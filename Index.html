@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>Spielregal</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23C1443C'/%3E%3Ctext x='50' y='68' font-size='55' text-anchor='middle' fill='%23F2EDE4' font-family='sans-serif'%3E%E2%9A%80%3C/text%3E%3C/svg%3E" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Spielregal" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
+<style>
+  html, body { background:#1C1B1A; margin:0; overscroll-behavior:none; }
+  .font-display { font-family:'Fraunces', serif; font-optical-sizing:auto; }
+  .font-body { font-family:'IBM Plex Sans', sans-serif; }
+  .font-mono { font-family:'IBM Plex Mono', monospace; }
+  ::-webkit-scrollbar { width:8px; height:8px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:#3A3631; border-radius:4px; }
+  @keyframes riseIn { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+  .rise-in { animation: riseIn .25s ease-out; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin { animation: spin 1s linear infinite; }
+  #loading { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; padding:24px; text-align:center; color:#F2EDE4; font-family:'IBM Plex Sans',sans-serif; }
+</style>
+</head>
+<body>
+<div id="root"><div id="loading">
+  <div style="color:#C1443C;">Lädt…</div>
+  <div id="load-hint" style="display:none; color:#A39C8F; font-size:14px; max-width:320px;">
+    Das dauert normalerweise nur eine Sekunde. Falls hier nichts weiter passiert: diese App lädt React beim Öffnen einmalig aus dem Internet – bitte prüfe, ob dein iPad gerade online ist, und lade die Seite neu (nach unten ziehen).
+  </div>
+</div></div>
+<script>
+  setTimeout(function () {
+    var hint = document.getElementById("load-hint");
+    var root = document.getElementById("root");
+    if (hint && root && root.textContent.indexOf("Lädt") !== -1) {
+      hint.style.display = "block";
+    }
+  }, 4000);
+</script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo } = React;
+const { createRoot } = ReactDOM;
+
+/* ---------------- ICONS (hand-drawn, no external deps) ---------------- */
+function Icon({ children, size = 18, className = "", strokeWidth = 2 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      {children}
+    </svg>
+  );
+}
+const Home = (p) => <Icon {...p}><path d="M3 10.5 12 3l9 7.5" /><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5" /></Icon>;
+const Library = (p) => <Icon {...p}><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16M15 4v16" /></Icon>;
+const ListChecks = (p) => <Icon {...p}><path d="M4 6h2M4 12h2M4 18h2" /><path d="M9 6h11M9 12h11M9 18h11" /></Icon>;
+const Sparkles = (p) => <Icon {...p}><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2" /></Icon>;
+const Plus = (p) => <Icon {...p}><path d="M12 5v14M5 12h14" /></Icon>;
+const X = (p) => <Icon {...p}><path d="M18 6 6 18M6 6l12 12" /></Icon>;
+const Search = (p) => <Icon {...p}><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></Icon>;
+const Dices = (p) => <Icon {...p}><rect x="3" y="3" width="8" height="8" rx="2" /><circle cx="7" cy="7" r="0.8" fill="currentColor" stroke="none" /><rect x="13" y="13" width="8" height="8" rx="2" /><circle cx="15.5" cy="15.5" r="0.8" fill="currentColor" stroke="none" /><circle cx="18.5" cy="18.5" r="0.8" fill="currentColor" stroke="none" /></Icon>;
+const Clock = (p) => <Icon {...p}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></Icon>;
+const Users = (p) => <Icon {...p}><circle cx="9" cy="8" r="3.2" /><path d="M3.5 20c0-3.3 2.5-6 5.5-6s5.5 2.7 5.5 6" /><circle cx="17" cy="9" r="2.5" /><path d="M15.5 14.2c2.4.3 4.5 2.5 4.5 5.8" /></Icon>;
+const Trash2 = (p) => <Icon {...p}><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" /><path d="M10 11v6M14 11v6" /></Icon>;
+const TrendingUp = (p) => <Icon {...p}><path d="M3 17 9.5 10.5 14 15l7-9" /><path d="M15 6h6v6" /></Icon>;
+const Archive = (p) => <Icon {...p}><rect x="3" y="4" width="18" height="4" rx="1" /><path d="M5 8v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8" /><path d="M10 13h4" /></Icon>;
+const Globe = (p) => <Icon {...p}><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c2.5 2.5 3.5 6 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-6-3.5-9s1-6.5 3.5-9Z" /></Icon>;
+const Sofa = (p) => <Icon {...p}><path d="M4 12V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4" /><rect x="3" y="12" width="18" height="6" rx="2" /><path d="M5 18v2M19 18v2" /></Icon>;
+const Loader2 = ({ className = "", size = 18 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className={`spin ${className}`}>
+    <path d="M12 3a9 9 0 1 0 9 9" />
+  </svg>
+);
+const ChevronRight = (p) => <Icon {...p}><path d="m9 6 6 6-6 6" /></Icon>;
+const Check = (p) => <Icon {...p}><path d="M5 13l4 4L19 7" /></Icon>;
+
+/* ---------------- STORAGE (localStorage, this file runs standalone) ---------------- */
+const GAMES_KEY = "spielregal:games";
+const PLAYS_KEY = "spielregal:plays";
+const loadKey = (key, fallback) => {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch (e) { return fallback; }
+};
+const saveKey = (key, value) => {
+  try { localStorage.setItem(key, JSON.stringify(value)); }
+  catch (e) { console.error("Speichern fehlgeschlagen", e); }
+};
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+
+/* ---------------- BGG API (best effort, needs internet) ---------------- */
+async function bggSearch(query) {
+  const url = `https://boardgamegeek.com/xmlapi2/search?query=${encodeURIComponent(query)}&type=boardgame`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("BGG nicht erreichbar");
+  const text = await res.text();
+  const xml = new DOMParser().parseFromString(text, "text/xml");
+  const items = Array.from(xml.getElementsByTagName("item")).slice(0, 8);
+  return items.map((it) => ({
+    bggId: it.getAttribute("id"),
+    name: it.getElementsByTagName("name")[0]?.getAttribute("value") || "Unbekannt",
+    year: it.getElementsByTagName("yearpublished")[0]?.getAttribute("value") || "",
+  }));
+}
+async function bggThing(bggId) {
+  const url = `https://boardgamegeek.com/xmlapi2/thing?id=${bggId}&stats=1`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("BGG nicht erreichbar");
+  const text = await res.text();
+  const xml = new DOMParser().parseFromString(text, "text/xml");
+  const item = xml.getElementsByTagName("item")[0];
+  if (!item) throw new Error("Kein Ergebnis");
+  const nameEl = Array.from(item.getElementsByTagName("name")).find(n => n.getAttribute("type") === "primary") || item.getElementsByTagName("name")[0];
+  const getTxt = (tag) => item.getElementsByTagName(tag)[0]?.textContent || "";
+  const getAttr = (tag) => item.getElementsByTagName(tag)[0]?.getAttribute("value") || "";
+  const mechanisms = Array.from(item.getElementsByTagName("link")).filter(l => l.getAttribute("type") === "boardgamemechanic").map(l => l.getAttribute("value"));
+  const categories = Array.from(item.getElementsByTagName("link")).filter(l => l.getAttribute("type") === "boardgamecategory").map(l => l.getAttribute("value"));
+  const publisher = Array.from(item.getElementsByTagName("link")).find(l => l.getAttribute("type") === "boardgamepublisher")?.getAttribute("value") || "";
+  const weight = item.getElementsByTagName("averageweight")[0]?.getAttribute("value");
+  return {
+    bggId, name: nameEl?.getAttribute("value") || "Unbekannt", year: getAttr("yearpublished"),
+    image: getTxt("image"), minPlayers: getAttr("minplayers"), maxPlayers: getAttr("maxplayers"),
+    minTime: getAttr("minplaytime"), maxTime: getAttr("maxplaytime"), age: getAttr("minage"),
+    publisher, mechanisms, categories,
+    complexity: weight ? Math.round(parseFloat(weight) * 10) / 10 : null,
+  };
+}
+
+/* ---------------- UI PRIMITIVES ---------------- */
+const Pill = ({ children, tone = "default" }) => {
+  const tones = {
+    default: "bg-[#2E2B28] text-[#A39C8F] border-[#3A3631]",
+    amber: "bg-[#D4A24C]/15 text-[#D4A24C] border-[#D4A24C]/30",
+    red: "bg-[#C1443C]/15 text-[#C1443C] border-[#C1443C]/30",
+    teal: "bg-[#4E8C82]/15 text-[#7FB3AA] border-[#4E8C82]/30",
+  };
+  return <span className={`px-2 py-0.5 rounded-full text-[11px] font-body font-medium border ${tones[tone]}`}>{children}</span>;
+};
+
+const Cover = ({ game, size = "md" }) => {
+  const dims = size === "sm" ? "w-12 h-12" : size === "lg" ? "w-full aspect-square" : "w-16 h-16";
+  return game.image ? (
+    <img src={game.image} alt={game.name} className={`${dims} object-cover rounded-lg border border-[#3A3631]`} />
+  ) : (
+    <div className={`${dims} rounded-lg border border-[#3A3631] bg-[#2E2B28] flex items-center justify-center text-[#5C574F]`}>
+      <Dices size={size === "lg" ? 28 : 18} />
+    </div>
+  );
+};
+
+/* ---------------- ADD / EDIT GAME MODAL ---------------- */
+function GameFormModal({ initial, onClose, onSave, onDelete }) {
+  const [step, setStep] = useState(initial ? "manual" : "search");
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const [form, setForm] = useState(initial || {
+    id: uid(), bggId: "", name: "", year: "", publisher: "", image: "",
+    minPlayers: "", maxPlayers: "", minTime: "", maxTime: "", age: "",
+    complexity: "", mechanisms: [], categories: [], status: "owned",
+    location: "", notes: "", rating: "", addedDate: new Date().toISOString().slice(0, 10),
+  });
+
+  const runSearch = async () => {
+    if (!query.trim()) return;
+    setSearching(true); setSearchError("");
+    try {
+      const r = await bggSearch(query);
+      setResults(r);
+      if (r.length === 0) setSearchError("Keine Treffer bei BGG. Manuell anlegen?");
+    } catch (e) { setSearchError("BGG ist gerade nicht erreichbar. Bitte manuell anlegen."); }
+    finally { setSearching(false); }
+  };
+
+  const pickResult = async (r) => {
+    setSearching(true);
+    try {
+      const details = await bggThing(r.bggId);
+      setForm((f) => ({ ...f, ...details, status: "owned", addedDate: f.addedDate }));
+      setStep("manual");
+    } catch (e) {
+      setForm((f) => ({ ...f, name: r.name, year: r.year, bggId: r.bggId }));
+      setStep("manual");
+    } finally { setSearching(false); }
+  };
+
+  const update = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6">
+      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rise-in">
+        <div className="sticky top-0 bg-[#1C1B1A] border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
+          <h2 className="font-display text-xl text-[#F2EDE4]">{initial ? "Spiel bearbeiten" : step === "search" ? "Spiel suchen" : "Details"}</h2>
+          <button onClick={onClose} className="text-[#A39C8F] p-1"><X size={22} /></button>
+        </div>
+
+        {step === "search" && (
+          <div className="p-5 space-y-4">
+            <div className="flex gap-2">
+              <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && runSearch()}
+                placeholder="z.B. Wingspan"
+                className="flex-1 bg-[#262422] border border-[#3A3631] rounded-xl px-4 py-3 text-[#F2EDE4] font-body placeholder-[#5C574F] focus:outline-none focus:border-[#D4A24C]" />
+              <button onClick={runSearch} className="bg-[#C1443C] text-[#F2EDE4] px-4 rounded-xl flex items-center justify-center active:scale-95">
+                {searching ? <Loader2 size={20} /> : <Search size={20} />}
+              </button>
+            </div>
+            {searchError && <p className="text-sm text-[#D4A24C] font-body">{searchError}</p>}
+            <div className="space-y-2">
+              {results.map((r) => (
+                <button key={r.bggId} onClick={() => pickResult(r)}
+                  className="w-full text-left bg-[#262422] hover:bg-[#2E2B28] border border-[#3A3631] rounded-xl px-4 py-3 flex items-center justify-between">
+                  <span className="font-body text-[#F2EDE4]">{r.name} <span className="text-[#5C574F]">({r.year || "?"})</span></span>
+                  <ChevronRight size={16} className="text-[#5C574F]" />
+                </button>
+              ))}
+            </div>
+            <button onClick={() => setStep("manual")} className="w-full text-center py-3 text-[#A39C8F] font-body text-sm border-t border-[#3A3631] pt-4">
+              Stattdessen manuell anlegen →
+            </button>
+          </div>
+        )}
+
+        {step === "manual" && (
+          <div className="p-5 space-y-4 font-body">
+            <div className="flex gap-3 items-start">
+              <Cover game={form} />
+              <div className="flex-1 space-y-2">
+                <input value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="Titel *"
+                  className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] focus:outline-none focus:border-[#D4A24C]" />
+                <div className="flex gap-2">
+                  <input value={form.year} onChange={(e) => update("year", e.target.value)} placeholder="Jahr"
+                    className="w-20 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] focus:outline-none focus:border-[#D4A24C]" />
+                  <input value={form.publisher} onChange={(e) => update("publisher", e.target.value)} placeholder="Verlag"
+                    className="flex-1 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] focus:outline-none focus:border-[#D4A24C]" />
+                </div>
+              </div>
+            </div>
+
+            <input value={form.image} onChange={(e) => update("image", e.target.value)} placeholder="Bild-URL (optional)"
+              className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#D4A24C]" />
+
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <label className="text-[11px] text-[#5C574F]">Spieler min–max</label>
+                <div className="flex gap-1 mt-1">
+                  <input value={form.minPlayers} onChange={(e) => update("minPlayers", e.target.value)} placeholder="1" className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-2 py-2 text-[#F2EDE4] text-sm" />
+                  <input value={form.maxPlayers} onChange={(e) => update("maxPlayers", e.target.value)} placeholder="4" className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-2 py-2 text-[#F2EDE4] text-sm" />
+                </div>
+              </div>
+              <div>
+                <label className="text-[11px] text-[#5C574F]">Dauer min–max</label>
+                <div className="flex gap-1 mt-1">
+                  <input value={form.minTime} onChange={(e) => update("minTime", e.target.value)} placeholder="30" className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-2 py-2 text-[#F2EDE4] text-sm" />
+                  <input value={form.maxTime} onChange={(e) => update("maxTime", e.target.value)} placeholder="60" className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-2 py-2 text-[#F2EDE4] text-sm" />
+                </div>
+              </div>
+              <div>
+                <label className="text-[11px] text-[#5C574F]">Komplexität 1–5</label>
+                <input value={form.complexity} onChange={(e) => update("complexity", e.target.value)} placeholder="2.5" className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-2 py-2 text-[#F2EDE4] text-sm mt-1" />
+              </div>
+            </div>
+
+            <input value={Array.isArray(form.mechanisms) ? form.mechanisms.join(", ") : form.mechanisms}
+              onChange={(e) => update("mechanisms", e.target.value.split(",").map(s => s.trim()).filter(Boolean))}
+              placeholder="Mechanismen, kommagetrennt"
+              className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#D4A24C]" />
+            <input value={Array.isArray(form.categories) ? form.categories.join(", ") : form.categories}
+              onChange={(e) => update("categories", e.target.value.split(",").map(s => s.trim()).filter(Boolean))}
+              placeholder="Kategorien, kommagetrennt"
+              className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#D4A24C]" />
+
+            <div>
+              <label className="text-[11px] text-[#5C574F]">Status</label>
+              <div className="flex gap-2 mt-1">
+                {[{ v: "owned", label: "Besitz" }, { v: "wishlist", label: "Wunschliste" }, { v: "none", label: "Nur gespielt" }].map((s) => (
+                  <button key={s.v} onClick={() => update("status", s.v)}
+                    className={`flex-1 py-2 rounded-lg text-sm border ${form.status === s.v ? "bg-[#C1443C] border-[#C1443C] text-[#F2EDE4]" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}>
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {form.status === "owned" && (
+              <input value={form.location} onChange={(e) => update("location", e.target.value)} placeholder="Standort (z.B. Regal 2)"
+                className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#D4A24C]" />
+            )}
+
+            <div>
+              <label className="text-[11px] text-[#5C574F]">Deine Bewertung (1–10)</label>
+              <input value={form.rating} onChange={(e) => update("rating", e.target.value)} placeholder="z.B. 8"
+                className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm mt-1 focus:outline-none focus:border-[#D4A24C]" />
+            </div>
+
+            <textarea value={form.notes} onChange={(e) => update("notes", e.target.value)} placeholder="Notizen, Hausregeln…" rows={2}
+              className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#D4A24C]" />
+
+            <button disabled={!form.name.trim()} onClick={() => onSave(form)}
+              className="w-full bg-[#C1443C] disabled:opacity-40 text-[#F2EDE4] rounded-xl py-3 font-medium active:scale-[0.99] flex items-center justify-center gap-2">
+              <Check size={18} /> Speichern
+            </button>
+            {initial && (
+              <button onClick={() => onDelete(initial.id)} className="w-full text-[#C1443C] text-sm font-body py-2 flex items-center justify-center gap-1.5">
+                <Trash2 size={14} /> Spiel entfernen
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- ADD PLAY MODAL ---------------- */
+function PlayFormModal({ games, onClose, onSave }) {
+  const [gameQuery, setGameQuery] = useState("");
+  const [selectedGame, setSelectedGame] = useState(null);
+  const [mode, setMode] = useState("physical-owned");
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [players, setPlayers] = useState("");
+  const [winner, setWinner] = useState("");
+  const [notes, setNotes] = useState("");
+
+  const filtered = gameQuery ? games.filter(g => g.name.toLowerCase().includes(gameQuery.toLowerCase())) : games.slice(0, 6);
+
+  const save = () => {
+    if (!selectedGame) return;
+    onSave({ id: uid(), gameId: selectedGame.id, gameName: selectedGame.name, date, mode, players, winner, notes });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6">
+      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rise-in font-body">
+        <div className="sticky top-0 bg-[#1C1B1A] border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
+          <h2 className="font-display text-xl text-[#F2EDE4]">Partie eintragen</h2>
+          <button onClick={onClose} className="text-[#A39C8F] p-1"><X size={22} /></button>
+        </div>
+        <div className="p-5 space-y-4">
+          {!selectedGame ? (
+            <div>
+              <input autoFocus value={gameQuery} onChange={(e) => setGameQuery(e.target.value)} placeholder="Spiel suchen…"
+                className="w-full bg-[#262422] border border-[#3A3631] rounded-xl px-4 py-3 text-[#F2EDE4] placeholder-[#5C574F] focus:outline-none focus:border-[#D4A24C]" />
+              <div className="mt-3 space-y-2">
+                {filtered.map((g) => (
+                  <button key={g.id} onClick={() => setSelectedGame(g)}
+                    className="w-full text-left bg-[#262422] hover:bg-[#2E2B28] border border-[#3A3631] rounded-xl px-4 py-2.5 flex items-center gap-3">
+                    <Cover game={g} size="sm" /><span className="text-[#F2EDE4]">{g.name}</span>
+                  </button>
+                ))}
+                {filtered.length === 0 && (
+                  <p className="text-sm text-[#5C574F] px-1">Nicht in deiner Liste? Lege es erst kurz über „Spiel hinzufügen" in der Sammlung an — auch ungespielt, ohne Besitz.</p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-3 bg-[#262422] border border-[#3A3631] rounded-xl px-4 py-3">
+                <Cover game={selectedGame} size="sm" />
+                <span className="text-[#F2EDE4] font-medium flex-1">{selectedGame.name}</span>
+                <button onClick={() => setSelectedGame(null)} className="text-[#5C574F] text-xs">Ändern</button>
+              </div>
+              <div>
+                <label className="text-[11px] text-[#5C574F]">Wo gespielt</label>
+                <div className="grid grid-cols-3 gap-2 mt-1">
+                  {[{ v: "physical-owned", label: "Eigene Sammlung", icon: Home }, { v: "physical-other", label: "Geliehen / Event", icon: Sofa }, { v: "bga", label: "BoardGameArena", icon: Globe }].map((m) => (
+                    <button key={m.v} onClick={() => setMode(m.v)}
+                      className={`py-2.5 rounded-lg text-xs border flex flex-col items-center gap-1 ${mode === m.v ? "bg-[#C1443C] border-[#C1443C] text-[#F2EDE4]" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}>
+                      <m.icon size={16} />{m.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-[11px] text-[#5C574F]">Datum</label>
+                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm mt-1" />
+              </div>
+              <input value={players} onChange={(e) => setPlayers(e.target.value)} placeholder="Mitspieler (optional)" className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#D4A24C]" />
+              <input value={winner} onChange={(e) => setWinner(e.target.value)} placeholder="Gewinner (optional)" className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#D4A24C]" />
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notiz (optional)" rows={2} className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#D4A24C]" />
+              <button onClick={save} className="w-full bg-[#4E8C82] text-[#F2EDE4] rounded-xl py-3 font-medium active:scale-[0.99] flex items-center justify-center gap-2">
+                <Check size={18} /> Partie speichern
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- DASHBOARD ---------------- */
+function Dashboard({ games, plays, onQuickFilter }) {
+  const owned = games.filter(g => g.status === "owned");
+  const playCounts = useMemo(() => {
+    const map = {}; plays.forEach(p => { map[p.gameId] = (map[p.gameId] || 0) + 1; }); return map;
+  }, [plays]);
+  const lastPlays = [...plays].sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 5);
+  const dustCollectors = owned.filter(g => !playCounts[g.id]).sort((a, b) => (a.addedDate || "").localeCompare(b.addedDate || "")).slice(0, 5);
+  const complexGames = owned.filter(g => g.complexity);
+  const avgComplexity = complexGames.length ? (complexGames.reduce((s, g) => s + parseFloat(g.complexity), 0) / complexGames.length).toFixed(1) : "—";
+  const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const recentPlayCounts = {};
+  plays.forEach(p => { if (p.date && new Date(p.date) >= thirtyDaysAgo) recentPlayCounts[p.gameId] = (recentPlayCounts[p.gameId] || 0) + 1; });
+  const topMonth = Object.entries(recentPlayCounts).sort((a, b) => b[1] - a[1])[0];
+  const topMonthGame = topMonth ? games.find(g => g.id === topMonth[0]) : null;
+  const digitalCount = plays.filter(p => p.mode === "bga").length;
+  const physicalCount = plays.filter(p => p.mode !== "bga").length;
+
+  return (
+    <div className="p-5 space-y-5 pb-28">
+      <div>
+        <p className="text-[#5C574F] font-body text-sm">{new Date().toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long" })}</p>
+        <h1 className="font-display text-3xl text-[#F2EDE4] mt-0.5">Spielregal</h1>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-4">
+          <p className="text-[#5C574F] text-xs font-body">Sammlung</p>
+          <p className="font-display text-3xl text-[#F2EDE4] mt-1">{owned.length}</p>
+          <p className="text-[#A39C8F] text-xs font-body mt-0.5">Spiele im Regal</p>
+        </div>
+        <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-4">
+          <p className="text-[#5C574F] text-xs font-body">Ø Komplexität</p>
+          <p className="font-display text-3xl text-[#F2EDE4] mt-1">{avgComplexity}</p>
+          <p className="text-[#A39C8F] text-xs font-body mt-0.5">von 5</p>
+        </div>
+      </div>
+      {topMonthGame && (
+        <div className="bg-gradient-to-r from-[#D4A24C]/15 to-transparent border border-[#D4A24C]/30 rounded-2xl p-4 flex items-center gap-3">
+          <TrendingUp className="text-[#D4A24C]" size={22} />
+          <div>
+            <p className="text-[#D4A24C] text-xs font-body font-medium">Spiel des Monats</p>
+            <p className="text-[#F2EDE4] font-display text-lg">{topMonthGame.name} · {topMonth[1]}× gespielt</p>
+          </div>
+        </div>
+      )}
+      <div>
+        <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Schnellfilter</h2>
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {[
+            { label: "2 Spieler", fn: g => parseInt(g.minPlayers) <= 2 && parseInt(g.maxPlayers) >= 2 },
+            { label: "Unter 30 Min", fn: g => g.minTime && parseInt(g.minTime) <= 30 },
+            { label: "Noch nie gespielt", fn: g => !playCounts[g.id] },
+          ].map(f => (
+            <button key={f.label} onClick={() => onQuickFilter(f.fn)} className="whitespace-nowrap px-4 py-2 bg-[#262422] border border-[#3A3631] rounded-full text-sm font-body text-[#F2EDE4]">{f.label}</button>
+          ))}
+        </div>
+      </div>
+      <div>
+        <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Zuletzt gespielt</h2>
+        {lastPlays.length === 0 ? <p className="text-[#5C574F] text-sm font-body">Noch keine Partien eingetragen.</p> : (
+          <div className="space-y-2">
+            {lastPlays.map(p => (
+              <div key={p.id} className="bg-[#262422] border border-[#3A3631] rounded-xl px-4 py-3 flex items-center justify-between">
+                <div><p className="text-[#F2EDE4] font-body">{p.gameName}</p><p className="text-[#5C574F] text-xs font-body">{p.date}</p></div>
+                <Pill tone={p.mode === "bga" ? "teal" : "default"}>{p.mode === "bga" ? "BGA" : p.mode === "physical-other" ? "Geliehen" : "Sammlung"}</Pill>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <div>
+        <div className="flex items-center gap-2 mb-2"><Archive size={15} className="text-[#5C574F]" /><h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide">Staubfänger</h2></div>
+        {dustCollectors.length === 0 ? <p className="text-[#5C574F] text-sm font-body">Alles im Regal wurde schon gespielt. Sehr gut!</p> : (
+          <div className="space-y-2">
+            {dustCollectors.map(g => (
+              <div key={g.id} className="bg-[#262422] border border-[#3A3631] rounded-xl px-4 py-3 flex items-center gap-3">
+                <Cover game={g} size="sm" />
+                <div className="flex-1"><p className="text-[#F2EDE4] font-body">{g.name}</p><p className="text-[#5C574F] text-xs font-body">seit {g.addedDate || "?"} ungespielt</p></div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      {plays.length > 0 && (
+        <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-4">
+          <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-3">Digital vs. Physisch</h2>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-2.5 rounded-full bg-[#3A3631] overflow-hidden flex">
+              <div className="bg-[#C1443C] h-full" style={{ width: `${(physicalCount / plays.length) * 100}%` }} />
+              <div className="bg-[#4E8C82] h-full" style={{ width: `${(digitalCount / plays.length) * 100}%` }} />
+            </div>
+          </div>
+          <div className="flex justify-between mt-2 text-xs font-body"><span className="text-[#C1443C]">{physicalCount} physisch</span><span className="text-[#4E8C82]">{digitalCount} BGA</span></div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------------- COLLECTION ---------------- */
+function Collection({ games, plays, filterFn, clearFilter, onAdd, onEdit }) {
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("owned");
+  const playCounts = useMemo(() => {
+    const map = {}; plays.forEach(p => { map[p.gameId] = (map[p.gameId] || 0) + 1; }); return map;
+  }, [plays]);
+  let list = games.filter(g => (statusFilter === "all" ? true : g.status === statusFilter));
+  if (query) list = list.filter(g => g.name.toLowerCase().includes(query.toLowerCase()));
+  if (filterFn) list = list.filter(filterFn);
+
+  return (
+    <div className="p-5 pb-28">
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="font-display text-3xl text-[#F2EDE4]">Sammlung</h1>
+        <button onClick={onAdd} className="bg-[#C1443C] text-[#F2EDE4] p-2.5 rounded-xl active:scale-95"><Plus size={20} /></button>
+      </div>
+      <div className="relative mb-3">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5C574F]" />
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Suchen…"
+          className="w-full bg-[#262422] border border-[#3A3631] rounded-xl pl-9 pr-3 py-2.5 text-[#F2EDE4] text-sm font-body placeholder-[#5C574F] focus:outline-none focus:border-[#D4A24C]" />
+      </div>
+      <div className="flex gap-2 mb-2">
+        {[{ v: "owned", label: "Besitz" }, { v: "wishlist", label: "Wunschliste" }, { v: "all", label: "Alle" }].map(s => (
+          <button key={s.v} onClick={() => setStatusFilter(s.v)}
+            className={`px-3 py-1.5 rounded-full text-xs font-body border ${statusFilter === s.v ? "bg-[#D4A24C] border-[#D4A24C] text-[#1C1B1A] font-medium" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}>{s.label}</button>
+        ))}
+        {filterFn && <button onClick={clearFilter} className="px-3 py-1.5 rounded-full text-xs font-body border border-[#C1443C] text-[#C1443C] flex items-center gap-1"><X size={12} /> Filter</button>}
+      </div>
+      {list.length === 0 ? <p className="text-[#5C574F] text-sm font-body mt-8 text-center">Keine Spiele gefunden.</p> : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
+          {list.map(g => (
+            <button key={g.id} onClick={() => onEdit(g)} className="text-left bg-[#262422] border border-[#3A3631] rounded-2xl p-3 rise-in">
+              <Cover game={g} size="lg" />
+              <p className="font-body text-[#F2EDE4] text-sm font-medium mt-2 leading-tight">{g.name}</p>
+              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                {g.minPlayers && <span className="flex items-center gap-0.5 text-[10px] text-[#A39C8F] font-mono"><Users size={10} /> {g.minPlayers}-{g.maxPlayers}</span>}
+                {g.minTime && <span className="flex items-center gap-0.5 text-[10px] text-[#A39C8F] font-mono"><Clock size={10} /> {g.minTime}'</span>}
+                {!playCounts[g.id] && g.status === "owned" && <Pill tone="amber">ungespielt</Pill>}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------------- PLAY LOG ---------------- */
+function PlayLog({ plays, onAdd, onDelete }) {
+  const sorted = [...plays].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+  const modeIcon = { "physical-owned": Home, "physical-other": Sofa, bga: Globe };
+  const modeLabel = { "physical-owned": "Eigene Sammlung", "physical-other": "Geliehen / Event", bga: "BoardGameArena" };
+  return (
+    <div className="p-5 pb-28">
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="font-display text-3xl text-[#F2EDE4]">Partien</h1>
+        <button onClick={onAdd} className="bg-[#4E8C82] text-[#F2EDE4] p-2.5 rounded-xl active:scale-95"><Plus size={20} /></button>
+      </div>
+      {sorted.length === 0 ? <p className="text-[#5C574F] text-sm font-body mt-8 text-center">Noch keine Partien eingetragen — auch geliehene oder online gespielte Spiele zählen.</p> : (
+        <div className="space-y-2">
+          {sorted.map(p => {
+            const IconC = modeIcon[p.mode] || Home;
+            return (
+              <div key={p.id} className="bg-[#262422] border border-[#3A3631] rounded-xl px-4 py-3 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#A39C8F] shrink-0"><IconC size={16} /></div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[#F2EDE4] font-body truncate">{p.gameName}</p>
+                  <p className="text-[#5C574F] text-xs font-body">{p.date} · {modeLabel[p.mode]}{p.winner ? ` · Sieger: ${p.winner}` : ""}</p>
+                </div>
+                <button onClick={() => onDelete(p.id)} className="text-[#5C574F] p-1"><Trash2 size={15} /></button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------------- RECOMMENDATIONS ---------------- */
+function Recommendations({ games, plays }) {
+  const [discovering, setDiscovering] = useState(false);
+  const [external, setExternal] = useState([]);
+  const [externalError, setExternalError] = useState("");
+  const playedIds = new Set(plays.map(p => p.gameId));
+  const profile = useMemo(() => {
+    const rated = games.filter(g => g.rating && parseFloat(g.rating) >= 8);
+    const tagCount = {};
+    rated.forEach(g => { [...(g.mechanisms || []), ...(g.categories || [])].forEach(t => { tagCount[t] = (tagCount[t] || 0) + 1; }); });
+    return Object.entries(tagCount).sort((a, b) => b[1] - a[1]);
+  }, [games]);
+  const unplayed = games.filter(g => !playedIds.has(g.id));
+  const scored = unplayed.map(g => {
+    const tags = [...(g.mechanisms || []), ...(g.categories || [])];
+    const score = profile.reduce((s, [tag, weight]) => (tags.includes(tag) ? s + weight : s), 0);
+    return { game: g, score };
+  }).filter(x => x.score > 0).sort((a, b) => b.score - a.score).slice(0, 8);
+  const topTag = profile[0] ? profile[0][0] : null;
+
+  const discoverNew = async () => {
+    if (!topTag) return;
+    setDiscovering(true); setExternalError("");
+    try {
+      const r = await bggSearch(topTag);
+      const ownedNames = new Set(games.map(g => g.name.toLowerCase()));
+      setExternal(r.filter(x => !ownedNames.has(x.name.toLowerCase())).slice(0, 6));
+    } catch (e) { setExternalError("BGG ist gerade nicht erreichbar — externe Vorschläge sind offline nicht möglich."); }
+    finally { setDiscovering(false); }
+  };
+
+  return (
+    <div className="p-5 pb-28">
+      <h1 className="font-display text-3xl text-[#F2EDE4] mb-1">Empfehlungen</h1>
+      <p className="text-[#A39C8F] text-sm font-body mb-5">Basierend auf Spielen, die du mit 8+ bewertet hast — egal ob eigene Sammlung, geliehen oder BGA.</p>
+      {profile.length === 0 ? (
+        <p className="text-[#5C574F] text-sm font-body">Bewerte ein paar gespielte Spiele mit 8 oder höher, damit ich ein Geschmacksprofil erstellen kann.</p>
+      ) : (
+        <>
+          <div className="mb-6">
+            <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Ungespielt, passt zu dir</h2>
+            {scored.length === 0 ? <p className="text-[#5C574F] text-sm font-body">Kein ungespieltes Spiel überschneidet sich aktuell mit deinem Profil.</p> : (
+              <div className="space-y-2">
+                {scored.map(({ game }) => {
+                  const tags = [...(game.mechanisms || []), ...(game.categories || [])];
+                  const match = profile.find(([t]) => tags.includes(t));
+                  const matchTag = match ? match[0] : null;
+                  return (
+                    <div key={game.id} className="bg-[#262422] border border-[#3A3631] rounded-xl px-4 py-3 flex items-center gap-3">
+                      <Cover game={game} size="sm" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[#F2EDE4] font-body truncate">{game.name}</p>
+                        {matchTag && <p className="text-[#5C574F] text-xs font-body">Ähnlich wie deine Favoriten: {matchTag}</p>}
+                      </div>
+                      <Pill tone={game.status === "owned" ? "teal" : "amber"}>{game.status === "owned" ? "besitzt du" : "nicht in Sammlung"}</Pill>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide">Neu entdecken</h2>
+              <button onClick={discoverNew} disabled={discovering} className="flex items-center gap-1.5 text-xs font-body text-[#D4A24C] disabled:opacity-50">
+                {discovering ? <Loader2 size={13} /> : <Sparkles size={13} />}{topTag ? `Nach "${topTag}" suchen` : "Suchen"}
+              </button>
+            </div>
+            {externalError && <p className="text-sm text-[#D4A24C] font-body">{externalError}</p>}
+            {external.length > 0 && (
+              <div className="space-y-2">
+                {external.map(r => (
+                  <div key={r.bggId} className="bg-[#262422] border border-[#3A3631] rounded-xl px-4 py-3 flex items-center justify-between">
+                    <span className="text-[#F2EDE4] font-body">{r.name} <span className="text-[#5C574F]">({r.year})</span></span>
+                    <Pill tone="red">nicht in Sammlung</Pill>
+                  </div>
+                ))}
+              </div>
+            )}
+            {external.length === 0 && !externalError && <p className="text-[#5C574F] text-sm font-body">Tippe auf „Suchen", um passende neue Spiele bei BGG zu finden (benötigt Internetzugriff).</p>}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ---------------- MAIN APP ---------------- */
+function App() {
+  const [games, setGames] = useState(() => loadKey(GAMES_KEY, []));
+  const [plays, setPlays] = useState(() => loadKey(PLAYS_KEY, []));
+  const [tab, setTab] = useState("dashboard");
+  const [gameModal, setGameModal] = useState(null);
+  const [playModal, setPlayModal] = useState(false);
+  const [quickFilter, setQuickFilter] = useState(null);
+
+  useEffect(() => { saveKey(GAMES_KEY, games); }, [games]);
+  useEffect(() => { saveKey(PLAYS_KEY, plays); }, [plays]);
+
+  const saveGame = (game) => {
+    setGames(prev => { const exists = prev.find(g => g.id === game.id); return exists ? prev.map(g => g.id === game.id ? game : g) : [...prev, game]; });
+    setGameModal(null);
+  };
+  const deleteGame = (id) => { setGames(prev => prev.filter(g => g.id !== id)); setGameModal(null); };
+  const savePlay = (play) => { setPlays(prev => [...prev, play]); setPlayModal(false); };
+  const deletePlay = (id) => setPlays(prev => prev.filter(p => p.id !== id));
+
+  const tabs = [
+    { id: "dashboard", label: "Übersicht", icon: Home },
+    { id: "collection", label: "Sammlung", icon: Library },
+    { id: "playlog", label: "Partien", icon: ListChecks },
+    { id: "recommendations", label: "Ideen", icon: Sparkles },
+  ];
+
+  return (
+    <div className="min-h-screen bg-[#1C1B1A] font-body flex flex-col max-w-3xl mx-auto relative">
+      <div className="flex-1 overflow-y-auto">
+        {tab === "dashboard" && <Dashboard games={games} plays={plays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} />}
+        {tab === "collection" && <Collection games={games} plays={plays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => setGameModal({ editing: null })} onEdit={(g) => setGameModal({ editing: g })} />}
+        {tab === "playlog" && <PlayLog plays={plays} onAdd={() => setPlayModal(true)} onDelete={deletePlay} />}
+        {tab === "recommendations" && <Recommendations games={games} plays={plays} />}
+      </div>
+      <div className="sticky bottom-0 bg-[#1C1B1A] border-t border-[#3A3631] px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        <div className="flex justify-around">
+          {tabs.map(t => (
+            <button key={t.id} onClick={() => { setTab(t.id); if (t.id !== "collection") setQuickFilter(null); }} className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl min-w-[64px]">
+              <t.icon size={20} className={tab === t.id ? "text-[#D4A24C]" : "text-[#5C574F]"} strokeWidth={tab === t.id ? 2.5 : 2} />
+              <span className={`text-[10px] font-body ${tab === t.id ? "text-[#D4A24C] font-semibold" : "text-[#5C574F]"}`}>{t.label}</span>
+              <div className={`h-0.5 w-5 rounded-full ${tab === t.id ? "bg-[#D4A24C]" : "bg-transparent"}`} />
+            </button>
+          ))}
+        </div>
+      </div>
+      {gameModal && <GameFormModal initial={gameModal.editing} onClose={() => setGameModal(null)} onSave={saveGame} onDelete={deleteGame} />}
+      {playModal && <PlayFormModal games={games} onClose={() => setPlayModal(false)} onSave={savePlay} />}
+    </div>
+  );
+}
+
+createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
