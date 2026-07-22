@@ -27,6 +27,7 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .spin { animation: spin 1s linear infinite; }
   #loading { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; padding:24px; text-align:center; color:#F2EDE4; font-family:'IBM Plex Sans',sans-serif; }
+  input, textarea, select { font-size: 16px !important; }
 </style>
 </head>
 <body>
@@ -172,7 +173,7 @@ const Pill = ({ children, tone = "default" }) => {
     red: "bg-[#C1443C]/15 text-[#C1443C] border-[#C1443C]/30",
     teal: "bg-[#4E8C82]/15 text-[#7FB3AA] border-[#4E8C82]/30",
   };
-  return <span className={`px-2 py-0.5 rounded-full text-[11px] font-body font-medium border ${tones[tone]}`}>{children}</span>;
+  return <span className={`px-2 py-0.5 rounded-full text-[11px] font-body font-medium border shrink-0 whitespace-nowrap ${tones[tone]}`}>{children}</span>;
 };
 
 const Cover = ({ game, size = "md" }) => {
@@ -227,7 +228,7 @@ function GameFormModal({ initial, onClose, onSave, onDelete }) {
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6">
-      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rise-in">
+      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92dvh] overflow-y-auto rise-in">
         <div className="sticky top-0 bg-[#1C1B1A] border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">{initial ? "Spiel bearbeiten" : step === "search" ? "Spiel suchen" : "Details"}</h2>
           <button onClick={onClose} className="text-[#A39C8F] p-1"><X size={22} /></button>
@@ -369,7 +370,7 @@ function PlayFormModal({ games, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6">
-      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rise-in font-body">
+      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92dvh] overflow-y-auto rise-in font-body">
         <div className="sticky top-0 bg-[#1C1B1A] border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Partie eintragen</h2>
           <button onClick={onClose} className="text-[#A39C8F] p-1"><X size={22} /></button>
@@ -446,7 +447,7 @@ function Dashboard({ games, plays, onQuickFilter }) {
   const physicalCount = plays.filter(p => p.mode !== "bga").length;
 
   return (
-    <div className="p-5 space-y-5 pb-28">
+    <div className="p-5 space-y-5 pb-6">
       <div>
         <p className="text-[#5C574F] font-body text-sm">{new Date().toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long" })}</p>
         <h1 className="font-display text-3xl text-[#F2EDE4] mt-0.5">Spielregal</h1>
@@ -538,7 +539,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onEdit }) {
   if (filterFn) list = list.filter(filterFn);
 
   return (
-    <div className="p-5 pb-28">
+    <div className="p-5 pb-6">
       <div className="flex items-center justify-between mb-4">
         <h1 className="font-display text-3xl text-[#F2EDE4]">Sammlung</h1>
         <button onClick={onAdd} className="bg-[#C1443C] text-[#F2EDE4] p-2.5 rounded-xl active:scale-95"><Plus size={20} /></button>
@@ -580,7 +581,7 @@ function PlayLog({ plays, onAdd, onDelete }) {
   const modeIcon = { "physical-owned": Home, "physical-other": Sofa, bga: Globe };
   const modeLabel = { "physical-owned": "Eigene Sammlung", "physical-other": "Geliehen / Event", bga: "BoardGameArena" };
   return (
-    <div className="p-5 pb-28">
+    <div className="p-5 pb-6">
       <div className="flex items-center justify-between mb-4">
         <h1 className="font-display text-3xl text-[#F2EDE4]">Partien</h1>
         <button onClick={onAdd} className="bg-[#4E8C82] text-[#F2EDE4] p-2.5 rounded-xl active:scale-95"><Plus size={20} /></button>
@@ -638,7 +639,7 @@ function Recommendations({ games, plays }) {
   };
 
   return (
-    <div className="p-5 pb-28">
+    <div className="p-5 pb-6">
       <h1 className="font-display text-3xl text-[#F2EDE4] mb-1">Empfehlungen</h1>
       <p className="text-[#A39C8F] text-sm font-body mb-5">Basierend auf Spielen, die du mit 8+ bewertet hast — egal ob eigene Sammlung, geliehen oder BGA.</p>
       {profile.length === 0 ? (
@@ -699,7 +700,7 @@ function SyncModal({ initialUrl, status, lastSynced, onClose, onSave, onSyncNow,
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6">
-      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rise-in font-body">
+      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92dvh] overflow-y-auto rise-in font-body">
         <div className="sticky top-0 bg-[#1C1B1A] border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Geräte-Synchronisation</h2>
           <button onClick={onClose} className="text-[#A39C8F] p-1"><X size={22} /></button>
