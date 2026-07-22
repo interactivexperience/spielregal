@@ -33,6 +33,7 @@
   input, textarea, select { font-size: 16px !important; }
   input::placeholder, textarea::placeholder { color: #5C574F !important; opacity: 1 !important; -webkit-text-fill-color: #5C574F !important; }
   .rte-content:empty:before { content: attr(data-placeholder); color: #5C574F; }
+  .rte-content, .rte-content * { color: inherit !important; background: transparent !important; }
   .rte-content h2 { font-family: 'Fraunces', serif; font-size: 1.25rem; margin: 0.4em 0 0.2em; }
   .rte-content h3 { font-family: 'IBM Plex Sans', sans-serif; font-size: 0.95rem; font-weight: 600; color: #A39C8F; margin: 0.4em 0 0.2em; }
   .rte-content ul { list-style: disc; padding-left: 1.4em; margin: 0.3em 0; }
@@ -427,6 +428,13 @@ function RichTextEditor({ value, onChange, placeholder, minHeight = 100 }) {
     if (editorRef.current) onChange(editorRef.current.innerHTML);
   };
 
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData("text/plain");
+    document.execCommand("insertText", false, text);
+    if (editorRef.current) onChange(editorRef.current.innerHTML);
+  };
+
   const ToolBtn = ({ children, onClick, className: cn = "" }) => (
     <button type="button" onClick={onClick} className={`h-9 px-2.5 flex items-center justify-center rounded-lg bg-[#262422] border border-[#3A3631] text-[#F2EDE4] text-xs shrink-0 ${cn}`}>
       {children}
@@ -436,9 +444,11 @@ function RichTextEditor({ value, onChange, placeholder, minHeight = 100 }) {
   return (
     <div className={expanded ? "fixed inset-0 z-[70] bg-[#1C1B1A] flex flex-col" : ""}>
       {expanded && (
-        <div className="shrink-0 border-b border-[#3A3631] px-4 py-3 flex items-center justify-between">
+        <div className="shrink-0 border-b border-[#3A3631] px-4 flex items-center justify-between" style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))", paddingBottom: "0.75rem" }}>
           <span className="text-[#F2EDE4] font-display text-lg">Bearbeiten</span>
-          <button type="button" onClick={() => setExpanded(false)} className="text-[#A39C8F] p-1"><X size={20} /></button>
+          <button type="button" onClick={() => setExpanded(false)} className="bg-[#6C7FE0] text-[#F2EDE4] px-4 h-10 rounded-[14px] font-medium text-sm flex items-center gap-1.5">
+            <Check size={15} /> Fertig
+          </button>
         </div>
       )}
       <div className={expanded ? "flex-1 overflow-y-auto p-4" : ""}>
@@ -460,6 +470,7 @@ function RichTextEditor({ value, onChange, placeholder, minHeight = 100 }) {
           contentEditable
           suppressContentEditableWarning
           onInput={(e) => onChange(e.currentTarget.innerHTML)}
+          onPaste={handlePaste}
           className="rte-content w-full border border-[#3A3631] rounded-[14px] px-3.5 py-3 text-[#F2EDE4] text-base focus:outline-none focus:border-[#6C7FE0] overflow-y-auto"
           style={{ minHeight: expanded ? "60vh" : minHeight }}
           data-placeholder={placeholder}
