@@ -2370,10 +2370,10 @@ function App() {
         {tab === "playlog" && <PlayLog plays={displayPlays} games={displayGames} onAdd={() => !demoMode && setPlayModal({ editing: null })} onEdit={(p) => !demoMode && setPlayModal({ editing: p })} onDelete={deletePlay} demoMode={demoMode} />}
         {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} onAddWishlist={addToWishlistFromRecommendation} />}
       </div>
-      <div className="shrink-0 bg-[#1C1B1A] border-t border-[#3A3631] px-2 py-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <div className="shrink-0 bg-[#1C1B1A] border-t border-[#3A3631] px-2 py-1.5">
         <div className="flex justify-around">
           {tabs.map(t => (
-            <button key={t.id} onClick={() => { setTab(t.id); if (t.id !== "collection") setQuickFilter(null); }} className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-[14px] min-w-[64px]">
+            <button key={t.id} onClick={() => { setTab(t.id); if (t.id !== "collection") setQuickFilter(null); }} className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-[14px] min-w-[64px]">
               <t.icon size={20} className={tab === t.id ? "text-[#D4A24C]" : "text-[#5C574F]"} strokeWidth={tab === t.id ? 2.5 : 2} />
               <span className={`text-[10px] font-body ${tab === t.id ? "text-[#D4A24C] font-semibold" : "text-[#5C574F]"}`}>{t.label}</span>
               <div className={`h-0.5 w-5 rounded-full ${tab === t.id ? "bg-[#D4A24C]" : "bg-transparent"}`} />
