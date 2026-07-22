@@ -963,12 +963,13 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState("");
   const [pickerOpen, setPickerOpen] = useState(null);
-  const [form, setForm] = useState(initial ? { designers: [], playerTypes: [], ...initial } : {
+  const FORM_DEFAULTS = {
     id: uid(), bggId: "", name: "", year: "", publishers: [], designers: [], images: [],
     minPlayers: "", maxPlayers: "", bestPlayers: "", minTime: "", maxTime: "", age: "",
     complexity: "", mechanisms: [], categories: [], playerTypes: [], status: "owned",
     location: "", summary: "", notes: "", rating: "", addedDate: new Date().toISOString().slice(0, 10),
-  });
+  };
+  const [form, setForm] = useState(initial ? { ...FORM_DEFAULTS, ...initial } : FORM_DEFAULTS);
 
   const runSearch = async () => {
     if (!query.trim()) return;
@@ -1318,7 +1319,7 @@ function PlayFormModal({ games, initial, onClose, onSave, onDelete }) {
 }
 
 /* ---------------- DASHBOARD ---------------- */
-function Dashboard({ games, plays, onQuickFilter }) {
+function Dashboard({ games, plays, onQuickFilter, onView }) {
   const owned = games.filter(g => g.status === "owned");
   const playCounts = useMemo(() => {
     const map = {}; plays.forEach(p => { map[p.gameId] = (map[p.gameId] || 0) + 1; }); return map;
@@ -1376,14 +1377,14 @@ function Dashboard({ games, plays, onQuickFilter }) {
         </div>
       </div>
       {topMonthGame && (
-        <div className="bg-gradient-to-r from-[#D4A24C]/15 to-transparent border border-[#D4A24C]/30 rounded-2xl p-4 flex items-center gap-3">
+        <button onClick={() => onView(topMonthGame)} className="w-full text-left bg-gradient-to-r from-[#D4A24C]/15 to-transparent border border-[#D4A24C]/30 rounded-2xl p-4 flex items-center gap-3">
           <Cover game={topMonthGame} size="md" />
           <div className="min-w-0">
             <p className="text-[#D4A24C] text-xs font-body font-medium flex items-center gap-1"><TrendingUp size={13} /> Spiel des Monats</p>
             <p className="text-[#F2EDE4] font-display text-lg truncate">{topMonthGame.name}</p>
             <p className="text-[#A39C8F] text-xs font-body">{topMonth[1]}× in den letzten 30 Tagen gespielt</p>
           </div>
-        </div>
+        </button>
       )}
 
       {genreMix.length > 0 && (
@@ -1445,11 +1446,11 @@ function Dashboard({ games, plays, onQuickFilter }) {
           <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Von der Wunschliste</h2>
           <div className="flex gap-3 overflow-x-auto pb-1">
             {wishlist.map(g => (
-              <div key={g.id} className="shrink-0 w-28 bg-[#262422] border border-[#3A3631] rounded-2xl p-2.5">
+              <button key={g.id} onClick={() => onView(g)} className="shrink-0 w-28 text-left bg-[#262422] border border-[#3A3631] rounded-2xl p-2.5">
                 <Cover game={g} size="lg" />
                 <p className="text-[#F2EDE4] font-body text-xs font-medium mt-1.5 truncate">{g.name}</p>
                 {g.year && <p className="text-[#5C574F] text-[10px] font-body">{g.year}</p>}
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -1462,12 +1463,12 @@ function Dashboard({ games, plays, onQuickFilter }) {
             {lastPlays.map(p => {
               const g = findGame(p.gameId);
               return (
-                <div key={p.id} className="shrink-0 w-28 bg-[#262422] border border-[#3A3631] rounded-2xl p-2.5">
+                <button key={p.id} onClick={() => g && onView(g)} disabled={!g} className="shrink-0 w-28 text-left bg-[#262422] border border-[#3A3631] rounded-2xl p-2.5">
                   {g ? <Cover game={g} size="lg" /> : <div className="w-full aspect-square rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#5C574F]"><Dices size={24} /></div>}
                   <p className="text-[#F2EDE4] font-body text-xs font-medium mt-1.5 truncate">{p.gameName}</p>
                   <p className="text-[#5C574F] text-[10px] font-body">{p.date}</p>
                   <div className="mt-1"><Pill tone={p.mode === "bga" ? "teal" : "default"}>{p.mode === "bga" ? "BGA" : p.mode === "physical-other" ? "Geliehen" : "Sammlung"}</Pill></div>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -1479,11 +1480,11 @@ function Dashboard({ games, plays, onQuickFilter }) {
           <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Deine Top-Bewertungen</h2>
           <div className="flex gap-3 overflow-x-auto pb-1">
             {topRated.map(g => (
-              <div key={g.id} className="shrink-0 w-28 bg-[#262422] border border-[#3A3631] rounded-2xl p-2.5">
+              <button key={g.id} onClick={() => onView(g)} className="shrink-0 w-28 text-left bg-[#262422] border border-[#3A3631] rounded-2xl p-2.5">
                 <Cover game={g} size="lg" />
                 <p className="text-[#F2EDE4] font-body text-xs font-medium mt-1.5 truncate">{g.name}</p>
                 <p className="text-[#D4A24C] text-[11px] font-mono flex items-center gap-0.5 mt-0.5"><Star size={10} fill="#D4A24C" className="text-[#D4A24C]" /> {g.rating}/10</p>
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -1495,11 +1496,11 @@ function Dashboard({ games, plays, onQuickFilter }) {
         {dustCollectors.length === 0 ? <p className="text-[#5C574F] text-sm font-body">Alles im Regal wurde schon gespielt. Sehr gut!</p> : (
           <div className="flex gap-3 overflow-x-auto pb-1">
             {dustCollectors.map(g => (
-              <div key={g.id} className="shrink-0 w-28 bg-[#262422] border border-[#3A3631] rounded-2xl p-2.5">
+              <button key={g.id} onClick={() => onView(g)} className="shrink-0 w-28 text-left bg-[#262422] border border-[#3A3631] rounded-2xl p-2.5">
                 <Cover game={g} size="lg" />
                 <p className="text-[#F2EDE4] font-body text-xs font-medium mt-1.5 truncate">{g.name}</p>
                 <p className="text-[#5C574F] text-[10px] font-body">seit {g.addedDate || "?"}</p>
-              </div>
+              </button>
             ))}
           </div>
         )}
@@ -2327,7 +2328,7 @@ function App() {
   ];
 
   return (
-    <div style={{ height: "var(--app-height, 100dvh)" }} className="bg-[#1C1B1A] font-body flex flex-col max-w-3xl mx-auto relative overflow-hidden">
+    <div className="fixed inset-0 bg-[#1C1B1A] font-body flex flex-col max-w-3xl mx-auto overflow-hidden">
       <div
         className="shrink-0 flex justify-end gap-2 px-4 pb-1"
         style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}
@@ -2376,7 +2377,7 @@ function App() {
             style={{ opacity: Math.min(pullY / PULL_THRESHOLD, 1) }}
           />
         </div>
-        {tab === "dashboard" && <Dashboard games={displayGames} plays={displayPlays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} />}
+        {tab === "dashboard" && <Dashboard games={displayGames} plays={displayPlays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} onView={(g) => setDetailGame(g)} />}
         {tab === "collection" && <Collection games={displayGames} plays={displayPlays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => !demoMode && setGameModal({ editing: null })} onView={(g) => setDetailGame(g)} onEdit={(g) => setGameModal({ editing: g })} onDelete={(g) => deleteGame(g.id)} categoryOptions={categoryOptions} mechanismOptions={mechanismOptions} demoMode={demoMode} />}
         {tab === "playlog" && <PlayLog plays={displayPlays} games={displayGames} onAdd={() => !demoMode && setPlayModal({ editing: null })} onEdit={(p) => !demoMode && setPlayModal({ editing: p })} onDelete={deletePlay} demoMode={demoMode} />}
         {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} onAddWishlist={addToWishlistFromRecommendation} />}
@@ -2448,7 +2449,28 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("root")).render(<App />);
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="min-h-screen bg-[#1C1B1A] flex items-center justify-center p-6">
+          <div className="max-w-sm text-center">
+            <Dices size={32} className="text-[#C1443C] mx-auto mb-3" />
+            <p className="text-[#F2EDE4] font-display text-xl mb-2">Kurz gestolpert</p>
+            <p className="text-[#A39C8F] text-sm mb-5">Hier ist etwas schiefgelaufen. Deine Daten in Firebase sind davon nicht betroffen.</p>
+            <button onClick={() => this.setState({ error: null })} className="w-full h-12 bg-[#6C7FE0] text-[#F2EDE4] rounded-[14px] font-medium mb-2">Nochmal versuchen</button>
+            <button onClick={() => window.location.reload()} className="w-full h-12 bg-[#262422] border border-[#3A3631] text-[#F2EDE4] rounded-[14px] font-medium">App neu laden</button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+createRoot(document.getElementById("root")).render(<ErrorBoundary><App /></ErrorBoundary>);
 </script>
 </body>
 </html>
