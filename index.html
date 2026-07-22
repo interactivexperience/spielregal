@@ -85,6 +85,8 @@ const Check = (p) => <Icon {...p}><path d="M5 13l4 4L19 7" /></Icon>;
 /* ---------------- STORAGE (localStorage, this file runs standalone) ---------------- */
 const GAMES_KEY = "spielregal:games";
 const PLAYS_KEY = "spielregal:plays";
+const SYNC_URL_KEY = "spielregal:syncUrl";
+const LOCAL_TS_KEY = "spielregal:localTs";
 const loadKey = (key, fallback) => {
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
   catch (e) { return fallback; }
@@ -94,6 +96,35 @@ const saveKey = (key, value) => {
   catch (e) { console.error("Speichern fehlgeschlagen", e); }
 };
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+
+/* ---------------- CLOUD SYNC (Firebase Realtime Database REST API) ---------------- */
+function normalizeSyncUrl(url) {
+  if (!url) return "";
+  let u = url.trim();
+  if (!u) return "";
+  if (!u.endsWith("/")) u += "/";
+  return u;
+}
+async function cloudPush(syncUrl, games, plays) {
+  const base = normalizeSyncUrl(syncUrl);
+  if (!base) return;
+  const payload = { games, plays, updatedAt: Date.now() };
+  const res = await fetch(base + "data.json", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error("Cloud-Speichern fehlgeschlagen");
+  return payload.updatedAt;
+}
+async function cloudPull(syncUrl) {
+  const base = normalizeSyncUrl(syncUrl);
+  if (!base) return null;
+  const res = await fetch(base + "data.json");
+  if (!res.ok) throw new Error("Cloud-Abruf fehlgeschlagen");
+  const json = await res.json();
+  return json;
+}
 
 /* ---------------- BGG API (best effort, needs internet) ---------------- */
 async function bggSearch(query) {
@@ -662,6 +693,56 @@ function Recommendations({ games, plays }) {
   );
 }
 
+/* ---------------- SYNC MODAL ---------------- */
+function SyncModal({ initialUrl, status, lastSynced, onClose, onSave, onSyncNow, onRemove }) {
+  const [url, setUrl] = useState(initialUrl || "");
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6">
+      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rise-in font-body">
+        <div className="sticky top-0 bg-[#1C1B1A] border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
+          <h2 className="font-display text-xl text-[#F2EDE4]">Geräte-Synchronisation</h2>
+          <button onClick={onClose} className="text-[#A39C8F] p-1"><X size={22} /></button>
+        </div>
+        <div className="p-5 space-y-4">
+          <p className="text-sm text-[#A39C8F]">
+            Trage hier die Firebase-Datenbank-Adresse ein. Auf jedem Gerät, auf dem du dieselbe Adresse einträgst, werden Sammlung und Partien automatisch synchronisiert.
+          </p>
+          <input
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://dein-projekt-default-rtdb.firebasedatabase.app/"
+            className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#D4A24C]"
+          />
+          <div className="flex items-center gap-2 text-xs">
+            {status === "syncing" && <><Loader2 size={13} /> <span className="text-[#A39C8F]">Synchronisiere…</span></>}
+            {status === "synced" && <span className="text-[#4E8C82]">Zuletzt synchronisiert: {lastSynced ? new Date(lastSynced).toLocaleTimeString("de-DE") : "gerade eben"}</span>}
+            {status === "error" && <span className="text-[#C1443C]">Synchronisation fehlgeschlagen — Internet oder Adresse prüfen</span>}
+            {status === "idle" && !initialUrl && <span className="text-[#5C574F]">Noch nicht eingerichtet</span>}
+          </div>
+          <button
+            onClick={() => onSave(url)}
+            disabled={!url.trim()}
+            className="w-full bg-[#4E8C82] disabled:opacity-40 text-[#F2EDE4] rounded-xl py-3 font-medium active:scale-[0.99] flex items-center justify-center gap-2"
+          >
+            <Check size={18} /> Speichern
+          </button>
+          {initialUrl && (
+            <>
+              <button onClick={onSyncNow} className="w-full bg-[#262422] border border-[#3A3631] text-[#F2EDE4] rounded-xl py-3 font-medium active:scale-[0.99]">
+                Jetzt synchronisieren
+              </button>
+              <button onClick={onRemove} className="w-full text-[#C1443C] text-sm font-body py-2">
+                Sync auf diesem Gerät entfernen
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ---------------- MAIN APP ---------------- */
 function App() {
   const [games, setGames] = useState(() => loadKey(GAMES_KEY, []));
@@ -670,9 +751,86 @@ function App() {
   const [gameModal, setGameModal] = useState(null);
   const [playModal, setPlayModal] = useState(false);
   const [quickFilter, setQuickFilter] = useState(null);
+  const [syncUrl, setSyncUrl] = useState(() => localStorage.getItem(SYNC_URL_KEY) || "");
+  const [syncModalOpen, setSyncModalOpen] = useState(false);
+  const [syncStatus, setSyncStatus] = useState("idle");
+  const [lastSynced, setLastSynced] = useState(null);
+  const skipNextPush = React.useRef(true);
+  const pushTimer = React.useRef(null);
 
   useEffect(() => { saveKey(GAMES_KEY, games); }, [games]);
   useEffect(() => { saveKey(PLAYS_KEY, plays); }, [plays]);
+
+  // On mount: if a sync URL is saved, pull remote data and adopt it if newer than local.
+  useEffect(() => {
+    if (!syncUrl) return;
+    setSyncStatus("syncing");
+    cloudPull(syncUrl).then((remote) => {
+      const localTs = parseInt(localStorage.getItem(LOCAL_TS_KEY) || "0", 10);
+      if (remote && remote.updatedAt && remote.updatedAt > localTs) {
+        setGames(remote.games || []);
+        setPlays(remote.plays || []);
+        localStorage.setItem(LOCAL_TS_KEY, String(remote.updatedAt));
+      }
+      setSyncStatus("synced");
+      setLastSynced(Date.now());
+      skipNextPush.current = true;
+    }).catch(() => setSyncStatus("error"));
+  }, []);
+
+  // Push to cloud (debounced) whenever games/plays change, after initial load.
+  useEffect(() => {
+    if (!syncUrl) return;
+    if (skipNextPush.current) { skipNextPush.current = false; return; }
+    if (pushTimer.current) clearTimeout(pushTimer.current);
+    pushTimer.current = setTimeout(() => {
+      setSyncStatus("syncing");
+      cloudPush(syncUrl, games, plays).then((ts) => {
+        localStorage.setItem(LOCAL_TS_KEY, String(ts));
+        setSyncStatus("synced");
+        setLastSynced(Date.now());
+      }).catch(() => setSyncStatus("error"));
+    }, 1200);
+    return () => clearTimeout(pushTimer.current);
+  }, [games, plays, syncUrl]);
+
+  const saveSyncUrl = (url) => {
+    const trimmed = url.trim();
+    localStorage.setItem(SYNC_URL_KEY, trimmed);
+    setSyncUrl(trimmed);
+    skipNextPush.current = true;
+    setSyncStatus("syncing");
+    cloudPull(trimmed).then((remote) => {
+      const localTs = parseInt(localStorage.getItem(LOCAL_TS_KEY) || "0", 10);
+      if (remote && remote.updatedAt && remote.updatedAt > localTs) {
+        setGames(remote.games || []);
+        setPlays(remote.plays || []);
+        localStorage.setItem(LOCAL_TS_KEY, String(remote.updatedAt));
+      } else {
+        cloudPush(trimmed, games, plays).then((ts) => localStorage.setItem(LOCAL_TS_KEY, String(ts)));
+      }
+      setSyncStatus("synced");
+      setLastSynced(Date.now());
+    }).catch(() => setSyncStatus("error"));
+    setSyncModalOpen(false);
+  };
+
+  const syncNow = () => {
+    if (!syncUrl) return;
+    setSyncStatus("syncing");
+    cloudPush(syncUrl, games, plays).then((ts) => {
+      localStorage.setItem(LOCAL_TS_KEY, String(ts));
+      setSyncStatus("synced");
+      setLastSynced(Date.now());
+    }).catch(() => setSyncStatus("error"));
+  };
+
+  const removeSync = () => {
+    localStorage.removeItem(SYNC_URL_KEY);
+    setSyncUrl("");
+    setSyncStatus("idle");
+    setSyncModalOpen(false);
+  };
 
   const saveGame = (game) => {
     setGames(prev => { const exists = prev.find(g => g.id === game.id); return exists ? prev.map(g => g.id === game.id ? game : g) : [...prev, game]; });
@@ -691,6 +849,19 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#1C1B1A] font-body flex flex-col max-w-3xl mx-auto relative">
+      <button
+        onClick={() => setSyncModalOpen(true)}
+        className="fixed top-4 right-4 z-40 bg-[#262422] border border-[#3A3631] rounded-full p-2.5 active:scale-95"
+        aria-label="Synchronisation"
+      >
+        {syncStatus === "syncing" ? (
+          <Loader2 size={16} className="text-[#D4A24C]" />
+        ) : syncUrl ? (
+          <Globe size={16} className={syncStatus === "error" ? "text-[#C1443C]" : "text-[#4E8C82]"} />
+        ) : (
+          <Globe size={16} className="text-[#5C574F]" />
+        )}
+      </button>
       <div className="flex-1 overflow-y-auto">
         {tab === "dashboard" && <Dashboard games={games} plays={plays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} />}
         {tab === "collection" && <Collection games={games} plays={plays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => setGameModal({ editing: null })} onEdit={(g) => setGameModal({ editing: g })} />}
@@ -710,6 +881,17 @@ function App() {
       </div>
       {gameModal && <GameFormModal initial={gameModal.editing} onClose={() => setGameModal(null)} onSave={saveGame} onDelete={deleteGame} />}
       {playModal && <PlayFormModal games={games} onClose={() => setPlayModal(false)} onSave={savePlay} />}
+      {syncModalOpen && (
+        <SyncModal
+          initialUrl={syncUrl}
+          status={syncStatus}
+          lastSynced={lastSynced}
+          onClose={() => setSyncModalOpen(false)}
+          onSave={saveSyncUrl}
+          onSyncNow={syncNow}
+          onRemove={removeSync}
+        />
+      )}
     </div>
   );
 }
