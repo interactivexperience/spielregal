@@ -49,6 +49,18 @@
       hint.style.display = "block";
     }
   }, 4000);
+
+  function setAppHeight() {
+    var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+    document.documentElement.style.setProperty("--app-height", h + "px");
+  }
+  setAppHeight();
+  window.addEventListener("resize", setAppHeight);
+  window.addEventListener("orientationchange", setAppHeight);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", setAppHeight);
+    window.visualViewport.addEventListener("scroll", setAppHeight);
+  }
 </script>
 
 <script type="text/babel" data-presets="react">
@@ -2101,7 +2113,7 @@ function App() {
   ];
 
   return (
-    <div className="h-[100dvh] bg-[#1C1B1A] font-body flex flex-col max-w-3xl mx-auto relative overflow-hidden">
+    <div style={{ height: "var(--app-height, 100dvh)" }} className="bg-[#1C1B1A] font-body flex flex-col max-w-3xl mx-auto relative overflow-hidden">
       <div
         className="shrink-0 flex justify-end gap-2 px-4 pb-1"
         style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}
