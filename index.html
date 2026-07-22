@@ -98,6 +98,45 @@ const saveKey = (key, value) => {
 };
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 
+function handleFocusScroll(e) {
+  const tag = e.target.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA") {
+    setTimeout(() => {
+      e.target.scrollIntoView({ block: "center", behavior: "smooth" });
+    }, 300);
+  }
+}
+
+/* ---------------- IMAGE RESIZE (for uploaded photos, keeps storage/sync small) ---------------- */
+function resizeImageFile(file, maxDim = 640, quality = 0.75) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Lesen fehlgeschlagen"));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("Bild ungültig"));
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height && width > maxDim) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else if (height > maxDim) {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 /* ---------------- CLOUD SYNC (Firebase Realtime Database REST API) ---------------- */
 function normalizeSyncUrl(url) {
   if (!url) return "";
@@ -194,6 +233,8 @@ function GameFormModal({ initial, onClose, onSave, onDelete }) {
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState("");
+  const fileInputRef = React.useRef(null);
+  const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState(initial || {
     id: uid(), bggId: "", name: "", year: "", publisher: "", image: "",
     minPlayers: "", maxPlayers: "", minTime: "", maxTime: "", age: "",
@@ -228,7 +269,7 @@ function GameFormModal({ initial, onClose, onSave, onDelete }) {
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6">
-      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92dvh] overflow-y-auto rise-in">
+      <div onFocus={handleFocusScroll} className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92dvh] overflow-y-auto rise-in">
         <div className="sticky top-0 bg-[#1C1B1A] border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">{initial ? "Spiel bearbeiten" : step === "search" ? "Spiel suchen" : "Details"}</h2>
           <button onClick={onClose} className="text-[#A39C8F] p-1"><X size={22} /></button>
@@ -248,9 +289,9 @@ function GameFormModal({ initial, onClose, onSave, onDelete }) {
             <div className="space-y-2">
               {results.map((r) => (
                 <button key={r.bggId} onClick={() => pickResult(r)}
-                  className="w-full text-left bg-[#262422] hover:bg-[#2E2B28] border border-[#3A3631] rounded-xl px-4 py-3 flex items-center justify-between">
-                  <span className="font-body text-[#F2EDE4]">{r.name} <span className="text-[#5C574F]">({r.year || "?"})</span></span>
-                  <ChevronRight size={16} className="text-[#5C574F]" />
+                  className="w-full text-left bg-[#262422] hover:bg-[#2E2B28] border border-[#3A3631] rounded-xl px-4 py-3 flex items-center justify-between gap-2">
+                  <span className="font-body text-[#F2EDE4] min-w-0 truncate">{r.name} <span className="text-[#5C574F]">({r.year || "?"})</span></span>
+                  <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
                 </button>
               ))}
             </div>
@@ -276,8 +317,40 @@ function GameFormModal({ initial, onClose, onSave, onDelete }) {
               </div>
             </div>
 
-            <input value={form.image} onChange={(e) => update("image", e.target.value)} placeholder="Bild-URL (optional)"
-              className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#D4A24C]" />
+            <div className="flex gap-2">
+              <input value={form.image} onChange={(e) => update("image", e.target.value)} placeholder="Bild-URL (optional)"
+                className="flex-1 min-w-0 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#D4A24C]" />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                disabled={uploading}
+                className="shrink-0 bg-[#262422] border border-[#3A3631] rounded-lg px-3 flex items-center gap-1.5 text-xs text-[#A39C8F] disabled:opacity-50"
+              >
+                {uploading ? <Loader2 size={14} /> : <Plus size={14} />}
+                Foto
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files && e.target.files[0];
+                  if (!file) return;
+                  setUploading(true);
+                  try {
+                    const dataUrl = await resizeImageFile(file);
+                    update("image", dataUrl);
+                  } catch {
+                    setSearchError("Foto konnte nicht verarbeitet werden.");
+                  } finally {
+                    setUploading(false);
+                    e.target.value = "";
+                  }
+                }}
+              />
+            </div>
 
             <div className="grid grid-cols-3 gap-2">
               <div>
@@ -370,7 +443,7 @@ function PlayFormModal({ games, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6">
-      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92dvh] overflow-y-auto rise-in font-body">
+      <div onFocus={handleFocusScroll} className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92dvh] overflow-y-auto rise-in font-body">
         <div className="sticky top-0 bg-[#1C1B1A] border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Partie eintragen</h2>
           <button onClick={onClose} className="text-[#A39C8F] p-1"><X size={22} /></button>
@@ -396,8 +469,8 @@ function PlayFormModal({ games, onClose, onSave }) {
             <>
               <div className="flex items-center gap-3 bg-[#262422] border border-[#3A3631] rounded-xl px-4 py-3">
                 <Cover game={selectedGame} size="sm" />
-                <span className="text-[#F2EDE4] font-medium flex-1">{selectedGame.name}</span>
-                <button onClick={() => setSelectedGame(null)} className="text-[#5C574F] text-xs">Ändern</button>
+                <span className="text-[#F2EDE4] font-medium flex-1 min-w-0 truncate">{selectedGame.name}</span>
+                <button onClick={() => setSelectedGame(null)} className="text-[#5C574F] text-xs shrink-0">Ändern</button>
               </div>
               <div>
                 <label className="text-[11px] text-[#5C574F]">Wo gespielt</label>
@@ -490,8 +563,8 @@ function Dashboard({ games, plays, onQuickFilter }) {
         {lastPlays.length === 0 ? <p className="text-[#5C574F] text-sm font-body">Noch keine Partien eingetragen.</p> : (
           <div className="space-y-2">
             {lastPlays.map(p => (
-              <div key={p.id} className="bg-[#262422] border border-[#3A3631] rounded-xl px-4 py-3 flex items-center justify-between">
-                <div><p className="text-[#F2EDE4] font-body">{p.gameName}</p><p className="text-[#5C574F] text-xs font-body">{p.date}</p></div>
+              <div key={p.id} className="bg-[#262422] border border-[#3A3631] rounded-xl px-4 py-3 flex items-center justify-between gap-2">
+                <div className="min-w-0"><p className="text-[#F2EDE4] font-body truncate">{p.gameName}</p><p className="text-[#5C574F] text-xs font-body">{p.date}</p></div>
                 <Pill tone={p.mode === "bga" ? "teal" : "default"}>{p.mode === "bga" ? "BGA" : p.mode === "physical-other" ? "Geliehen" : "Sammlung"}</Pill>
               </div>
             ))}
@@ -679,8 +752,8 @@ function Recommendations({ games, plays }) {
             {external.length > 0 && (
               <div className="space-y-2">
                 {external.map(r => (
-                  <div key={r.bggId} className="bg-[#262422] border border-[#3A3631] rounded-xl px-4 py-3 flex items-center justify-between">
-                    <span className="text-[#F2EDE4] font-body">{r.name} <span className="text-[#5C574F]">({r.year})</span></span>
+                  <div key={r.bggId} className="bg-[#262422] border border-[#3A3631] rounded-xl px-4 py-3 flex items-center justify-between gap-2">
+                    <span className="text-[#F2EDE4] font-body min-w-0 truncate">{r.name} <span className="text-[#5C574F]">({r.year})</span></span>
                     <Pill tone="red">nicht in Sammlung</Pill>
                   </div>
                 ))}
@@ -700,14 +773,14 @@ function SyncModal({ initialUrl, status, lastSynced, onClose, onSave, onSyncNow,
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6">
-      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92dvh] overflow-y-auto rise-in font-body">
+      <div onFocus={handleFocusScroll} className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92dvh] overflow-y-auto rise-in font-body">
         <div className="sticky top-0 bg-[#1C1B1A] border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Geräte-Synchronisation</h2>
           <button onClick={onClose} className="text-[#A39C8F] p-1"><X size={22} /></button>
         </div>
         <div className="p-5 space-y-4">
           <p className="text-sm text-[#A39C8F]">
-            Trage hier die Firebase-Datenbank-Adresse ein. Auf jedem Gerät, auf dem du dieselbe Adresse einträgst, werden Sammlung und Partien automatisch synchronisiert.
+            Deine Sammlung und Partien werden ausschließlich in dieser Firebase-Datenbank gespeichert — nicht auf dem Gerät selbst. Trage hier deine Datenbank-Adresse ein; auf jedem Gerät mit derselben Adresse siehst du automatisch dieselben Daten.
           </p>
           <input
             value={url}
@@ -734,7 +807,7 @@ function SyncModal({ initialUrl, status, lastSynced, onClose, onSave, onSyncNow,
                 Jetzt synchronisieren
               </button>
               <button onClick={onRemove} className="w-full text-[#C1443C] text-sm font-body py-2">
-                Sync auf diesem Gerät entfernen
+                Verbindung trennen (Daten bleiben in Firebase erhalten)
               </button>
             </>
           )}
@@ -746,14 +819,14 @@ function SyncModal({ initialUrl, status, lastSynced, onClose, onSave, onSyncNow,
 
 /* ---------------- MAIN APP ---------------- */
 function App() {
-  const [games, setGames] = useState(() => loadKey(GAMES_KEY, []));
-  const [plays, setPlays] = useState(() => loadKey(PLAYS_KEY, []));
+  const [games, setGames] = useState([]);
+  const [plays, setPlays] = useState([]);
   const [tab, setTab] = useState("dashboard");
   const [gameModal, setGameModal] = useState(null);
   const [playModal, setPlayModal] = useState(false);
   const [quickFilter, setQuickFilter] = useState(null);
   const [syncUrl, setSyncUrl] = useState(() => localStorage.getItem(SYNC_URL_KEY) || "");
-  const [syncModalOpen, setSyncModalOpen] = useState(false);
+  const [syncModalOpen, setSyncModalOpen] = useState(!localStorage.getItem(SYNC_URL_KEY));
   const [syncStatus, setSyncStatus] = useState("idle");
   const [lastSynced, setLastSynced] = useState(null);
   const skipNextPush = React.useRef(true);
@@ -773,13 +846,9 @@ function App() {
     setSyncStatus("syncing");
     try {
       const remote = await cloudPull(syncUrl);
-      const localTs = parseInt(localStorage.getItem(LOCAL_TS_KEY) || "0", 10);
-      if (remote && remote.updatedAt && remote.updatedAt > localTs) {
-        skipNextPush.current = true;
-        setGames(remote.games || []);
-        setPlays(remote.plays || []);
-        localStorage.setItem(LOCAL_TS_KEY, String(remote.updatedAt));
-      }
+      skipNextPush.current = true;
+      setGames((remote && remote.games) || []);
+      setPlays((remote && remote.plays) || []);
       setSyncStatus("synced");
       setLastSynced(Date.now());
     } catch {
@@ -817,35 +886,27 @@ function App() {
     }
   };
 
-  useEffect(() => { saveKey(GAMES_KEY, games); }, [games]);
-  useEffect(() => { saveKey(PLAYS_KEY, plays); }, [plays]);
-
-  // On mount: if a sync URL is saved, pull remote data and adopt it if newer than local.
+  // On mount: load data directly from Firebase — this is the sole source of truth, nothing persists locally.
   useEffect(() => {
     if (!syncUrl) return;
     setSyncStatus("syncing");
     cloudPull(syncUrl).then((remote) => {
-      const localTs = parseInt(localStorage.getItem(LOCAL_TS_KEY) || "0", 10);
-      if (remote && remote.updatedAt && remote.updatedAt > localTs) {
-        setGames(remote.games || []);
-        setPlays(remote.plays || []);
-        localStorage.setItem(LOCAL_TS_KEY, String(remote.updatedAt));
-      }
+      setGames((remote && remote.games) || []);
+      setPlays((remote && remote.plays) || []);
       setSyncStatus("synced");
       setLastSynced(Date.now());
       skipNextPush.current = true;
     }).catch(() => setSyncStatus("error"));
   }, []);
 
-  // Push to cloud (debounced) whenever games/plays change, after initial load.
+  // Write to Firebase (debounced) whenever games/plays change. No local copy is kept anywhere else.
   useEffect(() => {
     if (!syncUrl) return;
     if (skipNextPush.current) { skipNextPush.current = false; return; }
     if (pushTimer.current) clearTimeout(pushTimer.current);
     pushTimer.current = setTimeout(() => {
       setSyncStatus("syncing");
-      cloudPush(syncUrl, games, plays).then((ts) => {
-        localStorage.setItem(LOCAL_TS_KEY, String(ts));
+      cloudPush(syncUrl, games, plays).then(() => {
         setSyncStatus("synced");
         setLastSynced(Date.now());
       }).catch(() => setSyncStatus("error"));
@@ -860,13 +921,11 @@ function App() {
     skipNextPush.current = true;
     setSyncStatus("syncing");
     cloudPull(trimmed).then((remote) => {
-      const localTs = parseInt(localStorage.getItem(LOCAL_TS_KEY) || "0", 10);
-      if (remote && remote.updatedAt && remote.updatedAt > localTs) {
+      if (remote && (remote.games || remote.plays)) {
         setGames(remote.games || []);
         setPlays(remote.plays || []);
-        localStorage.setItem(LOCAL_TS_KEY, String(remote.updatedAt));
       } else {
-        cloudPush(trimmed, games, plays).then((ts) => localStorage.setItem(LOCAL_TS_KEY, String(ts)));
+        cloudPush(trimmed, games, plays);
       }
       setSyncStatus("synced");
       setLastSynced(Date.now());
@@ -877,8 +936,7 @@ function App() {
   const syncNow = () => {
     if (!syncUrl) return;
     setSyncStatus("syncing");
-    cloudPush(syncUrl, games, plays).then((ts) => {
-      localStorage.setItem(LOCAL_TS_KEY, String(ts));
+    cloudPush(syncUrl, games, plays).then(() => {
       setSyncStatus("synced");
       setLastSynced(Date.now());
     }).catch(() => setSyncStatus("error"));
@@ -908,24 +966,27 @@ function App() {
 
   return (
     <div className="h-[100dvh] bg-[#1C1B1A] font-body flex flex-col max-w-3xl mx-auto relative overflow-hidden">
-      <button
-        onClick={() => setSyncModalOpen(true)}
-        className="fixed z-40 bg-[#262422] border border-[#3A3631] rounded-full p-2.5 active:scale-95"
-        style={{ top: "max(1rem, env(safe-area-inset-top))", right: "1rem" }}
-        aria-label="Synchronisation"
+      <div
+        className="shrink-0 flex justify-end px-4 pb-1"
+        style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}
       >
-        {syncStatus === "syncing" ? (
-          <Loader2 size={16} className="text-[#D4A24C]" />
-        ) : syncUrl ? (
-          <Globe size={16} className={syncStatus === "error" ? "text-[#C1443C]" : "text-[#4E8C82]"} />
-        ) : (
-          <Globe size={16} className="text-[#5C574F]" />
-        )}
-      </button>
+        <button
+          onClick={() => setSyncModalOpen(true)}
+          className="bg-[#262422] border border-[#3A3631] rounded-full p-2.5 active:scale-95"
+          aria-label="Synchronisation"
+        >
+          {syncStatus === "syncing" ? (
+            <Loader2 size={16} className="text-[#D4A24C]" />
+          ) : syncUrl ? (
+            <Globe size={16} className={syncStatus === "error" ? "text-[#C1443C]" : "text-[#4E8C82]"} />
+          ) : (
+            <Globe size={16} className="text-[#5C574F]" />
+          )}
+        </button>
+      </div>
       <div
         ref={scrollElRef}
         className="flex-1 overflow-y-auto min-h-0"
-        style={{ paddingTop: "max(0.5rem, env(safe-area-inset-top))" }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
