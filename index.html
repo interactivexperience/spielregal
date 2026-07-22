@@ -757,6 +757,64 @@ function App() {
   const [lastSynced, setLastSynced] = useState(null);
   const skipNextPush = React.useRef(true);
   const pushTimer = React.useRef(null);
+  const scrollElRef = React.useRef(null);
+  const touchStartY = React.useRef(0);
+  const tracking = React.useRef(false);
+  const [pullY, setPullY] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const PULL_THRESHOLD = 70;
+
+  const pullLatest = async () => {
+    if (!syncUrl) {
+      await new Promise((r) => setTimeout(r, 400));
+      return;
+    }
+    setSyncStatus("syncing");
+    try {
+      const remote = await cloudPull(syncUrl);
+      const localTs = parseInt(localStorage.getItem(LOCAL_TS_KEY) || "0", 10);
+      if (remote && remote.updatedAt && remote.updatedAt > localTs) {
+        skipNextPush.current = true;
+        setGames(remote.games || []);
+        setPlays(remote.plays || []);
+        localStorage.setItem(LOCAL_TS_KEY, String(remote.updatedAt));
+      }
+      setSyncStatus("synced");
+      setLastSynced(Date.now());
+    } catch {
+      setSyncStatus("error");
+    }
+  };
+
+  const onTouchStart = (e) => {
+    if (scrollElRef.current && scrollElRef.current.scrollTop <= 0) {
+      touchStartY.current = e.touches[0].clientY;
+      tracking.current = true;
+    }
+  };
+  const onTouchMove = (e) => {
+    if (!tracking.current || refreshing) return;
+    const delta = e.touches[0].clientY - touchStartY.current;
+    if (delta > 0 && scrollElRef.current && scrollElRef.current.scrollTop <= 0) {
+      setPullY(Math.min(delta * 0.5, 110));
+    } else {
+      tracking.current = false;
+      setPullY(0);
+    }
+  };
+  const onTouchEnd = async () => {
+    if (!tracking.current) return;
+    tracking.current = false;
+    if (pullY >= PULL_THRESHOLD) {
+      setRefreshing(true);
+      setPullY(56);
+      await pullLatest();
+      setRefreshing(false);
+      setPullY(0);
+    } else {
+      setPullY(0);
+    }
+  };
 
   useEffect(() => { saveKey(GAMES_KEY, games); }, [games]);
   useEffect(() => { saveKey(PLAYS_KEY, plays); }, [plays]);
@@ -848,10 +906,11 @@ function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#1C1B1A] font-body flex flex-col max-w-3xl mx-auto relative">
+    <div className="h-[100dvh] bg-[#1C1B1A] font-body flex flex-col max-w-3xl mx-auto relative overflow-hidden">
       <button
         onClick={() => setSyncModalOpen(true)}
-        className="fixed top-4 right-4 z-40 bg-[#262422] border border-[#3A3631] rounded-full p-2.5 active:scale-95"
+        className="fixed z-40 bg-[#262422] border border-[#3A3631] rounded-full p-2.5 active:scale-95"
+        style={{ top: "max(1rem, env(safe-area-inset-top))", right: "1rem" }}
         aria-label="Synchronisation"
       >
         {syncStatus === "syncing" ? (
@@ -862,13 +921,30 @@ function App() {
           <Globe size={16} className="text-[#5C574F]" />
         )}
       </button>
-      <div className="flex-1 overflow-y-auto">
+      <div
+        ref={scrollElRef}
+        className="flex-1 overflow-y-auto min-h-0"
+        style={{ paddingTop: "max(0.5rem, env(safe-area-inset-top))" }}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        <div
+          className="flex items-center justify-center overflow-hidden transition-[height] duration-200"
+          style={{ height: pullY }}
+        >
+          <Loader2
+            size={20}
+            className={refreshing ? "text-[#D4A24C]" : "text-[#5C574F]"}
+            style={{ opacity: Math.min(pullY / PULL_THRESHOLD, 1) }}
+          />
+        </div>
         {tab === "dashboard" && <Dashboard games={games} plays={plays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} />}
         {tab === "collection" && <Collection games={games} plays={plays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => setGameModal({ editing: null })} onEdit={(g) => setGameModal({ editing: g })} />}
         {tab === "playlog" && <PlayLog plays={plays} onAdd={() => setPlayModal(true)} onDelete={deletePlay} />}
         {tab === "recommendations" && <Recommendations games={games} plays={plays} />}
       </div>
-      <div className="sticky bottom-0 bg-[#1C1B1A] border-t border-[#3A3631] px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <div className="shrink-0 bg-[#1C1B1A] border-t border-[#3A3631] px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         <div className="flex justify-around">
           {tabs.map(t => (
             <button key={t.id} onClick={() => { setTab(t.id); if (t.id !== "collection") setQuickFilter(null); }} className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl min-w-[64px]">
