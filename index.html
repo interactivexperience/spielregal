@@ -31,7 +31,7 @@
   .spin { animation: spin 1s linear infinite; }
   #loading { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; padding:24px; text-align:center; color:#F2EDE4; font-family:'IBM Plex Sans',sans-serif; }
   input, textarea, select { font-size: 16px !important; }
-  input::placeholder, textarea::placeholder { color: #5C574F; opacity: 1; }
+  input::placeholder, textarea::placeholder { color: #5C574F !important; opacity: 1 !important; -webkit-text-fill-color: #5C574F !important; }
 </style>
 </head>
 <body>
@@ -92,7 +92,7 @@ const Star = ({ fill = "none", ...p }) => (
   </svg>
 );
 const Block = ({ fill = "none", ...p }) => (
-  <svg width={p.size || 18} height={p.size || 18} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className}>
+  <svg width={p.size || 18} height={p.size || 18} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={p.className} style={p.style}>
     <rect x="4" y="4" width="16" height="16" rx="5" />
   </svg>
 );
@@ -103,8 +103,14 @@ const COMPLEXITY_STEP_LABELS = {
   4: "Anspruchsvoll — für erfahrene Spieler",
   5: "Sehr komplex — braucht Zeit und Konzentration",
 };
+function complexityStepTone(v) {
+  if (v < 2) return "#4E8C82"; // Familienspiel
+  if (v < 3.5) return "#D4A24C"; // Kennerspiel
+  return "#C1443C"; // Expertenspiel
+}
 function ComplexityPicker({ value, onChange }) {
   const v = Math.round(parseFloat(value)) || 0;
+  const tone = complexityStepTone(v || 1);
   return (
     <div>
       <div className="flex items-center gap-1.5">
@@ -118,15 +124,15 @@ function ComplexityPicker({ value, onChange }) {
           >
             <Block
               size={30}
-              className={v >= n ? "text-[#6C7FE0]" : "text-[#3A3631]"}
-              fill={v >= n ? "#6C7FE0" : "none"}
+              style={{ color: v >= n ? tone : "#3A3631" }}
+              fill={v >= n ? tone : "none"}
             />
           </button>
         ))}
       </div>
       {v > 0 && (
         <p className="text-xs text-[#A39C8F] mt-1.5">
-          <span className="font-mono text-[#6C7FE0]">{v}/5</span> · {COMPLEXITY_STEP_LABELS[v]}
+          <span className="font-mono" style={{ color: tone }}>{v}/5</span> · {COMPLEXITY_STEP_LABELS[v]}
         </p>
       )}
     </div>
@@ -487,35 +493,56 @@ function ImagePickerSheet({ onAdd, onClose }) {
 function PhotoGallerySection({ images, onAdd, onRemove, hero = false, editable = true }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(null);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const touchStartX = React.useRef(0);
+  const safeIndex = Math.min(carouselIndex, Math.max(images.length - 1, 0));
+
+  const onCarouselTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+  const onCarouselTouchEnd = (e) => {
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    if (delta < -40 && safeIndex < images.length - 1) setCarouselIndex(safeIndex + 1);
+    else if (delta > 40 && safeIndex > 0) setCarouselIndex(safeIndex - 1);
+  };
 
   return (
     <div>
       {hero && (
         <div className="flex justify-center mb-3">
           <div className="relative">
-            <div className="w-[200px] h-[200px] max-w-[55vw] max-h-[55vw] sm:max-w-[200px] sm:max-h-[200px] rounded-2xl overflow-hidden border border-[#3A3631] bg-[#2E2B28] flex items-center justify-center">
-              {images[0] ? (
-                <img src={images[0]} className="w-full h-full object-cover" onClick={() => setLightboxIndex(0)} />
+            <div
+              className="w-[200px] h-[200px] max-w-[55vw] max-h-[55vw] sm:max-w-[200px] sm:max-h-[200px] rounded-2xl overflow-hidden border border-[#3A3631] bg-[#2E2B28] flex items-center justify-center"
+              onTouchStart={onCarouselTouchStart}
+              onTouchEnd={onCarouselTouchEnd}
+            >
+              {images.length ? (
+                <img src={images[safeIndex]} className="w-full h-full object-cover" onClick={() => setLightboxIndex(safeIndex)} />
               ) : (
                 <Dices size={40} className="text-[#5C574F]" />
               )}
             </div>
+            {images.length > 1 && (
+              <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
+                {images.map((_, i) => (
+                  <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === safeIndex ? "bg-[#F2EDE4]" : "bg-[#F2EDE4]/30"}`} />
+                ))}
+              </div>
+            )}
             {editable && (
               <button type="button" onClick={() => setSheetOpen(true)} aria-label="Foto hinzufügen"
                 className="absolute -bottom-1 -right-1 bg-[#6C7FE0] text-[#F2EDE4] rounded-full p-3 border-4 border-[#1C1B1A] active:scale-95">
-                <Camera size={16} />
+                {images.length > 0 ? <Plus size={16} /> : <Camera size={16} />}
               </button>
             )}
           </div>
         </div>
       )}
-      {((hero ? images.length > 0 : true) && (images.length > (hero ? 1 : 0) || editable)) && (
+      {!hero && (images.length > 0 || editable) && (
         <div className="flex gap-2 overflow-x-auto pb-1">
-          {images.map((img, i) => (hero && i === 0 ? null : (
+          {images.map((img, i) => (
             <button key={i} type="button" onClick={() => setLightboxIndex(i)} className="shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-[#3A3631]">
               <img src={img} className="w-full h-full object-cover" />
             </button>
-          )))}
+          ))}
           {editable && (
             <button type="button" onClick={() => setSheetOpen(true)} className="shrink-0 w-16 h-16 rounded-lg border-2 border-dashed border-[#3A3631] flex items-center justify-center text-[#5C574F]">
               <Plus size={18} />
@@ -523,7 +550,7 @@ function PhotoGallerySection({ images, onAdd, onRemove, hero = false, editable =
           )}
         </div>
       )}
-      {sheetOpen && <ImagePickerSheet onAdd={(img) => { onAdd(img); setSheetOpen(false); }} onClose={() => setSheetOpen(false)} />}
+      {sheetOpen && <ImagePickerSheet onAdd={(img) => { onAdd(img); setCarouselIndex(images.length); setSheetOpen(false); }} onClose={() => setSheetOpen(false)} />}
       {lightboxIndex !== null && images[lightboxIndex] && (
         <div className="fixed inset-0 bg-black/90 z-[70] flex items-center justify-center p-4" onClick={() => setLightboxIndex(null)}>
           <img src={images[lightboxIndex]} className="max-w-full max-h-[75vh] object-contain rounded-lg" onClick={(e) => e.stopPropagation()} />
@@ -871,39 +898,33 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#6C7FE0] ${form.name ? "bg-[#262422]" : "bg-transparent"}`} />
             <input value={form.year} onChange={(e) => update("year", e.target.value.replace(/[^0-9]/g, "").slice(0, 4))} placeholder="Erscheinungsjahr" inputMode="numeric"
               className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#6C7FE0] ${form.year ? "bg-[#262422]" : "bg-transparent"}`} />
-            <div>
-              <label className="text-[11px] text-[#5C574F]">Verlag</label>
-              <button type="button" onClick={() => setPickerOpen("publishers")}
-                className={`w-full mt-1.5 h-12 border rounded-[14px] pl-3.5 pr-3 text-left flex items-center gap-1.5 ${form.publishers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
-                  {form.publishers.length ? form.publishers.map((p) => <Pill key={p}>{p}</Pill>) : "Auswählen…"}
-                </span>
-                <ChevronDown size={16} className="shrink-0 text-[#5C574F]" />
-              </button>
-            </div>
+            <button type="button" onClick={() => setPickerOpen("publishers")}
+              className={`w-full h-12 border rounded-[14px] pl-3.5 pr-3 text-left flex items-center gap-1.5 ${form.publishers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+              <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
+                {form.publishers.length ? form.publishers.map((p) => <Pill key={p}>{p}</Pill>) : "Verlag auswählen…"}
+              </span>
+              <ChevronDown size={16} className="shrink-0 text-[#5C574F]" />
+            </button>
 
             <div>
               <label className="text-[11px] text-[#5C574F]">Spieleranzahl (min–max)</label>
               <div className="flex items-center gap-2 mt-1.5">
-                <input value={form.minPlayers} onChange={(e) => update("minPlayers", e.target.value)} placeholder="1" inputMode="numeric"
+                <input value={form.minPlayers} onChange={(e) => update("minPlayers", e.target.value)} placeholder="min" inputMode="numeric"
                   className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base text-center ${form.minPlayers ? "bg-[#262422]" : "bg-transparent"}`} />
                 <span className="shrink-0 text-[#5C574F]">–</span>
-                <input value={form.maxPlayers} onChange={(e) => update("maxPlayers", e.target.value)} placeholder="4" inputMode="numeric"
+                <input value={form.maxPlayers} onChange={(e) => update("maxPlayers", e.target.value)} placeholder="max" inputMode="numeric"
                   className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base text-center ${form.maxPlayers ? "bg-[#262422]" : "bg-transparent"}`} />
               </div>
             </div>
-            <div>
-              <label className="text-[11px] text-[#5C574F]">Beste Spieleranzahl (optional)</label>
-              <input value={form.bestPlayers} onChange={(e) => update("bestPlayers", e.target.value)} placeholder="z.B. 4" inputMode="numeric"
-                className={`w-full mt-1.5 h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base ${form.bestPlayers ? "bg-[#262422]" : "bg-transparent"}`} />
-            </div>
+            <input value={form.bestPlayers} onChange={(e) => update("bestPlayers", e.target.value)} placeholder="Beste Spieleranzahl (optional)" inputMode="numeric"
+              className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base ${form.bestPlayers ? "bg-[#262422]" : "bg-transparent"}`} />
             <div>
               <label className="text-[11px] text-[#5C574F]">Dauer in Minuten (min–max)</label>
               <div className="flex items-center gap-2 mt-1.5">
-                <input value={form.minTime} onChange={(e) => update("minTime", e.target.value)} placeholder="30" inputMode="numeric"
+                <input value={form.minTime} onChange={(e) => update("minTime", e.target.value)} placeholder="min" inputMode="numeric"
                   className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base text-center ${form.minTime ? "bg-[#262422]" : "bg-transparent"}`} />
                 <span className="shrink-0 text-[#5C574F]">–</span>
-                <input value={form.maxTime} onChange={(e) => update("maxTime", e.target.value)} placeholder="60" inputMode="numeric"
+                <input value={form.maxTime} onChange={(e) => update("maxTime", e.target.value)} placeholder="max" inputMode="numeric"
                   className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base text-center ${form.maxTime ? "bg-[#262422]" : "bg-transparent"}`} />
               </div>
             </div>
@@ -915,43 +936,32 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               {complexityLabel(form) && <p className="text-xs text-[#5C574F] mt-1.5">→ {complexityLabel(form)}</p>}
             </div>
 
-            <div>
-              <label className="text-[11px] text-[#5C574F]">Mechanismen</label>
-              <button type="button" onClick={() => setPickerOpen("mechanisms")}
-                className={`w-full mt-1.5 min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 text-left flex items-center gap-1.5 ${form.mechanisms.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
-                  {form.mechanisms.length ? form.mechanisms.map((m) => {
-                    const MIcon = tagIcon(m);
-                    return <Pill key={m}><MIcon size={10} className="inline -mt-0.5 mr-0.5" />{m}</Pill>;
-                  }) : "Auswählen…"}
-                </span>
-                <ChevronDown size={16} className="shrink-0 text-[#5C574F]" />
-              </button>
-            </div>
-            <div>
-              <label className="text-[11px] text-[#5C574F]">Kategorien</label>
-              <button type="button" onClick={() => setPickerOpen("categories")}
-                className={`w-full mt-1.5 min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 text-left flex items-center gap-1.5 ${form.categories.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
-                  {form.categories.length ? form.categories.map((c) => {
-                    const CIcon = tagIcon(c);
-                    return <Pill key={c}><CIcon size={10} className="inline -mt-0.5 mr-0.5" />{c}</Pill>;
-                  }) : "Auswählen…"}
-                </span>
-                <ChevronDown size={16} className="shrink-0 text-[#5C574F]" />
-              </button>
-            </div>
+            <button type="button" onClick={() => setPickerOpen("mechanisms")}
+              className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 text-left flex items-center gap-1.5 ${form.mechanisms.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+              <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
+                {form.mechanisms.length ? form.mechanisms.map((m) => {
+                  const MIcon = tagIcon(m);
+                  return <Pill key={m}><MIcon size={10} className="inline -mt-0.5 mr-0.5" />{m}</Pill>;
+                }) : "Mechanismen auswählen…"}
+              </span>
+              <ChevronDown size={16} className="shrink-0 text-[#5C574F]" />
+            </button>
+            <button type="button" onClick={() => setPickerOpen("categories")}
+              className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 text-left flex items-center gap-1.5 ${form.categories.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+              <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
+                {form.categories.length ? form.categories.map((c) => {
+                  const CIcon = tagIcon(c);
+                  return <Pill key={c}><CIcon size={10} className="inline -mt-0.5 mr-0.5" />{c}</Pill>;
+                }) : "Kategorien auswählen…"}
+              </span>
+              <ChevronDown size={16} className="shrink-0 text-[#5C574F]" />
+            </button>
 
-            <div>
-              <label className="text-[11px] text-[#5C574F]">Status</label>
-              <div className="mt-1">
-                <Segmented
-                  options={[{ v: "owned", label: "Besitz" }, { v: "wishlist", label: "Wunschliste" }, { v: "none", label: "Nur gespielt" }]}
-                  value={form.status}
-                  onChange={(v) => update("status", v)}
-                />
-              </div>
-            </div>
+            <Segmented
+              options={[{ v: "owned", label: "Besitz" }, { v: "wishlist", label: "Wunschliste" }, { v: "none", label: "Nur gespielt" }]}
+              value={form.status}
+              onChange={(v) => update("status", v)}
+            />
 
             {initial && form.status === "owned" && (
               <input value={form.location} onChange={(e) => update("location", e.target.value)} placeholder="Standort (z.B. Regal 2)"
@@ -1071,16 +1081,11 @@ function PlayFormModal({ games, initial, onClose, onSave, onDelete }) {
                 <span className="text-[#F2EDE4] font-medium flex-1 min-w-0 truncate">{selectedGame.name}</span>
                 <button onClick={() => setSelectedGame(null)} className="text-[#5C574F] text-xs shrink-0">Ändern</button>
               </div>
-              <div>
-                <label className="text-[11px] text-[#5C574F]">Wo gespielt</label>
-                <div className="mt-1">
-                  <Segmented
-                    options={[{ v: "physical-owned", label: "Eigene Sammlung", icon: Home }, { v: "physical-other", label: "Geliehen / Event", icon: Sofa }, { v: "bga", label: "BoardGameArena", icon: Globe }]}
-                    value={mode}
-                    onChange={setMode}
-                  />
-                </div>
-              </div>
+              <Segmented
+                options={[{ v: "physical-owned", label: "Eigene Sammlung", icon: Home }, { v: "physical-other", label: "Geliehen / Event", icon: Sofa }, { v: "bga", label: "BoardGameArena", icon: Globe }]}
+                value={mode}
+                onChange={setMode}
+              />
               <div>
                 <label className="text-[11px] text-[#5C574F]">Datum</label>
                 <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-auto min-w-[180px] h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base mt-1.5" />
@@ -1127,8 +1132,9 @@ function Dashboard({ games, plays, onQuickFilter }) {
   const playCounts = useMemo(() => {
     const map = {}; plays.forEach(p => { map[p.gameId] = (map[p.gameId] || 0) + 1; }); return map;
   }, [plays]);
-  const lastPlays = [...plays].sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 5);
-  const dustCollectors = owned.filter(g => !playCounts[g.id]).sort((a, b) => (a.addedDate || "").localeCompare(b.addedDate || "")).slice(0, 5);
+  const lastPlays = [...plays].sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 6);
+  const dustCollectors = owned.filter(g => !playCounts[g.id]).sort((a, b) => (a.addedDate || "").localeCompare(b.addedDate || "")).slice(0, 6);
+  const topRated = [...owned].filter(g => g.rating).sort((a, b) => parseInt(b.rating) - parseInt(a.rating)).slice(0, 6);
   const complexGames = owned.filter(g => g.complexity);
   const avgComplexity = complexGames.length ? (complexGames.reduce((s, g) => s + parseFloat(g.complexity), 0) / complexGames.length).toFixed(1) : "—";
   const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -1138,9 +1144,30 @@ function Dashboard({ games, plays, onQuickFilter }) {
   const topMonthGame = topMonth ? games.find(g => g.id === topMonth[0]) : null;
   const digitalCount = plays.filter(p => p.mode === "bga").length;
   const physicalCount = plays.filter(p => p.mode !== "bga").length;
+  const genreMix = useMemo(() => {
+    const tally = {};
+    owned.forEach(g => (g.categories || []).forEach(c => { tally[c] = (tally[c] || 0) + 1; }));
+    return Object.entries(tally).sort((a, b) => b[1] - a[1]).slice(0, 7);
+  }, [owned]);
+  const gamePlaysMap = useMemo(() => {
+    const map = {}; plays.forEach(p => { map[p.gameId] = p.gameName; }); return map;
+  }, [plays]);
+  const findGame = (id) => games.find(g => g.id === id);
+
+  const mostPlayed = useMemo(() => {
+    const entries = Object.entries(playCounts).sort((a, b) => b[1] - a[1])[0];
+    return entries ? { game: findGame(entries[0]), count: entries[1] } : null;
+  }, [playCounts, games]);
+  const withComplexity = owned.filter(g => g.complexity);
+  const heaviest = withComplexity.length ? [...withComplexity].sort((a, b) => parseFloat(b.complexity) - parseFloat(a.complexity))[0] : null;
+  const lightest = withComplexity.length ? [...withComplexity].sort((a, b) => parseFloat(a.complexity) - parseFloat(b.complexity))[0] : null;
+  const withMaxPlayers = owned.filter(g => g.maxPlayers);
+  const biggestGroup = withMaxPlayers.length ? [...withMaxPlayers].sort((a, b) => parseInt(b.maxPlayers) - parseInt(a.maxPlayers))[0] : null;
+
+  const wishlist = games.filter(g => g.status === "wishlist").slice(0, 6);
 
   return (
-    <div className="p-5 space-y-5 pb-6">
+    <div className="p-5 space-y-6 pb-6">
       <div>
         <p className="text-[#5C574F] font-body text-sm">{new Date().toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long" })}</p>
         <h1 className="font-display text-3xl text-[#F2EDE4] mt-0.5">Spielregal</h1>
@@ -1159,35 +1186,128 @@ function Dashboard({ games, plays, onQuickFilter }) {
       </div>
       {topMonthGame && (
         <div className="bg-gradient-to-r from-[#D4A24C]/15 to-transparent border border-[#D4A24C]/30 rounded-2xl p-4 flex items-center gap-3">
-          <TrendingUp className="text-[#D4A24C]" size={22} />
-          <div>
-            <p className="text-[#D4A24C] text-xs font-body font-medium">Spiel des Monats</p>
-            <p className="text-[#F2EDE4] font-display text-lg">{topMonthGame.name} · {topMonth[1]}× gespielt</p>
+          <Cover game={topMonthGame} size="md" />
+          <div className="min-w-0">
+            <p className="text-[#D4A24C] text-xs font-body font-medium flex items-center gap-1"><TrendingUp size={13} /> Spiel des Monats</p>
+            <p className="text-[#F2EDE4] font-display text-lg truncate">{topMonthGame.name}</p>
+            <p className="text-[#A39C8F] text-xs font-body">{topMonth[1]}× in den letzten 30 Tagen gespielt</p>
           </div>
         </div>
       )}
-      <div>
-        <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Zuletzt gespielt</h2>
-        {lastPlays.length === 0 ? <p className="text-[#5C574F] text-sm font-body">Noch keine Partien eingetragen.</p> : (
-          <div className="space-y-2">
-            {lastPlays.map(p => (
-              <div key={p.id} className="bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center justify-between gap-2">
-                <div className="min-w-0"><p className="text-[#F2EDE4] font-body truncate">{p.gameName}</p><p className="text-[#5C574F] text-xs font-body">{p.date}</p></div>
-                <Pill tone={p.mode === "bga" ? "teal" : "default"}>{p.mode === "bga" ? "BGA" : p.mode === "physical-other" ? "Geliehen" : "Sammlung"}</Pill>
+
+      {genreMix.length > 0 && (
+        <div>
+          <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Deine Genre-Mischung</h2>
+          <div className="flex flex-wrap gap-1.5">
+            {genreMix.map(([cat, count], i) => {
+              const CIcon = tagIcon(cat);
+              const tones = ["#6C7FE0", "#D4A24C", "#4E8C82", "#C1443C"];
+              const color = tones[i % tones.length];
+              return (
+                <span key={cat} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-body border" style={{ borderColor: color + "40", backgroundColor: color + "15", color }}>
+                  <CIcon size={12} />{cat} <span className="opacity-60">· {count}</span>
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {(mostPlayed || heaviest || biggestGroup) && (
+        <div>
+          <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Rekorde</h2>
+          <div className="grid grid-cols-2 gap-2.5">
+            {mostPlayed && mostPlayed.game && (
+              <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
+                <p className="text-[10px] text-[#5C574F] font-body mb-1">🏆 Meistgespielt</p>
+                <p className="text-[#F2EDE4] text-sm font-body font-medium truncate">{mostPlayed.game.name}</p>
+                <p className="text-[#6C7FE0] text-xs font-mono">{mostPlayed.count}× gespielt</p>
+              </div>
+            )}
+            {heaviest && (
+              <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
+                <p className="text-[10px] text-[#5C574F] font-body mb-1">🧠 Schwerstes Spiel</p>
+                <p className="text-[#F2EDE4] text-sm font-body font-medium truncate">{heaviest.name}</p>
+                <p className="text-[#C1443C] text-xs font-mono">{parseFloat(heaviest.complexity).toFixed(1)}/5</p>
+              </div>
+            )}
+            {lightest && lightest.id !== (heaviest && heaviest.id) && (
+              <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
+                <p className="text-[10px] text-[#5C574F] font-body mb-1">🪶 Leichtestes Spiel</p>
+                <p className="text-[#F2EDE4] text-sm font-body font-medium truncate">{lightest.name}</p>
+                <p className="text-[#4E8C82] text-xs font-mono">{parseFloat(lightest.complexity).toFixed(1)}/5</p>
+              </div>
+            )}
+            {biggestGroup && (
+              <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
+                <p className="text-[10px] text-[#5C574F] font-body mb-1">👥 Größte Runde</p>
+                <p className="text-[#F2EDE4] text-sm font-body font-medium truncate">{biggestGroup.name}</p>
+                <p className="text-[#D4A24C] text-xs font-mono">bis zu {biggestGroup.maxPlayers} Spieler</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {wishlist.length > 0 && (
+        <div>
+          <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Von der Wunschliste</h2>
+          <div className="flex gap-3 overflow-x-auto pb-1">
+            {wishlist.map(g => (
+              <div key={g.id} className="shrink-0 w-28 bg-[#262422] border border-[#3A3631] rounded-2xl p-2.5">
+                <Cover game={g} size="lg" />
+                <p className="text-[#F2EDE4] font-body text-xs font-medium mt-1.5 truncate">{g.name}</p>
+                {g.year && <p className="text-[#5C574F] text-[10px] font-body">{g.year}</p>}
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      <div>
+        <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Zuletzt gespielt</h2>
+        {lastPlays.length === 0 ? <p className="text-[#5C574F] text-sm font-body">Noch keine Partien eingetragen.</p> : (
+          <div className="flex gap-3 overflow-x-auto pb-1">
+            {lastPlays.map(p => {
+              const g = findGame(p.gameId);
+              return (
+                <div key={p.id} className="shrink-0 w-28 bg-[#262422] border border-[#3A3631] rounded-2xl p-2.5">
+                  {g ? <Cover game={g} size="lg" /> : <div className="w-full aspect-square rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#5C574F]"><Dices size={24} /></div>}
+                  <p className="text-[#F2EDE4] font-body text-xs font-medium mt-1.5 truncate">{p.gameName}</p>
+                  <p className="text-[#5C574F] text-[10px] font-body">{p.date}</p>
+                  <div className="mt-1"><Pill tone={p.mode === "bga" ? "teal" : "default"}>{p.mode === "bga" ? "BGA" : p.mode === "physical-other" ? "Geliehen" : "Sammlung"}</Pill></div>
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
+
+      {topRated.length > 0 && (
+        <div>
+          <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Deine Top-Bewertungen</h2>
+          <div className="flex gap-3 overflow-x-auto pb-1">
+            {topRated.map(g => (
+              <div key={g.id} className="shrink-0 w-28 bg-[#262422] border border-[#3A3631] rounded-2xl p-2.5">
+                <Cover game={g} size="lg" />
+                <p className="text-[#F2EDE4] font-body text-xs font-medium mt-1.5 truncate">{g.name}</p>
+                <p className="text-[#D4A24C] text-[11px] font-mono flex items-center gap-0.5 mt-0.5"><Star size={10} fill="#D4A24C" className="text-[#D4A24C]" /> {g.rating}/10</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div>
         <div className="flex items-center gap-2 mb-1"><Archive size={15} className="text-[#5C574F]" /><h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide">Staubfänger</h2></div>
         <p className="text-xs text-[#5C574F] mb-2">Spiele in deinem Regal, die schon am längsten auf ihre erste Partie warten.</p>
         {dustCollectors.length === 0 ? <p className="text-[#5C574F] text-sm font-body">Alles im Regal wurde schon gespielt. Sehr gut!</p> : (
-          <div className="space-y-2">
+          <div className="flex gap-3 overflow-x-auto pb-1">
             {dustCollectors.map(g => (
-              <div key={g.id} className="bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center gap-3">
-                <Cover game={g} size="sm" />
-                <div className="flex-1"><p className="text-[#F2EDE4] font-body">{g.name}</p><p className="text-[#5C574F] text-xs font-body">seit {g.addedDate || "?"} ungespielt</p></div>
+              <div key={g.id} className="shrink-0 w-28 bg-[#262422] border border-[#3A3631] rounded-2xl p-2.5">
+                <Cover game={g} size="lg" />
+                <p className="text-[#F2EDE4] font-body text-xs font-medium mt-1.5 truncate">{g.name}</p>
+                <p className="text-[#5C574F] text-[10px] font-body">seit {g.addedDate || "?"}</p>
               </div>
             ))}
           </div>
@@ -1350,6 +1470,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
                   </Pill>
                 )}
                 {!playCounts[g.id] && g.status === "owned" && <Pill tone="amber">ungespielt</Pill>}
+                {playCounts[g.id] > 0 && <Pill tone="teal">{playCounts[g.id]}× gespielt</Pill>}
               </div>
             </button>
           ))}
@@ -1433,16 +1554,62 @@ function SwipeableRow({ onDelete, children, disabled }) {
   );
 }
 
-function PlayLog({ plays, onAdd, onEdit, onDelete, demoMode }) {
+function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
   const sorted = [...plays].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
   const modeIcon = { "physical-owned": Home, "physical-other": Sofa, bga: Globe };
   const modeLabel = { "physical-owned": "Eigene Sammlung", "physical-other": "Geliehen / Event", bga: "BoardGameArena" };
+
+  const currentYear = new Date().getFullYear();
+  const yearPlays = plays.filter(p => p.date && new Date(p.date).getFullYear() === currentYear);
+  const yearGameCount = new Set(yearPlays.map(p => p.gameId)).size;
+  const estimatedMinutes = yearPlays.reduce((sum, p) => {
+    const g = games.find(x => x.id === p.gameId);
+    if (!g || !g.minTime) return sum;
+    const avg = (parseInt(g.minTime) + parseInt(g.maxTime || g.minTime)) / 2;
+    return sum + avg;
+  }, 0);
+  const estimatedHours = Math.round((estimatedMinutes / 60) * 10) / 10;
+
+  const winCounts = useMemo(() => {
+    const tally = {};
+    plays.forEach(p => { if (p.winner && p.winner.trim()) { const name = p.winner.trim(); tally[name] = (tally[name] || 0) + 1; } });
+    return Object.entries(tally).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  }, [plays]);
+  const medals = ["🥇", "🥈", "🥉"];
+
   return (
     <div className="p-5 pb-6">
       <div className="flex items-center justify-between mb-4">
         <h1 className="font-display text-3xl text-[#F2EDE4]">Partien</h1>
         <button onClick={onAdd} disabled={demoMode} className="bg-[#6C7FE0] disabled:opacity-30 text-[#F2EDE4] w-12 h-12 flex items-center justify-center rounded-[14px] active:scale-95"><Plus size={20} /></button>
       </div>
+
+      {yearPlays.length > 0 && (
+        <div className="bg-gradient-to-r from-[#6C7FE0]/15 to-transparent border border-[#6C7FE0]/30 rounded-2xl p-4 mb-4">
+          <p className="text-xs font-semibold text-[#6C7FE0] uppercase tracking-wide mb-2">{currentYear} bisher</p>
+          <div className="flex items-center gap-5">
+            <div><p className="font-display text-2xl text-[#F2EDE4]">{yearPlays.length}</p><p className="text-[#A39C8F] text-[11px] font-body">Partien</p></div>
+            <div><p className="font-display text-2xl text-[#F2EDE4]">{yearGameCount}</p><p className="text-[#A39C8F] text-[11px] font-body">Spiele</p></div>
+            <div><p className="font-display text-2xl text-[#F2EDE4]">{estimatedHours > 0 ? `~${estimatedHours}` : "—"}</p><p className="text-[#A39C8F] text-[11px] font-body">Stunden</p></div>
+          </div>
+        </div>
+      )}
+
+      {winCounts.length > 0 && (
+        <div className="mb-5">
+          <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Bestenliste</h2>
+          <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-4 space-y-2.5">
+            {winCounts.map(([name, count], i) => (
+              <div key={name} className="flex items-center gap-3">
+                <span className="text-lg w-6 shrink-0">{medals[i] || `${i + 1}.`}</span>
+                <span className="flex-1 min-w-0 text-[#F2EDE4] font-body truncate">{name}</span>
+                <span className="text-[#D4A24C] text-sm font-mono shrink-0">{count}× gewonnen</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {sorted.length === 0 ? <p className="text-[#5C574F] text-sm font-body mt-8 text-center">Noch keine Partien eingetragen — auch geliehene oder online gespielte Spiele zählen.</p> : (
         <div className="space-y-2">
           {sorted.map(p => {
@@ -1467,7 +1634,7 @@ function PlayLog({ plays, onAdd, onEdit, onDelete, demoMode }) {
 }
 
 /* ---------------- RECOMMENDATIONS ---------------- */
-function Recommendations({ games, plays }) {
+function Recommendations({ games, plays, onAddWishlist }) {
   const [discovering, setDiscovering] = useState(false);
   const [external, setExternal] = useState([]);
   const [externalError, setExternalError] = useState("");
@@ -1502,25 +1669,49 @@ function Recommendations({ games, plays }) {
       <h1 className="font-display text-3xl text-[#F2EDE4] mb-1">Empfehlungen</h1>
       <p className="text-[#A39C8F] text-sm font-body mb-5">Basierend auf Spielen, die du mit 8+ bewertet hast — egal ob eigene Sammlung, geliehen oder BGA.</p>
       {profile.length === 0 ? (
-        <p className="text-[#5C574F] text-sm font-body">Bewerte ein paar gespielte Spiele mit 8 oder höher, damit ich ein Geschmacksprofil erstellen kann.</p>
+        <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-5 text-center">
+          <Sparkles size={28} className="text-[#D4A24C] mx-auto mb-2" />
+          <p className="text-[#A39C8F] text-sm font-body">Bewerte ein paar gespielte Spiele mit 8 oder höher, damit ich ein Geschmacksprofil erstellen kann.</p>
+        </div>
       ) : (
         <>
+          <div className="bg-gradient-to-r from-[#6C7FE0]/15 to-transparent border border-[#6C7FE0]/30 rounded-2xl p-4 mb-6">
+            <p className="text-xs font-semibold text-[#6C7FE0] uppercase tracking-wide mb-2">Dein Geschmacksprofil</p>
+            <div className="flex flex-wrap gap-1.5">
+              {profile.slice(0, 8).map(([tag, weight]) => {
+                const TIcon = tagIcon(tag);
+                return (
+                  <span key={tag} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs bg-[#1C1B1A]/40 text-[#F2EDE4] border border-[#6C7FE0]/20">
+                    <TIcon size={11} />{tag}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="mb-6">
             <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Ungespielt, passt zu dir</h2>
-            {scored.length === 0 ? <p className="text-[#5C574F] text-sm font-body">Kein ungespieltes Spiel überschneidet sich aktuell mit deinem Profil.</p> : (
-              <div className="space-y-2">
+            {scored.length === 0 ? (
+              <p className="text-[#5C574F] text-sm font-body">Kein ungespieltes Spiel überschneidet sich aktuell mit deinem Profil.</p>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
                 {scored.map(({ game }) => {
                   const tags = [...(game.mechanisms || []), ...(game.categories || [])];
                   const match = profile.find(([t]) => tags.includes(t));
                   const matchTag = match ? match[0] : null;
                   return (
-                    <div key={game.id} className="bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center gap-3">
-                      <Cover game={game} size="sm" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[#F2EDE4] font-body truncate">{game.name}</p>
-                        {matchTag && <p className="text-[#5C574F] text-xs font-body">Ähnlich wie deine Favoriten: {matchTag}</p>}
+                    <div key={game.id} className="bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
+                      <Cover game={game} size="lg" />
+                      <p className="text-[#F2EDE4] font-body text-sm font-medium mt-2 leading-tight truncate">{game.name}</p>
+                      {matchTag && <p className="text-[#6C7FE0] text-[11px] font-body mt-0.5 truncate">✨ {matchTag}</p>}
+                      <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
+                        <Pill tone={game.status === "owned" ? "teal" : "amber"}>{game.status === "owned" ? "besitzt du" : "nicht in Sammlung"}</Pill>
                       </div>
-                      <Pill tone={game.status === "owned" ? "teal" : "amber"}>{game.status === "owned" ? "besitzt du" : "nicht in Sammlung"}</Pill>
+                      {game.status !== "owned" && game.status !== "wishlist" && (
+                        <button onClick={() => onAddWishlist(game)} className="w-full mt-2 h-9 flex items-center justify-center gap-1.5 bg-[#6C7FE0]/15 text-[#6C7FE0] rounded-[10px] text-xs font-medium">
+                          <Plus size={13} /> Zur Wunschliste
+                        </button>
+                      )}
                     </div>
                   );
                 })}
@@ -1536,11 +1727,17 @@ function Recommendations({ games, plays }) {
             </div>
             {externalError && <p className="text-sm text-[#D4A24C] font-body">{externalError}</p>}
             {external.length > 0 && (
-              <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-3">
                 {external.map(r => (
-                  <div key={r.bggId} className="bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center justify-between gap-2">
-                    <span className="text-[#F2EDE4] font-body min-w-0 truncate">{r.name} <span className="text-[#5C574F]">({r.year})</span></span>
-                    <Pill tone="amber">nicht in Sammlung</Pill>
+                  <div key={r.bggId} className="bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
+                    <div className="w-full aspect-square rounded-lg border border-[#3A3631] bg-[#2E2B28] flex items-center justify-center text-[#5C574F]">
+                      <Dices size={28} />
+                    </div>
+                    <p className="text-[#F2EDE4] font-body text-sm font-medium mt-2 leading-tight truncate">{r.name}</p>
+                    <p className="text-[#5C574F] text-xs font-body">{r.year}</p>
+                    <button onClick={() => onAddWishlist({ name: r.name, year: r.year, bggId: r.bggId })} className="w-full mt-2 h-9 flex items-center justify-center gap-1.5 bg-[#6C7FE0]/15 text-[#6C7FE0] rounded-[10px] text-xs font-medium">
+                      <Plus size={13} /> Zur Wunschliste
+                    </button>
                   </div>
                 ))}
               </div>
@@ -1647,6 +1844,13 @@ function GameDetailModal({ game, plays, onClose, onEdit }) {
             )}
           </div>
         </div>
+        {onEdit && (
+          <div className="shrink-0 border-t border-[#3A3631] p-4">
+            <button onClick={onEdit} className="w-full h-12 bg-[#6C7FE0] text-[#F2EDE4] rounded-[14px] font-medium flex items-center justify-center gap-2">
+              <Pencil size={16} /> Bearbeiten
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1870,6 +2074,19 @@ function App() {
     setGameModal(null);
   };
   const deleteGame = (id) => { setGames(prev => prev.filter(g => g.id !== id)); setGameModal(null); };
+  const addToWishlistFromRecommendation = (rec) => {
+    setGames(prev => {
+      if (rec.id && prev.some(g => g.id === rec.id)) {
+        return prev.map(g => g.id === rec.id ? { ...g, status: "wishlist" } : g);
+      }
+      return [...prev, {
+        id: uid(), bggId: rec.bggId || "", name: rec.name, year: rec.year || "",
+        publishers: [], images: [], minPlayers: "", maxPlayers: "", bestPlayers: "",
+        minTime: "", maxTime: "", age: "", complexity: "", mechanisms: [], categories: [],
+        status: "wishlist", location: "", notes: "", rating: "", addedDate: new Date().toISOString().slice(0, 10),
+      }];
+    });
+  };
   const savePlay = (play) => {
     setPlays(prev => { const exists = prev.find(p => p.id === play.id); return exists ? prev.map(p => p.id === play.id ? play : p) : [...prev, play]; });
     setPlayModal(null);
@@ -1935,8 +2152,8 @@ function App() {
         </div>
         {tab === "dashboard" && <Dashboard games={displayGames} plays={displayPlays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} />}
         {tab === "collection" && <Collection games={displayGames} plays={displayPlays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => !demoMode && setGameModal({ editing: null })} onView={(g) => setDetailGame(g)} onEdit={(g) => setGameModal({ editing: g })} onDelete={(g) => deleteGame(g.id)} categoryOptions={categoryOptions} mechanismOptions={mechanismOptions} demoMode={demoMode} />}
-        {tab === "playlog" && <PlayLog plays={displayPlays} onAdd={() => !demoMode && setPlayModal({ editing: null })} onEdit={(p) => !demoMode && setPlayModal({ editing: p })} onDelete={deletePlay} demoMode={demoMode} />}
-        {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} />}
+        {tab === "playlog" && <PlayLog plays={displayPlays} games={displayGames} onAdd={() => !demoMode && setPlayModal({ editing: null })} onEdit={(p) => !demoMode && setPlayModal({ editing: p })} onDelete={deletePlay} demoMode={demoMode} />}
+        {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} onAddWishlist={addToWishlistFromRecommendation} />}
       </div>
       <div className="shrink-0 bg-[#1C1B1A] border-t border-[#3A3631] px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         <div className="flex justify-around">
