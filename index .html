@@ -2620,8 +2620,14 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
     <div className="p-5 pb-6">
       <div className="flex items-center justify-between mb-4">
         <h1 className="font-display text-3xl text-[#F2EDE4]">Partien</h1>
-        <button onClick={onAdd} disabled={demoMode} className="bg-[#6C7FE0] disabled:opacity-30 text-[#F2EDE4] w-12 h-12 flex items-center justify-center rounded-[14px] active:scale-95"><Plus size={20} /></button>
       </div>
+      {!demoMode && (
+        <button onClick={onAdd} aria-label="Partie eintragen"
+          className="fixed z-30 left-1/2 -translate-x-1/2 bg-[#6C7FE0] text-[#F2EDE4] w-14 h-14 flex items-center justify-center rounded-full shadow-lg active:scale-95"
+          style={{ bottom: "calc(64px + env(safe-area-inset-bottom) + 12px)" }}>
+          <Plus size={22} />
+        </button>
+      )}
 
       {yearPlays.length > 0 && (
         <div className="bg-gradient-to-r from-[#6C7FE0]/15 to-transparent border border-[#6C7FE0]/30 rounded-2xl p-4 mb-4">
@@ -2650,7 +2656,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
       )}
 
       {sorted.length === 0 ? <p className="text-[#5C574F] text-sm font-body mt-8 text-center">Noch keine Partien eingetragen — auch geliehene oder online gespielte Spiele zählen.</p> : (
-        <div className="space-y-2">
+        <div className="space-y-2 pb-20">
           {sorted.map(p => {
             const IconC = modeIcon[p.mode] || Home;
             return (
