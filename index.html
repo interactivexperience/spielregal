@@ -2000,6 +2000,9 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     bestof: bestOf && (
       <div key="bestof">
         <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Best of</h2>
+        {plays.length < 5 ? (
+          <p className="text-xs text-[#5C574F]">Trag noch ein paar mehr Partien ein, dann zeigen wir dir hier deine Vorlieben.</p>
+        ) : (
         <div className="grid grid-cols-2 gap-2.5">
           {bestOf.topYear && bestOf.topYear.game && (
             <button onClick={() => onView(bestOf.topYear.game)} className="text-left bg-[#262422] border border-[#3A3631] rounded-2xl p-3 flex flex-col">
@@ -2037,41 +2040,46 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             </div>
           )}
         </div>
+        )}
       </div>
     ),
     records: (mostPlayed || heaviest || biggestGroup) && (
       <div key="records">
         <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Rekorde</h2>
+        {owned.length < 5 ? (
+          <p className="text-xs text-[#5C574F]">Noch zu wenige Spiele im Regal für aussagekräftige Rekorde — ab 5 Spielen geht's los.</p>
+        ) : (
         <div className="flex gap-4 overflow-x-auto pb-1 px-1">
           {mostPlayed && mostPlayed.game && (
             <button onClick={() => onView(mostPlayed.game)} className="shrink-0 flex flex-col items-center gap-2 w-20 text-center">
               <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl" style={{ background: `radial-gradient(circle at 32% 26%, #6C7FE0f0, #6C7FE099 55%, #6C7FE0cc 100%)`, boxShadow: `0 3px 8px #6C7FE066, 0 1px 0 rgba(255,255,255,0.25) inset, 0 -4px 8px rgba(0,0,0,0.3) inset`, border: `1px solid #6C7FE0` }}>🏆</div>
-              <p className="text-[11px] text-[#F2EDE4] font-medium truncate w-full">{mostPlayed.game.name}</p>
+              <p className="text-[11px] text-[#F2EDE4] font-medium leading-tight">Meistgespielt</p>
               <p className="text-[10px] text-[#6C7FE0]">{mostPlayed.count}× gespielt</p>
             </button>
           )}
           {heaviest && (
             <button onClick={() => onView(heaviest)} className="shrink-0 flex flex-col items-center gap-2 w-20 text-center">
               <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl" style={{ background: `radial-gradient(circle at 32% 26%, #C1443Cf0, #C1443C99 55%, #C1443Ccc 100%)`, boxShadow: `0 3px 8px #C1443C66, 0 1px 0 rgba(255,255,255,0.25) inset, 0 -4px 8px rgba(0,0,0,0.3) inset`, border: `1px solid #C1443C` }}>🧠</div>
-              <p className="text-[11px] text-[#F2EDE4] font-medium truncate w-full">{heaviest.name}</p>
+              <p className="text-[11px] text-[#F2EDE4] font-medium leading-tight">Schwerstes Spiel</p>
               <p className="text-[10px] text-[#C1443C]">{parseFloat(heaviest.complexity).toFixed(1)}/5</p>
             </button>
           )}
           {lightest && lightest.id !== (heaviest && heaviest.id) && (
             <button onClick={() => onView(lightest)} className="shrink-0 flex flex-col items-center gap-2 w-20 text-center">
               <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl" style={{ background: `radial-gradient(circle at 32% 26%, #4E8C82f0, #4E8C8299 55%, #4E8C82cc 100%)`, boxShadow: `0 3px 8px #4E8C8266, 0 1px 0 rgba(255,255,255,0.25) inset, 0 -4px 8px rgba(0,0,0,0.3) inset`, border: `1px solid #4E8C82` }}>🪶</div>
-              <p className="text-[11px] text-[#F2EDE4] font-medium truncate w-full">{lightest.name}</p>
+              <p className="text-[11px] text-[#F2EDE4] font-medium leading-tight">Leichtestes Spiel</p>
               <p className="text-[10px] text-[#4E8C82]">{parseFloat(lightest.complexity).toFixed(1)}/5</p>
             </button>
           )}
           {biggestGroup && (
             <button onClick={() => onView(biggestGroup)} className="shrink-0 flex flex-col items-center gap-2 w-20 text-center">
               <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl" style={{ background: `radial-gradient(circle at 32% 26%, #D4A24Cf0, #D4A24C99 55%, #D4A24Ccc 100%)`, boxShadow: `0 3px 8px #D4A24C66, 0 1px 0 rgba(255,255,255,0.25) inset, 0 -4px 8px rgba(0,0,0,0.3) inset`, border: `1px solid #D4A24C` }}>👥</div>
-              <p className="text-[11px] text-[#F2EDE4] font-medium truncate w-full">{biggestGroup.name}</p>
+              <p className="text-[11px] text-[#F2EDE4] font-medium leading-tight">Größte Runde</p>
               <p className="text-[10px] text-[#D4A24C]">bis {biggestGroup.maxPlayers} Sp.</p>
             </button>
           )}
         </div>
+        )}
       </div>
     ),
     wishlist: wishlist.length > 0 && (
@@ -2089,6 +2097,9 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     topRated: topRated.length > 0 && (
       <div key="topRated">
         <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Top 10 Spiele</h2>
+        {topRated.length < 3 ? (
+          <p className="text-xs text-[#5C574F]">Bewerte noch ein paar mehr Spiele, dann gibt's hier eine richtige Bestenliste.</p>
+        ) : (
         <div className="flex gap-3 overflow-x-auto pb-1">
           {topRated.map(g => (
             <DashboardGameTile key={g.id} game={g} onClick={() => onView(g)}>
@@ -2096,6 +2107,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             </DashboardGameTile>
           ))}
         </div>
+        )}
       </div>
     ),
     dust: (
@@ -2646,7 +2658,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
       {!demoMode && (
         <button onClick={onAdd} aria-label="Spiel hinzufügen"
           className="fixed z-30 left-1/2 -translate-x-1/2 bg-[#6C7FE0] text-[#F2EDE4] w-14 h-14 flex items-center justify-center rounded-full shadow-lg active:scale-95"
-          style={{ bottom: "calc(64px + env(safe-area-inset-bottom) + 12px)" }}>
+          style={{ bottom: "calc(50px + env(safe-area-inset-bottom) + 10px)" }}>
           <Plus size={22} />
         </button>
       )}
@@ -2755,7 +2767,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
       {!demoMode && (
         <button onClick={onAdd} aria-label="Partie eintragen"
           className="fixed z-30 left-1/2 -translate-x-1/2 bg-[#6C7FE0] text-[#F2EDE4] w-14 h-14 flex items-center justify-center rounded-full shadow-lg active:scale-95"
-          style={{ bottom: "calc(64px + env(safe-area-inset-bottom) + 12px)" }}>
+          style={{ bottom: "calc(50px + env(safe-area-inset-bottom) + 10px)" }}>
           <Plus size={22} />
         </button>
       )}
