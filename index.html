@@ -30,6 +30,7 @@
   @keyframes tabFade { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
   .tab-fade { animation: tabFade .22s ease-out; }
   @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes confettiFall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(360deg); opacity: 0; } }
   .spin { animation: spin 1s linear infinite; }
   #loading { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; padding:24px; text-align:center; color:#F2EDE4; font-family:'IBM Plex Sans',sans-serif; }
   input, textarea, select { font-size: 16px !important; }
@@ -175,6 +176,8 @@ const Info = (p) => <Icon {...p}><circle cx="12" cy="12" r="9" /><path d="M12 8h
 const ChevronDown = (p) => <Icon {...p}><path d="m6 9 6 6 6-6" /></Icon>;
 const Maximize2 = (p) => <Icon {...p}><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></Icon>;
 const Minimize2 = (p) => <Icon {...p}><path d="M9 3v6H3M15 21v-6h6M3 9l7-7M21 15l-7 7" /></Icon>;
+const MoreHorizontal = (p) => <Icon {...p}><circle cx="5" cy="12" r="1.5" fill="currentColor" /><circle cx="12" cy="12" r="1.5" fill="currentColor" /><circle cx="19" cy="12" r="1.5" fill="currentColor" /></Icon>;
+const GripVertical = (p) => <Icon {...p}><circle cx="9" cy="6" r="1.3" fill="currentColor" /><circle cx="9" cy="12" r="1.3" fill="currentColor" /><circle cx="9" cy="18" r="1.3" fill="currentColor" /><circle cx="15" cy="6" r="1.3" fill="currentColor" /><circle cx="15" cy="12" r="1.3" fill="currentColor" /><circle cx="15" cy="18" r="1.3" fill="currentColor" /></Icon>;
 
 /* ---------------- STORAGE (localStorage, this file runs standalone) ---------------- */
 const GAMES_KEY = "spielregal:games";
@@ -190,6 +193,51 @@ const saveKey = (key, value) => {
   catch (e) { console.error("Speichern fehlgeschlagen", e); }
 };
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+
+// A short, cheerful three-note chime synthesized on the fly — no audio files needed.
+function playChime() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = ctx.currentTime;
+    [523.25, 659.25, 783.99].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, now + i * 0.08);
+      gain.gain.linearRampToValueAtTime(0.15, now + i * 0.08 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.4);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(now + i * 0.08);
+      osc.stop(now + i * 0.08 + 0.42);
+    });
+  } catch {}
+}
+
+function Confetti({ active }) {
+  if (!active) return null;
+  const colors = ["#6C7FE0", "#D4A24C", "#4E8C82", "#C1443C", "#F2EDE4"];
+  const pieces = Array.from({ length: 26 }, (_, i) => ({
+    left: 8 + Math.random() * 84,
+    delay: Math.random() * 0.25,
+    duration: 1.1 + Math.random() * 0.7,
+    color: colors[i % colors.length],
+    size: 6 + Math.random() * 6,
+    rotate: Math.random() * 360,
+  }));
+  return (
+    <div className="fixed inset-0 z-[95] pointer-events-none overflow-hidden">
+      {pieces.map((p, i) => (
+        <div key={i} style={{
+          position: "absolute", left: p.left + "%", top: "-20px",
+          width: p.size, height: p.size * 1.6, background: p.color, borderRadius: 2,
+          animation: `confettiFall ${p.duration}s ease-in ${p.delay}s forwards`,
+          transform: `rotate(${p.rotate}deg)`,
+        }} />
+      ))}
+    </div>
+  );
+}
 
 // Samples a cover image to find a representative accent color. Falls back silently
 // (resolves null) on any failure — e.g. cross-origin images without CORS headers.
@@ -225,6 +273,40 @@ function extractDominantColor(src) {
       img.src = src;
     } catch { resolve(null); }
   });
+}
+
+// Shared cache so the same cover image isn't re-analyzed every time it shows up
+// across different Dashboard sections (Top 10, Best of, Wishlist, etc).
+const dominantColorCache = new Map();
+function useDominantColor(src) {
+  const [color, setColor] = useState(() => (src && dominantColorCache.has(src) ? dominantColorCache.get(src) : null));
+  useEffect(() => {
+    if (!src) { setColor(null); return; }
+    if (dominantColorCache.has(src)) { setColor(dominantColorCache.get(src)); return; }
+    let cancelled = false;
+    extractDominantColor(src).then((c) => {
+      if (c) dominantColorCache.set(src, c);
+      if (!cancelled) setColor(c);
+    });
+    return () => { cancelled = true; };
+  }, [src]);
+  return color;
+}
+
+function DashboardGameTile({ game, onClick, children }) {
+  const img = (game.images && game.images[0]) || game.image;
+  const color = useDominantColor(img);
+  return (
+    <button
+      onClick={onClick}
+      className="shrink-0 w-28 text-left border border-[#3A3631] rounded-2xl p-2.5"
+      style={{ backgroundImage: color ? `linear-gradient(160deg, ${color}70, #262422 80%)` : undefined, backgroundColor: "#262422" }}
+    >
+      <Cover game={game} size="lg" />
+      <p className="text-[#F2EDE4] font-body text-xs font-medium mt-1.5 truncate">{game.name}</p>
+      {children}
+    </button>
+  );
 }
 
 function handleFocusScroll(e) {
@@ -402,12 +484,29 @@ function complexityLabel(game) {
   if (categories.some((c) => /party/i.test(c))) return "Partyspiel";
   const w = parseFloat(game.complexity);
   if (!w || isNaN(w)) return null;
+  if (w < 1.5) return "Einsteigerspiel";
   if (w < 2.0) return "Familienspiel";
+  if (w < 2.5) return "Gehobenes Familienspiel";
+  if (w < 3.0) return "Leichtes Kennerspiel";
   if (w < 3.5) return "Kennerspiel";
+  if (w < 4.0) return "Anspruchsvolles Kennerspiel";
   return "Expertenspiel";
 }
-const COMPLEXITY_TONE = { Familienspiel: "teal", Kennerspiel: "amber", Expertenspiel: "red", Partyspiel: "default" };
-const COMPLEXITY_ICON = { Familienspiel: Home, Kennerspiel: Puzzle, Expertenspiel: Brain, Partyspiel: Sparkles };
+const COMPLEXITY_TONE = {
+  Einsteigerspiel: "teal", Familienspiel: "teal", "Gehobenes Familienspiel": "teal",
+  "Leichtes Kennerspiel": "amber", Kennerspiel: "amber", "Anspruchsvolles Kennerspiel": "amber",
+  Expertenspiel: "red", Partyspiel: "default",
+};
+const COMPLEXITY_ICON = {
+  Einsteigerspiel: Home, Familienspiel: Home, "Gehobenes Familienspiel": Home,
+  "Leichtes Kennerspiel": Puzzle, Kennerspiel: Puzzle, "Anspruchsvolles Kennerspiel": Puzzle,
+  Expertenspiel: Brain, Partyspiel: Sparkles,
+};
+const COMPLEXITY_SHORT = {
+  Einsteigerspiel: "Einsteiger", Familienspiel: "Familie", "Gehobenes Familienspiel": "Familie+",
+  "Leichtes Kennerspiel": "Kenner–", Kennerspiel: "Kenner", "Anspruchsvolles Kennerspiel": "Kenner+",
+  Expertenspiel: "Experte", Partyspiel: "Party",
+};
 
 /* ---------------- DEMO PREVIEW DATA (local only, never saved/synced) ---------------- */
 function demoCover(text, bg, fg) {
@@ -422,29 +521,69 @@ const DEMO_GAMES = [
   { id: "demo-5", name: "Nebelburg", year: "2022", publishers: ["Frosted Games"], designers: ["Isaac Childres"], images: [], minPlayers: "2", maxPlayers: "2", bestPlayers: "", minTime: "60", maxTime: "90", complexity: "3.0", mechanisms: ["Deck Building", "Hand Management"], categories: ["Fantasy", "Card Game"], playerTypes: ["Taktiker", "Geschichtenerzähler"], status: "wishlist", location: "", summary: "<p>Ein episches Duell in einer nebelverhangenen Fantasiewelt — baut euer Deck über eine ganze Kampagne hinweg aus.</p>", notes: "Steht schon länger auf der Liste.", rating: "", addedDate: "2025-05-10" },
 ];
 const DEMO_PLAYS = [
-  { id: "demo-p1", gameId: "demo-1", gameName: "Vogelflug", date: "2026-07-10", mode: "physical-owned", players: "Anna, Ben", winner: "Anna", notes: "", images: [] },
-  { id: "demo-p2", gameId: "demo-2", gameName: "Handelswege", date: "2026-07-05", mode: "physical-owned", players: "Ben, Chris", winner: "Chris", notes: "", images: [] },
-  { id: "demo-p3", gameId: "demo-3", gameName: "Sternenreich", date: "2026-06-28", mode: "physical-other", players: "Spielrunde bei Anna", winner: "", notes: "", images: [] },
-  { id: "demo-p4", gameId: "demo-1", gameName: "Vogelflug", date: "2026-05-15", mode: "bga", players: "", winner: "", notes: "", images: [] },
+  { id: "demo-p1", gameId: "demo-1", gameName: "Vogelflug", date: "2026-07-10", mode: "physical-owned", players: "Anna, Ben", playerIds: ["demo-pl1", "demo-pl2"], winner: "Anna", notes: "", images: [] },
+  { id: "demo-p2", gameId: "demo-2", gameName: "Handelswege", date: "2026-07-05", mode: "physical-owned", players: "Ben, Chris", playerIds: ["demo-pl2", "demo-pl3"], winner: "Chris", notes: "", images: [] },
+  { id: "demo-p3", gameId: "demo-3", gameName: "Sternenreich", date: "2026-06-28", mode: "physical-other", players: "Spielrunde bei Anna", playerIds: [], winner: "", notes: "", images: [] },
+  { id: "demo-p4", gameId: "demo-1", gameName: "Vogelflug", date: "2026-05-15", mode: "bga", players: "", playerIds: [], winner: "", notes: "", images: [] },
 ];
 const DEMO_LISTS = [
   { id: "demo-l1", name: "Zu zweit", gameIds: ["demo-2", "demo-5"] },
   { id: "demo-l2", name: "Partyabend", gameIds: ["demo-4"] },
 ];
+const DEMO_PLAYERS = [
+  { id: "demo-pl1", name: "Anna", photo: "" },
+  { id: "demo-pl2", name: "Ben", photo: "" },
+  { id: "demo-pl3", name: "Chris", photo: "" },
+];
 
 /* ---------------- TAG ICON MAPPING (categories & mechanisms get a matching icon) ---------------- */
+const Compass = (p) => <Icon {...p}><circle cx="12" cy="12" r="9" /><path d="m14.5 9.5-2 5-5 2 2-5 5-2Z" /></Icon>;
+const PawPrint = (p) => <Icon {...p}><circle cx="7" cy="10" r="1.6" /><circle cx="12" cy="7" r="1.6" /><circle cx="17" cy="10" r="1.6" /><path d="M8 16c0-2.2 1.8-3 4-3s4 .8 4 3-1.8 3-4 3-4-.8-4-3Z" /></Icon>;
+const MaskIcon = (p) => <Icon {...p}><path d="M4 10c0-3 3-6 8-6s8 3 8 6-3 8-8 8-8-5-8-8Z" /><circle cx="9" cy="10" r="1.2" fill="currentColor" /><circle cx="15" cy="10" r="1.2" fill="currentColor" /></Icon>;
+const Skull = (p) => <Icon {...p}><circle cx="12" cy="10" r="7" /><circle cx="9" cy="10" r="1.3" fill="currentColor" /><circle cx="15" cy="10" r="1.3" fill="currentColor" /><path d="M9 17v3M15 17v3M12 17v4" /></Icon>;
+const Laugh = (p) => <Icon {...p}><circle cx="12" cy="12" r="9" /><path d="M8 13a4 4 0 0 0 8 0" /><path d="M9 9h.01M15 9h.01" /></Icon>;
+const Crown = (p) => <Icon {...p}><path d="m3 17 2-9 4 4 3-6 3 6 4-4 2 9Z" /><path d="M5 20h14" /></Icon>;
+const Rocket = (p) => <Icon {...p}><path d="M12 2c3 2 5 6 5 10 0 2-1 4-2 5l-3 3-3-3c-1-1-2-3-2-5 0-4 2-8 5-10Z" /><circle cx="12" cy="10" r="1.5" fill="currentColor" /><path d="M8 16l-2 4M16 16l2 4" /></Icon>;
+const Tv = (p) => <Icon {...p}><rect x="3" y="5" width="18" height="13" rx="2" /><path d="M8 21h8M12 18v3" /></Icon>;
+const BookOpen = (p) => <Icon {...p}><path d="M12 6c-2-1.5-5-2-8-1v13c3-1 6-.5 8 1 2-1.5 5-2 8-1V5c-3-1-6-.5-8 1Z" /><path d="M12 6v13" /></Icon>;
+const Handshake = (p) => <Icon {...p}><path d="m3 12 4-4 4 3 3-3 4 4-3 3-1-1-3 3-4-1Z" /><path d="M9 15l3 3" /></Icon>;
+const Grid3x3 = (p) => <Icon {...p}><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M3 15h18M9 3v18M15 3v18" /></Icon>;
+const Layers = (p) => <Icon {...p}><path d="m12 3 9 5-9 5-9-5 9-5Z" /><path d="m3 13 9 5 9-5" /></Icon>;
+const Shield = (p) => <Icon {...p}><path d="M12 3l7 3v6c0 5-3 8-7 9-4-1-7-4-7-9V6l7-3Z" /></Icon>;
+const Zap = (p) => <Icon {...p}><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" /></Icon>;
+const Eye = (p) => <Icon {...p}><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></Icon>;
+
 function tagIcon(name) {
   const n = name.toLowerCase();
-  if (/card/.test(n)) return CardIcon;
-  if (/dice/.test(n)) return Dices;
-  if (/party/.test(n)) return Sparkles;
-  if (/fantasy|mytholog|horror|sci-?fi|space/.test(n)) return Star;
-  if (/economic|city|industry|trains?|transport|civilization/.test(n)) return Building;
-  if (/fighting|war|military|miniature/.test(n)) return Sword;
-  if (/puzzle|deduction|abstract/.test(n)) return Puzzle;
-  if (/negotiat|trading|auction|bidding|voting/.test(n)) return Users;
-  if (/real-time|time/.test(n)) return Clock;
-  if (/travel|nautical|explorat|racing/.test(n)) return Globe;
+  if (/card|hand management|deck building|drafting/.test(n)) return CardIcon;
+  if (/^dice$|dice rolling|roll.*spin|push your luck/.test(n)) return Dices;
+  if (/^party/.test(n)) return Sparkles;
+  if (/humor/.test(n)) return Laugh;
+  if (/fantasy|mytholog/.test(n)) return Star;
+  if (/sci-?fi|space exploration|video game/.test(n)) return Rocket;
+  if (/economic|city building|industry|trains?|transport/.test(n)) return Building;
+  if (/civilization|political|medieval/.test(n)) return Crown;
+  if (/fighting|wargame|military|miniature/.test(n)) return Sword;
+  if (/horror|zombies/.test(n)) return Skull;
+  if (/puzzle|pattern building/.test(n)) return Puzzle;
+  if (/deduction|memory|spies/.test(n)) return Eye;
+  if (/bluffing|murder.?mystery/.test(n)) return MaskIcon;
+  if (/negotiat|trading|auction|bidding/.test(n)) return Handshake;
+  if (/voting/.test(n)) return Users;
+  if (/real-time|action points|simultaneous/.test(n)) return Zap;
+  if (/time$/.test(n)) return Clock;
+  if (/travel|nautical|explorat|racing|adventure|route.?network|point to point/.test(n)) return Compass;
+  if (/animals/.test(n)) return PawPrint;
+  if (/movies|tv|radio/.test(n)) return Tv;
+  if (/word game|storytelling|role playing/.test(n)) return BookOpen;
+  if (/grid movement|hex-and-counter|modular board|tile placement/.test(n)) return Grid3x3;
+  if (/legacy game/.test(n)) return Archive;
+  if (/cooperative/.test(n)) return Heart;
+  if (/area control|territory building|worker placement|engine building/.test(n)) return Shield;
+  if (/set collection|trick-taking|variable player powers/.test(n)) return Layers;
+  if (/abstract strategy/.test(n)) return Block;
+  if (/action.*dexterity/.test(n)) return Zap;
+  if (/sports/.test(n)) return TrendingUp;
   return Dices;
 }
 
@@ -660,7 +799,7 @@ function ImagePickerSheet({ onAdd, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-6" onClick={onClose}>
+    <div className="fixed top-0 left-0 right-0 bg-black/70 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }} onClick={onClose}>
       <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm rise-in font-body p-5 space-y-2" onClick={(e) => e.stopPropagation()}>
         <h3 className="font-display text-lg text-[#F2EDE4] mb-1">Foto hinzufügen</h3>
         {!urlMode ? (
@@ -747,7 +886,7 @@ function PhotoGallerySection({ images, onAdd, onRemove, hero = false, editable =
                     onTouchStart={isFront ? onCarouselTouchStart : undefined}
                     onTouchEnd={isFront ? onCarouselTouchEnd : undefined}
                   >
-                    <img src={images[idx]} alt="Foto" className="w-full h-full object-cover" onClick={isFront ? () => setLightboxIndex(idx) : undefined} />
+                    <img src={images[idx]} alt="Foto" className="w-full h-full block object-cover" onClick={isFront ? () => setLightboxIndex(idx) : undefined} />
                   </div>
                 );
               })
@@ -772,7 +911,7 @@ function PhotoGallerySection({ images, onAdd, onRemove, hero = false, editable =
         <div className="flex gap-2 overflow-x-auto pb-1">
           {images.map((img, i) => (
             <button key={i} type="button" onClick={() => setLightboxIndex(i)} className="shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-[#3A3631]">
-              <img src={img} alt="Foto" className="w-full h-full object-cover" />
+              <img src={img} alt="Foto" className="w-full h-full block object-cover" />
             </button>
           ))}
           {editable && (
@@ -785,7 +924,7 @@ function PhotoGallerySection({ images, onAdd, onRemove, hero = false, editable =
       {sheetOpen && <ImagePickerSheet onAdd={(img) => { onAdd(img); setCarouselIndex(images.length); setSheetOpen(false); }} onClose={() => setSheetOpen(false)} />}
       {lightboxIndex !== null && images[lightboxIndex] && (
         <div className="fixed inset-0 bg-black/90 z-[70] flex items-center justify-center p-3" onClick={() => setLightboxIndex(null)}>
-          <img src={images[lightboxIndex]} alt="Foto vergrößert" className="max-w-full max-h-[88vh] object-contain rounded-lg" />
+          <img src={images[lightboxIndex]} alt="Foto vergrößert" className="max-w-full max-h-[88vh] block object-contain rounded-lg" />
           {editable && (
             <button
               onClick={(e) => { e.stopPropagation(); onRemove(lightboxIndex); setLightboxIndex(null); }}
@@ -807,8 +946,8 @@ function TagPickerModal({ title, options, selected, onToggle, onAddCustom, onClo
   const exists = options.some((o) => o.toLowerCase() === query.trim().toLowerCase());
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-6">
-      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[85dvh] flex flex-col rise-in font-body">
+    <div className="fixed top-0 left-0 right-0 bg-black/70 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }}>
+      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[var(--app-height,100dvh)] flex flex-col rise-in font-body">
         <div className="shrink-0 border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">{title}</h2>
           <button onClick={onClose} className="text-[#A39C8F] p-1"><X size={22} /></button>
@@ -888,20 +1027,28 @@ function TagPickerModal({ title, options, selected, onToggle, onAddCustom, onClo
 }
 
 /* ---------------- SETTINGS MODAL (manage custom categories & mechanisms) ---------------- */
-function SettingsModal({ customCategories, customMechanisms, customPlayerTypes, onAddCategory, onRemoveCategory, onAddMechanism, onRemoveMechanism, onAddPlayerType, onRemovePlayerType, demoMode, onToggleDemo, onClose }) {
+function SettingsModal({ customCategories, customMechanisms, customPlayerTypes, onAddCategory, onRemoveCategory, onAddMechanism, onRemoveMechanism, onAddPlayerType, onRemovePlayerType, demoMode, onToggleDemo, syncUrl, syncStatus, onOpenSync, onClose }) {
   const [catInput, setCatInput] = useState("");
   const [mechInput, setMechInput] = useState("");
   const [typeInput, setTypeInput] = useState("");
   const [typeDescInput, setTypeDescInput] = useState("");
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6">
-      <div onFocus={handleFocusScroll} className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92dvh] overflow-y-auto rise-in font-body">
+    <div className="fixed top-0 left-0 right-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }}>
+      <div onFocus={handleFocusScroll} className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[var(--app-height,100dvh)] overflow-y-auto rise-in font-body">
         <div className="sticky top-0 bg-[#1C1B1A] border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Einstellungen</h2>
           <button onClick={onClose} className="text-[#A39C8F] p-1"><X size={22} /></button>
         </div>
         <div className="p-5 space-y-6">
+          <div>
+            <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Geräte-Synchronisation</h3>
+            <p className="text-xs text-[#5C574F] mb-2">{syncUrl ? "Deine Daten werden über Firebase mit deinen Geräten abgeglichen." : "Noch nicht eingerichtet — deine Daten bleiben nur auf diesem Gerät."}</p>
+            <button onClick={onOpenSync} className="w-full h-12 rounded-[14px] text-sm font-medium bg-[#262422] border border-[#3A3631] text-[#F2EDE4] flex items-center justify-center gap-2">
+              {syncStatus === "syncing" ? <Loader2 size={16} className="text-[#D4A24C]" /> : <Globe size={16} className={syncStatus === "error" ? "text-[#C1443C]" : "text-[#5C574F]"} />}
+              {syncUrl ? "Synchronisation verwalten" : "Synchronisation einrichten"}
+            </button>
+          </div>
           <div>
             <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Vorschau</h3>
             <p className="text-xs text-[#5C574F] mb-2">Füllt die App vorübergehend mit Beispiel-Spielen, damit du siehst, wie's mit Inhalt aussieht. Wird nirgends gespeichert.</p>
@@ -1062,7 +1209,7 @@ const Cover = ({ game, size = "md", className: extraClass = "" }) => {
   const dims = size === "sm" ? "w-12 h-12" : size === "lg" ? "w-full aspect-square" : "w-16 h-16";
   const img = (game.images && game.images[0]) || game.image; // game.image kept as fallback for older saved entries
   return img ? (
-    <img src={img} alt={game.name} className={`${dims} object-cover rounded-lg border border-[#3A3631] ${extraClass}`} />
+    <img src={img} alt={game.name} className={`${dims} block object-cover rounded-lg border border-[#3A3631] ${extraClass}`} />
   ) : (
     <div className={`${dims} rounded-lg border border-[#3A3631] bg-[#2E2B28] flex items-center justify-center text-[#5C574F] ${extraClass}`}>
       <Dices size={size === "lg" ? 28 : 18} />
@@ -1252,11 +1399,6 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               </div>
             </button>
 
-            {initial && form.status === "owned" && (
-              <input value={form.location} onChange={(e) => update("location", e.target.value)} placeholder="Standort (z.B. Regal 2)"
-                className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#6C7FE0] ${form.location ? "bg-[#262422]" : "bg-transparent"}`} />
-            )}
-
             <div>
               <label className="text-[11px] text-[#5C574F]">Deine Bewertung</label>
               <div className="mt-1.5">
@@ -1347,12 +1489,17 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
 }
 
 /* ---------------- ADD PLAY MODAL ---------------- */
-function PlayFormModal({ games, plays, initial, onClose, onSave, onDelete }) {
+function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlayerPhoto, initial, onClose, onSave, onDelete }) {
   const [gameQuery, setGameQuery] = useState("");
   const [selectedGame, setSelectedGame] = useState(() =>
     initial ? (games.find(g => g.id === initial.gameId) || { id: initial.gameId, name: initial.gameName }) : null
   );
   const [mode, setMode] = useState(initial ? initial.mode : "physical-owned");
+  const [playerIds, setPlayerIds] = useState(initial ? initial.playerIds || [] : []);
+  const [newPlayerOpen, setNewPlayerOpen] = useState(false);
+  const [newPlayerName, setNewPlayerName] = useState("");
+  const [newPlayerPhotoFor, setNewPlayerPhotoFor] = useState(null);
+  const togglePlayerId = (id) => setPlayerIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   const knownPlayers = useMemo(() => {
     const set = new Set();
     (plays || []).forEach((p) => (p.players || "").split(",").map((n) => n.trim()).filter(Boolean).forEach((n) => set.add(n)));
@@ -1373,12 +1520,14 @@ function PlayFormModal({ games, plays, initial, onClose, onSave, onDelete }) {
 
   const save = () => {
     if (!selectedGame) return;
-    onSave({ id: initial ? initial.id : uid(), gameId: selectedGame.id, gameName: selectedGame.name, date, mode, players, winner, notes, images });
+    const profileNames = playerIds.map((id) => (playerProfiles.find((p) => p.id === id) || {}).name).filter(Boolean);
+    const mergedPlayers = [...new Set([...profileNames, ...players.split(",").map((n) => n.trim()).filter(Boolean)])].join(", ");
+    onSave({ id: initial ? initial.id : uid(), gameId: selectedGame.id, gameName: selectedGame.name, date, mode, players: mergedPlayers, playerIds, winner, notes, images });
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6">
-      <div onFocus={handleFocusScroll} className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92dvh] flex flex-col overflow-hidden rise-in font-body">
+    <div className="fixed top-0 left-0 right-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }}>
+      <div onFocus={handleFocusScroll} className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[var(--app-height,100dvh)] flex flex-col overflow-hidden rise-in font-body">
         <div className="shrink-0 bg-[#1C1B1A] border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">{initial ? "Partie bearbeiten" : "Partie eintragen"}</h2>
           <button onClick={onClose} className="text-[#A39C8F] p-1"><X size={22} /></button>
@@ -1416,7 +1565,32 @@ function PlayFormModal({ games, plays, initial, onClose, onSave, onDelete }) {
                 <label className="text-[11px] text-[#5C574F]">Datum</label>
                 <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-auto min-w-[180px] h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base mt-1.5" />
               </div>
-              <input value={players} onChange={(e) => setPlayers(e.target.value)} placeholder="Mitspieler (optional)"
+              <div>
+                <label className="text-[11px] text-[#5C574F]">Mitspieler</label>
+                <div className="flex items-center gap-3 overflow-x-auto pb-1 mt-1.5">
+                  {playerProfiles.map((p) => {
+                    const selected = playerIds.includes(p.id);
+                    return (
+                      <div key={p.id} className="shrink-0 flex flex-col items-center gap-1 w-16">
+                        <button type="button" onClick={() => togglePlayerId(p.id)} onContextMenu={(e) => e.preventDefault()}
+                          className="relative w-14 h-14 rounded-full overflow-hidden border-2" style={{ borderColor: selected ? "#6C7FE0" : "#3A3631" }}>
+                          {p.photo ? (
+                            <img src={p.photo} alt={p.name} className="w-full h-full block object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-[#262422] flex items-center justify-center text-[#A39C8F] font-display text-lg">{p.name.charAt(0).toUpperCase()}</div>
+                          )}
+                          {selected && <div className="absolute inset-0 bg-[#6C7FE0]/25 flex items-center justify-center"><Check size={18} className="text-white" /></div>}
+                        </button>
+                        <button type="button" onClick={() => setNewPlayerPhotoFor(p.id)} className="text-[10px] text-[#5C574F] truncate w-full text-center">{p.name}</button>
+                      </div>
+                    );
+                  })}
+                  <button type="button" onClick={() => setNewPlayerOpen(true)} className="shrink-0 w-14 h-14 rounded-full border-2 border-dashed border-[#3A3631] flex items-center justify-center text-[#5C574F]">
+                    <Plus size={18} />
+                  </button>
+                </div>
+              </div>
+              <input value={players} onChange={(e) => setPlayers(e.target.value)} placeholder="Weitere Mitspieler (Freitext, optional)"
                 className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#6C7FE0] ${players ? "bg-[#262422]" : "bg-transparent"}`} />
               {knownPlayers.length > 0 && (
                 <div className="flex gap-1.5 overflow-x-auto pb-1 -mt-1.5">
@@ -1455,12 +1629,104 @@ function PlayFormModal({ games, plays, initial, onClose, onSave, onDelete }) {
           </div>
         )}
       </div>
+      {newPlayerOpen && (
+        <div className="fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }} onClick={() => setNewPlayerOpen(false)}>
+          <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm rise-in font-body p-5 space-y-3" onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-display text-lg text-[#F2EDE4]">Neuer Mitspieler</h3>
+            <input onFocus={handleFocusScroll} value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Name"
+              className="w-full h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#6C7FE0]" />
+            <button onClick={() => { if (newPlayerName.trim()) { const id = onAddPlayer(newPlayerName.trim()); setPlayerIds((prev) => [...prev, id]); setNewPlayerName(""); setNewPlayerOpen(false); } }}
+              className="w-full h-12 bg-[#6C7FE0] text-[#F2EDE4] rounded-[14px] font-medium">Anlegen</button>
+            <p className="text-xs text-[#5C574F] text-center">Ein Profilbild kannst du danach über den Namen ergänzen.</p>
+          </div>
+        </div>
+      )}
+      {newPlayerPhotoFor && (
+        <ImagePickerSheet onAdd={(img) => { onUpdatePlayerPhoto(newPlayerPhotoFor, img); setNewPlayerPhotoFor(null); }} onClose={() => setNewPlayerPhotoFor(null)} />
+      )}
     </div>
   );
 }
 
 /* ---------------- DASHBOARD ---------------- */
-const DEFAULT_DASHBOARD_ORDER = ["nudge", "month", "genre", "records", "wishlist", "lastPlayed", "topRated", "dust", "digital"];
+const DEFAULT_DASHBOARD_ORDER = ["nudge", "month", "achievements", "records", "bestof", "wishlist", "topRated", "dust", "digital"];
+
+function DashboardReorderScreen({ order, sections, labels, onSave, onClose }) {
+  const [items, setItems] = useState(order.filter((key) => sections[key]));
+  const dragIndex = React.useRef(null);
+  const [draggingKey, setDraggingKey] = useState(null);
+  const itemRefs = React.useRef({});
+
+  const moveItem = (from, to) => {
+    setItems((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  };
+
+  const handleTouchStart = (idx) => {
+    dragIndex.current = idx;
+    setDraggingKey(items[idx]);
+  };
+  const handleTouchMove = (e) => {
+    if (dragIndex.current === null) return;
+    const touchY = e.touches[0].clientY;
+    items.forEach((key, idx) => {
+      if (idx === dragIndex.current) return;
+      const el = itemRefs.current[key];
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const mid = rect.top + rect.height / 2;
+      if ((touchY < mid && idx < dragIndex.current) || (touchY > mid && idx > dragIndex.current)) {
+        moveItem(dragIndex.current, idx);
+        dragIndex.current = idx;
+      }
+    });
+  };
+  const handleTouchEnd = () => {
+    dragIndex.current = null;
+    setDraggingKey(null);
+  };
+
+  return (
+    <div className="fixed inset-0 z-[80] bg-[#1C1B1A] flex flex-col">
+      <div className="shrink-0 border-b border-[#3A3631] px-5 flex items-center justify-between" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
+        <button onClick={onClose} className="text-[#A39C8F] p-1" aria-label="Abbrechen"><ChevronLeft size={22} /></button>
+        <h2 className="font-display text-xl text-[#F2EDE4]">Neu anordnen</h2>
+        <button onClick={() => onSave(items)} className="text-[#6C7FE0] text-sm font-medium px-2 py-1">Fertig</button>
+      </div>
+      <p className="shrink-0 text-xs text-[#5C574F] px-5 pt-3 pb-1">Am Griff-Symbol ziehen, um die Reihenfolge zu ändern.</p>
+      <div className="flex-1 overflow-y-auto p-4 space-y-2" style={{ touchAction: draggingKey ? "none" : "auto" }}>
+        {items.map((key, idx) => (
+          <div
+            key={key}
+            ref={(el) => { itemRefs.current[key] = el; }}
+            className="flex items-center gap-3 bg-[#262422] border rounded-[14px] px-3.5 h-14"
+            style={{
+              borderColor: draggingKey === key ? "#6C7FE0" : "#3A3631",
+              transform: draggingKey === key ? "scale(1.03)" : "none",
+              boxShadow: draggingKey === key ? "0 8px 20px rgba(0,0,0,0.4)" : "none",
+              zIndex: draggingKey === key ? 10 : 1,
+              transition: "border-color .15s, transform .15s, box-shadow .15s",
+            }}
+          >
+            <span className="text-sm text-[#F2EDE4] flex-1">{labels[key] || key}</span>
+            <div
+              className="text-[#5C574F] p-2 -mr-2"
+              onTouchStart={() => handleTouchStart(idx)}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              <GripVertical size={18} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorder }) {
   const owned = games.filter(g => g.status === "owned");
@@ -1498,6 +1764,57 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
 
   const wishlist = games.filter(g => g.status === "wishlist").slice(0, 6);
 
+  // Best-of: abgeleitet aus tatsächlich gespielten Partien, nicht nur aus der Sammlung.
+  const bestOf = useMemo(() => {
+    if (plays.length === 0) return null;
+    const thisYear = new Date().getFullYear();
+    const yearPlayCounts = {};
+    plays.forEach(p => { if (p.date && new Date(p.date).getFullYear() === thisYear) yearPlayCounts[p.gameId] = (yearPlayCounts[p.gameId] || 0) + 1; });
+    const topYearEntry = Object.entries(yearPlayCounts).sort((a, b) => b[1] - a[1])[0];
+    const topYear = topYearEntry ? { game: findGame(topYearEntry[0]), count: topYearEntry[1] } : null;
+
+    const playerCountTally = {};
+    plays.forEach(p => { const n = (p.players || "").split(",").map(s => s.trim()).filter(Boolean).length; if (n > 0) playerCountTally[n] = (playerCountTally[n] || 0) + 1; });
+    const favCountEntry = Object.entries(playerCountTally).sort((a, b) => b[1] - a[1])[0];
+
+    const playedGameIds = [...new Set(plays.map(p => p.gameId))];
+    const playedGames = playedGameIds.map(id => games.find(g => g.id === id)).filter(Boolean);
+    const catTally = {}, mechTally = {};
+    playedGames.forEach(g => {
+      const count = plays.filter(p => p.gameId === g.id).length;
+      (g.categories || []).forEach(c => { catTally[c] = (catTally[c] || 0) + count; });
+      (g.mechanisms || []).forEach(m => { mechTally[m] = (mechTally[m] || 0) + count; });
+    });
+    const favCat = Object.entries(catTally).sort((a, b) => b[1] - a[1])[0];
+    const favMech = Object.entries(mechTally).sort((a, b) => b[1] - a[1])[0];
+
+    let complexitySum = 0, complexityCount = 0;
+    playedGames.forEach(g => { if (g.complexity) { const c = plays.filter(p => p.gameId === g.id).length; complexitySum += parseFloat(g.complexity) * c; complexityCount += c; } });
+    const avgPlayedComplexity = complexityCount ? complexitySum / complexityCount : null;
+    const complexityLabelFromValue = avgPlayedComplexity == null ? null : avgPlayedComplexity < 2 ? "Familienspiel" : avgPlayedComplexity < 3.5 ? "Kennerspiel" : "Expertenspiel";
+
+    return { topYear, favCount: favCountEntry ? { count: favCountEntry[0], times: favCountEntry[1] } : null, favCat, favMech, complexityLabel: complexityLabelFromValue, avgPlayedComplexity };
+  }, [plays, games]);
+
+  // Erfolge: rein aus vorhandenen Daten berechnet, kein zusätzlicher Speicherzustand nötig.
+  const distinctPlayedGames = new Set(plays.map(p => p.gameId)).size;
+  const distinctPlayedCategories = new Set(owned.filter(g => plays.some(p => p.gameId === g.id)).flatMap(g => g.categories || [])).size;
+  const seriesCount = mostPlayed ? mostPlayed.count : 0;
+  const allRated = owned.length > 0 && owned.every(g => g.rating);
+  const campaignMastery = games.some(g => g.isCampaign && plays.filter(p => p.gameId === g.id).length >= 3);
+  const achievements = [
+    { id: "first", label: "Erste Partie", emoji: "🎉", unlocked: plays.length >= 1 },
+    { id: "many", label: "Vielspieler", emoji: "🔥", unlocked: plays.length >= 10 },
+    { id: "pro", label: "Spielprofi", emoji: "🏅", unlocked: plays.length >= 50 },
+    { id: "collector", label: "Sammler", emoji: "📚", unlocked: owned.length >= 10 },
+    { id: "megacollector", label: "Großsammler", emoji: "🏛️", unlocked: owned.length >= 25 },
+    { id: "series", label: "Serientäter", emoji: "🔁", unlocked: seriesCount >= 5 },
+    { id: "explorer", label: "Genre-Entdecker", emoji: "🧭", unlocked: distinctPlayedCategories >= 5 },
+    { id: "variety", label: "Vielfalt", emoji: "🎨", unlocked: distinctPlayedGames >= 10 },
+    { id: "campaign", label: "Kampagnen-Meister", emoji: "🗺️", unlocked: campaignMastery },
+    { id: "rated", label: "Perfektionist", emoji: "⭐", unlocked: allRated },
+  ];
+
   // Kontextuelle Vorschläge: das am längsten wartende Spiel mit einer kleinen freundlichen Nachricht.
   const nudge = useMemo(() => {
     if (dustCollectors.length > 0) {
@@ -1518,73 +1835,115 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
 
   const sections = {
     month: topMonthGame && (
-      <button key="month" onClick={() => onView(topMonthGame)} className="w-full text-left bg-gradient-to-r from-[#D4A24C]/15 to-transparent border border-[#D4A24C]/30 rounded-2xl p-4 flex items-center gap-3">
-        <Cover game={topMonthGame} size="md" />
-        <div className="min-w-0">
-          <p className="text-[#D4A24C] text-xs font-body font-medium flex items-center gap-1"><TrendingUp size={13} /> Spiel des Monats</p>
-          <p className="text-[#F2EDE4] font-display text-lg truncate">{topMonthGame.name}</p>
-          <p className="text-[#A39C8F] text-xs font-body">{topMonth[1]}× in den letzten 30 Tagen gespielt</p>
+      <button key="month" onClick={() => onView(topMonthGame)} className="w-full text-left bg-[#262422] border border-[#3A3631] rounded-xl px-3.5 py-2.5 flex items-center gap-2.5">
+        <Cover game={topMonthGame} size="sm" />
+        <div className="min-w-0 flex-1">
+          <p className="text-[#5C574F] text-[10px] font-body flex items-center gap-1"><TrendingUp size={10} /> Spiel des Monats</p>
+          <p className="text-[#F2EDE4] font-body text-sm font-medium truncate">{topMonthGame.name} <span className="text-[#5C574F] font-normal">· {topMonth[1]}× diesen Monat</span></p>
         </div>
       </button>
     ),
     nudge: nudge && (
-      <button key="nudge" onClick={() => onView(nudge.game)} className="w-full text-left bg-gradient-to-r from-[#6C7FE0]/15 to-transparent border border-[#6C7FE0]/30 rounded-2xl p-4 flex items-center gap-3">
-        <Cover game={nudge.game} size="md" />
+      <button key="nudge" onClick={() => onView(nudge.game)}
+        className="relative w-full text-left rounded-3xl p-5 flex items-center gap-4 overflow-hidden border border-[#6C7FE0]/30"
+        style={{ backgroundImage: "radial-gradient(circle at 15% 20%, rgba(108,127,224,0.28), transparent 65%), linear-gradient(135deg, #262422, #1C1B1A)" }}>
+        <Cover game={nudge.game} size="lg" className="!w-24 !h-24 shrink-0" />
         <div className="min-w-0">
-          <p className="text-[#6C7FE0] text-xs font-body font-medium flex items-center gap-1"><Sparkles size={13} /> Vorschlag</p>
-          <p className="text-[#F2EDE4] font-display text-lg truncate">{nudge.game.name}</p>
-          <p className="text-[#A39C8F] text-xs font-body">{nudge.text}</p>
+          <p className="text-[#8B9AFA] text-xs font-body font-semibold flex items-center gap-1.5 mb-1"><Sparkles size={14} /> VORSCHLAG FÜR HEUTE</p>
+          <p className="text-[#F2EDE4] font-display text-2xl leading-tight truncate">{nudge.game.name}</p>
+          <p className="text-[#A39C8F] text-sm font-body mt-0.5">{nudge.text}</p>
         </div>
       </button>
     ),
-    genre: genreMix.length > 0 && (
-      <div key="genre">
-        <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Deine Genre-Mischung</h2>
-        <div className="flex flex-wrap gap-1.5">
-          {genreMix.map(([cat, count], i) => {
-            const CIcon = tagIcon(cat);
-            const tones = ["#6C7FE0", "#D4A24C", "#4E8C82", "#C1443C"];
-            const color = tones[i % tones.length];
-            return (
-              <span key={cat} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-body border" style={{ borderColor: color + "40", backgroundColor: color + "15", color }}>
-                <CIcon size={12} />{cat} <span className="opacity-60">· {count}</span>
-              </span>
-            );
-          })}
+    achievements: (
+      <div key="achievements">
+        <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Erfolge</h2>
+        <div className="flex gap-3 overflow-x-auto pb-1 px-1">
+          {achievements.map((a) => (
+            <div key={a.id} className="shrink-0 flex flex-col items-center gap-1.5 w-16 text-center">
+              <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl border-2 ${a.unlocked ? "" : "grayscale opacity-30"}`}
+                style={{ background: a.unlocked ? "radial-gradient(circle at 35% 30%, #7C8EF0, #4E5BC0)" : "#262422", borderColor: a.unlocked ? "#6C7FE0" : "#3A3631" }}>
+                {a.emoji}
+              </div>
+              <p className={`text-[10px] leading-tight ${a.unlocked ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>{a.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    ),
+    bestof: bestOf && (
+      <div key="bestof">
+        <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Best of</h2>
+        <div className="grid grid-cols-2 gap-2.5">
+          {bestOf.topYear && bestOf.topYear.game && (
+            <button onClick={() => onView(bestOf.topYear.game)} className="text-left bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
+              <p className="text-[10px] text-[#5C574F] font-body mb-1">📅 Meistgespielt {new Date().getFullYear()}</p>
+              <p className="text-[#F2EDE4] text-sm font-body font-medium truncate">{bestOf.topYear.game.name}</p>
+              <p className="text-[#6C7FE0] text-xs font-mono">{bestOf.topYear.count}× dieses Jahr</p>
+            </button>
+          )}
+          {bestOf.favCount && (
+            <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
+              <p className="text-[10px] text-[#5C574F] font-body mb-1">👤 Liebste Spielerzahl</p>
+              <p className="text-[#F2EDE4] text-sm font-body font-medium">{bestOf.favCount.count} Spieler</p>
+              <p className="text-[#D4A24C] text-xs font-mono">{bestOf.favCount.times}× so gespielt</p>
+            </div>
+          )}
+          {bestOf.favCat && (
+            <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
+              <p className="text-[10px] text-[#5C574F] font-body mb-1">🏷️ Lieblingsgenre</p>
+              <p className="text-[#F2EDE4] text-sm font-body font-medium truncate">{bestOf.favCat[0]}</p>
+              <p className="text-[#4E8C82] text-xs font-mono">am häufigsten gespielt</p>
+            </div>
+          )}
+          {bestOf.favMech && (
+            <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
+              <p className="text-[10px] text-[#5C574F] font-body mb-1">⚙️ Lieblingsmechanismus</p>
+              <p className="text-[#F2EDE4] text-sm font-body font-medium truncate">{bestOf.favMech[0]}</p>
+              <p className="text-[#C1443C] text-xs font-mono">am häufigsten gespielt</p>
+            </div>
+          )}
+          {bestOf.complexityLabel && (
+            <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
+              <p className="text-[10px] text-[#5C574F] font-body mb-1">{COMPLEXITY_SHORT[bestOf.complexityLabel] === "Familie" ? "🏠" : COMPLEXITY_SHORT[bestOf.complexityLabel] === "Kenner" ? "🧩" : "🧠"} Deine Komplexität</p>
+              <p className="text-[#F2EDE4] text-sm font-body font-medium">{COMPLEXITY_SHORT[bestOf.complexityLabel]}</p>
+              <p className="text-[#A39C8F] text-xs font-mono">Ø {bestOf.avgPlayedComplexity.toFixed(1)}/5 gespielt</p>
+            </div>
+          )}
         </div>
       </div>
     ),
     records: (mostPlayed || heaviest || biggestGroup) && (
       <div key="records">
         <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Rekorde</h2>
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="flex gap-4 overflow-x-auto pb-1 px-1">
           {mostPlayed && mostPlayed.game && (
-            <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
-              <p className="text-[10px] text-[#5C574F] font-body mb-1">🏆 Meistgespielt</p>
-              <p className="text-[#F2EDE4] text-sm font-body font-medium truncate">{mostPlayed.game.name}</p>
-              <p className="text-[#6C7FE0] text-xs font-mono">{mostPlayed.count}× gespielt</p>
-            </div>
+            <button onClick={() => onView(mostPlayed.game)} className="shrink-0 flex flex-col items-center gap-2 w-20 text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl border-2" style={{ background: "radial-gradient(circle at 35% 30%, #7C8EF0, #4E5BC0)", borderColor: "#6C7FE0" }}>🏆</div>
+              <p className="text-[11px] text-[#F2EDE4] font-medium truncate w-full">{mostPlayed.game.name}</p>
+              <p className="text-[10px] text-[#6C7FE0]">{mostPlayed.count}× gespielt</p>
+            </button>
           )}
           {heaviest && (
-            <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
-              <p className="text-[10px] text-[#5C574F] font-body mb-1">🧠 Schwerstes Spiel</p>
-              <p className="text-[#F2EDE4] text-sm font-body font-medium truncate">{heaviest.name}</p>
-              <p className="text-[#C1443C] text-xs font-mono">{parseFloat(heaviest.complexity).toFixed(1)}/5</p>
-            </div>
+            <button onClick={() => onView(heaviest)} className="shrink-0 flex flex-col items-center gap-2 w-20 text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl border-2" style={{ background: "radial-gradient(circle at 35% 30%, #E0685F, #A8332C)", borderColor: "#C1443C" }}>🧠</div>
+              <p className="text-[11px] text-[#F2EDE4] font-medium truncate w-full">{heaviest.name}</p>
+              <p className="text-[10px] text-[#C1443C]">{parseFloat(heaviest.complexity).toFixed(1)}/5</p>
+            </button>
           )}
           {lightest && lightest.id !== (heaviest && heaviest.id) && (
-            <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
-              <p className="text-[10px] text-[#5C574F] font-body mb-1">🪶 Leichtestes Spiel</p>
-              <p className="text-[#F2EDE4] text-sm font-body font-medium truncate">{lightest.name}</p>
-              <p className="text-[#4E8C82] text-xs font-mono">{parseFloat(lightest.complexity).toFixed(1)}/5</p>
-            </div>
+            <button onClick={() => onView(lightest)} className="shrink-0 flex flex-col items-center gap-2 w-20 text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl border-2" style={{ background: "radial-gradient(circle at 35% 30%, #6FAE9E, #3A7666)", borderColor: "#4E8C82" }}>🪶</div>
+              <p className="text-[11px] text-[#F2EDE4] font-medium truncate w-full">{lightest.name}</p>
+              <p className="text-[10px] text-[#4E8C82]">{parseFloat(lightest.complexity).toFixed(1)}/5</p>
+            </button>
           )}
           {biggestGroup && (
-            <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
-              <p className="text-[10px] text-[#5C574F] font-body mb-1">👥 Größte Runde</p>
-              <p className="text-[#F2EDE4] text-sm font-body font-medium truncate">{biggestGroup.name}</p>
-              <p className="text-[#D4A24C] text-xs font-mono">bis zu {biggestGroup.maxPlayers} Spieler</p>
-            </div>
+            <button onClick={() => onView(biggestGroup)} className="shrink-0 flex flex-col items-center gap-2 w-20 text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl border-2" style={{ background: "radial-gradient(circle at 35% 30%, #E8BC72, #B8842E)", borderColor: "#D4A24C" }}>👥</div>
+              <p className="text-[11px] text-[#F2EDE4] font-medium truncate w-full">{biggestGroup.name}</p>
+              <p className="text-[10px] text-[#D4A24C]">bis {biggestGroup.maxPlayers} Sp.</p>
+            </button>
           )}
         </div>
       </div>
@@ -1594,33 +1953,11 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
         <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Von der Wunschliste</h2>
         <div className="flex gap-3 overflow-x-auto pb-1">
           {wishlist.map(g => (
-            <button key={g.id} onClick={() => onView(g)} className="shrink-0 w-28 text-left bg-[#262422] border border-[#3A3631] rounded-2xl p-2.5">
-              <Cover game={g} size="lg" />
-              <p className="text-[#F2EDE4] font-body text-xs font-medium mt-1.5 truncate">{g.name}</p>
+            <DashboardGameTile key={g.id} game={g} onClick={() => onView(g)}>
               {g.year && <p className="text-[#5C574F] text-[10px] font-body">{g.year}</p>}
-            </button>
+            </DashboardGameTile>
           ))}
         </div>
-      </div>
-    ),
-    lastPlayed: (
-      <div key="lastPlayed">
-        <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Zuletzt gespielt</h2>
-        {lastPlays.length === 0 ? <p className="text-[#5C574F] text-sm font-body">Noch keine Partien eingetragen.</p> : (
-          <div className="flex gap-3 overflow-x-auto pb-1">
-            {lastPlays.map(p => {
-              const g = findGame(p.gameId);
-              return (
-                <button key={p.id} onClick={() => g && onView(g)} disabled={!g} className="shrink-0 w-28 text-left bg-[#262422] border border-[#3A3631] rounded-2xl p-2.5">
-                  {g ? <Cover game={g} size="lg" /> : <div className="w-full aspect-square rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#5C574F]"><Dices size={24} /></div>}
-                  <p className="text-[#F2EDE4] font-body text-xs font-medium mt-1.5 truncate">{p.gameName}</p>
-                  <p className="text-[#5C574F] text-[10px] font-body">{p.date}</p>
-                  <div className="mt-1"><Pill tone={p.mode === "bga" ? "teal" : "default"}>{p.mode === "bga" ? "BGA" : p.mode === "physical-other" ? "Geliehen" : "Sammlung"}</Pill></div>
-                </button>
-              );
-            })}
-          </div>
-        )}
       </div>
     ),
     topRated: topRated.length > 0 && (
@@ -1628,11 +1965,9 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
         <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Top 10 Spiele</h2>
         <div className="flex gap-3 overflow-x-auto pb-1">
           {topRated.map(g => (
-            <button key={g.id} onClick={() => onView(g)} className="shrink-0 w-28 text-left bg-[#262422] border border-[#3A3631] rounded-2xl p-2.5">
-              <Cover game={g} size="lg" />
-              <p className="text-[#F2EDE4] font-body text-xs font-medium mt-1.5 truncate">{g.name}</p>
+            <DashboardGameTile key={g.id} game={g} onClick={() => onView(g)}>
               <p className="text-[#D4A24C] text-[11px] font-mono flex items-center gap-0.5 mt-0.5"><Star size={10} fill="#D4A24C" className="text-[#D4A24C]" /> {g.rating}/10</p>
-            </button>
+            </DashboardGameTile>
           ))}
         </div>
       </div>
@@ -1644,50 +1979,75 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
         {dustCollectors.length === 0 ? <p className="text-[#5C574F] text-sm font-body">Alles im Regal wurde schon gespielt. Sehr gut!</p> : (
           <div className="flex gap-3 overflow-x-auto pb-1">
             {dustCollectors.map(g => (
-              <button key={g.id} onClick={() => onView(g)} className="shrink-0 w-28 text-left bg-[#262422] border border-[#3A3631] rounded-2xl p-2.5">
-                <Cover game={g} size="lg" />
-                <p className="text-[#F2EDE4] font-body text-xs font-medium mt-1.5 truncate">{g.name}</p>
+              <DashboardGameTile key={g.id} game={g} onClick={() => onView(g)}>
                 <p className="text-[#5C574F] text-[10px] font-body">seit {g.addedDate || "?"}</p>
-              </button>
+              </DashboardGameTile>
             ))}
           </div>
         )}
       </div>
     ),
     digital: plays.length > 0 && (
-      <div key="digital" className="bg-[#262422] border border-[#3A3631] rounded-2xl p-4">
+      <div key="digital" className="bg-gradient-to-br from-[#262422] to-[#1C1B1A] border border-[#3A3631] rounded-2xl p-4">
         <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-3">Digital vs. Physisch</h2>
-        <div className="flex items-center gap-2">
-          <div className="flex-1 h-2.5 rounded-full bg-[#3A3631] overflow-hidden flex">
-            <div className="bg-[#6C7FE0] h-full" style={{ width: `${(physicalCount / plays.length) * 100}%` }} />
-            <div className="bg-[#4E8C82] h-full" style={{ width: `${(digitalCount / plays.length) * 100}%` }} />
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🎲</span>
+            <span className="font-display text-3xl text-[#F2EDE4]">{Math.round((physicalCount / plays.length) * 100)}%</span>
+          </div>
+          <span className="text-[#5C574F] text-xs font-mono tracking-widest">VS</span>
+          <div className="flex items-center gap-2">
+            <span className="font-display text-3xl text-[#F2EDE4]">{Math.round((digitalCount / plays.length) * 100)}%</span>
+            <span className="text-xl">💻</span>
           </div>
         </div>
-        <div className="flex justify-between mt-2 text-xs font-body"><span className="text-[#6C7FE0]">{physicalCount} physisch</span><span className="text-[#4E8C82]">{digitalCount} BGA</span></div>
+        <div className="h-3.5 rounded-full bg-[#3A3631] overflow-hidden flex" style={{ boxShadow: "inset 0 1px 3px rgba(0,0,0,0.4)" }}>
+          <div className="h-full" style={{ width: `${(physicalCount / plays.length) * 100}%`, background: "linear-gradient(90deg, #5A6BD0, #8B9AFA)" }} />
+          <div className="h-full" style={{ width: `${(digitalCount / plays.length) * 100}%`, background: "linear-gradient(90deg, #3F7A6E, #6FBBA9)" }} />
+        </div>
+        <div className="flex justify-between mt-2 text-xs font-body"><span className="text-[#8B9AFA]">{physicalCount} physisch</span><span className="text-[#6FBBA9]">{digitalCount} BGA</span></div>
       </div>
     ),
   };
   const order = sectionOrder && sectionOrder.length ? sectionOrder : DEFAULT_DASHBOARD_ORDER;
-  const [reorderOpen, setReorderOpen] = useState(false);
-  const SECTION_LABELS = { nudge: "Vorschlag für heute", month: "Spiel des Monats", genre: "Genre-Mischung", records: "Rekorde", wishlist: "Wunschliste", lastPlayed: "Zuletzt gespielt", topRated: "Top 10 Spiele", dust: "Staubfänger", digital: "Digital vs. Physisch" };
-  const moveSection = (idx, dir) => {
-    const next = [...order];
-    const target = idx + dir;
-    if (target < 0 || target >= next.length) return;
-    [next[idx], next[target]] = [next[target], next[idx]];
-    onReorder(next);
-  };
+  const [sortMenuOpen, setSortMenuOpen] = useState(false);
+  const [reorderScreenOpen, setReorderScreenOpen] = useState(false);
+  const SECTION_LABELS = { nudge: "Vorschlag für heute", month: "Spiel des Monats", records: "Rekorde", wishlist: "Wunschliste", topRated: "Top 10 Spiele", dust: "Staubfänger", digital: "Digital vs. Physisch", achievements: "Erfolge", bestof: "Best of" };
+  const PRESETS = [
+    { key: "default", label: "Standard", icon: ListChecks, order: DEFAULT_DASHBOARD_ORDER },
+    { key: "activity", label: "Nach Aktivität", icon: Sparkles, order: ["nudge", "month", "dust", "achievements", "topRated", "records", "bestof", "wishlist", "digital"] },
+    { key: "collection", label: "Nach Sammlung", icon: Library, order: ["records", "bestof", "topRated", "wishlist", "dust", "achievements", "nudge", "month", "digital"] },
+  ];
 
   return (
-    <div className="p-5 space-y-6 pb-6">
+    <div className="p-5 space-y-6 pb-6" style={{ backgroundImage: "radial-gradient(circle at 85% 0%, rgba(108,127,224,0.10), transparent 45%), radial-gradient(circle at 0% 55%, rgba(212,162,76,0.06), transparent 40%)" }}>
       <div className="flex items-start justify-between">
         <div>
           <p className="text-[#5C574F] font-body text-sm">{new Date().toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long" })}</p>
           <h1 className="font-display text-3xl text-[#F2EDE4] mt-0.5">Spielregal</h1>
         </div>
-        <button onClick={() => setReorderOpen(true)} aria-label="Reihenfolge anpassen" className="mt-1 w-10 h-10 flex items-center justify-center bg-[#262422] border border-[#3A3631] rounded-full text-[#5C574F]">
-          <ListChecks size={16} />
-        </button>
+        <div className="relative mt-1">
+          <button onClick={() => setSortMenuOpen((o) => !o)} aria-label="Sortieren" className="w-10 h-10 flex items-center justify-center bg-[#262422] border border-[#3A3631] rounded-full text-[#5C574F]">
+            <MoreHorizontal size={18} />
+          </button>
+          {sortMenuOpen && (
+            <>
+              <div className="fixed inset-0 z-[62]" onClick={() => setSortMenuOpen(false)} />
+              <div className="absolute right-0 top-12 z-[63] bg-[#262422] border border-[#3A3631] rounded-2xl shadow-xl overflow-hidden w-56">
+                {PRESETS.map((p) => (
+                  <button key={p.key} onClick={() => { onReorder(p.order); setSortMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-left border-b border-[#3A3631] active:bg-[#1C1B1A]">
+                    <p.icon size={16} className="text-[#A39C8F]" />
+                    <span className="text-sm text-[#F2EDE4]">{p.label}</span>
+                  </button>
+                ))}
+                <button onClick={() => { setSortMenuOpen(false); setReorderScreenOpen(true); }} className="w-full flex items-center gap-3 px-4 py-3 text-left active:bg-[#1C1B1A]">
+                  <GripVertical size={16} className="text-[#6C7FE0]" />
+                  <span className="text-sm text-[#6C7FE0] font-medium">Neu anordnen</span>
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-4">
@@ -1702,30 +2062,14 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
         </div>
       </div>
       {order.map((key) => sections[key] || null)}
-      {reorderOpen && (
-        <div className="fixed inset-0 bg-black/70 z-[65] flex items-end sm:items-center justify-center p-0 sm:p-6" onClick={() => setReorderOpen(false)}>
-          <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm max-h-[80dvh] flex flex-col rise-in font-body" onClick={(e) => e.stopPropagation()}>
-            <div className="shrink-0 border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
-              <h2 className="font-display text-xl text-[#F2EDE4]">Reihenfolge</h2>
-              <button onClick={() => setReorderOpen(false)} className="text-[#A39C8F] p-1"><X size={22} /></button>
-            </div>
-            <div className="p-4 overflow-y-auto flex-1 space-y-2">
-              {order.filter((key) => sections[key]).map((key, i, arr) => (
-                <div key={key} className="flex items-center justify-between bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 h-12">
-                  <span className="text-sm text-[#F2EDE4]">{SECTION_LABELS[key] || key}</span>
-                  <div className="flex gap-1">
-                    <button onClick={() => moveSection(order.indexOf(key), -1)} disabled={i === 0} className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#1C1B1A] border border-[#3A3631] text-[#A39C8F] disabled:opacity-30">
-                      <ChevronDown size={14} className="rotate-180" />
-                    </button>
-                    <button onClick={() => moveSection(order.indexOf(key), 1)} disabled={i === arr.length - 1} className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#1C1B1A] border border-[#3A3631] text-[#A39C8F] disabled:opacity-30">
-                      <ChevronDown size={14} />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+      {reorderScreenOpen && (
+        <DashboardReorderScreen
+          order={order}
+          sections={sections}
+          labels={SECTION_LABELS}
+          onSave={(next) => { onReorder(next); setReorderScreenOpen(false); }}
+          onClose={() => setReorderScreenOpen(false)}
+        />
       )}
     </div>
   );
@@ -1739,8 +2083,8 @@ function AddGamesToListModal({ games, list, onToggle, onClose }) {
   const [query, setQuery] = useState("");
   const filtered = games.filter((g) => g.name.toLowerCase().includes(query.toLowerCase()));
   return (
-    <div className="fixed inset-0 bg-black/70 z-[65] flex items-end sm:items-center justify-center p-0 sm:p-6" onClick={onClose}>
-      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm max-h-[85dvh] flex flex-col rise-in font-body" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }} onClick={onClose}>
+      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm max-h-[var(--app-height,100dvh)] flex flex-col rise-in font-body" onClick={(e) => e.stopPropagation()}>
         <div className="shrink-0 border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Spiele hinzufügen</h2>
           <button onClick={onClose} className="text-[#A39C8F] p-1"><X size={22} /></button>
@@ -1848,7 +2192,7 @@ function ListDetailModal({ list, games, plays, onClose, onView, onDeleteList, on
         <AddGamesToListModal games={games} list={list} onToggle={(gameId) => onToggleGame(list.id, gameId)} onClose={() => setAddOpen(false)} />
       )}
       {contextGame && (
-        <div className="fixed inset-0 bg-black/70 z-[66] flex items-end sm:items-center justify-center p-0 sm:p-6" onClick={() => setContextGame(null)}>
+        <div className="fixed top-0 left-0 right-0 bg-black/70 z-[66] flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }} onClick={() => setContextGame(null)}>
           <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm rise-in font-body p-5 space-y-2" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3 pb-3 mb-1 border-b border-[#3A3631]">
               <Cover game={contextGame} size="sm" />
@@ -1934,8 +2278,8 @@ function CommandBarModal({ games, plays, lists, onClose, onOpenGame, onOpenList,
 function ListPickerModal({ lists, gameId, onToggle, onCreate, onClose }) {
   const [newName, setNewName] = useState("");
   return (
-    <div className="fixed inset-0 bg-black/70 z-[65] flex items-end sm:items-center justify-center p-0 sm:p-6" onClick={onClose}>
-      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm max-h-[80dvh] flex flex-col rise-in font-body" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }} onClick={onClose}>
+      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm max-h-[var(--app-height,100dvh)] flex flex-col rise-in font-body" onClick={(e) => e.stopPropagation()}>
         <div className="shrink-0 border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Zu Liste hinzufügen</h2>
           <button onClick={onClose} className="text-[#A39C8F] p-1"><X size={22} /></button>
@@ -1964,20 +2308,30 @@ function ListPickerModal({ lists, gameId, onToggle, onCreate, onClose }) {
   );
 }
 
-function CollectionFilterModal({ categoryOptions, mechanismOptions, filters, onChange, onClose, onReset }) {
+function CollectionFilterModal({ categoryOptions, mechanismOptions, filters, statusFilter, onChangeStatus, onChange, onClose, onReset }) {
   const toggle = (key, value) => {
     const list = filters[key];
     onChange({ ...filters, [key]: list.includes(value) ? list.filter((x) => x !== value) : [...list, value] });
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-6">
-      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[85dvh] flex flex-col rise-in font-body">
+    <div className="fixed top-0 left-0 right-0 bg-black/70 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }}>
+      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[var(--app-height,100dvh)] flex flex-col rise-in font-body">
         <div className="shrink-0 border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Filter</h2>
           <button onClick={onClose} className="text-[#A39C8F] p-1"><X size={22} /></button>
         </div>
         <div className="p-5 overflow-y-auto flex-1 space-y-6">
+          <div>
+            <label className="text-[11px] text-[#5C574F]">Status</label>
+            <div className="mt-1.5">
+              <Segmented
+                options={[{ v: "owned", label: "Besitz" }, { v: "wishlist", label: "Wunschliste" }, { v: "all", label: "Alle" }]}
+                value={statusFilter}
+                onChange={onChangeStatus}
+              />
+            </div>
+          </div>
           <div>
             <label className="text-[11px] text-[#5C574F]">Spielbar mit … Personen</label>
             <input value={filters.players} onChange={(e) => onChange({ ...filters, players: e.target.value })} placeholder="z.B. 4" inputMode="numeric"
@@ -2031,6 +2385,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, filters, onC
 
 function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit, onDelete, categoryOptions, mechanismOptions, demoMode, lists, onCreateList, onOpenList }) {
   const [query, setQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("owned");
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [filters, setFilters] = useState({ categories: [], mechanisms: [], players: "", minRating: "" });
@@ -2045,7 +2400,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
     longPressTimer.current = setTimeout(() => { longPressFired.current = true; setContextGame(g); }, 500);
   };
   const cancelLongPress = () => { if (longPressTimer.current) clearTimeout(longPressTimer.current); };
-  const activeFilterCount = filters.categories.length + filters.mechanisms.length + (filters.players ? 1 : 0) + (filters.minRating ? 1 : 0);
+  const activeFilterCount = filters.categories.length + filters.mechanisms.length + (filters.players ? 1 : 0) + (filters.minRating ? 1 : 0) + (statusFilter !== "owned" ? 1 : 0);
   const playCounts = useMemo(() => {
     const map = {}; plays.forEach(p => { map[p.gameId] = (map[p.gameId] || 0) + 1; }); return map;
   }, [plays]);
@@ -2061,7 +2416,15 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
     <div className="p-5 pb-6">
       <div className="flex items-center justify-between mb-4">
         <h1 className="font-display text-3xl text-[#F2EDE4]">Sammlung</h1>
-        <button onClick={onAdd} disabled={demoMode} className="bg-[#6C7FE0] disabled:opacity-30 text-[#F2EDE4] w-12 h-12 flex items-center justify-center rounded-[14px] active:scale-95"><Plus size={20} /></button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setSearchOpen((o) => !o)} aria-label="Suchen" className={`w-11 h-11 flex items-center justify-center rounded-full border ${searchOpen ? "bg-[#F2EDE4] border-[#F2EDE4] text-[#1C1B1A]" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}>
+            <Search size={17} />
+          </button>
+          <button onClick={() => setFilterModalOpen(true)} aria-label="Filter" className="relative w-11 h-11 flex items-center justify-center bg-[#262422] border border-[#3A3631] rounded-full text-[#A39C8F]">
+            <Puzzle size={17} />
+            {activeFilterCount > 0 && <span className="absolute -top-1 -right-1 bg-[#6C7FE0] text-[#F2EDE4] text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{activeFilterCount}</span>}
+          </button>
+        </div>
       </div>
       <div className="flex gap-3 overflow-x-auto pb-1 mb-4">
         {lists.map((l) => {
@@ -2090,29 +2453,22 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           <span className="text-xs">Neue Liste</span>
         </button>
       </div>
-      <div className="mb-3">
-        <div className="relative">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5C574F]" />
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Suchen…"
-            className="w-full h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] pl-10 pr-3.5 text-[#F2EDE4] text-base font-body placeholder-[#5C574F] focus:outline-none focus:border-[#D4A24C]" />
+      {searchOpen && (
+        <div className="mb-3">
+          <div className="relative">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5C574F]" />
+            <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Suchen…"
+              className="w-full h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] pl-10 pr-3.5 text-[#F2EDE4] text-base font-body placeholder-[#5C574F] focus:outline-none focus:border-[#D4A24C]" />
+          </div>
         </div>
-      </div>
-      <div className="flex items-center gap-2 mb-2">
-        <div className="flex-1">
-          <Segmented
-            options={[{ v: "owned", label: "Besitz" }, { v: "wishlist", label: "Wunschliste" }, { v: "all", label: "Alle" }]}
-            value={statusFilter}
-            onChange={setStatusFilter}
-          />
+      )}
+      {filterFn && (
+        <div className="flex items-center gap-2 mb-2">
+          <button onClick={clearFilter} className="shrink-0 px-3 py-1.5 rounded-full text-xs font-body border border-[#6C7FE0] text-[#6C7FE0] flex items-center gap-1"><X size={12} /> Filter</button>
         </div>
-        <button onClick={() => setFilterModalOpen(true)} className="relative shrink-0 w-12 h-12 flex items-center justify-center bg-[#262422] border border-[#3A3631] rounded-[14px] text-[#A39C8F]">
-          <Puzzle size={18} />
-          {activeFilterCount > 0 && <span className="absolute -top-1 -right-1 bg-[#6C7FE0] text-[#F2EDE4] text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{activeFilterCount}</span>}
-        </button>
-        {filterFn && <button onClick={clearFilter} className="shrink-0 px-3 py-1.5 rounded-full text-xs font-body border border-[#6C7FE0] text-[#6C7FE0] flex items-center gap-1"><X size={12} /> Filter</button>}
-      </div>
+      )}
       {list.length === 0 ? <p className="text-[#5C574F] text-sm font-body mt-8 text-center">Keine Spiele gefunden.</p> : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3 pb-20">
           {list.map(g => (
             <button
               key={g.id}
@@ -2140,7 +2496,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
         </div>
       )}
       {contextGame && (
-        <div className="fixed inset-0 bg-black/70 z-[65] flex items-end sm:items-center justify-center p-0 sm:p-6" onClick={() => setContextGame(null)}>
+        <div className="fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }} onClick={() => setContextGame(null)}>
           <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm rise-in font-body p-5 space-y-2" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3 pb-3 mb-1 border-b border-[#3A3631]">
               <Cover game={contextGame} size="sm" />
@@ -2156,18 +2512,27 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           </div>
         </div>
       )}
+      {!demoMode && (
+        <button onClick={onAdd} aria-label="Spiel hinzufügen"
+          className="fixed z-30 left-1/2 -translate-x-1/2 bg-[#6C7FE0] text-[#F2EDE4] w-14 h-14 flex items-center justify-center rounded-full shadow-lg active:scale-95"
+          style={{ bottom: "calc(64px + env(safe-area-inset-bottom) + 12px)" }}>
+          <Plus size={22} />
+        </button>
+      )}
       {filterModalOpen && (
         <CollectionFilterModal
           categoryOptions={categoryOptions}
           mechanismOptions={mechanismOptions}
           filters={filters}
+          statusFilter={statusFilter}
+          onChangeStatus={setStatusFilter}
           onChange={setFilters}
           onClose={() => setFilterModalOpen(false)}
-          onReset={() => setFilters({ categories: [], mechanisms: [], players: "", minRating: "" })}
+          onReset={() => { setFilters({ categories: [], mechanisms: [], players: "", minRating: "" }); setStatusFilter("owned"); }}
         />
       )}
       {createListOpen && (
-        <div className="fixed inset-0 bg-black/70 z-[65] flex items-end sm:items-center justify-center p-0 sm:p-6" onClick={() => setCreateListOpen(false)}>
+        <div className="fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }} onClick={() => setCreateListOpen(false)}>
           <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm rise-in font-body p-5 space-y-3" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-display text-lg text-[#F2EDE4]">Neue Liste</h3>
             <input onFocus={handleFocusScroll} value={newListName} onChange={(e) => setNewListName(e.target.value)} placeholder="z.B. Partyabend"
@@ -2255,8 +2620,14 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
     <div className="p-5 pb-6">
       <div className="flex items-center justify-between mb-4">
         <h1 className="font-display text-3xl text-[#F2EDE4]">Partien</h1>
-        <button onClick={onAdd} disabled={demoMode} className="bg-[#6C7FE0] disabled:opacity-30 text-[#F2EDE4] w-12 h-12 flex items-center justify-center rounded-[14px] active:scale-95"><Plus size={20} /></button>
       </div>
+      {!demoMode && (
+        <button onClick={onAdd} aria-label="Partie eintragen"
+          className="fixed z-30 left-1/2 -translate-x-1/2 bg-[#6C7FE0] text-[#F2EDE4] w-14 h-14 flex items-center justify-center rounded-full shadow-lg active:scale-95"
+          style={{ bottom: "calc(64px + env(safe-area-inset-bottom) + 12px)" }}>
+          <Plus size={22} />
+        </button>
+      )}
 
       {yearPlays.length > 0 && (
         <div className="bg-gradient-to-r from-[#6C7FE0]/15 to-transparent border border-[#6C7FE0]/30 rounded-2xl p-4 mb-4">
@@ -2285,7 +2656,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
       )}
 
       {sorted.length === 0 ? <p className="text-[#5C574F] text-sm font-body mt-8 text-center">Noch keine Partien eingetragen — auch geliehene oder online gespielte Spiele zählen.</p> : (
-        <div className="space-y-2">
+        <div className="space-y-2 pb-20">
           {sorted.map(p => {
             const IconC = modeIcon[p.mode] || Home;
             return (
@@ -2458,9 +2829,9 @@ function GameDetailModal({ game, plays, lists, onToggleList, onCreateList, onClo
   );
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-[56] flex items-end sm:items-center justify-center p-0 sm:p-6">
-      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92dvh] flex flex-col overflow-hidden rise-in font-body">
-        <div className="shrink-0 bg-[#1C1B1A] border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
+    <div className="fixed top-0 left-0 right-0 bg-black/60 z-[56] flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }}>
+      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[var(--app-height,100dvh)] flex flex-col overflow-hidden rise-in font-body">
+        <div className="shrink-0 bg-[#1C1B1A] border-b px-5 py-4 flex items-center justify-between" style={{ borderColor: accentColor + "30" }}>
           <button onClick={onClose} className="text-[#A39C8F] p-1" aria-label="Zurück"><ChevronLeft size={22} /></button>
           {onEdit ? (
             <button onClick={onEdit} className="p-1.5 bg-[#262422] border border-[#3A3631] rounded-full" style={{ color: accentColor }} aria-label="Bearbeiten"><Pencil size={16} /></button>
@@ -2468,7 +2839,7 @@ function GameDetailModal({ game, plays, lists, onToggleList, onCreateList, onClo
             <span className="text-[10px] text-[#5C574F] px-2 py-1 bg-[#262422] border border-[#3A3631] rounded-full">Demo</span>
           )}
         </div>
-        <div className="overflow-y-auto flex-1 p-5 space-y-5">
+        <div className="overflow-y-auto flex-1 p-5 space-y-5" style={{ backgroundImage: `linear-gradient(180deg, ${accentColor}35, transparent 220px)` }}>
           <div>
             <h1 className="font-display text-2xl text-[#F2EDE4] leading-tight">{game.name}</h1>
             {(game.year || (game.publishers && game.publishers.length > 0)) && (
@@ -2491,7 +2862,7 @@ function GameDetailModal({ game, plays, lists, onToggleList, onCreateList, onClo
               <StatBlock icon={Clock} value={`${game.minTime}–${game.maxTime || game.minTime}`} sub="Minuten" />
             )}
             {label && (
-              <StatBlock icon={COMPLEXITY_ICON[label] || Block} value={label} sub={game.complexity ? `${parseFloat(game.complexity).toFixed(1)}/5` : ""} />
+              <StatBlock icon={COMPLEXITY_ICON[label] || Block} value={COMPLEXITY_SHORT[label] || label} sub={game.complexity ? `${parseFloat(game.complexity).toFixed(1)}/5` : ""} />
             )}
             <StatBlock
               icon={game.status === "owned" ? Library : Heart}
@@ -2509,7 +2880,7 @@ function GameDetailModal({ game, plays, lists, onToggleList, onCreateList, onClo
 
           {game.playerTypes && game.playerTypes.length > 0 && (
             <div>
-              <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-1.5">Für dich, wenn du magst…</p>
+              <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-1.5">Passt zu diesen Spielertypen</p>
               <div className="flex flex-wrap gap-1.5">
                 {game.playerTypes.map((t) => <Pill key={t} tone="teal">{t}</Pill>)}
               </div>
@@ -2547,12 +2918,6 @@ function GameDetailModal({ game, plays, lists, onToggleList, onCreateList, onClo
                     </div>
                   </div>
                 )}
-                {game.status === "owned" && game.location && (
-                  <div>
-                    <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-1">Standort</p>
-                    <p className="text-sm text-[#F2EDE4]">{game.location}</p>
-                  </div>
-                )}
                 {game.notes && (
                   <div>
                     <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-1">Notizen</p>
@@ -2564,8 +2929,8 @@ function GameDetailModal({ game, plays, lists, onToggleList, onCreateList, onClo
           </div>
 
           {lists && onToggleList && (
-            <button onClick={() => setListPickerOpen(true)} className="w-full h-12 flex items-center justify-center gap-2 bg-[#262422] border border-[#3A3631] rounded-[14px] text-[#F2EDE4] text-sm font-medium">
-              <Plus size={15} /> {memberOfCount > 0 ? `In ${memberOfCount} Liste${memberOfCount > 1 ? "n" : ""}` : "Zu Liste hinzufügen"}
+            <button onClick={() => setListPickerOpen(true)} className="w-full h-12 flex items-center justify-center gap-2 bg-[#262422] border rounded-[14px] text-[#F2EDE4] text-sm font-medium" style={{ borderColor: accentColor + "50" }}>
+              <Plus size={15} style={{ color: accentColor }} /> {memberOfCount > 0 ? `In ${memberOfCount} Liste${memberOfCount > 1 ? "n" : ""}` : "Zu Liste hinzufügen"}
             </button>
           )}
 
@@ -2593,7 +2958,7 @@ function GameDetailModal({ game, plays, lists, onToggleList, onCreateList, onClo
                       {p.images && p.images.length > 0 && (
                         <div className="flex gap-2 mt-1.5 overflow-x-auto">
                           {p.images.map((img, j) => (
-                            <img key={j} src={img} alt="Spielstand" className="w-20 h-20 rounded-lg object-cover border border-[#3A3631] shrink-0" />
+                            <img key={j} src={img} alt="Spielstand" className="w-20 h-20 rounded-lg block object-cover border border-[#3A3631] shrink-0" />
                           ))}
                         </div>
                       )}
@@ -2623,8 +2988,8 @@ function SyncModal({ initialUrl, status, lastSynced, onClose, onSave, onSyncNow,
   const [url, setUrl] = useState(initialUrl || "");
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6">
-      <div onFocus={handleFocusScroll} className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92dvh] overflow-y-auto rise-in font-body">
+    <div className="fixed top-0 left-0 right-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }}>
+      <div onFocus={handleFocusScroll} className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[var(--app-height,100dvh)] overflow-y-auto rise-in font-body">
         <div className="sticky top-0 bg-[#1C1B1A] border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Geräte-Synchronisation</h2>
           <button onClick={onClose} className="text-[#A39C8F] p-1"><X size={22} /></button>
@@ -2680,6 +3045,8 @@ function App() {
   const [commandBarOpen, setCommandBarOpen] = useState(false);
   const [demoMode, setDemoMode] = useState(false);
   const [lists, setLists] = useState([]);
+  const [players, setPlayersList] = useState([]);
+  const [celebrate, setCelebrate] = useState(false);
   const [dashboardOrder, setDashboardOrder] = useState(() => {
     try { const saved = localStorage.getItem("spielregal:dashboardOrder"); return saved ? JSON.parse(saved) : DEFAULT_DASHBOARD_ORDER; }
     catch { return DEFAULT_DASHBOARD_ORDER; }
@@ -2698,6 +3065,7 @@ function App() {
   const displayGames = demoMode ? DEMO_GAMES : games;
   const displayPlays = demoMode ? DEMO_PLAYS : plays;
   const displayLists = demoMode ? DEMO_LISTS : lists;
+  const displayPlayers = demoMode ? DEMO_PLAYERS : players;
   const [tab, setTab] = useState("dashboard");
   const [gameModal, setGameModal] = useState(null);
   const [detailGame, setDetailGame] = useState(null);
@@ -2760,6 +3128,13 @@ function App() {
       return { ...l, gameIds: has ? l.gameIds.filter((id) => id !== gameId) : [...l.gameIds, gameId] };
     }));
   };
+  const addPlayer = (name, photo) => {
+    const p = { id: uid(), name, photo: photo || "" };
+    setPlayersList((prev) => [...prev, p]);
+    return p.id;
+  };
+  const updatePlayerPhoto = (id, photo) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, photo } : p)));
+  const removePlayer = (id) => setPlayersList((prev) => prev.filter((p) => p.id !== id));
   const skipNextPush = React.useRef(true);
   const pushTimer = React.useRef(null);
   const scrollElRef = React.useRef(null);
@@ -2817,6 +3192,7 @@ function App() {
       setCustomPlayerTypes((remote && remote.customPlayerTypes) || []);
       setCustomPlayerTypeDescriptions((remote && remote.customPlayerTypeDescriptions) || {});
       setLists((remote && remote.lists) || []);
+      setPlayersList((remote && remote.players) || []);
       setSyncStatus("synced");
       setLastSynced(Date.now());
       skipNextPush.current = true;
@@ -2830,13 +3206,13 @@ function App() {
     if (pushTimer.current) clearTimeout(pushTimer.current);
     pushTimer.current = setTimeout(() => {
       setSyncStatus("syncing");
-      cloudPush(syncUrl, { games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists }).then(() => {
+      cloudPush(syncUrl, { games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players }).then(() => {
         setSyncStatus("synced");
         setLastSynced(Date.now());
       }).catch(() => setSyncStatus("error"));
     }, 1200);
     return () => clearTimeout(pushTimer.current);
-  }, [games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, syncUrl]);
+  }, [games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players, syncUrl]);
 
   const saveSyncUrl = (url) => {
     const trimmed = url.trim();
@@ -2853,8 +3229,9 @@ function App() {
         setCustomPlayerTypes(remote.customPlayerTypes || []);
         setCustomPlayerTypeDescriptions(remote.customPlayerTypeDescriptions || {});
         setLists(remote.lists || []);
+        setPlayersList(remote.players || []);
       } else {
-        cloudPush(trimmed, { games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists });
+        cloudPush(trimmed, { games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players });
       }
       setSyncStatus("synced");
       setLastSynced(Date.now());
@@ -2865,7 +3242,7 @@ function App() {
   const syncNow = () => {
     if (!syncUrl) return;
     setSyncStatus("syncing");
-    cloudPush(syncUrl, { games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists }).then(() => {
+    cloudPush(syncUrl, { games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players }).then(() => {
       setSyncStatus("synced");
       setLastSynced(Date.now());
     }).catch(() => setSyncStatus("error"));
@@ -2897,7 +3274,11 @@ function App() {
     });
   };
   const savePlay = (play) => {
-    setPlays(prev => { const exists = prev.find(p => p.id === play.id); return exists ? prev.map(p => p.id === play.id ? play : p) : [...prev, play]; });
+    setPlays(prev => {
+      const exists = prev.find(p => p.id === play.id);
+      if (!exists) { setCelebrate(true); playChime(); setTimeout(() => setCelebrate(false), 1600); }
+      return exists ? prev.map(p => p.id === play.id ? play : p) : [...prev, play];
+    });
     setPlayModal(null);
   };
   const deletePlay = (id) => { setPlays(prev => prev.filter(p => p.id !== id)); setPlayModal(null); };
@@ -2915,32 +3296,21 @@ function App() {
         className="shrink-0 flex justify-end gap-2 px-4 pb-1"
         style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}
       >
-        <button
-          onClick={() => setCommandBarOpen(true)}
-          className="bg-[#262422] border border-[#3A3631] rounded-full p-2.5 active:scale-95"
-          aria-label="Suchen"
-        >
-          <Search size={16} className="text-[#5C574F]" />
-        </button>
+        {tab === "dashboard" && (
+          <button
+            onClick={() => setCommandBarOpen(true)}
+            className="bg-[#262422] border border-[#3A3631] rounded-full p-2.5 active:scale-95"
+            aria-label="Suchen"
+          >
+            <Search size={16} className="text-[#5C574F]" />
+          </button>
+        )}
         <button
           onClick={() => setSettingsModalOpen(true)}
           className="bg-[#262422] border border-[#3A3631] rounded-full p-2.5 active:scale-95"
           aria-label="Einstellungen"
         >
           <Settings size={16} className="text-[#5C574F]" />
-        </button>
-        <button
-          onClick={() => setSyncModalOpen(true)}
-          className="bg-[#262422] border border-[#3A3631] rounded-full p-2.5 active:scale-95"
-          aria-label="Synchronisation"
-        >
-          {syncStatus === "syncing" ? (
-            <Loader2 size={16} className="text-[#D4A24C]" />
-          ) : syncUrl ? (
-            <Globe size={16} className={syncStatus === "error" ? "text-[#C1443C]" : "text-[#5C574F]"} />
-          ) : (
-            <Globe size={16} className="text-[#5C574F]" />
-          )}
         </button>
       </div>
       {demoMode && (
@@ -3023,7 +3393,7 @@ function App() {
           onDelete={deleteGame}
         />
       )}
-      {playModal && <PlayFormModal games={games} plays={plays} initial={playModal.editing} onClose={() => setPlayModal(null)} onSave={savePlay} onDelete={deletePlay} />}
+      {playModal && <PlayFormModal games={games} plays={plays} playerProfiles={displayPlayers} onAddPlayer={addPlayer} onUpdatePlayerPhoto={updatePlayerPhoto} initial={playModal.editing} onClose={() => setPlayModal(null)} onSave={savePlay} onDelete={deletePlay} />}
       {syncModalOpen && (
         <SyncModal
           initialUrl={syncUrl}
@@ -3048,6 +3418,9 @@ function App() {
           onRemovePlayerType={removeCustomPlayerType}
           demoMode={demoMode}
           onToggleDemo={() => { setDemoMode((d) => !d); setSettingsModalOpen(false); }}
+          syncUrl={syncUrl}
+          syncStatus={syncStatus}
+          onOpenSync={() => { setSyncModalOpen(true); setSettingsModalOpen(false); }}
           onClose={() => setSettingsModalOpen(false)}
         />
       )}
@@ -3062,6 +3435,7 @@ function App() {
           onGoToPlaylog={() => { setTab("playlog"); setCommandBarOpen(false); }}
         />
       )}
+      <Confetti active={celebrate} />
     </div>
   );
 }
