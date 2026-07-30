@@ -363,6 +363,21 @@ function TopTenCarousel({ games, onView }) {
   );
 }
 
+function BggBadge({ className: extraClass = "" }) {
+  return (
+    <div className={`flex justify-center items-center pt-4 pb-1 ${extraClass}`}>
+      <a
+        href="https://boardgamegeek.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[10px] font-body text-[#5C574F]"
+      >
+        Powered by BGG
+      </a>
+    </div>
+  );
+}
+
 function DashboardGameTile({ game, onClick, children, large = false, rank, stagger = false }) {
   const img = (game.images && game.images[0]) || game.image;
   const color = useDominantColor(img);
@@ -561,6 +576,12 @@ const PLAYER_TYPE_DESCRIPTIONS = {
 // game, ~2.0-3.5 as an enthusiast ("Kenner") game, above that as an expert game. Party games
 // are classified by genre (BGG category) rather than weight, since they're often light but
 // play very differently from a family strategy game.
+function formatBestPlayers(game) {
+  const min = game.bestPlayersMin, max = game.bestPlayersMax;
+  if (min && max && min !== max) return `${min}–${max}`;
+  if (min || max) return min || max;
+  return game.bestPlayers || ""; // ältere Einträge mit nur einem Wert
+}
 function complexityLabel(game) {
   const categories = game.categories || [];
   if (categories.some((c) => /party/i.test(c))) return "Partyspiel";
@@ -588,6 +609,11 @@ const COMPLEXITY_SHORT = {
   Einsteigerspiel: "Einsteiger", Familienspiel: "Familie", "Gehobenes Familienspiel": "Familie+",
   "Leichtes Kennerspiel": "Kenner–", Kennerspiel: "Kenner", "Anspruchsvolles Kennerspiel": "Kenner+",
   Expertenspiel: "Experte", Partyspiel: "Party",
+};
+const COMPLEXITY_MEDIUM = {
+  Einsteigerspiel: "Einsteigerspiel", Familienspiel: "Familienspiel", "Gehobenes Familienspiel": "Familienspiel+",
+  "Leichtes Kennerspiel": "Kennerspiel–", Kennerspiel: "Kennerspiel", "Anspruchsvolles Kennerspiel": "Kennerspiel+",
+  Expertenspiel: "Expertenspiel", Partyspiel: "Partyspiel",
 };
 
 /* ---------------- DEMO PREVIEW DATA (local only, never saved/synced) ---------------- */
@@ -1237,7 +1263,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
   const [typeDescInput, setTypeDescInput] = useState("");
 
   return (
-    <div className="p-5 pb-6 space-y-6 font-body">
+    <div className="p-5 pb-6 space-y-6 font-body min-h-full flex flex-col">
       <h1 className="font-display text-3xl text-[#F2EDE4]">Einstellungen</h1>
       <div>
         <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Geräte-Synchronisation</h3>
@@ -1314,9 +1340,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
               ))}
             </div>
           </div>
-          <p className="text-center text-[11px] text-[#5C574F] pt-2">
-            Spieldaten via <a href="https://boardgamegeek.com" target="_blank" rel="noopener noreferrer" className="underline">Powered by BGG</a>
-          </p>
+          <BggBadge className="mt-auto" />
         </div>
   );
 }
@@ -1482,11 +1506,16 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
   const [pickerOpen, setPickerOpen] = useState(null);
   const FORM_DEFAULTS = {
     id: uid(), bggId: "", name: "", year: "", publishers: [], designers: [], images: [],
-    minPlayers: "", maxPlayers: "", bestPlayers: "", minTime: "", maxTime: "", age: "",
+    minPlayers: "", maxPlayers: "", bestPlayersMin: "", bestPlayersMax: "", minTime: "", maxTime: "", age: "",
     complexity: "", mechanisms: [], categories: [], playerTypes: [], status: "owned",
     location: "", summary: "", notes: "", rating: "", isCampaign: false, addedDate: new Date().toISOString().slice(0, 10),
   };
-  const [form, setForm] = useState(initial ? { ...FORM_DEFAULTS, ...initial } : FORM_DEFAULTS);
+  const [form, setForm] = useState(initial ? {
+    ...FORM_DEFAULTS,
+    ...initial,
+    bestPlayersMin: initial.bestPlayersMin || initial.bestPlayers || "",
+    bestPlayersMax: initial.bestPlayersMax || "",
+  } : FORM_DEFAULTS);
 
   const runSearch = async () => {
     if (!query.trim()) return;
@@ -1571,18 +1600,18 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               </div>
             </div>
             <button type="button" onClick={() => setPickerOpen("publishers")}
-              className={`w-full h-12 border rounded-[14px] pl-3.5 pr-3 text-left flex items-center gap-1.5 ${form.publishers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+              className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 text-left flex items-start gap-1.5 ${form.publishers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
               <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
                 {form.publishers.length ? form.publishers.map((p) => <Pill key={p}>{p}</Pill>) : "Verlag auswählen…"}
               </span>
-              <ChevronDown size={16} className="shrink-0 text-[#5C574F]" />
+              <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
             </button>
             <button type="button" onClick={() => setPickerOpen("designers")}
-              className={`w-full h-12 border rounded-[14px] pl-3.5 pr-3 text-left flex items-center gap-1.5 ${form.designers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+              className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 text-left flex items-start gap-1.5 ${form.designers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
               <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
                 {form.designers.length ? form.designers.map((d) => <Pill key={d}>{d}</Pill>) : "Designer auswählen…"}
               </span>
-              <ChevronDown size={16} className="shrink-0 text-[#5C574F]" />
+              <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
             </button>
 
             <div>
@@ -1595,8 +1624,16 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
                   className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base text-center ${form.maxPlayers ? "bg-[#262422]" : "bg-transparent"}`} />
               </div>
             </div>
-            <input value={form.bestPlayers} onChange={(e) => update("bestPlayers", e.target.value)} placeholder="Beste Spieleranzahl (optional)" inputMode="numeric"
-              className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base ${form.bestPlayers ? "bg-[#262422]" : "bg-transparent"}`} />
+            <div>
+              <label className="text-[11px] text-[#5C574F]">Beste Spieleranzahl (optional, von–bis)</label>
+              <div className="flex items-center gap-2 mt-1.5">
+                <input value={form.bestPlayersMin} onChange={(e) => update("bestPlayersMin", e.target.value)} placeholder="von" inputMode="numeric"
+                  className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base text-center ${form.bestPlayersMin ? "bg-[#262422]" : "bg-transparent"}`} />
+                <span className="shrink-0 text-[#5C574F]">–</span>
+                <input value={form.bestPlayersMax} onChange={(e) => update("bestPlayersMax", e.target.value)} placeholder="bis" inputMode="numeric"
+                  className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base text-center ${form.bestPlayersMax ? "bg-[#262422]" : "bg-transparent"}`} />
+              </div>
+            </div>
             <div>
               <label className="text-[11px] text-[#5C574F]">Dauer in Minuten (min–max)</label>
               <div className="flex items-center gap-2 mt-1.5">
@@ -1616,31 +1653,31 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             </div>
 
             <button type="button" onClick={() => setPickerOpen("mechanisms")}
-              className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 text-left flex items-center gap-1.5 ${form.mechanisms.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+              className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 text-left flex items-start gap-1.5 ${form.mechanisms.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
               <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
                 {form.mechanisms.length ? form.mechanisms.map((m) => {
                   const MIcon = tagIcon(m);
                   return <Pill key={m}><MIcon size={10} className="inline -mt-0.5 mr-0.5" />{m}</Pill>;
                 }) : "Mechanismen auswählen…"}
               </span>
-              <ChevronDown size={16} className="shrink-0 text-[#5C574F]" />
+              <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
             </button>
             <button type="button" onClick={() => setPickerOpen("categories")}
-              className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 text-left flex items-center gap-1.5 ${form.categories.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+              className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 text-left flex items-start gap-1.5 ${form.categories.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
               <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
                 {form.categories.length ? form.categories.map((c) => {
                   const CIcon = tagIcon(c);
                   return <Pill key={c}><CIcon size={10} className="inline -mt-0.5 mr-0.5" />{c}</Pill>;
                 }) : "Kategorien auswählen…"}
               </span>
-              <ChevronDown size={16} className="shrink-0 text-[#5C574F]" />
+              <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
             </button>
             <button type="button" onClick={() => setPickerOpen("playerTypes")}
-              className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 text-left flex items-center gap-1.5 ${form.playerTypes.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+              className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 text-left flex items-start gap-1.5 ${form.playerTypes.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
               <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
                 {form.playerTypes.length ? form.playerTypes.map((t) => <Pill key={t}>{t}</Pill>) : "Spielertyp auswählen…"}
               </span>
-              <ChevronDown size={16} className="shrink-0 text-[#5C574F]" />
+              <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
             </button>
 
             <Segmented
@@ -2333,7 +2370,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
   ];
 
   return (
-    <div className="p-5 space-y-6 pb-6" style={{ backgroundImage: "radial-gradient(circle at 85% 0%, rgba(108,127,224,0.10), transparent 45%), radial-gradient(circle at 0% 55%, rgba(212,162,76,0.06), transparent 40%)" }}>
+    <div className="p-5 space-y-6 pb-6 min-h-full flex flex-col" style={{ backgroundImage: "radial-gradient(circle at 85% 0%, rgba(108,127,224,0.10), transparent 45%), radial-gradient(circle at 0% 55%, rgba(212,162,76,0.06), transparent 40%)" }}>
       <div className="flex items-end justify-between">
         <div>
           <p className="text-[#5C574F] font-body text-sm">{new Date().toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long" })}</p>
@@ -2380,6 +2417,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
         </div>
       </div>
       {order.map((key) => sections[key] || null)}
+      <BggBadge className="mt-auto" />
       {reorderScreenOpen && (
         <DashboardReorderScreen
           order={order}
@@ -2731,7 +2769,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
   if (filters.minRating) list = list.filter(g => g.rating && parseInt(g.rating) >= parseInt(filters.minRating));
 
   return (
-    <div className="p-5 pb-6">
+    <div className="p-5 pb-6 overflow-x-hidden min-h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <h1 className="font-display text-3xl text-[#F2EDE4]">Sammlung</h1>
         <div className="flex items-center gap-2">
@@ -2800,10 +2838,10 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
               <p className="font-body text-[#F2EDE4] text-sm font-medium mt-2 leading-tight">{g.name}</p>
               <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                 {g.minPlayers && <span className="flex items-center gap-0.5 text-[10px] text-[#A39C8F] font-mono"><Users size={10} /> {g.minPlayers}-{g.maxPlayers}</span>}
-                {g.bestPlayers && <span className="flex items-center gap-0.5 text-[10px] text-[#D4A24C] font-mono"><Star size={10} /> {g.bestPlayers}</span>}
+                {formatBestPlayers(g) && <span className="flex items-center gap-0.5 text-[10px] text-[#D4A24C] font-mono"><Star size={10} /> {formatBestPlayers(g)}</span>}
                 {complexityLabel(g) && (
                   <Pill tone={COMPLEXITY_TONE[complexityLabel(g)]}>
-                    {complexityLabel(g)}{g.complexity ? ` (${parseFloat(g.complexity).toFixed(1)})` : ""}
+                    {COMPLEXITY_MEDIUM[complexityLabel(g)] || complexityLabel(g)}{g.complexity ? ` (${parseFloat(g.complexity).toFixed(1)})` : ""}
                   </Pill>
                 )}
                 {!playCounts[g.id] && g.status === "owned" && <Pill tone="amber">ungespielt</Pill>}
@@ -2813,6 +2851,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           ))}
         </div>
       )}
+      <div className="pb-16 mt-auto"><BggBadge /></div>
       {contextGame && (
         <div className="fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }} onClick={() => setContextGame(null)}>
           <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm rise-in font-body p-5 space-y-2" onClick={(e) => e.stopPropagation()}>
@@ -2935,7 +2974,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
   const medals = ["🥇", "🥈", "🥉"];
 
   return (
-    <div className="p-5 pb-6">
+    <div className="p-5 pb-6 min-h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <h1 className="font-display text-3xl text-[#F2EDE4]">Partien</h1>
       </div>
@@ -2992,6 +3031,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
           })}
         </div>
       )}
+      <div className="pb-16 mt-auto"><BggBadge /></div>
     </div>
   );
 }
@@ -3022,13 +3062,18 @@ function Recommendations({ games, plays, onAddWishlist }) {
     try {
       const r = await bggSearch(topTag);
       const ownedNames = new Set(games.map(g => g.name.toLowerCase()));
-      setExternal(r.filter(x => !ownedNames.has(x.name.toLowerCase())).slice(0, 6));
+      const shortlist = r.filter(x => !ownedNames.has(x.name.toLowerCase())).slice(0, 6);
+      // bggSearch only returns name/year — fetch full details (cover, players, complexity)
+      // for each candidate so the cards actually show something instead of a blank placeholder.
+      const detailed = await Promise.allSettled(shortlist.map(x => bggThing(x.bggId)));
+      const enriched = detailed.map((res, i) => res.status === "fulfilled" ? { ...shortlist[i], ...res.value } : shortlist[i]);
+      setExternal(enriched);
     } catch (e) { setExternalError("BGG ist gerade nicht am Tisch — neue Vorschläge klappen offline leider nicht."); }
     finally { setDiscovering(false); }
   };
 
   return (
-    <div className="p-5 pb-6">
+    <div className="p-5 pb-6 min-h-full flex flex-col">
       <h1 className="font-display text-3xl text-[#F2EDE4] mb-1">Empfehlungen</h1>
       <p className="text-[#A39C8F] text-sm font-body mb-5">Basierend auf Spielen, die du mit 8+ bewertet hast — egal ob eigene Sammlung, geliehen oder BGA.</p>
       {profile.length === 0 ? (
@@ -3093,12 +3138,16 @@ function Recommendations({ games, plays, onAddWishlist }) {
               <div className="grid grid-cols-2 gap-3">
                 {external.map(r => (
                   <div key={r.bggId} className="bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
-                    <div className="w-full aspect-square rounded-lg border border-[#3A3631] bg-[#2E2B28] flex items-center justify-center text-[#5C574F]">
-                      <Dices size={28} />
-                    </div>
+                    {r.images && r.images[0] ? (
+                      <img src={r.images[0]} alt={r.name} className="w-full aspect-square block object-cover rounded-lg border border-[#3A3631]" />
+                    ) : (
+                      <div className="w-full aspect-square rounded-lg border border-[#3A3631] bg-[#2E2B28] flex items-center justify-center text-[#5C574F]">
+                        <Dices size={28} />
+                      </div>
+                    )}
                     <p className="text-[#F2EDE4] font-body text-sm font-medium mt-2 leading-tight truncate">{r.name}</p>
-                    <p className="text-[#5C574F] text-xs font-body">{r.year}</p>
-                    <button onClick={() => onAddWishlist({ name: r.name, year: r.year, bggId: r.bggId })} className="w-full mt-2 h-9 flex items-center justify-center gap-1.5 bg-[#6C7FE0]/15 text-[#6C7FE0] rounded-[10px] text-xs font-medium">
+                    <p className="text-[#5C574F] text-xs font-body">{r.year}{r.minPlayers ? ` · ${r.minPlayers}–${r.maxPlayers} Sp.` : ""}</p>
+                    <button onClick={() => onAddWishlist(r)} className="w-full mt-2 h-9 flex items-center justify-center gap-1.5 bg-[#6C7FE0]/15 text-[#6C7FE0] rounded-[10px] text-xs font-medium">
                       <Plus size={13} /> Zur Wunschliste
                     </button>
                   </div>
@@ -3109,6 +3158,7 @@ function Recommendations({ games, plays, onAddWishlist }) {
           </div>
         </>
       )}
+      <BggBadge className="mt-auto" />
     </div>
   );
 }
@@ -3174,7 +3224,7 @@ function GameDetailModal({ game, plays, lists, onToggleList, onCreateList, onClo
 
           <div className="flex items-stretch bg-[#262422] border border-[#3A3631] rounded-2xl overflow-hidden divide-x divide-[#3A3631]">
             {game.minPlayers && (
-              <StatBlock icon={Users} value={`${game.minPlayers}–${game.maxPlayers}`} sub={game.bestPlayers ? `Beste: ${game.bestPlayers}` : "Spieler"} />
+              <StatBlock icon={Users} value={`${game.minPlayers}–${game.maxPlayers}`} sub={formatBestPlayers(game) ? `Beste: ${formatBestPlayers(game)}` : "Spieler"} />
             )}
             {game.minTime && (
               <StatBlock icon={Clock} value={`${game.minTime}–${game.maxTime || game.minTime}`} sub="Minuten" />
@@ -3623,8 +3673,11 @@ function App() {
       }
       return [...prev, {
         id: uid(), bggId: rec.bggId || "", name: rec.name, year: rec.year || "",
-        publishers: [], images: [], minPlayers: "", maxPlayers: "", bestPlayers: "",
-        minTime: "", maxTime: "", age: "", complexity: "", mechanisms: [], categories: [],
+        publishers: rec.publishers || [], designers: rec.designers || [], images: rec.images || [],
+        minPlayers: rec.minPlayers || "", maxPlayers: rec.maxPlayers || "", bestPlayersMin: "", bestPlayersMax: "",
+        minTime: rec.minTime || "", maxTime: rec.maxTime || "", age: rec.age || "",
+        complexity: rec.complexity || "", mechanisms: rec.mechanisms || [], categories: rec.categories || [],
+        playerTypes: [], summary: rec.summary || "",
         status: "wishlist", location: "", notes: "", rating: "", addedDate: new Date().toISOString().slice(0, 10),
       }];
     });
