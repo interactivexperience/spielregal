@@ -1314,6 +1314,9 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
               ))}
             </div>
           </div>
+          <p className="text-center text-[11px] text-[#5C574F] pt-2">
+            Spieldaten via <a href="https://boardgamegeek.com" target="_blank" rel="noopener noreferrer" className="underline">Powered by BGG</a>
+          </p>
         </div>
   );
 }
@@ -1325,11 +1328,65 @@ function normalizeSyncUrl(url) {
   if (!u.endsWith("/")) u += "/";
   return u;
 }
-async function cloudPush(syncUrl, data) {
+
+/* ---------------- ANONYMOUS AUTH (lightweight REST, no SDK) ----------------
+   Signs in anonymously against the Firebase project so the database rules can
+   require `auth != null`, blocking casual/automated access while staying
+   invisible to the person using the app — no login screen, nothing to type. */
+const AUTH_KEYS = { apiKey: "spielregal:apiKey", idToken: "spielregal:idToken", refreshToken: "spielregal:refreshToken", expiresAt: "spielregal:tokenExpiresAt" };
+
+async function signInAnonymously(apiKey) {
+  const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ returnSecureToken: true }),
+  });
+  if (!res.ok) throw new Error("Anmeldung fehlgeschlagen — API-Schlüssel prüfen");
+  const json = await res.json();
+  const expiresAt = Date.now() + (parseInt(json.expiresIn, 10) || 3600) * 1000;
+  localStorage.setItem(AUTH_KEYS.idToken, json.idToken);
+  localStorage.setItem(AUTH_KEYS.refreshToken, json.refreshToken);
+  localStorage.setItem(AUTH_KEYS.expiresAt, String(expiresAt));
+  return json.idToken;
+}
+
+async function refreshIdToken(apiKey, refreshToken) {
+  const res = await fetch(`https://securetoken.googleapis.com/v1/token?key=${apiKey}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(refreshToken)}`,
+  });
+  if (!res.ok) throw new Error("Token-Erneuerung fehlgeschlagen");
+  const json = await res.json();
+  const expiresAt = Date.now() + (parseInt(json.expires_in, 10) || 3600) * 1000;
+  localStorage.setItem(AUTH_KEYS.idToken, json.id_token);
+  localStorage.setItem(AUTH_KEYS.refreshToken, json.refresh_token);
+  localStorage.setItem(AUTH_KEYS.expiresAt, String(expiresAt));
+  return json.id_token;
+}
+
+// Returns a currently-valid ID token, signing in or refreshing as needed.
+// Returns "" (no token) when no API key is configured — falls back to
+// unauthenticated requests so older setups without a key keep working.
+async function getValidIdToken(apiKey) {
+  if (!apiKey) return "";
+  const storedToken = localStorage.getItem(AUTH_KEYS.idToken);
+  const expiresAt = parseInt(localStorage.getItem(AUTH_KEYS.expiresAt) || "0", 10);
+  const refreshToken = localStorage.getItem(AUTH_KEYS.refreshToken);
+  if (storedToken && Date.now() < expiresAt - 60000) return storedToken;
+  if (refreshToken) {
+    try { return await refreshIdToken(apiKey, refreshToken); } catch { /* fall through to fresh sign-in */ }
+  }
+  return signInAnonymously(apiKey);
+}
+
+async function cloudPush(syncUrl, data, apiKey) {
   const base = normalizeSyncUrl(syncUrl);
   if (!base) return;
   const payload = { ...data, updatedAt: Date.now() };
-  const res = await fetch(base + "data.json", {
+  const token = await getValidIdToken(apiKey).catch(() => "");
+  const url = base + "data.json" + (token ? `?auth=${token}` : "");
+  const res = await fetch(url, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -1337,10 +1394,12 @@ async function cloudPush(syncUrl, data) {
   if (!res.ok) throw new Error("Der Spielzug wurde nicht gewertet — Speichern in der Cloud fehlgeschlagen");
   return payload.updatedAt;
 }
-async function cloudPull(syncUrl) {
+async function cloudPull(syncUrl, apiKey) {
   const base = normalizeSyncUrl(syncUrl);
   if (!base) return null;
-  const res = await fetch(base + "data.json");
+  const token = await getValidIdToken(apiKey).catch(() => "");
+  const url = base + "data.json" + (token ? `?auth=${token}` : "");
+  const res = await fetch(url);
   if (!res.ok) throw new Error("Karten ziehen fehlgeschlagen — Cloud-Abruf hat nicht geklappt");
   const json = await res.json();
   return json;
@@ -1348,7 +1407,7 @@ async function cloudPull(syncUrl) {
 
 /* ---------------- BGG API (best effort, needs internet) ---------------- */
 async function bggSearch(query) {
-  const url = `https://boardgamegeek.com/xmlapi2/search?query=${encodeURIComponent(query)}&type=boardgame`;
+  const url = `https://shiny-grass-80ec.contact-mdinh.workers.dev/xmlapi2/search?query=${encodeURIComponent(query)}&type=boardgame`;
   const res = await fetch(url);
   if (!res.ok) throw new Error("BGG würfelt gerade nicht mit — nicht erreichbar");
   const text = await res.text();
@@ -1361,7 +1420,7 @@ async function bggSearch(query) {
   }));
 }
 async function bggThing(bggId) {
-  const url = `https://boardgamegeek.com/xmlapi2/thing?id=${bggId}&stats=1`;
+  const url = `https://shiny-grass-80ec.contact-mdinh.workers.dev/xmlapi2/thing?id=${bggId}&stats=1`;
   const res = await fetch(url);
   if (!res.ok) throw new Error("BGG würfelt gerade nicht mit — nicht erreichbar");
   const text = await res.text();
@@ -1486,6 +1545,9 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             <button onClick={() => setStep("manual")} className="w-full text-center py-3 mt-2 border border-[#3A3631] rounded-[14px] text-[#F2EDE4] font-body text-sm font-medium active:scale-[0.99]">
               Manuell anlegen
             </button>
+            <p className="text-center text-[11px] text-[#5C574F]">
+              Ergebnisse via <a href="https://boardgamegeek.com" target="_blank" rel="noopener noreferrer" className="underline">Powered by BGG</a>
+            </p>
           </div>
         )}
 
@@ -3240,8 +3302,9 @@ function GameDetailModal({ game, plays, lists, onToggleList, onCreateList, onClo
   );
 }
 
-function SyncModal({ initialUrl, status, lastSynced, onClose, onSave, onSyncNow, onRemove }) {
+function SyncModal({ initialUrl, initialApiKey, status, lastSynced, onClose, onSave, onSyncNow, onRemove }) {
   const [url, setUrl] = useState(initialUrl || "");
+  const [key, setKey] = useState(initialApiKey || "");
 
   return (
     <div className="fixed top-0 left-0 right-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }}>
@@ -3254,20 +3317,33 @@ function SyncModal({ initialUrl, status, lastSynced, onClose, onSave, onSyncNow,
           <p className="text-sm text-[#A39C8F]">
             Deine Sammlung und Partien werden ausschließlich in dieser Firebase-Datenbank gespeichert — nicht auf dem Gerät selbst. Trage hier deine Datenbank-Adresse ein; auf jedem Gerät mit derselben Adresse siehst du automatisch dieselben Daten.
           </p>
-          <input
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://dein-projekt-default-rtdb.firebasedatabase.app/"
-            className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#D4A24C]"
-          />
+          <div>
+            <label className="text-[11px] text-[#5C574F]">Datenbank-Adresse</label>
+            <input
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://dein-projekt-default-rtdb.firebasedatabase.app/"
+              className="w-full mt-1 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#D4A24C]"
+            />
+          </div>
+          <div>
+            <label className="text-[11px] text-[#5C574F]">Web-API-Schlüssel (für sichere Anmeldung)</label>
+            <input
+              value={key}
+              onChange={(e) => setKey(e.target.value)}
+              placeholder="AIzaSy…"
+              className="w-full mt-1 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#D4A24C]"
+            />
+            <p className="text-[11px] text-[#5C574F] mt-1.5">Findest du in der Firebase-Konsole unter Projekteinstellungen → Allgemein → "Web-API-Schlüssel". Damit meldet sich die App automatisch (anonym, ohne Login-Bildschirm) an, damit deine Datenbank-Regeln geschützt sein können.</p>
+          </div>
           <div className="flex items-center gap-2 text-xs">
             {status === "syncing" && <><Loader2 size={13} /> <span className="text-[#A39C8F]">Synchronisiere…</span></>}
             {status === "synced" && <span className="text-[#4E8C82]">Zuletzt synchronisiert: {lastSynced ? new Date(lastSynced).toLocaleTimeString("de-DE") : "gerade eben"}</span>}
-            {status === "error" && <span className="text-[#C1443C]">Patzer beim Synchronisieren — Internet oder Adresse prüfen</span>}
+            {status === "error" && <span className="text-[#C1443C]">Patzer beim Synchronisieren — Internet, Adresse oder API-Schlüssel prüfen</span>}
             {status === "idle" && !initialUrl && <span className="text-[#5C574F]">Noch nicht eingerichtet</span>}
           </div>
           <button
-            onClick={() => onSave(url)}
+            onClick={() => onSave(url, key)}
             disabled={!url.trim()}
             className="w-full bg-[#6C7FE0] disabled:opacity-40 text-[#F2EDE4] rounded-[14px] py-3 font-medium active:scale-[0.99] flex items-center justify-center gap-2"
           >
@@ -3344,6 +3420,7 @@ function App() {
   const [playModal, setPlayModal] = useState(null);
   const [quickFilter, setQuickFilter] = useState(null);
   const [syncUrl, setSyncUrl] = useState(() => localStorage.getItem(SYNC_URL_KEY) || "");
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem(AUTH_KEYS.apiKey) || "");
   const [syncModalOpen, setSyncModalOpen] = useState(!localStorage.getItem(SYNC_URL_KEY));
   const [syncStatus, setSyncStatus] = useState("idle");
   const [lastSynced, setLastSynced] = useState(null);
@@ -3455,7 +3532,7 @@ function App() {
   useEffect(() => {
     if (!syncUrl) return;
     setSyncStatus("syncing");
-    cloudPull(syncUrl).then((remote) => {
+    cloudPull(syncUrl, apiKey).then((remote) => {
       setGames((remote && remote.games) || []);
       setPlays((remote && remote.plays) || []);
       setCustomCategories((remote && remote.customCategories) || []);
@@ -3477,21 +3554,24 @@ function App() {
     if (pushTimer.current) clearTimeout(pushTimer.current);
     pushTimer.current = setTimeout(() => {
       setSyncStatus("syncing");
-      cloudPush(syncUrl, { games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players }).then(() => {
+      cloudPush(syncUrl, { games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players }, apiKey).then(() => {
         setSyncStatus("synced");
         setLastSynced(Date.now());
       }).catch(() => setSyncStatus("error"));
     }, 1200);
     return () => clearTimeout(pushTimer.current);
-  }, [games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players, syncUrl]);
+  }, [games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players, syncUrl, apiKey]);
 
-  const saveSyncUrl = (url) => {
+  const saveSyncUrl = (url, key) => {
     const trimmed = url.trim();
+    const trimmedKey = (key || "").trim();
     localStorage.setItem(SYNC_URL_KEY, trimmed);
+    if (trimmedKey) localStorage.setItem(AUTH_KEYS.apiKey, trimmedKey);
     setSyncUrl(trimmed);
+    setApiKey(trimmedKey);
     skipNextPush.current = true;
     setSyncStatus("syncing");
-    cloudPull(trimmed).then((remote) => {
+    cloudPull(trimmed, trimmedKey).then((remote) => {
       if (remote && (remote.games || remote.plays)) {
         setGames(remote.games || []);
         setPlays(remote.plays || []);
@@ -3502,7 +3582,7 @@ function App() {
         setLists(remote.lists || []);
         setPlayersList(remote.players || []);
       } else {
-        cloudPush(trimmed, { games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players });
+        cloudPush(trimmed, { games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players }, trimmedKey);
       }
       setSyncStatus("synced");
       setLastSynced(Date.now());
@@ -3513,7 +3593,7 @@ function App() {
   const syncNow = () => {
     if (!syncUrl) return;
     setSyncStatus("syncing");
-    cloudPush(syncUrl, { games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players }).then(() => {
+    cloudPush(syncUrl, { games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players }, apiKey).then(() => {
       setSyncStatus("synced");
       setLastSynced(Date.now());
     }).catch(() => setSyncStatus("error"));
@@ -3521,7 +3601,12 @@ function App() {
 
   const removeSync = () => {
     localStorage.removeItem(SYNC_URL_KEY);
+    localStorage.removeItem(AUTH_KEYS.apiKey);
+    localStorage.removeItem(AUTH_KEYS.idToken);
+    localStorage.removeItem(AUTH_KEYS.refreshToken);
+    localStorage.removeItem(AUTH_KEYS.expiresAt);
     setSyncUrl("");
+    setApiKey("");
     setSyncStatus("idle");
     setSyncModalOpen(false);
   };
@@ -3667,6 +3752,7 @@ function App() {
       {syncModalOpen && (
         <SyncModal
           initialUrl={syncUrl}
+          initialApiKey={apiKey}
           status={syncStatus}
           lastSynced={lastSynced}
           onClose={() => setSyncModalOpen(false)}
