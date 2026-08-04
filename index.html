@@ -395,7 +395,7 @@ function DashboardGameTile({ game, onClick, children, large = false, rank, stagg
       }}
     >
       {rank && (
-        <span className="absolute top-1.5 left-1.5 z-10 w-6 h-6 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-[11px] font-display text-[#F2EDE4] border border-[#F2EDE4]/30">
+        <span className="absolute top-1.5 left-1.5 z-10 w-6 h-6 rounded-full bg-black/90 backdrop-blur-sm flex items-center justify-center text-[11px] font-display text-[#F2EDE4] border border-[#F2EDE4]/30">
           {rank}
         </span>
       )}
@@ -1353,19 +1353,20 @@ function normalizeSyncUrl(url) {
   return u;
 }
 
-/* ---------------- ANONYMOUS AUTH (lightweight REST, no SDK) ----------------
-   Signs in anonymously against the Firebase project so the database rules can
-   require `auth != null`, blocking casual/automated access while staying
-   invisible to the person using the app — no login screen, nothing to type. */
-const AUTH_KEYS = { apiKey: "spielregal:apiKey", idToken: "spielregal:idToken", refreshToken: "spielregal:refreshToken", expiresAt: "spielregal:tokenExpiresAt" };
+/* ---------------- EMAIL/PASSWORD AUTH (lightweight REST, no SDK) ----------------
+   Signs in with your own email/password against the Firebase project so the
+   database rules can require `auth != null` in a way that's actually locked —
+   unlike anonymous auth, nobody else can get a token without your password.
+   Runs automatically in the background — no login screen for daily use. */
+const AUTH_KEYS = { apiKey: "spielregal:apiKey", email: "spielregal:authEmail", password: "spielregal:authPassword", idToken: "spielregal:idToken", refreshToken: "spielregal:refreshToken", expiresAt: "spielregal:tokenExpiresAt" };
 
-async function signInAnonymously(apiKey) {
-  const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`, {
+async function signInWithPassword(apiKey, email, password) {
+  const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ returnSecureToken: true }),
+    body: JSON.stringify({ email, password, returnSecureToken: true }),
   });
-  if (!res.ok) throw new Error("Anmeldung fehlgeschlagen — API-Schlüssel prüfen");
+  if (!res.ok) throw new Error("Anmeldung fehlgeschlagen — E-Mail, Passwort oder API-Schlüssel prüfen");
   const json = await res.json();
   const expiresAt = Date.now() + (parseInt(json.expiresIn, 10) || 3600) * 1000;
   localStorage.setItem(AUTH_KEYS.idToken, json.idToken);
@@ -1390,8 +1391,8 @@ async function refreshIdToken(apiKey, refreshToken) {
 }
 
 // Returns a currently-valid ID token, signing in or refreshing as needed.
-// Returns "" (no token) when no API key is configured — falls back to
-// unauthenticated requests so older setups without a key keep working.
+// Returns "" (no token) when no API key/credentials are configured — falls
+// back to unauthenticated requests so older setups without a key keep working.
 async function getValidIdToken(apiKey) {
   if (!apiKey) return "";
   const storedToken = localStorage.getItem(AUTH_KEYS.idToken);
@@ -1401,7 +1402,10 @@ async function getValidIdToken(apiKey) {
   if (refreshToken) {
     try { return await refreshIdToken(apiKey, refreshToken); } catch { /* fall through to fresh sign-in */ }
   }
-  return signInAnonymously(apiKey);
+  const email = localStorage.getItem(AUTH_KEYS.email);
+  const password = localStorage.getItem(AUTH_KEYS.password);
+  if (!email || !password) return "";
+  return signInWithPassword(apiKey, email, password);
 }
 
 async function cloudPush(syncUrl, data, apiKey) {
@@ -1821,7 +1825,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }}>
+    <div className="fixed top-0 left-0 right-0 bg-black/90 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }}>
       <div onFocus={handleFocusScroll} className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[var(--app-height,100dvh)] flex flex-col overflow-hidden rise-in font-body">
         <div className="shrink-0 bg-[#1C1B1A] border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">{initial ? "Partie bearbeiten" : "Partie eintragen"}</h2>
@@ -3117,6 +3121,11 @@ function Recommendations({ games, plays, onAddWishlist }) {
                     )}
                     <p className="text-[#F2EDE4] font-body text-sm font-medium mt-2 leading-tight truncate">{r.name}</p>
                     <p className="text-[#5C574F] text-xs font-body">{r.year}{r.minPlayers ? ` · ${r.minPlayers}–${r.maxPlayers} Sp.` : ""}</p>
+                    {r.summary && (
+                      <p className="text-[#A39C8F] text-[11px] font-body mt-1.5 leading-snug line-clamp-3" style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                        {r.summary.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()}
+                      </p>
+                    )}
                     <button onClick={() => onAddWishlist(r)} className="w-full mt-2 h-9 flex items-center justify-center gap-1.5 bg-[#6C7FE0]/15 text-[#6C7FE0] rounded-[10px] text-xs font-medium">
                       <Plus size={13} /> Zur Wunschliste
                     </button>
@@ -3168,7 +3177,7 @@ function GameDetailModal({ game, plays, lists, onToggleList, onCreateList, onClo
   );
 
   return (
-    <div className="fixed top-0 left-0 right-0 bg-black/60 z-[56] flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }}>
+    <div className="fixed top-0 left-0 right-0 bg-black/90 z-[56] flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }}>
       <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[var(--app-height,100dvh)] flex flex-col overflow-hidden rise-in font-body">
         <div className="shrink-0 bg-[#1C1B1A] border-b px-5 py-4 flex items-center justify-between" style={{ borderColor: accentColor + "30" }}>
           <button onClick={onClose} className="text-[#A39C8F] p-1" aria-label="Zurück"><ChevronLeft size={22} /></button>
@@ -3323,12 +3332,14 @@ function GameDetailModal({ game, plays, lists, onToggleList, onCreateList, onClo
   );
 }
 
-function SyncModal({ initialUrl, initialApiKey, status, lastSynced, onClose, onSave, onSyncNow, onRemove }) {
+function SyncModal({ initialUrl, initialApiKey, initialEmail, status, lastSynced, onClose, onSave, onSyncNow, onRemove }) {
   const [url, setUrl] = useState(initialUrl || "");
   const [key, setKey] = useState(initialApiKey || "");
+  const [email, setEmail] = useState(initialEmail || "");
+  const [password, setPassword] = useState("");
 
   return (
-    <div className="fixed top-0 left-0 right-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }}>
+    <div className="fixed top-0 left-0 right-0 bg-black/90 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }}>
       <div onFocus={handleFocusScroll} className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[var(--app-height,100dvh)] overflow-y-auto rise-in font-body">
         <div className="sticky top-0 bg-[#1C1B1A] border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Geräte-Synchronisation</h2>
@@ -3348,23 +3359,45 @@ function SyncModal({ initialUrl, initialApiKey, status, lastSynced, onClose, onS
             />
           </div>
           <div>
-            <label className="text-[11px] text-[#5C574F]">Web-API-Schlüssel (für sichere Anmeldung)</label>
+            <label className="text-[11px] text-[#5C574F]">Web-API-Schlüssel</label>
             <input
               value={key}
               onChange={(e) => setKey(e.target.value)}
               placeholder="AIzaSy…"
               className="w-full mt-1 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#D4A24C]"
             />
-            <p className="text-[11px] text-[#5C574F] mt-1.5">Findest du in der Firebase-Konsole unter Projekteinstellungen → Allgemein → "Web-API-Schlüssel". Damit meldet sich die App automatisch (anonym, ohne Login-Bildschirm) an, damit deine Datenbank-Regeln geschützt sein können.</p>
+            <p className="text-[11px] text-[#5C574F] mt-1.5">Findest du in der Firebase-Konsole unter Projekteinstellungen → Allgemein → "Web-API-Schlüssel".</p>
+          </div>
+          <div>
+            <label className="text-[11px] text-[#5C574F]">E-Mail (für sichere Anmeldung)</label>
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="du@beispiel.de"
+              autoComplete="username"
+              className="w-full mt-1 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#D4A24C]"
+            />
+          </div>
+          <div>
+            <label className="text-[11px] text-[#5C574F]">Passwort</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={initialEmail ? "Nur bei Änderung neu eingeben" : "••••••••"}
+              autoComplete="current-password"
+              className="w-full mt-1 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#D4A24C]"
+            />
+            <p className="text-[11px] text-[#5C574F] mt-1.5">Diesen Nutzer legst du einmalig in der Firebase-Konsole unter Authentication → Users an. Die App meldet sich damit automatisch im Hintergrund an — kein Login-Bildschirm im Alltag.</p>
           </div>
           <div className="flex items-center gap-2 text-xs">
             {status === "syncing" && <><Loader2 size={13} /> <span className="text-[#A39C8F]">Synchronisiere…</span></>}
             {status === "synced" && <span className="text-[#4E8C82]">Zuletzt synchronisiert: {lastSynced ? new Date(lastSynced).toLocaleTimeString("de-DE") : "gerade eben"}</span>}
-            {status === "error" && <span className="text-[#C1443C]">Patzer beim Synchronisieren — Internet, Adresse oder API-Schlüssel prüfen</span>}
+            {status === "error" && <span className="text-[#C1443C]">Patzer beim Synchronisieren — Internet, Zugangsdaten oder API-Schlüssel prüfen</span>}
             {status === "idle" && !initialUrl && <span className="text-[#5C574F]">Noch nicht eingerichtet</span>}
           </div>
           <button
-            onClick={() => onSave(url, key)}
+            onClick={() => onSave(url, key, email, password)}
             disabled={!url.trim()}
             className="w-full bg-[#6C7FE0] disabled:opacity-40 text-[#F2EDE4] rounded-[14px] py-3 font-medium active:scale-[0.99] flex items-center justify-center gap-2"
           >
@@ -3442,6 +3475,7 @@ function App() {
   const [quickFilter, setQuickFilter] = useState(null);
   const [syncUrl, setSyncUrl] = useState(() => localStorage.getItem(SYNC_URL_KEY) || "");
   const [apiKey, setApiKey] = useState(() => localStorage.getItem(AUTH_KEYS.apiKey) || "");
+  const [authEmail, setAuthEmail] = useState(() => localStorage.getItem(AUTH_KEYS.email) || "");
   const [syncModalOpen, setSyncModalOpen] = useState(!localStorage.getItem(SYNC_URL_KEY));
   const [syncStatus, setSyncStatus] = useState("idle");
   const [lastSynced, setLastSynced] = useState(null);
@@ -3583,13 +3617,21 @@ function App() {
     return () => clearTimeout(pushTimer.current);
   }, [games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players, syncUrl, apiKey]);
 
-  const saveSyncUrl = (url, key) => {
+  const saveSyncUrl = (url, key, email, password) => {
     const trimmed = url.trim();
     const trimmedKey = (key || "").trim();
+    const trimmedEmail = (email || "").trim();
     localStorage.setItem(SYNC_URL_KEY, trimmed);
     if (trimmedKey) localStorage.setItem(AUTH_KEYS.apiKey, trimmedKey);
+    if (trimmedEmail) localStorage.setItem(AUTH_KEYS.email, trimmedEmail);
+    if (password) localStorage.setItem(AUTH_KEYS.password, password);
+    // Force a fresh sign-in with the (possibly new) credentials instead of reusing an old token.
+    localStorage.removeItem(AUTH_KEYS.idToken);
+    localStorage.removeItem(AUTH_KEYS.refreshToken);
+    localStorage.removeItem(AUTH_KEYS.expiresAt);
     setSyncUrl(trimmed);
     setApiKey(trimmedKey);
+    setAuthEmail(trimmedEmail);
     skipNextPush.current = true;
     setSyncStatus("syncing");
     cloudPull(trimmed, trimmedKey).then((remote) => {
@@ -3623,11 +3665,14 @@ function App() {
   const removeSync = () => {
     localStorage.removeItem(SYNC_URL_KEY);
     localStorage.removeItem(AUTH_KEYS.apiKey);
+    localStorage.removeItem(AUTH_KEYS.email);
+    localStorage.removeItem(AUTH_KEYS.password);
     localStorage.removeItem(AUTH_KEYS.idToken);
     localStorage.removeItem(AUTH_KEYS.refreshToken);
     localStorage.removeItem(AUTH_KEYS.expiresAt);
     setSyncUrl("");
     setApiKey("");
+    setAuthEmail("");
     setSyncStatus("idle");
     setSyncModalOpen(false);
   };
@@ -3777,6 +3822,7 @@ function App() {
         <SyncModal
           initialUrl={syncUrl}
           initialApiKey={apiKey}
+          initialEmail={authEmail}
           status={syncStatus}
           lastSynced={lastSynced}
           onClose={() => setSyncModalOpen(false)}
