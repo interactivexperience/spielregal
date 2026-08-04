@@ -1256,8 +1256,25 @@ function TagPickerModal({ title, options, selected, onToggle, onAddCustom, onClo
 }
 
 /* ---------------- SETTINGS MODAL (manage custom categories & mechanisms) ---------------- */
-function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, onAddCategory, onRemoveCategory, onAddMechanism, onRemoveMechanism, onAddPlayerType, onRemovePlayerType, demoMode, onToggleDemo, syncUrl, syncStatus, onOpenSync, bggImportStatus, bggImportResult, bggImportError, onImportBggPlays }) {
+function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, onAddCategory, onRemoveCategory, onAddMechanism, onRemoveMechanism, onAddPlayerType, onRemovePlayerType, demoMode, onToggleDemo, syncUrl, syncStatus, onOpenSync, bggImportStatus, bggImportResult, bggImportError, onImportBggPlays, games, plays, onMergeGames }) {
   const [bggUsername, setBggUsername] = useState("");
+  const duplicateGroups = useMemo(() => {
+    if (!games) return [];
+    const norm = (s) => s.toLowerCase().replace(/\s*\([^)]*\)\s*/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+    const groups = [];
+    const used = new Set();
+    games.forEach((g, i) => {
+      if (used.has(g.id)) return;
+      const gNorm = norm(g.name);
+      const matches = games.filter((h, j) => j !== i && !used.has(h.id) && norm(h.name) === gNorm);
+      if (matches.length > 0) {
+        const group = [g, ...matches];
+        group.forEach((x) => used.add(x.id));
+        groups.push(group);
+      }
+    });
+    return groups;
+  }, [games]);
   const [catInput, setCatInput] = useState("");
   const [mechInput, setMechInput] = useState("");
   const [typeInput, setTypeInput] = useState("");
@@ -1299,6 +1316,37 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
             )}
             {bggImportStatus === "error" && <p className="text-xs text-[#C1443C] mt-2">{bggImportError}</p>}
           </div>
+          {duplicateGroups.length > 0 && (
+            <div>
+              <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Mögliche Duplikate</h3>
+              <p className="text-xs text-[#5C574F] mb-2">Diese Spiele haben sehr ähnliche Namen — vermutlich entstanden beim Import doppelte Einträge. Zusammenführen verschiebt alle Partien auf den behaltenen Eintrag und löscht den anderen.</p>
+              <div className="space-y-2">
+                {duplicateGroups.map((group) => (
+                  <div key={group.map((g) => g.id).join("-")} className="bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
+                    {group.map((g) => {
+                      const count = (plays || []).filter((p) => p.gameId === g.id).length;
+                      const others = group.filter((h) => h.id !== g.id);
+                      return (
+                        <div key={g.id} className="flex items-center gap-2.5 py-1.5">
+                          <Cover game={g} size="sm" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[#F2EDE4] font-body text-sm truncate">{g.name}</p>
+                            <p className="text-[#5C574F] text-xs font-body">{count} Partie{count === 1 ? "" : "n"}</p>
+                          </div>
+                          <button
+                            onClick={() => others.forEach((o) => onMergeGames(g.id, o.id))}
+                            className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-[#6C7FE0]/15 text-[#6C7FE0]"
+                          >
+                            Diesen behalten
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <div>
             <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Eigene Kategorien</h3>
             <p className="text-xs text-[#5C574F] mb-2">Die BGG-Standardkategorien sind immer verfügbar. Hier ergänzt du eigene.</p>
@@ -3121,7 +3169,15 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
       if (!byGame.has(key)) byGame.set(key, []);
       byGame.get(key).push(p); // sorted already comes newest-first, so this stays newest-first per group
     });
-    return Array.from(byGame.values()); // Map preserves insertion order, so groups are already newest-first
+    const groups = Array.from(byGame.values());
+    const todayStr = new Date().toISOString().slice(0, 10); // re-evaluated on every render, so "today" is always current
+    groups.sort((a, b) => {
+      const aToday = a.some((p) => p.date === todayStr);
+      const bToday = b.some((p) => p.date === todayStr);
+      if (aToday !== bToday) return aToday ? -1 : 1; // played today always floats to the top
+      return b.length - a.length; // otherwise most-played first
+    });
+    return groups;
   }, [sorted]);
 
   const currentYear = new Date().getFullYear();
@@ -3917,6 +3973,11 @@ function App() {
     setGameModal(null);
   };
   const deleteGame = (id) => { setGames(prev => prev.filter(g => g.id !== id)); setGameModal(null); };
+  const mergeGames = (keepId, dropId) => {
+    if (keepId === dropId) return;
+    setPlays(prev => prev.map(p => (p.gameId === dropId ? { ...p, gameId: keepId, gameName: games.find(g => g.id === keepId)?.name || p.gameName } : p)));
+    setGames(prev => prev.filter(g => g.id !== dropId));
+  };
 
   const [bggImportStatus, setBggImportStatus] = useState("idle"); // idle | importing | done | error
   const [bggImportResult, setBggImportResult] = useState(null);
@@ -4087,6 +4148,9 @@ function App() {
               bggImportResult={bggImportResult}
               bggImportError={bggImportError}
               onImportBggPlays={importBggPlays}
+              games={games}
+              plays={plays}
+              onMergeGames={mergeGames}
             />
           )}
         </div>
