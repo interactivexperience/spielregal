@@ -1256,7 +1256,8 @@ function TagPickerModal({ title, options, selected, onToggle, onAddCustom, onClo
 }
 
 /* ---------------- SETTINGS MODAL (manage custom categories & mechanisms) ---------------- */
-function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, onAddCategory, onRemoveCategory, onAddMechanism, onRemoveMechanism, onAddPlayerType, onRemovePlayerType, demoMode, onToggleDemo, syncUrl, syncStatus, onOpenSync }) {
+function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, onAddCategory, onRemoveCategory, onAddMechanism, onRemoveMechanism, onAddPlayerType, onRemovePlayerType, demoMode, onToggleDemo, syncUrl, syncStatus, onOpenSync, bggImportStatus, bggImportResult, bggImportError, onImportBggPlays }) {
+  const [bggUsername, setBggUsername] = useState("");
   const [catInput, setCatInput] = useState("");
   const [mechInput, setMechInput] = useState("");
   const [typeInput, setTypeInput] = useState("");
@@ -1266,20 +1267,28 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     <div className="p-5 pb-6 space-y-6 font-body min-h-full flex flex-col">
       <h1 className="font-display text-3xl text-[#F2EDE4]">Einstellungen</h1>
       <div>
-        <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Geräte-Synchronisation</h3>
-            <p className="text-xs text-[#5C574F] mb-2">{syncUrl ? "Deine Daten werden über Firebase mit deinen Geräten abgeglichen." : "Noch nicht eingerichtet — deine Daten bleiben nur auf diesem Gerät."}</p>
-            <button onClick={onOpenSync} className="w-full h-12 rounded-[14px] text-sm font-medium bg-[#262422] border border-[#3A3631] text-[#F2EDE4] flex items-center justify-center gap-2">
-              {syncStatus === "syncing" ? <Loader2 size={16} className="text-[#D4A24C]" /> : <Globe size={16} className={syncStatus === "error" ? "text-[#C1443C]" : "text-[#5C574F]"} />}
-              {syncUrl ? "Synchronisation verwalten" : "Synchronisation einrichten"}
+            <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">BGG-Partien importieren</h3>
+            <p className="text-xs text-[#5C574F] mb-2">Holt alle Partien, die du je auf BoardGameGeek zu deinem Namen eingetragen hast. Spiele, die noch nicht in deiner Sammlung sind, werden automatisch mit Status "nur gespielt" angelegt. Bereits importierte Partien werden bei erneutem Import übersprungen.</p>
+            <div className="flex gap-2 mb-2">
+              <input value={bggUsername} onChange={(e) => setBggUsername(e.target.value)} placeholder="Dein BGG-Nutzername"
+                className="flex-1 min-w-0 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
+            </div>
+            <button
+              onClick={() => onImportBggPlays(bggUsername)}
+              disabled={!bggUsername.trim() || bggImportStatus === "importing"}
+              className="w-full h-12 rounded-[14px] text-sm font-medium bg-[#262422] border border-[#3A3631] text-[#F2EDE4] disabled:opacity-40 flex items-center justify-center gap-2"
+            >
+              {bggImportStatus === "importing" ? <Loader2 size={16} className="text-[#D4A24C]" /> : <ListChecks size={16} className="text-[#5C574F]" />}
+              {bggImportStatus === "importing" ? "Importiere… kann bei vielen Partien dauern" : "Partien importieren"}
             </button>
-          </div>
-          <div>
-            <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Vorschau</h3>
-            <p className="text-xs text-[#5C574F] mb-2">Füllt die App vorübergehend mit Beispiel-Spielen, damit du siehst, wie's mit Inhalt aussieht. Wird nirgends gespeichert.</p>
-            <button onClick={onToggleDemo}
-              className={`w-full h-12 rounded-[14px] text-sm font-medium ${demoMode ? "bg-[#D4A24C] text-[#1C1B1A]" : "bg-[#262422] border border-[#3A3631] text-[#F2EDE4]"}`}>
-              {demoMode ? "Demo-Vorschau beenden" : "Demo-Vorschau anzeigen"}
-            </button>
+            {bggImportStatus === "done" && bggImportResult && (
+              <p className="text-xs text-[#4E8C82] mt-2">
+                {bggImportResult.playsImported} neue Partie{bggImportResult.playsImported === 1 ? "" : "n"} importiert
+                {bggImportResult.gamesAdded > 0 ? `, ${bggImportResult.gamesAdded} neue Spiel${bggImportResult.gamesAdded === 1 ? "" : "e"} angelegt` : ""}.
+                {bggImportResult.totalFound > bggImportResult.playsImported ? ` (${bggImportResult.totalFound - bggImportResult.playsImported} bereits vorher importiert.)` : ""}
+              </p>
+            )}
+            {bggImportStatus === "error" && <p className="text-xs text-[#C1443C] mt-2">{bggImportError}</p>}
           </div>
           <div>
             <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Eigene Kategorien</h3>
@@ -1339,6 +1348,22 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
                 </span>
               ))}
             </div>
+          </div>
+          <div>
+            <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Geräte-Synchronisation</h3>
+            <p className="text-xs text-[#5C574F] mb-2">{syncUrl ? "Deine Daten werden über Firebase mit deinen Geräten abgeglichen." : "Noch nicht eingerichtet — deine Daten bleiben nur auf diesem Gerät."}</p>
+            <button onClick={onOpenSync} className="w-full h-12 rounded-[14px] text-sm font-medium bg-[#262422] border border-[#3A3631] text-[#F2EDE4] flex items-center justify-center gap-2">
+              {syncStatus === "syncing" ? <Loader2 size={16} className="text-[#D4A24C]" /> : <Globe size={16} className={syncStatus === "error" ? "text-[#C1443C]" : "text-[#5C574F]"} />}
+              {syncUrl ? "Synchronisation verwalten" : "Synchronisation einrichten"}
+            </button>
+          </div>
+          <div>
+            <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Vorschau</h3>
+            <p className="text-xs text-[#5C574F] mb-2">Füllt die App vorübergehend mit Beispiel-Spielen, damit du siehst, wie's mit Inhalt aussieht. Wird nirgends gespeichert.</p>
+            <button onClick={onToggleDemo}
+              className={`w-full h-12 rounded-[14px] text-sm font-medium ${demoMode ? "bg-[#D4A24C] text-[#1C1B1A]" : "bg-[#262422] border border-[#3A3631] text-[#F2EDE4]"}`}>
+              {demoMode ? "Demo-Vorschau beenden" : "Demo-Vorschau anzeigen"}
+            </button>
           </div>
           <BggBadge className="mt-auto" />
         </div>
@@ -1475,6 +1500,63 @@ async function bggThing(bggId) {
     publishers, designers, mechanisms, categories, summary,
     complexity: weight ? Math.round(parseFloat(weight) * 10) / 10 : null,
   };
+}
+
+// BGG's plain text search can't filter by category/mechanism — it only matches
+// game titles. So for real recommendations, pull from BGG's currently-hot list
+// instead and check each candidate's actual tags against the taste profile.
+async function bggFetchHotList() {
+  const url = `https://shiny-grass-80ec.contact-mdinh.workers.dev/xmlapi2/hot?type=boardgame`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("BGG-Trends nicht erreichbar");
+  const text = await res.text();
+  const xml = new DOMParser().parseFromString(text, "text/xml");
+  const items = Array.from(xml.getElementsByTagName("item"));
+  return items.map((it) => {
+    const nameEl = it.getElementsByTagName("name")[0];
+    const yearEl = it.getElementsByTagName("yearpublished")[0];
+    return {
+      bggId: it.getAttribute("id"),
+      name: nameEl ? nameEl.getAttribute("value") : "",
+      year: yearEl ? yearEl.getAttribute("value") : "",
+    };
+  });
+}
+
+// Fetches ALL plays BGG has stored for a username (paginated, 100 per page,
+// oldest requests slowed down slightly to stay within BGG's rate limit).
+async function bggFetchAllPlays(username) {
+  let page = 1;
+  const all = [];
+  while (true) {
+    const url = `https://shiny-grass-80ec.contact-mdinh.workers.dev/xmlapi2/plays?username=${encodeURIComponent(username)}&page=${page}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("BGG-Partien konnten nicht geladen werden — Nutzername oder Verbindung prüfen");
+    const text = await res.text();
+    const xml = new DOMParser().parseFromString(text, "text/xml");
+    const playEls = Array.from(xml.getElementsByTagName("play"));
+    if (playEls.length === 0) break;
+    playEls.forEach((el) => {
+      const itemEl = el.getElementsByTagName("item")[0];
+      const playerEls = Array.from(el.getElementsByTagName("player"));
+      const commentsEl = el.getElementsByTagName("comments")[0];
+      all.push({
+        bggPlayId: el.getAttribute("id"),
+        date: el.getAttribute("date"),
+        objectid: itemEl ? itemEl.getAttribute("objectid") : "",
+        itemName: itemEl ? itemEl.getAttribute("name") : "",
+        comments: commentsEl ? commentsEl.textContent : "",
+        players: playerEls.map((pl) => ({
+          name: pl.getAttribute("name") || pl.getAttribute("username") || "",
+          win: pl.getAttribute("win") === "1",
+        })),
+      });
+    });
+    if (playEls.length < 100) break;
+    page++;
+    await new Promise((r) => setTimeout(r, 1200)); // stay well under BGG's rate limit
+  }
+  return all;
 }
 
 /* ---------------- UI PRIMITIVES ---------------- */
@@ -2746,6 +2828,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, filters, sta
 function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit, onDelete, categoryOptions, mechanismOptions, demoMode, lists, onCreateList, onOpenList }) {
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [gridCols, setGridCols] = useState(2);
   const [statusFilter, setStatusFilter] = useState("owned");
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [filters, setFilters] = useState({ categories: [], mechanisms: [], players: "", minRating: "" });
@@ -2776,13 +2859,19 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
     <div className="p-5 pb-6 overflow-x-hidden min-h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <h1 className="font-display text-3xl text-[#F2EDE4]">Sammlung</h1>
-        <div className="flex items-center gap-2">
-          <button onClick={() => setSearchOpen((o) => !o)} aria-label="Suchen" className={`w-11 h-11 flex items-center justify-center rounded-full border ${searchOpen ? "bg-[#F2EDE4] border-[#F2EDE4] text-[#1C1B1A]" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}>
-            <Search size={17} />
+        <div className="flex items-center bg-[#262422] border border-[#3A3631] rounded-full p-0.5">
+          <button onClick={() => setGridCols(2)} aria-label="2 Spalten" className={`w-9 h-9 flex items-center justify-center rounded-full ${gridCols === 2 ? "bg-[#F2EDE4] text-[#1C1B1A]" : "text-[#5C574F]"}`}>
+            <div className="flex gap-0.5">
+              <div className="w-2 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
+              <div className="w-2 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
+            </div>
           </button>
-          <button onClick={() => setFilterModalOpen(true)} aria-label="Filter" className="relative w-11 h-11 flex items-center justify-center bg-[#262422] border border-[#3A3631] rounded-full text-[#A39C8F]">
-            <Puzzle size={17} />
-            {activeFilterCount > 0 && <span className="absolute -top-1 -right-1 bg-[#6C7FE0] text-[#F2EDE4] text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{activeFilterCount}</span>}
+          <button onClick={() => setGridCols(3)} aria-label="3 Spalten" className={`w-9 h-9 flex items-center justify-center rounded-full ${gridCols === 3 ? "bg-[#F2EDE4] text-[#1C1B1A]" : "text-[#5C574F]"}`}>
+            <div className="flex gap-0.5">
+              <div className="w-1.5 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
+              <div className="w-1.5 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
+              <div className="w-1.5 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
+            </div>
           </button>
         </div>
       </div>
@@ -2828,7 +2917,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
         </div>
       )}
       {list.length === 0 ? <p className="text-[#5C574F] text-sm font-body mt-8 mb-12 text-center">Keine Spiele gefunden.</p> : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3 pb-20">
+        <div className={`grid gap-3 mt-3 pb-20 ${gridCols === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
           {list.map(g => (
             <button
               key={g.id}
@@ -2836,21 +2925,25 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
               onTouchStart={() => startLongPress(g)}
               onTouchEnd={cancelLongPress}
               onTouchMove={cancelLongPress}
-              className="text-left bg-[#262422] border border-[#3A3631] rounded-2xl p-3 rise-in flex flex-col"
+              className={`text-left bg-[#262422] border border-[#3A3631] rounded-2xl rise-in flex flex-col ${gridCols === 3 ? "p-1.5" : "p-3"}`}
             >
               <Cover game={g} size="lg" />
-              <p className="font-body text-[#F2EDE4] text-sm font-medium mt-2 leading-tight">{g.name}</p>
-              <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                {g.minPlayers && <span className="flex items-center gap-0.5 text-[10px] text-[#A39C8F] font-mono"><Users size={10} /> {g.minPlayers}-{g.maxPlayers}</span>}
-                {formatBestPlayers(g) && <span className="flex items-center gap-0.5 text-[10px] text-[#D4A24C] font-mono"><Star size={10} /> {formatBestPlayers(g)}</span>}
-                {complexityLabel(g) && (
-                  <Pill tone={COMPLEXITY_TONE[complexityLabel(g)]}>
-                    {COMPLEXITY_MEDIUM[complexityLabel(g)] || complexityLabel(g)}{g.complexity ? ` (${parseFloat(g.complexity).toFixed(1)})` : ""}
-                  </Pill>
-                )}
-                {!playCounts[g.id] && g.status === "owned" && <Pill tone="amber">ungespielt</Pill>}
-                {playCounts[g.id] > 0 && <Pill tone="teal">{playCounts[g.id]}× gespielt</Pill>}
-              </div>
+              {gridCols === 2 && (
+                <>
+                  <p className="font-body text-[#F2EDE4] text-sm font-medium mt-2 leading-tight">{g.name}</p>
+                  <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                    {g.minPlayers && <span className="flex items-center gap-0.5 text-[10px] text-[#A39C8F] font-mono"><Users size={10} /> {g.minPlayers}-{g.maxPlayers}</span>}
+                    {formatBestPlayers(g) && <span className="flex items-center gap-0.5 text-[10px] text-[#D4A24C] font-mono"><Star size={10} /> {formatBestPlayers(g)}</span>}
+                    {complexityLabel(g) && (
+                      <Pill tone={COMPLEXITY_TONE[complexityLabel(g)]}>
+                        {COMPLEXITY_MEDIUM[complexityLabel(g)] || complexityLabel(g)}{g.complexity ? ` (${parseFloat(g.complexity).toFixed(1)})` : ""}
+                      </Pill>
+                    )}
+                    {!playCounts[g.id] && g.status === "owned" && <Pill tone="amber">ungespielt</Pill>}
+                    {playCounts[g.id] > 0 && <Pill tone="teal">{playCounts[g.id]}× gespielt</Pill>}
+                  </div>
+                </>
+              )}
             </button>
           ))}
         </div>
@@ -2885,6 +2978,17 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           <Plus size={22} />
         </button>
       )}
+      <button onClick={() => setSearchOpen((o) => !o)} aria-label="Suchen"
+        className={`fixed z-30 w-11 h-11 flex items-center justify-center rounded-full border shadow-lg ${searchOpen ? "bg-[#F2EDE4] border-[#F2EDE4] text-[#1C1B1A]" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}
+        style={{ left: "calc(50% - 76px)", transform: "translateX(-50%)", bottom: "calc(50px + env(safe-area-inset-bottom) + 16px)" }}>
+        <Search size={17} />
+      </button>
+      <button onClick={() => setFilterModalOpen(true)} aria-label="Filter"
+        className="fixed z-30 w-11 h-11 flex items-center justify-center bg-[#262422] border border-[#3A3631] rounded-full text-[#A39C8F] shadow-lg"
+        style={{ left: "calc(50% + 76px)", transform: "translateX(-50%)", bottom: "calc(50px + env(safe-area-inset-bottom) + 16px)" }}>
+        <Puzzle size={17} />
+        {activeFilterCount > 0 && <span className="absolute -top-1 -right-1 bg-[#6C7FE0] text-[#F2EDE4] text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{activeFilterCount}</span>}
+      </button>
       {filterModalOpen && (
         <CollectionFilterModal
           categoryOptions={categoryOptions}
@@ -3057,21 +3161,40 @@ function Recommendations({ games, plays, onAddWishlist, onView }) {
     rated.forEach(g => { [...(g.mechanisms || []), ...(g.categories || [])].forEach(t => { tagCount[t] = (tagCount[t] || 0) + 1; }); });
     return Object.entries(tagCount).sort((a, b) => b[1] - a[1]);
   }, [games]);
-  const topTags = profile.slice(0, 3).map(([tag]) => tag);
+  const topTags = profile.slice(0, 5).map(([tag]) => tag);
 
   const discoverNew = async () => {
     if (topTags.length === 0) return;
     setDiscovering(true); setExternalError(""); setHasSearched(true);
     try {
-      const tag = topTags[Math.floor(Math.random() * topTags.length)];
-      const r = await bggSearch(tag);
-      const ownedNames = new Set(games.map(g => g.name.toLowerCase()));
-      const shortlist = r.filter(x => !ownedNames.has(x.name.toLowerCase())).slice(0, 6);
-      // bggSearch only returns name/year — fetch full details (cover, players, complexity)
-      // for each candidate so the cards actually show something instead of a blank placeholder.
-      const detailed = await Promise.allSettled(shortlist.map(x => bggThing(x.bggId)));
-      const enriched = detailed.map((res, i) => res.status === "fulfilled" ? { ...shortlist[i], ...res.value } : shortlist[i]);
-      setExternal(enriched);
+      const hotList = await bggFetchHotList();
+      const ownedNames = new Set(games.map((g) => g.name.toLowerCase()));
+      const ownedBggIds = new Set(games.filter((g) => g.bggId).map((g) => String(g.bggId)));
+      const candidates = hotList.filter((x) => !ownedNames.has(x.name.toLowerCase()) && !ownedBggIds.has(String(x.bggId)));
+      // Shuffle so repeated taps surface different picks instead of the same list every time.
+      for (let i = candidates.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+      }
+      const batch = candidates.slice(0, 15);
+      const detailed = [];
+      for (const c of batch) {
+        try {
+          const details = await bggThing(c.bggId);
+          detailed.push({ ...c, ...details });
+        } catch { /* skip candidates BGG won't return details for */ }
+        await new Promise((r) => setTimeout(r, 700)); // stay under BGG's rate limit
+      }
+      const tagSet = new Set(topTags);
+      const scored = detailed
+        .map((g) => {
+          const tags = [...(g.mechanisms || []), ...(g.categories || [])];
+          return { game: g, score: tags.filter((t) => tagSet.has(t)).length };
+        })
+        .filter((x) => x.score > 0)
+        .sort((a, b) => b.score - a.score);
+      const results = (scored.length > 0 ? scored.map((x) => x.game) : detailed).slice(0, 6);
+      setExternal(results);
     } catch (e) { setExternalError("BGG ist gerade nicht am Tisch — neue Vorschläge klappen offline leider nicht."); }
     finally { setDiscovering(false); }
   };
@@ -3702,6 +3825,58 @@ function App() {
     setGameModal(null);
   };
   const deleteGame = (id) => { setGames(prev => prev.filter(g => g.id !== id)); setGameModal(null); };
+
+  const [bggImportStatus, setBggImportStatus] = useState("idle"); // idle | importing | done | error
+  const [bggImportResult, setBggImportResult] = useState(null);
+  const [bggImportError, setBggImportError] = useState("");
+
+  const importBggPlays = async (username) => {
+    const name = (username || "").trim();
+    if (!name) return;
+    setBggImportStatus("importing");
+    setBggImportError("");
+    try {
+      const allPlays = await bggFetchAllPlays(name);
+      const existingBggPlayIds = new Set(plays.map((p) => p.bggPlayId).filter(Boolean));
+      const bggIdToGame = new Map(games.filter((g) => g.bggId).map((g) => [String(g.bggId), g]));
+      const newGames = [];
+      const newPlays = [];
+
+      for (const p of allPlays) {
+        if (!p.objectid || existingBggPlayIds.has(p.bggPlayId)) continue;
+        let game = bggIdToGame.get(String(p.objectid));
+        if (!game) {
+          let details = {};
+          try { details = await bggThing(p.objectid); await new Promise((r) => setTimeout(r, 1200)); } catch { /* best effort — fall back to bare name below */ }
+          game = {
+            id: uid(), bggId: p.objectid, name: details.name || p.itemName || "Unbekanntes Spiel", year: details.year || "",
+            publishers: details.publishers || [], designers: details.designers || [], images: details.images || [],
+            minPlayers: details.minPlayers || "", maxPlayers: details.maxPlayers || "", bestPlayersMin: "", bestPlayersMax: "",
+            minTime: details.minTime || "", maxTime: details.maxTime || "", age: details.age || "",
+            complexity: details.complexity || "", mechanisms: details.mechanisms || [], categories: details.categories || [],
+            playerTypes: [], status: "none", location: "", summary: details.summary || "", notes: "", rating: "",
+            addedDate: new Date().toISOString().slice(0, 10),
+          };
+          newGames.push(game);
+          bggIdToGame.set(String(p.objectid), game);
+        }
+        const winner = p.players.find((pl) => pl.win);
+        newPlays.push({
+          id: uid(), gameId: game.id, gameName: game.name, date: p.date || "", mode: "physical-owned",
+          players: p.players.map((pl) => pl.name).filter(Boolean).join(", "), playerIds: [],
+          winner: winner ? winner.name : "", notes: p.comments || "", images: [], bggPlayId: p.bggPlayId,
+        });
+      }
+
+      if (newGames.length) setGames((prev) => [...prev, ...newGames]);
+      if (newPlays.length) setPlays((prev) => [...prev, ...newPlays]);
+      setBggImportResult({ playsImported: newPlays.length, gamesAdded: newGames.length, totalFound: allPlays.length });
+      setBggImportStatus("done");
+    } catch (e) {
+      setBggImportError(e.message || "Import fehlgeschlagen");
+      setBggImportStatus("error");
+    }
+  };
   const addToWishlistFromRecommendation = (rec) => {
     setGames(prev => {
       if (rec.id && prev.some(g => g.id === rec.id)) {
@@ -3783,6 +3958,10 @@ function App() {
               syncUrl={syncUrl}
               syncStatus={syncStatus}
               onOpenSync={() => setSyncModalOpen(true)}
+              bggImportStatus={bggImportStatus}
+              bggImportResult={bggImportResult}
+              bggImportError={bggImportError}
+              onImportBggPlays={importBggPlays}
             />
           )}
         </div>
