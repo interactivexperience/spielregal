@@ -1282,10 +1282,11 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
               {bggImportStatus === "importing" ? "Importiere… kann bei vielen Partien dauern" : "Partien importieren"}
             </button>
             {bggImportStatus === "done" && bggImportResult && (
-              <p className="text-xs text-[#4E8C82] mt-2">
+              <p className={`text-xs mt-2 ${bggImportResult.incomplete ? "text-[#D4A24C]" : "text-[#4E8C82]"}`}>
                 {bggImportResult.playsImported} neue Partie{bggImportResult.playsImported === 1 ? "" : "n"} importiert
                 {bggImportResult.gamesAdded > 0 ? `, ${bggImportResult.gamesAdded} neue Spiel${bggImportResult.gamesAdded === 1 ? "" : "e"} angelegt` : ""}.
                 {bggImportResult.totalFound > bggImportResult.playsImported ? ` (${bggImportResult.totalFound - bggImportResult.playsImported} bereits vorher importiert.)` : ""}
+                {bggImportResult.incomplete ? " BGG hat den Import vorzeitig abgebrochen (Server war überlastet) — tipp einfach nochmal auf \"Partien importieren\", bereits importierte werden automatisch übersprungen." : ""}
               </p>
             )}
             {bggImportStatus === "error" && <p className="text-xs text-[#C1443C] mt-2">{bggImportError}</p>}
@@ -1528,11 +1529,25 @@ async function bggFetchHotList() {
 async function bggFetchAllPlays(username) {
   let page = 1;
   const all = [];
+  let incomplete = false;
   while (true) {
     const url = `https://shiny-grass-80ec.contact-mdinh.workers.dev/xmlapi2/plays?username=${encodeURIComponent(username)}&page=${page}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("BGG-Partien konnten nicht geladen werden — Nutzername oder Verbindung prüfen");
-    const text = await res.text();
+    let text = null;
+    // BGG occasionally answers a page with a transient 500/503 under load —
+    // retry a few times with backoff. If it still won't budge, stop paging
+    // here but keep everything gathered so far rather than losing it all.
+    for (let attempt = 1; attempt <= 4; attempt++) {
+      let res;
+      try { res = await fetch(url); } catch { res = null; }
+      if (res && res.ok) { text = await res.text(); break; }
+      if (attempt === 4) {
+        if (page === 1) throw new Error("BGG-Partien konnten nicht geladen werden — Nutzername oder Verbindung prüfen");
+        incomplete = true;
+      } else {
+        await new Promise((r) => setTimeout(r, 1500 * attempt));
+      }
+    }
+    if (text === null) break; // gave up on this page after retries — stop here, keep what we have
     const xml = new DOMParser().parseFromString(text, "text/xml");
     const playEls = Array.from(xml.getElementsByTagName("play"));
     if (playEls.length === 0) break;
@@ -1556,6 +1571,7 @@ async function bggFetchAllPlays(username) {
     page++;
     await new Promise((r) => setTimeout(r, 1200)); // stay well under BGG's rate limit
   }
+  all.incomplete = incomplete;
   return all;
 }
 
@@ -1944,7 +1960,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
               />
               <div>
                 <label className="text-[11px] text-[#5C574F]">Datum</label>
-                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-auto min-w-[180px] h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base mt-1.5" />
+                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-auto min-w-[180px] h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base mt-2.5" />
               </div>
               <div>
                 <label className="text-[11px] text-[#5C574F]">Mitspieler</label>
@@ -2925,9 +2941,9 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
               onTouchStart={() => startLongPress(g)}
               onTouchEnd={cancelLongPress}
               onTouchMove={cancelLongPress}
-              className={`text-left bg-[#262422] border border-[#3A3631] rounded-2xl rise-in flex flex-col ${gridCols === 3 ? "p-1.5" : "p-3"}`}
+              className={`text-left rounded-2xl rise-in flex flex-col overflow-hidden ${gridCols === 3 ? "bg-transparent" : "bg-[#262422] border border-[#3A3631] p-3"}`}
             >
-              <Cover game={g} size="lg" />
+              <Cover game={g} size="lg" className={gridCols === 3 ? "!rounded-none !border-0" : ""} />
               {gridCols === 2 && (
                 <>
                   <p className="font-body text-[#F2EDE4] text-sm font-medium mt-2 leading-tight">{g.name}</p>
@@ -3068,6 +3084,17 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
   const modeIcon = { "physical-owned": Home, "physical-other": Sofa, bga: Globe };
   const modeLabel = { "physical-owned": "Eigene Sammlung", "physical-other": "Geliehen / Event", bga: "BoardGameArena" };
 
+  // Same game's plays grouped together; groups ordered by their most recent play, newest first.
+  const grouped = useMemo(() => {
+    const byGame = new Map();
+    sorted.forEach((p) => {
+      const key = p.gameId || p.gameName;
+      if (!byGame.has(key)) byGame.set(key, []);
+      byGame.get(key).push(p); // sorted already comes newest-first, so this stays newest-first per group
+    });
+    return Array.from(byGame.values()); // Map preserves insertion order, so groups are already newest-first
+  }, [sorted]);
+
   const currentYear = new Date().getFullYear();
   const yearPlays = plays.filter(p => p.date && new Date(p.date).getFullYear() === currentYear);
   const yearGameCount = new Set(yearPlays.map(p => p.gameId)).size;
@@ -3126,20 +3153,35 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
       )}
 
       {sorted.length === 0 ? <p className="text-[#5C574F] text-sm font-body mt-8 text-center">Noch keine Partien eingetragen — auch geliehene oder online gespielte Spiele zählen.</p> : (
-        <div className="space-y-2 pb-20">
-          {sorted.map(p => {
-            const IconC = modeIcon[p.mode] || Home;
+        <div className="space-y-4 pb-20">
+          {grouped.map((group) => {
+            const first = group[0];
+            const game = games.find((g) => g.id === first.gameId);
             return (
-              <SwipeableRow key={p.id} onDelete={() => onDelete(p.id)} disabled={demoMode}>
-                <button onClick={() => onEdit(p)} className="w-full text-left bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#A39C8F] shrink-0"><IconC size={16} /></div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[#F2EDE4] font-body truncate">{p.gameName}</p>
-                    <p className="text-[#5C574F] text-xs font-body">{p.date} · {modeLabel[p.mode]}{p.winner ? ` · Sieger: ${p.winner}` : ""}</p>
-                  </div>
-                  <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
-                </button>
-              </SwipeableRow>
+              <div key={first.gameId || first.gameName}>
+                <div className="flex items-center gap-2 mb-1.5 px-1">
+                  {game && <Cover game={game} size="sm" className="!w-7 !h-7" />}
+                  <p className="text-[#F2EDE4] font-body text-sm font-medium truncate">{first.gameName}</p>
+                  {group.length > 1 && <span className="text-[#5C574F] text-xs font-mono shrink-0">{group.length}×</span>}
+                </div>
+                <div className="space-y-2">
+                  {group.map((p) => {
+                    const IconC = modeIcon[p.mode] || Home;
+                    return (
+                      <SwipeableRow key={p.id} onDelete={() => onDelete(p.id)} disabled={demoMode}>
+                        <button onClick={() => onEdit(p)} className="w-full text-left bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#A39C8F] shrink-0"><IconC size={16} /></div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[#F2EDE4] font-body truncate">{p.date}</p>
+                            <p className="text-[#5C574F] text-xs font-body">{modeLabel[p.mode]}{p.winner ? ` · Sieger: ${p.winner}` : ""}</p>
+                          </div>
+                          <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
+                        </button>
+                      </SwipeableRow>
+                    );
+                  })}
+                </div>
+              </div>
             );
           })}
         </div>
@@ -3835,46 +3877,61 @@ function App() {
     if (!name) return;
     setBggImportStatus("importing");
     setBggImportError("");
+    const newGames = [];
+    const newPlays = [];
+    let fetchIncomplete = false;
+    let allPlays = [];
     try {
-      const allPlays = await bggFetchAllPlays(name);
+      try {
+        allPlays = await bggFetchAllPlays(name);
+        fetchIncomplete = !!allPlays.incomplete;
+      } catch (e) {
+        setBggImportError(e.message || "Import fehlgeschlagen");
+        setBggImportStatus("error");
+        return;
+      }
       const existingBggPlayIds = new Set(plays.map((p) => p.bggPlayId).filter(Boolean));
       const bggIdToGame = new Map(games.filter((g) => g.bggId).map((g) => [String(g.bggId), g]));
-      const newGames = [];
-      const newPlays = [];
 
       for (const p of allPlays) {
-        if (!p.objectid || existingBggPlayIds.has(p.bggPlayId)) continue;
-        let game = bggIdToGame.get(String(p.objectid));
-        if (!game) {
-          let details = {};
-          try { details = await bggThing(p.objectid); await new Promise((r) => setTimeout(r, 1200)); } catch { /* best effort — fall back to bare name below */ }
-          game = {
-            id: uid(), bggId: p.objectid, name: details.name || p.itemName || "Unbekanntes Spiel", year: details.year || "",
-            publishers: details.publishers || [], designers: details.designers || [], images: details.images || [],
-            minPlayers: details.minPlayers || "", maxPlayers: details.maxPlayers || "", bestPlayersMin: "", bestPlayersMax: "",
-            minTime: details.minTime || "", maxTime: details.maxTime || "", age: details.age || "",
-            complexity: details.complexity || "", mechanisms: details.mechanisms || [], categories: details.categories || [],
-            playerTypes: [], status: "none", location: "", summary: details.summary || "", notes: "", rating: "",
-            addedDate: new Date().toISOString().slice(0, 10),
-          };
-          newGames.push(game);
-          bggIdToGame.set(String(p.objectid), game);
-        }
-        const winner = p.players.find((pl) => pl.win);
-        newPlays.push({
-          id: uid(), gameId: game.id, gameName: game.name, date: p.date || "", mode: "physical-owned",
-          players: p.players.map((pl) => pl.name).filter(Boolean).join(", "), playerIds: [],
-          winner: winner ? winner.name : "", notes: p.comments || "", images: [], bggPlayId: p.bggPlayId,
-        });
+        try {
+          if (!p.objectid || existingBggPlayIds.has(p.bggPlayId)) continue;
+          let game = bggIdToGame.get(String(p.objectid));
+          if (!game) {
+            let details = {};
+            try { details = await bggThing(p.objectid); await new Promise((r) => setTimeout(r, 1200)); } catch { /* best effort — fall back to bare name below */ }
+            game = {
+              id: uid(), bggId: p.objectid, name: details.name || p.itemName || "Unbekanntes Spiel", year: details.year || "",
+              publishers: details.publishers || [], designers: details.designers || [], images: details.images || [],
+              minPlayers: details.minPlayers || "", maxPlayers: details.maxPlayers || "", bestPlayersMin: "", bestPlayersMax: "",
+              minTime: details.minTime || "", maxTime: details.maxTime || "", age: details.age || "",
+              complexity: details.complexity || "", mechanisms: details.mechanisms || [], categories: details.categories || [],
+              playerTypes: [], status: "none", location: "", summary: details.summary || "", notes: "", rating: "",
+              addedDate: new Date().toISOString().slice(0, 10),
+            };
+            newGames.push(game);
+            bggIdToGame.set(String(p.objectid), game);
+          }
+          const winner = p.players.find((pl) => pl.win);
+          newPlays.push({
+            id: uid(), gameId: game.id, gameName: game.name, date: p.date || "", mode: "physical-owned",
+            players: p.players.map((pl) => pl.name).filter(Boolean).join(", "), playerIds: [],
+            winner: winner ? winner.name : "", notes: p.comments || "", images: [], bggPlayId: p.bggPlayId,
+          });
+        } catch { /* skip this one play, keep going with the rest */ }
       }
 
       if (newGames.length) setGames((prev) => [...prev, ...newGames]);
       if (newPlays.length) setPlays((prev) => [...prev, ...newPlays]);
-      setBggImportResult({ playsImported: newPlays.length, gamesAdded: newGames.length, totalFound: allPlays.length });
+      setBggImportResult({ playsImported: newPlays.length, gamesAdded: newGames.length, totalFound: allPlays.length, incomplete: fetchIncomplete });
       setBggImportStatus("done");
     } catch (e) {
-      setBggImportError(e.message || "Import fehlgeschlagen");
-      setBggImportStatus("error");
+      // Even here, save whatever we managed to gather before the unexpected failure.
+      if (newGames.length) setGames((prev) => [...prev, ...newGames]);
+      if (newPlays.length) setPlays((prev) => [...prev, ...newPlays]);
+      setBggImportResult({ playsImported: newPlays.length, gamesAdded: newGames.length, totalFound: allPlays.length || newPlays.length, incomplete: true });
+      setBggImportError(e.message || "Import teilweise fehlgeschlagen — bereits gefundene Partien wurden trotzdem gespeichert.");
+      setBggImportStatus(newPlays.length ? "done" : "error");
     }
   };
   const addToWishlistFromRecommendation = (rec) => {
