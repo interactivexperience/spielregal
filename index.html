@@ -3080,6 +3080,7 @@ function SwipeableRow({ onDelete, children, disabled }) {
 }
 
 function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
+  const [detailGroupKey, setDetailGroupKey] = useState(null);
   const sorted = [...plays].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
   const modeIcon = { "physical-owned": Home, "physical-other": Sofa, bga: Globe };
   const modeLabel = { "physical-owned": "Eigene Sammlung", "physical-other": "Geliehen / Event", bga: "BoardGameArena" };
@@ -3153,40 +3154,61 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
       )}
 
       {sorted.length === 0 ? <p className="text-[#5C574F] text-sm font-body mt-8 text-center">Noch keine Partien eingetragen — auch geliehene oder online gespielte Spiele zählen.</p> : (
-        <div className="space-y-4 pb-20">
+        <div className="space-y-2 pb-20">
           {grouped.map((group) => {
             const first = group[0];
             const game = games.find((g) => g.id === first.gameId);
+            const lastPlayerCount = first.players ? first.players.split(",").map((s) => s.trim()).filter(Boolean).length : 0;
             return (
-              <div key={first.gameId || first.gameName}>
-                <div className="flex items-center gap-2 mb-1.5 px-1">
-                  {game && <Cover game={game} size="sm" className="!w-7 !h-7" />}
-                  <p className="text-[#F2EDE4] font-body text-sm font-medium truncate">{first.gameName}</p>
-                  {group.length > 1 && <span className="text-[#5C574F] text-xs font-mono shrink-0">{group.length}×</span>}
+              <button key={first.gameId || first.gameName} onClick={() => setDetailGroupKey(first.gameId || first.gameName)} className="w-full text-left bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center gap-3">
+                {game ? <Cover game={game} size="sm" /> : <div className="w-12 h-12 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#A39C8F] shrink-0"><Dices size={18} /></div>}
+                <div className="flex-1 min-w-0">
+                  <p className="text-[#F2EDE4] font-body truncate">{first.gameName}</p>
+                  <p className="text-[#5C574F] text-xs font-body">
+                    {group.length}× gespielt · zuletzt {first.date || "?"}
+                    {lastPlayerCount > 0 ? ` · ${lastPlayerCount} Spieler` : ""}
+                    {first.winner ? ` · Sieger: ${first.winner}` : ""}
+                  </p>
                 </div>
-                <div className="space-y-2">
-                  {group.map((p) => {
-                    const IconC = modeIcon[p.mode] || Home;
-                    return (
-                      <SwipeableRow key={p.id} onDelete={() => onDelete(p.id)} disabled={demoMode}>
-                        <button onClick={() => onEdit(p)} className="w-full text-left bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#A39C8F] shrink-0"><IconC size={16} /></div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[#F2EDE4] font-body truncate">{p.date}</p>
-                            <p className="text-[#5C574F] text-xs font-body">{modeLabel[p.mode]}{p.winner ? ` · Sieger: ${p.winner}` : ""}</p>
-                          </div>
-                          <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
-                        </button>
-                      </SwipeableRow>
-                    );
-                  })}
-                </div>
-              </div>
+                <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
+              </button>
             );
           })}
         </div>
       )}
       <div className="pb-16 mt-auto"><BggBadge /></div>
+      {detailGroupKey && (() => {
+        const liveGroup = grouped.find((g) => (g[0].gameId || g[0].gameName) === detailGroupKey);
+        if (!liveGroup) { setDetailGroupKey(null); return null; }
+        return (
+        <div className="fixed inset-0 z-50 bg-[#1C1B1A]">
+          <div className="w-full h-full max-w-3xl mx-auto overflow-y-auto font-body">
+            <div className="sticky top-0 bg-[#1C1B1A] border-b border-[#3A3631] px-5 flex items-center justify-between z-10" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
+              <button onClick={() => setDetailGroupKey(null)} className="text-[#A39C8F] p-1" aria-label="Zurück"><ChevronLeft size={22} /></button>
+              <h2 className="font-display text-xl text-[#F2EDE4] truncate px-2">{liveGroup[0].gameName}</h2>
+              <span className="w-6" />
+            </div>
+            <div className="p-5 space-y-2">
+              {liveGroup.map((p) => {
+                const IconC = modeIcon[p.mode] || Home;
+                return (
+                  <SwipeableRow key={p.id} onDelete={() => onDelete(p.id)} disabled={demoMode}>
+                    <button onClick={() => onEdit(p)} className="w-full text-left bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#A39C8F] shrink-0"><IconC size={16} /></div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[#F2EDE4] font-body truncate">{p.date}</p>
+                        <p className="text-[#5C574F] text-xs font-body">{modeLabel[p.mode]}{p.winner ? ` · Sieger: ${p.winner}` : ""}</p>
+                      </div>
+                      <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
+                    </button>
+                  </SwipeableRow>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+        );
+      })()}
     </div>
   );
 }
@@ -3892,16 +3914,20 @@ function App() {
       }
       const existingBggPlayIds = new Set(plays.map((p) => p.bggPlayId).filter(Boolean));
       const bggIdToGame = new Map(games.filter((g) => g.bggId).map((g) => [String(g.bggId), g]));
+      const nameToGame = new Map(games.map((g) => [g.name.toLowerCase(), g]));
 
       for (const p of allPlays) {
         try {
-          if (!p.objectid || existingBggPlayIds.has(p.bggPlayId)) continue;
-          let game = bggIdToGame.get(String(p.objectid));
+          if (existingBggPlayIds.has(p.bggPlayId)) continue;
+          let game = p.objectid ? bggIdToGame.get(String(p.objectid)) : null;
+          if (!game && p.itemName) game = nameToGame.get(p.itemName.toLowerCase());
           if (!game) {
             let details = {};
-            try { details = await bggThing(p.objectid); await new Promise((r) => setTimeout(r, 1200)); } catch { /* best effort — fall back to bare name below */ }
+            if (p.objectid) {
+              try { details = await bggThing(p.objectid); await new Promise((r) => setTimeout(r, 1200)); } catch { /* best effort — fall back to bare name below */ }
+            }
             game = {
-              id: uid(), bggId: p.objectid, name: details.name || p.itemName || "Unbekanntes Spiel", year: details.year || "",
+              id: uid(), bggId: p.objectid || "", name: details.name || p.itemName || "Unbekanntes Spiel", year: details.year || "",
               publishers: details.publishers || [], designers: details.designers || [], images: details.images || [],
               minPlayers: details.minPlayers || "", maxPlayers: details.maxPlayers || "", bestPlayersMin: "", bestPlayersMax: "",
               minTime: details.minTime || "", maxTime: details.maxTime || "", age: details.age || "",
@@ -3910,7 +3936,8 @@ function App() {
               addedDate: new Date().toISOString().slice(0, 10),
             };
             newGames.push(game);
-            bggIdToGame.set(String(p.objectid), game);
+            if (p.objectid) bggIdToGame.set(String(p.objectid), game);
+            nameToGame.set(game.name.toLowerCase(), game);
           }
           const winner = p.players.find((pl) => pl.win);
           newPlays.push({
