@@ -3046,7 +3046,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
 }
 
 /* ---------------- RECOMMENDATIONS ---------------- */
-function Recommendations({ games, plays, onAddWishlist }) {
+function Recommendations({ games, plays, onAddWishlist, onView }) {
   const [discovering, setDiscovering] = useState(false);
   const [external, setExternal] = useState([]);
   const [externalError, setExternalError] = useState("");
@@ -3110,27 +3110,47 @@ function Recommendations({ games, plays, onAddWishlist }) {
           <div>
             {external.length > 0 && (
               <div className="grid grid-cols-2 gap-3">
-                {external.map(r => (
-                  <div key={r.bggId} className="bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
-                    {r.images && r.images[0] ? (
-                      <img src={r.images[0]} alt={r.name} className="w-full aspect-square block object-cover rounded-lg border border-[#3A3631]" />
-                    ) : (
-                      <div className="w-full aspect-square rounded-lg border border-[#3A3631] bg-[#2E2B28] flex items-center justify-center text-[#5C574F]">
-                        <Dices size={28} />
-                      </div>
-                    )}
-                    <p className="text-[#F2EDE4] font-body text-sm font-medium mt-2 leading-tight truncate">{r.name}</p>
-                    <p className="text-[#5C574F] text-xs font-body">{r.year}{r.minPlayers ? ` · ${r.minPlayers}–${r.maxPlayers} Sp.` : ""}</p>
-                    {r.summary && (
-                      <p className="text-[#A39C8F] text-[11px] font-body mt-1.5 leading-snug line-clamp-3" style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                        {r.summary.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()}
-                      </p>
-                    )}
-                    <button onClick={() => onAddWishlist(r)} className="w-full mt-2 h-9 flex items-center justify-center gap-1.5 bg-[#6C7FE0]/15 text-[#6C7FE0] rounded-[10px] text-xs font-medium">
-                      <Plus size={13} /> Zur Wunschliste
+                {external.map(r => {
+                  const existingGame = games.find(g => g.bggId && r.bggId && String(g.bggId) === String(r.bggId));
+                  const previewGame = existingGame || {
+                    id: r.bggId, bggId: r.bggId, name: r.name, year: r.year || "",
+                    images: r.images || [], publishers: r.publishers || [], designers: r.designers || [],
+                    minPlayers: r.minPlayers || "", maxPlayers: r.maxPlayers || "", bestPlayersMin: "", bestPlayersMax: "",
+                    minTime: r.minTime || "", maxTime: r.maxTime || "", age: r.age || "",
+                    complexity: r.complexity || "", mechanisms: r.mechanisms || [], categories: r.categories || [],
+                    playerTypes: [], summary: r.summary || "", notes: "", rating: "", status: "none",
+                  };
+                  return (
+                    <button key={r.bggId} onClick={() => onView(previewGame)} className="text-left bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
+                      {r.images && r.images[0] ? (
+                        <img src={r.images[0]} alt={r.name} className="w-full aspect-square block object-cover rounded-lg border border-[#3A3631]" />
+                      ) : (
+                        <div className="w-full aspect-square rounded-lg border border-[#3A3631] bg-[#2E2B28] flex items-center justify-center text-[#5C574F]">
+                          <Dices size={28} />
+                        </div>
+                      )}
+                      <p className="text-[#F2EDE4] font-body text-sm font-medium mt-2 leading-tight truncate">{r.name}</p>
+                      <p className="text-[#5C574F] text-xs font-body">{r.year}{r.minPlayers ? ` · ${r.minPlayers}–${r.maxPlayers} Sp.` : ""}</p>
+                      {r.summary && (
+                        <p className="text-[#A39C8F] text-[11px] font-body mt-1.5 leading-snug" style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                          {r.summary.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()}
+                        </p>
+                      )}
+                      {existingGame ? (
+                        <div className="w-full mt-2 h-9 flex items-center justify-center gap-1.5 bg-[#4E8C82]/15 text-[#4E8C82] rounded-[10px] text-xs font-medium">
+                          <Check size={13} /> Schon hinzugefügt
+                        </div>
+                      ) : (
+                        <div
+                          onClick={(e) => { e.stopPropagation(); onAddWishlist(r); }}
+                          className="w-full mt-2 h-9 flex items-center justify-center gap-1.5 bg-[#6C7FE0]/15 text-[#6C7FE0] rounded-[10px] text-xs font-medium"
+                        >
+                          <Plus size={13} /> Zur Wunschliste
+                        </div>
+                      )}
                     </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
             {external.length === 0 && !externalError && !hasSearched && <p className="text-[#5C574F] text-sm font-body">Tippe oben auf "Empfehlung anzeigen", um passende neue Spiele bei BGG zu finden (benötigt Internetzugriff).</p>}
@@ -3746,7 +3766,7 @@ function App() {
           {tab === "dashboard" && <Dashboard games={displayGames} plays={displayPlays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} onView={(g) => setDetailGame(g)} sectionOrder={dashboardOrder} onReorder={setDashboardOrder} onSearch={() => setCommandBarOpen(true)} />}
           {tab === "collection" && <Collection games={displayGames} plays={displayPlays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => !demoMode && setGameModal({ editing: null })} onView={(g) => setDetailGame(g)} onEdit={(g) => setGameModal({ editing: g })} onDelete={(g) => deleteGame(g.id)} categoryOptions={categoryOptions} mechanismOptions={mechanismOptions} demoMode={demoMode} lists={displayLists} onCreateList={(name) => !demoMode && addList(name)} onOpenList={(l) => setDetailList(l)} />}
           {tab === "playlog" && <PlayLog plays={displayPlays} games={displayGames} onAdd={() => !demoMode && setPlayModal({ editing: null })} onEdit={(p) => !demoMode && setPlayModal({ editing: p })} onDelete={deletePlay} demoMode={demoMode} />}
-          {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} onAddWishlist={addToWishlistFromRecommendation} />}
+          {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} onAddWishlist={addToWishlistFromRecommendation} onView={(g) => setDetailGame(g)} />}
           {tab === "settings" && (
             <SettingsPage
               customCategories={customCategories}
