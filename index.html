@@ -2823,7 +2823,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           <button onClick={clearFilter} className="shrink-0 px-3 py-1.5 rounded-full text-xs font-body border border-[#6C7FE0] text-[#6C7FE0] flex items-center gap-1"><X size={12} /> Filter</button>
         </div>
       )}
-      {list.length === 0 ? <p className="text-[#5C574F] text-sm font-body mt-8 text-center">Keine Spiele gefunden.</p> : (
+      {list.length === 0 ? <p className="text-[#5C574F] text-sm font-body mt-8 mb-12 text-center">Keine Spiele gefunden.</p> : (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3 pb-20">
           {list.map(g => (
             <button
@@ -2851,7 +2851,12 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           ))}
         </div>
       )}
-      <div className="pb-16 mt-auto"><BggBadge /></div>
+      <div className="w-full pb-16 mt-auto text-center">
+        <p className="text-[10px] font-body text-[#5C574F]">
+          {games.filter((g) => g.status === "owned").length} im Besitz · {games.filter((g) => g.status === "wishlist").length} Wunschliste ·{" "}
+          <a href="https://boardgamegeek.com" target="_blank" rel="noopener noreferrer" className="underline">Powered by BGG</a>
+        </p>
+      </div>
       {contextGame && (
         <div className="fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)" }} onClick={() => setContextGame(null)}>
           <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm rise-in font-body p-5 space-y-2" onClick={(e) => e.stopPropagation()}>
@@ -3041,26 +3046,21 @@ function Recommendations({ games, plays, onAddWishlist }) {
   const [discovering, setDiscovering] = useState(false);
   const [external, setExternal] = useState([]);
   const [externalError, setExternalError] = useState("");
-  const playedIds = new Set(plays.map(p => p.gameId));
+  const [hasSearched, setHasSearched] = useState(false);
   const profile = useMemo(() => {
     const rated = games.filter(g => g.rating && parseFloat(g.rating) >= 8);
     const tagCount = {};
     rated.forEach(g => { [...(g.mechanisms || []), ...(g.categories || [])].forEach(t => { tagCount[t] = (tagCount[t] || 0) + 1; }); });
     return Object.entries(tagCount).sort((a, b) => b[1] - a[1]);
   }, [games]);
-  const unplayed = games.filter(g => !playedIds.has(g.id));
-  const scored = unplayed.map(g => {
-    const tags = [...(g.mechanisms || []), ...(g.categories || [])];
-    const score = profile.reduce((s, [tag, weight]) => (tags.includes(tag) ? s + weight : s), 0);
-    return { game: g, score };
-  }).filter(x => x.score > 0).sort((a, b) => b.score - a.score).slice(0, 8);
-  const topTag = profile[0] ? profile[0][0] : null;
+  const topTags = profile.slice(0, 3).map(([tag]) => tag);
 
   const discoverNew = async () => {
-    if (!topTag) return;
-    setDiscovering(true); setExternalError("");
+    if (topTags.length === 0) return;
+    setDiscovering(true); setExternalError(""); setHasSearched(true);
     try {
-      const r = await bggSearch(topTag);
+      const tag = topTags[Math.floor(Math.random() * topTags.length)];
+      const r = await bggSearch(tag);
       const ownedNames = new Set(games.map(g => g.name.toLowerCase()));
       const shortlist = r.filter(x => !ownedNames.has(x.name.toLowerCase())).slice(0, 6);
       // bggSearch only returns name/year — fetch full details (cover, players, complexity)
@@ -3075,7 +3075,7 @@ function Recommendations({ games, plays, onAddWishlist }) {
   return (
     <div className="p-5 pb-6 min-h-full flex flex-col">
       <h1 className="font-display text-3xl text-[#F2EDE4] mb-1">Empfehlungen</h1>
-      <p className="text-[#A39C8F] text-sm font-body mb-5">Basierend auf Spielen, die du mit 8+ bewertet hast — egal ob eigene Sammlung, geliehen oder BGA.</p>
+      <p className="text-[#A39C8F] text-sm font-body mb-5">Neue Spiele, die zu dem passen, was du mit 8+ bewertet hast — egal ob eigene Sammlung, geliehen oder BGA.</p>
       {profile.length === 0 ? (
         <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-5 text-center">
           <Sparkles size={28} className="text-[#D4A24C] mx-auto mb-2" />
@@ -3083,7 +3083,7 @@ function Recommendations({ games, plays, onAddWishlist }) {
         </div>
       ) : (
         <>
-          <div className="bg-gradient-to-r from-[#6C7FE0]/15 to-transparent border border-[#6C7FE0]/30 rounded-2xl p-4 mb-6">
+          <div className="bg-gradient-to-r from-[#6C7FE0]/15 to-transparent border border-[#6C7FE0]/30 rounded-2xl p-4 mb-5">
             <p className="text-xs font-semibold text-[#6C7FE0] uppercase tracking-wide mb-2">Dein Geschmacksprofil</p>
             <div className="flex flex-wrap gap-1.5">
               {profile.slice(0, 8).map(([tag, weight]) => {
@@ -3097,43 +3097,13 @@ function Recommendations({ games, plays, onAddWishlist }) {
             </div>
           </div>
 
-          <div className="mb-6">
-            <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Ungespielt, passt zu dir</h2>
-            {scored.length === 0 ? (
-              <p className="text-[#5C574F] text-sm font-body">Kein ungespieltes Spiel überschneidet sich aktuell mit deinem Profil.</p>
-            ) : (
-              <div className="grid grid-cols-2 gap-3">
-                {scored.map(({ game }) => {
-                  const tags = [...(game.mechanisms || []), ...(game.categories || [])];
-                  const match = profile.find(([t]) => tags.includes(t));
-                  const matchTag = match ? match[0] : null;
-                  return (
-                    <div key={game.id} className="bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
-                      <Cover game={game} size="lg" />
-                      <p className="text-[#F2EDE4] font-body text-sm font-medium mt-2 leading-tight truncate">{game.name}</p>
-                      {matchTag && <p className="text-[#6C7FE0] text-[11px] font-body mt-0.5 truncate">✨ {matchTag}</p>}
-                      <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
-                        <Pill tone={game.status === "owned" ? "teal" : "amber"}>{game.status === "owned" ? "besitzt du" : "nicht in Sammlung"}</Pill>
-                      </div>
-                      {game.status !== "owned" && game.status !== "wishlist" && (
-                        <button onClick={() => onAddWishlist(game)} className="w-full mt-2 h-9 flex items-center justify-center gap-1.5 bg-[#6C7FE0]/15 text-[#6C7FE0] rounded-[10px] text-xs font-medium">
-                          <Plus size={13} /> Zur Wunschliste
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          <button onClick={discoverNew} disabled={discovering} className="w-full h-12 mb-5 flex items-center justify-center gap-2 bg-[#6C7FE0] disabled:opacity-50 text-[#F2EDE4] rounded-[14px] font-medium active:scale-[0.99]">
+            {discovering ? <Loader2 size={18} /> : <Sparkles size={18} />}
+            {hasSearched ? "Neue Empfehlung anzeigen" : "Empfehlung anzeigen"}
+          </button>
+
+          {externalError && <p className="text-sm text-[#D4A24C] font-body">{externalError}</p>}
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide">Neu entdecken</h2>
-              <button onClick={discoverNew} disabled={discovering} className="flex items-center gap-1.5 text-xs font-body text-[#D4A24C] disabled:opacity-50">
-                {discovering ? <Loader2 size={13} /> : <Sparkles size={13} />}{topTag ? `Nach "${topTag}" suchen` : "Suchen"}
-              </button>
-            </div>
-            {externalError && <p className="text-sm text-[#D4A24C] font-body">{externalError}</p>}
             {external.length > 0 && (
               <div className="grid grid-cols-2 gap-3">
                 {external.map(r => (
@@ -3154,7 +3124,8 @@ function Recommendations({ games, plays, onAddWishlist }) {
                 ))}
               </div>
             )}
-            {external.length === 0 && !externalError && <p className="text-[#5C574F] text-sm font-body">Tippe auf „Suchen", um passende neue Spiele bei BGG zu finden (benötigt Internetzugriff).</p>}
+            {external.length === 0 && !externalError && !hasSearched && <p className="text-[#5C574F] text-sm font-body">Tippe oben auf "Empfehlung anzeigen", um passende neue Spiele bei BGG zu finden (benötigt Internetzugriff).</p>}
+            {external.length === 0 && !externalError && hasSearched && <p className="text-[#5C574F] text-sm font-body">Kein neuer Treffer gefunden — nochmal tippen für einen neuen Versuch.</p>}
           </div>
         </>
       )}
@@ -3233,8 +3204,8 @@ function GameDetailModal({ game, plays, lists, onToggleList, onCreateList, onClo
               <StatBlock icon={COMPLEXITY_ICON[label] || Block} value={COMPLEXITY_SHORT[label] || label} sub={game.complexity ? `${parseFloat(game.complexity).toFixed(1)}/5` : ""} />
             )}
             <StatBlock
-              icon={game.status === "owned" ? Library : Heart}
-              value={game.status === "owned" ? "Besitz" : game.status === "wishlist" ? "Wunschliste" : "—"}
+              icon={game.status === "owned" ? Library : game.status === "wishlist" ? Heart : Dices}
+              value={game.status === "owned" ? "Besitz" : game.status === "wishlist" ? "Wunsch" : "Gespielt"}
               sub="Status"
             />
           </div>
