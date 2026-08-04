@@ -1566,6 +1566,7 @@ async function bggFetchAllPlays(username) {
       all.push({
         bggPlayId: el.getAttribute("id"),
         date: el.getAttribute("date"),
+        quantity: Math.max(1, parseInt(el.getAttribute("quantity"), 10) || 1),
         objectid: itemEl ? itemEl.getAttribute("objectid") : "",
         itemName: itemEl ? itemEl.getAttribute("name") : "",
         comments: commentsEl ? commentsEl.textContent : "",
@@ -1920,6 +1921,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
   const [winner, setWinner] = useState(initial ? initial.winner || "" : "");
   const [notes, setNotes] = useState(initial ? initial.notes || "" : "");
   const [images, setImages] = useState(initial ? initial.images || [] : []);
+  const [quantity, setQuantity] = useState(1);
 
   const filtered = gameQuery ? games.filter(g => g.name.toLowerCase().includes(gameQuery.toLowerCase())) : games.slice(0, 6);
 
@@ -1927,7 +1929,14 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
     if (!selectedGame) return;
     const profileNames = playerIds.map((id) => (playerProfiles.find((p) => p.id === id) || {}).name).filter(Boolean);
     const mergedPlayers = [...new Set([...profileNames, ...players.split(",").map((n) => n.trim()).filter(Boolean)])].join(", ");
-    onSave({ id: initial ? initial.id : uid(), gameId: selectedGame.id, gameName: selectedGame.name, date, mode, players: mergedPlayers, playerIds, winner, notes, images });
+    if (!initial && quantity > 1) {
+      const batch = Array.from({ length: quantity }, () => ({
+        id: uid(), gameId: selectedGame.id, gameName: selectedGame.name, date, mode, players: mergedPlayers, playerIds, winner, notes, images,
+      }));
+      onSave(batch);
+    } else {
+      onSave({ id: initial ? initial.id : uid(), gameId: selectedGame.id, gameName: selectedGame.name, date, mode, players: mergedPlayers, playerIds, winner, notes, images });
+    }
   };
 
   return (
@@ -1970,6 +1979,17 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                 <label className="text-[11px] text-[#5C574F]">Datum</label>
                 <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-auto min-w-[180px] h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base mt-2.5" />
               </div>
+              {!initial && (
+                <div>
+                  <label className="text-[11px] text-[#5C574F]">Wie oft an diesem Tag gespielt?</label>
+                  <div className="flex items-center gap-3 mt-2.5">
+                    <button type="button" onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="w-10 h-10 rounded-full bg-[#262422] border border-[#3A3631] text-[#F2EDE4] flex items-center justify-center text-lg">–</button>
+                    <span className="font-display text-xl text-[#F2EDE4] w-8 text-center">{quantity}</span>
+                    <button type="button" onClick={() => setQuantity((q) => Math.min(20, q + 1))} className="w-10 h-10 rounded-full bg-[#262422] border border-[#3A3631] text-[#F2EDE4] flex items-center justify-center text-lg">+</button>
+                    {quantity > 1 && <span className="text-xs text-[#5C574F]">legt {quantity} gleiche Partien an</span>}
+                  </div>
+                </div>
+              )}
               <div>
                 <label className="text-[11px] text-[#5C574F]">Mitspieler</label>
                 <div className="flex items-center gap-3 overflow-x-auto pb-1 mt-1.5">
@@ -3921,13 +3941,16 @@ function App() {
         setBggImportStatus("error");
         return;
       }
-      const existingBggPlayIds = new Set(plays.map((p) => p.bggPlayId).filter(Boolean));
+      const existingBggPlayCounts = new Map();
+      plays.forEach((p) => { if (p.bggPlayId) existingBggPlayCounts.set(p.bggPlayId, (existingBggPlayCounts.get(p.bggPlayId) || 0) + 1); });
       const bggIdToGame = new Map(games.filter((g) => g.bggId).map((g) => [String(g.bggId), g]));
       const nameToGame = new Map(games.map((g) => [g.name.toLowerCase(), g]));
 
       for (const p of allPlays) {
         try {
-          if (existingBggPlayIds.has(p.bggPlayId)) continue;
+          const already = existingBggPlayCounts.get(p.bggPlayId) || 0;
+          const needed = Math.max(0, (p.quantity || 1) - already);
+          if (needed === 0) continue;
           let game = p.objectid ? bggIdToGame.get(String(p.objectid)) : null;
           if (!game && p.itemName) {
             const norm = (s) => s.toLowerCase().replace(/\s*\([^)]*\)\s*/g, "").replace(/[^a-z0-9]+/g, " ").trim();
@@ -3954,11 +3977,13 @@ function App() {
             nameToGame.set(game.name.toLowerCase(), game);
           }
           const winner = p.players.find((pl) => pl.win);
-          newPlays.push({
-            id: uid(), gameId: game.id, gameName: game.name, date: p.date || "", mode: "physical-owned",
-            players: p.players.map((pl) => pl.name).filter(Boolean).join(", "), playerIds: [],
-            winner: winner ? winner.name : "", notes: p.comments || "", images: [], bggPlayId: p.bggPlayId,
-          });
+          for (let i = 0; i < needed; i++) {
+            newPlays.push({
+              id: uid(), gameId: game.id, gameName: game.name, date: p.date || "", mode: "physical-owned",
+              players: p.players.map((pl) => pl.name).filter(Boolean).join(", "), playerIds: [],
+              winner: winner ? winner.name : "", notes: p.comments || "", images: [], bggPlayId: p.bggPlayId,
+            });
+          }
         } catch (err) { failures.push(`${p.itemName || "?"} (${p.date || "?"}): ${err.message || err}`); }
       }
 
@@ -3991,11 +4016,13 @@ function App() {
       }];
     });
   };
-  const savePlay = (play) => {
+  const savePlay = (playOrPlays) => {
+    const list = Array.isArray(playOrPlays) ? playOrPlays : [playOrPlays];
     setPlays(prev => {
-      const exists = prev.find(p => p.id === play.id);
-      if (!exists) { setCelebrate(true); playChime(); setTimeout(() => setCelebrate(false), 1600); }
-      return exists ? prev.map(p => p.id === play.id ? play : p) : [...prev, play];
+      const isNew = !prev.find(p => p.id === list[0].id);
+      if (isNew) { setCelebrate(true); playChime(); setTimeout(() => setCelebrate(false), 1600); }
+      const ids = new Set(list.map(p => p.id));
+      return [...prev.filter(p => !ids.has(p.id)), ...list];
     });
     setPlayModal(null);
   };
