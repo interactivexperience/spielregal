@@ -1289,6 +1289,14 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
                 {bggImportResult.incomplete ? " BGG hat den Import vorzeitig abgebrochen (Server war überlastet) — tipp einfach nochmal auf \"Partien importieren\", bereits importierte werden automatisch übersprungen." : ""}
               </p>
             )}
+            {bggImportStatus === "done" && bggImportResult && bggImportResult.failures && bggImportResult.failures.length > 0 && (
+              <div className="mt-2 bg-[#C1443C]/10 border border-[#C1443C]/30 rounded-lg p-2.5">
+                <p className="text-xs text-[#C1443C] font-medium mb-1">{bggImportResult.failures.length} Partie{bggImportResult.failures.length === 1 ? "" : "n"} konnte{bggImportResult.failures.length === 1 ? "" : "n"} nicht verarbeitet werden:</p>
+                {bggImportResult.failures.slice(0, 10).map((f, i) => (
+                  <p key={i} className="text-[11px] text-[#5C574F] font-mono">{f}</p>
+                ))}
+              </div>
+            )}
             {bggImportStatus === "error" && <p className="text-xs text-[#C1443C] mt-2">{bggImportError}</p>}
           </div>
           <div>
@@ -3901,6 +3909,7 @@ function App() {
     setBggImportError("");
     const newGames = [];
     const newPlays = [];
+    const failures = [];
     let fetchIncomplete = false;
     let allPlays = [];
     try {
@@ -3920,7 +3929,12 @@ function App() {
         try {
           if (existingBggPlayIds.has(p.bggPlayId)) continue;
           let game = p.objectid ? bggIdToGame.get(String(p.objectid)) : null;
-          if (!game && p.itemName) game = nameToGame.get(p.itemName.toLowerCase());
+          if (!game && p.itemName) {
+            const norm = (s) => s.toLowerCase().replace(/\s*\([^)]*\)\s*/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+            const wanted = norm(p.itemName);
+            game = nameToGame.get(p.itemName.toLowerCase())
+              || games.find((g) => norm(g.name) === wanted || norm(g.name).includes(wanted) || wanted.includes(norm(g.name)));
+          }
           if (!game) {
             let details = {};
             if (p.objectid) {
@@ -3945,18 +3959,18 @@ function App() {
             players: p.players.map((pl) => pl.name).filter(Boolean).join(", "), playerIds: [],
             winner: winner ? winner.name : "", notes: p.comments || "", images: [], bggPlayId: p.bggPlayId,
           });
-        } catch { /* skip this one play, keep going with the rest */ }
+        } catch (err) { failures.push(`${p.itemName || "?"} (${p.date || "?"}): ${err.message || err}`); }
       }
 
       if (newGames.length) setGames((prev) => [...prev, ...newGames]);
       if (newPlays.length) setPlays((prev) => [...prev, ...newPlays]);
-      setBggImportResult({ playsImported: newPlays.length, gamesAdded: newGames.length, totalFound: allPlays.length, incomplete: fetchIncomplete });
+      setBggImportResult({ playsImported: newPlays.length, gamesAdded: newGames.length, totalFound: allPlays.length, incomplete: fetchIncomplete, failures });
       setBggImportStatus("done");
     } catch (e) {
       // Even here, save whatever we managed to gather before the unexpected failure.
       if (newGames.length) setGames((prev) => [...prev, ...newGames]);
       if (newPlays.length) setPlays((prev) => [...prev, ...newPlays]);
-      setBggImportResult({ playsImported: newPlays.length, gamesAdded: newGames.length, totalFound: allPlays.length || newPlays.length, incomplete: true });
+      setBggImportResult({ playsImported: newPlays.length, gamesAdded: newGames.length, totalFound: allPlays.length || newPlays.length, incomplete: true, failures });
       setBggImportError(e.message || "Import teilweise fehlgeschlagen — bereits gefundene Partien wurden trotzdem gespeichert.");
       setBggImportStatus(newPlays.length ? "done" : "error");
     }
