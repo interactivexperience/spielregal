@@ -1970,13 +1970,18 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
   const togglePlayerId = (id) => setPlayerIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   const knownPlayers = useMemo(() => {
     const set = new Set();
-    (plays || []).forEach((p) => (p.players || "").split(",").map((n) => n.trim()).filter(Boolean).forEach((n) => set.add(n)));
+    const profileNames = new Set(playerProfiles.map((p) => p.name));
+    (plays || []).forEach((p) => (p.players || "").split(",").map((n) => n.trim()).filter(Boolean).forEach((n) => { if (!profileNames.has(n)) set.add(n); }));
     return Array.from(set).sort();
-  }, [plays]);
+  }, [plays, playerProfiles]);
   const addPlayerName = (name) => {
     const current = players.split(",").map((n) => n.trim()).filter(Boolean);
     if (current.includes(name)) return;
     setPlayers(current.length ? `${current.join(", ")}, ${name}` : name);
+  };
+  const removePlayerName = (name) => {
+    const current = players.split(",").map((n) => n.trim()).filter(Boolean);
+    setPlayers(current.filter((n) => n !== name).join(", "));
   };
   const [date, setDate] = useState(initial ? initial.date : new Date().toISOString().slice(0, 10));
   const [players, setPlayers] = useState(initial ? initial.players || "" : "");
@@ -2057,7 +2062,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                 </div>
               )}
               <div>
-                <label className="text-[11px] text-[#5C574F]">Mitspieler</label>
+                <label className="text-[11px] text-[#5C574F]">Mitspieler <span className="text-[10px]">(antippen zum Auswählen, halten zum Bearbeiten)</span></label>
                 <div className="flex items-start gap-3 overflow-x-auto pb-1 mt-1.5">
                   {playerProfiles.map((p) => {
                     const selected = playerIds.includes(p.id);
@@ -2074,14 +2079,9 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                           {p.photo ? (
                             <img src={p.photo} alt={p.name} className="w-full h-full block object-cover" />
                           ) : (
-                            <div className="w-full h-full bg-[#262422] flex items-center justify-center text-[#A39C8F] font-display text-lg">{p.name.charAt(0).toUpperCase()}</div>
+                            <div className="w-full h-full bg-[#262422] flex items-center justify-center"><Camera size={20} className="text-[#5C574F]" /></div>
                           )}
                           {selected && <div className="absolute inset-0 bg-[#6C7FE0]/25 flex items-center justify-center"><Check size={18} className="text-white" /></div>}
-                          {!p.photo && !selected && (
-                            <div className="absolute bottom-0 right-0 w-4.5 h-4.5 rounded-full bg-[#1C1B1A] border border-[#3A3631] flex items-center justify-center" style={{ width: 16, height: 16 }}>
-                              <Camera size={9} className="text-[#5C574F]" />
-                            </div>
-                          )}
                         </button>
                         <p className="text-[10px] text-[#5C574F] truncate w-full text-center">{p.name}</p>
                       </div>
@@ -2091,15 +2091,24 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                     <Plus size={18} />
                   </button>
                 </div>
-                <p className="text-[10px] text-[#5C574F] mt-1.5">Antippen zum Auswählen, gedrückt halten zum Bearbeiten</p>
               </div>
               <input value={players} onChange={(e) => setPlayers(e.target.value)} placeholder="Weitere Mitspieler (Freitext, optional)"
                 className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#6C7FE0] ${players ? "bg-[#262422]" : "bg-transparent"}`} />
               {knownPlayers.length > 0 && (
                 <div className="flex gap-1.5 overflow-x-auto pb-1 -mt-1.5">
-                  {knownPlayers.filter((n) => !players.split(",").map((x) => x.trim()).includes(n)).map((n) => (
-                    <button key={n} type="button" onClick={() => addPlayerName(n)} className="shrink-0 px-2.5 py-1 rounded-full text-xs bg-[#262422] border border-[#3A3631] text-[#A39C8F]">+ {n}</button>
-                  ))}
+                  {knownPlayers.map((n) => {
+                    const active = players.split(",").map((x) => x.trim()).includes(n);
+                    return (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => (active ? removePlayerName(n) : addPlayerName(n))}
+                        className={`shrink-0 px-2.5 py-1 rounded-full text-xs border flex items-center gap-1 ${active ? "bg-[#1C1B1A] border-[#3A3631] text-[#5C574F]" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}
+                      >
+                        {active ? <Check size={11} /> : "+"} {n}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
               <input value={winner} onChange={(e) => setWinner(e.target.value)} placeholder="Gewinner (optional)"
