@@ -1604,7 +1604,15 @@ const AI_WORKER_URL_KEY = "spielregal:aiWorkerUrl";
 async function aiElevatorPitch(workerUrl, gameName, originalSummary) {
   const prompt = `Du bist ein Brettspiel-Experte und schreibst kurze, klare Zusammenfassungen auf Deutsch.
 
-Schreib einen Elevator-Pitch für das Brettspiel "${gameName}" — maximal 5 Sätze, Fokus ausschließlich auf die Kernmechaniken (wie wird gespielt, was macht man als Spieler). Jemand, der das liest, soll sofort verstehen, wie das Spiel ungefähr funktioniert. Kein Marketing-Geschwafel, keine Einleitung wie "Willkommen zu" — direkt zur Sache. Antworte nur mit dem Fließtext, ohne Überschrift oder Anführungszeichen.
+Schreib einen Elevator-Pitch für das Brettspiel "${gameName}" mit zwei Teilen:
+1. Eine kurze, prägnante TITELZEILE (3-6 Wörter, wie ein Schlagwort-Motto), die die Kernmechanik auf den Punkt bringt — z.B. im Stil von "Zwei Würfel. Ein Fürstentum. Deine Strategie."
+2. Darunter ein Fließtext, maximal 5 Sätze, Fokus ausschließlich auf die Kernmechaniken (wie wird gespielt, was macht man als Spieler). Jemand, der das liest, soll sofort verstehen, wie das Spiel ungefähr funktioniert.
+
+Kein Marketing-Geschwafel, keine Einleitung wie "Willkommen zu" — direkt zur Sache.
+
+Antworte in genau diesem Format, sonst nichts:
+TITEL: <die Titelzeile>
+TEXT: <der Fließtext>
 
 Original-Beschreibung (Englisch, von BoardGameGeek):
 ${(originalSummary || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 2000)}`;
@@ -1614,10 +1622,22 @@ ${(originalSummary || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().s
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
   });
-  if (!res.ok) throw new Error("KI nicht erreichbar — Worker-Adresse prüfen");
+  if (!res.ok) {
+    let detail = "";
+    try { detail = (await res.text()).slice(0, 150); } catch { /* ignore */ }
+    throw new Error(`KI-Worker antwortete mit Fehler ${res.status}${detail ? ": " + detail : ""}`);
+  }
   const json = await res.json();
   if (json.error) throw new Error(json.error);
-  return (json.text || "").trim();
+  const raw = (json.text || "").trim();
+
+  const titleMatch = raw.match(/TITEL:\s*(.+)/i);
+  const textMatch = raw.match(/TEXT:\s*([\s\S]+)/i);
+  const title = titleMatch ? titleMatch[1].trim() : "";
+  const body = textMatch ? textMatch[1].trim() : raw.replace(/TITEL:.*$/im, "").trim();
+
+  if (title) return `<h3>${title}</h3><p>${body}</p>`;
+  return `<p>${body}</p>`;
 }
 
 
@@ -1697,7 +1717,7 @@ const Cover = ({ game, size = "md", className: extraClass = "" }) => {
 };
 
 /* ---------------- ADD / EDIT GAME MODAL ---------------- */
-function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOptions, playerTypeOptions, designerOptions, customPlayerTypeDescriptions, onAddCategory, onAddMechanism, onAddPlayerType, onClose, onSave, onDelete, aiWorkerUrl }) {
+function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOptions, playerTypeOptions, designerOptions, customPlayerTypeDescriptions, onAddCategory, onAddMechanism, onAddPlayerType, onClose, onSave, onDelete, aiWorkerUrl, games }) {
   const [pitchLoading, setPitchLoading] = useState(false);
   const [pitchError, setPitchError] = useState("");
   const [step, setStep] = useState(initial ? "manual" : "search");
@@ -1765,13 +1785,19 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             </div>
             {searchError && <p className="text-sm text-[#D4A24C] font-body">{searchError}</p>}
             <div className="space-y-2">
-              {results.map((r) => (
-                <button key={r.bggId} onClick={() => pickResult(r)}
-                  className="w-full text-left bg-[#262422] hover:bg-[#2E2B28] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center justify-between gap-2">
-                  <span className="font-body text-[#F2EDE4] min-w-0 truncate">{r.name} <span className="text-[#5C574F]">({r.year || "?"})</span></span>
-                  <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
-                </button>
-              ))}
+              {results.map((r) => {
+                const alreadyOwned = (games || []).find((g) => g.bggId && String(g.bggId) === String(r.bggId));
+                return (
+                  <button key={r.bggId} onClick={() => pickResult(r)}
+                    className="w-full text-left bg-[#262422] hover:bg-[#2E2B28] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center justify-between gap-2">
+                    <span className="font-body text-[#F2EDE4] min-w-0 truncate">
+                      {r.name} <span className="text-[#5C574F]">({r.year || "?"})</span>
+                      {alreadyOwned && <span className="block text-[11px] text-[#D4A24C] mt-0.5">Bereits in deiner Sammlung</span>}
+                    </span>
+                    <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
+                  </button>
+                );
+              })}
             </div>
             <button onClick={() => setStep("manual")} className="w-full text-center py-3 mt-2 border border-[#3A3631] rounded-[14px] text-[#F2EDE4] font-body text-sm font-medium active:scale-[0.99]">
               Manuell anlegen
@@ -4360,6 +4386,7 @@ function App() {
           onSave={saveGame}
           onDelete={deleteGame}
           aiWorkerUrl={aiWorkerUrl}
+          games={games}
         />
       )}
       {playModal && <PlayFormModal games={games} plays={plays} playerProfiles={displayPlayers} onAddPlayer={addPlayer} onUpdatePlayerPhoto={updatePlayerPhoto} onUpdatePlayerName={updatePlayerName} onRemovePlayer={removePlayer} initial={playModal.editing} onClose={() => setPlayModal(null)} onSave={savePlay} onDelete={deletePlay} />}
