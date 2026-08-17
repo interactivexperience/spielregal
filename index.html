@@ -21,23 +21,41 @@
   html, body { background:#1C1B1A; margin:0; overscroll-behavior:none; }
   button { transition: transform 0.15s cubic-bezier(0.34, 1.2, 0.64, 1), opacity 0.15s ease, background-color 0.2s ease, border-color 0.2s ease; }
   button:active { transform: scale(0.96); }
-  button { position: relative; isolation: isolate; }
+  button { position: relative; isolation: isolate; overflow: hidden; }
   button::after {
     content: "";
-    position: absolute; inset: 0;
-    background: linear-gradient(120deg, transparent 20%, rgba(255,90,150,0.45), rgba(255,200,80,0.45), rgba(120,220,255,0.45), rgba(180,130,255,0.45), transparent 80%);
-    background-size: 250% 100%;
-    background-position: -120% 0;
+    position: absolute; top: 50%; left: 50%;
+    width: 220%; height: 220%;
+    transform: translate(-50%, -50%) scale(0);
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, #ff5a96, #ffc850, #78dcff, #b482ff, #ff5a96);
     opacity: 0;
     pointer-events: none;
-    border-radius: inherit;
     z-index: 5;
   }
-  button:active::after { opacity: 1; animation: rainbow-shimmer 0.55s ease-out; }
-  @keyframes rainbow-shimmer {
-    0% { background-position: -120% 0; opacity: 1; }
-    70% { opacity: 1; }
-    100% { background-position: 160% 0; opacity: 0; }
+  button:active::after { animation: rainbow-ripple 0.5s ease-out; }
+  @keyframes rainbow-ripple {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 0.5; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+  }
+  .save-pop { animation: savePop 0.38s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes savePop {
+    0% { transform: scale(1); }
+    35% { transform: scale(0.9); }
+    65% { transform: scale(1.06); }
+    100% { transform: scale(1); }
+  }
+  .save-ring {
+    position: absolute; top: 50%; left: 50%; width: 40px; height: 40px;
+    border: 2px solid #F2EDE4; border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0.3);
+    opacity: 0.8;
+    animation: saveRing 0.5s ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes saveRing {
+    0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0.8; }
+    100% { transform: translate(-50%, -50%) scale(2.6); opacity: 0; }
   }
   .font-display { font-family:'Fraunces', serif; font-optical-sizing:auto; }
   .font-body { font-family:'IBM Plex Sans', sans-serif; }
@@ -1897,6 +1915,16 @@ const Cover = ({ game, size = "md", className: extraClass = "" }) => {
 /* ---------------- ADD / EDIT GAME MODAL ---------------- */
 function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOptions, playerTypeOptions, designerOptions, customPlayerTypeDescriptions, onAddCategory, onAddMechanism, onAddPlayerType, onClose, onSave, onDelete, aiWorkerUrl, games }) {
   const [pitchLoading, setPitchLoading] = useState(false);
+  const [saveCelebrating, setSaveCelebrating] = useState(false);
+  const handleSaveClick = () => {
+    if (!initial) {
+      haptic([10, 30, 15]);
+      setSaveCelebrating(true);
+      setTimeout(() => onSave(form), 380);
+    } else {
+      onSave(form);
+    }
+  };
   const [typesLoading, setTypesLoading] = useState(false);
   const [typesError, setTypesError] = useState("");
   const [summaryVersion, setSummaryVersion] = useState(0);
@@ -2161,8 +2189,9 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
         )}
         {step === "manual" && (
           <div className="shrink-0 border-t border-[#3A3631] p-4 space-y-2">
-            <button disabled={!form.name.trim()} onClick={() => onSave(form)}
-              className="w-full bg-[#6C7FE0] disabled:opacity-40 text-[#F2EDE4] rounded-[14px] py-3 font-medium active:scale-[0.99] flex items-center justify-center gap-2">
+            <button disabled={!form.name.trim()} onClick={handleSaveClick}
+              className={`w-full bg-[#6C7FE0] disabled:opacity-40 text-[#F2EDE4] rounded-[14px] py-3 font-medium active:scale-[0.99] flex items-center justify-center gap-2 relative ${saveCelebrating ? "save-pop" : ""}`}>
+              {saveCelebrating && <span className="save-ring" />}
               <Check size={18} /> Speichern
             </button>
             {initial && (
@@ -2579,7 +2608,7 @@ function DashboardReorderScreen({ order, sections, labels, onSave, onClose }) {
   );
 }
 
-function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorder, onSearch }) {
+function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorder, onSearch, aiWorkerUrl }) {
   const owned = games.filter(g => g.status === "owned");
   const playCounts = useMemo(() => {
     const map = {}; plays.forEach(p => { map[p.gameId] = (map[p.gameId] || 0) + 1; }); return map;
@@ -2683,6 +2712,58 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     { id: "campaign", label: "Kampagnen-Meister", emoji: "🗺️", unlocked: campaignMastery },
     { id: "rated", label: "Perfektionist", emoji: "⭐", unlocked: allRated },
   ].sort((a, b) => (b.unlocked === a.unlocked ? 0 : b.unlocked ? 1 : -1));
+
+  const [justUnlocked, setJustUnlocked] = useState(null);
+  const [weeklyTip, setWeeklyTip] = useState(() => { try { return JSON.parse(localStorage.getItem("spielregal:weeklyTip") || "null"); } catch { return null; } });
+  const [yearlyInsight, setYearlyInsight] = useState(() => { try { return JSON.parse(localStorage.getItem("spielregal:yearlyInsight") || "null"); } catch { return null; } });
+  const [tipLoading, setTipLoading] = useState(false);
+
+  useEffect(() => {
+    if (!aiWorkerUrl || plays.length === 0) return;
+    const now = Date.now();
+    const weekMs = 7 * 24 * 60 * 60 * 1000;
+    const yearKey = new Date().getFullYear();
+
+    const needsWeekly = !weeklyTip || (now - weeklyTip.generatedAt) > weekMs;
+    const needsYearly = !yearlyInsight || yearlyInsight.year !== yearKey;
+    if (!needsWeekly && !needsYearly) return;
+
+    (async () => {
+      setTipLoading(true);
+      const context = buildCollectionContextForAI(games, plays);
+      try {
+        if (needsWeekly) {
+          const text = await aiChat(aiWorkerUrl, [{ role: "user", content: `Du bist ein Brettspiel-Kumpel. Schreib EINEN kurzen, persönlichen Tipp (max. 2 Sätze) auf Deutsch für diese Woche, basierend auf dem Spielverhalten unten — z.B. ein Spiel, das lange nicht dran war, ein Muster das auffällt, oder eine Ermutigung. Kein Grußwort, direkt der Tipp.\n\n${context}` }]);
+          const val = { text, generatedAt: now };
+          setWeeklyTip(val);
+          localStorage.setItem("spielregal:weeklyTip", JSON.stringify(val));
+        }
+        if (needsYearly) {
+          const text = await aiChat(aiWorkerUrl, [{ role: "user", content: `Du bist ein Brettspiel-Kumpel. Schreib EINE kurze, interessante Beobachtung (max. 2-3 Sätze) auf Deutsch über das Spieljahr ${yearKey} des Nutzers, basierend auf den Daten unten — z.B. ein Muster, eine Entwicklung, ein Rekord. Kein Grußwort, direkt die Beobachtung.\n\n${context}` }]);
+          const val = { text, year: yearKey, generatedAt: now };
+          setYearlyInsight(val);
+          localStorage.setItem("spielregal:yearlyInsight", JSON.stringify(val));
+        }
+      } catch { /* silently skip — these are a nice-to-have, not critical */ }
+      setTipLoading(false);
+    })();
+  }, [aiWorkerUrl, plays.length]);
+  const unlockedIdsKey = achievements.filter((a) => a.unlocked).map((a) => a.id).sort().join(",");
+  useEffect(() => {
+    const seenKey = "spielregal:seenAchievements";
+    const seen = new Set(JSON.parse(localStorage.getItem(seenKey) || "[]"));
+    const unlockedIds = unlockedIdsKey ? unlockedIdsKey.split(",") : [];
+    const newlyUnlocked = unlockedIds.filter((id) => !seen.has(id));
+    if (newlyUnlocked.length > 0 && seen.size > 0) { // skip the very first load so old data doesn't all "celebrate" at once
+      const first = achievements.find((a) => a.id === newlyUnlocked[0]);
+      if (first) {
+        setJustUnlocked(first);
+        haptic([12, 50, 12, 50, 25]);
+        setTimeout(() => setJustUnlocked(null), 3200);
+      }
+    }
+    localStorage.setItem(seenKey, JSON.stringify(unlockedIds));
+  }, [unlockedIdsKey]);
 
   // Kontextuelle Vorschläge: das am längsten wartende Spiel mit einer kleinen freundlichen Nachricht.
   const nudge = useMemo(() => {
@@ -2927,6 +3008,17 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
 
   return (
     <div className="p-5 space-y-6 pb-6 min-h-full flex flex-col" style={{ backgroundImage: "radial-gradient(circle at 85% 0%, rgba(108,127,224,0.10), transparent 45%), radial-gradient(circle at 0% 55%, rgba(212,162,76,0.06), transparent 40%)" }}>
+      {justUnlocked && (
+        <div className="fixed left-1/2 z-40 rise-in" style={{ top: "max(1rem, env(safe-area-inset-top))", transform: "translateX(-50%)" }}>
+          <div className="flex items-center gap-2.5 bg-[#1C1B1A] border border-[#D4A24C]/50 rounded-full pl-2 pr-4 py-2 shadow-xl" style={{ boxShadow: "0 4px 24px rgba(212,162,76,0.35)" }}>
+            <span className="text-2xl">{justUnlocked.emoji}</span>
+            <div>
+              <p className="text-[10px] text-[#D4A24C] font-semibold uppercase tracking-wide">Neuer Erfolg!</p>
+              <p className="text-sm text-[#F2EDE4] font-medium leading-tight">{justUnlocked.label}</p>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex items-end justify-between">
         <div>
           <p className="text-[#5C574F] font-body text-sm">{new Date().toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long" })}</p>
@@ -2969,6 +3061,22 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
           <p className="text-[#A39C8F] text-xs font-body mt-0.5">von 5</p>
         </div>
       </div>
+      {(weeklyTip || yearlyInsight || tipLoading) && (
+        <div className="space-y-3">
+          {weeklyTip && (
+            <div className="bg-gradient-to-r from-[#4E8C82]/15 to-transparent border border-[#4E8C82]/30 rounded-2xl p-4">
+              <p className="text-xs font-semibold text-[#7FB3AA] uppercase tracking-wide mb-1.5 flex items-center gap-1.5"><Sparkles size={12} /> Tipp der Woche</p>
+              <p className="text-[#F2EDE4] text-sm font-body leading-snug">{weeklyTip.text}</p>
+            </div>
+          )}
+          {yearlyInsight && (
+            <div className="bg-gradient-to-r from-[#D4A24C]/15 to-transparent border border-[#D4A24C]/30 rounded-2xl p-4">
+              <p className="text-xs font-semibold text-[#D4A24C] uppercase tracking-wide mb-1.5 flex items-center gap-1.5"><Sparkles size={12} /> Dein Spieljahr {yearlyInsight.year}</p>
+              <p className="text-[#F2EDE4] text-sm font-body leading-snug">{yearlyInsight.text}</p>
+            </div>
+          )}
+        </div>
+      )}
       {order.map((key) => sections[key] || null)}
       <BggBadge className="mt-auto" />
       {reorderScreenOpen && (
@@ -3455,7 +3563,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
         className="fixed z-30 w-11 h-11 flex items-center justify-center bg-[#262422] border border-[#3A3631] rounded-full text-[#A39C8F] shadow-lg"
         style={{ left: "calc(50% + 76px)", transform: "translateX(-50%)", bottom: "calc(50px + env(safe-area-inset-bottom) + 16px)" }}>
         <Puzzle size={17} />
-        {activeFilterCount > 0 && <span className="absolute -top-1 -right-1 bg-[#6C7FE0] text-[#F2EDE4] text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{activeFilterCount}</span>}
+        {activeFilterCount > 0 && <span className="absolute top-0.5 right-0.5 bg-[#6C7FE0] text-[#F2EDE4] text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{activeFilterCount}</span>}
       </button>
       {filterModalOpen && (
         <CollectionFilterModal
@@ -4608,7 +4716,7 @@ function App() {
           />
         </div>
         <div key={tab} className="tab-fade">
-          {tab === "dashboard" && <Dashboard games={displayGames} plays={displayPlays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} onView={(g) => setDetailGame(g)} sectionOrder={dashboardOrder} onReorder={setDashboardOrder} onSearch={() => setCommandBarOpen(true)} />}
+          {tab === "dashboard" && <Dashboard games={displayGames} plays={displayPlays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} onView={(g) => setDetailGame(g)} sectionOrder={dashboardOrder} onReorder={setDashboardOrder} onSearch={() => setCommandBarOpen(true)} aiWorkerUrl={aiWorkerUrl} />}
           {tab === "collection" && <Collection games={displayGames} plays={displayPlays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => !demoMode && setGameModal({ editing: null })} onView={(g) => setDetailGame(g)} onEdit={(g) => setGameModal({ editing: g })} onDelete={(g) => deleteGame(g.id)} categoryOptions={categoryOptions} mechanismOptions={mechanismOptions} demoMode={demoMode} lists={displayLists} onCreateList={(name) => !demoMode && addList(name)} onOpenList={(l) => setDetailList(l)} />}
           {tab === "playlog" && <PlayLog plays={displayPlays} games={displayGames} onAdd={() => !demoMode && setPlayModal({ editing: null })} onEdit={(p) => !demoMode && setPlayModal({ editing: p })} onDelete={deletePlay} demoMode={demoMode} />}
           {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} onAddWishlist={addToWishlistFromRecommendation} onView={(g) => setDetailGame(g)} aiWorkerUrl={aiWorkerUrl} />}
