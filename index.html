@@ -1641,6 +1641,41 @@ ${(originalSummary || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().s
 }
 
 
+// Builds a compact text summary of the collection + recent play history to
+// give the AI real context, without sending full game objects.
+function buildCollectionContextForAI(games, plays) {
+  const owned = games.filter((g) => g.status !== "wishlist");
+  const playCounts = {};
+  plays.forEach((p) => { playCounts[p.gameId] = (playCounts[p.gameId] || 0) + 1; });
+  const lines = owned.map((g) => {
+    const count = playCounts[g.id] || 0;
+    const tags = [...(g.categories || []), ...(g.mechanisms || [])].slice(0, 4).join(", ");
+    const players = g.minPlayers ? `${g.minPlayers}-${g.maxPlayers} Spieler` : "Spieleranzahl unbekannt";
+    const time = g.minTime ? `${g.minTime}-${g.maxTime} Min.` : "Dauer unbekannt";
+    const comp = complexityLabel(g) || "Komplexität unbekannt";
+    return `- ${g.name} | ${players} | ${time} | ${comp} | Themen: ${tags || "-"} | ${count}× gespielt${count === 0 ? " (noch nie gespielt)" : ""}`;
+  });
+  const recentPlays = [...plays].sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 8)
+    .map((p) => `${p.gameName} am ${p.date}`).join("; ");
+  return `Sammlung des Nutzers:\n${lines.join("\n")}\n\nZuletzt gespielt: ${recentPlays || "noch keine Partien eingetragen"}`;
+}
+
+async function aiChat(workerUrl, messages) {
+  const res = await fetch(workerUrl.replace(/\/$/, ""), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages }),
+  });
+  if (!res.ok) {
+    let detail = "";
+    try { detail = (await res.text()).slice(0, 150); } catch { /* ignore */ }
+    throw new Error(`KI-Worker antwortete mit Fehler ${res.status}${detail ? ": " + detail : ""}`);
+  }
+  const json = await res.json();
+  if (json.error) throw new Error(json.error);
+  return (json.text || "").trim();
+}
+
 // Fetches ALL plays BGG has stored for a username (paginated, 100 per page,
 // oldest requests slowed down slightly to stay within BGG's rate limit).
 async function bggFetchAllPlays(username) {
@@ -1719,6 +1754,7 @@ const Cover = ({ game, size = "md", className: extraClass = "" }) => {
 /* ---------------- ADD / EDIT GAME MODAL ---------------- */
 function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOptions, playerTypeOptions, designerOptions, customPlayerTypeDescriptions, onAddCategory, onAddMechanism, onAddPlayerType, onClose, onSave, onDelete, aiWorkerUrl, games }) {
   const [pitchLoading, setPitchLoading] = useState(false);
+  const [summaryVersion, setSummaryVersion] = useState(0);
   const [pitchError, setPitchError] = useState("");
   const [step, setStep] = useState(initial ? "manual" : "search");
   const [query, setQuery] = useState("");
@@ -1833,6 +1869,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
                       try {
                         const pitch = await aiElevatorPitch(aiWorkerUrl, form.name || "dieses Spiel", form.summary || "");
                         update("summary", pitch);
+                        setSummaryVersion((v) => v + 1);
                       } catch (e) { setPitchError(e.message || "Fehlgeschlagen"); }
                       finally { setPitchLoading(false); }
                     }}
@@ -1844,7 +1881,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               </div>
               {pitchError && <p className="text-[11px] text-[#C1443C] mt-1">{pitchError}</p>}
               <div className="mt-1.5">
-                <RichTextEditor value={form.summary} onChange={(html) => update("summary", html)} placeholder="Worum geht's in diesem Spiel?" />
+                <RichTextEditor key={summaryVersion} value={form.summary} onChange={(html) => update("summary", html)} placeholder="Worum geht's in diesem Spiel?" />
               </div>
             </div>
             <button type="button" onClick={() => setPickerOpen("publishers")}
@@ -3475,7 +3512,45 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
 }
 
 /* ---------------- RECOMMENDATIONS ---------------- */
-function Recommendations({ games, plays, onAddWishlist, onView }) {
+function Recommendations({ games, plays, onAddWishlist, onView, aiWorkerUrl }) {
+  const [chatMessages, setChatMessages] = useState([]); // { role: 'user'|'assistant', content }
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatError, setChatError] = useState("");
+  const chatEndRef = React.useRef(null);
+
+  const sendChat = async (text) => {
+    const question = (text || chatInput).trim();
+    if (!question || chatLoading) return;
+    haptic(6);
+    const newUserMsg = { role: "user", content: question };
+    const nextMessages = [...chatMessages, newUserMsg];
+    setChatMessages(nextMessages);
+    setChatInput("");
+    setChatLoading(true);
+    setChatError("");
+    try {
+      const systemPrompt = `Du bist ein hilfsbereiter Brettspiel-Berater in einer App zur Verwaltung einer Spielesammlung. Antworte auf Deutsch, kurz und konkret (max. 4-5 Sätze pro Antwort, außer bei Rückfragen). Empfiehl in erster Linie Spiele aus der Sammlung des Nutzers unten. Wenn wirklich nichts in der Sammlung zur Situation passt, darfst du auch ein Spiel außerhalb der Sammlung nennen — aber kennzeichne das klar als "nicht in deiner Sammlung" und begründe genau, warum es für die Situation besser passt als alles Vorhandene. Berücksichtige auch, was der Nutzer zuletzt gespielt hat (nicht gerade erst Gespieltes bevorzugt vorschlagen, außer explizit gewünscht) und schlage gerne auch mal ein lange nicht gespieltes Spiel vor.\n\n${buildCollectionContextForAI(games, plays)}`;
+      const apiMessages = [{ role: "system", content: systemPrompt }, ...nextMessages];
+      const reply = await aiChat(aiWorkerUrl, apiMessages);
+      setChatMessages([...nextMessages, { role: "assistant", content: reply }]);
+      setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+    } catch (e) {
+      setChatError(e.message || "Fehlgeschlagen");
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  const moodChips = [
+    { label: "Kurzes Spiel", prompt: "Ich hab nur wenig Zeit — was geht schnell?" },
+    { label: "Zu zweit", prompt: "Wir sind nur zu zweit, was passt?" },
+    { label: "Entspannt", prompt: "Ich will was Entspanntes, nichts zu Kniffliges." },
+    { label: "Knifflig", prompt: "Ich hab Lust auf was richtig Kniffliges/Strategisches." },
+    { label: "Lange nicht gespielt", prompt: "Was hab ich schon ewig nicht mehr gespielt?" },
+    { label: "Große Runde", prompt: "Wir sind eine größere Gruppe, was passt gut?" },
+  ];
+
   const [discovering, setDiscovering] = useState(false);
   const [external, setExternal] = useState([]);
   const [externalError, setExternalError] = useState("");
@@ -3527,6 +3602,59 @@ function Recommendations({ games, plays, onAddWishlist, onView }) {
   return (
     <div className="p-5 pb-6 min-h-full flex flex-col">
       <h1 className="font-display text-3xl text-[#F2EDE4] mb-1">Empfehlungen</h1>
+
+      {aiWorkerUrl && (
+        <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-4 mb-6">
+          <p className="text-xs font-semibold text-[#6C7FE0] uppercase tracking-wide mb-2 flex items-center gap-1.5"><Sparkles size={13} /> Frag mich, was ich spielen soll</p>
+
+          {chatMessages.length === 0 && (
+            <p className="text-[#5C574F] text-xs font-body mb-3">Schreib mir deine Situation, oder tipp einen Vorschlag an:</p>
+          )}
+
+          {chatMessages.length > 0 && (
+            <div className="space-y-2.5 mb-3 max-h-80 overflow-y-auto">
+              {chatMessages.map((m, i) => (
+                <div key={i} className={`text-sm font-body rounded-[14px] px-3.5 py-2.5 ${m.role === "user" ? "bg-[#6C7FE0]/15 text-[#F2EDE4] ml-6" : "bg-[#1C1B1A] border border-[#3A3631] text-[#F2EDE4] mr-2"}`}>
+                  {m.content}
+                </div>
+              ))}
+              {chatLoading && (
+                <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-[14px] px-3.5 py-2.5 mr-2 flex items-center gap-2 text-[#5C574F] text-sm">
+                  <Loader2 size={13} /> überlegt…
+                </div>
+              )}
+              <div ref={chatEndRef} />
+            </div>
+          )}
+
+          <div className="flex gap-1.5 overflow-x-auto pb-2 -mx-1 px-1">
+            {moodChips.map((c) => (
+              <button key={c.label} onClick={() => sendChat(c.prompt)} disabled={chatLoading}
+                className="shrink-0 px-3 py-1.5 rounded-full text-xs bg-[#1C1B1A] border border-[#3A3631] text-[#A39C8F] disabled:opacity-40">
+                {c.label}
+              </button>
+            ))}
+          </div>
+
+          {chatError && <p className="text-xs text-[#C1443C] mb-2">{chatError}</p>}
+
+          <div className="flex gap-2">
+            <input
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && sendChat()}
+              placeholder="z.B. Wir sind zu 4, 30 Minuten Zeit…"
+              disabled={chatLoading}
+              className="flex-1 min-w-0 h-11 bg-[#1C1B1A] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0] disabled:opacity-60"
+            />
+            <button onClick={() => sendChat()} disabled={chatLoading || !chatInput.trim()}
+              className="shrink-0 w-11 h-11 rounded-[14px] bg-[#6C7FE0] disabled:opacity-40 text-[#F2EDE4] flex items-center justify-center">
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        </div>
+      )}
+
       <p className="text-[#A39C8F] text-sm font-body mb-5">Neue Spiele, die zu dem passen, was du mit 8+ bewertet hast — egal ob eigene Sammlung, geliehen oder BGA.</p>
       {profile.length === 0 ? (
         <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-5 text-center">
@@ -4307,7 +4435,7 @@ function App() {
           {tab === "dashboard" && <Dashboard games={displayGames} plays={displayPlays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} onView={(g) => setDetailGame(g)} sectionOrder={dashboardOrder} onReorder={setDashboardOrder} onSearch={() => setCommandBarOpen(true)} />}
           {tab === "collection" && <Collection games={displayGames} plays={displayPlays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => !demoMode && setGameModal({ editing: null })} onView={(g) => setDetailGame(g)} onEdit={(g) => setGameModal({ editing: g })} onDelete={(g) => deleteGame(g.id)} categoryOptions={categoryOptions} mechanismOptions={mechanismOptions} demoMode={demoMode} lists={displayLists} onCreateList={(name) => !demoMode && addList(name)} onOpenList={(l) => setDetailList(l)} />}
           {tab === "playlog" && <PlayLog plays={displayPlays} games={displayGames} onAdd={() => !demoMode && setPlayModal({ editing: null })} onEdit={(p) => !demoMode && setPlayModal({ editing: p })} onDelete={deletePlay} demoMode={demoMode} />}
-          {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} onAddWishlist={addToWishlistFromRecommendation} onView={(g) => setDetailGame(g)} />}
+          {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} onAddWishlist={addToWishlistFromRecommendation} onView={(g) => setDetailGame(g)} aiWorkerUrl={aiWorkerUrl} />}
           {tab === "settings" && (
             <SettingsPage
               customCategories={customCategories}
