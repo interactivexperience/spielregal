@@ -3096,7 +3096,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
 /* ---------------- COLLECTION FILTERS (Kategorie, Spieleranzahl, Mechanismus, Bewertung) ---------------- */
 /* ---------------- LIST PICKER (Spiel zu Liste hinzufügen, Mehrfachauswahl) ---------------- */
 /* ---------------- ADD GAMES TO LIST (search + toggle, Audible-style) ---------------- */
-function AddGamesToListModal({ games, list, onToggle, onClose }) {
+function AddGamesToListModal({ games, plays, list, onToggle, onClose }) {
   const [query, setQuery] = useState("");
   const filtered = games.filter((g) => g.name.toLowerCase().includes(query.toLowerCase()));
   return (
@@ -3117,11 +3117,20 @@ function AddGamesToListModal({ games, list, onToggle, onClose }) {
           {filtered.length === 0 && <p className="text-sm text-[#5C574F] px-1">Keine Spiele gefunden.</p>}
           {filtered.map((g) => {
             const checked = list.gameIds.includes(g.id);
+            const playCount = (plays || []).filter((p) => p.gameId === g.id).length;
+            const isPlayed = playCount > 0;
             return (
               <button key={g.id} onClick={() => onToggle(g.id)}
-                className="w-full flex items-center gap-3 px-2 py-2 rounded-[14px] bg-[#262422] border border-[#3A3631]">
+                className={`w-full flex items-center gap-3 px-2 py-2 rounded-[14px] bg-[#262422] border border-[#3A3631] ${isPlayed ? "opacity-60" : ""}`}>
                 <Cover game={g} size="sm" />
-                <span className="flex-1 min-w-0 text-left text-sm text-[#F2EDE4] truncate">{g.name}</span>
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-sm text-[#F2EDE4] truncate">{g.name}</p>
+                  <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                    {g.status === "owned" && <Pill tone="teal">Besitz</Pill>}
+                    {g.status === "wishlist" && <Pill tone="amber">Wunschliste</Pill>}
+                    {isPlayed && <span className="text-[10px] text-[#5C574F] font-body">{playCount}× gespielt</span>}
+                  </div>
+                </div>
                 <div className={`w-6 h-6 rounded-full border flex items-center justify-center shrink-0 ${checked ? "bg-[#6C7FE0] border-[#6C7FE0]" : "border-[#3A3631]"}`}>
                   {checked && <Check size={14} className="text-[#F2EDE4]" />}
                 </div>
@@ -3206,7 +3215,7 @@ function ListDetailModal({ list, games, plays, onClose, onView, onDeleteList, on
         </div>
       </div>
       {addOpen && (
-        <AddGamesToListModal games={games} list={list} onToggle={(gameId) => onToggleGame(list.id, gameId)} onClose={() => setAddOpen(false)} />
+        <AddGamesToListModal games={games} plays={plays} list={list} onToggle={(gameId) => onToggleGame(list.id, gameId)} onClose={() => setAddOpen(false)} />
       )}
       {contextGame && (
         <div className="fixed top-0 left-0 right-0 bg-black/70 z-[66] flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={() => setContextGame(null)}>
