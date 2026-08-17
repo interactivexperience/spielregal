@@ -21,6 +21,24 @@
   html, body { background:#1C1B1A; margin:0; overscroll-behavior:none; }
   button { transition: transform 0.15s cubic-bezier(0.34, 1.2, 0.64, 1), opacity 0.15s ease, background-color 0.2s ease, border-color 0.2s ease; }
   button:active { transform: scale(0.96); }
+  button { position: relative; isolation: isolate; }
+  button::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(120deg, transparent 20%, rgba(255,90,150,0.45), rgba(255,200,80,0.45), rgba(120,220,255,0.45), rgba(180,130,255,0.45), transparent 80%);
+    background-size: 250% 100%;
+    background-position: -120% 0;
+    opacity: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    z-index: 5;
+  }
+  button:active::after { opacity: 1; animation: rainbow-shimmer 0.55s ease-out; }
+  @keyframes rainbow-shimmer {
+    0% { background-position: -120% 0; opacity: 1; }
+    70% { opacity: 1; }
+    100% { background-position: 160% 0; opacity: 0; }
+  }
   .font-display { font-family:'Fraunces', serif; font-optical-sizing:auto; }
   .font-body { font-family:'IBM Plex Sans', sans-serif; }
   .font-mono { font-family:'IBM Plex Mono', monospace; }
@@ -29,8 +47,8 @@
   ::-webkit-scrollbar-thumb { background:#3A3631; border-radius:4px; }
   @keyframes riseIn { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
   .rise-in { animation: riseIn .25s ease-out; }
-  @keyframes tabFade { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
-  .tab-fade { animation: tabFade .22s ease-out; }
+  @keyframes tabFade { from { opacity:0; transform:translateY(8px) scale(0.99); } to { opacity:1; transform:translateY(0) scale(1); } }
+  .tab-fade { animation: tabFade .32s cubic-bezier(0.22, 1, 0.36, 1); }
   @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes confettiFall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(360deg); opacity: 0; } }
   .spin { animation: spin 1s linear infinite; }
@@ -972,6 +990,7 @@ function ImageCropModal({ src, onConfirm, onCancel }) {
             ref={imgRef}
             src={src}
             alt="Zuschneiden"
+            crossOrigin="anonymous"
             onLoad={(e) => { const { naturalWidth: w, naturalHeight: h } = e.target; setNatSize({ w, h }); }}
             style={{
               position: "absolute", left: "50%", top: "50%",
@@ -1079,9 +1098,10 @@ function ImagePickerSheet({ onAdd, onClose }) {
 }
 
 /* ---------------- PHOTO GALLERY (used in game form, play form, and detail view) ---------------- */
-function PhotoGallerySection({ images, onAdd, onRemove, hero = false, editable = true }) {
+function PhotoGallerySection({ images, onAdd, onRemove, onReplace, hero = false, editable = true }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(null);
+  const [cropIndex, setCropIndex] = useState(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const touchStartX = React.useRef(0);
   const safeIndex = Math.min(carouselIndex, Math.max(images.length - 1, 0));
@@ -1160,14 +1180,31 @@ function PhotoGallerySection({ images, onAdd, onRemove, hero = false, editable =
         <div className="fixed inset-0 bg-black/90 z-[70] flex items-center justify-center p-3" onClick={() => setLightboxIndex(null)}>
           <img src={images[lightboxIndex]} alt="Foto vergrößert" className="max-w-full max-h-[88vh] block object-contain rounded-lg" />
           {editable && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onRemove(lightboxIndex); setLightboxIndex(null); }}
-              className="absolute bottom-6 bg-[#C1443C] text-white px-4 py-2.5 rounded-[14px] flex items-center gap-2 text-sm font-medium"
-            >
-              <Trash2 size={16} /> Foto entfernen
-            </button>
+            <div className="absolute bottom-6 flex gap-2">
+              {onReplace && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setCropIndex(lightboxIndex); }}
+                  className="bg-[#262422] border border-[#3A3631] text-[#F2EDE4] px-4 py-2.5 rounded-[14px] flex items-center gap-2 text-sm font-medium"
+                >
+                  <Maximize2 size={16} /> Ausschnitt anpassen
+                </button>
+              )}
+              <button
+                onClick={(e) => { e.stopPropagation(); onRemove(lightboxIndex); setLightboxIndex(null); }}
+                className="bg-[#C1443C] text-white px-4 py-2.5 rounded-[14px] flex items-center gap-2 text-sm font-medium"
+              >
+                <Trash2 size={16} /> Foto entfernen
+              </button>
+            </div>
           )}
         </div>
+      )}
+      {cropIndex !== null && images[cropIndex] && (
+        <ImageCropModal
+          src={images[cropIndex]}
+          onConfirm={(cropped) => { onReplace(cropIndex, cropped); setCropIndex(null); }}
+          onCancel={() => setCropIndex(null)}
+        />
       )}
     </div>
   );
@@ -1261,7 +1298,36 @@ function TagPickerModal({ title, options, selected, onToggle, onAddCustom, onClo
 }
 
 /* ---------------- SETTINGS MODAL (manage custom categories & mechanisms) ---------------- */
+function SettingsRow({ icon: Icon, label, sub, onClick, tone }) {
+  return (
+    <button onClick={onClick} className="w-full flex items-center gap-3 bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3.5 text-left">
+      <div className="w-9 h-9 rounded-lg bg-[#1C1B1A] flex items-center justify-center shrink-0" style={{ color: tone || "#A39C8F" }}>
+        <Icon size={17} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[#F2EDE4] font-body text-sm font-medium">{label}</p>
+        {sub && <p className="text-[#5C574F] text-xs font-body mt-0.5 truncate">{sub}</p>}
+      </div>
+      <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
+    </button>
+  );
+}
+
+function SettingsSubPage({ title, onBack, children }) {
+  return (
+    <div className="p-5 pb-10 space-y-6 font-body min-h-full flex flex-col">
+      <div className="flex items-center gap-3">
+        <button onClick={onBack} className="text-[#A39C8F] p-1 -ml-1" aria-label="Zurück"><ChevronLeft size={22} /></button>
+        <h1 className="font-display text-2xl text-[#F2EDE4]">{title}</h1>
+      </div>
+      {children}
+      <BggBadge className="mt-auto" />
+    </div>
+  );
+}
+
 function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, onAddCategory, onRemoveCategory, onAddMechanism, onRemoveMechanism, onAddPlayerType, onRemovePlayerType, demoMode, onToggleDemo, syncUrl, syncStatus, onOpenSync, bggImportStatus, bggImportResult, bggImportError, onImportBggPlays, games, plays, onMergeGames, aiWorkerUrl, onSaveAiWorkerUrl }) {
+  const [view, setView] = useState("menu"); // menu | sync | ai | bggImport | customize | duplicates | demo
   const [aiUrlInput, setAiUrlInput] = useState(aiWorkerUrl || "");
   const [bggUsername, setBggUsername] = useState("");
   const duplicateGroups = useMemo(() => {
@@ -1286,162 +1352,206 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
   const [typeInput, setTypeInput] = useState("");
   const [typeDescInput, setTypeDescInput] = useState("");
 
-  return (
-    <div className="p-5 pb-6 space-y-6 font-body min-h-full flex flex-col">
-      <h1 className="font-display text-3xl text-[#F2EDE4]">Einstellungen</h1>
-      <div>
-            <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">BGG-Partien importieren</h3>
-            <p className="text-xs text-[#5C574F] mb-2">Holt alle Partien, die du je auf BoardGameGeek zu deinem Namen eingetragen hast. Spiele, die noch nicht in deiner Sammlung sind, werden automatisch mit Status "nur gespielt" angelegt. Bereits importierte Partien werden bei erneutem Import übersprungen.</p>
-            <div className="flex gap-2 mb-2">
-              <input value={bggUsername} onChange={(e) => setBggUsername(e.target.value)} placeholder="Dein BGG-Nutzername"
-                className="flex-1 min-w-0 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
-            </div>
-            <button
-              onClick={() => onImportBggPlays(bggUsername)}
-              disabled={!bggUsername.trim() || bggImportStatus === "importing"}
-              className="w-full h-12 rounded-[14px] text-sm font-medium bg-[#262422] border border-[#3A3631] text-[#F2EDE4] disabled:opacity-40 flex items-center justify-center gap-2"
-            >
-              {bggImportStatus === "importing" ? <Loader2 size={16} className="text-[#D4A24C]" /> : <ListChecks size={16} className="text-[#5C574F]" />}
-              {bggImportStatus === "importing" ? "Importiere… kann bei vielen Partien dauern" : "Partien importieren"}
-            </button>
-            {bggImportStatus === "done" && bggImportResult && (
-              <p className={`text-xs mt-2 ${bggImportResult.incomplete ? "text-[#D4A24C]" : "text-[#4E8C82]"}`}>
-                {bggImportResult.playsImported} neue Partie{bggImportResult.playsImported === 1 ? "" : "n"} importiert
-                {bggImportResult.gamesAdded > 0 ? `, ${bggImportResult.gamesAdded} neue Spiel${bggImportResult.gamesAdded === 1 ? "" : "e"} angelegt` : ""}.
-                {bggImportResult.totalFound > bggImportResult.playsImported ? ` (${bggImportResult.totalFound - bggImportResult.playsImported} bereits vorher importiert.)` : ""}
-                {bggImportResult.incomplete ? " BGG hat den Import vorzeitig abgebrochen (Server war überlastet) — tipp einfach nochmal auf \"Partien importieren\", bereits importierte werden automatisch übersprungen." : ""}
-              </p>
-            )}
-            {bggImportStatus === "done" && bggImportResult && bggImportResult.failures && bggImportResult.failures.length > 0 && (
-              <div className="mt-2 bg-[#C1443C]/10 border border-[#C1443C]/30 rounded-lg p-2.5">
-                <p className="text-xs text-[#C1443C] font-medium mb-1">{bggImportResult.failures.length} Partie{bggImportResult.failures.length === 1 ? "" : "n"} konnte{bggImportResult.failures.length === 1 ? "" : "n"} nicht verarbeitet werden:</p>
-                {bggImportResult.failures.slice(0, 10).map((f, i) => (
-                  <p key={i} className="text-[11px] text-[#5C574F] font-mono">{f}</p>
-                ))}
-              </div>
-            )}
-            {bggImportStatus === "error" && <p className="text-xs text-[#C1443C] mt-2">{bggImportError}</p>}
+  if (view === "sync") {
+    return (
+      <SettingsSubPage title="Synchronisation" onBack={() => setView("menu")}>
+        <div>
+          <p className="text-xs text-[#5C574F] mb-2">{syncUrl ? "Deine Daten werden über Firebase mit deinen Geräten abgeglichen." : "Noch nicht eingerichtet — deine Daten bleiben nur auf diesem Gerät."}</p>
+          <button onClick={onOpenSync} className="w-full h-12 rounded-[14px] text-sm font-medium bg-[#262422] border border-[#3A3631] text-[#F2EDE4] flex items-center justify-center gap-2">
+            {syncStatus === "syncing" ? <Loader2 size={16} className="text-[#D4A24C]" /> : <Globe size={16} className={syncStatus === "error" ? "text-[#C1443C]" : "text-[#5C574F]"} />}
+            {syncUrl ? "Synchronisation verwalten" : "Synchronisation einrichten"}
+          </button>
+        </div>
+      </SettingsSubPage>
+    );
+  }
+
+  if (view === "ai") {
+    return (
+      <SettingsSubPage title="KI-Assistent" onBack={() => setView("menu")}>
+        <div>
+          <p className="text-xs text-[#5C574F] mb-2">Für Elevator-Pitch-Zusammenfassungen beim Spiel-Import und Spielvorschläge im Gespräch. Läuft über deinen eigenen Cloudflare Worker — nichts geht an einen fremden KI-Anbieter.</p>
+          <div className="flex gap-2">
+            <input value={aiUrlInput} onChange={(e) => setAiUrlInput(e.target.value)} placeholder="https://spielregal-ai.dein-name.workers.dev"
+              className="flex-1 min-w-0 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
+            <button onClick={() => onSaveAiWorkerUrl(aiUrlInput)} disabled={!aiUrlInput.trim()} className="shrink-0 px-4 rounded-lg bg-[#6C7FE0] disabled:opacity-40 text-[#F2EDE4] text-sm font-medium">Speichern</button>
           </div>
-          <div>
-            <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">KI-Assistent</h3>
-            <p className="text-xs text-[#5C574F] mb-2">Für Elevator-Pitch-Zusammenfassungen beim Spiel-Import und (bald) Spielvorschläge im Gespräch. Läuft über deinen eigenen Cloudflare Worker — nichts geht an einen fremden KI-Anbieter.</p>
-            <div className="flex gap-2">
-              <input value={aiUrlInput} onChange={(e) => setAiUrlInput(e.target.value)} placeholder="https://spielregal-ai.dein-name.workers.dev"
-                className="flex-1 min-w-0 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
-              <button onClick={() => onSaveAiWorkerUrl(aiUrlInput)} disabled={!aiUrlInput.trim()} className="shrink-0 px-4 rounded-lg bg-[#6C7FE0] disabled:opacity-40 text-[#F2EDE4] text-sm font-medium">Speichern</button>
-            </div>
-            {aiWorkerUrl && <p className="text-[11px] text-[#4E8C82] mt-1.5">Eingerichtet</p>}
+          {aiWorkerUrl && <p className="text-[11px] text-[#4E8C82] mt-1.5">Eingerichtet</p>}
+        </div>
+      </SettingsSubPage>
+    );
+  }
+
+  if (view === "bggImport") {
+    return (
+      <SettingsSubPage title="BGG-Partien importieren" onBack={() => setView("menu")}>
+        <div>
+          <p className="text-xs text-[#5C574F] mb-2">Holt alle Partien, die du je auf BoardGameGeek zu deinem Namen eingetragen hast. Spiele, die noch nicht in deiner Sammlung sind, werden automatisch mit Status "nur gespielt" angelegt. Bereits importierte Partien werden bei erneutem Import übersprungen.</p>
+          <div className="flex gap-2 mb-2">
+            <input value={bggUsername} onChange={(e) => setBggUsername(e.target.value)} placeholder="Dein BGG-Nutzername"
+              className="flex-1 min-w-0 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
           </div>
-          {duplicateGroups.length > 0 && (
-            <div>
-              <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Mögliche Duplikate</h3>
-              <p className="text-xs text-[#5C574F] mb-2">Diese Spiele haben sehr ähnliche Namen — vermutlich entstanden beim Import doppelte Einträge. Zusammenführen verschiebt alle Partien auf den behaltenen Eintrag und löscht den anderen.</p>
-              <div className="space-y-2">
-                {duplicateGroups.map((group) => (
-                  <div key={group.map((g) => g.id).join("-")} className="bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
-                    {group.map((g) => {
-                      const count = (plays || []).filter((p) => p.gameId === g.id).length;
-                      const others = group.filter((h) => h.id !== g.id);
-                      return (
-                        <div key={g.id} className="flex items-center gap-2.5 py-1.5">
-                          <Cover game={g} size="sm" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[#F2EDE4] font-body text-sm truncate">{g.name}</p>
-                            <p className="text-[#5C574F] text-xs font-body">{count} Partie{count === 1 ? "" : "n"}</p>
-                          </div>
-                          <button
-                            onClick={() => others.forEach((o) => onMergeGames(g.id, o.id))}
-                            className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-[#6C7FE0]/15 text-[#6C7FE0]"
-                          >
-                            Diesen behalten
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
+          <button
+            onClick={() => onImportBggPlays(bggUsername)}
+            disabled={!bggUsername.trim() || bggImportStatus === "importing"}
+            className="w-full h-12 rounded-[14px] text-sm font-medium bg-[#262422] border border-[#3A3631] text-[#F2EDE4] disabled:opacity-40 flex items-center justify-center gap-2"
+          >
+            {bggImportStatus === "importing" ? <Loader2 size={16} className="text-[#D4A24C]" /> : <ListChecks size={16} className="text-[#5C574F]" />}
+            {bggImportStatus === "importing" ? "Importiere… kann bei vielen Partien dauern" : "Partien importieren"}
+          </button>
+          {bggImportStatus === "done" && bggImportResult && (
+            <p className={`text-xs mt-2 ${bggImportResult.incomplete ? "text-[#D4A24C]" : "text-[#4E8C82]"}`}>
+              {bggImportResult.playsImported} neue Partie{bggImportResult.playsImported === 1 ? "" : "n"} importiert
+              {bggImportResult.gamesAdded > 0 ? `, ${bggImportResult.gamesAdded} neue Spiel${bggImportResult.gamesAdded === 1 ? "" : "e"} angelegt` : ""}.
+              {bggImportResult.totalFound > bggImportResult.playsImported ? ` (${bggImportResult.totalFound - bggImportResult.playsImported} bereits vorher importiert.)` : ""}
+              {bggImportResult.incomplete ? " BGG hat den Import vorzeitig abgebrochen (Server war überlastet) — tipp einfach nochmal auf \"Partien importieren\", bereits importierte werden automatisch übersprungen." : ""}
+            </p>
+          )}
+          {bggImportStatus === "done" && bggImportResult && bggImportResult.failures && bggImportResult.failures.length > 0 && (
+            <div className="mt-2 bg-[#C1443C]/10 border border-[#C1443C]/30 rounded-lg p-2.5">
+              <p className="text-xs text-[#C1443C] font-medium mb-1">{bggImportResult.failures.length} Partie{bggImportResult.failures.length === 1 ? "" : "n"} konnte{bggImportResult.failures.length === 1 ? "" : "n"} nicht verarbeitet werden:</p>
+              {bggImportResult.failures.slice(0, 10).map((f, i) => (
+                <p key={i} className="text-[11px] text-[#5C574F] font-mono">{f}</p>
+              ))}
             </div>
           )}
-          <div>
-            <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Eigene Kategorien</h3>
-            <p className="text-xs text-[#5C574F] mb-2">Die BGG-Standardkategorien sind immer verfügbar. Hier ergänzt du eigene.</p>
-            <div className="flex gap-2 mb-3">
-              <input value={catInput} onChange={(e) => setCatInput(e.target.value)} placeholder="Neue Kategorie"
-                className="flex-1 min-w-0 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
-              <button onClick={() => { if (catInput.trim()) { onAddCategory(catInput.trim()); setCatInput(""); } }}
-                className="shrink-0 bg-[#6C7FE0] text-[#F2EDE4] px-4 rounded-lg text-sm">Hinzufügen</button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {customCategories.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine eigenen Kategorien.</p>}
-              {customCategories.map((c) => (
-                <span key={c} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[#262422] border-[#3A3631] text-[#A39C8F]">
-                  {c}
-                  <button onClick={() => onRemoveCategory(c)} className="text-[#5C574F]"><X size={12} /></button>
-                </span>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Eigene Mechanismen</h3>
-            <p className="text-xs text-[#5C574F] mb-2">Die BGG-Standardmechanismen sind immer verfügbar. Hier ergänzt du eigene.</p>
-            <div className="flex gap-2 mb-3">
-              <input value={mechInput} onChange={(e) => setMechInput(e.target.value)} placeholder="Neuer Mechanismus"
-                className="flex-1 min-w-0 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
-              <button onClick={() => { if (mechInput.trim()) { onAddMechanism(mechInput.trim()); setMechInput(""); } }}
-                className="shrink-0 bg-[#6C7FE0] text-[#F2EDE4] px-4 rounded-lg text-sm">Hinzufügen</button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {customMechanisms.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine eigenen Mechanismen.</p>}
-              {customMechanisms.map((m) => (
-                <span key={m} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[#262422] border-[#3A3631] text-[#A39C8F]">
-                  {m}
-                  <button onClick={() => onRemoveMechanism(m)} className="text-[#5C574F]"><X size={12} /></button>
-                </span>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Eigene Spielertypen</h3>
-            <p className="text-xs text-[#5C574F] mb-2">Zielgruppen wie Optimierer oder Taktiker sind vorgegeben. Hier ergänzt du eigene.</p>
-            <div className="space-y-2 mb-3">
-              <input value={typeInput} onChange={(e) => setTypeInput(e.target.value)} placeholder="Neuer Spielertyp"
-                className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
-              <input value={typeDescInput} onChange={(e) => setTypeDescInput(e.target.value)} placeholder="Beschreibung (optional)"
-                className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
-              <button onClick={() => { if (typeInput.trim()) { onAddPlayerType(typeInput.trim(), typeDescInput); setTypeInput(""); setTypeDescInput(""); } }}
-                className="w-full bg-[#6C7FE0] text-[#F2EDE4] py-2 rounded-lg text-sm">Hinzufügen</button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {customPlayerTypes.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine eigenen Spielertypen.</p>}
-              {customPlayerTypes.map((t) => (
-                <span key={t} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[#262422] border-[#3A3631] text-[#A39C8F]">
-                  {t}
-                  <button onClick={() => onRemovePlayerType(t)} className="text-[#5C574F]"><X size={12} /></button>
-                </span>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Geräte-Synchronisation</h3>
-            <p className="text-xs text-[#5C574F] mb-2">{syncUrl ? "Deine Daten werden über Firebase mit deinen Geräten abgeglichen." : "Noch nicht eingerichtet — deine Daten bleiben nur auf diesem Gerät."}</p>
-            <button onClick={onOpenSync} className="w-full h-12 rounded-[14px] text-sm font-medium bg-[#262422] border border-[#3A3631] text-[#F2EDE4] flex items-center justify-center gap-2">
-              {syncStatus === "syncing" ? <Loader2 size={16} className="text-[#D4A24C]" /> : <Globe size={16} className={syncStatus === "error" ? "text-[#C1443C]" : "text-[#5C574F]"} />}
-              {syncUrl ? "Synchronisation verwalten" : "Synchronisation einrichten"}
-            </button>
-          </div>
-          <div>
-            <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Vorschau</h3>
-            <p className="text-xs text-[#5C574F] mb-2">Füllt die App vorübergehend mit Beispiel-Spielen, damit du siehst, wie's mit Inhalt aussieht. Wird nirgends gespeichert.</p>
-            <button onClick={onToggleDemo}
-              className={`w-full h-12 rounded-[14px] text-sm font-medium ${demoMode ? "bg-[#D4A24C] text-[#1C1B1A]" : "bg-[#262422] border border-[#3A3631] text-[#F2EDE4]"}`}>
-              {demoMode ? "Demo-Vorschau beenden" : "Demo-Vorschau anzeigen"}
-            </button>
-          </div>
-          <BggBadge className="mt-auto" />
+          {bggImportStatus === "error" && <p className="text-xs text-[#C1443C] mt-2">{bggImportError}</p>}
         </div>
+      </SettingsSubPage>
+    );
+  }
+
+  if (view === "duplicates") {
+    return (
+      <SettingsSubPage title="Mögliche Duplikate" onBack={() => setView("menu")}>
+        <div>
+          <p className="text-xs text-[#5C574F] mb-2">Diese Spiele haben sehr ähnliche Namen — vermutlich entstanden beim Import doppelte Einträge. Zusammenführen verschiebt alle Partien auf den behaltenen Eintrag und löscht den anderen.</p>
+          <div className="space-y-2">
+            {duplicateGroups.map((group) => (
+              <div key={group.map((g) => g.id).join("-")} className="bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
+                {group.map((g) => {
+                  const count = (plays || []).filter((p) => p.gameId === g.id).length;
+                  const others = group.filter((h) => h.id !== g.id);
+                  return (
+                    <div key={g.id} className="flex items-center gap-2.5 py-1.5">
+                      <Cover game={g} size="sm" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[#F2EDE4] font-body text-sm truncate">{g.name}</p>
+                        <p className="text-[#5C574F] text-xs font-body">{count} Partie{count === 1 ? "" : "n"}</p>
+                      </div>
+                      <button
+                        onClick={() => others.forEach((o) => onMergeGames(g.id, o.id))}
+                        className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-[#6C7FE0]/15 text-[#6C7FE0]"
+                      >
+                        Diesen behalten
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+      </SettingsSubPage>
+    );
+  }
+
+  if (view === "customize") {
+    return (
+      <SettingsSubPage title="Sammlung anpassen" onBack={() => setView("menu")}>
+        <div>
+          <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Eigene Kategorien</h3>
+          <p className="text-xs text-[#5C574F] mb-2">Die BGG-Standardkategorien sind immer verfügbar. Hier ergänzt du eigene.</p>
+          <div className="flex gap-2 mb-3">
+            <input value={catInput} onChange={(e) => setCatInput(e.target.value)} placeholder="Neue Kategorie"
+              className="flex-1 min-w-0 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
+            <button onClick={() => { if (catInput.trim()) { onAddCategory(catInput.trim()); setCatInput(""); } }}
+              className="shrink-0 bg-[#6C7FE0] text-[#F2EDE4] px-4 rounded-lg text-sm">Hinzufügen</button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {customCategories.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine eigenen Kategorien.</p>}
+            {customCategories.map((c) => (
+              <span key={c} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[#262422] border-[#3A3631] text-[#A39C8F]">
+                {c}
+                <button onClick={() => onRemoveCategory(c)} className="text-[#5C574F]"><X size={12} /></button>
+              </span>
+            ))}
+          </div>
+        </div>
+        <div>
+          <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Eigene Mechanismen</h3>
+          <p className="text-xs text-[#5C574F] mb-2">Die BGG-Standardmechanismen sind immer verfügbar. Hier ergänzt du eigene.</p>
+          <div className="flex gap-2 mb-3">
+            <input value={mechInput} onChange={(e) => setMechInput(e.target.value)} placeholder="Neuer Mechanismus"
+              className="flex-1 min-w-0 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
+            <button onClick={() => { if (mechInput.trim()) { onAddMechanism(mechInput.trim()); setMechInput(""); } }}
+              className="shrink-0 bg-[#6C7FE0] text-[#F2EDE4] px-4 rounded-lg text-sm">Hinzufügen</button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {customMechanisms.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine eigenen Mechanismen.</p>}
+            {customMechanisms.map((m) => (
+              <span key={m} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[#262422] border-[#3A3631] text-[#A39C8F]">
+                {m}
+                <button onClick={() => onRemoveMechanism(m)} className="text-[#5C574F]"><X size={12} /></button>
+              </span>
+            ))}
+          </div>
+        </div>
+        <div>
+          <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Eigene Spielertypen</h3>
+          <p className="text-xs text-[#5C574F] mb-2">Zielgruppen wie Optimierer oder Taktiker sind vorgegeben. Hier ergänzt du eigene.</p>
+          <div className="space-y-2 mb-3">
+            <input value={typeInput} onChange={(e) => setTypeInput(e.target.value)} placeholder="Neuer Spielertyp"
+              className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
+            <input value={typeDescInput} onChange={(e) => setTypeDescInput(e.target.value)} placeholder="Beschreibung (optional)"
+              className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
+            <button onClick={() => { if (typeInput.trim()) { onAddPlayerType(typeInput.trim(), typeDescInput); setTypeInput(""); setTypeDescInput(""); } }}
+              className="w-full bg-[#6C7FE0] text-[#F2EDE4] py-2 rounded-lg text-sm">Hinzufügen</button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {customPlayerTypes.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine eigenen Spielertypen.</p>}
+            {customPlayerTypes.map((t) => (
+              <span key={t} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[#262422] border-[#3A3631] text-[#A39C8F]">
+                {t}
+                <button onClick={() => onRemovePlayerType(t)} className="text-[#5C574F]"><X size={12} /></button>
+              </span>
+            ))}
+          </div>
+        </div>
+      </SettingsSubPage>
+    );
+  }
+
+  if (view === "demo") {
+    return (
+      <SettingsSubPage title="Vorschau-Modus" onBack={() => setView("menu")}>
+        <div>
+          <p className="text-xs text-[#5C574F] mb-2">Füllt die App vorübergehend mit Beispiel-Spielen, damit du siehst, wie's mit Inhalt aussieht. Wird nirgends gespeichert.</p>
+          <button onClick={onToggleDemo}
+            className={`w-full h-12 rounded-[14px] text-sm font-medium ${demoMode ? "bg-[#D4A24C] text-[#1C1B1A]" : "bg-[#262422] border border-[#3A3631] text-[#F2EDE4]"}`}>
+            {demoMode ? "Demo-Vorschau beenden" : "Demo-Vorschau anzeigen"}
+          </button>
+        </div>
+      </SettingsSubPage>
+    );
+  }
+
+  return (
+    <div className="p-5 pb-6 space-y-2.5 font-body min-h-full flex flex-col">
+      <h1 className="font-display text-3xl text-[#F2EDE4] mb-2">Einstellungen</h1>
+      <SettingsRow icon={Globe} label="Synchronisation" sub={syncUrl ? "Eingerichtet" : "Nicht eingerichtet"} tone="#6C7FE0" onClick={() => setView("sync")} />
+      <SettingsRow icon={Sparkles} label="KI-Assistent" sub={aiWorkerUrl ? "Eingerichtet" : "Nicht eingerichtet"} tone="#D4A24C" onClick={() => setView("ai")} />
+      <SettingsRow icon={ListChecks} label="BGG-Partien importieren" tone="#4E8C82" onClick={() => setView("bggImport")} />
+      <SettingsRow icon={Puzzle} label="Sammlung anpassen" sub="Kategorien, Mechanismen, Spielertypen" onClick={() => setView("customize")} />
+      {duplicateGroups.length > 0 && (
+        <SettingsRow icon={Layers} label="Mögliche Duplikate" sub={`${duplicateGroups.length} gefunden`} tone="#C1443C" onClick={() => setView("duplicates")} />
+      )}
+      <SettingsRow icon={Eye} label="Vorschau-Modus" sub={demoMode ? "Aktiv" : "Aus"} onClick={() => setView("demo")} />
+      <BggBadge className="mt-auto" />
+    </div>
   );
 }
+
 
 function normalizeSyncUrl(url) {
   if (!url) return "";
@@ -1641,6 +1751,39 @@ ${(originalSummary || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().s
 }
 
 
+// Suggests which player types (from the existing list, or a genuinely new one
+// if nothing fits) match a game, based on its categories/mechanics/complexity.
+async function aiSuggestPlayerTypes(workerUrl, game, existingTypes) {
+  const prompt = `Du hilfst dabei, ein Brettspiel mit passenden "Spielertypen" (Zielgruppen-Etiketten) zu versehen.
+
+Bestehende Spielertypen in der Sammlung: ${existingTypes.join(", ") || "(noch keine)"}
+
+Spiel: "${game.name}"
+Komplexität: ${game.complexity || "unbekannt"}/5
+Kategorien: ${(game.categories || []).join(", ") || "-"}
+Mechanismen: ${(game.mechanisms || []).join(", ") || "-"}
+Beschreibung: ${(game.summary || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 600)}
+
+Wähle 1-4 passende Spielertypen aus der bestehenden Liste oben aus. Nur falls wirklich keiner der bestehenden Typen gut passt, darfst du zusätzlich EINEN neuen, kurzen Spielertyp (1-2 Wörter) erfinden. Bevorzuge aber immer bestehende Typen, um die Liste nicht unnötig aufzublähen.
+
+Antworte NUR mit einer kommagetrennten Liste der gewählten Typen, sonst nichts. Beispiel: Taktiker, Optimierer`;
+
+  const res = await fetch(workerUrl.replace(/\/$/, ""), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
+  });
+  if (!res.ok) {
+    let detail = "";
+    try { detail = (await res.text()).slice(0, 150); } catch { /* ignore */ }
+    throw new Error(`KI-Worker antwortete mit Fehler ${res.status}${detail ? ": " + detail : ""}`);
+  }
+  const json = await res.json();
+  if (json.error) throw new Error(json.error);
+  const raw = (json.text || "").trim();
+  return raw.split(",").map((s) => s.trim()).filter(Boolean).slice(0, 4);
+}
+
 // Builds a compact text summary of the collection + recent play history to
 // give the AI real context, without sending full game objects.
 function buildCollectionContextForAI(games, plays) {
@@ -1754,6 +1897,8 @@ const Cover = ({ game, size = "md", className: extraClass = "" }) => {
 /* ---------------- ADD / EDIT GAME MODAL ---------------- */
 function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOptions, playerTypeOptions, designerOptions, customPlayerTypeDescriptions, onAddCategory, onAddMechanism, onAddPlayerType, onClose, onSave, onDelete, aiWorkerUrl, games }) {
   const [pitchLoading, setPitchLoading] = useState(false);
+  const [typesLoading, setTypesLoading] = useState(false);
+  const [typesError, setTypesError] = useState("");
   const [summaryVersion, setSummaryVersion] = useState(0);
   const [pitchError, setPitchError] = useState("");
   const [step, setStep] = useState(initial ? "manual" : "search");
@@ -1850,6 +1995,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               images={form.images}
               onAdd={(img) => update("images", [...form.images, img])}
               onRemove={(i) => update("images", form.images.filter((_, idx) => idx !== i))}
+              onReplace={(i, img) => update("images", form.images.map((x, idx) => (idx === i ? img : x)))}
               hero
             />
 
@@ -1964,6 +2110,25 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               </span>
               <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
             </button>
+            {aiWorkerUrl && (
+              <button
+                type="button"
+                disabled={typesLoading}
+                onClick={async () => {
+                  setTypesLoading(true); setTypesError("");
+                  try {
+                    const suggested = await aiSuggestPlayerTypes(aiWorkerUrl, form, playerTypeOptions || []);
+                    suggested.forEach((t) => { if (!(playerTypeOptions || []).includes(t)) onAddPlayerType(t, ""); });
+                    update("playerTypes", [...new Set([...form.playerTypes, ...suggested])]);
+                  } catch (e) { setTypesError(e.message || "Fehlgeschlagen"); }
+                  finally { setTypesLoading(false); }
+                }}
+                className="flex items-center gap-1 text-[11px] text-[#6C7FE0] disabled:opacity-50 -mt-2"
+              >
+                {typesLoading ? <Loader2 size={11} /> : <Sparkles size={11} />} Spielertypen von KI vorschlagen lassen
+              </button>
+            )}
+            {typesError && <p className="text-[11px] text-[#C1443C] -mt-2">{typesError}</p>}
 
             <Segmented
               options={[{ v: "owned", label: "Besitz" }, { v: "wishlist", label: "Wunschliste" }, { v: "none", label: "Nur gespielt" }]}
@@ -2251,6 +2416,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                     images={images}
                     onAdd={(img) => setImages((prev) => [...prev, img])}
                     onRemove={(i) => setImages((prev) => prev.filter((_, idx) => idx !== i))}
+                    onReplace={(i, img) => setImages((prev) => prev.map((x, idx) => (idx === i ? img : x)))}
                   />
                 </div>
               </div>
@@ -2767,9 +2933,6 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
           <h1 className="font-display text-3xl text-[#F2EDE4] mt-0.5">Spielregal</h1>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={onSearch} aria-label="Suchen" className="w-11 h-11 flex items-center justify-center bg-[#262422] border border-[#3A3631] rounded-full text-[#5C574F]">
-            <Search size={17} />
-          </button>
           <div className="relative">
             <button onClick={() => setSortMenuOpen((o) => !o)} aria-label="Sortieren" className="w-11 h-11 flex items-center justify-center bg-[#262422] border border-[#3A3631] rounded-full text-[#5C574F]">
               <MoreHorizontal size={18} />
@@ -3170,11 +3333,12 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
               <div className="w-2 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
             </div>
           </button>
-          <button onClick={() => { haptic(6); setGridCols(3); }} aria-label="3 Spalten" className={`w-11 h-11 flex items-center justify-center rounded-full ${gridCols === 3 ? "bg-[#F2EDE4] text-[#1C1B1A]" : "text-[#5C574F]"}`}>
+          <button onClick={() => { haptic(6); setGridCols(4); }} aria-label="4 Spalten" className={`w-11 h-11 flex items-center justify-center rounded-full ${gridCols === 4 ? "bg-[#F2EDE4] text-[#1C1B1A]" : "text-[#5C574F]"}`}>
             <div className="flex gap-0.5">
-              <div className="w-1.5 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
-              <div className="w-1.5 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
-              <div className="w-1.5 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
+              <div className="w-1 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
+              <div className="w-1 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
+              <div className="w-1 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
+              <div className="w-1 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
             </div>
           </button>
         </div>
@@ -3221,7 +3385,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
         </div>
       )}
       {list.length === 0 ? <p className="text-[#5C574F] text-sm font-body mt-8 mb-12 text-center">Keine Spiele gefunden.</p> : (
-        <div className={`grid gap-3 mt-3 pb-20 ${gridCols === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
+        <div className={`grid gap-3 mt-3 pb-20 ${gridCols === 4 ? "grid-cols-4" : "grid-cols-2"}`}>
           {list.map(g => (
             <button
               key={g.id}
@@ -3229,9 +3393,9 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
               onTouchStart={() => startLongPress(g)}
               onTouchEnd={cancelLongPress}
               onTouchMove={cancelLongPress}
-              className={`text-left rounded-2xl rise-in flex flex-col overflow-hidden ${gridCols === 3 ? "bg-transparent" : "bg-[#262422] border border-[#3A3631] p-3"}`}
+              className={`text-left rounded-2xl rise-in flex flex-col overflow-hidden ${gridCols === 4 ? "bg-transparent" : "bg-[#262422] border border-[#3A3631] p-3"}`}
             >
-              <Cover game={g} size="lg" className={gridCols === 3 ? "!rounded-none !border-0" : ""} />
+              <Cover game={g} size="lg" className={gridCols === 4 ? "!rounded-none !border-0" : ""} />
               {gridCols === 2 && (
                 <>
                   <p className="font-body text-[#F2EDE4] text-sm font-medium mt-2 leading-tight">{g.name}</p>
@@ -3252,7 +3416,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           ))}
         </div>
       )}
-      <div className="w-full pb-16 mt-auto text-center">
+      <div className="w-full pb-28 mt-auto text-center">
         <p className="text-[10px] font-body text-[#5C574F]">
           {games.filter((g) => g.status === "owned").length} im Besitz · {games.filter((g) => g.status === "wishlist").length} Wunschliste ·{" "}
           <a href="https://boardgamegeek.com" target="_blank" rel="noopener noreferrer" className="underline">Powered by BGG</a>
@@ -3555,6 +3719,7 @@ function Recommendations({ games, plays, onAddWishlist, onView, aiWorkerUrl }) {
   const [external, setExternal] = useState([]);
   const [externalError, setExternalError] = useState("");
   const [hasSearched, setHasSearched] = useState(false);
+  const [showBggDiscovery, setShowBggDiscovery] = useState(false);
   const profile = useMemo(() => {
     const rated = games.filter(g => g.rating && parseFloat(g.rating) >= 8);
     const tagCount = {};
@@ -3600,21 +3765,24 @@ function Recommendations({ games, plays, onAddWishlist, onView, aiWorkerUrl }) {
   };
 
   return (
-    <div className="p-5 pb-6 min-h-full flex flex-col">
-      <h1 className="font-display text-3xl text-[#F2EDE4] mb-1">Empfehlungen</h1>
+    <div className="p-5 pb-10 min-h-full flex flex-col">
+      <h1 className="font-display text-3xl text-[#F2EDE4] mb-5">Empfehlungen</h1>
 
       {aiWorkerUrl && (
-        <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-4 mb-6">
-          <p className="text-xs font-semibold text-[#6C7FE0] uppercase tracking-wide mb-2 flex items-center gap-1.5"><Sparkles size={13} /> Frag mich, was ich spielen soll</p>
+        <div
+          className="rounded-3xl p-5 mb-8 border border-[#6C7FE0]/30"
+          style={{ backgroundImage: "radial-gradient(circle at 20% 0%, rgba(108,127,224,0.20), transparent 60%), linear-gradient(160deg, #262422, #1C1B1A)" }}
+        >
+          <p className="text-[#8B9AFA] font-display text-2xl leading-tight mb-3 flex items-center gap-2"><Sparkles size={20} /> Frag mich, was ich spielen soll</p>
 
           {chatMessages.length === 0 && (
-            <p className="text-[#5C574F] text-xs font-body mb-3">Schreib mir deine Situation, oder tipp einen Vorschlag an:</p>
+            <p className="text-[#A39C8F] text-sm font-body mb-4">Schreib mir deine Situation, oder tipp einen Vorschlag an:</p>
           )}
 
           {chatMessages.length > 0 && (
-            <div className="space-y-2.5 mb-3 max-h-80 overflow-y-auto">
+            <div className="space-y-2.5 mb-4 max-h-80 overflow-y-auto">
               {chatMessages.map((m, i) => (
-                <div key={i} className={`text-sm font-body rounded-[14px] px-3.5 py-2.5 ${m.role === "user" ? "bg-[#6C7FE0]/15 text-[#F2EDE4] ml-6" : "bg-[#1C1B1A] border border-[#3A3631] text-[#F2EDE4] mr-2"}`}>
+                <div key={i} className={`text-sm font-body rounded-[14px] px-3.5 py-2.5 ${m.role === "user" ? "bg-[#6C7FE0]/20 text-[#F2EDE4] ml-6" : "bg-[#1C1B1A] border border-[#3A3631] text-[#F2EDE4] mr-2"}`}>
                   {m.content}
                 </div>
               ))}
@@ -3627,10 +3795,10 @@ function Recommendations({ games, plays, onAddWishlist, onView, aiWorkerUrl }) {
             </div>
           )}
 
-          <div className="flex gap-1.5 overflow-x-auto pb-2 -mx-1 px-1">
+          <div className="flex gap-1.5 overflow-x-auto pb-2 -mx-1 px-1 mb-2">
             {moodChips.map((c) => (
               <button key={c.label} onClick={() => sendChat(c.prompt)} disabled={chatLoading}
-                className="shrink-0 px-3 py-1.5 rounded-full text-xs bg-[#1C1B1A] border border-[#3A3631] text-[#A39C8F] disabled:opacity-40">
+                className="shrink-0 px-3.5 py-2 rounded-full text-xs bg-[#1C1B1A] border border-[#3A3631] text-[#A39C8F] disabled:opacity-40">
                 {c.label}
               </button>
             ))}
@@ -3638,23 +3806,29 @@ function Recommendations({ games, plays, onAddWishlist, onView, aiWorkerUrl }) {
 
           {chatError && <p className="text-xs text-[#C1443C] mb-2">{chatError}</p>}
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 mt-2">
             <input
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendChat()}
               placeholder="z.B. Wir sind zu 4, 30 Minuten Zeit…"
               disabled={chatLoading}
-              className="flex-1 min-w-0 h-11 bg-[#1C1B1A] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0] disabled:opacity-60"
+              className="flex-1 min-w-0 h-12 bg-[#1C1B1A] border border-[#3A3631] rounded-[14px] px-4 text-[#F2EDE4] text-base focus:outline-none focus:border-[#6C7FE0] disabled:opacity-60"
             />
             <button onClick={() => sendChat()} disabled={chatLoading || !chatInput.trim()}
-              className="shrink-0 w-11 h-11 rounded-[14px] bg-[#6C7FE0] disabled:opacity-40 text-[#F2EDE4] flex items-center justify-center">
-              <ChevronRight size={18} />
+              className="shrink-0 w-12 h-12 rounded-[14px] bg-[#6C7FE0] disabled:opacity-40 text-[#F2EDE4] flex items-center justify-center">
+              <ChevronRight size={20} />
             </button>
           </div>
         </div>
       )}
 
+      <button onClick={() => setShowBggDiscovery((v) => !v)} className="w-full flex items-center justify-between py-2 mb-2">
+        <span className="text-[#5C574F] text-xs font-semibold uppercase tracking-wide">Weitere Ideen von BGG</span>
+        <ChevronDown size={16} className={`text-[#5C574F] transition-transform ${showBggDiscovery ? "rotate-180" : ""}`} />
+      </button>
+      {showBggDiscovery && (
+      <>
       <p className="text-[#A39C8F] text-sm font-body mb-5">Neue Spiele, die zu dem passen, was du mit 8+ bewertet hast — egal ob eigene Sammlung, geliehen oder BGA.</p>
       {profile.length === 0 ? (
         <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-5 text-center">
@@ -3733,6 +3907,8 @@ function Recommendations({ games, plays, onAddWishlist, onView, aiWorkerUrl }) {
             {external.length === 0 && !externalError && hasSearched && <p className="text-[#5C574F] text-sm font-body">Kein neuer Treffer gefunden — nochmal tippen für einen neuen Versuch.</p>}
           </div>
         </>
+      )}
+      </>
       )}
       <BggBadge className="mt-auto" />
     </div>
@@ -4468,9 +4644,9 @@ function App() {
       <div className="shrink-0 bg-[#1C1B1A]/80 backdrop-blur-xl border-t border-[#3A3631] px-2 pt-1.5 pb-2.5" style={{ WebkitBackdropFilter: "blur(20px)" }}>
         <div className="flex justify-around">
           {tabs.map(t => (
-            <button key={t.id} onClick={() => { haptic(6); setTab(t.id); if (t.id !== "collection") setQuickFilter(null); }} className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-[14px] min-w-[64px]">
-              <t.icon size={20} className={tab === t.id ? "text-[#D4A24C]" : "text-[#5C574F]"} strokeWidth={tab === t.id ? 2.5 : 2} />
-              <span className={`text-[10px] font-body ${tab === t.id ? "text-[#D4A24C] font-semibold" : "text-[#5C574F]"}`}>{t.label}</span>
+            <button key={t.id} onClick={() => { haptic(6); setTab(t.id); if (t.id !== "collection") setQuickFilter(null); }} className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-[14px] min-w-[64px] transition-transform duration-200" style={{ transform: tab === t.id ? "translateY(-1px)" : "none" }}>
+              <t.icon size={20} className={`transition-colors duration-200 ${tab === t.id ? "text-[#D4A24C]" : "text-[#5C574F]"}`} strokeWidth={tab === t.id ? 2.5 : 2} />
+              <span className={`text-[10px] font-body transition-colors duration-200 ${tab === t.id ? "text-[#D4A24C] font-semibold" : "text-[#5C574F]"}`}>{t.label}</span>
             </button>
           ))}
         </div>
