@@ -3617,7 +3617,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
         </div>
       )}
       {list.length === 0 ? <p className="text-[#5C574F] text-sm font-body mt-8 mb-12 text-center">Keine Spiele gefunden.</p> : (
-        <div className={`grid gap-3 mt-3 pb-20 ${gridCols === 4 ? "grid-cols-4" : "grid-cols-2"}`}>
+        <div className={`grid gap-3 mt-3 pb-32 ${gridCols === 4 ? "grid-cols-4" : "grid-cols-2"}`}>
           {list.map(g => (
             <button
               key={g.id}
@@ -3674,18 +3674,18 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
       {!demoMode && (
         <button onClick={() => { haptic(8); onAdd(); }} aria-label="Spiel hinzufügen"
           className="fixed z-30 left-1/2 -translate-x-1/2 text-[#F2EDE4] w-14 h-14 flex items-center justify-center rounded-full shadow-lg active:scale-95 border border-white/25"
-          style={{ background: "linear-gradient(160deg, #8b98ee, #6C7FE0 55%, #5a68d6)", boxShadow: "0 8px 24px rgba(108,127,224,0.45), inset 0 1px 1px rgba(255,255,255,0.4)", bottom: "calc(50px + env(safe-area-inset-bottom) + 10px)" }}>
+          style={{ background: "linear-gradient(160deg, #8b98ee, #6C7FE0 55%, #5a68d6)", boxShadow: "0 8px 24px rgba(108,127,224,0.45), inset 0 1px 1px rgba(255,255,255,0.4)", bottom: "calc(96px + env(safe-area-inset-bottom))" }}>
           <Plus size={22} />
         </button>
       )}
       <button onClick={() => setSearchOpen((o) => !o)} aria-label="Suchen"
         className={`glass fixed z-30 w-11 h-11 flex items-center justify-center rounded-full border shadow-lg ${searchOpen ? "bg-[#F2EDE4] border-[#F2EDE4] text-[#1C1B1A]" : "border-white/15 text-[#A39C8F]"}`}
-        style={{ left: "calc(50% - 76px)", transform: "translateX(-50%)", bottom: "calc(50px + env(safe-area-inset-bottom) + 16px)" }}>
+        style={{ left: "calc(50% - 76px)", transform: "translateX(-50%)", bottom: "calc(102px + env(safe-area-inset-bottom))" }}>
         <Search size={17} />
       </button>
       <button onClick={() => setFilterModalOpen(true)} aria-label="Filter"
         className="glass fixed z-30 w-11 h-11 flex items-center justify-center border border-white/15 rounded-full text-[#A39C8F] shadow-lg"
-        style={{ left: "calc(50% + 76px)", transform: "translateX(-50%)", bottom: "calc(50px + env(safe-area-inset-bottom) + 16px)" }}>
+        style={{ left: "calc(50% + 76px)", transform: "translateX(-50%)", bottom: "calc(102px + env(safe-area-inset-bottom))" }}>
         <Puzzle size={17} />
         {activeFilterCount > 0 && <span className="absolute top-0.5 right-0.5 bg-[#6C7FE0] text-[#F2EDE4] text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{activeFilterCount}</span>}
       </button>
@@ -3816,7 +3816,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
       {!demoMode && (
         <button onClick={() => { haptic(8); onAdd(); }} aria-label="Partie eintragen"
           className="fixed z-30 left-1/2 -translate-x-1/2 text-[#F2EDE4] w-14 h-14 flex items-center justify-center rounded-full shadow-lg active:scale-95 border border-white/25"
-          style={{ background: "linear-gradient(160deg, #8b98ee, #6C7FE0 55%, #5a68d6)", boxShadow: "0 8px 24px rgba(108,127,224,0.45), inset 0 1px 1px rgba(255,255,255,0.4)", bottom: "calc(50px + env(safe-area-inset-bottom) + 10px)" }}>
+          style={{ background: "linear-gradient(160deg, #8b98ee, #6C7FE0 55%, #5a68d6)", boxShadow: "0 8px 24px rgba(108,127,224,0.45), inset 0 1px 1px rgba(255,255,255,0.4)", bottom: "calc(96px + env(safe-area-inset-bottom))" }}>
           <Plus size={22} />
         </button>
       )}
@@ -3848,7 +3848,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
       )}
 
       {sorted.length === 0 ? <p className="text-[#5C574F] text-sm font-body mt-8 text-center">Noch keine Partien eingetragen — auch geliehene oder online gespielte Spiele zählen.</p> : (
-        <div className="space-y-2 pb-20">
+        <div className="space-y-2 pb-32">
           {grouped.map((group) => {
             const first = group[0];
             const game = games.find((g) => g.id === first.gameId);
