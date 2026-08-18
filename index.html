@@ -7,7 +7,8 @@
 <meta http-equiv="Expires" content="0" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
 <title>Spielregal</title>
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23C1443C'/%3E%3Ctext x='50' y='68' font-size='55' text-anchor='middle' fill='%23F2EDE4' font-family='sans-serif'%3E%E2%9A%80%3C/text%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231C1B1A'/%3E%3Ctext x='50' y='68' font-size='55' text-anchor='middle' fill='%23F2EDE4' font-family='sans-serif'%3E%E2%9A%80%3C/text%3E%3C/svg%3E" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231C1B1A'/%3E%3Ctext x='50' y='68' font-size='55' text-anchor='middle' fill='%23F2EDE4' font-family='sans-serif'%3E%E2%9A%80%3C/text%3E%3C/svg%3E" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 <meta name="apple-mobile-web-app-title" content="Spielregal" />
@@ -163,6 +164,7 @@ const TrendingUp = (p) => <Icon {...p}><path d="M3 17 9.5 10.5 14 15l7-9" /><pat
 const Archive = (p) => <Icon {...p}><rect x="3" y="4" width="18" height="4" rx="1" /><path d="M5 8v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8" /><path d="M10 13h4" /></Icon>;
 const Globe = (p) => <Icon {...p}><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c2.5 2.5 3.5 6 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-6-3.5-9s1-6.5 3.5-9Z" /></Icon>;
 const Sofa = (p) => <Icon {...p}><path d="M4 12V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4" /><rect x="3" y="12" width="18" height="6" rx="2" /><path d="M5 18v2M19 18v2" /></Icon>;
+const HandCoins = (p) => <Icon {...p}><path d="M3 14c1.5 1.5 3.5 2 6 2h4l4.5-1.5a1.2 1.2 0 0 0-.7-2.3L12 13.5" /><path d="M9 16H3" /><circle cx="15" cy="6.5" r="3" /><path d="M15 5v3M13.8 6.5h2.4" /></Icon>;
 const Loader2 = ({ className = "", size = 18 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className={`spin ${className}`}>
     <path d="M12 3a9 9 0 1 0 9 9" />
@@ -1748,6 +1750,13 @@ async function bggThing(bggId) {
   const designers = Array.from(item.getElementsByTagName("link")).filter(l => l.getAttribute("type") === "boardgamedesigner").map(l => l.getAttribute("value"));
   const weight = item.getElementsByTagName("averageweight")[0]?.getAttribute("value");
   const bggImage = getTxt("image");
+  // Expansion links: inbound="true" means THIS item is an expansion of the linked
+  // (base) game. Links without inbound mean the linked item is an expansion OF this one.
+  const expansionLinks = Array.from(item.getElementsByTagName("link")).filter(l => l.getAttribute("type") === "boardgameexpansion");
+  const baseLink = expansionLinks.find(l => l.getAttribute("inbound") === "true");
+  const baseGameBggId = baseLink ? baseLink.getAttribute("id") : null;
+  const baseGameName = baseLink ? baseLink.getAttribute("value") : null;
+  const expansionBggIds = expansionLinks.filter(l => l.getAttribute("inbound") !== "true").map(l => l.getAttribute("id"));
   const rawDescription = getTxt("description");
   const summary = rawDescription
     ? rawDescription.split(/\n\s*\n|\r\n\r\n/).map(p => `<p>${p.trim()}</p>`).join("")
@@ -1758,6 +1767,7 @@ async function bggThing(bggId) {
     minTime: getAttr("minplaytime"), maxTime: getAttr("maxplaytime"), age: getAttr("minage"),
     publishers, designers, mechanisms, categories, summary,
     complexity: weight ? Math.round(parseFloat(weight) * 10) / 10 : null,
+    baseGameBggId, baseGameName, expansionBggIds,
   };
 }
 
@@ -1978,12 +1988,21 @@ const Pill = ({ children, tone = "default" }) => {
 const Cover = ({ game, size = "md", className: extraClass = "" }) => {
   const dims = size === "sm" ? "w-12 h-12" : size === "lg" ? "w-full aspect-square" : "w-16 h-16";
   const img = (game.images && game.images[0]) || game.image; // game.image kept as fallback for older saved entries
+  const lentBadge = game.lentTo && game.lentTo.trim() && (
+    <span className="absolute bottom-0.5 right-0.5 bg-[#D4A24C] text-[#1C1B1A] rounded-full flex items-center justify-center" style={{ width: size === "lg" ? 24 : 16, height: size === "lg" ? 24 : 16 }} title={`Verliehen an ${game.lentTo.trim()}`}>
+      <HandCoins size={size === "lg" ? 14 : 10} strokeWidth={2.5} />
+    </span>
+  );
   return img ? (
-    <img src={img} alt={game.name} className={`${dims} block object-cover rounded-lg border border-[#3A3631] ${extraClass}`} />
+    <span className={`relative inline-block ${dims} ${extraClass}`}>
+      <img src={img} alt={game.name} className={`w-full h-full block object-cover rounded-lg border border-[#3A3631] ${extraClass}`} />
+      {lentBadge}
+    </span>
   ) : (
-    <div className={`${dims} rounded-lg border border-[#3A3631] bg-[#2E2B28] flex items-center justify-center text-[#5C574F] ${extraClass}`}>
+    <span className={`relative inline-flex ${dims} rounded-lg border border-[#3A3631] bg-[#2E2B28] items-center justify-center text-[#5C574F] ${extraClass}`}>
       <Dices size={size === "lg" ? 28 : 18} />
-    </div>
+      {lentBadge}
+    </span>
   );
 };
 
@@ -2014,7 +2033,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
     id: uid(), bggId: "", name: "", year: "", publishers: [], designers: [], images: [],
     minPlayers: "", maxPlayers: "", bestPlayersMin: "", bestPlayersMax: "", minTime: "", maxTime: "", age: "",
     complexity: "", mechanisms: [], categories: [], playerTypes: [], status: "owned",
-    location: "", summary: "", notes: "", rating: "", isCampaign: false, addedDate: new Date().toISOString().slice(0, 10),
+    location: "", summary: "", notes: "", rating: "", isCampaign: false, lentTo: "", addedDate: new Date().toISOString().slice(0, 10),
   };
   const [form, setForm] = useState(initial ? {
     ...FORM_DEFAULTS,
@@ -2246,6 +2265,20 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
                 <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
               </div>
             </button>
+
+            <div>
+              <button type="button" onClick={() => update("lentTo", form.lentTo ? "" : " ")}
+                className={`w-full h-12 flex items-center justify-between px-3.5 rounded-[14px] border ${form.lentTo ? "bg-[#D4A24C]/15 border-[#D4A24C]/40" : "bg-transparent border-[#3A3631]"}`}>
+                <span className={`text-sm flex items-center gap-2 ${form.lentTo ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}><HandCoins size={16} /> Verliehen</span>
+                <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.lentTo ? "bg-[#D4A24C] justify-end" : "bg-[#3A3631] justify-start"}`}>
+                  <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
+                </div>
+              </button>
+              {form.lentTo && (
+                <input value={form.lentTo.trim()} onChange={(e) => update("lentTo", e.target.value)} placeholder="An wen?"
+                  className="w-full h-11 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base mt-2 focus:outline-none focus:border-[#D4A24C]" />
+              )}
+            </div>
 
             <div>
               <label className="block text-[11px] text-[#5C574F]">Deine Bewertung</label>
@@ -3767,9 +3800,22 @@ function SwipeableRow({ onDelete, children, disabled }) {
 
 function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
   const [detailGroupKey, setDetailGroupKey] = useState(null);
+  const [viewMode, setViewMode] = useState("game"); // "game" | "evening"
+  const [detailEveningDate, setDetailEveningDate] = useState(null);
   const sorted = [...plays].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
   const modeIcon = { "physical-owned": Home, "physical-other": Sofa, bga: Globe };
   const modeLabel = { "physical-owned": "Eigene Sammlung", "physical-other": "Geliehen / Event", bga: "BoardGameArena" };
+
+  // Plays from the same date grouped into one "evening" card, newest first.
+  const eveningGroups = useMemo(() => {
+    const byDate = new Map();
+    sorted.forEach((p) => {
+      const key = p.date || "Ohne Datum";
+      if (!byDate.has(key)) byDate.set(key, []);
+      byDate.get(key).push(p);
+    });
+    return Array.from(byDate.entries()).sort((a, b) => b[0].localeCompare(a[0]));
+  }, [sorted]);
 
   // Same game's plays grouped together; groups ordered by their most recent play, newest first.
   const grouped = useMemo(() => {
@@ -3808,10 +3854,33 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
   }, [plays]);
   const medals = ["🥇", "🥈", "🥉"];
 
+  const allPlayerNames = useMemo(() => {
+    const names = new Set();
+    plays.forEach((p) => (p.players || "").split(",").map((s) => s.trim()).filter(Boolean).forEach((n) => names.add(n)));
+    return [...names].sort();
+  }, [plays]);
+  const [h2hA, setH2hA] = useState("");
+  const [h2hB, setH2hB] = useState("");
+  const h2hStats = useMemo(() => {
+    if (!h2hA || !h2hB || h2hA === h2hB) return null;
+    const together = plays.filter((p) => {
+      const names = (p.players || "").split(",").map((s) => s.trim());
+      return names.includes(h2hA) && names.includes(h2hB);
+    });
+    const aWins = together.filter((p) => (p.winner || "").trim() === h2hA).length;
+    const bWins = together.filter((p) => (p.winner || "").trim() === h2hB).length;
+    return { total: together.length, aWins, bWins };
+  }, [plays, h2hA, h2hB]);
+
   return (
     <div className="p-5 pb-6 min-h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <h1 className="font-display text-3xl text-[#F2EDE4]">Partien</h1>
+      </div>
+
+      <div className="flex bg-[#262422] border border-[#3A3631] rounded-[14px] p-1 gap-1 mb-4">
+        <button onClick={() => setViewMode("game")} className={`flex-1 py-2 rounded-[10px] text-xs font-body ${viewMode === "game" ? "bg-[#F2EDE4] text-[#1C1B1A] font-medium" : "text-[#A39C8F]"}`}>Nach Spiel</button>
+        <button onClick={() => setViewMode("evening")} className={`flex-1 py-2 rounded-[10px] text-xs font-body ${viewMode === "evening" ? "bg-[#F2EDE4] text-[#1C1B1A] font-medium" : "text-[#A39C8F]"}`}>Nach Abend</button>
       </div>
       {!demoMode && (
         <button onClick={() => { haptic(8); onAdd(); }} aria-label="Partie eintragen"
@@ -3847,7 +3916,75 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
         </div>
       )}
 
-      {sorted.length === 0 ? <p className="text-[#5C574F] text-sm font-body mt-8 text-center">Noch keine Partien eingetragen — auch geliehene oder online gespielte Spiele zählen.</p> : (
+      {allPlayerNames.length >= 2 && (
+        <div className="mb-5">
+          <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Kopf-an-Kopf</h2>
+          <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <select value={h2hA} onChange={(e) => setH2hA(e.target.value)} className="flex-1 min-w-0 bg-[#1C1B1A] border border-[#3A3631] rounded-lg px-2.5 py-2 text-[#F2EDE4] text-sm">
+                <option value="">Spieler A</option>
+                {allPlayerNames.map((n) => <option key={n} value={n}>{n}</option>)}
+              </select>
+              <span className="text-[#5C574F] text-xs shrink-0">vs.</span>
+              <select value={h2hB} onChange={(e) => setH2hB(e.target.value)} className="flex-1 min-w-0 bg-[#1C1B1A] border border-[#3A3631] rounded-lg px-2.5 py-2 text-[#F2EDE4] text-sm">
+                <option value="">Spieler B</option>
+                {allPlayerNames.map((n) => <option key={n} value={n}>{n}</option>)}
+              </select>
+            </div>
+            {h2hStats && (
+              h2hStats.total === 0 ? (
+                <p className="text-[#5C574F] text-xs font-body">Noch keine gemeinsame Partie gefunden.</p>
+              ) : (
+                <div>
+                  <p className="text-[#5C574F] text-xs font-body mb-2">{h2hStats.total} gemeinsame Partie{h2hStats.total === 1 ? "" : "n"}</p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 text-center">
+                      <p className="font-display text-2xl text-[#F2EDE4]">{h2hStats.aWins}</p>
+                      <p className="text-[#A39C8F] text-[11px] font-body truncate">{h2hA}</p>
+                    </div>
+                    <div className="h-8 w-px bg-[#3A3631]" />
+                    <div className="flex-1 text-center">
+                      <p className="font-display text-2xl text-[#F2EDE4]">{h2hStats.bWins}</p>
+                      <p className="text-[#A39C8F] text-[11px] font-body truncate">{h2hB}</p>
+                    </div>
+                  </div>
+                </div>
+              )
+            )}
+          </div>
+        </div>
+      )}
+
+      {sorted.length === 0 ? <p className="text-[#5C574F] text-sm font-body mt-8 text-center">Noch keine Partien eingetragen — auch geliehene oder online gespielte Spiele zählen.</p> : viewMode === "evening" ? (
+        <div className="space-y-2 pb-32">
+          {eveningGroups.map(([date, group]) => {
+            const distinctGames = [...new Map(group.map((p) => [p.gameId || p.gameName, p])).values()];
+            const estMinutes = group.reduce((sum, p) => {
+              const g = games.find((x) => x.id === p.gameId);
+              if (!g || !g.minTime) return sum;
+              return sum + (parseInt(g.minTime) + parseInt(g.maxTime || g.minTime)) / 2;
+            }, 0);
+            return (
+              <button key={date} onClick={() => setDetailEveningDate(date)} className="w-full text-left bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center gap-3">
+                <div className="flex -space-x-3 shrink-0">
+                  {distinctGames.slice(0, 3).map((p, i) => {
+                    const g = games.find((x) => x.id === p.gameId);
+                    return g ? <Cover key={i} game={g} size="sm" className="!border-2 !border-[#262422]" /> : <div key={i} className="w-12 h-12 rounded-lg bg-[#2E2B28] border-2 border-[#262422] flex items-center justify-center text-[#A39C8F]"><Dices size={16} /></div>;
+                  })}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[#F2EDE4] font-body">{date}</p>
+                  <p className="text-[#5C574F] text-xs font-body">
+                    {group.length} Partie{group.length === 1 ? "" : "n"} · {distinctGames.length} Spiel{distinctGames.length === 1 ? "" : "e"}
+                    {estMinutes > 0 ? ` · ~${Math.round((estMinutes / 60) * 10) / 10} Std.` : ""}
+                  </p>
+                </div>
+                <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
+              </button>
+            );
+          })}
+        </div>
+      ) : (
         <div className="space-y-2 pb-32">
           {grouped.map((group) => {
             const first = group[0];
@@ -3891,6 +4028,40 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
                       <div className="w-9 h-9 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#A39C8F] shrink-0"><IconC size={16} /></div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[#F2EDE4] font-body truncate">{p.date}</p>
+                        <p className="text-[#5C574F] text-xs font-body">{modeLabel[p.mode]}{p.winner ? ` · Sieger: ${p.winner}` : ""}</p>
+                      </div>
+                      <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
+                    </button>
+                  </SwipeableRow>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+        );
+      })()}
+      {detailEveningDate && (() => {
+        const liveGroup = eveningGroups.find(([date]) => date === detailEveningDate);
+        if (!liveGroup) { setDetailEveningDate(null); return null; }
+        const [date, dayPlays] = liveGroup;
+        return (
+        <div className="fixed inset-0 z-50 bg-[#1C1B1A]">
+          <div className="w-full h-full max-w-3xl mx-auto overflow-y-auto font-body">
+            <div className="glass-strong sticky top-0 border-b border-white/10 px-5 flex items-center justify-between z-10" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
+              <button onClick={() => setDetailEveningDate(null)} className="text-[#A39C8F] p-1" aria-label="Zurück"><ChevronLeft size={22} /></button>
+              <h2 className="font-display text-xl text-[#F2EDE4] truncate px-2">{date}</h2>
+              <span className="w-6" />
+            </div>
+            <div className="p-5 space-y-2">
+              {dayPlays.map((p) => {
+                const game = games.find((g) => g.id === p.gameId);
+                const IconC = modeIcon[p.mode] || Home;
+                return (
+                  <SwipeableRow key={p.id} onDelete={() => onDelete(p.id)} disabled={demoMode}>
+                    <button onClick={() => onEdit(p)} className="w-full text-left bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center gap-3">
+                      {game ? <Cover game={game} size="sm" /> : <div className="w-12 h-12 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#A39C8F] shrink-0"><IconC size={16} /></div>}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[#F2EDE4] font-body truncate">{p.gameName}</p>
                         <p className="text-[#5C574F] text-xs font-body">{modeLabel[p.mode]}{p.winner ? ` · Sieger: ${p.winner}` : ""}</p>
                       </div>
                       <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
@@ -3994,7 +4165,7 @@ ${buildCollectionContextForAI(games, plays)}`;
               const mentioned = m.role === "assistant" ? games.filter((g) => m.content.includes(g.name)) : [];
               const isLast = i === chatMessages.length - 1;
               return (
-                <div key={i} className={`flex gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div key={i} className={`flex gap-2 items-end ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                   {m.role === "assistant" && <PipAvatar size={30} />}
                   <div className={`max-w-[80%] flex flex-col gap-1.5 ${m.role === "user" ? "items-end" : "items-start"}`}>
                     <div className={`text-sm font-body rounded-2xl px-4 py-2.5 ${m.role === "user" ? "bg-[#6C7FE0] text-white rounded-br-md" : "bg-[#262422] border border-[#3A3631] text-[#F2EDE4] rounded-bl-md"}`}>
@@ -4024,7 +4195,7 @@ ${buildCollectionContextForAI(games, plays)}`;
               );
             })}
             {chatLoading && (
-              <div className="flex gap-2 justify-start">
+              <div className="flex gap-2 justify-start items-end">
                 <PipAvatar size={30} />
                 <div className="bg-[#262422] border border-[#3A3631] rounded-2xl rounded-bl-md px-4 py-2.5 flex items-center gap-2 text-[#5C574F] text-sm">
                   <Loader2 size={13} /> tippt…
@@ -4062,7 +4233,7 @@ ${buildCollectionContextForAI(games, plays)}`;
 /* ---------------- GAME DETAIL VIEW ---------------- */
 const TONE_HEX = { teal: "#4E8C82", amber: "#E85D9C", red: "#C1443C", default: "#A39C8F" };
 
-function GameDetailModal({ game, plays, lists, onToggleList, onCreateList, onClose, onEdit }) {
+function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList, onClose, onEdit, onViewOther }) {
   const [campaignOpen, setCampaignOpen] = useState(false);
   const gamePlays = plays.filter((p) => p.gameId === game.id);
   const lastPlay = [...gamePlays].sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0];
@@ -4206,6 +4377,40 @@ function GameDetailModal({ game, plays, lists, onToggleList, onCreateList, onClo
               <p className="text-sm text-[#F2EDE4]">{gamePlays.length}× gespielt{lastPlay ? `, zuletzt am ${lastPlay.date}` : ""}</p>
             )}
           </div>
+
+          {(() => {
+            const baseGame = game.baseGameId ? (games || []).find((g) => g.id === game.baseGameId) : null;
+            const expansions = (games || []).filter((g) => g.baseGameId === game.id);
+            if (!baseGame && expansions.length === 0) return null;
+            return (
+              <div className="space-y-2">
+                {baseGame && (
+                  <button onClick={() => onViewOther(baseGame)} className="w-full text-left bg-[#262422] border border-[#3A3631] rounded-2xl p-3.5 flex items-center gap-3">
+                    <Cover game={baseGame} size="sm" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[#5C574F] text-xs font-body">Erweiterung zu</p>
+                      <p className="text-[#F2EDE4] text-sm font-body truncate">{baseGame.name}</p>
+                    </div>
+                    <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
+                  </button>
+                )}
+                {expansions.length > 0 && (
+                  <div>
+                    <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-1.5">Erweiterungen ({expansions.length})</p>
+                    <div className="space-y-2">
+                      {expansions.map((ex) => (
+                        <button key={ex.id} onClick={() => onViewOther(ex)} className="w-full text-left bg-[#262422] border border-[#3A3631] rounded-2xl p-3.5 flex items-center gap-3">
+                          <Cover game={ex} size="sm" />
+                          <span className="flex-1 min-w-0 text-[#F2EDE4] text-sm font-body truncate">{ex.name}</span>
+                          <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {game.isCampaign && gamePlays.length > 0 && (() => {
             const sorted = [...gamePlays].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
@@ -4628,7 +4833,19 @@ function App() {
   };
 
   const saveGame = (game) => {
-    setGames(prev => { const exists = prev.find(g => g.id === game.id); return exists ? prev.map(g => g.id === game.id ? game : g) : [...prev, game]; });
+    setGames(prev => {
+      const exists = prev.find(g => g.id === game.id);
+      let next = exists ? prev.map(g => g.id === game.id ? game : g) : [...prev, game];
+      // Resolve this game's own base-game link, if BGG told us it's an expansion.
+      if (game.baseGameBggId) {
+        const base = next.find(g => g.bggId && String(g.bggId) === String(game.baseGameBggId));
+        if (base) next = next.map(g => g.id === game.id ? { ...g, baseGameId: base.id } : g);
+      }
+      // Resolve any OTHER games that turn out to be expansions of this one
+      // (handles adding the base game after its expansions were already imported).
+      next = next.map(g => (g.id !== game.id && g.baseGameBggId && String(g.baseGameBggId) === String(game.bggId)) ? { ...g, baseGameId: game.id } : g);
+      return next;
+    });
     setGameModal(null);
   };
   const deleteGame = (id) => { setGames(prev => prev.filter(g => g.id !== id)); setGameModal(null); };
@@ -4863,12 +5080,14 @@ function App() {
       {detailGame && (
         <GameDetailModal
           game={detailGame}
+          games={displayGames}
           plays={displayPlays}
           lists={demoMode ? null : displayLists}
           onToggleList={demoMode ? null : toggleGameInList}
           onCreateList={demoMode ? null : addList}
           onClose={() => setDetailGame(null)}
           onEdit={demoMode ? null : () => { setGameModal({ editing: detailGame }); setDetailGame(null); }}
+          onViewOther={(g) => setDetailGame(g)}
         />
       )}
       {detailList && (
