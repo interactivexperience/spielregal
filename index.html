@@ -747,8 +747,9 @@ const RATING_LABELS = {
 function RichTextEditor({ value, onChange, placeholder, minHeight = 100 }) {
   const editorRef = React.useRef(null);
   const initialized = React.useRef(false);
-  const [expanded, setExpanded] = useState(false);
+  const [focused, setFocused] = useState(false);
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
+  const blurTimer = React.useRef(null);
 
   useEffect(() => {
     if (editorRef.current && !initialized.current) {
@@ -780,6 +781,12 @@ function RichTextEditor({ value, onChange, placeholder, minHeight = 100 }) {
     editorRef.current.focus();
   };
 
+  const handleFocus = () => { if (blurTimer.current) clearTimeout(blurTimer.current); setFocused(true); };
+  const handleBlur = () => { blurTimer.current = setTimeout(() => setFocused(false), 180); };
+  // Toolbar buttons must not steal focus/selection from the editor before their
+  // click runs — mousedown+preventDefault keeps the current text selection intact.
+  const keepFocus = (e) => e.preventDefault();
+
   const TEXT_COLORS = [
     { label: "Standard", value: "#F2EDE4" },
     { label: "Flieder", value: "#6C7FE0" },
@@ -789,79 +796,59 @@ function RichTextEditor({ value, onChange, placeholder, minHeight = 100 }) {
   ];
 
   const ToolBtn = ({ children, onClick, className: cn = "", ariaLabel }) => (
-    <button type="button" onClick={onClick} aria-label={ariaLabel} className={`h-9 px-2.5 flex items-center justify-center rounded-lg bg-[#262422] border border-[#3A3631] text-[#F2EDE4] text-xs shrink-0 ${cn}`}>
+    <button type="button" onMouseDown={keepFocus} onClick={onClick} aria-label={ariaLabel} className={`h-9 px-2.5 flex items-center justify-center rounded-lg bg-[#262422] border border-[#3A3631] text-[#F2EDE4] text-xs shrink-0 ${cn}`}>
       {children}
     </button>
   );
 
   return (
-    <div className={expanded ? "fixed inset-0 z-[70] bg-[#1C1B1A] flex flex-col" : "relative"}>
-      {expanded && (
-        <div className="shrink-0 border-b border-[#3A3631] px-4 flex items-center" style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))", paddingBottom: "0.75rem" }}>
-          <span className="text-[#F2EDE4] font-display text-lg">Bearbeiten</span>
-        </div>
-      )}
-      <div className={expanded ? "flex-1 overflow-y-auto p-4" : ""}>
-        {expanded && (
-          <div className="relative mb-2">
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-              <ToolBtn ariaLabel="Fett" onClick={() => exec("bold")}><b>B</b></ToolBtn>
-              <ToolBtn ariaLabel="Kursiv" onClick={() => exec("italic")}><i>I</i></ToolBtn>
-              <ToolBtn ariaLabel="Aufzählung" onClick={() => exec("insertUnorderedList")}>• Liste</ToolBtn>
-              <ToolBtn ariaLabel="Titel" onClick={() => exec("formatBlock", "H2")} className="font-semibold">Titel</ToolBtn>
-              <ToolBtn ariaLabel="Subheadline" onClick={() => exec("formatBlock", "H3")}>Subheadline</ToolBtn>
-              <ToolBtn ariaLabel="Normaler Text" onClick={() => exec("formatBlock", "P")} className="text-[#A39C8F]">Text</ToolBtn>
-              <ToolBtn ariaLabel="Textfarbe" onClick={() => setColorPickerOpen((o) => !o)}>
-                <span className="w-3.5 h-3.5 rounded-full border border-[#F2EDE4]/40" style={{ background: "conic-gradient(#6C7FE0,#D4A24C,#4E8C82,#C1443C,#6C7FE0)" }} />
-              </ToolBtn>
-            </div>
-            {colorPickerOpen && (
-              <div className="absolute top-11 left-0 z-10 bg-[#262422] border border-[#3A3631] rounded-[14px] p-2 flex gap-2 shadow-lg">
-                {TEXT_COLORS.map((c) => (
-                  <button
-                    key={c.value}
-                    type="button"
-                    aria-label={c.label}
-                    onClick={() => { exec("foreColor", c.value); setColorPickerOpen(false); }}
-                    className="w-8 h-8 rounded-full border-2 border-[#1C1B1A]"
-                    style={{ backgroundColor: c.value }}
-                  />
-                ))}
-              </div>
-            )}
+    <div className="relative">
+      {focused && (
+        <div className="relative mb-2">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+            <ToolBtn ariaLabel="Fett" onClick={() => exec("bold")}><b>B</b></ToolBtn>
+            <ToolBtn ariaLabel="Kursiv" onClick={() => exec("italic")}><i>I</i></ToolBtn>
+            <ToolBtn ariaLabel="Aufzählung" onClick={() => exec("insertUnorderedList")}>• Liste</ToolBtn>
+            <ToolBtn ariaLabel="Titel" onClick={() => exec("formatBlock", "H2")} className="font-semibold">Titel</ToolBtn>
+            <ToolBtn ariaLabel="Subheadline" onClick={() => exec("formatBlock", "H3")}>Subheadline</ToolBtn>
+            <ToolBtn ariaLabel="Normaler Text" onClick={() => exec("formatBlock", "P")} className="text-[#A39C8F]">Text</ToolBtn>
+            <ToolBtn ariaLabel="Textfarbe" onClick={() => setColorPickerOpen((o) => !o)}>
+              <span className="w-3.5 h-3.5 rounded-full border border-[#F2EDE4]/40" style={{ background: "conic-gradient(#6C7FE0,#D4A24C,#4E8C82,#C1443C,#6C7FE0)" }} />
+            </ToolBtn>
+            <ToolBtn ariaLabel="Gesamten Text löschen" onClick={clearAll} className="text-[#C1443C]"><Trash2 size={13} /></ToolBtn>
           </div>
-        )}
-        <div
-          ref={editorRef}
-          contentEditable
-          suppressContentEditableWarning
-          onInput={handleInput}
-          onPaste={handlePaste}
-          role="textbox"
-          aria-multiline="true"
-          aria-label={placeholder}
-          className="rte-content w-full border border-[#3A3631] rounded-[14px] px-3.5 py-3 pb-14 text-[#F2EDE4] text-base focus:outline-none focus:border-[#6C7FE0] overflow-y-auto"
-          style={{ minHeight: expanded ? "60vh" : minHeight }}
-          data-placeholder={placeholder}
-        />
-      </div>
-      {!expanded ? (
-        <button type="button" onClick={() => setExpanded(true)} aria-label="Vergrößern"
-          className="absolute bottom-2.5 right-2.5 w-11 h-11 flex items-center justify-center rounded-lg bg-[#262422] border border-[#3A3631] text-[#5C574F]">
-          <Maximize2 size={14} />
-        </button>
-      ) : (
-        <div className="fixed z-[71] flex items-center gap-2" style={{ bottom: "max(1rem, env(safe-area-inset-bottom))", right: "1rem" }}>
-          <button type="button" onClick={clearAll} aria-label="Gesamten Text löschen"
-            className="w-11 h-11 flex items-center justify-center rounded-lg bg-[#262422] border border-[#3A3631] text-[#C1443C] shadow-lg">
-            <Trash2 size={14} />
-          </button>
-          <button type="button" onClick={() => setExpanded(false)}
-            className="h-9 px-4 flex items-center justify-center gap-1.5 rounded-lg bg-[#6C7FE0] text-[#F2EDE4] text-sm font-medium shadow-lg">
-            <Check size={14} /> Fertig
-          </button>
+          {colorPickerOpen && (
+            <div className="absolute top-11 left-0 z-10 bg-[#262422] border border-[#3A3631] rounded-[14px] p-2 flex gap-2 shadow-lg">
+              {TEXT_COLORS.map((c) => (
+                <button
+                  key={c.value}
+                  type="button"
+                  onMouseDown={keepFocus}
+                  aria-label={c.label}
+                  onClick={() => { exec("foreColor", c.value); setColorPickerOpen(false); }}
+                  className="w-8 h-8 rounded-full border-2 border-[#1C1B1A]"
+                  style={{ backgroundColor: c.value }}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
+      <div
+        ref={editorRef}
+        contentEditable
+        suppressContentEditableWarning
+        onInput={handleInput}
+        onPaste={handlePaste}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        role="textbox"
+        aria-multiline="true"
+        aria-label={placeholder}
+        className="rte-content w-full border border-[#3A3631] rounded-[14px] px-3.5 py-3 text-[#F2EDE4] text-base focus:outline-none focus:border-[#6C7FE0]"
+        style={{ minHeight }}
+        data-placeholder={placeholder}
+      />
     </div>
   );
 }
@@ -1764,7 +1751,7 @@ ${(originalSummary || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().s
   const title = titleMatch ? titleMatch[1].trim() : "";
   const body = textMatch ? textMatch[1].trim() : raw.replace(/TITEL:.*$/im, "").trim();
 
-  if (title) return `<h3>${title}</h3><p>${body}</p>`;
+  if (title) return `<h2>${title}</h2><p>${body}</p>`;
   return `<p>${body}</p>`;
 }
 
@@ -1835,6 +1822,23 @@ async function aiChat(workerUrl, messages) {
   const json = await res.json();
   if (json.error) throw new Error(json.error);
   return (json.text || "").trim();
+}
+
+// Suggests which candidate games best fit an existing list, based on the
+// list's name and whatever's already in it (theme inferred from both).
+async function aiSuggestForList(workerUrl, listName, gamesInList, candidates) {
+  const describe = (g) => `${g.name} (${g.minPlayers || "?"}-${g.maxPlayers || "?"} Sp., ${complexityLabel(g) || "?"}, ${[...(g.categories || []), ...(g.mechanisms || [])].slice(0, 3).join(", ") || "-"})`;
+  const prompt = `Eine Liste in einer Brettspielsammlung heißt "${listName}".
+${gamesInList.length ? `Bereits enthaltene Spiele: ${gamesInList.map(describe).join("; ")}` : "Die Liste ist noch leer — leite das Thema nur vom Namen ab."}
+
+Kandidaten, die noch nicht in der Liste sind:
+${candidates.map(describe).join("\n")}
+
+Welche der Kandidaten passen inhaltlich gut zu dieser Liste (Thema/Anlass/Spieleranzahl)? Antworte NUR mit den exakten Namen, kommagetrennt, ohne weitere Erklärung. Falls nichts wirklich passt, antworte mit "keine".`;
+
+  const raw = await aiChat(workerUrl, [{ role: "user", content: prompt }]);
+  if (/^keine\.?$/i.test(raw.trim())) return [];
+  return raw.split(",").map((s) => s.trim()).filter(Boolean);
 }
 
 // Fetches ALL plays BGG has stored for a username (paginated, 100 per page,
@@ -3096,9 +3100,25 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
 /* ---------------- COLLECTION FILTERS (Kategorie, Spieleranzahl, Mechanismus, Bewertung) ---------------- */
 /* ---------------- LIST PICKER (Spiel zu Liste hinzufügen, Mehrfachauswahl) ---------------- */
 /* ---------------- ADD GAMES TO LIST (search + toggle, Audible-style) ---------------- */
-function AddGamesToListModal({ games, plays, list, onToggle, onClose }) {
+function AddGamesToListModal({ games, plays, list, onToggle, onClose, aiWorkerUrl }) {
   const [query, setQuery] = useState("");
+  const [aiPicks, setAiPicks] = useState(null); // null = not run, [] = run but no matches, [...] = matched names
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
   const filtered = games.filter((g) => g.name.toLowerCase().includes(query.toLowerCase()));
+
+  const runAiSuggest = async () => {
+    setAiLoading(true); setAiError("");
+    try {
+      const gamesInList = games.filter((g) => list.gameIds.includes(g.id));
+      const candidates = games.filter((g) => !list.gameIds.includes(g.id));
+      const picks = await aiSuggestForList(aiWorkerUrl, list.name, gamesInList, candidates);
+      setAiPicks(picks);
+      haptic(8);
+    } catch (e) { setAiError(e.message || "Fehlgeschlagen"); }
+    finally { setAiLoading(false); }
+  };
+
   return (
     <div className="fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={onClose}>
       <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm max-h-[var(--app-height,100dvh)] flex flex-col rise-in font-body" onClick={(e) => e.stopPropagation()}>
@@ -3106,12 +3126,19 @@ function AddGamesToListModal({ games, plays, list, onToggle, onClose }) {
           <h2 className="font-display text-xl text-[#F2EDE4]">Spiele hinzufügen</h2>
           <button onClick={onClose} className="text-[#A39C8F] p-1"><X size={22} /></button>
         </div>
-        <div className="shrink-0 p-4 border-b border-[#3A3631]">
+        <div className="shrink-0 p-4 border-b border-[#3A3631] space-y-2.5">
           <div className="relative">
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5C574F]" />
             <input onFocus={handleFocusScroll} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Suchen…"
               className="w-full h-11 bg-[#262422] border border-[#3A3631] rounded-[14px] pl-10 pr-3.5 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
           </div>
+          {aiWorkerUrl && (
+            <button onClick={runAiSuggest} disabled={aiLoading} className="w-full h-10 rounded-[14px] text-xs font-medium bg-[#6C7FE0]/15 text-[#6C7FE0] disabled:opacity-50 flex items-center justify-center gap-1.5">
+              {aiLoading ? <Loader2 size={12} /> : <Sparkles size={12} />} Passende Spiele von KI hervorheben lassen
+            </button>
+          )}
+          {aiError && <p className="text-[11px] text-[#C1443C]">{aiError}</p>}
+          {aiPicks && aiPicks.length === 0 && !aiLoading && <p className="text-[11px] text-[#5C574F]">Keine der übrigen Spiele passt der KI zufolge besonders gut.</p>}
         </div>
         <div className="p-4 overflow-y-auto flex-1 space-y-2">
           {filtered.length === 0 && <p className="text-sm text-[#5C574F] px-1">Keine Spiele gefunden.</p>}
@@ -3119,12 +3146,17 @@ function AddGamesToListModal({ games, plays, list, onToggle, onClose }) {
             const checked = list.gameIds.includes(g.id);
             const playCount = (plays || []).filter((p) => p.gameId === g.id).length;
             const isPlayed = playCount > 0;
+            const aiMatch = aiPicks && aiPicks.includes(g.name);
             return (
               <button key={g.id} onClick={() => onToggle(g.id)}
-                className={`w-full flex items-center gap-3 px-2 py-2 rounded-[14px] bg-[#262422] border border-[#3A3631] ${isPlayed ? "opacity-60" : ""}`}>
+                className={`w-full flex items-center gap-3 px-2 py-2 rounded-[14px] bg-[#262422] border ${aiMatch ? "border-[#6C7FE0]" : "border-[#3A3631]"} ${isPlayed ? "opacity-60" : ""}`}
+                style={aiMatch ? { boxShadow: "0 0 0 1px #6C7FE0, 0 0 16px rgba(108,127,224,0.35)" } : undefined}>
                 <Cover game={g} size="sm" />
                 <div className="flex-1 min-w-0 text-left">
-                  <p className="text-sm text-[#F2EDE4] truncate">{g.name}</p>
+                  <p className="text-sm text-[#F2EDE4] truncate flex items-center gap-1.5">
+                    {g.name}
+                    {aiMatch && <Sparkles size={11} className="text-[#6C7FE0] shrink-0" />}
+                  </p>
                   <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                     {g.status === "owned" && <Pill tone="teal">Besitz</Pill>}
                     {g.status === "wishlist" && <Pill tone="amber">Wunschliste</Pill>}
@@ -3147,7 +3179,7 @@ function AddGamesToListModal({ games, plays, list, onToggle, onClose }) {
 }
 
 /* ---------------- LIST DETAIL PAGE (view/add/remove games, delete the list) ---------------- */
-function ListDetailModal({ list, games, plays, onClose, onView, onDeleteList, onToggleGame, demoMode }) {
+function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDeleteList, onToggleGame, demoMode }) {
   const [addOpen, setAddOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [contextGame, setContextGame] = useState(null);
@@ -3224,6 +3256,9 @@ function ListDetailModal({ list, games, plays, onClose, onView, onDeleteList, on
               <Cover game={contextGame} size="sm" />
               <span className="text-[#F2EDE4] font-medium truncate">{contextGame.name}</span>
             </div>
+            <button onClick={() => { onEdit(contextGame); setContextGame(null); }} className="w-full h-12 flex items-center gap-3 px-3.5 bg-[#262422] border border-[#3A3631] rounded-[14px] text-[#F2EDE4] text-sm">
+              <Pencil size={16} /> Bearbeiten
+            </button>
             <button onClick={() => { onToggleGame(list.id, contextGame.id); setContextGame(null); }} className="w-full h-12 flex items-center gap-3 px-3.5 bg-[#262422] border border-[#3A3631] rounded-[14px] text-[#C1443C] text-sm">
               <X size={16} /> Aus Liste entfernen
             </button>
@@ -3793,8 +3828,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
 }
 
 /* ---------------- RECOMMENDATIONS ---------------- */
-function Recommendations({ games, plays, onAddWishlist, onView, aiWorkerUrl }) {
-  const [chatMessages, setChatMessages] = useState([]); // { role: 'user'|'assistant', content }
+function Recommendations({ games, plays, onAddWishlist, onView, aiWorkerUrl, chatMessages, setChatMessages }) {
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const [chatError, setChatError] = useState("");
@@ -3811,7 +3845,7 @@ function Recommendations({ games, plays, onAddWishlist, onView, aiWorkerUrl }) {
     setChatLoading(true);
     setChatError("");
     try {
-      const systemPrompt = `Du bist ein hilfsbereiter Brettspiel-Berater in einer App zur Verwaltung einer Spielesammlung. Antworte auf Deutsch, kurz und konkret (max. 4-5 Sätze pro Antwort, außer bei Rückfragen). Empfiehl in erster Linie Spiele aus der Sammlung des Nutzers unten. Wenn wirklich nichts in der Sammlung zur Situation passt, darfst du auch ein Spiel außerhalb der Sammlung nennen — aber kennzeichne das klar als "nicht in deiner Sammlung" und begründe genau, warum es für die Situation besser passt als alles Vorhandene. Berücksichtige auch, was der Nutzer zuletzt gespielt hat (nicht gerade erst Gespieltes bevorzugt vorschlagen, außer explizit gewünscht) und schlage gerne auch mal ein lange nicht gespieltes Spiel vor.\n\n${buildCollectionContextForAI(games, plays)}`;
+      const systemPrompt = `Du bist ein hilfsbereiter Brettspiel-Berater in einer App zur Verwaltung einer Spielesammlung. Antworte auf Deutsch, kurz und konkret (max. 4-5 Sätze pro Antwort, außer bei Rückfragen). Empfiehl in erster Linie Spiele aus der Sammlung des Nutzers unten. Wenn wirklich nichts in der Sammlung zur Situation passt, darfst du auch ein Spiel außerhalb der Sammlung nennen — aber kennzeichne das klar als "nicht in deiner Sammlung" und begründe genau, warum es für die Situation besser passt als alles Vorhandene. Berücksichtige auch, was der Nutzer zuletzt gespielt hat (nicht gerade erst Gespieltes bevorzugt vorschlagen, außer explizit gewünscht) und schlage gerne auch mal ein lange nicht gespieltes Spiel vor. Falls die Angaben des Nutzers nicht reichen, um sich zwischen mehreren guten Optionen zu entscheiden (z.B. Spieleranzahl oder Zeit fehlt, oder mehrere Spiele passen ähnlich gut), stell EINE kurze, konkrete Rückfrage statt zu raten.\n\n${buildCollectionContextForAI(games, plays)}`;
       const apiMessages = [{ role: "system", content: systemPrompt }, ...nextMessages];
       const reply = await aiChat(aiWorkerUrl, apiMessages);
       setChatMessages([...nextMessages, { role: "assistant", content: reply }]);
@@ -3898,11 +3932,26 @@ function Recommendations({ games, plays, onAddWishlist, onView, aiWorkerUrl }) {
 
           {chatMessages.length > 0 && (
             <div className="space-y-2.5 mb-4 max-h-80 overflow-y-auto">
-              {chatMessages.map((m, i) => (
-                <div key={i} className={`text-sm font-body rounded-[14px] px-3.5 py-2.5 ${m.role === "user" ? "bg-[#6C7FE0]/20 text-[#F2EDE4] ml-6" : "bg-[#1C1B1A] border border-[#3A3631] text-[#F2EDE4] mr-2"}`}>
-                  {m.content}
-                </div>
-              ))}
+              {chatMessages.map((m, i) => {
+                const mentioned = m.role === "assistant" ? games.filter((g) => m.content.includes(g.name)) : [];
+                return (
+                  <div key={i}>
+                    <div className={`text-sm font-body rounded-[14px] px-3.5 py-2.5 ${m.role === "user" ? "bg-[#6C7FE0]/20 text-[#F2EDE4] ml-6" : "bg-[#1C1B1A] border border-[#3A3631] text-[#F2EDE4] mr-2"}`}>
+                      {m.content}
+                    </div>
+                    {mentioned.length > 0 && (
+                      <div className="flex gap-1.5 overflow-x-auto pt-1.5 mr-2">
+                        {mentioned.map((g) => (
+                          <button key={g.id} onClick={() => onView(g)} className="shrink-0 flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full bg-[#262422] border border-[#3A3631] text-xs text-[#A39C8F]">
+                            <Cover game={g} size="sm" className="!w-5 !h-5" />
+                            {g.name} <ChevronRight size={11} />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
               {chatLoading && (
                 <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-[14px] px-3.5 py-2.5 mr-2 flex items-center gap-2 text-[#5C574F] text-sm">
                   <Loader2 size={13} /> überlegt…
@@ -4037,6 +4086,7 @@ function Recommendations({ games, plays, onAddWishlist, onView, aiWorkerUrl }) {
 const TONE_HEX = { teal: "#4E8C82", amber: "#D4A24C", red: "#C1443C", default: "#A39C8F" };
 
 function GameDetailModal({ game, plays, lists, onToggleList, onCreateList, onClose, onEdit }) {
+  const [campaignOpen, setCampaignOpen] = useState(false);
   const gamePlays = plays.filter((p) => p.gameId === game.id);
   const lastPlay = [...gamePlays].sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0];
   const label = complexityLabel(game);
@@ -4180,34 +4230,54 @@ function GameDetailModal({ game, plays, lists, onToggleList, onCreateList, onClo
             )}
           </div>
 
-          {game.isCampaign && gamePlays.length > 0 && (
-            <div>
-              <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-2">Kampagnen-Verlauf</p>
-              <div className="space-y-3">
-                {[...gamePlays].sort((a, b) => (a.date || "").localeCompare(b.date || "")).map((p, i) => (
-                  <div key={p.id} className="flex gap-3">
-                    <div className="flex flex-col items-center shrink-0">
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#6C7FE0] mt-1.5" />
-                      {i < gamePlays.length - 1 && <div className="flex-1 w-px bg-[#3A3631] mt-1" />}
-                    </div>
-                    <div className="flex-1 min-w-0 pb-3">
-                      <p className="text-xs text-[#5C574F] font-mono">{p.date}</p>
-                      {p.images && p.images.length > 0 && (
-                        <div className="flex gap-2 mt-1.5 overflow-x-auto">
-                          {p.images.map((img, j) => (
-                            <img key={j} src={img} alt="Spielstand" className="w-20 h-20 rounded-lg block object-cover border border-[#3A3631] shrink-0" />
-                          ))}
-                        </div>
-                      )}
-                      {p.notes && <p className="text-sm text-[#F2EDE4] mt-1.5">{p.notes}</p>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {game.isCampaign && gamePlays.length > 0 && (() => {
+            const sorted = [...gamePlays].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+            const last = sorted[sorted.length - 1];
+            return (
+              <button onClick={() => setCampaignOpen(true)} className="w-full text-left bg-[#262422] border border-[#3A3631] rounded-2xl p-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#6C7FE0]/15 flex items-center justify-center shrink-0 text-[#6C7FE0]"><ListChecks size={18} /></div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[#F2EDE4] text-sm font-medium">Kampagnen-Verlauf</p>
+                  <p className="text-[#5C574F] text-xs font-body">{gamePlays.length} Partie{gamePlays.length === 1 ? "" : "n"} · zuletzt am {last.date || "?"}</p>
+                </div>
+                <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
+              </button>
+            );
+          })()}
         </div>
       </div>
+      {campaignOpen && (
+        <div className="fixed inset-0 z-[60] bg-[#1C1B1A]">
+          <div className="w-full h-full max-w-3xl mx-auto overflow-y-auto font-body">
+            <div className="sticky top-0 bg-[#1C1B1A]/85 backdrop-blur-xl border-b border-[#3A3631] px-5 flex items-center justify-between z-10" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
+              <button onClick={() => setCampaignOpen(false)} className="text-[#A39C8F] p-1" aria-label="Zurück"><ChevronLeft size={22} /></button>
+              <h2 className="font-display text-xl text-[#F2EDE4] truncate px-2">Kampagnen-Verlauf</h2>
+              <span className="w-6" />
+            </div>
+            <div className="p-5 space-y-3">
+              {[...gamePlays].sort((a, b) => (a.date || "").localeCompare(b.date || "")).map((p, i, arr) => (
+                <div key={p.id} className="flex gap-3">
+                  <div className="flex flex-col items-center shrink-0">
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#6C7FE0] mt-1.5" />
+                    {i < arr.length - 1 && <div className="flex-1 w-px bg-[#3A3631] mt-1" />}
+                  </div>
+                  <div className="flex-1 min-w-0 pb-3">
+                    <p className="text-xs text-[#5C574F] font-mono">{p.date}</p>
+                    {p.images && p.images.length > 0 && (
+                      <div className="flex gap-2 mt-1.5 overflow-x-auto">
+                        {p.images.map((img, j) => (
+                          <img key={j} src={img} alt="Spielstand" className="w-20 h-20 rounded-lg block object-cover border border-[#3A3631] shrink-0" />
+                        ))}
+                      </div>
+                    )}
+                    {p.notes && <p className="text-sm text-[#F2EDE4] mt-1.5">{p.notes}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       {listPickerOpen && lists && (
         <ListPickerModal
           lists={lists}
@@ -4357,6 +4427,17 @@ function App() {
   const displayLists = demoMode ? DEMO_LISTS : lists;
   const displayPlayers = demoMode ? DEMO_PLAYERS : players;
   const [tab, setTab] = useState("dashboard");
+  const [aiChatMessages, setAiChatMessages] = useState([]);
+  const [pendingTabSwitch, setPendingTabSwitch] = useState(null);
+  const requestTabSwitch = (nextTab) => {
+    if (tab === "recommendations" && nextTab !== "recommendations" && aiChatMessages.length > 0) {
+      setPendingTabSwitch(nextTab);
+      return;
+    }
+    haptic(6);
+    setTab(nextTab);
+    if (nextTab !== "collection") setQuickFilter(null);
+  };
   const [gameModal, setGameModal] = useState(null);
   const [detailGame, setDetailGame] = useState(null);
   const [detailList, setDetailList] = useState(null);
@@ -4728,7 +4809,7 @@ function App() {
           {tab === "dashboard" && <Dashboard games={displayGames} plays={displayPlays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} onView={(g) => setDetailGame(g)} sectionOrder={dashboardOrder} onReorder={setDashboardOrder} onSearch={() => setCommandBarOpen(true)} aiWorkerUrl={aiWorkerUrl} />}
           {tab === "collection" && <Collection games={displayGames} plays={displayPlays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => !demoMode && setGameModal({ editing: null })} onView={(g) => setDetailGame(g)} onEdit={(g) => setGameModal({ editing: g })} onDelete={(g) => deleteGame(g.id)} categoryOptions={categoryOptions} mechanismOptions={mechanismOptions} demoMode={demoMode} lists={displayLists} onCreateList={(name) => !demoMode && addList(name)} onOpenList={(l) => setDetailList(l)} />}
           {tab === "playlog" && <PlayLog plays={displayPlays} games={displayGames} onAdd={() => !demoMode && setPlayModal({ editing: null })} onEdit={(p) => !demoMode && setPlayModal({ editing: p })} onDelete={deletePlay} demoMode={demoMode} />}
-          {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} onAddWishlist={addToWishlistFromRecommendation} onView={(g) => setDetailGame(g)} aiWorkerUrl={aiWorkerUrl} />}
+          {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} onAddWishlist={addToWishlistFromRecommendation} onView={(g) => setDetailGame(g)} aiWorkerUrl={aiWorkerUrl} chatMessages={aiChatMessages} setChatMessages={setAiChatMessages} />}
           {tab === "settings" && (
             <SettingsPage
               customCategories={customCategories}
@@ -4761,13 +4842,30 @@ function App() {
       <div className="shrink-0 bg-[#1C1B1A]/80 backdrop-blur-xl border-t border-[#3A3631] px-2 pt-1.5 pb-2.5" style={{ WebkitBackdropFilter: "blur(20px)" }}>
         <div className="flex justify-around">
           {tabs.map(t => (
-            <button key={t.id} onClick={() => { haptic(6); setTab(t.id); if (t.id !== "collection") setQuickFilter(null); }} className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-[14px] min-w-[64px] transition-transform duration-200" style={{ transform: tab === t.id ? "translateY(-1px)" : "none" }}>
+            <button key={t.id} onClick={() => requestTabSwitch(t.id)} className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-[14px] min-w-[64px] transition-transform duration-200" style={{ transform: tab === t.id ? "translateY(-1px)" : "none" }}>
               <t.icon size={20} className={`transition-colors duration-200 ${tab === t.id ? "text-[#D4A24C]" : "text-[#5C574F]"}`} strokeWidth={tab === t.id ? 2.5 : 2} />
               <span className={`text-[10px] font-body transition-colors duration-200 ${tab === t.id ? "text-[#D4A24C] font-semibold" : "text-[#5C574F]"}`}>{t.label}</span>
             </button>
           ))}
         </div>
       </div>
+      {pendingTabSwitch && (
+        <div className="fixed top-0 left-0 right-0 bg-black/80 z-[80] flex items-center justify-center p-6" style={{ height: "var(--app-height, 100dvh)" }} onClick={() => setPendingTabSwitch(null)}>
+          <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-2xl p-5 w-full max-w-xs rise-in font-body" onClick={(e) => e.stopPropagation()}>
+            <p className="text-[#F2EDE4] font-display text-lg mb-1.5">KI-Gespräch verlassen?</p>
+            <p className="text-[#A39C8F] text-sm mb-4">Der Gesprächsverlauf wird dabei gelöscht.</p>
+            <div className="flex gap-2">
+              <button onClick={() => setPendingTabSwitch(null)} className="flex-1 h-11 rounded-[14px] bg-[#262422] border border-[#3A3631] text-[#F2EDE4] text-sm font-medium">Abbrechen</button>
+              <button
+                onClick={() => { const next = pendingTabSwitch; setAiChatMessages([]); setPendingTabSwitch(null); haptic(6); setTab(next); if (next !== "collection") setQuickFilter(null); }}
+                className="flex-1 h-11 rounded-[14px] bg-[#C1443C] text-white text-sm font-medium"
+              >
+                Verlassen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {detailGame && (
         <GameDetailModal
           game={detailGame}
@@ -4787,6 +4885,7 @@ function App() {
           demoMode={demoMode}
           onClose={() => setDetailList(null)}
           onView={(g) => setDetailGame(g)}
+          onEdit={(g) => setGameModal({ editing: g })}
           onDeleteList={removeList}
           onToggleGame={toggleGameInList}
         />
