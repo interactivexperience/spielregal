@@ -3142,18 +3142,18 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
                 </div>
                 <div className="min-w-0">
                   <p className="text-[#F2EDE4] font-display text-xl leading-tight truncate">{tasteProfile[0][0]}</p>
-                  <p className="text-[#5C574F] text-xs font-body">Dein Lieblingsthema</p>
+                  <p className="text-[#5C574F] text-xs font-body">Dein Lieblingsthema · {tasteProfile[0][1]}× bei deinen 8+-Bewertungen</p>
                 </div>
               </div>
             );
           })()}
           {tasteProfile.length > 1 && (
             <div className="flex flex-wrap gap-1.5">
-              {tasteProfile.slice(1).map(([tag]) => {
+              {tasteProfile.slice(1).map(([tag, weight]) => {
                 const TIcon = tagIcon(tag);
                 return (
                   <span key={tag} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs bg-[#1C1B1A]/50 border border-[#3A3631] text-[#A39C8F] font-body">
-                    <TIcon size={11} />{tag}
+                    <TIcon size={11} />{tag} <span className="text-[#5C574F]">· {weight}</span>
                   </span>
                 );
               })}
