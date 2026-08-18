@@ -19,6 +19,28 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
 <style>
   html, body { background:#1C1B1A; margin:0; overscroll-behavior:none; }
+  .glass {
+    background: rgba(38, 36, 34, 0.55);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    position: relative;
+  }
+  .glass::before {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.04) 40%, rgba(255,255,255,0) 70%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .glass-strong {
+    background: rgba(28, 27, 26, 0.72);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+  }
   button { transition: transform 0.15s cubic-bezier(0.34, 1.2, 0.64, 1), opacity 0.15s ease, background-color 0.2s ease, border-color 0.2s ease; }
   button:active { transform: scale(0.96); }
   button { position: relative; isolation: isolate; overflow: hidden; }
@@ -168,7 +190,7 @@ const COMPLEXITY_STEP_LABELS = {
 };
 function complexityStepTone(v) {
   if (v < 2) return "#4E8C82"; // Familienspiel
-  if (v < 3.5) return "#D4A24C"; // Kennerspiel
+  if (v < 3.5) return "#E85D9C"; // Kennerspiel
   return "#C1443C"; // Expertenspiel
 }
 function ComplexityPicker({ value, onChange }) {
@@ -257,7 +279,7 @@ function playChime() {
 
 function Confetti({ active }) {
   if (!active) return null;
-  const colors = ["#6C7FE0", "#D4A24C", "#4E8C82", "#C1443C", "#F2EDE4"];
+  const colors = ["#6C7FE0", "#E85D9C", "#4E8C82", "#C1443C", "#F2EDE4"];
   const pieces = Array.from({ length: 26 }, (_, i) => ({
     left: 8 + Math.random() * 84,
     delay: Math.random() * 0.25,
@@ -375,7 +397,7 @@ function TopTenCarousel({ games, onView }) {
                   <div className="w-full h-full flex items-center justify-center text-[#5C574F]"><Dices size={28} /></div>
                 )}
                 {isFront && (
-                  <span className="absolute top-2 left-2 w-6 h-6 rounded-full bg-[#D4A24C] text-[#1C1B1A] text-[11px] font-display font-bold flex items-center justify-center border-2 border-[#1C1B1A]">
+                  <span className="absolute top-2 left-2 w-6 h-6 rounded-full bg-[#E85D9C] text-[#1C1B1A] text-[11px] font-display font-bold flex items-center justify-center border-2 border-[#1C1B1A]">
                     {safeIndex + 1}
                   </span>
                 )}
@@ -394,7 +416,7 @@ function TopTenCarousel({ games, onView }) {
         />
       </div>
       <p className="text-[#F2EDE4] text-sm font-medium mt-4 text-center truncate max-w-[220px]">{current.name}</p>
-      <p className="text-[#D4A24C] text-xs font-mono flex items-center gap-1 mt-0.5"><Star size={11} fill="#D4A24C" className="text-[#D4A24C]" /> {current.rating}/10</p>
+      <p className="text-[#E85D9C] text-xs font-mono flex items-center gap-1 mt-0.5"><Star size={11} fill="#E85D9C" className="text-[#E85D9C]" /> {current.rating}/10</p>
       <div className="flex gap-1 mt-2">
         {games.map((_, i) => (
           <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === safeIndex ? "bg-[#F2EDE4]" : "bg-[#F2EDE4]/30"}`} />
@@ -790,7 +812,7 @@ function RichTextEditor({ value, onChange, placeholder, minHeight = 100 }) {
   const TEXT_COLORS = [
     { label: "Standard", value: "#F2EDE4" },
     { label: "Flieder", value: "#6C7FE0" },
-    { label: "Amber", value: "#D4A24C" },
+    { label: "Amber", value: "#E85D9C" },
     { label: "Türkis", value: "#4E8C82" },
     { label: "Rot", value: "#C1443C" },
   ];
@@ -813,7 +835,7 @@ function RichTextEditor({ value, onChange, placeholder, minHeight = 100 }) {
             <ToolBtn ariaLabel="Subheadline" onClick={() => exec("formatBlock", "H3")}>Subheadline</ToolBtn>
             <ToolBtn ariaLabel="Normaler Text" onClick={() => exec("formatBlock", "P")} className="text-[#A39C8F]">Text</ToolBtn>
             <ToolBtn ariaLabel="Textfarbe" onClick={() => setColorPickerOpen((o) => !o)}>
-              <span className="w-3.5 h-3.5 rounded-full border border-[#F2EDE4]/40" style={{ background: "conic-gradient(#6C7FE0,#D4A24C,#4E8C82,#C1443C,#6C7FE0)" }} />
+              <span className="w-3.5 h-3.5 rounded-full border border-[#F2EDE4]/40" style={{ background: "conic-gradient(#6C7FE0,#E85D9C,#4E8C82,#C1443C,#6C7FE0)" }} />
             </ToolBtn>
             <ToolBtn ariaLabel="Gesamten Text löschen" onClick={clearAll} className="text-[#C1443C]"><Trash2 size={13} /></ToolBtn>
           </div>
@@ -868,15 +890,15 @@ function StarRating({ value, onChange }) {
           >
             <Star
               size={26}
-              className={v >= s ? "text-[#D4A24C]" : "text-[#3A3631]"}
-              fill={v >= s ? "#D4A24C" : "none"}
+              className={v >= s ? "text-[#E85D9C]" : "text-[#3A3631]"}
+              fill={v >= s ? "#E85D9C" : "none"}
             />
           </button>
         ))}
       </div>
       {v > 0 && (
         <p className="text-xs text-[#A39C8F] mt-1.5">
-          <span className="font-mono text-[#D4A24C]">{v}/10</span> · {RATING_LABELS[v]}
+          <span className="font-mono text-[#E85D9C]">{v}/10</span> · {RATING_LABELS[v]}
         </p>
       )}
     </div>
@@ -1363,7 +1385,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
         <div>
           <p className="text-xs text-[#5C574F] mb-2">{syncUrl ? "Deine Daten werden über Firebase mit deinen Geräten abgeglichen." : "Noch nicht eingerichtet — deine Daten bleiben nur auf diesem Gerät."}</p>
           <button onClick={onOpenSync} className="w-full h-12 rounded-[14px] text-sm font-medium bg-[#262422] border border-[#3A3631] text-[#F2EDE4] flex items-center justify-center gap-2">
-            {syncStatus === "syncing" ? <Loader2 size={16} className="text-[#D4A24C]" /> : <Globe size={16} className={syncStatus === "error" ? "text-[#C1443C]" : "text-[#5C574F]"} />}
+            {syncStatus === "syncing" ? <Loader2 size={16} className="text-[#E85D9C]" /> : <Globe size={16} className={syncStatus === "error" ? "text-[#C1443C]" : "text-[#5C574F]"} />}
             {syncUrl ? "Synchronisation verwalten" : "Synchronisation einrichten"}
           </button>
         </div>
@@ -1401,11 +1423,11 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
             disabled={!bggUsername.trim() || bggImportStatus === "importing"}
             className="w-full h-12 rounded-[14px] text-sm font-medium bg-[#262422] border border-[#3A3631] text-[#F2EDE4] disabled:opacity-40 flex items-center justify-center gap-2"
           >
-            {bggImportStatus === "importing" ? <Loader2 size={16} className="text-[#D4A24C]" /> : <ListChecks size={16} className="text-[#5C574F]" />}
+            {bggImportStatus === "importing" ? <Loader2 size={16} className="text-[#E85D9C]" /> : <ListChecks size={16} className="text-[#5C574F]" />}
             {bggImportStatus === "importing" ? "Importiere… kann bei vielen Partien dauern" : "Partien importieren"}
           </button>
           {bggImportStatus === "done" && bggImportResult && (
-            <p className={`text-xs mt-2 ${bggImportResult.incomplete ? "text-[#D4A24C]" : "text-[#4E8C82]"}`}>
+            <p className={`text-xs mt-2 ${bggImportResult.incomplete ? "text-[#E85D9C]" : "text-[#4E8C82]"}`}>
               {bggImportResult.playsImported} neue Partie{bggImportResult.playsImported === 1 ? "" : "n"} importiert
               {bggImportResult.gamesAdded > 0 ? `, ${bggImportResult.gamesAdded} neue Spiel${bggImportResult.gamesAdded === 1 ? "" : "e"} angelegt` : ""}.
               {bggImportResult.totalFound > bggImportResult.playsImported ? ` (${bggImportResult.totalFound - bggImportResult.playsImported} bereits vorher importiert.)` : ""}
@@ -1533,7 +1555,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
         <div>
           <p className="text-xs text-[#5C574F] mb-2">Füllt die App vorübergehend mit Beispiel-Spielen, damit du siehst, wie's mit Inhalt aussieht. Wird nirgends gespeichert.</p>
           <button onClick={onToggleDemo}
-            className={`w-full h-12 rounded-[14px] text-sm font-medium ${demoMode ? "bg-[#D4A24C] text-[#1C1B1A]" : "bg-[#262422] border border-[#3A3631] text-[#F2EDE4]"}`}>
+            className={`w-full h-12 rounded-[14px] text-sm font-medium ${demoMode ? "bg-[#E85D9C] text-[#1C1B1A]" : "bg-[#262422] border border-[#3A3631] text-[#F2EDE4]"}`}>
             {demoMode ? "Demo-Vorschau beenden" : "Demo-Vorschau anzeigen"}
           </button>
         </div>
@@ -1545,7 +1567,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     <div className="p-5 pb-6 space-y-2.5 font-body min-h-full flex flex-col">
       <h1 className="font-display text-3xl text-[#F2EDE4] mb-2">Einstellungen</h1>
       <SettingsRow icon={Globe} label="Synchronisation" sub={syncUrl ? "Eingerichtet" : "Nicht eingerichtet"} tone="#6C7FE0" onClick={() => setView("sync")} />
-      <SettingsRow icon={Sparkles} label="KI-Assistent" sub={aiWorkerUrl ? "Eingerichtet" : "Nicht eingerichtet"} tone="#D4A24C" onClick={() => setView("ai")} />
+      <SettingsRow icon={Sparkles} label="KI-Assistent" sub={aiWorkerUrl ? "Eingerichtet" : "Nicht eingerichtet"} tone="#E85D9C" onClick={() => setView("ai")} />
       <SettingsRow icon={ListChecks} label="BGG-Partien importieren" tone="#4E8C82" onClick={() => setView("bggImport")} />
       <SettingsRow icon={Puzzle} label="Sammlung anpassen" sub="Kategorien, Mechanismen, Spielertypen" onClick={() => setView("customize")} />
       {duplicateGroups.length > 0 && (
@@ -1897,7 +1919,7 @@ async function bggFetchAllPlays(username) {
 const Pill = ({ children, tone = "default" }) => {
   const tones = {
     default: "bg-[#2E2B28] text-[#A39C8F] border-[#3A3631]",
-    amber: "bg-[#D4A24C]/15 text-[#D4A24C] border-[#D4A24C]/30",
+    amber: "bg-[#E85D9C]/15 text-[#E85D9C] border-[#E85D9C]/30",
     red: "bg-[#C1443C]/15 text-[#C1443C] border-[#C1443C]/30",
     teal: "bg-[#4E8C82]/15 text-[#7FB3AA] border-[#4E8C82]/30",
   };
@@ -1991,12 +2013,12 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             <div className="flex gap-2">
               <input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && runSearch()}
                 placeholder="z.B. Wingspan"
-                className="flex-1 h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 text-[#F2EDE4] text-base font-body placeholder-[#5C574F] focus:outline-none focus:border-[#D4A24C]" />
+                className="flex-1 h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 text-[#F2EDE4] text-base font-body placeholder-[#5C574F] focus:outline-none focus:border-[#E85D9C]" />
               <button onClick={runSearch} className="bg-[#6C7FE0] text-[#F2EDE4] w-12 h-12 shrink-0 rounded-[14px] flex items-center justify-center active:scale-95">
                 {searching ? <Loader2 size={20} /> : <Search size={20} />}
               </button>
             </div>
-            {searchError && <p className="text-sm text-[#D4A24C] font-body">{searchError}</p>}
+            {searchError && <p className="text-sm text-[#E85D9C] font-body">{searchError}</p>}
             <div className="space-y-2">
               {results.map((r) => {
                 const alreadyOwned = (games || []).find((g) => g.bggId && String(g.bggId) === String(r.bggId));
@@ -2005,7 +2027,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
                     className="w-full text-left bg-[#262422] hover:bg-[#2E2B28] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center justify-between gap-2">
                     <span className="font-body text-[#F2EDE4] min-w-0 truncate">
                       {r.name} <span className="text-[#5C574F]">({r.year || "?"})</span>
-                      {alreadyOwned && <span className="block text-[11px] text-[#D4A24C] mt-0.5">Bereits in deiner Sammlung</span>}
+                      {alreadyOwned && <span className="block text-[11px] text-[#E85D9C] mt-0.5">Bereits in deiner Sammlung</span>}
                     </span>
                     <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
                   </button>
@@ -2037,7 +2059,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#6C7FE0] ${form.year ? "bg-[#262422]" : "bg-transparent"}`} />
             <div>
               <div className="flex items-center justify-between">
-                <label className="text-[11px] text-[#5C574F]">Zusammenfassung</label>
+                <label className="block text-[11px] text-[#5C574F]">Zusammenfassung</label>
                 {aiWorkerUrl && (
                   <button
                     type="button"
@@ -2078,7 +2100,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             </button>
 
             <div>
-              <label className="text-[11px] text-[#5C574F]">Spieleranzahl (min–max)</label>
+              <label className="block text-[11px] text-[#5C574F]">Spieleranzahl (min–max)</label>
               <div className="flex items-center gap-2 mt-1.5">
                 <input value={form.minPlayers} onChange={(e) => update("minPlayers", e.target.value)} placeholder="min" inputMode="numeric"
                   className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base text-center ${form.minPlayers ? "bg-[#262422]" : "bg-transparent"}`} />
@@ -2088,7 +2110,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               </div>
             </div>
             <div>
-              <label className="text-[11px] text-[#5C574F]">Beste Spieleranzahl (optional, von–bis)</label>
+              <label className="block text-[11px] text-[#5C574F]">Beste Spieleranzahl (optional, von–bis)</label>
               <div className="flex items-center gap-2 mt-1.5">
                 <input value={form.bestPlayersMin} onChange={(e) => update("bestPlayersMin", e.target.value)} placeholder="von" inputMode="numeric"
                   className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base text-center ${form.bestPlayersMin ? "bg-[#262422]" : "bg-transparent"}`} />
@@ -2098,7 +2120,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               </div>
             </div>
             <div>
-              <label className="text-[11px] text-[#5C574F]">Dauer in Minuten (min–max)</label>
+              <label className="block text-[11px] text-[#5C574F]">Dauer in Minuten (min–max)</label>
               <div className="flex items-center gap-2 mt-1.5">
                 <input value={form.minTime} onChange={(e) => update("minTime", e.target.value)} placeholder="min" inputMode="numeric"
                   className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base text-center ${form.minTime ? "bg-[#262422]" : "bg-transparent"}`} />
@@ -2108,7 +2130,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               </div>
             </div>
             <div>
-              <label className="text-[11px] text-[#5C574F]">Komplexität</label>
+              <label className="block text-[11px] text-[#5C574F]">Komplexität</label>
               <div className="mt-1.5">
                 <ComplexityPicker value={form.complexity} onChange={(v) => update("complexity", v)} />
               </div>
@@ -2177,14 +2199,14 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             </button>
 
             <div>
-              <label className="text-[11px] text-[#5C574F]">Deine Bewertung</label>
+              <label className="block text-[11px] text-[#5C574F]">Deine Bewertung</label>
               <div className="mt-1.5">
                 <StarRating value={form.rating} onChange={(v) => update("rating", v)} />
               </div>
             </div>
 
             <div>
-              <label className="text-[11px] text-[#5C574F]">Notizen, Hausregeln</label>
+              <label className="block text-[11px] text-[#5C574F]">Notizen, Hausregeln</label>
               <div className="mt-1.5">
                 <RichTextEditor value={form.notes} onChange={(html) => update("notes", html)} placeholder="Notizen, Hausregeln…" />
               </div>
@@ -2343,7 +2365,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
           {!selectedGame ? (
             <div>
               <input value={gameQuery} onChange={(e) => setGameQuery(e.target.value)} placeholder="Spiel suchen…"
-                className="w-full bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 text-[#F2EDE4] placeholder-[#5C574F] focus:outline-none focus:border-[#D4A24C]" />
+                className="w-full bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 text-[#F2EDE4] placeholder-[#5C574F] focus:outline-none focus:border-[#E85D9C]" />
               <div className="mt-3 space-y-2">
                 {filtered.map((g) => (
                   <button key={g.id} onClick={() => setSelectedGame(g)}
@@ -2369,12 +2391,12 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                 onChange={setMode}
               />
               <div>
-                <label className="text-[11px] text-[#5C574F]">Datum</label>
+                <label className="block text-[11px] text-[#5C574F]">Datum</label>
                 <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-auto min-w-[180px] h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base mt-2.5" />
               </div>
               {!initial && (
                 <div>
-                  <label className="text-[11px] text-[#5C574F]">Wie oft an diesem Tag gespielt?</label>
+                  <label className="block text-[11px] text-[#5C574F]">Wie oft an diesem Tag gespielt?</label>
                   <div className="flex items-center gap-3 mt-2.5">
                     <button type="button" onClick={() => { haptic(5); setQuantity((q) => Math.max(1, q - 1)); }} className="w-11 h-11 rounded-full bg-[#262422] border border-[#3A3631] text-[#F2EDE4] flex items-center justify-center text-lg">–</button>
                     <span className="font-display text-xl text-[#F2EDE4] w-8 text-center">{quantity}</span>
@@ -2384,7 +2406,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                 </div>
               )}
               <div>
-                <label className="text-[11px] text-[#5C574F]">Mitspieler <span className="text-[10px]">(antippen zum Auswählen, halten zum Bearbeiten)</span></label>
+                <label className="block text-[11px] text-[#5C574F]">Mitspieler <span className="text-[10px]">(antippen zum Auswählen, halten zum Bearbeiten)</span></label>
                 <div className="flex items-start gap-3 overflow-x-auto pb-1 mt-1.5">
                   {playerProfiles.map((p) => {
                     const selected = playerIds.includes(p.id);
@@ -2443,7 +2465,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                 placeholder="Notiz (optional)" rows={2}
                 className={`w-full border border-[#3A3631] rounded-[14px] px-3.5 py-3 text-[#F2EDE4] text-base focus:outline-none focus:border-[#6C7FE0] resize-none overflow-hidden ${notes ? "bg-[#262422]" : "bg-transparent"}`} />
               <div>
-                <label className="text-[11px] text-[#5C574F]">Fotos</label>
+                <label className="block text-[11px] text-[#5C574F]">Fotos</label>
                 <div className="mt-1.5">
                   <PhotoGallerySection
                     images={images}
@@ -2799,8 +2821,8 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     ),
     nudge: nudge && (
       <button key="nudge" onClick={() => onView(nudge.game)}
-        className="relative w-full text-left rounded-3xl p-5 flex items-center gap-4 overflow-hidden border border-[#6C7FE0]/30"
-        style={{ backgroundImage: "radial-gradient(circle at 15% 20%, rgba(108,127,224,0.28), transparent 65%), linear-gradient(135deg, #262422, #1C1B1A)" }}>
+        className="glass relative w-full text-left rounded-3xl p-5 flex items-center gap-4 overflow-hidden border border-[#6C7FE0]/30"
+        style={{ backgroundImage: "radial-gradient(circle at 15% 20%, rgba(108,127,224,0.28), transparent 65%)" }}>
         <Cover game={nudge.game} size="lg" className="!w-24 !h-24 shrink-0" />
         <div className="min-w-0">
           <p className="text-[#8B9AFA] text-xs font-body font-semibold flex items-center gap-1.5 mb-1"><Sparkles size={14} /> VORSCHLAG FÜR HEUTE</p>
@@ -2814,7 +2836,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
         <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Erfolge</h2>
         <div className="flex gap-3 overflow-x-auto pb-1 px-1">
           {achievements.map((a, i) => {
-            const palette = ["#6C7FE0", "#D4A24C", "#4E8C82", "#C1443C", "#8B5FBF"];
+            const palette = ["#6C7FE0", "#E85D9C", "#4E8C82", "#C1443C", "#8B5FBF"];
             const c = palette[i % palette.length];
             return (
               <div key={a.id} className="shrink-0 flex flex-col items-center gap-1.5 w-16 text-center">
@@ -2856,7 +2878,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-3">
               <p className="text-[10px] text-[#5C574F] font-body mb-1">👤 Liebste Spielerzahl</p>
               <p className="text-[#F2EDE4] text-sm font-body font-medium">{bestOf.favCount.count} Spieler</p>
-              <p className="text-[#D4A24C] text-xs font-mono">{bestOf.favCount.times}× so gespielt</p>
+              <p className="text-[#E85D9C] text-xs font-mono">{bestOf.favCount.times}× so gespielt</p>
             </div>
           )}
           {bestOf.favCat && (
@@ -2916,7 +2938,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             </div>
           )}
           {biggestPlayGroup && (
-            <div className="bg-[#262422] rounded-2xl p-4 border-l-[3px]" style={{ borderColor: "#D4A24C" }}>
+            <div className="bg-[#262422] rounded-2xl p-4 border-l-[3px]" style={{ borderColor: "#E85D9C" }}>
               <div className="flex items-baseline gap-2">
                 <span className="text-lg">👥</span>
                 <p className="font-display text-2xl text-[#F2EDE4]">{biggestPlayGroup}</p>
@@ -2955,7 +2977,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
                   ) : (
                     <div className="w-full aspect-square rounded-xl border border-[#3A3631] bg-[#2E2B28] flex items-center justify-center text-[#5C574F]"><Dices size={18} /></div>
                   )}
-                  <span className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-[#D4A24C] text-[#1C1B1A] text-[10px] font-display font-bold flex items-center justify-center border-2 border-[#1C1B1A] shadow">{i + 1}</span>
+                  <span className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-[#E85D9C] text-[#1C1B1A] text-[10px] font-display font-bold flex items-center justify-center border-2 border-[#1C1B1A] shadow">{i + 1}</span>
                 </button>
               );
             })}
@@ -3014,10 +3036,10 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     <div className="p-5 space-y-6 pb-6 min-h-full flex flex-col" style={{ backgroundImage: "radial-gradient(circle at 85% 0%, rgba(108,127,224,0.10), transparent 45%), radial-gradient(circle at 0% 55%, rgba(212,162,76,0.06), transparent 40%)" }}>
       {justUnlocked && (
         <div className="fixed left-1/2 z-40 rise-in" style={{ top: "max(1rem, env(safe-area-inset-top))", transform: "translateX(-50%)" }}>
-          <div className="flex items-center gap-2.5 bg-[#1C1B1A] border border-[#D4A24C]/50 rounded-full pl-2 pr-4 py-2 shadow-xl" style={{ boxShadow: "0 4px 24px rgba(212,162,76,0.35)" }}>
+          <div className="flex items-center gap-2.5 bg-[#1C1B1A] border border-[#E85D9C]/50 rounded-full pl-2 pr-4 py-2 shadow-xl" style={{ boxShadow: "0 4px 24px rgba(212,162,76,0.35)" }}>
             <span className="text-2xl">{justUnlocked.emoji}</span>
             <div>
-              <p className="text-[10px] text-[#D4A24C] font-semibold uppercase tracking-wide">Neuer Erfolg!</p>
+              <p className="text-[10px] text-[#E85D9C] font-semibold uppercase tracking-wide">Neuer Erfolg!</p>
               <p className="text-sm text-[#F2EDE4] font-medium leading-tight">{justUnlocked.label}</p>
             </div>
           </div>
@@ -3074,8 +3096,8 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             </div>
           )}
           {yearlyInsight && (
-            <div className="bg-gradient-to-r from-[#D4A24C]/15 to-transparent border border-[#D4A24C]/30 rounded-2xl p-4">
-              <p className="text-xs font-semibold text-[#D4A24C] uppercase tracking-wide mb-1.5 flex items-center gap-1.5"><Sparkles size={12} /> Dein Spieljahr {yearlyInsight.year}</p>
+            <div className="bg-gradient-to-r from-[#E85D9C]/15 to-transparent border border-[#E85D9C]/30 rounded-2xl p-4">
+              <p className="text-xs font-semibold text-[#E85D9C] uppercase tracking-wide mb-1.5 flex items-center gap-1.5"><Sparkles size={12} /> Dein Spieljahr {yearlyInsight.year}</p>
               <p className="text-[#F2EDE4] text-sm font-body leading-snug">{yearlyInsight.text}</p>
             </div>
           )}
@@ -3384,7 +3406,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, filters, sta
         </div>
         <div className="p-5 overflow-y-auto flex-1 space-y-6">
           <div>
-            <label className="text-[11px] text-[#5C574F]">Status</label>
+            <label className="block text-[11px] text-[#5C574F]">Status</label>
             <div className="mt-1.5">
               <Segmented
                 options={[{ v: "owned", label: "Besitz" }, { v: "wishlist", label: "Wunschliste" }, { v: "all", label: "Alle" }]}
@@ -3394,12 +3416,12 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, filters, sta
             </div>
           </div>
           <div>
-            <label className="text-[11px] text-[#5C574F]">Spielbar mit … Personen</label>
+            <label className="block text-[11px] text-[#5C574F]">Spielbar mit … Personen</label>
             <input value={filters.players} onChange={(e) => onChange({ ...filters, players: e.target.value })} placeholder="z.B. 4" inputMode="numeric"
               className="w-full mt-1.5 h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#6C7FE0]" />
           </div>
           <div>
-            <label className="text-[11px] text-[#5C574F]">Mindestbewertung</label>
+            <label className="block text-[11px] text-[#5C574F]">Mindestbewertung</label>
             <div className="mt-1.5">
               <StarRating value={filters.minRating} onChange={(v) => onChange({ ...filters, minRating: v })} />
             </div>
@@ -3527,7 +3549,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           <div className="relative">
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5C574F]" />
             <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Suchen…"
-              className="w-full h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] pl-10 pr-3.5 text-[#F2EDE4] text-base font-body placeholder-[#5C574F] focus:outline-none focus:border-[#D4A24C]" />
+              className="w-full h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] pl-10 pr-3.5 text-[#F2EDE4] text-base font-body placeholder-[#5C574F] focus:outline-none focus:border-[#E85D9C]" />
           </div>
         </div>
       )}
@@ -3553,7 +3575,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
                   <p className="font-body text-[#F2EDE4] text-sm font-medium mt-2 leading-tight">{g.name}</p>
                   <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                     {g.minPlayers && <span className="flex items-center gap-0.5 text-[10px] text-[#A39C8F] font-mono"><Users size={10} /> {g.minPlayers}-{g.maxPlayers}</span>}
-                    {formatBestPlayers(g) && <span className="flex items-center gap-0.5 text-[10px] text-[#D4A24C] font-mono"><Star size={10} /> {formatBestPlayers(g)}</span>}
+                    {formatBestPlayers(g) && <span className="flex items-center gap-0.5 text-[10px] text-[#E85D9C] font-mono"><Star size={10} /> {formatBestPlayers(g)}</span>}
                     {complexityLabel(g) && (
                       <Pill tone={COMPLEXITY_TONE[complexityLabel(g)]}>
                         {COMPLEXITY_MEDIUM[complexityLabel(g)] || complexityLabel(g)}{g.complexity ? ` (${parseFloat(g.complexity).toFixed(1)})` : ""}
@@ -3593,18 +3615,18 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
       )}
       {!demoMode && (
         <button onClick={() => { haptic(8); onAdd(); }} aria-label="Spiel hinzufügen"
-          className="fixed z-30 left-1/2 -translate-x-1/2 bg-[#6C7FE0] text-[#F2EDE4] w-14 h-14 flex items-center justify-center rounded-full shadow-lg active:scale-95"
-          style={{ bottom: "calc(50px + env(safe-area-inset-bottom) + 10px)" }}>
+          className="fixed z-30 left-1/2 -translate-x-1/2 text-[#F2EDE4] w-14 h-14 flex items-center justify-center rounded-full shadow-lg active:scale-95 border border-white/25"
+          style={{ background: "linear-gradient(160deg, #8b98ee, #6C7FE0 55%, #5a68d6)", boxShadow: "0 8px 24px rgba(108,127,224,0.45), inset 0 1px 1px rgba(255,255,255,0.4)", bottom: "calc(50px + env(safe-area-inset-bottom) + 10px)" }}>
           <Plus size={22} />
         </button>
       )}
       <button onClick={() => setSearchOpen((o) => !o)} aria-label="Suchen"
-        className={`fixed z-30 w-11 h-11 flex items-center justify-center rounded-full border shadow-lg ${searchOpen ? "bg-[#F2EDE4] border-[#F2EDE4] text-[#1C1B1A]" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}
+        className={`glass fixed z-30 w-11 h-11 flex items-center justify-center rounded-full border shadow-lg ${searchOpen ? "bg-[#F2EDE4] border-[#F2EDE4] text-[#1C1B1A]" : "border-white/15 text-[#A39C8F]"}`}
         style={{ left: "calc(50% - 76px)", transform: "translateX(-50%)", bottom: "calc(50px + env(safe-area-inset-bottom) + 16px)" }}>
         <Search size={17} />
       </button>
       <button onClick={() => setFilterModalOpen(true)} aria-label="Filter"
-        className="fixed z-30 w-11 h-11 flex items-center justify-center bg-[#262422] border border-[#3A3631] rounded-full text-[#A39C8F] shadow-lg"
+        className="glass fixed z-30 w-11 h-11 flex items-center justify-center border border-white/15 rounded-full text-[#A39C8F] shadow-lg"
         style={{ left: "calc(50% + 76px)", transform: "translateX(-50%)", bottom: "calc(50px + env(safe-area-inset-bottom) + 16px)" }}>
         <Puzzle size={17} />
         {activeFilterCount > 0 && <span className="absolute top-0.5 right-0.5 bg-[#6C7FE0] text-[#F2EDE4] text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{activeFilterCount}</span>}
@@ -3735,8 +3757,8 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
       </div>
       {!demoMode && (
         <button onClick={() => { haptic(8); onAdd(); }} aria-label="Partie eintragen"
-          className="fixed z-30 left-1/2 -translate-x-1/2 bg-[#6C7FE0] text-[#F2EDE4] w-14 h-14 flex items-center justify-center rounded-full shadow-lg active:scale-95"
-          style={{ bottom: "calc(50px + env(safe-area-inset-bottom) + 10px)" }}>
+          className="fixed z-30 left-1/2 -translate-x-1/2 text-[#F2EDE4] w-14 h-14 flex items-center justify-center rounded-full shadow-lg active:scale-95 border border-white/25"
+          style={{ background: "linear-gradient(160deg, #8b98ee, #6C7FE0 55%, #5a68d6)", boxShadow: "0 8px 24px rgba(108,127,224,0.45), inset 0 1px 1px rgba(255,255,255,0.4)", bottom: "calc(50px + env(safe-area-inset-bottom) + 10px)" }}>
           <Plus size={22} />
         </button>
       )}
@@ -3760,7 +3782,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
               <div key={name} className="flex items-center gap-3">
                 <span className="text-lg w-6 shrink-0">{medals[i] || `${i + 1}.`}</span>
                 <span className="flex-1 min-w-0 text-[#F2EDE4] font-body truncate">{name}</span>
-                <span className="text-[#D4A24C] text-sm font-mono shrink-0">{count}× gewonnen</span>
+                <span className="text-[#E85D9C] text-sm font-mono shrink-0">{count}× gewonnen</span>
               </div>
             ))}
           </div>
@@ -3797,7 +3819,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
         return (
         <div className="fixed inset-0 z-50 bg-[#1C1B1A]">
           <div className="w-full h-full max-w-3xl mx-auto overflow-y-auto font-body">
-            <div className="sticky top-0 bg-[#1C1B1A]/85 backdrop-blur-xl border-b border-[#3A3631] px-5 flex items-center justify-between z-10" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
+            <div className="glass-strong sticky top-0 border-b border-white/10 px-5 flex items-center justify-between z-10" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
               <button onClick={() => setDetailGroupKey(null)} className="text-[#A39C8F] p-1" aria-label="Zurück"><ChevronLeft size={22} /></button>
               <h2 className="font-display text-xl text-[#F2EDE4] truncate px-2">{liveGroup[0].gameName}</h2>
               <span className="w-6" />
@@ -3921,8 +3943,8 @@ function Recommendations({ games, plays, onAddWishlist, onView, aiWorkerUrl, cha
 
       {aiWorkerUrl && (
         <div
-          className="rounded-3xl p-5 mb-8 border border-[#6C7FE0]/30"
-          style={{ backgroundImage: "radial-gradient(circle at 20% 0%, rgba(108,127,224,0.20), transparent 60%), linear-gradient(160deg, #262422, #1C1B1A)" }}
+          className="glass rounded-3xl p-5 mb-8 border border-[#6C7FE0]/30"
+          style={{ backgroundImage: "radial-gradient(circle at 20% 0%, rgba(108,127,224,0.20), transparent 60%)" }}
         >
           <p className="text-[#8B9AFA] font-display text-2xl leading-tight mb-3 flex items-center gap-2"><Sparkles size={20} /> Frag mich, was ich spielen soll</p>
 
@@ -3998,7 +4020,7 @@ function Recommendations({ games, plays, onAddWishlist, onView, aiWorkerUrl, cha
       <p className="text-[#A39C8F] text-sm font-body mb-5">Neue Spiele, die zu dem passen, was du mit 8+ bewertet hast — egal ob eigene Sammlung, geliehen oder BGA.</p>
       {profile.length === 0 ? (
         <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-5 text-center">
-          <Sparkles size={28} className="text-[#D4A24C] mx-auto mb-2" />
+          <Sparkles size={28} className="text-[#E85D9C] mx-auto mb-2" />
           <p className="text-[#A39C8F] text-sm font-body">Bewerte ein paar gespielte Spiele mit 8 oder höher, damit ich ein Geschmacksprofil erstellen kann.</p>
         </div>
       ) : (
@@ -4022,7 +4044,7 @@ function Recommendations({ games, plays, onAddWishlist, onView, aiWorkerUrl, cha
             {hasSearched ? "Neue Empfehlung anzeigen" : "Empfehlung anzeigen"}
           </button>
 
-          {externalError && <p className="text-sm text-[#D4A24C] font-body">{externalError}</p>}
+          {externalError && <p className="text-sm text-[#E85D9C] font-body">{externalError}</p>}
           <div>
             {external.length > 0 && (
               <div className="grid grid-cols-2 gap-3">
@@ -4083,7 +4105,7 @@ function Recommendations({ games, plays, onAddWishlist, onView, aiWorkerUrl, cha
 
 /* ---------------- SYNC MODAL ---------------- */
 /* ---------------- GAME DETAIL VIEW ---------------- */
-const TONE_HEX = { teal: "#4E8C82", amber: "#D4A24C", red: "#C1443C", default: "#A39C8F" };
+const TONE_HEX = { teal: "#4E8C82", amber: "#E85D9C", red: "#C1443C", default: "#A39C8F" };
 
 function GameDetailModal({ game, plays, lists, onToggleList, onCreateList, onClose, onEdit }) {
   const [campaignOpen, setCampaignOpen] = useState(false);
@@ -4198,7 +4220,7 @@ function GameDetailModal({ game, plays, lists, onToggleList, onCreateList, onClo
                     <div className="flex items-center gap-2 flex-wrap">
                       <div className="flex">
                         {Array.from({ length: 10 }, (_, i) => i + 1).map((s) => (
-                          <Star key={s} size={18} className={parseInt(game.rating) >= s ? "text-[#D4A24C]" : "text-[#3A3631]"} fill={parseInt(game.rating) >= s ? "#D4A24C" : "none"} />
+                          <Star key={s} size={18} className={parseInt(game.rating) >= s ? "text-[#E85D9C]" : "text-[#3A3631]"} fill={parseInt(game.rating) >= s ? "#E85D9C" : "none"} />
                         ))}
                       </div>
                       <span className="text-xs text-[#A39C8F]">{RATING_LABELS[parseInt(game.rating)]}</span>
@@ -4249,7 +4271,7 @@ function GameDetailModal({ game, plays, lists, onToggleList, onCreateList, onClo
       {campaignOpen && (
         <div className="fixed inset-0 z-[60] bg-[#1C1B1A]">
           <div className="w-full h-full max-w-3xl mx-auto overflow-y-auto font-body">
-            <div className="sticky top-0 bg-[#1C1B1A]/85 backdrop-blur-xl border-b border-[#3A3631] px-5 flex items-center justify-between z-10" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
+            <div className="glass-strong sticky top-0 border-b border-white/10 px-5 flex items-center justify-between z-10" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
               <button onClick={() => setCampaignOpen(false)} className="text-[#A39C8F] p-1" aria-label="Zurück"><ChevronLeft size={22} /></button>
               <h2 className="font-display text-xl text-[#F2EDE4] truncate px-2">Kampagnen-Verlauf</h2>
               <span className="w-6" />
@@ -4300,7 +4322,7 @@ function SyncModal({ initialUrl, initialApiKey, initialEmail, status, lastSynced
   return (
     <div className="fixed top-0 left-0 right-0 bg-black/90 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }}>
       <div onFocus={handleFocusScroll} className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[var(--app-height,100dvh)] overflow-y-auto rise-in font-body">
-        <div className="sticky top-0 bg-[#1C1B1A]/85 backdrop-blur-xl border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
+        <div className="glass-strong sticky top-0 border-b border-white/10 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Geräte-Synchronisation</h2>
           <button onClick={onClose} className="text-[#A39C8F] p-1"><X size={22} /></button>
         </div>
@@ -4309,43 +4331,43 @@ function SyncModal({ initialUrl, initialApiKey, initialEmail, status, lastSynced
             Deine Sammlung und Partien werden ausschließlich in dieser Firebase-Datenbank gespeichert — nicht auf dem Gerät selbst. Trage hier deine Datenbank-Adresse ein; auf jedem Gerät mit derselben Adresse siehst du automatisch dieselben Daten.
           </p>
           <div>
-            <label className="text-[11px] text-[#5C574F]">Datenbank-Adresse</label>
+            <label className="block text-[11px] text-[#5C574F]">Datenbank-Adresse</label>
             <input
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://dein-projekt-default-rtdb.firebasedatabase.app/"
-              className="w-full mt-1 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#D4A24C]"
+              className="w-full mt-1 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#E85D9C]"
             />
           </div>
           <div>
-            <label className="text-[11px] text-[#5C574F]">Web-API-Schlüssel</label>
+            <label className="block text-[11px] text-[#5C574F]">Web-API-Schlüssel</label>
             <input
               value={key}
               onChange={(e) => setKey(e.target.value)}
               placeholder="AIzaSy…"
-              className="w-full mt-1 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#D4A24C]"
+              className="w-full mt-1 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#E85D9C]"
             />
             <p className="text-[11px] text-[#5C574F] mt-1.5">Findest du in der Firebase-Konsole unter Projekteinstellungen → Allgemein → "Web-API-Schlüssel".</p>
           </div>
           <div>
-            <label className="text-[11px] text-[#5C574F]">E-Mail (für sichere Anmeldung)</label>
+            <label className="block text-[11px] text-[#5C574F]">E-Mail (für sichere Anmeldung)</label>
             <input
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="du@beispiel.de"
               autoComplete="username"
-              className="w-full mt-1 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#D4A24C]"
+              className="w-full mt-1 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#E85D9C]"
             />
           </div>
           <div>
-            <label className="text-[11px] text-[#5C574F]">Passwort</label>
+            <label className="block text-[11px] text-[#5C574F]">Passwort</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={initialEmail ? "Nur bei Änderung neu eingeben" : "••••••••"}
               autoComplete="current-password"
-              className="w-full mt-1 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#D4A24C]"
+              className="w-full mt-1 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#E85D9C]"
             />
             <p className="text-[11px] text-[#5C574F] mt-1.5">Diesen Nutzer legst du einmalig in der Firebase-Konsole unter Authentication → Users an. Die App meldet sich damit automatisch im Hintergrund an — kein Login-Bildschirm im Alltag.</p>
           </div>
@@ -4783,9 +4805,9 @@ function App() {
     <div className="fixed inset-0 bg-[#1C1B1A] font-body flex flex-col max-w-3xl mx-auto overflow-hidden">
       <div className="shrink-0" style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }} />
       {demoMode && (
-        <div className="shrink-0 mx-4 mb-2 px-3.5 py-2 bg-[#D4A24C]/15 border border-[#D4A24C]/30 rounded-[14px] flex items-center justify-between gap-2">
-          <span className="text-xs text-[#D4A24C] font-medium">Demo-Vorschau — wird nicht gespeichert</span>
-          <button onClick={() => setDemoMode(false)} className="text-xs text-[#D4A24C] underline shrink-0">Beenden</button>
+        <div className="shrink-0 mx-4 mb-2 px-3.5 py-2 bg-[#E85D9C]/15 border border-[#E85D9C]/30 rounded-[14px] flex items-center justify-between gap-2">
+          <span className="text-xs text-[#E85D9C] font-medium">Demo-Vorschau — wird nicht gespeichert</span>
+          <button onClick={() => setDemoMode(false)} className="text-xs text-[#E85D9C] underline shrink-0">Beenden</button>
         </div>
       )}
       <div
@@ -4801,7 +4823,7 @@ function App() {
         >
           <Loader2
             size={20}
-            className={refreshing ? "text-[#D4A24C]" : "text-[#5C574F]"}
+            className={refreshing ? "text-[#E85D9C]" : "text-[#5C574F]"}
             style={{ opacity: Math.min(pullY / PULL_THRESHOLD, 1) }}
           />
         </div>
@@ -4839,14 +4861,28 @@ function App() {
           )}
         </div>
       </div>
-      <div className="shrink-0 bg-[#1C1B1A]/80 backdrop-blur-xl border-t border-[#3A3631] px-2 pt-1.5 pb-2.5" style={{ WebkitBackdropFilter: "blur(20px)" }}>
-        <div className="flex justify-around">
-          {tabs.map(t => (
-            <button key={t.id} onClick={() => requestTabSwitch(t.id)} className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-[14px] min-w-[64px] transition-transform duration-200" style={{ transform: tab === t.id ? "translateY(-1px)" : "none" }}>
-              <t.icon size={20} className={`transition-colors duration-200 ${tab === t.id ? "text-[#D4A24C]" : "text-[#5C574F]"}`} strokeWidth={tab === t.id ? 2.5 : 2} />
-              <span className={`text-[10px] font-body transition-colors duration-200 ${tab === t.id ? "text-[#D4A24C] font-semibold" : "text-[#5C574F]"}`}>{t.label}</span>
-            </button>
-          ))}
+      <div className="shrink-0 px-4" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
+        <div className="glass-strong relative rounded-full border border-white/10 px-1.5 py-1.5 shadow-2xl">
+          <div
+            className="absolute rounded-full"
+            style={{
+              left: `calc((${tabs.findIndex((t) => t.id === tab)} + 0.5) * (100% / ${tabs.length}))`,
+              top: 4,
+              width: 54, height: 34,
+              transform: "translateX(-50%)",
+              background: "conic-gradient(from 0deg, #ff5a96, #ffc850, #78dcff, #b482ff, #ff5a96)",
+              boxShadow: "0 2px 12px rgba(180,130,255,0.4)",
+              transition: "left 0.38s cubic-bezier(0.34, 1.56, 0.64, 1)",
+            }}
+          />
+          <div className="relative grid" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
+            {tabs.map(t => (
+              <button key={t.id} onClick={() => requestTabSwitch(t.id)} className="flex flex-col items-center gap-1 px-1 py-1.5 rounded-full transition-transform duration-200" style={{ transform: tab === t.id ? "translateY(-1px) scale(1.04)" : "none" }}>
+                <t.icon size={19} className={`transition-colors duration-300 ${tab === t.id ? "text-white" : "text-[#5C574F]"}`} strokeWidth={tab === t.id ? 2.5 : 2} />
+                <span className={`text-[9px] font-body leading-none whitespace-nowrap transition-colors duration-300 ${tab === t.id ? "text-[#F2EDE4] font-semibold" : "text-[#5C574F]"}`}>{t.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
       {pendingTabSwitch && (
