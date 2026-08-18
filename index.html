@@ -3989,7 +3989,7 @@ ${buildCollectionContextForAI(games, plays)}`;
         </div>
       ) : (
         <>
-          <div className="flex-1 px-5 space-y-3 pb-3">
+          <div className="flex-1 px-5 space-y-3" style={{ paddingBottom: "calc(84px + env(safe-area-inset-bottom) + 96px)" }}>
             {chatMessages.map((m, i) => {
               const mentioned = m.role === "assistant" ? games.filter((g) => m.content.includes(g.name)) : [];
               const isLast = i === chatMessages.length - 1;
@@ -4035,7 +4035,7 @@ ${buildCollectionContextForAI(games, plays)}`;
             <div ref={chatEndRef} />
           </div>
 
-          <div className="sticky bottom-0 glass-strong border-t border-white/10 p-4" style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
+          <div className="fixed left-0 right-0 z-30 glass-strong border-t border-white/10 p-4" style={{ bottom: "calc(84px + env(safe-area-inset-bottom))" }}>
             <div className="flex gap-2">
               <input
                 onFocus={handleFocusScroll}
@@ -4406,12 +4406,6 @@ function App() {
   const [tab, setTab] = useState("dashboard");
   const [aiChatMessages, setAiChatMessages] = useState([]);
   const [pendingTabSwitch, setPendingTabSwitch] = useState(null);
-  const tabButtonRefs = React.useRef({});
-  const [tabPillRect, setTabPillRect] = useState({ left: 0, width: 0 });
-  useEffect(() => {
-    const el = tabButtonRefs.current[tab];
-    if (el) setTabPillRect({ left: el.offsetLeft - 3, width: el.offsetWidth + 6 });
-  }, [tab]);
   const requestTabSwitch = (nextTab) => {
     if (tab === "recommendations" && nextTab !== "recommendations" && aiChatMessages.length > 0) {
       setPendingTabSwitch(nextTab);
@@ -4759,7 +4753,7 @@ function App() {
     { id: "collection", label: "Sammlung", icon: Library },
     { id: "playlog", label: "Partien", icon: ListChecks },
     { id: "recommendations", label: "Ideen", icon: Sparkles },
-    { id: "settings", label: "Einstellungen", icon: Settings },
+    { id: "settings", label: "Mehr", icon: Settings },
   ];
 
   return (
@@ -4824,29 +4818,26 @@ function App() {
       </div>
       <div className="shrink-0 px-4" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
         <div className="glass-strong relative rounded-full border border-white/10 px-1.5 py-1.5 shadow-2xl overflow-hidden">
-          <div
-            className="absolute rounded-full"
-            style={{
-              left: tabPillRect.left,
-              top: 4,
-              width: tabPillRect.width,
-              bottom: 4,
-              background: "conic-gradient(from 0deg, #ff5a96, #ffc850, #78dcff, #b482ff, #ff5a96)",
-              boxShadow: "0 2px 12px rgba(180,130,255,0.4)",
-              transition: "left 0.38s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.38s cubic-bezier(0.34, 1.56, 0.64, 1)",
-            }}
-          />
-          <div className="relative flex justify-between">
+          <div className="relative grid" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
+            <div
+              className="absolute rounded-full mx-0.5"
+              style={{
+                left: `calc(${tabs.findIndex((t) => t.id === tab)} * (100% / ${tabs.length}))`,
+                width: `calc(100% / ${tabs.length})`,
+                top: 0, bottom: 0,
+                background: "conic-gradient(from 0deg, #ff5a96, #ffc850, #78dcff, #b482ff, #ff5a96)",
+                boxShadow: "0 2px 12px rgba(180,130,255,0.4)",
+                transition: "left 0.4s cubic-bezier(0.34, 1.2, 0.64, 1)",
+              }}
+            />
             {tabs.map(t => (
               <button
                 key={t.id}
-                ref={(el) => { tabButtonRefs.current[t.id] = el; }}
                 onClick={() => requestTabSwitch(t.id)}
-                className="relative flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-full transition-transform duration-200"
-                style={{ transform: tab === t.id ? "translateY(-1px)" : "none" }}
+                className="relative flex flex-col items-center justify-center gap-1 py-1.5 rounded-full"
               >
-                <t.icon size={19} className={`transition-colors duration-300 ${tab === t.id ? "text-white" : "text-[#5C574F]"}`} strokeWidth={tab === t.id ? 2.5 : 2} />
-                <span className={`text-[9px] font-body leading-none whitespace-nowrap transition-colors duration-300 ${tab === t.id ? "text-white font-semibold" : "text-[#5C574F]"}`}>{t.label}</span>
+                <t.icon size={19} className={`relative transition-colors duration-300 ${tab === t.id ? "text-white" : "text-[#5C574F]"}`} strokeWidth={tab === t.id ? 2.5 : 2} />
+                <span className={`relative text-[9px] font-body leading-none whitespace-nowrap transition-colors duration-300 ${tab === t.id ? "text-white font-semibold" : "text-[#5C574F]"}`}>{t.label}</span>
               </button>
             ))}
           </div>
