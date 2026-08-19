@@ -236,6 +236,7 @@ const CardIcon = (p) => <Icon {...p}><rect x="4" y="2" width="12" height="17" rx
 const Building = (p) => <Icon {...p}><rect x="4" y="3" width="16" height="18" rx="1" /><path d="M9 8h1M14 8h1M9 12h1M14 12h1M9 16h1M14 16h1" /></Icon>;
 const Sword = (p) => <Icon {...p}><path d="m14.5 4.5 5 5-9 9-3 1 1-3Z" /><path d="M13 6l5 5M5 19l2 2" /></Icon>;
 const Puzzle = (p) => <Icon {...p}><path d="M9 3v2.2a1.8 1.8 0 0 1-3 1.4A1.8 1.8 0 0 0 3 8v3h2.2a1.8 1.8 0 0 1 0 3.6H3V18a2 2 0 0 0 2 2h3v-2.2a1.8 1.8 0 0 1 3.6 0V20H15a2 2 0 0 0 2-2v-3.2a1.8 1.8 0 0 1 0-3.6H21V8a2 2 0 0 0-2-2h-3V3.8a1.8 1.8 0 0 0-3.6 0V6H9Z" /></Icon>;
+const SlidersFilter = (p) => <Icon {...p}><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h13M21 18h0" /><circle cx="16" cy="6" r="2.2" /><circle cx="8" cy="12" r="2.2" /><circle cx="17" cy="18" r="2.2" /></Icon>;
 const Info = (p) => <Icon {...p}><circle cx="12" cy="12" r="9" /><path d="M12 8h.01" /><path d="M11 12h1v5h1" /></Icon>;
 const ChevronDown = (p) => <Icon {...p}><path d="m6 9 6 6 6-6" /></Icon>;
 const ChevronUp = (p) => <Icon {...p}><path d="m6 15 6-6 6 6" /></Icon>;
@@ -429,8 +430,17 @@ function TopTenCarousel({ games, onView }) {
   );
 }
 
+// Finds games actually mentioned as whole words in a text — avoids false
+// positives like a game named "Ra" matching inside "Radlands".
+function findMentionedGames(text, games) {
+  return games.filter((g) => {
+    const escaped = g.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`(^|[^\\p{L}\\p{N}])${escaped}([^\\p{L}\\p{N}]|$)`, "u").test(text);
+  });
+}
+
 function TextWithGameLinks({ text, games, onView, color }) {
-  const mentioned = games.filter((g) => text.includes(g.name));
+  const mentioned = findMentionedGames(text, games);
   if (mentioned.length === 0) return <p className="text-[#F2EDE4] text-sm font-body leading-snug">{text}</p>;
   const escaped = mentioned.map((g) => g.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).sort((a, b) => b.length - a.length);
   const parts = text.split(new RegExp(`(${escaped.join("|")})`, "g"));
@@ -1069,7 +1079,6 @@ function ImageCropModal({ src, onConfirm, onCancel }) {
             ref={imgRef}
             src={src}
             alt="Zuschneiden"
-            crossOrigin="anonymous"
             onLoad={(e) => { const { naturalWidth: w, naturalHeight: h } = e.target; setNatSize({ w, h }); }}
             style={{
               position: "absolute", left: "50%", top: "50%",
@@ -1144,7 +1153,7 @@ function ImagePickerSheet({ onAdd, onClose }) {
               className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
             {urlError && <p className="text-xs text-[#C1443C]">{urlError}</p>}
             <button onClick={submitUrl} disabled={urlChecking || !url.trim()}
-              className="w-full bg-[#6C7FE0] disabled:opacity-50 text-[#F2EDE4] rounded-lg py-2.5 text-sm font-medium flex items-center justify-center gap-2">
+              className="w-full bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] disabled:opacity-50 text-[#F2EDE4] rounded-lg py-2.5 text-sm font-medium flex items-center justify-center gap-2">
               {urlChecking ? <Loader2 size={14} /> : <Check size={14} />} {urlChecking ? "Prüfe Bild…" : "Hinzufügen"}
             </button>
           </div>
@@ -1233,7 +1242,7 @@ function PhotoGallerySection({ images, onAdd, onRemove, onReplace, hero = false,
             )}
             {editable && (
               <button type="button" onClick={() => setSheetOpen(true)} aria-label="Foto hinzufügen"
-                className="absolute -bottom-2 -right-2 z-20 bg-[#6C7FE0] text-[#F2EDE4] rounded-full p-3 border-4 border-[#1C1B1A] active:scale-95">
+                className="absolute -bottom-2 -right-2 z-20 bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] rounded-full p-3 border-4 border-[#1C1B1A] active:scale-95">
                 {images.length > 0 ? <Plus size={16} /> : <Camera size={16} />}
               </button>
             )}
@@ -1314,7 +1323,7 @@ function TagPickerModal({ title, options, selected, onToggle, onAddCustom, onClo
           {query.trim() && !exists && (
             <button
               onClick={() => { onAddCustom(query.trim()); onToggle(query.trim()); setQuery(""); }}
-              className="w-full h-12 bg-[#6C7FE0] text-[#F2EDE4] rounded-[14px] text-sm flex items-center justify-center gap-1.5"
+              className="w-full h-12 bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] rounded-[14px] text-sm flex items-center justify-center gap-1.5"
             >
               <Plus size={14} /> „{query.trim()}" hinzufügen
             </button>
@@ -1453,7 +1462,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
           <div className="flex gap-2">
             <input value={aiUrlInput} onChange={(e) => setAiUrlInput(e.target.value)} placeholder="https://spielregal-ai.dein-name.workers.dev"
               className="flex-1 min-w-0 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
-            <button onClick={() => onSaveAiWorkerUrl(aiUrlInput)} disabled={!aiUrlInput.trim()} className="shrink-0 px-4 rounded-lg bg-[#6C7FE0] disabled:opacity-40 text-[#F2EDE4] text-sm font-medium">Speichern</button>
+            <button onClick={() => onSaveAiWorkerUrl(aiUrlInput)} disabled={!aiUrlInput.trim()} className="shrink-0 px-4 rounded-lg bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] disabled:opacity-40 text-[#F2EDE4] text-sm font-medium">Speichern</button>
           </div>
           {aiWorkerUrl && <p className="text-[11px] text-[#4E8C82] mt-1.5">Eingerichtet</p>}
         </div>
@@ -1545,7 +1554,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
             <input value={catInput} onChange={(e) => setCatInput(e.target.value)} placeholder="Neue Kategorie"
               className="flex-1 min-w-0 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
             <button onClick={() => { if (catInput.trim()) { onAddCategory(catInput.trim()); setCatInput(""); } }}
-              className="shrink-0 bg-[#6C7FE0] text-[#F2EDE4] px-4 rounded-lg text-sm">Hinzufügen</button>
+              className="shrink-0 bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] px-4 rounded-lg text-sm">Hinzufügen</button>
           </div>
           <div className="flex flex-wrap gap-2">
             {customCategories.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine eigenen Kategorien.</p>}
@@ -1564,7 +1573,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
             <input value={mechInput} onChange={(e) => setMechInput(e.target.value)} placeholder="Neuer Mechanismus"
               className="flex-1 min-w-0 bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
             <button onClick={() => { if (mechInput.trim()) { onAddMechanism(mechInput.trim()); setMechInput(""); } }}
-              className="shrink-0 bg-[#6C7FE0] text-[#F2EDE4] px-4 rounded-lg text-sm">Hinzufügen</button>
+              className="shrink-0 bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] px-4 rounded-lg text-sm">Hinzufügen</button>
           </div>
           <div className="flex flex-wrap gap-2">
             {customMechanisms.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine eigenen Mechanismen.</p>}
@@ -1585,7 +1594,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
             <input value={typeDescInput} onChange={(e) => setTypeDescInput(e.target.value)} placeholder="Beschreibung (optional)"
               className="w-full bg-[#262422] border border-[#3A3631] rounded-lg px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
             <button onClick={() => { if (typeInput.trim()) { onAddPlayerType(typeInput.trim(), typeDescInput); setTypeInput(""); setTypeDescInput(""); } }}
-              className="w-full bg-[#6C7FE0] text-[#F2EDE4] py-2 rounded-lg text-sm">Hinzufügen</button>
+              className="w-full bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] py-2 rounded-lg text-sm">Hinzufügen</button>
           </div>
           <div className="flex flex-wrap gap-2">
             {customPlayerTypes.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine eigenen Spielertypen.</p>}
@@ -1747,7 +1756,12 @@ async function bggThing(bggId) {
   const getAttr = (tag) => item.getElementsByTagName(tag)[0]?.getAttribute("value") || "";
   const mechanisms = Array.from(item.getElementsByTagName("link")).filter(l => l.getAttribute("type") === "boardgamemechanic").map(l => l.getAttribute("value"));
   const categories = Array.from(item.getElementsByTagName("link")).filter(l => l.getAttribute("type") === "boardgamecategory").map(l => l.getAttribute("value"));
-  const publishers = Array.from(item.getElementsByTagName("link")).filter(l => l.getAttribute("type") === "boardgamepublisher").map(l => l.getAttribute("value"));
+  const allPublishers = Array.from(item.getElementsByTagName("link")).filter(l => l.getAttribute("type") === "boardgamepublisher").map(l => l.getAttribute("value"));
+  // BGG lists every regional publisher with no "primary" flag. Best-effort: keep the
+  // first (usually the original publisher) plus any recognizable German-market publisher.
+  const KNOWN_GERMAN_PUBLISHERS = ["kosmos", "pegasus spiele", "hans im glück", "hans im gluck", "amigo", "schmidt spiele", "ravensburger", "asmodee deutschland", "feuerland spiele", "frosted games", "skellig games", "spielworxx", "huch!", "kobold spieleverlag", "abacusspiele", "queen games", "eggertspiele", "moses verlag"];
+  const germanMatch = allPublishers.find(p => KNOWN_GERMAN_PUBLISHERS.some(k => p.toLowerCase().includes(k)));
+  const publishers = [...new Set([allPublishers[0], germanMatch].filter(Boolean))];
   const designers = Array.from(item.getElementsByTagName("link")).filter(l => l.getAttribute("type") === "boardgamedesigner").map(l => l.getAttribute("value"));
   const weight = item.getElementsByTagName("averageweight")[0]?.getAttribute("value");
   const bggImage = getTxt("image");
@@ -1871,23 +1885,79 @@ Antworte NUR mit einer kommagetrennten Liste der gewählten Typen, sonst nichts.
   return raw.split(",").map((s) => s.trim()).filter(Boolean).slice(0, 4);
 }
 
+// Suggests categories, mechanisms, AND player types together in one pass,
+// preferring existing options in the collection over inventing new ones.
+async function aiSuggestGameTags(workerUrl, game, existingCategories, existingMechanisms, existingPlayerTypes) {
+  const prompt = `Du hilfst dabei, ein Brettspiel korrekt einzuordnen: passende Kategorien, Mechanismen und Spielertypen (Zielgruppen-Etiketten).
+
+Bestehende Kategorien in der Sammlung: ${existingCategories.join(", ") || "(noch keine)"}
+Bestehende Mechanismen in der Sammlung: ${existingMechanisms.join(", ") || "(noch keine)"}
+Bestehende Spielertypen in der Sammlung: ${existingPlayerTypes.join(", ") || "(noch keine)"}
+
+Spiel: "${game.name}"
+Komplexität: ${game.complexity || "unbekannt"}/5
+Bereits gesetzte Kategorien: ${(game.categories || []).join(", ") || "-"}
+Bereits gesetzte Mechanismen: ${(game.mechanisms || []).join(", ") || "-"}
+Beschreibung: ${(game.summary || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 600)}
+
+Wähle für jede der drei Listen 1-4 passende Einträge — bevorzuge IMMER bestehende Einträge aus der Sammlung oben, statt neue zu erfinden. Nur wenn wirklich nichts passt, darfst du pro Liste maximal einen neuen, kurzen Begriff ergänzen.
+
+Antworte NUR in exakt diesem Format, sonst nichts:
+KATEGORIEN: Begriff1, Begriff2
+MECHANISMEN: Begriff1, Begriff2
+SPIELERTYPEN: Begriff1, Begriff2`;
+
+  const res = await fetch(workerUrl.replace(/\/$/, ""), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
+  });
+  if (!res.ok) {
+    let detail = "";
+    try { detail = (await res.text()).slice(0, 150); } catch { /* ignore */ }
+    throw new Error(`KI-Worker antwortete mit Fehler ${res.status}${detail ? ": " + detail : ""}`);
+  }
+  const json = await res.json();
+  if (json.error) throw new Error(json.error);
+  const raw = (json.text || "").trim();
+  const parseLine = (label) => {
+    const m = raw.match(new RegExp(`${label}:\\s*(.+)`, "i"));
+    return m ? m[1].split(",").map((s) => s.trim()).filter(Boolean).slice(0, 4) : [];
+  };
+  return {
+    categories: parseLine("KATEGORIEN"),
+    mechanisms: parseLine("MECHANISMEN"),
+    playerTypes: parseLine("SPIELERTYPEN"),
+  };
+}
+
 // Builds a compact text summary of the collection + recent play history to
 // give the AI real context, without sending full game objects.
 function buildCollectionContextForAI(games, plays) {
   const owned = games.filter((g) => g.status !== "wishlist");
   const playCounts = {};
   plays.forEach((p) => { playCounts[p.gameId] = (playCounts[p.gameId] || 0) + 1; });
-  const lines = owned.map((g) => {
+  // Keep the context focused: prioritize games with a real description or recent
+  // play activity so the model reasons over relevant, well-described games first.
+  const sorted = [...owned].sort((a, b) => {
+    const scoreA = (a.summary ? 2 : 0) + (playCounts[a.id] ? 1 : 0);
+    const scoreB = (b.summary ? 2 : 0) + (playCounts[b.id] ? 1 : 0);
+    return scoreB - scoreA;
+  });
+  const capped = sorted.slice(0, 60);
+  const lines = capped.map((g) => {
     const count = playCounts[g.id] || 0;
     const tags = [...(g.categories || []), ...(g.mechanisms || [])].slice(0, 4).join(", ");
     const players = g.minPlayers ? `${g.minPlayers}-${g.maxPlayers} Spieler` : "Spieleranzahl unbekannt";
     const time = g.minTime ? `${g.minTime}-${g.maxTime} Min.` : "Dauer unbekannt";
     const comp = complexityLabel(g) || "Komplexität unbekannt";
-    return `- ${g.name} | ${players} | ${time} | ${comp} | Themen: ${tags || "-"} | ${count}× gespielt${count === 0 ? " (noch nie gespielt)" : ""}`;
+    const desc = g.summary ? ` | Beschreibung: ${g.summary.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 220)}` : "";
+    return `- ${g.name} | ${players} | ${time} | ${comp} | Themen: ${tags || "-"} | ${count}× gespielt${count === 0 ? " (noch nie gespielt)" : ""}${desc}`;
   });
   const recentPlays = [...plays].sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 8)
     .map((p) => `${p.gameName} am ${p.date}`).join("; ");
-  return `Sammlung des Nutzers:\n${lines.join("\n")}\n\nZuletzt gespielt: ${recentPlays || "noch keine Partien eingetragen"}`;
+  const omittedNote = sorted.length > capped.length ? `\n(${sorted.length - capped.length} weitere Spiele mit weniger Info nicht aufgeführt, um fokussiert zu bleiben.)` : "";
+  return `Sammlung des Nutzers:\n${lines.join("\n")}${omittedNote}\n\nZuletzt gespielt: ${recentPlays || "noch keine Partien eingetragen"}`;
 }
 
 async function aiChat(workerUrl, messages, temperature = 0.9) {
@@ -2073,7 +2143,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
       <div onFocus={handleFocusScroll} className="bg-[#1C1B1A] w-full h-full max-w-3xl mx-auto flex flex-col overflow-hidden">
         <div className="shrink-0 bg-[#1C1B1A] border-b border-[#3A3631] px-5 flex items-center justify-between" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
           <button onClick={onClose} className="text-[#A39C8F] p-1" aria-label="Zurück"><ChevronLeft size={22} /></button>
-          <h2 className="font-display text-xl text-[#F2EDE4]">{initial ? "Spiel bearbeiten" : step === "search" ? "Spiel suchen" : "Details"}</h2>
+          <h2 className="font-display text-xl text-[#F2EDE4] truncate px-2 flex-1 text-center">{initial ? (form.name || "Spiel bearbeiten") : step === "search" ? "Spiel suchen" : "Details"}</h2>
           {onSaveAndNavigate ? (
             <div className="flex items-center gap-1">
               <button
@@ -2104,7 +2174,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               <input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && runSearch()}
                 placeholder="z.B. Wingspan"
                 className="flex-1 h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 text-[#F2EDE4] text-base font-body placeholder-[#5C574F] focus:outline-none focus:border-[#E85D9C]" />
-              <button onClick={runSearch} className="bg-[#6C7FE0] text-[#F2EDE4] w-12 h-12 shrink-0 rounded-[14px] flex items-center justify-center active:scale-95">
+              <button onClick={runSearch} className="bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] w-12 h-12 shrink-0 rounded-[14px] flex items-center justify-center active:scale-95">
                 {searching ? <Loader2 size={20} /> : <Search size={20} />}
               </button>
             </div>
@@ -2174,20 +2244,26 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
                 <RichTextEditor key={summaryVersion} value={form.summary} onChange={(html) => update("summary", html)} placeholder="Worum geht's in diesem Spiel?" />
               </div>
             </div>
-            <button type="button" onClick={() => setPickerOpen("publishers")}
-              className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 text-left flex items-start gap-1.5 ${form.publishers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-              <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
-                {form.publishers.length ? form.publishers.map((p) => <Pill key={p}>{p}</Pill>) : "Verlag auswählen…"}
-              </span>
-              <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
-            </button>
-            <button type="button" onClick={() => setPickerOpen("designers")}
-              className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 text-left flex items-start gap-1.5 ${form.designers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-              <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
-                {form.designers.length ? form.designers.map((d) => <Pill key={d}>{d}</Pill>) : "Designer auswählen…"}
-              </span>
-              <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
-            </button>
+            <div>
+              <label className="block text-[11px] text-[#5C574F]">Verlag</label>
+              <button type="button" onClick={() => setPickerOpen("publishers")}
+                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex items-start gap-1.5 ${form.publishers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
+                  {form.publishers.length ? form.publishers.map((p) => <Pill key={p}>{p}</Pill>) : "Verlag auswählen…"}
+                </span>
+                <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
+              </button>
+            </div>
+            <div>
+              <label className="block text-[11px] text-[#5C574F]">Designer</label>
+              <button type="button" onClick={() => setPickerOpen("designers")}
+                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex items-start gap-1.5 ${form.designers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
+                  {form.designers.length ? form.designers.map((d) => <Pill key={d}>{d}</Pill>) : "Designer auswählen…"}
+                </span>
+                <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
+              </button>
+            </div>
 
             <div>
               <label className="block text-[11px] text-[#5C574F]">Spieleranzahl (min–max)</label>
@@ -2227,33 +2303,42 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               {complexityLabel(form) && <p className="text-xs text-[#5C574F] mt-1.5">→ {complexityLabel(form)}</p>}
             </div>
 
-            <button type="button" onClick={() => setPickerOpen("mechanisms")}
-              className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 text-left flex items-start gap-1.5 ${form.mechanisms.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-              <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
-                {form.mechanisms.length ? form.mechanisms.map((m) => {
-                  const MIcon = tagIcon(m);
-                  return <Pill key={m}><MIcon size={10} className="inline -mt-0.5 mr-0.5" />{m}</Pill>;
-                }) : "Mechanismen auswählen…"}
-              </span>
-              <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
-            </button>
-            <button type="button" onClick={() => setPickerOpen("categories")}
-              className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 text-left flex items-start gap-1.5 ${form.categories.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-              <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
-                {form.categories.length ? form.categories.map((c) => {
-                  const CIcon = tagIcon(c);
-                  return <Pill key={c}><CIcon size={10} className="inline -mt-0.5 mr-0.5" />{c}</Pill>;
-                }) : "Kategorien auswählen…"}
-              </span>
-              <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
-            </button>
-            <button type="button" onClick={() => setPickerOpen("playerTypes")}
-              className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 text-left flex items-start gap-1.5 ${form.playerTypes.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-              <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
-                {form.playerTypes.length ? form.playerTypes.map((t) => <Pill key={t}>{t}</Pill>) : "Spielertyp auswählen…"}
-              </span>
-              <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
-            </button>
+            <div>
+              <label className="block text-[11px] text-[#5C574F]">Mechanismen</label>
+              <button type="button" onClick={() => setPickerOpen("mechanisms")}
+                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex items-start gap-1.5 ${form.mechanisms.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
+                  {form.mechanisms.length ? form.mechanisms.map((m) => {
+                    const MIcon = tagIcon(m);
+                    return <Pill key={m}><MIcon size={10} className="inline -mt-0.5 mr-0.5" />{m}</Pill>;
+                  }) : "Mechanismen auswählen…"}
+                </span>
+                <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
+              </button>
+            </div>
+            <div>
+              <label className="block text-[11px] text-[#5C574F]">Kategorien</label>
+              <button type="button" onClick={() => setPickerOpen("categories")}
+                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex items-start gap-1.5 ${form.categories.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
+                  {form.categories.length ? form.categories.map((c) => {
+                    const CIcon = tagIcon(c);
+                    return <Pill key={c}><CIcon size={10} className="inline -mt-0.5 mr-0.5" />{c}</Pill>;
+                  }) : "Kategorien auswählen…"}
+                </span>
+                <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
+              </button>
+            </div>
+            <div>
+              <label className="block text-[11px] text-[#5C574F]">Spielertyp</label>
+              <button type="button" onClick={() => setPickerOpen("playerTypes")}
+                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex items-start gap-1.5 ${form.playerTypes.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
+                  {form.playerTypes.length ? form.playerTypes.map((t) => <Pill key={t}>{t}</Pill>) : "Spielertyp auswählen…"}
+                </span>
+                <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
+              </button>
+            </div>
             {aiWorkerUrl && (
               <button
                 type="button"
@@ -2261,15 +2346,22 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
                 onClick={async () => {
                   setTypesLoading(true); setTypesError("");
                   try {
-                    const suggested = await aiSuggestPlayerTypes(aiWorkerUrl, form, playerTypeOptions || []);
-                    suggested.forEach((t) => { if (!(playerTypeOptions || []).includes(t)) onAddPlayerType(t, ""); });
-                    update("playerTypes", [...new Set([...form.playerTypes, ...suggested])]);
+                    const result = await aiSuggestGameTags(aiWorkerUrl, form, categoryOptions || [], mechanismOptions || [], playerTypeOptions || []);
+                    result.categories.forEach((c) => { if (!(categoryOptions || []).includes(c)) onAddCategory(c); });
+                    result.mechanisms.forEach((m) => { if (!(mechanismOptions || []).includes(m)) onAddMechanism(m); });
+                    result.playerTypes.forEach((t) => { if (!(playerTypeOptions || []).includes(t)) onAddPlayerType(t, ""); });
+                    setForm((f) => ({
+                      ...f,
+                      categories: [...new Set([...f.categories, ...result.categories])],
+                      mechanisms: [...new Set([...f.mechanisms, ...result.mechanisms])],
+                      playerTypes: [...new Set([...f.playerTypes, ...result.playerTypes])],
+                    }));
                   } catch (e) { setTypesError(e.message || "Fehlgeschlagen"); }
                   finally { setTypesLoading(false); }
                 }}
                 className="flex items-center gap-1 text-[11px] text-[#6C7FE0] disabled:opacity-50 -mt-2"
               >
-                {typesLoading ? <Loader2 size={11} /> : <Sparkles size={11} />} Spielertypen von KI vorschlagen lassen
+                {typesLoading ? <Loader2 size={11} /> : <Sparkles size={11} />} Kategorien, Mechanismen &amp; Spielertyp von KI vorschlagen lassen
               </button>
             )}
             {typesError && <p className="text-[11px] text-[#C1443C] -mt-2">{typesError}</p>}
@@ -2283,7 +2375,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             <button type="button" onClick={() => update("isCampaign", !form.isCampaign)}
               className={`w-full h-12 flex items-center justify-between px-3.5 rounded-[14px] border ${form.isCampaign ? "bg-[#6C7FE0]/15 border-[#6C7FE0]/40" : "bg-transparent border-[#3A3631]"}`}>
               <span className={`text-sm ${form.isCampaign ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>Kampagnenspiel (Fortschritts-Historie)</span>
-              <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.isCampaign ? "bg-[#6C7FE0] justify-end" : "bg-[#3A3631] justify-start"}`}>
+              <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.isCampaign ? "bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] justify-end" : "bg-[#3A3631] justify-start"}`}>
                 <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
               </div>
             </button>
@@ -2320,7 +2412,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
         {step === "manual" && (
           <div className="shrink-0 border-t border-[#3A3631] p-4 space-y-2">
             <button disabled={!form.name.trim()} onClick={handleSaveClick}
-              className={`w-full bg-[#6C7FE0] disabled:opacity-40 text-[#F2EDE4] rounded-[14px] py-3 font-medium active:scale-[0.99] flex items-center justify-center gap-2 relative ${saveCelebrating ? "save-pop" : ""}`}>
+              className={`w-full bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] disabled:opacity-40 text-[#F2EDE4] rounded-[14px] py-3 font-medium active:scale-[0.99] flex items-center justify-center gap-2 relative ${saveCelebrating ? "save-pop" : ""}`}>
               {saveCelebrating && <span className="save-ring" />}
               <Check size={18} /> Speichern
             </button>
@@ -2584,7 +2676,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
         </div>
         {selectedGame && (
           <div className="shrink-0 border-t border-[#3A3631] p-4 space-y-2">
-            <button onClick={save} className="w-full bg-[#6C7FE0] text-[#F2EDE4] rounded-[14px] py-3 font-medium active:scale-[0.99] flex items-center justify-center gap-2">
+            <button onClick={save} className="w-full bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] rounded-[14px] py-3 font-medium active:scale-[0.99] flex items-center justify-center gap-2">
               <Check size={18} /> Partie speichern
             </button>
             {initial && (
@@ -2602,7 +2694,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
             <input onFocus={handleFocusScroll} value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Name"
               className="w-full h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#6C7FE0]" />
             <button onClick={() => { if (newPlayerName.trim()) { const id = onAddPlayer(newPlayerName.trim()); setPlayerIds((prev) => [...prev, id]); setNewPlayerName(""); setNewPlayerOpen(false); } }}
-              className="w-full h-12 bg-[#6C7FE0] text-[#F2EDE4] rounded-[14px] font-medium">Anlegen</button>
+              className="w-full h-12 bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] rounded-[14px] font-medium">Anlegen</button>
             <p className="text-xs text-[#5C574F] text-center">Ein Profilbild kannst du danach über den Namen ergänzen.</p>
           </div>
         </div>
@@ -2641,7 +2733,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
             />
             <button
               onClick={() => { if (editingPlayer.name.trim()) onUpdatePlayerName(editingPlayer.id, editingPlayer.name.trim()); setEditingPlayer(null); }}
-              className="w-full h-12 bg-[#6C7FE0] text-[#F2EDE4] rounded-[14px] font-medium"
+              className="w-full h-12 bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] rounded-[14px] font-medium"
             >
               Speichern
             </button>
@@ -3298,7 +3390,7 @@ function AddGamesToListModal({ games, plays, list, onToggle, onClose, aiWorkerUr
                     {isPlayed && <span className="text-[10px] text-[#5C574F] font-body">{playCount}× gespielt</span>}
                   </div>
                 </div>
-                <div className={`w-6 h-6 rounded-full border flex items-center justify-center shrink-0 ${checked ? "bg-[#6C7FE0] border-[#6C7FE0]" : "border-[#3A3631]"}`}>
+                <div className={`w-6 h-6 rounded-full border flex items-center justify-center shrink-0 ${checked ? "bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] border-transparent" : "border-[#3A3631]"}`}>
                   {checked && <Check size={14} className="text-[#F2EDE4]" />}
                 </div>
               </button>
@@ -3352,7 +3444,7 @@ function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDelete
         )}
         <div className="flex-1 overflow-y-auto p-5">
           {!demoMode && (
-            <button onClick={() => setAddOpen(true)} className="w-full h-12 mb-4 flex items-center justify-center gap-2 bg-[#6C7FE0] text-[#F2EDE4] rounded-[14px] font-medium">
+            <button onClick={() => setAddOpen(true)} className="w-full h-12 mb-4 flex items-center justify-center gap-2 bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] rounded-[14px] font-medium">
               <Plus size={16} /> Spiele hinzufügen
             </button>
           )}
@@ -3497,14 +3589,17 @@ function ListPickerModal({ lists, gameId, onToggle, onCreate, onClose }) {
           <input onFocus={handleFocusScroll} value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Neue Liste…"
             className="flex-1 min-w-0 h-11 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
           <button onClick={() => { if (newName.trim()) { onCreate(newName.trim()); setNewName(""); } }}
-            className="shrink-0 h-11 px-4 bg-[#6C7FE0] text-[#F2EDE4] rounded-[14px] text-sm font-medium">Anlegen</button>
+            className="shrink-0 h-11 px-4 bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] rounded-[14px] text-sm font-medium">Anlegen</button>
         </div>
       </div>
     </div>
   );
 }
 
-function CollectionFilterModal({ categoryOptions, mechanismOptions, filters, statusFilter, onChangeStatus, onChange, onClose, onReset }) {
+function CollectionFilterModal({ categoryOptions, mechanismOptions, filters, statusFilter, onChangeStatus, onChange, onClose, onReset, sortBy, onChangeSort }) {
+  const [showAllCategories, setShowAllCategories] = useState(false);
+  const [showAllMechanisms, setShowAllMechanisms] = useState(false);
+  const CAP = 10;
   const toggle = (key, value) => {
     const list = filters[key];
     onChange({ ...filters, [key]: list.includes(value) ? list.filter((x) => x !== value) : [...list, value] });
@@ -3518,6 +3613,21 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, filters, sta
           <button onClick={onClose} className="text-[#A39C8F] p-1"><X size={22} /></button>
         </div>
         <div className="p-5 overflow-y-auto flex-1 space-y-6">
+          <div>
+            <label className="block text-[11px] text-[#5C574F]">Sortierung</label>
+            <select value={sortBy} onChange={(e) => onChangeSort(e.target.value)}
+              className="w-full mt-1.5 h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#6C7FE0]">
+              <option value="name-asc">Name (A–Z)</option>
+              <option value="name-desc">Name (Z–A)</option>
+              <option value="rating-desc">Bewertung (hoch → niedrig)</option>
+              <option value="rating-asc">Bewertung (niedrig → hoch)</option>
+              <option value="plays-desc">Meistgespielt zuerst</option>
+              <option value="added-desc">Zuletzt hinzugefügt</option>
+              <option value="added-asc">Zuerst hinzugefügt</option>
+              <option value="complexity-desc">Komplexität (hoch → niedrig)</option>
+              <option value="complexity-asc">Komplexität (niedrig → hoch)</option>
+            </select>
+          </div>
           <div>
             <label className="block text-[11px] text-[#5C574F]">Status</label>
             <div className="mt-1.5">
@@ -3542,7 +3652,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, filters, sta
           <div>
             <p className="text-[11px] text-[#5C574F] mb-1.5">Kategorien</p>
             <div className="flex flex-wrap gap-2">
-              {categoryOptions.map((c) => {
+              {(showAllCategories ? categoryOptions : categoryOptions.slice(0, CAP)).map((c) => {
                 const isSel = filters.categories.includes(c);
                 const CIcon = tagIcon(c);
                 return (
@@ -3552,12 +3662,18 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, filters, sta
                   </button>
                 );
               })}
+              {categoryOptions.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine Kategorien in deiner Sammlung.</p>}
+              {categoryOptions.length > CAP && (
+                <button onClick={() => setShowAllCategories((v) => !v)} className="px-3 py-1.5 rounded-full text-xs text-[#6C7FE0]">
+                  {showAllCategories ? "Weniger anzeigen" : `+${categoryOptions.length - CAP} mehr`}
+                </button>
+              )}
             </div>
           </div>
           <div>
             <p className="text-[11px] text-[#5C574F] mb-1.5">Mechanismen</p>
             <div className="flex flex-wrap gap-2">
-              {mechanismOptions.map((m) => {
+              {(showAllMechanisms ? mechanismOptions : mechanismOptions.slice(0, CAP)).map((m) => {
                 const isSel = filters.mechanisms.includes(m);
                 const MIcon = tagIcon(m);
                 return (
@@ -3567,12 +3683,18 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, filters, sta
                   </button>
                 );
               })}
+              {mechanismOptions.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine Mechanismen in deiner Sammlung.</p>}
+              {mechanismOptions.length > CAP && (
+                <button onClick={() => setShowAllMechanisms((v) => !v)} className="px-3 py-1.5 rounded-full text-xs text-[#6C7FE0]">
+                  {showAllMechanisms ? "Weniger anzeigen" : `+${mechanismOptions.length - CAP} mehr`}
+                </button>
+              )}
             </div>
           </div>
         </div>
         <div className="shrink-0 p-4 border-t border-[#3A3631] flex gap-2">
           <button onClick={onReset} className="flex-1 bg-[#262422] border border-[#3A3631] text-[#F2EDE4] rounded-[14px] py-3 font-medium">Zurücksetzen</button>
-          <button onClick={onClose} className="flex-1 bg-[#6C7FE0] text-[#F2EDE4] rounded-[14px] py-3 font-medium">Anwenden</button>
+          <button onClick={onClose} className="flex-1 bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] rounded-[14px] py-3 font-medium">Anwenden</button>
         </div>
       </div>
     </div>
@@ -3586,6 +3708,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
   const [statusFilter, setStatusFilter] = useState("owned");
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [filters, setFilters] = useState({ categories: [], mechanisms: [], players: "", minRating: "" });
+  const [sortBy, setSortBy] = useState("name-asc");
   const [contextGame, setContextGame] = useState(null);
   const [newListName, setNewListName] = useState("");
   const [createListOpen, setCreateListOpen] = useState(false);
@@ -3598,6 +3721,16 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
   };
   const cancelLongPress = () => { if (longPressTimer.current) clearTimeout(longPressTimer.current); };
   const activeFilterCount = filters.categories.length + filters.mechanisms.length + (filters.players ? 1 : 0) + (filters.minRating ? 1 : 0) + (statusFilter !== "owned" ? 1 : 0);
+  const presentCategories = useMemo(() => {
+    const counts = {};
+    games.forEach((g) => (g.categories || []).forEach((c) => { counts[c] = (counts[c] || 0) + 1; }));
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([tag]) => tag);
+  }, [games]);
+  const presentMechanisms = useMemo(() => {
+    const counts = {};
+    games.forEach((g) => (g.mechanisms || []).forEach((m) => { counts[m] = (counts[m] || 0) + 1; }));
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([tag]) => tag);
+  }, [games]);
   const playCounts = useMemo(() => {
     const map = {}; plays.forEach(p => { map[p.gameId] = (map[p.gameId] || 0) + 1; }); return map;
   }, [plays]);
@@ -3608,6 +3741,21 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
   if (filters.mechanisms.length) list = list.filter(g => filters.mechanisms.every(m => (g.mechanisms || []).includes(m)));
   if (filters.players) list = list.filter(g => g.minPlayers && g.maxPlayers && parseInt(filters.players) >= parseInt(g.minPlayers) && parseInt(filters.players) <= parseInt(g.maxPlayers));
   if (filters.minRating) list = list.filter(g => g.rating && parseInt(g.rating) >= parseInt(filters.minRating));
+
+  list = [...list].sort((a, b) => {
+    switch (sortBy) {
+      case "name-asc": return a.name.localeCompare(b.name, "de");
+      case "name-desc": return b.name.localeCompare(a.name, "de");
+      case "rating-desc": return (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0);
+      case "rating-asc": return (parseFloat(a.rating) || 0) - (parseFloat(b.rating) || 0);
+      case "plays-desc": return (playCounts[b.id] || 0) - (playCounts[a.id] || 0);
+      case "added-desc": return (b.addedDate || "").localeCompare(a.addedDate || "");
+      case "added-asc": return (a.addedDate || "").localeCompare(b.addedDate || "");
+      case "complexity-desc": return (parseFloat(b.complexity) || 0) - (parseFloat(a.complexity) || 0);
+      case "complexity-asc": return (parseFloat(a.complexity) || 0) - (parseFloat(b.complexity) || 0);
+      default: return 0;
+    }
+  });
 
   return (
     <div className="p-5 pb-6 overflow-x-hidden min-h-full flex flex-col">
@@ -3680,9 +3828,14 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
               onTouchStart={() => startLongPress(g)}
               onTouchEnd={cancelLongPress}
               onTouchMove={cancelLongPress}
-              className={`text-left rounded-2xl rise-in flex flex-col overflow-hidden ${gridCols === 4 ? "bg-transparent" : "bg-[#262422] border border-[#3A3631] p-3"}`}
+              className={`relative text-left rounded-2xl rise-in flex flex-col overflow-hidden ${gridCols === 4 ? "bg-transparent" : "bg-[#262422] border border-[#3A3631] p-3"}`}
             >
               <Cover game={g} size="lg" className={gridCols === 4 ? "!rounded-none !border-0" : ""} />
+              {gridCols === 4 && g.rating && (
+                <span className="absolute top-1.5 left-1.5 flex items-center gap-0.5 bg-black/70 text-[#E85D9C] text-[10px] font-mono px-1.5 py-0.5 rounded-full">
+                  <Star size={9} fill="currentColor" /> {g.rating}
+                </span>
+              )}
               {gridCols === 2 && (
                 <>
                   <p className="font-body text-[#F2EDE4] text-sm font-medium mt-2 leading-tight">{g.name}</p>
@@ -3738,16 +3891,26 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
         style={{ left: "calc(50% - 76px)", transform: "translateX(-50%)", bottom: "calc(102px + env(safe-area-inset-bottom))" }}>
         <Search size={17} />
       </button>
-      <button onClick={() => setFilterModalOpen(true)} aria-label="Filter"
-        className="glass fixed z-30 w-11 h-11 flex items-center justify-center border border-white/15 rounded-full text-[#A39C8F] shadow-lg"
-        style={{ left: "calc(50% + 76px)", transform: "translateX(-50%)", bottom: "calc(102px + env(safe-area-inset-bottom))" }}>
-        <Puzzle size={17} />
-        {activeFilterCount > 0 && <span className="absolute top-0.5 right-0.5 bg-[#6C7FE0] text-[#F2EDE4] text-[10px] w-4 h-4 rounded-full flex items-center justify-center">{activeFilterCount}</span>}
-      </button>
+      <div className="fixed z-30" style={{ left: "calc(50% + 76px)", transform: "translateX(-50%)", bottom: "calc(102px + env(safe-area-inset-bottom))" }}>
+        <button onClick={() => setFilterModalOpen(true)} aria-label="Filter"
+          className="glass w-11 h-11 flex items-center justify-center border border-white/15 rounded-full text-[#A39C8F] shadow-lg">
+          <SlidersFilter size={17} />
+        </button>
+        {activeFilterCount > 0 && (
+          <span
+            className="absolute -top-1 -right-1 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-semibold border-2 border-[#1C1B1A]"
+            style={{ background: "conic-gradient(from 0deg, #ff5a96, #ffc850, #78dcff, #b482ff, #ff5a96)" }}
+          >
+            {activeFilterCount}
+          </span>
+        )}
+      </div>
       {filterModalOpen && (
         <CollectionFilterModal
-          categoryOptions={categoryOptions}
-          mechanismOptions={mechanismOptions}
+          categoryOptions={presentCategories}
+          mechanismOptions={presentMechanisms}
+          sortBy={sortBy}
+          onChangeSort={setSortBy}
           filters={filters}
           statusFilter={statusFilter}
           onChangeStatus={setStatusFilter}
@@ -3763,7 +3926,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
             <input onFocus={handleFocusScroll} value={newListName} onChange={(e) => setNewListName(e.target.value)} placeholder="z.B. Partyabend"
               className="w-full h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#6C7FE0]" />
             <button onClick={() => { if (newListName.trim()) { const name = newListName.trim(); const id = onCreateList(name); setNewListName(""); setCreateListOpen(false); if (id) onOpenList({ id, name, gameIds: [] }); } }}
-              className="w-full h-12 bg-[#6C7FE0] text-[#F2EDE4] rounded-[14px] font-medium">Anlegen</button>
+              className="w-full h-12 bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] rounded-[14px] font-medium">Anlegen</button>
           </div>
         </div>
       )}
@@ -4127,7 +4290,7 @@ Wichtige Chat-Regeln, damit es sich nicht wie ein Bot anfühlt:
 
 Empfiehl in erster Linie Spiele aus der Sammlung unten. Wenn wirklich nichts passt, darfst du auch ein fremdes Spiel nennen — dann klar als "nicht in deiner Sammlung" kennzeichnen und kurz begründen, warum es besser passt. Berücksichtige die Partien-Historie (nicht gerade erst Gespieltes bevorzugt vorschlagen, außer gewünscht; schlag gern auch mal was lange nicht Gespieltes vor).
 
-WICHTIG, sobald du ein KONKRETES Spiel empfiehlst: erklär in ein bis zwei knappen Sätzen, WIE es gespielt wird bzw. was die Kernmechanik ist (nicht nur "macht Laune" oder "ist schnell gespielt" — das sagt nichts über das Spiel selbst aus). Der Nutzer soll aus deiner Antwort verstehen, was ihn erwartet.
+WICHTIG, sobald du ein KONKRETES Spiel empfiehlst: erklär in ein bis zwei knappen Sätzen, WIE es gespielt wird bzw. was die Kernmechanik ist. Stütz dich dabei NUR auf die "Beschreibung" (falls vorhanden) und die "Themen" in der Sammlung unten — erfinde keine Regeldetails, die dort nicht stehen. Gibt es zu einem Spiel keine Beschreibung, sag das ehrlich (z.B. "genauer kenn ich die Regeln nicht, aber laut Kategorie ist es...") statt generische Floskeln wie "macht Laune" oder "clever einsetzen" zu benutzen, die nichts Konkretes aussagen.
 
 Lies zwischen den Zeilen: wenn der Nutzer z.B. erwähnt "die Kinder sind da", "wir sind neu dabei", "nach der Arbeit noch schnell", "größere Familienrunde an Weihnachten" — zieh daraus selbst Schlüsse (Zielgruppe, Energielevel, Regelkenntnis, verfügbare Zeit), statt stur nach Spieleranzahl/Zeit zu fragen, wenn's schon impliziert ist. Merk dir außerdem alles, was im bisherigen Gespräch schon gesagt wurde, und frag das nie nochmal.
 
@@ -4190,8 +4353,16 @@ ${buildCollectionContextForAI(games, plays)}`;
 
   return (
     <div className="min-h-full flex flex-col">
-      <div className="p-5 pb-3">
+      <div className="p-5 pb-3 flex items-center justify-between gap-3">
         <h1 className="font-display text-3xl text-[#F2EDE4]">Was spielen wir heute?</h1>
+        {aiWorkerUrl && chatMessages.length > 0 && (
+          <button
+            onClick={() => { haptic(6); greetedRef.current = false; setChatMessages([]); }}
+            className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full bg-[#262422] border border-[#3A3631] text-[#A39C8F] text-xs font-body"
+          >
+            <Sparkles size={12} /> Neuer Chat
+          </button>
+        )}
       </div>
 
       {!aiWorkerUrl ? (
@@ -4206,13 +4377,13 @@ ${buildCollectionContextForAI(games, plays)}`;
         <>
           <div className="flex-1 px-5 space-y-3" style={{ paddingBottom: "calc(84px + env(safe-area-inset-bottom) + 96px)" }}>
             {chatMessages.map((m, i) => {
-              const mentioned = m.role === "assistant" ? games.filter((g) => m.content.includes(g.name)) : [];
+              const mentioned = m.role === "assistant" ? findMentionedGames(m.content, games) : [];
               const isLast = i === chatMessages.length - 1;
               return (
                 <div key={i} className={`flex gap-2 items-end ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                   {m.role === "assistant" && <PipAvatar size={30} />}
                   <div className={`max-w-[80%] flex flex-col gap-1.5 ${m.role === "user" ? "items-end" : "items-start"}`}>
-                    <div className={`text-sm font-body rounded-2xl px-4 py-2.5 ${m.role === "user" ? "bg-[#6C7FE0] text-white rounded-br-md" : "bg-[#262422] border border-[#3A3631] text-[#F2EDE4] rounded-bl-md"}`}>
+                    <div className={`text-sm font-body rounded-2xl px-4 py-2.5 ${m.role === "user" ? "bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-white rounded-br-md" : "bg-[#262422] border border-[#3A3631] text-[#F2EDE4] rounded-bl-md"}`}>
                       {m.content}
                     </div>
                     {mentioned.length > 0 && (
@@ -4262,7 +4433,7 @@ ${buildCollectionContextForAI(games, plays)}`;
                 className="flex-1 min-w-0 h-12 bg-[#262422] border-0 rounded-full px-4 text-[#F2EDE4] text-base shadow-lg focus:outline-none disabled:opacity-60"
               />
               <button onClick={() => sendChat()} disabled={chatLoading || !chatInput.trim()}
-                className="shrink-0 w-12 h-12 rounded-full bg-[#6C7FE0] disabled:opacity-40 text-[#F2EDE4] flex items-center justify-center">
+                className="shrink-0 w-12 h-12 rounded-full bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] disabled:opacity-40 text-[#F2EDE4] flex items-center justify-center">
                 <ChevronRight size={20} />
               </button>
             </div>
@@ -4484,7 +4655,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
               {[...gamePlays].sort((a, b) => (a.date || "").localeCompare(b.date || "")).map((p, i, arr) => (
                 <div key={p.id} className="flex gap-3">
                   <div className="flex flex-col items-center shrink-0">
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#6C7FE0] mt-1.5" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] mt-1.5" />
                     {i < arr.length - 1 && <div className="flex-1 w-px bg-[#3A3631] mt-1" />}
                   </div>
                   <div className="flex-1 min-w-0 pb-3">
@@ -4584,7 +4755,7 @@ function SyncModal({ initialUrl, initialApiKey, initialEmail, status, lastSynced
           <button
             onClick={() => onSave(url, key, email, password)}
             disabled={!url.trim()}
-            className="w-full bg-[#6C7FE0] disabled:opacity-40 text-[#F2EDE4] rounded-[14px] py-3 font-medium active:scale-[0.99] flex items-center justify-center gap-2"
+            className="w-full bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] disabled:opacity-40 text-[#F2EDE4] rounded-[14px] py-3 font-medium active:scale-[0.99] flex items-center justify-center gap-2"
           >
             <Check size={18} /> Speichern
           </button>
@@ -4654,12 +4825,7 @@ function App() {
   const displayPlayers = demoMode ? DEMO_PLAYERS : players;
   const [tab, setTab] = useState("dashboard");
   const [aiChatMessages, setAiChatMessages] = useState([]);
-  const [pendingTabSwitch, setPendingTabSwitch] = useState(null);
   const requestTabSwitch = (nextTab) => {
-    if (tab === "recommendations" && nextTab !== "recommendations" && aiChatMessages.length > 0) {
-      setPendingTabSwitch(nextTab);
-      return;
-    }
     haptic(6);
     setTab(nextTab);
     if (nextTab !== "collection") setQuickFilter(null);
@@ -5113,23 +5279,6 @@ function App() {
           </div>
         </div>
       </div>
-      {pendingTabSwitch && (
-        <div className="fixed top-0 left-0 right-0 bg-black/80 z-[80] flex items-center justify-center p-6" style={{ height: "var(--app-height, 100dvh)" }} onClick={() => setPendingTabSwitch(null)}>
-          <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-2xl p-5 w-full max-w-xs rise-in font-body" onClick={(e) => e.stopPropagation()}>
-            <p className="text-[#F2EDE4] font-display text-lg mb-1.5">KI-Gespräch verlassen?</p>
-            <p className="text-[#A39C8F] text-sm mb-4">Der Gesprächsverlauf wird dabei gelöscht.</p>
-            <div className="flex gap-2">
-              <button onClick={() => setPendingTabSwitch(null)} className="flex-1 h-11 rounded-[14px] bg-[#262422] border border-[#3A3631] text-[#F2EDE4] text-sm font-medium">Abbrechen</button>
-              <button
-                onClick={() => { const next = pendingTabSwitch; setAiChatMessages([]); setPendingTabSwitch(null); haptic(6); setTab(next); if (next !== "collection") setQuickFilter(null); }}
-                className="flex-1 h-11 rounded-[14px] bg-[#C1443C] text-white text-sm font-medium"
-              >
-                Verlassen
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       {detailGame && (
         <GameDetailModal
           game={detailGame}
@@ -5221,7 +5370,7 @@ class ErrorBoundary extends React.Component {
             <Dices size={32} className="text-[#C1443C] mx-auto mb-3" />
             <p className="text-[#F2EDE4] font-display text-xl mb-2">Kurz gestolpert</p>
             <p className="text-[#A39C8F] text-sm mb-5">Hier ist etwas schiefgelaufen. Deine Daten in Firebase sind davon nicht betroffen.</p>
-            <button onClick={() => this.setState({ error: null })} className="w-full h-12 bg-[#6C7FE0] text-[#F2EDE4] rounded-[14px] font-medium mb-2">Nochmal versuchen</button>
+            <button onClick={() => this.setState({ error: null })} className="w-full h-12 bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] rounded-[14px] font-medium mb-2">Nochmal versuchen</button>
             <button onClick={() => window.location.reload()} className="w-full h-12 bg-[#262422] border border-[#3A3631] text-[#F2EDE4] rounded-[14px] font-medium">App neu laden</button>
           </div>
         </div>
