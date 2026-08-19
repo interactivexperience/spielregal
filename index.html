@@ -1901,6 +1901,43 @@ Antworte NUR mit einer kommagetrennten Liste der gewählten Typen, sonst nichts.
 // preferring existing options in the collection over inventing new ones.
 // Fallback for when the diacritics/keyword heuristic can't confidently spot a
 // German alternate title or publisher — asks the AI to judge from the raw lists.
+// For manual entries with no BGG link — has no real data to work from, so asks
+// the AI to identify the original publisher, German title, and German publisher(s)
+// from its own knowledge. Less reliable than the BGG-based lookup, since it's
+// not grounded in actual BGG data — the AI may be wrong or unsure.
+async function aiIdentifyGameInfoFromName(workerUrl, gameName, existingPublishers) {
+  const prompt = `Brettspiel: "${gameName}"
+Bereits eingetragene Verlage: ${(existingPublishers || []).join(", ") || "(keine)"}
+
+Dieses Spiel hat keinen BGG-Datensatz verknüpft — nutze dein eigenes Wissen über das Spiel. Falls du das Spiel nicht kennst oder dir nicht sicher bist, schreib "keiner" statt zu raten.
+
+1. Wie heißt der ORIGINAL-Verlag (Erstveröffentlichung, egal welches Land)? Nur nennen, wenn er nicht schon in "Bereits eingetragene Verlage" steht.
+2. Wie lautet der deutsche Titel des Spiels (falls anders als der eingegebene Name)?
+3. Welche(r) deutsche(n) Verlag(e) haben es veröffentlicht (Deutschland/Österreich/Schweiz)?
+
+Antworte NUR in exakt diesem Format:
+ORIGINALVERLAG: <Name oder "keiner">
+TITEL: <deutscher Titel oder "keiner">
+VERLAGE: <deutsche(r) Verlag(e), kommagetrennt, oder "keiner">`;
+
+  const res = await fetch(workerUrl.replace(/\/$/, ""), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
+  });
+  if (!res.ok) throw new Error(`KI-Worker Fehler ${res.status}`);
+  const json = await res.json();
+  if (json.error) throw new Error(json.error);
+  const raw = (json.text || "").trim();
+  const clean = (v) => { const t = (v || "").trim(); return (!t || /^keiner\.?$/i.test(t)) ? null : t; };
+  const origMatch = raw.match(/ORIGINALVERLAG:\s*(.+)/i);
+  const titleMatch = raw.match(/TITEL:\s*(.+)/i);
+  const publisherMatch = raw.match(/VERLAGE?:\s*(.+)/i);
+  const publisherRaw = clean(publisherMatch && publisherMatch[1]);
+  const germanPublishers = publisherRaw ? publisherRaw.split(",").map((s) => s.trim()).filter(Boolean) : [];
+  return { originalPublisher: clean(origMatch && origMatch[1]), germanName: clean(titleMatch && titleMatch[1]), germanPublishers };
+}
+
 async function aiIdentifyGermanInfo(workerUrl, gameName, alternateNames, publishers) {
   const prompt = `Brettspiel: "${gameName}"
 
@@ -2337,33 +2374,44 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               {publisherTrimLoading && (
                 <p className="flex items-center gap-1 text-[11px] text-[#5C574F] mt-2"><Loader2 size={11} /> Verlagsliste wird auf Original + Deutsch reduziert…</p>
               )}
-              {aiWorkerUrl && form.bggId && (
+              {aiWorkerUrl && form.name.trim() && (
                 <button
                   type="button"
                   disabled={germanLookupLoading}
                   onClick={async () => {
                     setGermanLookupLoading(true); setGermanLookupError("");
                     try {
-                      const fresh = await bggThing(form.bggId);
-                      const needsGermanName = !fresh.germanName && (fresh.alternateNames || []).length > 0;
-                      const needsGermanPublisher = !(fresh.allPublishers || []).some(p => form.publishers.includes(p)) && (fresh.allPublishers || []).length > 0;
-                      let guess = { germanName: fresh.germanName, germanPublishers: [] };
-                      if (needsGermanName || needsGermanPublisher) {
-                        const aiGuess = await aiIdentifyGermanInfo(aiWorkerUrl, fresh.name, fresh.alternateNames, fresh.allPublishers);
-                        guess = { germanName: fresh.germanName || aiGuess.germanName, germanPublishers: aiGuess.germanPublishers || [] };
+                      let guess = { germanName: null, germanPublishers: [], originalPublisher: null };
+                      if (form.bggId) {
+                        const fresh = await bggThing(form.bggId);
+                        const needsGermanName = !fresh.germanName && (fresh.alternateNames || []).length > 0;
+                        const needsGermanPublisher = !(fresh.allPublishers || []).some(p => form.publishers.includes(p)) && (fresh.allPublishers || []).length > 0;
+                        const needsOriginalPublisher = form.publishers.length === 0 && (fresh.allPublishers || []).length > 0;
+                        guess.germanName = fresh.germanName;
+                        if (needsOriginalPublisher) guess.originalPublisher = fresh.allPublishers[0];
+                        if (needsGermanName || needsGermanPublisher) {
+                          const aiGuess = await aiIdentifyGermanInfo(aiWorkerUrl, fresh.name, fresh.alternateNames, fresh.allPublishers);
+                          guess.germanName = guess.germanName || aiGuess.germanName;
+                          guess.germanPublishers = aiGuess.germanPublishers || [];
+                        }
+                      } else {
+                        // Manual entry, no BGG link — fall back to the AI's own knowledge.
+                        const aiGuess = await aiIdentifyGameInfoFromName(aiWorkerUrl, form.name, form.publishers);
+                        guess = { germanName: aiGuess.germanName, germanPublishers: aiGuess.germanPublishers || [], originalPublisher: form.publishers.length === 0 ? aiGuess.originalPublisher : null };
                       }
+                      const newPublishers = [guess.originalPublisher, ...guess.germanPublishers].filter(Boolean);
                       setForm((f) => ({
                         ...f,
                         germanName: guess.germanName || f.germanName,
-                        publishers: (guess.germanPublishers || []).length ? [...new Set([...f.publishers, ...guess.germanPublishers])] : f.publishers,
+                        publishers: newPublishers.length ? [...new Set([...f.publishers, ...newPublishers])] : f.publishers,
                       }));
-                      if (!guess.germanName && !(guess.germanPublishers || []).length) setGermanLookupError("Nichts Neues gefunden.");
+                      if (!guess.germanName && !guess.originalPublisher && guess.germanPublishers.length === 0) setGermanLookupError("Nichts gefunden.");
                     } catch (e) { setGermanLookupError(e.message || "Fehlgeschlagen"); }
                     finally { setGermanLookupLoading(false); }
                   }}
                   className="flex items-center gap-1 text-[11px] text-[#6C7FE0] disabled:opacity-50 mt-2"
                 >
-                  {germanLookupLoading ? <Loader2 size={11} /> : <Sparkles size={11} />} Deutschen Titel/Verlag nachträglich suchen
+                  {germanLookupLoading ? <Loader2 size={11} /> : <Sparkles size={11} />} {form.bggId ? "Deutschen Titel/Verlag nachträglich suchen" : "Deutschen Titel/Verlag von KI erraten lassen"}
                 </button>
               )}
               {germanLookupError && <p className="text-[11px] text-[#C1443C] mt-1">{germanLookupError}</p>}
