@@ -1764,9 +1764,16 @@ async function bggThing(bggId) {
   const allPublishers = Array.from(item.getElementsByTagName("link")).filter(l => l.getAttribute("type") === "boardgamepublisher").map(l => l.getAttribute("value"));
   // BGG lists every regional publisher with no "primary" flag. Best-effort: keep the
   // first (usually the original publisher) plus any recognizable German-market publisher.
-  const KNOWN_GERMAN_PUBLISHERS = ["kosmos", "pegasus spiele", "hans im glück", "hans im gluck", "amigo", "schmidt spiele", "ravensburger", "asmodee deutschland", "feuerland spiele", "frosted games", "skellig games", "spielworxx", "huch!", "kobold spieleverlag", "abacusspiele", "queen games", "eggertspiele", "moses verlag"];
-  const germanMatch = allPublishers.find(p => KNOWN_GERMAN_PUBLISHERS.some(k => p.toLowerCase().includes(k)));
-  const publishers = [...new Set([allPublishers[0], germanMatch].filter(Boolean))];
+  const KNOWN_GERMAN_PUBLISHERS = [
+    "kosmos", "pegasus spiele", "hans im glück", "hans im gluck", "amigo", "schmidt spiele", "ravensburger",
+    "asmodee deutschland", "feuerland spiele", "frosted games", "skellig games", "spielworxx", "huch!", "huch & friends",
+    "kobold spieleverlag", "abacusspiele", "queen games", "eggertspiele", "moses verlag", "lookout games", "lookout spiele",
+    "zoch verlag", "zoch", "noris spiele", "nürnberger-spielkarten-verlag", "nsv", "pd-verlag", "argentum verlag",
+    "deep print games", "heidelberger spieleverlag", "corax games", "edition spielwiese", "2f-spiele", "irongames",
+    "game factory", "franckh-kosmos", "klemmer spiele", "piatnik", "united games entertainment", "iq-spiele", "drei magier spiele",
+  ];
+  const germanMatches = allPublishers.filter(p => KNOWN_GERMAN_PUBLISHERS.some(k => p.toLowerCase().includes(k)));
+  const publishers = [...new Set([allPublishers[0], ...germanMatches].filter(Boolean))];
   const designers = Array.from(item.getElementsByTagName("link")).filter(l => l.getAttribute("type") === "boardgamedesigner").map(l => l.getAttribute("value"));
   const weight = item.getElementsByTagName("averageweight")[0]?.getAttribute("value");
   const bggImage = getTxt("image");
@@ -1900,11 +1907,11 @@ async function aiIdentifyGermanInfo(workerUrl, gameName, alternateNames, publish
 Alternative Titel (aus verschiedenen Ländern/Sprachen, keine Sprache angegeben): ${(alternateNames || []).join(" | ") || "(keine)"}
 Verlage (verschiedene Länder): ${(publishers || []).join(" | ") || "(keine)"}
 
-Welcher der alternativen Titel ist auf DEUTSCH? Welcher der Verlage ist ein deutscher Verlag (Deutschland/Österreich/Schweiz)? Falls du dir bei einem der beiden nicht sicher bist oder keiner passt, schreib "keiner".
+Welcher der alternativen Titel ist auf DEUTSCH? Welche(r) der Verlage ist/sind deutsche Verlage (Deutschland/Österreich/Schweiz) — es können auch mehrere sein, z.B. bei Lizenzausgaben. Falls du dir nicht sicher bist oder keiner passt, schreib "keiner".
 
 Antworte NUR in exakt diesem Format:
 TITEL: <deutscher Titel oder "keiner">
-VERLAG: <deutscher Verlag oder "keiner">`;
+VERLAGE: <deutsche(r) Verlag(e), kommagetrennt, oder "keiner">`;
 
   const res = await fetch(workerUrl.replace(/\/$/, ""), {
     method: "POST",
@@ -1916,9 +1923,12 @@ VERLAG: <deutscher Verlag oder "keiner">`;
   if (json.error) throw new Error(json.error);
   const raw = (json.text || "").trim();
   const titleMatch = raw.match(/TITEL:\s*(.+)/i);
-  const publisherMatch = raw.match(/VERLAG:\s*(.+)/i);
+  const publisherMatch = raw.match(/VERLAGE?:\s*(.+)/i);
   const clean = (v) => { const t = (v || "").trim(); return (!t || /^keiner\.?$/i.test(t)) ? null : t; };
-  return { germanName: clean(titleMatch && titleMatch[1]), germanPublisher: clean(publisherMatch && publisherMatch[1]) };
+  const germanName = clean(titleMatch && titleMatch[1]);
+  const publisherRaw = clean(publisherMatch && publisherMatch[1]);
+  const germanPublishers = publisherRaw ? publisherRaw.split(",").map((s) => s.trim()).filter(Boolean) : [];
+  return { germanName, germanPublisher: germanPublishers[0] || null, germanPublishers };
 }
 
 async function aiSuggestGameTags(workerUrl, game, existingCategories, existingMechanisms, existingPlayerTypes) {
@@ -2126,6 +2136,25 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
   };
   const [typesLoading, setTypesLoading] = useState(false);
   const [germanLookupLoading, setGermanLookupLoading] = useState(false);
+  const [publisherTrimLoading, setPublisherTrimLoading] = useState(false);
+  useEffect(() => {
+    if (!aiWorkerUrl || !initial || !initial.bggId || (initial.publishers || []).length <= 2) return;
+    let cancelled = false;
+    (async () => {
+      setPublisherTrimLoading(true);
+      try {
+        const fresh = await bggThing(initial.bggId);
+        let publishers = fresh.publishers || [];
+        if (publishers.length === 0 && (fresh.allPublishers || []).length > 0) {
+          const aiGuess = await aiIdentifyGermanInfo(aiWorkerUrl, fresh.name, fresh.alternateNames, fresh.allPublishers);
+          publishers = [fresh.allPublishers[0], ...(aiGuess.germanPublishers || [])].filter(Boolean);
+        }
+        if (!cancelled && publishers.length > 0) setForm((f) => ({ ...f, publishers: [...new Set(publishers)] }));
+      } catch { /* silent — best-effort cleanup, not critical */ }
+      finally { if (!cancelled) setPublisherTrimLoading(false); }
+    })();
+    return () => { cancelled = true; };
+  }, [initial]);
   const [germanLookupError, setGermanLookupError] = useState("");
   const [typesError, setTypesError] = useState("");
   const [summaryVersion, setSummaryVersion] = useState(0);
@@ -2177,7 +2206,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             if (f.bggId !== details.bggId) return f; // user already moved to a different game — don't overwrite
             const next = { ...f };
             if (needsGermanName && guess.germanName) next.germanName = guess.germanName;
-            if (needsGermanPublisher && guess.germanPublisher && !next.publishers.includes(guess.germanPublisher)) next.publishers = [...next.publishers, guess.germanPublisher];
+            if (needsGermanPublisher && (guess.germanPublishers || []).length) next.publishers = [...new Set([...next.publishers, ...guess.germanPublishers])];
             return next;
           });
         } catch { /* silent — this is a nice-to-have fallback, not critical */ }
@@ -2305,6 +2334,9 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
                 </span>
                 <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
               </button>
+              {publisherTrimLoading && (
+                <p className="flex items-center gap-1 text-[11px] text-[#5C574F] mt-2"><Loader2 size={11} /> Verlagsliste wird auf Original + Deutsch reduziert…</p>
+              )}
               {aiWorkerUrl && form.bggId && (
                 <button
                   type="button"
@@ -2315,17 +2347,17 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
                       const fresh = await bggThing(form.bggId);
                       const needsGermanName = !fresh.germanName && (fresh.alternateNames || []).length > 0;
                       const needsGermanPublisher = !(fresh.allPublishers || []).some(p => form.publishers.includes(p)) && (fresh.allPublishers || []).length > 0;
-                      let guess = { germanName: fresh.germanName, germanPublisher: null };
+                      let guess = { germanName: fresh.germanName, germanPublishers: [] };
                       if (needsGermanName || needsGermanPublisher) {
                         const aiGuess = await aiIdentifyGermanInfo(aiWorkerUrl, fresh.name, fresh.alternateNames, fresh.allPublishers);
-                        guess = { germanName: fresh.germanName || aiGuess.germanName, germanPublisher: aiGuess.germanPublisher };
+                        guess = { germanName: fresh.germanName || aiGuess.germanName, germanPublishers: aiGuess.germanPublishers || [] };
                       }
                       setForm((f) => ({
                         ...f,
                         germanName: guess.germanName || f.germanName,
-                        publishers: guess.germanPublisher && !f.publishers.includes(guess.germanPublisher) ? [...f.publishers, guess.germanPublisher] : f.publishers,
+                        publishers: (guess.germanPublishers || []).length ? [...new Set([...f.publishers, ...guess.germanPublishers])] : f.publishers,
                       }));
-                      if (!guess.germanName && !guess.germanPublisher) setGermanLookupError("Nichts Neues gefunden.");
+                      if (!guess.germanName && !(guess.germanPublishers || []).length) setGermanLookupError("Nichts Neues gefunden.");
                     } catch (e) { setGermanLookupError(e.message || "Fehlgeschlagen"); }
                     finally { setGermanLookupLoading(false); }
                   }}
@@ -3727,9 +3759,10 @@ function PlayLogFilterModal({ filters, onChange, onClose, onReset, allWinners })
   );
 }
 
-function CollectionFilterModal({ categoryOptions, mechanismOptions, filters, statusFilter, onChangeStatus, onChange, onClose, onReset, sortBy, onChangeSort }) {
+function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOptions, filters, statusFilter, onChangeStatus, onChange, onClose, onReset, sortBy, onChangeSort }) {
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [showAllMechanisms, setShowAllMechanisms] = useState(false);
+  const [showAllPublishers, setShowAllPublishers] = useState(false);
   const CAP = 10;
   const toggle = (key, value) => {
     const list = filters[key];
@@ -3822,6 +3855,26 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, filters, sta
               )}
             </div>
           </div>
+          <div>
+            <p className="text-[11px] text-[#5C574F] mb-1.5">Verlag</p>
+            <div className="flex flex-wrap gap-2">
+              {(showAllPublishers ? publisherOptions : publisherOptions.slice(0, CAP)).map((p) => {
+                const isSel = filters.publishers.includes(p);
+                return (
+                  <button key={p} onClick={() => toggle("publishers", p)}
+                    className={`px-3 py-1.5 rounded-full text-xs border ${isSel ? "bg-[#F2EDE4] border-[#F2EDE4] text-[#1C1B1A] font-medium" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}>
+                    {p}
+                  </button>
+                );
+              })}
+              {publisherOptions.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine Verlage in deiner Sammlung.</p>}
+              {publisherOptions.length > CAP && (
+                <button onClick={() => setShowAllPublishers((v) => !v)} className="px-3 py-1.5 rounded-full text-xs text-[#6C7FE0]">
+                  {showAllPublishers ? "Weniger anzeigen" : `+${publisherOptions.length - CAP} mehr`}
+                </button>
+              )}
+            </div>
+          </div>
         </div>
         <div className="shrink-0 p-4 border-t border-[#3A3631] flex gap-2">
           <button onClick={onReset} className="flex-1 bg-[#262422] border border-[#3A3631] text-[#F2EDE4] rounded-[14px] py-3 font-medium">Zurücksetzen</button>
@@ -3838,7 +3891,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
   const [gridCols, setGridCols] = useState(2);
   const [statusFilter, setStatusFilter] = useState("owned");
   const [filterModalOpen, setFilterModalOpen] = useState(false);
-  const [filters, setFilters] = useState({ categories: [], mechanisms: [], players: "", minRating: "" });
+  const [filters, setFilters] = useState({ categories: [], mechanisms: [], publishers: [], players: "", minRating: "" });
   const [sortBy, setSortBy] = useState("name-asc");
   const [contextGame, setContextGame] = useState(null);
   const [newListName, setNewListName] = useState("");
@@ -3851,7 +3904,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
     longPressTimer.current = setTimeout(() => { longPressFired.current = true; setContextGame(g); }, 500);
   };
   const cancelLongPress = () => { if (longPressTimer.current) clearTimeout(longPressTimer.current); };
-  const activeFilterCount = filters.categories.length + filters.mechanisms.length + (filters.players ? 1 : 0) + (filters.minRating ? 1 : 0) + (statusFilter !== "owned" ? 1 : 0);
+  const activeFilterCount = filters.categories.length + filters.mechanisms.length + filters.publishers.length + (filters.players ? 1 : 0) + (filters.minRating ? 1 : 0) + (statusFilter !== "owned" ? 1 : 0);
   const presentCategories = useMemo(() => {
     const counts = {};
     games.forEach((g) => (g.categories || []).forEach((c) => { counts[c] = (counts[c] || 0) + 1; }));
@@ -3862,6 +3915,11 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
     games.forEach((g) => (g.mechanisms || []).forEach((m) => { counts[m] = (counts[m] || 0) + 1; }));
     return Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([tag]) => tag);
   }, [games]);
+  const presentPublishers = useMemo(() => {
+    const counts = {};
+    games.forEach((g) => (g.publishers || []).forEach((p) => { counts[p] = (counts[p] || 0) + 1; }));
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([tag]) => tag);
+  }, [games]);
   const playCounts = useMemo(() => {
     const map = {}; plays.forEach(p => { map[p.gameId] = (map[p.gameId] || 0) + 1; }); return map;
   }, [plays]);
@@ -3870,6 +3928,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
   if (filterFn) list = list.filter(filterFn);
   if (filters.categories.length) list = list.filter(g => filters.categories.every(c => (g.categories || []).includes(c)));
   if (filters.mechanisms.length) list = list.filter(g => filters.mechanisms.every(m => (g.mechanisms || []).includes(m)));
+  if (filters.publishers.length) list = list.filter(g => filters.publishers.every(p => (g.publishers || []).includes(p)));
   if (filters.players) list = list.filter(g => g.minPlayers && g.maxPlayers && parseInt(filters.players) >= parseInt(g.minPlayers) && parseInt(filters.players) <= parseInt(g.maxPlayers));
   if (filters.minRating) list = list.filter(g => g.rating && parseInt(g.rating) >= parseInt(filters.minRating));
 
@@ -4043,6 +4102,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
       {filterModalOpen && (
         <CollectionFilterModal
           categoryOptions={presentCategories}
+          publisherOptions={presentPublishers}
           mechanismOptions={presentMechanisms}
           sortBy={sortBy}
           onChangeSort={setSortBy}
@@ -4051,7 +4111,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           onChangeStatus={setStatusFilter}
           onChange={setFilters}
           onClose={() => setFilterModalOpen(false)}
-          onReset={() => { setFilters({ categories: [], mechanisms: [], players: "", minRating: "" }); setStatusFilter("owned"); }}
+          onReset={() => { setFilters({ categories: [], mechanisms: [], publishers: [], players: "", minRating: "" }); setStatusFilter("owned"); }}
         />
       )}
       {createListOpen && (
