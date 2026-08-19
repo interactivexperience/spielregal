@@ -1798,6 +1798,21 @@ async function bggThing(bggId) {
   };
 }
 
+// Fetches a handful of real user reviews/ratings from BGG for a game — gives
+// Pip actual player opinions to draw on, not just the official description.
+async function bggThingComments(bggId, pageSize = 6) {
+  const url = `https://shiny-grass-80ec.contact-mdinh.workers.dev/xmlapi2/thing?id=${bggId}&ratingcomments=1&pagesize=${pageSize}&page=1`;
+  const res = await fetch(url);
+  if (!res.ok) return [];
+  const text = await res.text();
+  const xml = new DOMParser().parseFromString(text, "text/xml");
+  const comments = Array.from(xml.getElementsByTagName("comment"));
+  return comments
+    .map((c) => ({ rating: c.getAttribute("rating"), text: (c.getAttribute("value") || "").trim() }))
+    .filter((c) => c.text && c.text.length > 15)
+    .slice(0, pageSize);
+}
+
 // BGG's plain text search can't filter by category/mechanism — it only matches
 // game titles. So for real recommendations, pull from BGG's currently-hot list
 // instead and check each candidate's actual tags against the taste profile.
@@ -4566,9 +4581,10 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
 }
 
 /* ---------------- RECOMMENDATIONS ---------------- */
-function Recommendations({ games, plays, onView, aiWorkerUrl, chatMessages, setChatMessages }) {
+function Recommendations({ games, plays, onView, aiWorkerUrl, chatMessages, setChatMessages, onAddWishlist }) {
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
+  const [chatLoadingLabel, setChatLoadingLabel] = useState("überlegt…");
   const [chatError, setChatError] = useState("");
   const chatEndRef = React.useRef(null);
   const greetedRef = React.useRef(false);
@@ -4601,6 +4617,14 @@ Wenn du noch was Wichtiges nicht weißt, frag GEZIELT nach der einen Sache, die 
 Die OPTIONS-Zeile ist NUR für kurze Antwortmöglichkeiten gedacht, die der NUTZER als nächstes plausibel sagen würde — niemals Spielnamen, Erweiterungsnamen oder andere Datenfragmente. Beispiele für gute Optionen bei einer Rückfrage: "2 Spieler" | "4 Spieler" | "Egal". Nachdem du ein KONKRETES Spiel empfohlen hast, sind die einzig sinnvollen Optionen kurze Reaktionen wie "Klingt gut" | "Zeig mir eine Alternative" | "Erzähl mehr dazu" — nie mehrere andere Spiele auf einmal ohne dass der Nutzer danach gefragt hat. Häng die Zeile nur an, wenn sie wirklich sinnvolle, kurze Nutzer-Antworten enthält, sonst ganz weglassen, in exakt diesem Format:
 OPTIONS: Option1 | Option2 | Option3
 
+Du hast KEINEN Zugriff auf das freie Internet — aber du kannst gezielt bei BoardGameGeek (der größten Brettspiel-Datenbank) nachschlagen, wenn der Nutzer nach einem SPEZIFISCHEN Spiel fragt, das nicht in seiner Sammlung ist (z.B. "Was hältst du von X?", "Warum sollte ich X kaufen?", "Kennst du X?"). Antworte in diesem Fall NUR mit einer einzigen Zeile, sonst nichts:
+BGGSEARCH: <Spielname>
+
+Fragt der Nutzer allgemein nach einer NEUEN Kaufempfehlung / einem Spiel, das er noch nicht hat, ohne einen bestimmten Titel zu nennen (z.B. "Was soll ich mir als nächstes kaufen?", "Empfiehl mir was Neues"), antworte NUR mit dieser einen Zeile:
+BGGDISCOVER
+
+Nutze BGGSEARCH/BGGDISCOVER NUR, wenn es wirklich um ein Spiel außerhalb der Sammlung geht — für Empfehlungen aus der Sammlung unten brauchst du das nicht, da antwortest du direkt normal. Bekommst du nach einer BGGSEARCH-Anfrage echte Spieler-Rezensionen mitgeliefert, beziehe deren Meinung natürlich mit ein (z.B. "Spieler sagen, dass..."), statt sie zu ignorieren — aber erfinde nichts dazu, was nicht in den Rezensionen steht.
+
 ${buildCollectionContextForAI(games, plays)}`;
 
   const sendChat = async (text) => {
@@ -4614,14 +4638,62 @@ ${buildCollectionContextForAI(games, plays)}`;
     setChatError("");
     try {
       const apiMessages = [{ role: "system", content: systemPrompt() }, ...nextMessages];
-      const raw = await aiChat(aiWorkerUrl, apiMessages);
+      let raw = await aiChat(aiWorkerUrl, apiMessages);
+      let externalGame = null;
+
+      const bggSearchMatch = raw.trim().match(/^BGGSEARCH:\s*(.+)$/i);
+      const isDiscover = /^BGGDISCOVER\s*$/i.test(raw.trim());
+
+      if (bggSearchMatch || isDiscover) {
+        setChatLoadingLabel(isDiscover ? "durchstöbert BGG…" : "schaut bei BGG nach…");
+        let toolResultText = "";
+        try {
+          if (bggSearchMatch) {
+            const results = await bggSearch(bggSearchMatch[1].trim());
+            if (results.length > 0) {
+              const details = await bggThing(results[0].bggId);
+              externalGame = details;
+              let reviewsText = "";
+              try {
+                const comments = await bggThingComments(results[0].bggId);
+                if (comments.length > 0) {
+                  reviewsText = `\n\nEchte Spieler-Rezensionen (mit ihrer Bewertung 1-10):\n${comments.map((c) => `- (${c.rating || "?"}/10) "${c.text.slice(0, 200)}"`).join("\n")}`;
+                }
+              } catch { /* reviews are a nice-to-have — skip silently if unavailable */ }
+              toolResultText = `Echte BGG-Daten zu "${details.name}" (${details.year || "?"}): ${details.minPlayers || "?"}-${details.maxPlayers || "?"} Spieler, ${details.minTime || "?"}-${details.maxTime || "?"} Min., Komplexität ${details.complexity || "unbekannt"}/5. Kategorien: ${(details.categories || []).slice(0, 4).join(", ") || "-"}. Mechanismen: ${(details.mechanisms || []).slice(0, 4).join(", ") || "-"}. Beschreibung: ${(details.summary || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 500) || "keine verfügbar"}.${reviewsText}`;
+            } else {
+              toolResultText = `Keine Treffer auf BGG für "${bggSearchMatch[1].trim()}" gefunden.`;
+            }
+          } else {
+            const hot = await bggFetchHotList();
+            const top = hot.slice(0, 6);
+            const enriched = [];
+            for (const h of top.slice(0, 3)) {
+              try { enriched.push(await bggThing(h.bggId)); } catch { /* skip this one */ }
+            }
+            if (enriched.length > 0) externalGame = enriched[0];
+            toolResultText = `Aktuell angesagte Spiele auf BGG:\n${enriched.map((d) => `- ${d.name} (${d.year || "?"}) | ${d.minPlayers || "?"}-${d.maxPlayers || "?"} Sp. | Komplexität ${d.complexity || "?"}/5 | Themen: ${(d.categories || []).slice(0, 3).join(", ")}`).join("\n") || "Keine Daten verfügbar."}`;
+          }
+        } catch {
+          toolResultText = "BGG war gerade nicht erreichbar.";
+        }
+        setChatLoadingLabel("überlegt…");
+        const followUp = [
+          ...apiMessages,
+          { role: "assistant", content: raw },
+          { role: "user", content: `[BGG-Ergebnis]: ${toolResultText}\n\nBeantworte jetzt meine ursprüngliche Frage damit — normal, wie mit einem Freund, kein Datengestammel.` },
+        ];
+        raw = await aiChat(aiWorkerUrl, followUp);
+      }
+
       const { text: replyText, options } = parseReply(raw);
-      setChatMessages([...nextMessages, { role: "assistant", content: replyText, options }]);
+      setChatMessages([...nextMessages, { role: "assistant", content: replyText, options, externalGame }]);
       setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
     } catch (e) {
       setChatError(e.message || "Fehlgeschlagen");
     } finally {
       setChatLoading(false);
+      setChatLoadingLabel("überlegt…");
     }
   };
 
@@ -4685,7 +4757,14 @@ ${buildCollectionContextForAI(games, plays)}`;
                 <div key={i} className={`flex gap-2 items-end ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                   {m.role === "assistant" && <PipAvatar size={30} />}
                   <div className={`max-w-[80%] flex flex-col gap-1.5 ${m.role === "user" ? "items-end" : "items-start"}`}>
-                    <div className={`text-sm font-body rounded-2xl px-4 py-2.5 ${m.role === "user" ? "bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-white rounded-br-md" : "bg-[#262422] border border-[#3A3631] text-[#F2EDE4] rounded-bl-md"}`}>
+                    <div
+                      className={`text-sm font-body rounded-2xl px-4 py-2.5 ${m.role === "user" ? "text-white rounded-br-md" : "bg-[#262422] border border-[#3A3631] text-[#F2EDE4] rounded-bl-md"}`}
+                      style={m.role === "user" ? {
+                        backgroundImage: "linear-gradient(180deg, #ff5a96, #ffc850, #78dcff, #b482ff)",
+                        backgroundAttachment: "fixed",
+                        backgroundSize: "100vw 100vh",
+                      } : undefined}
+                    >
                       {m.content}
                     </div>
                     {mentioned.length > 0 && (
@@ -4697,6 +4776,12 @@ ${buildCollectionContextForAI(games, plays)}`;
                           </button>
                         ))}
                       </div>
+                    )}
+                    {m.externalGame && !games.some((g) => g.bggId && String(g.bggId) === String(m.externalGame.bggId)) && (
+                      <button onClick={() => onAddWishlist(m.externalGame)} className="flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full bg-[#D4A24C]/15 border border-[#D4A24C]/40 text-xs text-[#D4A24C] font-medium">
+                        {m.externalGame.images && m.externalGame.images[0] ? <img src={m.externalGame.images[0]} alt="" className="w-5 h-5 rounded-full object-cover" /> : <Heart size={12} />}
+                        {m.externalGame.name} zur Wunschliste
+                      </button>
                     )}
                     {m.role === "assistant" && isLast && m.options && m.options.length > 0 && !chatLoading && (
                       <div className="flex gap-1.5 flex-wrap mt-0.5">
@@ -4715,7 +4800,7 @@ ${buildCollectionContextForAI(games, plays)}`;
               <div className="flex gap-2 justify-start items-end">
                 <PipAvatar size={30} />
                 <div className="bg-[#262422] border border-[#3A3631] rounded-2xl rounded-bl-md px-4 py-2.5 flex items-center gap-2 text-[#5C574F] text-sm">
-                  <Loader2 size={13} /> tippt…
+                  <Loader2 size={13} /> {chatLoadingLabel}
                 </div>
               </div>
             )}
@@ -5533,7 +5618,7 @@ function App() {
           {tab === "dashboard" && <Dashboard games={displayGames} plays={displayPlays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} onView={(g) => setDetailGame(g)} sectionOrder={dashboardOrder} onReorder={setDashboardOrder} onSearch={() => setCommandBarOpen(true)} aiWorkerUrl={aiWorkerUrl} />}
           {tab === "collection" && <Collection games={displayGames} plays={displayPlays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => !demoMode && setGameModal({ editing: null })} onView={(g) => setDetailGame(g)} onEdit={(g) => setGameModal({ editing: g })} onDelete={(g) => deleteGame(g.id)} categoryOptions={categoryOptions} mechanismOptions={mechanismOptions} demoMode={demoMode} lists={displayLists} onCreateList={(name) => !demoMode && addList(name)} onOpenList={(l) => setDetailList(l)} />}
           {tab === "playlog" && <PlayLog plays={displayPlays} games={displayGames} onAdd={() => !demoMode && setPlayModal({ editing: null })} onEdit={(p) => !demoMode && setPlayModal({ editing: p })} onDelete={deletePlay} demoMode={demoMode} />}
-          {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} onView={(g) => setDetailGame(g)} aiWorkerUrl={aiWorkerUrl} chatMessages={aiChatMessages} setChatMessages={setAiChatMessages} />}
+          {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} onView={(g) => setDetailGame(g)} aiWorkerUrl={aiWorkerUrl} chatMessages={aiChatMessages} setChatMessages={setAiChatMessages} onAddWishlist={addToWishlistFromRecommendation} />}
           {tab === "settings" && (
             <SettingsPage
               customCategories={customCategories}
