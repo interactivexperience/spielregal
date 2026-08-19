@@ -1752,6 +1752,11 @@ async function bggThing(bggId) {
   const item = xml.getElementsByTagName("item")[0];
   if (!item) throw new Error("Fehlwurf — kein Ergebnis gefunden");
   const nameEl = Array.from(item.getElementsByTagName("name")).find(n => n.getAttribute("type") === "primary") || item.getElementsByTagName("name")[0];
+  const alternateNames = Array.from(item.getElementsByTagName("name")).filter(n => n.getAttribute("type") === "alternate").map(n => n.getAttribute("value"));
+  // BGG doesn't tag alternate-name languages at all — best-effort guess via German
+  // diacritics/umlauts or very common German connector words.
+  const GERMAN_HINTS = [" der ", " die ", " das ", " und ", " von ", " ein ", " eine ", "ä", "ö", "ü", "ß"];
+  const germanName = alternateNames.find(n => GERMAN_HINTS.some(h => n.toLowerCase().includes(h))) || null;
   const getTxt = (tag) => item.getElementsByTagName(tag)[0]?.textContent || "";
   const getAttr = (tag) => item.getElementsByTagName(tag)[0]?.getAttribute("value") || "";
   const mechanisms = Array.from(item.getElementsByTagName("link")).filter(l => l.getAttribute("type") === "boardgamemechanic").map(l => l.getAttribute("value"));
@@ -1782,7 +1787,7 @@ async function bggThing(bggId) {
     minTime: getAttr("minplaytime"), maxTime: getAttr("maxplaytime"), age: getAttr("minage"),
     publishers, designers, mechanisms, categories, summary,
     complexity: weight ? Math.round(parseFloat(weight) * 10) / 10 : null,
-    baseGameBggId, baseGameName, expansionBggIds,
+    baseGameBggId, baseGameName, expansionBggIds, germanName, alternateNames, allPublishers,
   };
 }
 
@@ -1887,6 +1892,35 @@ Antworte NUR mit einer kommagetrennten Liste der gewählten Typen, sonst nichts.
 
 // Suggests categories, mechanisms, AND player types together in one pass,
 // preferring existing options in the collection over inventing new ones.
+// Fallback for when the diacritics/keyword heuristic can't confidently spot a
+// German alternate title or publisher — asks the AI to judge from the raw lists.
+async function aiIdentifyGermanInfo(workerUrl, gameName, alternateNames, publishers) {
+  const prompt = `Brettspiel: "${gameName}"
+
+Alternative Titel (aus verschiedenen Ländern/Sprachen, keine Sprache angegeben): ${(alternateNames || []).join(" | ") || "(keine)"}
+Verlage (verschiedene Länder): ${(publishers || []).join(" | ") || "(keine)"}
+
+Welcher der alternativen Titel ist auf DEUTSCH? Welcher der Verlage ist ein deutscher Verlag (Deutschland/Österreich/Schweiz)? Falls du dir bei einem der beiden nicht sicher bist oder keiner passt, schreib "keiner".
+
+Antworte NUR in exakt diesem Format:
+TITEL: <deutscher Titel oder "keiner">
+VERLAG: <deutscher Verlag oder "keiner">`;
+
+  const res = await fetch(workerUrl.replace(/\/$/, ""), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
+  });
+  if (!res.ok) throw new Error(`KI-Worker Fehler ${res.status}`);
+  const json = await res.json();
+  if (json.error) throw new Error(json.error);
+  const raw = (json.text || "").trim();
+  const titleMatch = raw.match(/TITEL:\s*(.+)/i);
+  const publisherMatch = raw.match(/VERLAG:\s*(.+)/i);
+  const clean = (v) => { const t = (v || "").trim(); return (!t || /^keiner\.?$/i.test(t)) ? null : t; };
+  return { germanName: clean(titleMatch && titleMatch[1]), germanPublisher: clean(publisherMatch && publisherMatch[1]) };
+}
+
 async function aiSuggestGameTags(workerUrl, game, existingCategories, existingMechanisms, existingPlayerTypes) {
   const prompt = `Du hilfst dabei, ein Brettspiel korrekt einzuordnen: passende Kategorien, Mechanismen und Spielertypen (Zielgruppen-Etiketten).
 
@@ -2091,6 +2125,8 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
     }
   };
   const [typesLoading, setTypesLoading] = useState(false);
+  const [germanLookupLoading, setGermanLookupLoading] = useState(false);
+  const [germanLookupError, setGermanLookupError] = useState("");
   const [typesError, setTypesError] = useState("");
   const [summaryVersion, setSummaryVersion] = useState(0);
   const [pitchError, setPitchError] = useState("");
@@ -2130,6 +2166,22 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
       const details = await bggThing(r.bggId);
       setForm((f) => ({ ...f, ...details, status: "owned", addedDate: f.addedDate }));
       setStep("manual");
+      // Best-effort fallback: if neither a German title nor a German publisher
+      // could be confidently guessed, and the AI worker is set up, ask it.
+      const needsGermanName = !details.germanName && (details.alternateNames || []).length > 0;
+      const needsGermanPublisher = !(details.publishers || []).some(p => p !== details.publishers[0]) && (details.allPublishers || []).length > 1;
+      if (aiWorkerUrl && (needsGermanName || needsGermanPublisher)) {
+        try {
+          const guess = await aiIdentifyGermanInfo(aiWorkerUrl, details.name, details.alternateNames, details.allPublishers);
+          setForm((f) => {
+            if (f.bggId !== details.bggId) return f; // user already moved to a different game — don't overwrite
+            const next = { ...f };
+            if (needsGermanName && guess.germanName) next.germanName = guess.germanName;
+            if (needsGermanPublisher && guess.germanPublisher && !next.publishers.includes(guess.germanPublisher)) next.publishers = [...next.publishers, guess.germanPublisher];
+            return next;
+          });
+        } catch { /* silent — this is a nice-to-have fallback, not critical */ }
+      }
     } catch (e) {
       setForm((f) => ({ ...f, name: r.name, year: r.year, bggId: r.bggId }));
       setStep("manual");
@@ -2253,6 +2305,36 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
                 </span>
                 <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
               </button>
+              {aiWorkerUrl && form.bggId && (
+                <button
+                  type="button"
+                  disabled={germanLookupLoading}
+                  onClick={async () => {
+                    setGermanLookupLoading(true); setGermanLookupError("");
+                    try {
+                      const fresh = await bggThing(form.bggId);
+                      const needsGermanName = !fresh.germanName && (fresh.alternateNames || []).length > 0;
+                      const needsGermanPublisher = !(fresh.allPublishers || []).some(p => form.publishers.includes(p)) && (fresh.allPublishers || []).length > 0;
+                      let guess = { germanName: fresh.germanName, germanPublisher: null };
+                      if (needsGermanName || needsGermanPublisher) {
+                        const aiGuess = await aiIdentifyGermanInfo(aiWorkerUrl, fresh.name, fresh.alternateNames, fresh.allPublishers);
+                        guess = { germanName: fresh.germanName || aiGuess.germanName, germanPublisher: aiGuess.germanPublisher };
+                      }
+                      setForm((f) => ({
+                        ...f,
+                        germanName: guess.germanName || f.germanName,
+                        publishers: guess.germanPublisher && !f.publishers.includes(guess.germanPublisher) ? [...f.publishers, guess.germanPublisher] : f.publishers,
+                      }));
+                      if (!guess.germanName && !guess.germanPublisher) setGermanLookupError("Nichts Neues gefunden.");
+                    } catch (e) { setGermanLookupError(e.message || "Fehlgeschlagen"); }
+                    finally { setGermanLookupLoading(false); }
+                  }}
+                  className="flex items-center gap-1 text-[11px] text-[#6C7FE0] disabled:opacity-50 mt-2"
+                >
+                  {germanLookupLoading ? <Loader2 size={11} /> : <Sparkles size={11} />} Deutschen Titel/Verlag nachträglich suchen
+                </button>
+              )}
+              {germanLookupError && <p className="text-[11px] text-[#C1443C] mt-1">{germanLookupError}</p>}
             </div>
             <div>
               <label className="block text-[11px] text-[#5C574F]">Designer</label>
@@ -3596,6 +3678,55 @@ function ListPickerModal({ lists, gameId, onToggle, onCreate, onClose }) {
   );
 }
 
+function PlayLogFilterModal({ filters, onChange, onClose, onReset, allWinners }) {
+  return (
+    <div className="fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end sm:items-center justify-center p-0 sm:p-6" style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={onClose}>
+      <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm max-h-[85vh] flex flex-col rise-in font-body" onClick={(e) => e.stopPropagation()}>
+        <div className="shrink-0 border-b border-[#3A3631] px-5 py-4 flex items-center justify-between">
+          <h2 className="font-display text-xl text-[#F2EDE4]">Filter</h2>
+          <button onClick={onClose} className="text-[#A39C8F] p-1"><X size={22} /></button>
+        </div>
+        <div className="p-5 overflow-y-auto flex-1 space-y-6">
+          <div>
+            <label className="block text-[11px] text-[#5C574F]">Modus</label>
+            <div className="mt-1.5">
+              <Segmented
+                options={[{ v: "all", label: "Alle" }, { v: "physical-owned", label: "Eigene" }, { v: "physical-other", label: "Geliehen" }, { v: "bga", label: "Online" }]}
+                value={filters.mode}
+                onChange={(v) => onChange({ ...filters, mode: v })}
+              />
+            </div>
+          </div>
+          {allWinners.length > 0 && (
+            <div>
+              <label className="block text-[11px] text-[#5C574F]">Sieger</label>
+              <select value={filters.winner} onChange={(e) => onChange({ ...filters, winner: e.target.value })}
+                className="w-full mt-1.5 h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#6C7FE0]">
+                <option value="">Egal</option>
+                {allWinners.map((w) => <option key={w} value={w}>{w}</option>)}
+              </select>
+            </div>
+          )}
+          <div>
+            <label className="block text-[11px] text-[#5C574F]">Zeitraum</label>
+            <div className="flex items-center gap-2 mt-1.5">
+              <input type="date" value={filters.from} onChange={(e) => onChange({ ...filters, from: e.target.value })}
+                className="flex-1 min-w-0 h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
+              <span className="shrink-0 text-[#5C574F]">–</span>
+              <input type="date" value={filters.to} onChange={(e) => onChange({ ...filters, to: e.target.value })}
+                className="flex-1 min-w-0 h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
+            </div>
+          </div>
+        </div>
+        <div className="shrink-0 p-4 border-t border-[#3A3631] flex gap-2">
+          <button onClick={onReset} className="flex-1 bg-[#262422] border border-[#3A3631] text-[#F2EDE4] rounded-[14px] py-3 font-medium">Zurücksetzen</button>
+          <button onClick={onClose} className="flex-1 bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] rounded-[14px] py-3 font-medium">Anwenden</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function CollectionFilterModal({ categoryOptions, mechanismOptions, filters, statusFilter, onChangeStatus, onChange, onClose, onReset, sortBy, onChangeSort }) {
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [showAllMechanisms, setShowAllMechanisms] = useState(false);
@@ -3886,25 +4017,29 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           <Plus size={22} />
         </button>
       )}
-      <button onClick={() => setSearchOpen((o) => !o)} aria-label="Suchen"
-        className={`glass fixed z-30 w-11 h-11 flex items-center justify-center rounded-full border shadow-lg ${searchOpen ? "bg-[#F2EDE4] border-[#F2EDE4] text-[#1C1B1A]" : "border-white/15 text-[#A39C8F]"}`}
-        style={{ left: "calc(50% - 76px)", transform: "translateX(-50%)", bottom: "calc(102px + env(safe-area-inset-bottom))" }}>
-        <Search size={17} />
-      </button>
-      <div className="fixed z-30" style={{ left: "calc(50% + 76px)", transform: "translateX(-50%)", bottom: "calc(102px + env(safe-area-inset-bottom))" }}>
-        <button onClick={() => setFilterModalOpen(true)} aria-label="Filter"
-          className="glass w-11 h-11 flex items-center justify-center border border-white/15 rounded-full text-[#A39C8F] shadow-lg">
-          <SlidersFilter size={17} />
-        </button>
-        {activeFilterCount > 0 && (
-          <span
-            className="absolute -top-1 -right-1 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-semibold border-2 border-[#1C1B1A]"
-            style={{ background: "conic-gradient(from 0deg, #ff5a96, #ffc850, #78dcff, #b482ff, #ff5a96)" }}
-          >
-            {activeFilterCount}
-          </span>
-        )}
-      </div>
+      {games.length > 0 && (
+        <>
+          <button onClick={() => setSearchOpen((o) => !o)} aria-label="Suchen"
+            className={`glass fixed z-30 w-11 h-11 flex items-center justify-center rounded-full border shadow-lg ${searchOpen ? "bg-[#F2EDE4] border-[#F2EDE4] text-[#1C1B1A]" : "border-white/15 text-[#A39C8F]"}`}
+            style={{ left: "calc(50% - 76px)", transform: "translateX(-50%)", bottom: "calc(102px + env(safe-area-inset-bottom))" }}>
+            <Search size={17} />
+          </button>
+          <div className="fixed z-30" style={{ left: "calc(50% + 76px)", transform: "translateX(-50%)", bottom: "calc(102px + env(safe-area-inset-bottom))" }}>
+            <button onClick={() => setFilterModalOpen(true)} aria-label="Filter"
+              className="glass w-11 h-11 flex items-center justify-center border border-white/15 rounded-full text-[#A39C8F] shadow-lg">
+              <SlidersFilter size={17} />
+            </button>
+            {activeFilterCount > 0 && (
+              <span
+                className="absolute -top-1 -right-1 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-semibold border-2 border-[#1C1B1A]"
+                style={{ background: "conic-gradient(from 0deg, #ff5a96, #ffc850, #78dcff, #b482ff, #ff5a96)" }}
+              >
+                {activeFilterCount}
+              </span>
+            )}
+          </div>
+        </>
+      )}
       {filterModalOpen && (
         <CollectionFilterModal
           categoryOptions={presentCategories}
@@ -3987,9 +4122,27 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
   const [detailGroupKey, setDetailGroupKey] = useState(null);
   const [viewMode, setViewMode] = useState("game"); // "game" | "evening"
   const [detailEveningDate, setDetailEveningDate] = useState(null);
-  const sorted = [...plays].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [filterModalOpen, setFilterModalOpen] = useState(false);
+  const [filters, setFilters] = useState({ mode: "all", winner: "", from: "", to: "" });
   const modeIcon = { "physical-owned": Home, "physical-other": Sofa, bga: Globe };
   const modeLabel = { "physical-owned": "Eigene Sammlung", "physical-other": "Geliehen / Event", bga: "BoardGameArena" };
+  const activeFilterCount = (filters.mode !== "all" ? 1 : 0) + (filters.winner ? 1 : 0) + (filters.from ? 1 : 0) + (filters.to ? 1 : 0);
+  const allWinners = useMemo(() => {
+    const names = new Set();
+    plays.forEach((p) => { if (p.winner && p.winner.trim()) names.add(p.winner.trim()); });
+    return [...names].sort();
+  }, [plays]);
+
+  let filteredPlays = plays;
+  if (query.trim()) filteredPlays = filteredPlays.filter((p) => p.gameName.toLowerCase().includes(query.toLowerCase()));
+  if (filters.mode !== "all") filteredPlays = filteredPlays.filter((p) => p.mode === filters.mode);
+  if (filters.winner) filteredPlays = filteredPlays.filter((p) => (p.winner || "").trim() === filters.winner);
+  if (filters.from) filteredPlays = filteredPlays.filter((p) => p.date && p.date >= filters.from);
+  if (filters.to) filteredPlays = filteredPlays.filter((p) => p.date && p.date <= filters.to);
+
+  const sorted = [...filteredPlays].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
 
   // Plays from the same date grouped into one "evening" card, newest first.
   const eveningGroups = useMemo(() => {
@@ -4073,6 +4226,48 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
           style={{ background: "linear-gradient(160deg, #8b98ee, #6C7FE0 55%, #5a68d6)", boxShadow: "0 8px 24px rgba(108,127,224,0.45), inset 0 1px 1px rgba(255,255,255,0.4)", bottom: "calc(96px + env(safe-area-inset-bottom))" }}>
           <Plus size={22} />
         </button>
+      )}
+      {plays.length > 0 && (
+        <>
+          <button onClick={() => setSearchOpen((o) => !o)} aria-label="Suchen"
+            className={`glass fixed z-30 w-11 h-11 flex items-center justify-center rounded-full border shadow-lg ${searchOpen ? "bg-[#F2EDE4] border-[#F2EDE4] text-[#1C1B1A]" : "border-white/15 text-[#A39C8F]"}`}
+            style={{ left: "calc(50% - 76px)", transform: "translateX(-50%)", bottom: "calc(96px + env(safe-area-inset-bottom))" }}>
+            <Search size={17} />
+          </button>
+          <div className="fixed z-30" style={{ left: "calc(50% + 76px)", transform: "translateX(-50%)", bottom: "calc(96px + env(safe-area-inset-bottom))" }}>
+            <button onClick={() => setFilterModalOpen(true)} aria-label="Filter"
+              className="glass w-11 h-11 flex items-center justify-center border border-white/15 rounded-full text-[#A39C8F] shadow-lg">
+              <SlidersFilter size={17} />
+            </button>
+            {activeFilterCount > 0 && (
+              <span
+                className="absolute -top-1 -right-1 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-semibold border-2 border-[#1C1B1A]"
+                style={{ background: "conic-gradient(from 0deg, #ff5a96, #ffc850, #78dcff, #b482ff, #ff5a96)" }}
+              >
+                {activeFilterCount}
+              </span>
+            )}
+          </div>
+        </>
+      )}
+      </div>
+      {searchOpen && (
+        <div className="px-1 pb-3 -mt-1">
+          <div className="relative">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5C574F]" />
+            <input onFocus={handleFocusScroll} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Spiel suchen…" autoFocus
+              className="w-full h-11 bg-[#262422] border border-[#3A3631] rounded-[14px] pl-10 pr-3.5 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#6C7FE0]" />
+          </div>
+        </div>
+      )}
+      {filterModalOpen && (
+        <PlayLogFilterModal
+          filters={filters}
+          onChange={setFilters}
+          onClose={() => setFilterModalOpen(false)}
+          onReset={() => setFilters({ mode: "all", winner: "", from: "", to: "" })}
+          allWinners={allWinners}
+        />
       )}
 
       {yearPlays.length > 0 && (
@@ -4492,6 +4687,9 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
         <div className="overflow-y-auto flex-1 p-5 space-y-5" style={{ backgroundImage: `linear-gradient(180deg, ${accentColor}35, transparent 220px)` }}>
           <div>
             <h1 className="font-display text-2xl text-[#F2EDE4] leading-tight">{game.name}</h1>
+            {game.germanName && game.germanName !== game.name && (
+              <p className="text-[#A39C8F] text-sm mt-0.5">{game.germanName}</p>
+            )}
             {(game.year || (game.publishers && game.publishers.length > 0)) && (
               <p className="text-[#5C574F] text-sm mt-0.5">
                 {game.year}{game.year && game.publishers && game.publishers.length ? " · " : ""}{(game.publishers || []).join(", ")}
@@ -4515,8 +4713,14 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
               <StatBlock icon={COMPLEXITY_ICON[label] || Block} value={COMPLEXITY_SHORT[label] || label} sub={game.complexity ? `${parseFloat(game.complexity).toFixed(1)}/5` : ""} />
             )}
             <StatBlock
-              icon={game.status === "owned" ? Library : game.status === "wishlist" ? Heart : Dices}
-              value={game.status === "owned" ? "Besitz" : game.status === "wishlist" ? "Wunsch" : "Gespielt"}
+              icon={game.status === "owned" ? Library : game.status === "wishlist" ? Heart : (gamePlays.every(p => p.mode === "bga") && gamePlays.length > 0 ? Globe : Dices)}
+              value={game.status === "owned" ? "Besitz" : game.status === "wishlist" ? "Wunsch" : (() => {
+                if (gamePlays.length === 0) return "Gespielt";
+                const hasOnline = gamePlays.some(p => p.mode === "bga");
+                const hasAnalog = gamePlays.some(p => p.mode !== "bga");
+                if (hasOnline && hasAnalog) return "Gemischt";
+                return hasOnline ? "Online" : "Analog";
+              })()}
               sub="Status"
             />
           </div>
