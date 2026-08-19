@@ -238,6 +238,7 @@ const Sword = (p) => <Icon {...p}><path d="m14.5 4.5 5 5-9 9-3 1 1-3Z" /><path d
 const Puzzle = (p) => <Icon {...p}><path d="M9 3v2.2a1.8 1.8 0 0 1-3 1.4A1.8 1.8 0 0 0 3 8v3h2.2a1.8 1.8 0 0 1 0 3.6H3V18a2 2 0 0 0 2 2h3v-2.2a1.8 1.8 0 0 1 3.6 0V20H15a2 2 0 0 0 2-2v-3.2a1.8 1.8 0 0 1 0-3.6H21V8a2 2 0 0 0-2-2h-3V3.8a1.8 1.8 0 0 0-3.6 0V6H9Z" /></Icon>;
 const Info = (p) => <Icon {...p}><circle cx="12" cy="12" r="9" /><path d="M12 8h.01" /><path d="M11 12h1v5h1" /></Icon>;
 const ChevronDown = (p) => <Icon {...p}><path d="m6 9 6 6 6-6" /></Icon>;
+const ChevronUp = (p) => <Icon {...p}><path d="m6 15 6-6 6 6" /></Icon>;
 const Maximize2 = (p) => <Icon {...p}><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></Icon>;
 const Minimize2 = (p) => <Icon {...p}><path d="M9 3v6H3M15 21v-6h6M3 9l7-7M21 15l-7 7" /></Icon>;
 const MoreHorizontal = (p) => <Icon {...p}><circle cx="5" cy="12" r="1.5" fill="currentColor" /><circle cx="12" cy="12" r="1.5" fill="currentColor" /><circle cx="19" cy="12" r="1.5" fill="currentColor" /></Icon>;
@@ -2007,7 +2008,7 @@ const Cover = ({ game, size = "md", className: extraClass = "" }) => {
 };
 
 /* ---------------- ADD / EDIT GAME MODAL ---------------- */
-function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOptions, playerTypeOptions, designerOptions, customPlayerTypeDescriptions, onAddCategory, onAddMechanism, onAddPlayerType, onClose, onSave, onDelete, aiWorkerUrl, games }) {
+function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOptions, playerTypeOptions, designerOptions, customPlayerTypeDescriptions, onAddCategory, onAddMechanism, onAddPlayerType, onClose, onSave, onDelete, aiWorkerUrl, games, onSaveAndNavigate, hasPrev, hasNext }) {
   const [pitchLoading, setPitchLoading] = useState(false);
   const [saveCelebrating, setSaveCelebrating] = useState(false);
   const handleSaveClick = () => {
@@ -2073,7 +2074,28 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
         <div className="shrink-0 bg-[#1C1B1A] border-b border-[#3A3631] px-5 flex items-center justify-between" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
           <button onClick={onClose} className="text-[#A39C8F] p-1" aria-label="Zurück"><ChevronLeft size={22} /></button>
           <h2 className="font-display text-xl text-[#F2EDE4]">{initial ? "Spiel bearbeiten" : step === "search" ? "Spiel suchen" : "Details"}</h2>
-          <span className="w-6" />
+          {onSaveAndNavigate ? (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => onSaveAndNavigate(form, "prev")}
+                disabled={!hasPrev}
+                aria-label="Voriges Spiel"
+                className="w-8 h-8 flex items-center justify-center rounded-full text-[#A39C8F] disabled:opacity-25"
+              >
+                <ChevronUp size={18} />
+              </button>
+              <button
+                onClick={() => onSaveAndNavigate(form, "next")}
+                disabled={!hasNext}
+                aria-label="Nächstes Spiel"
+                className="w-8 h-8 flex items-center justify-center rounded-full text-[#A39C8F] disabled:opacity-25"
+              >
+                <ChevronDown size={18} />
+              </button>
+            </div>
+          ) : (
+            <span className="w-6" />
+          )}
         </div>
 
         {step === "search" && (
@@ -4854,7 +4876,7 @@ function App() {
     setSyncModalOpen(false);
   };
 
-  const saveGame = (game) => {
+  const applyGameSave = (game) => {
     setGames(prev => {
       const exists = prev.find(g => g.id === game.id);
       let next = exists ? prev.map(g => g.id === game.id ? game : g) : [...prev, game];
@@ -4868,7 +4890,16 @@ function App() {
       next = next.map(g => (g.id !== game.id && g.baseGameBggId && String(g.baseGameBggId) === String(game.bggId)) ? { ...g, baseGameId: game.id } : g);
       return next;
     });
-    setGameModal(null);
+  };
+  const saveGame = (game) => { applyGameSave(game); setGameModal(null); };
+  const saveGameAndNavigate = (game, direction) => {
+    applyGameSave(game);
+    const list = displayGames;
+    const idx = list.findIndex(g => g.id === game.id);
+    if (idx === -1) { setGameModal(null); return; }
+    const nextIdx = direction === "next" ? idx + 1 : idx - 1;
+    if (nextIdx < 0 || nextIdx >= list.length) return; // stay put at the boundary
+    setGameModal({ editing: list[nextIdx] });
   };
   const deleteGame = (id) => { setGames(prev => prev.filter(g => g.id !== id)); setGameModal(null); };
   const mergeGames = (keepId, dropId) => {
@@ -5142,6 +5173,9 @@ function App() {
           onDelete={deleteGame}
           aiWorkerUrl={aiWorkerUrl}
           games={games}
+          onSaveAndNavigate={gameModal.editing ? saveGameAndNavigate : null}
+          hasPrev={gameModal.editing ? displayGames.findIndex(g => g.id === gameModal.editing.id) > 0 : false}
+          hasNext={gameModal.editing ? displayGames.findIndex(g => g.id === gameModal.editing.id) < displayGames.length - 1 : false}
         />
       )}
       {playModal && <PlayFormModal games={games} plays={plays} playerProfiles={displayPlayers} onAddPlayer={addPlayer} onUpdatePlayerPhoto={updatePlayerPhoto} onUpdatePlayerName={updatePlayerName} onRemovePlayer={removePlayer} initial={playModal.editing} onClose={() => setPlayModal(null)} onSave={savePlay} onDelete={deletePlay} />}
