@@ -3490,35 +3490,35 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             <button onClick={() => onView(bestOf.topYear.game)} className="text-left glass border border-white/10 rounded-2xl p-3 flex flex-col">
               <p className="text-[10px] text-[#5C574F] font-body mb-1">📅 Meistgespielt {new Date().getFullYear()}</p>
               <p className="text-[#F2EDE4] text-sm font-body font-medium truncate">{bestOf.topYear.game.name}</p>
-              <p className="text-[#E85D9C] text-xs font-mono">{bestOf.topYear.count}× dieses Jahr</p>
+              <p className="text-[#E85D9C] text-xs font-body">{bestOf.topYear.count}× dieses Jahr</p>
             </button>
           )}
           {bestOf.favCount && (
             <div className="glass border border-white/10 rounded-2xl p-3">
               <p className="text-[10px] text-[#5C574F] font-body mb-1">👤 Liebste Spielerzahl</p>
               <p className="text-[#F2EDE4] text-sm font-body font-medium">{bestOf.favCount.count} Spieler</p>
-              <p className="text-[#E85D9C] text-xs font-mono">{bestOf.favCount.times}× so gespielt</p>
+              <p className="text-[#E85D9C] text-xs font-body">{bestOf.favCount.times}× so gespielt</p>
             </div>
           )}
           {bestOf.favCat && (
             <div className="glass border border-white/10 rounded-2xl p-3">
               <p className="text-[10px] text-[#5C574F] font-body mb-1">🏷️ Lieblingsgenre</p>
               <p className="text-[#F2EDE4] text-sm font-body font-medium truncate">{bestOf.favCat[0]}</p>
-              <p className="text-[#4E8C82] text-xs font-mono">am häufigsten gespielt</p>
+              <p className="text-[#4E8C82] text-xs font-body">am häufigsten gespielt</p>
             </div>
           )}
           {bestOf.favMech && (
             <div className="glass border border-white/10 rounded-2xl p-3">
               <p className="text-[10px] text-[#5C574F] font-body mb-1">⚙️ Lieblingsmechanismus</p>
               <p className="text-[#F2EDE4] text-sm font-body font-medium truncate">{bestOf.favMech[0]}</p>
-              <p className="text-[#C1443C] text-xs font-mono">am häufigsten gespielt</p>
+              <p className="text-[#C1443C] text-xs font-body">am häufigsten gespielt</p>
             </div>
           )}
           {bestOf.complexityLabel && (
             <div className="glass border border-white/10 rounded-2xl p-3">
               <p className="text-[10px] text-[#5C574F] font-body mb-1">{COMPLEXITY_SHORT[bestOf.complexityLabel] === "Familie" ? "🏠" : COMPLEXITY_SHORT[bestOf.complexityLabel] === "Kenner" ? "🧩" : "🧠"} Deine Komplexität</p>
               <p className="text-[#F2EDE4] text-sm font-body font-medium">{COMPLEXITY_SHORT[bestOf.complexityLabel]}</p>
-              <p className="text-[#A39C8F] text-xs font-mono">Ø {bestOf.avgPlayedComplexity.toFixed(1)}/5 gespielt</p>
+              <p className="text-[#A39C8F] text-xs font-body">Ø {bestOf.avgPlayedComplexity.toFixed(1)}/5 gespielt</p>
             </div>
           )}
         </div>
@@ -3530,39 +3530,31 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
         <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Rekorde</h2>
         <div className="grid grid-cols-2 gap-2.5">
           {mostPlayed && mostPlayed.game && mostPlayed.count >= 2 && (
-            <button onClick={() => onView(mostPlayed.game)} className="glass text-left rounded-2xl p-4 border border-white/10 border-t-2" style={{ borderTopColor: "#E85D9C" }}>
-              <div className="flex items-baseline gap-2">
-                <span className="text-lg">🏆</span>
-                <p className="font-display text-2xl text-[#F2EDE4]">{mostPlayed.count}×</p>
-              </div>
-              <p className="text-xs text-[#A39C8F] mt-1.5">Meistgespielt · <span className="text-[#E85D9C]">{mostPlayed.game.name}</span></p>
+            <button onClick={() => onView(mostPlayed.game)} className="glass text-left rounded-2xl p-4 border border-white/10">
+              <span className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "#E85D9C26" }}>🏆</span>
+              <p className="font-display text-2xl text-[#F2EDE4] mt-2.5">{mostPlayed.count}×</p>
+              <p className="text-xs text-[#A39C8F] mt-1">Meistgespielt · <span className="text-[#E85D9C]">{mostPlayed.game.name}</span></p>
             </button>
           )}
           {bestStreak && (
-            <div className="glass rounded-2xl p-4 border border-white/10 border-t-2" style={{ borderTopColor: "#C1443C" }}>
-              <div className="flex items-baseline gap-2">
-                <span className="text-lg">🔥</span>
-                <p className="font-display text-2xl text-[#F2EDE4]">{bestStreak}</p>
-              </div>
-              <p className="text-xs text-[#A39C8F] mt-1.5">Tage-Serie am Stück</p>
+            <div className="glass rounded-2xl p-4 border border-white/10">
+              <span className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "#C1443C26" }}>🔥</span>
+              <p className="font-display text-2xl text-[#F2EDE4] mt-2.5">{bestStreak}</p>
+              <p className="text-xs text-[#A39C8F] mt-1">Tage-Serie am Stück</p>
             </div>
           )}
           {bestDay && (
-            <div className="glass rounded-2xl p-4 border border-white/10 border-t-2" style={{ borderTopColor: "#4E8C82" }}>
-              <div className="flex items-baseline gap-2">
-                <span className="text-lg">📅</span>
-                <p className="font-display text-2xl text-[#F2EDE4]">{bestDay.count}×</p>
-              </div>
-              <p className="text-xs text-[#A39C8F] mt-1.5">Partien an einem Tag</p>
+            <div className="glass rounded-2xl p-4 border border-white/10">
+              <span className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "#4E8C8226" }}>📅</span>
+              <p className="font-display text-2xl text-[#F2EDE4] mt-2.5">{bestDay.count}×</p>
+              <p className="text-xs text-[#A39C8F] mt-1">Partien an einem Tag</p>
             </div>
           )}
           {biggestPlayGroup && (
-            <div className="glass rounded-2xl p-4 border border-white/10 border-t-2" style={{ borderTopColor: "#E85D9C" }}>
-              <div className="flex items-baseline gap-2">
-                <span className="text-lg">👥</span>
-                <p className="font-display text-2xl text-[#F2EDE4]">{biggestPlayGroup}</p>
-              </div>
-              <p className="text-xs text-[#A39C8F] mt-1.5">Spieler in einer Runde</p>
+            <div className="glass rounded-2xl p-4 border border-white/10">
+              <span className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "#E85D9C26" }}>👥</span>
+              <p className="font-display text-2xl text-[#F2EDE4] mt-2.5">{biggestPlayGroup}</p>
+              <p className="text-xs text-[#A39C8F] mt-1">Spieler in einer Runde</p>
             </div>
           )}
         </div>
@@ -4466,10 +4458,10 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
         <>
           <button onClick={() => setSearchOpen((o) => !o)} aria-label="Suchen"
             className={`glass fixed z-30 w-11 h-11 flex items-center justify-center rounded-full border shadow-lg ${searchOpen ? "border-[#E85D9C]/50 text-[#F2EDE4]" : "border-white/15 text-[#A39C8F]"}`}
-            style={{ left: "calc(50% - 76px)", transform: "translateX(-50%)", bottom: "calc(102px + env(safe-area-inset-bottom))" }}>
+            style={{ left: "calc(50% - 76px)", transform: "translateX(-50%)", bottom: "calc(76px + env(safe-area-inset-bottom))" }}>
             <Search size={17} />
           </button>
-          <div className="fixed z-30" style={{ left: "calc(50% + 76px)", transform: "translateX(-50%)", bottom: "calc(102px + env(safe-area-inset-bottom))" }}>
+          <div className="fixed z-30" style={{ left: "calc(50% + 76px)", transform: "translateX(-50%)", bottom: "calc(76px + env(safe-area-inset-bottom))" }}>
             <button onClick={() => setFilterModalOpen(true)} aria-label="Filter"
               className="glass w-11 h-11 flex items-center justify-center border border-white/15 rounded-full text-[#A39C8F] shadow-lg">
               <SlidersFilter size={17} />
