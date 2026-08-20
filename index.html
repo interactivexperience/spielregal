@@ -210,6 +210,12 @@ const COMPLEXITY_STEP_LABELS = {
   4: "Anspruchsvoll — für erfahrene Spieler",
   5: "Sehr komplex — braucht Zeit und Konzentration",
 };
+function formatDate(iso) {
+  if (!iso) return "";
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  if (!m) return iso;
+  return `${m[3]}.${m[2]}.${m[1].slice(2)}`;
+}
 function complexityStepTone(v) {
   if (v < 2) return "#4E8C82"; // Familienspiel
   if (v < 3.5) return "#E85D9C"; // Kennerspiel
@@ -2116,7 +2122,7 @@ function buildCollectionContextForAI(games, plays) {
     return `- ${g.name} | ${players} | ${time} | ${comp} | Themen: ${tags || "-"} | ${count}× gespielt${count === 0 ? " (noch nie gespielt)" : ""}${desc}`;
   });
   const recentPlays = [...plays].sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 8)
-    .map((p) => `${p.gameName} am ${p.date}`).join("; ");
+    .map((p) => `${p.gameName} am ${formatDate(p.date)}`).join("; ");
   const omittedNote = sorted.length > capped.length ? `\n(${sorted.length - capped.length} weitere Spiele mit weniger Info nicht aufgeführt, um fokussiert zu bleiben.)` : "";
   return `Sammlung des Nutzers:\n${lines.join("\n")}${omittedNote}\n\nZuletzt gespielt: ${recentPlays || "noch keine Partien eingetragen"}`;
 }
@@ -2535,10 +2541,10 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
       <div onFocus={handleFocusScroll} className="bg-[#1C1B1A] w-full h-full max-w-3xl mx-auto flex flex-col overflow-hidden relative">
         <div className="shrink-0 relative z-20" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", height: "calc(2.75rem + max(1rem, env(safe-area-inset-top)))" }}>
           <div
-            className="glass absolute left-1/2 -translate-x-1/2 rounded-full px-4 py-1.5 border border-white/15 transition-opacity duration-200"
+            className="absolute left-1/2 -translate-x-1/2 flex items-center h-9 transition-opacity duration-200"
             style={{ top: "max(1rem, env(safe-area-inset-top))", opacity: formTitleCollapsed ? 1 : 0, pointerEvents: "none" }}
           >
-            <p className="font-display text-sm text-[#F2EDE4] truncate max-w-[50vw]">{formTitle}</p>
+            <p className="font-display text-sm text-[#F2EDE4] truncate max-w-[50vw] text-center">{formTitle}</p>
           </div>
           <div className="absolute left-4 flex items-center gap-2" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>
             <button onClick={onClose} className="glass w-9 h-9 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" aria-label="Zurück"><ChevronLeft size={22} /></button>
@@ -2624,7 +2630,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               <label className="block text-[11px] text-[#5C574F]">Verlag</label>
               <button type="button" onClick={() => setPickerOpen("publishers")}
                 className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex items-start gap-1.5 ${form.publishers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
+                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 items-center ${form.publishers.length === 1 ? "justify-center" : ""}`}>
                   {form.publishers.length ? form.publishers.map((p) => <Pill key={p}>{p}</Pill>) : "Verlag auswählen…"}
                 </span>
                 <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
@@ -2638,7 +2644,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               <label className="block text-[11px] text-[#5C574F]">Designer</label>
               <button type="button" onClick={() => setPickerOpen("designers")}
                 className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex items-start gap-1.5 ${form.designers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
+                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 items-center ${form.designers.length === 1 ? "justify-center" : ""}`}>
                   {form.designers.length ? form.designers.map((d) => <Pill key={d}>{d}</Pill>) : "Designer auswählen…"}
                 </span>
                 <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
@@ -2687,7 +2693,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               <label className="block text-[11px] text-[#5C574F]">Mechanismen</label>
               <button type="button" onClick={() => setPickerOpen("mechanisms")}
                 className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex items-start gap-1.5 ${form.mechanisms.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
+                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 items-center ${form.mechanisms.length === 1 ? "justify-center" : ""}`}>
                   {form.mechanisms.length ? form.mechanisms.map((m) => {
                     const MIcon = tagIcon(m);
                     return <Pill key={m}><MIcon size={10} className="inline -mt-0.5 mr-0.5" />{m}</Pill>;
@@ -2700,7 +2706,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               <label className="block text-[11px] text-[#5C574F]">Kategorien</label>
               <button type="button" onClick={() => setPickerOpen("categories")}
                 className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex items-start gap-1.5 ${form.categories.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
+                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 items-center ${form.categories.length === 1 ? "justify-center" : ""}`}>
                   {form.categories.length ? form.categories.map((c) => {
                     const CIcon = tagIcon(c);
                     return <Pill key={c}><CIcon size={10} className="inline -mt-0.5 mr-0.5" />{c}</Pill>;
@@ -2713,7 +2719,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               <label className="block text-[11px] text-[#5C574F]">Spielertyp</label>
               <button type="button" onClick={() => setPickerOpen("playerTypes")}
                 className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex items-start gap-1.5 ${form.playerTypes.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
+                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 items-center ${form.playerTypes.length === 1 ? "justify-center" : ""}`}>
                   {form.playerTypes.length ? form.playerTypes.map((t) => <Pill key={t}>{t}</Pill>) : "Spielertyp auswählen…"}
                 </span>
                 <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
@@ -2721,21 +2727,30 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             </div>
             {typesError && <p className="text-[11px] text-[#C1443C] -mt-2">{typesError}</p>}
 
-            <Segmented
-              options={[{ v: "owned", label: "Besitz" }, { v: "wishlist", label: "Wunschliste" }, { v: "none", label: "Nur gespielt" }]}
-              value={form.status}
-              onChange={(v) => update("status", v)}
-            />
-
-            {form.status === "owned" && (
-              <div>
-                <label className="block text-[11px] text-[#5C574F] mb-1.5">Ausführung</label>
-                <Segmented
-                  options={[{ v: "analog", label: "Analog" }, { v: "digital", label: "Digital" }]}
-                  value={form.format || "analog"}
-                  onChange={(v) => update("format", v)}
-                />
+            <button type="button" onClick={() => update("status", form.status === "owned" ? "wishlist" : "owned")}
+              className={`w-full h-12 flex items-center justify-between px-3.5 rounded-[14px] border ${form.status === "owned" ? "bg-[#4E8C82]/15 border-[#4E8C82]/40" : "bg-transparent border-[#3A3631]"}`}>
+              <span className={`text-sm ${form.status === "owned" ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>Besitz</span>
+              <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.status === "owned" ? "bg-[#4E8C82] justify-end" : "bg-[#3A3631] justify-start"}`}>
+                <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
               </div>
+            </button>
+
+            {form.status === "owned" ? (
+              <button type="button" onClick={() => update("format", form.format === "digital" ? "analog" : "digital")}
+                className={`w-full h-12 flex items-center justify-between px-3.5 rounded-[14px] border ${form.format === "digital" ? "bg-[#8B9AFA]/15 border-[#8B9AFA]/40" : "bg-transparent border-[#3A3631]"}`}>
+                <span className={`text-sm ${form.format === "digital" ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>Digital</span>
+                <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.format === "digital" ? "bg-[#8B9AFA] justify-end" : "bg-[#3A3631] justify-start"}`}>
+                  <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
+                </div>
+              </button>
+            ) : (
+              <button type="button" onClick={() => update("status", form.status === "none" ? "wishlist" : "none")}
+                className={`w-full h-12 flex items-center justify-between px-3.5 rounded-[14px] border ${form.status === "none" ? "bg-[#8B9AFA]/15 border-[#8B9AFA]/40" : "bg-transparent border-[#3A3631]"}`}>
+                <span className={`text-sm ${form.status === "none" ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>Nur gespielt</span>
+                <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.status === "none" ? "bg-[#8B9AFA] justify-end" : "bg-[#3A3631] justify-start"}`}>
+                  <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
+                </div>
+              </button>
             )}
 
             <button type="button" onClick={() => update("isCampaign", !form.isCampaign)}
@@ -3604,7 +3619,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
           <div className="flex gap-3 overflow-x-auto pb-1">
             {dustCollectors.map(g => (
               <DashboardGameTile key={g.id} game={g} onClick={() => onView(g)}>
-                <p className="text-[#5C574F] text-[10px] font-body">seit {g.addedDate || "?"}</p>
+                <p className="text-[#5C574F] text-[10px] font-body">seit {g.addedDate ? formatDate(g.addedDate) : "?"}</p>
               </DashboardGameTile>
             ))}
           </div>
@@ -3657,13 +3672,8 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
           </div>
         </div>
       )}
-      <div className="flex items-end justify-between">
-        <div>
-          <p className="text-[#5C574F] font-body text-sm">{new Date().toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long" })}</p>
-          <h1 className="font-display text-3xl text-[#F2EDE4] mt-0.5">Spielregal</h1>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="relative">
+      <div className="flex items-center justify-end">
+        <div className="relative">
             <button onClick={() => setSortMenuOpen((o) => !o)} aria-label="Sortieren" className="glass w-11 h-11 flex items-center justify-center border border-white/15 rounded-full text-[#5C574F]">
               <MoreHorizontal size={18} />
             </button>
@@ -3688,7 +3698,6 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             </div>
           )}
         </div>
-      </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <button onClick={() => setStatInfo("collection")} className="glass text-left border border-white/10 rounded-2xl p-4">
@@ -4013,7 +4022,7 @@ function CommandBarModal({ games, plays, lists, onClose, onOpenGame, onOpenList,
               {playResults.map((p) => (
                 <button key={p.id} onClick={onGoToPlaylog} className="glass w-full flex items-center justify-between px-3.5 h-11 rounded-[14px] border border-white/15">
                   <span className="text-left text-sm text-[#F2EDE4] truncate">{p.gameName}</span>
-                  <span className="text-xs text-[#5C574F] shrink-0">{p.date}</span>
+                  <span className="text-xs text-[#5C574F] shrink-0">{formatDate(p.date)}</span>
                 </button>
               ))}
             </div>
@@ -4401,19 +4410,27 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
                   <Star size={9} fill="currentColor" /> {g.rating}
                 </span>
               )}
+              {gridCols === 4 && g.complexity && (
+                <span className="absolute top-1.5 right-1.5 flex items-center gap-0.5 bg-black/70 text-[#F2EDE4] text-[10px] font-mono px-1.5 py-0.5 rounded-full">
+                  <Puzzle size={9} /> {parseFloat(g.complexity).toFixed(1)}
+                </span>
+              )}
               {gridCols === 2 && (
                 <div className="px-1.5 pt-2 pb-1">
                   <p className="font-body text-[#F2EDE4] text-sm font-medium leading-tight truncate">{g.name}</p>
-                  <div className="flex items-center gap-1.5 mt-1">
+                  <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                     {g.rating ? (
                       <span className="flex items-center gap-0.5 text-[10px] text-[#D4A24C] font-mono"><Star size={10} fill="currentColor" /> {g.rating}</span>
                     ) : g.minPlayers ? (
                       <span className="flex items-center gap-0.5 text-[10px] text-[#5C574F] font-mono"><Users size={10} /> {g.minPlayers}-{g.maxPlayers}</span>
                     ) : null}
+                    {g.complexity ? (
+                      <span className="flex items-center gap-0.5 text-[10px] text-[#5C574F] font-mono"><Puzzle size={10} /> {parseFloat(g.complexity).toFixed(1)}</span>
+                    ) : null}
                     {playCounts[g.id] > 0 ? (
                       <Pill tone="teal">{playCounts[g.id]}×</Pill>
                     ) : g.status === "owned" ? (
-                      <Pill tone="amber">ungespielt</Pill>
+                      <Pill tone="amber">0×</Pill>
                     ) : null}
                   </div>
                 </div>
@@ -4789,7 +4806,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
                   })}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[#F2EDE4] font-body">{date}</p>
+                  <p className="text-[#F2EDE4] font-body">{formatDate(date)}</p>
                   <p className="text-[#5C574F] text-xs font-body">
                     {group.length} Partie{group.length === 1 ? "" : "n"} · {distinctGames.length} Spiel{distinctGames.length === 1 ? "" : "e"}
                     {estMinutes > 0 ? ` · ~${Math.round((estMinutes / 60) * 10) / 10} Std.` : ""}
@@ -4840,7 +4857,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
                     <button onClick={() => onEdit(p)} className="w-full text-left bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center gap-3">
                       <div className="w-9 h-9 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#A39C8F] shrink-0"><IconC size={16} /></div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[#F2EDE4] font-body truncate">{p.date}</p>
+                        <p className="text-[#F2EDE4] font-body truncate">{formatDate(p.date)}</p>
                         <p className="text-[#5C574F] text-xs font-body">{modeLabel[p.mode]}{p.winner ? ` · Sieger: ${p.winner}` : ""}</p>
                       </div>
                       <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
@@ -4863,7 +4880,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
             <div className="shrink-0 relative" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", height: "calc(2.75rem + max(1rem, env(safe-area-inset-top)))" }}>
               <button onClick={() => setDetailEveningDate(null)} className="glass absolute left-4 w-9 h-9 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" style={{ top: "max(1rem, env(safe-area-inset-top))" }} aria-label="Zurück"><ChevronLeft size={22} /></button>
             </div>
-            <h2 className="font-display text-2xl text-[#F2EDE4] px-5 mb-4">{date}</h2>
+            <h2 className="font-display text-2xl text-[#F2EDE4] px-5 mb-4">{formatDate(date)}</h2>
             <div className="p-5 space-y-2">
               {dayPlays.map((p) => {
                 const game = games.find((g) => g.id === p.gameId);
@@ -5180,7 +5197,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
     <div className="fixed top-0 left-0 right-0 bg-black/90 z-[56] flex items-end justify-center p-0" style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }}>
       <div className="glass border border-white/10 rounded-t-[28px] w-full max-h-[var(--app-height,100dvh)] flex flex-col overflow-hidden rise-in font-body relative">
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
-        <button onClick={onClose} className="glass absolute top-11 left-4 z-20 w-9 h-9 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" aria-label="Zurück"><ChevronLeft size={22} /></button>
+        <button onClick={onClose} className="absolute top-11 left-4 z-20 w-9 h-9 flex items-center justify-center rounded-full text-[#F2EDE4]" style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.6))" }} aria-label="Zurück"><ChevronLeft size={22} /></button>
         {onEdit ? (
           <button onClick={onEdit} className="glass absolute top-11 right-4 z-20 w-9 h-9 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" aria-label="Bearbeiten"><Pencil size={16} /></button>
         ) : (
@@ -5244,10 +5261,12 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
           )}
 
           <div>
-            <button onClick={() => setDetailsOpen((o) => !o)} className="no-ripple w-full flex items-center justify-between py-2.5 px-3 -mx-3 rounded-[14px] text-left">
-              <span className="text-xs text-[#5C574F] uppercase tracking-wide">Mehr Details</span>
-              <ChevronDown size={16} className={`text-[#5C574F] transition-transform ${detailsOpen ? "rotate-180" : ""}`} />
-            </button>
+            <div className="flex justify-center">
+              <button onClick={() => setDetailsOpen((o) => !o)} className="no-ripple inline-flex items-center gap-1 py-2 text-xs font-medium text-[#8B9AFA] tracking-wide">
+                {detailsOpen ? "Weniger Details" : "Mehr Details"}
+                <ChevronDown size={14} className={`transition-transform ${detailsOpen ? "rotate-180" : ""}`} />
+              </button>
+            </div>
             {detailsOpen && (
               <div className="space-y-5 pt-2">
                 {tags.length > 0 && (
@@ -5295,7 +5314,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
             {gamePlays.length === 0 ? (
               <p className="text-sm text-[#5C574F]">Noch nie gespielt.</p>
             ) : (
-              <p className="text-sm text-[#F2EDE4]">{gamePlays.length}× gespielt{lastPlay ? `, zuletzt am ${lastPlay.date}` : ""}</p>
+              <p className="text-sm text-[#F2EDE4]">{gamePlays.length}× gespielt{lastPlay ? `, zuletzt am ${formatDate(lastPlay.date)}` : ""}</p>
             )}
           </div>
 
@@ -5364,7 +5383,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                     {i < arr.length - 1 && <div className="flex-1 w-px bg-[#3A3631] mt-1" />}
                   </div>
                   <div className="flex-1 min-w-0 pb-3">
-                    <p className="text-xs text-[#5C574F] font-mono">{p.date}</p>
+                    <p className="text-xs text-[#5C574F] font-mono">{formatDate(p.date)}</p>
                     {p.images && p.images.length > 0 && (
                       <div className="flex gap-2 mt-1.5 overflow-x-auto">
                         {p.images.map((img, j) => (
