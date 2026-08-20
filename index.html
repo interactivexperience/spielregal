@@ -38,6 +38,24 @@
     mask-composite: exclude;
     pointer-events: none;
   }
+  .glass-icon-btn {
+    background: rgba(22, 20, 19, 0.4);
+    backdrop-filter: blur(30px) saturate(140%);
+    -webkit-backdrop-filter: blur(30px) saturate(140%);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.35), inset 0 1px 1px rgba(255,255,255,0.12);
+    position: relative;
+  }
+  .glass-icon-btn::before {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0.05) 45%, rgba(255,255,255,0) 75%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
   .tab-sheen {
     position: relative;
     box-shadow: 0 4px 14px rgba(0,0,0,0.35);
@@ -1146,9 +1164,9 @@ function ImageCropModal({ src, onConfirm, onCancel }) {
   return (
     <div className="fixed inset-0 bg-black z-[75] flex flex-col">
       <div className="shrink-0 flex items-center justify-between px-5" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
-        <button onClick={onCancel} className="glass w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]" aria-label="Abbrechen"><X size={20} /></button>
+        <button onClick={onCancel} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]" aria-label="Abbrechen"><X size={20} /></button>
         <span className="text-[#F2EDE4] font-display text-lg">Zuschneiden</span>
-        <button onClick={confirm} className="glass w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#E85D9C]" aria-label="Übernehmen"><Check size={20} /></button>
+        <button onClick={confirm} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#E85D9C]" aria-label="Übernehmen"><Check size={20} /></button>
       </div>
       <div className="flex-1 flex items-center justify-center">
         <div
@@ -1397,7 +1415,7 @@ function TagPickerModal({ title, options, selected, onToggle, onAddCustom, onClo
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">{title}</h2>
-          <button onClick={requestClose} className="glass w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
+          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
         </div>
         {descriptions && <p className="shrink-0 px-4 pt-3 text-xs text-[#5C574F]">Tippe auf das <span className="inline-flex items-center justify-center w-4 h-4 rounded-full border border-[#5C574F] text-[10px] mx-0.5">i</span> für eine kurze Erklärung.</p>}
         <div className="shrink-0 p-4 border-b border-[#3A3631] space-y-2">
@@ -1494,7 +1512,7 @@ function SettingsSubPage({ title, onBack, children }) {
   return (
     <div className="p-5 pb-10 space-y-6 font-body min-h-full flex flex-col" {...swipe}>
       <div className="flex items-center gap-3">
-        <button onClick={onBack} className="glass w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]" aria-label="Zurück"><ChevronLeft size={22} /></button>
+        <button onClick={onBack} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]" aria-label="Zurück"><ChevronLeft size={22} /></button>
         <h1 className="font-display text-2xl text-[#F2EDE4]">{title}</h1>
       </div>
       {children}
@@ -2343,7 +2361,7 @@ function BggMergeModal({ current, fresh, onApply, onClose }) {
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">BGG-Daten übernehmen</h2>
-          <button onClick={requestClose} className="glass w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
+          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
         </div>
         <p className="text-xs text-[#5C574F] px-5 pt-3">Wähl aus, was übernommen werden soll — alles andere bleibt unverändert.</p>
         <div className="p-5 overflow-y-auto flex-1 space-y-2">
@@ -2610,7 +2628,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             <p className="font-display text-sm text-[#F2EDE4] truncate max-w-[50vw] text-center">{formTitle}</p>
           </div>
           <div className="absolute left-4 flex items-center gap-2" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>
-            <button onClick={onClose} className="glass w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" aria-label="Zurück"><ChevronLeft size={22} /></button>
+            <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" aria-label="Zurück"><ChevronLeft size={22} /></button>
           </div>
           {onSaveAndNavigate ? (
             <div className="glass absolute right-4 flex items-center gap-1 rounded-full border border-white/15 p-0.5" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>
@@ -2879,7 +2897,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
           <div className={`bg-[#1C1B1A] border border-[#3A3631] rounded-t-[28px] w-full max-w-3xl mx-auto font-body ${aiMenuClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) => e.stopPropagation()} style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
             <div className="px-5 py-4 flex items-center justify-between">
               <h2 className="font-display text-lg text-[#F2EDE4]">{aiWorkerUrl ? "KI-Werkzeuge" : "Spieldaten holen"}</h2>
-              <button onClick={aiMenuClose.requestClose} className="glass w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={18} /></button>
+              <button onClick={aiMenuClose.requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={18} /></button>
             </div>
             <div className="p-3 space-y-2">
               {aiWorkerUrl && (
@@ -2979,7 +2997,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
             <div className="shrink-0 px-5 py-4 flex items-center justify-between">
               <h2 className="font-display text-lg text-[#F2EDE4]">Welches Spiel?</h2>
-              <button onClick={bggCandClose.requestClose} className="glass w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={18} /></button>
+              <button onClick={bggCandClose.requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={18} /></button>
             </div>
             <div className="p-4 overflow-y-auto flex-1 space-y-2">
               {bggFetchCandidates.map((r) => (
@@ -3072,7 +3090,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 bg-[#1C1B1A] px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">{initial ? "Partie bearbeiten" : "Partie eintragen"}</h2>
-          <button onClick={onClose} className="glass w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
+          <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
         </div>
         <div className="p-5 space-y-4 overflow-y-auto flex-1">
           {!selectedGame ? (
@@ -3322,7 +3340,7 @@ function DashboardReorderScreen({ order, sections, labels, hiddenSections = [], 
   return (
     <div className="fixed inset-0 z-[80] bg-[#1C1B1A] flex flex-col">
       <div className="shrink-0 px-5 flex items-center justify-between" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
-        <button onClick={onClose} className="glass w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" aria-label="Abbrechen"><ChevronLeft size={22} /></button>
+        <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" aria-label="Abbrechen"><ChevronLeft size={22} /></button>
         <h2 className="font-display text-xl text-[#F2EDE4]">Sektionen</h2>
         <button onClick={() => { onSave(items); onToggleHidden && onToggleHidden(hidden); }} className="text-[#E85D9C] text-sm font-medium px-2 py-1">Fertig</button>
       </div>
@@ -3750,31 +3768,32 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
       )}
       <div className="flex items-center justify-between">
         <h1 className="font-display text-3xl text-[#F2EDE4]">Spielregal</h1>
-        <div className="relative sticky top-2 z-30">
-            <button onClick={() => setSortMenuOpen((o) => !o)} aria-label="Sortieren" className="glass w-10 h-10 flex items-center justify-center border border-white/15 rounded-full text-[#5C574F]">
-              <MoreHorizontal size={18} />
-            </button>
-          {sortMenuOpen && (
-            <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[70] flex items-end justify-center p-0 ${sortMenuClose.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)" }} onClick={sortMenuClose.requestClose}>
-              <div className={`glass border border-white/10 rounded-t-[28px] w-full font-body ${sortMenuClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) => e.stopPropagation()}>
-                <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
-                <div className="px-5 py-3">
-                  <h2 className="font-display text-lg text-[#F2EDE4]">Dashboard sortieren</h2>
-                </div>
-                {PRESETS.map((p) => (
-                  <button key={p.key} onClick={() => { onReorder(p.order); sortMenuClose.requestClose(); }} className="w-full flex items-center gap-3 px-5 py-3.5 text-left active:bg-white/5">
-                    <p.icon size={16} className="text-[#A39C8F]" />
-                    <span className="text-sm text-[#F2EDE4]">{p.label}</span>
-                  </button>
-                ))}
-                <button onClick={() => { sortMenuClose.requestClose(); setReorderScreenOpen(true); }} className="w-full flex items-center gap-3 px-5 py-3.5 text-left active:bg-white/5" style={{ paddingBottom: "max(0.875rem, env(safe-area-inset-bottom))" }}>
-                  <GripVertical size={16} className="text-[#8B9AFA]" />
-                  <span className="text-sm text-[#8B9AFA] font-medium">Anordnen & Ausblenden</span>
-                </button>
+        <div className="w-10 h-10" />
+      </div>
+      <div className="fixed z-30" style={{ top: "max(1rem, env(safe-area-inset-top))", right: "1.25rem" }}>
+        <button onClick={() => setSortMenuOpen((o) => !o)} aria-label="Sortieren" className="glass-icon-btn w-10 h-10 flex items-center justify-center border border-white/15 rounded-full text-[#5C574F]">
+          <MoreHorizontal size={18} />
+        </button>
+        {sortMenuOpen && (
+          <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[70] flex items-end justify-center p-0 ${sortMenuClose.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)" }} onClick={sortMenuClose.requestClose}>
+            <div className={`glass border border-white/10 rounded-t-[28px] w-full font-body ${sortMenuClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) => e.stopPropagation()}>
+              <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
+              <div className="px-5 py-3">
+                <h2 className="font-display text-lg text-[#F2EDE4]">Dashboard sortieren</h2>
               </div>
+              {PRESETS.map((p) => (
+                <button key={p.key} onClick={() => { onReorder(p.order); sortMenuClose.requestClose(); }} className="w-full flex items-center gap-3 px-5 py-3.5 text-left active:bg-white/5">
+                  <p.icon size={16} className="text-[#A39C8F]" />
+                  <span className="text-sm text-[#F2EDE4]">{p.label}</span>
+                </button>
+              ))}
+              <button onClick={() => { sortMenuClose.requestClose(); setReorderScreenOpen(true); }} className="w-full flex items-center gap-3 px-5 py-3.5 text-left active:bg-white/5" style={{ paddingBottom: "max(0.875rem, env(safe-area-inset-bottom))" }}>
+                <GripVertical size={16} className="text-[#8B9AFA]" />
+                <span className="text-sm text-[#8B9AFA] font-medium">Anordnen & Ausblenden</span>
+              </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
       <div className="grid grid-cols-2 gap-3">
         <button onClick={() => setStatInfo("collection")} className="glass text-left border border-white/10 rounded-2xl p-4">
@@ -3909,7 +3928,7 @@ function AddGamesToListModal({ games, plays, list, onToggle, onClose, aiWorkerUr
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Spiele hinzufügen</h2>
-          <button onClick={requestClose} className="glass w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
+          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
         </div>
         <div className="shrink-0 p-4 border-b border-[#3A3631] space-y-2.5">
           <div className="relative">
@@ -3985,10 +4004,10 @@ function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDelete
     <div className="fixed inset-0 z-[55] bg-[#1C1B1A]">
       <div className="w-full h-full max-w-3xl mx-auto flex flex-col overflow-hidden">
         <div className="shrink-0 px-5 flex items-center justify-between" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
-          <button onClick={onClose} className="glass w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" aria-label="Zurück"><ChevronLeft size={22} /></button>
+          <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" aria-label="Zurück"><ChevronLeft size={22} /></button>
           <h2 className="font-display text-xl text-[#F2EDE4] truncate px-2">{list.name}</h2>
           {!demoMode ? (
-            <button onClick={() => setConfirmDelete(true)} className="glass w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#C1443C]" aria-label="Liste löschen"><Trash2 size={16} /></button>
+            <button onClick={() => setConfirmDelete(true)} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#C1443C]" aria-label="Liste löschen"><Trash2 size={16} /></button>
           ) : <span className="w-8" />}
         </div>
         {confirmDelete && (
@@ -4132,7 +4151,7 @@ function ListPickerModal({ lists, gameId, onToggle, onCreate, onClose }) {
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Zu Liste hinzufügen</h2>
-          <button onClick={requestClose} className="glass w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
+          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
         </div>
         <div className="p-4 overflow-y-auto flex-1 space-y-2">
           {lists.length === 0 && <p className="text-sm text-[#5C574F] px-1">Noch keine Listen — leg unten deine erste an.</p>}
@@ -4170,7 +4189,7 @@ function PlayLogFilterModal({ filters, onChange, onClose, onReset, allWinners, v
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Filter</h2>
-          <button onClick={requestClose} className="glass w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
+          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
         </div>
         <div className="p-5 overflow-y-auto flex-1 space-y-6">
           <div>
@@ -4240,7 +4259,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Filter</h2>
-          <button onClick={requestClose} className="glass w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
+          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
         </div>
         <div className="p-5 overflow-y-auto flex-1 space-y-6">
           <div>
@@ -4539,13 +4558,13 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
       {games.length > 0 && (
         <>
           <button onClick={() => setSearchOpen((o) => !o)} aria-label="Suchen"
-            className={`glass fixed z-30 w-10 h-10 flex items-center justify-center rounded-full border shadow-lg ${searchOpen ? "border-[#E85D9C]/50 text-[#F2EDE4]" : "border-white/15 text-[#A39C8F]"}`}
+            className={`glass-icon-btn fixed z-30 w-10 h-10 flex items-center justify-center rounded-full border shadow-lg ${searchOpen ? "border-[#E85D9C]/50 text-[#F2EDE4]" : "border-white/15 text-[#A39C8F]"}`}
             style={{ left: "calc(50% - 76px)", transform: "translateX(-50%)", bottom: "calc(82px + env(safe-area-inset-bottom))" }}>
             <Search size={17} />
           </button>
           <div className="fixed z-30" style={{ left: "calc(50% + 76px)", transform: "translateX(-50%)", bottom: "calc(82px + env(safe-area-inset-bottom))" }}>
             <button onClick={() => setFilterModalOpen(true)} aria-label="Filter"
-              className="glass w-10 h-10 flex items-center justify-center border border-white/15 rounded-full text-[#A39C8F] shadow-lg">
+              className="glass-icon-btn w-10 h-10 flex items-center justify-center border border-white/15 rounded-full text-[#A39C8F] shadow-lg">
               <SlidersFilter size={17} />
             </button>
             {activeFilterCount > 0 && (
@@ -4749,13 +4768,13 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
       {plays.length > 0 && (
         <>
           <button onClick={() => setSearchOpen((o) => !o)} aria-label="Suchen"
-            className={`glass fixed z-30 w-10 h-10 flex items-center justify-center rounded-full border shadow-lg ${searchOpen ? "border-[#E85D9C]/50 text-[#F2EDE4]" : "border-white/15 text-[#A39C8F]"}`}
+            className={`glass-icon-btn fixed z-30 w-10 h-10 flex items-center justify-center rounded-full border shadow-lg ${searchOpen ? "border-[#E85D9C]/50 text-[#F2EDE4]" : "border-white/15 text-[#A39C8F]"}`}
             style={{ left: "calc(50% - 76px)", transform: "translateX(-50%)", bottom: "calc(82px + env(safe-area-inset-bottom))" }}>
             <Search size={17} />
           </button>
           <div className="fixed z-30" style={{ left: "calc(50% + 76px)", transform: "translateX(-50%)", bottom: "calc(82px + env(safe-area-inset-bottom))" }}>
             <button onClick={() => setFilterModalOpen(true)} aria-label="Filter"
-              className="glass w-10 h-10 flex items-center justify-center border border-white/15 rounded-full text-[#A39C8F] shadow-lg">
+              className="glass-icon-btn w-10 h-10 flex items-center justify-center border border-white/15 rounded-full text-[#A39C8F] shadow-lg">
               <SlidersFilter size={17} />
             </button>
             {activeFilterCount > 0 && (
@@ -4912,7 +4931,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
         <div className="fixed inset-0 z-50 bg-[#1C1B1A]" {...groupSwipe}>
           <div className="w-full h-full max-w-3xl mx-auto overflow-y-auto font-body">
             <div className="shrink-0 relative" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", height: "calc(2.75rem + max(1rem, env(safe-area-inset-top)))" }}>
-              <button onClick={() => setDetailGroupKey(null)} className="glass absolute left-4 w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" style={{ top: "max(1rem, env(safe-area-inset-top))" }} aria-label="Zurück"><ChevronLeft size={22} /></button>
+              <button onClick={() => setDetailGroupKey(null)} className="glass-icon-btn absolute left-4 w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" style={{ top: "max(1rem, env(safe-area-inset-top))" }} aria-label="Zurück"><ChevronLeft size={22} /></button>
             </div>
             <h2 className="font-display text-2xl text-[#F2EDE4] px-5 mb-4">{liveGroup[0].gameName}</h2>
             <div className="p-5 space-y-2">
@@ -4944,7 +4963,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
         <div className="fixed inset-0 z-50 bg-[#1C1B1A]" {...eveningSwipe}>
           <div className="w-full h-full max-w-3xl mx-auto overflow-y-auto font-body">
             <div className="shrink-0 relative" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", height: "calc(2.75rem + max(1rem, env(safe-area-inset-top)))" }}>
-              <button onClick={() => setDetailEveningDate(null)} className="glass absolute left-4 w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" style={{ top: "max(1rem, env(safe-area-inset-top))" }} aria-label="Zurück"><ChevronLeft size={22} /></button>
+              <button onClick={() => setDetailEveningDate(null)} className="glass-icon-btn absolute left-4 w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" style={{ top: "max(1rem, env(safe-area-inset-top))" }} aria-label="Zurück"><ChevronLeft size={22} /></button>
             </div>
             <h2 className="font-display text-2xl text-[#F2EDE4] px-5 mb-4">{formatDate(date)}</h2>
             <div className="p-5 space-y-2">
@@ -5262,11 +5281,11 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
   return (
     <div className="fixed inset-0 z-[56] bg-[#1C1B1A]">
       <div className="w-full h-full max-w-3xl mx-auto flex flex-col overflow-hidden relative font-body">
-        <button onClick={onClose} className="glass absolute left-4 z-20 w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" style={{ top: "max(1rem, env(safe-area-inset-top))" }} aria-label="Zurück"><ChevronLeft size={22} /></button>
+        <button onClick={onClose} className="glass-icon-btn absolute left-4 z-20 w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" style={{ top: "max(1rem, env(safe-area-inset-top))" }} aria-label="Zurück"><ChevronLeft size={22} /></button>
         <div className="absolute right-4 z-20 flex items-center gap-2" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>
           {lists && onToggleList && (
             <div className="relative">
-              <button onClick={() => setListPickerOpen(true)} className="glass w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" aria-label="Zur Liste hinzufügen">
+              <button onClick={() => setListPickerOpen(true)} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" aria-label="Zur Liste hinzufügen">
                 <BookmarkPlus size={16} />
               </button>
               {memberOfCount > 0 && (
@@ -5275,7 +5294,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
             </div>
           )}
           {onEdit ? (
-            <button onClick={onEdit} className="glass w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" aria-label="Bearbeiten"><Pencil size={16} /></button>
+            <button onClick={onEdit} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" aria-label="Bearbeiten"><Pencil size={16} /></button>
           ) : (
             <span className="glass text-[10px] text-[#F2EDE4] px-2 py-1 border border-white/15 rounded-full">Demo</span>
           )}
@@ -5441,7 +5460,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
         <div className="fixed inset-0 z-[60] bg-[#1C1B1A]" {...campaignSwipe}>
           <div className="w-full h-full max-w-3xl mx-auto overflow-y-auto font-body">
             <div className="shrink-0 relative" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", height: "calc(2.75rem + max(1rem, env(safe-area-inset-top)))" }}>
-              <button onClick={() => setCampaignOpen(false)} className="glass absolute left-4 w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" style={{ top: "max(1rem, env(safe-area-inset-top))" }} aria-label="Zurück"><ChevronLeft size={22} /></button>
+              <button onClick={() => setCampaignOpen(false)} className="glass-icon-btn absolute left-4 w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" style={{ top: "max(1rem, env(safe-area-inset-top))" }} aria-label="Zurück"><ChevronLeft size={22} /></button>
             </div>
             <h2 className="font-display text-2xl text-[#F2EDE4] px-5 mb-4">Kampagnen-Verlauf</h2>
             <div className="p-5 space-y-3">
@@ -5493,7 +5512,7 @@ function SyncModal({ initialUrl, initialApiKey, initialEmail, status, lastSynced
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="px-5 pt-2 pb-2 flex items-center justify-between gap-3">
           <h2 className="font-display text-xl text-[#F2EDE4]">Geräte-Synchronisation</h2>
-          <button onClick={onClose} className="glass shrink-0 w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]"><X size={20} /></button>
+          <button onClick={onClose} className="glass-icon-btn shrink-0 w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]"><X size={20} /></button>
         </div>
         <div className="p-5 space-y-4">
           <p className="text-sm text-[#A39C8F]">
