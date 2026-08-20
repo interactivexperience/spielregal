@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 <meta name="apple-mobile-web-app-title" content="Spielregal" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
@@ -94,8 +94,8 @@
     0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0.8; }
     100% { transform: translate(-50%, -50%) scale(2.6); opacity: 0; }
   }
-  .font-display { font-family:'Fraunces', serif; font-optical-sizing:auto; }
-  .font-body { font-family:'IBM Plex Sans', sans-serif; }
+  .font-display { font-family:'Bricolage Grotesque', sans-serif; font-optical-sizing:auto; font-weight: 700; letter-spacing: -0.01em; }
+  .font-body { font-family:'Inter', sans-serif; }
   .font-mono { font-family:'IBM Plex Mono', monospace; }
   ::-webkit-scrollbar { width:8px; height:8px; }
   ::-webkit-scrollbar-track { background:transparent; }
@@ -113,13 +113,13 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes confettiFall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(360deg); opacity: 0; } }
   .spin { animation: spin 1s linear infinite; }
-  #loading { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; padding:24px; text-align:center; color:#F2EDE4; font-family:'IBM Plex Sans',sans-serif; }
+  #loading { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; padding:24px; text-align:center; color:#F2EDE4; font-family:'Inter',sans-serif; }
   input, textarea, select { font-size: 16px !important; }
   input::placeholder, textarea::placeholder { color: #5C574F !important; opacity: 1 !important; -webkit-text-fill-color: #5C574F !important; }
   .rte-content:empty:before { content: attr(data-placeholder); color: #5C574F; }
   input:focus-visible, textarea:focus-visible, button:focus-visible, [contenteditable]:focus-visible { outline: 2px solid #6C7FE0; outline-offset: 2px; }
-  .rte-content h2 { font-family: 'Fraunces', serif; font-size: 1.25rem; margin: 0.4em 0 0.2em; }
-  .rte-content h3 { font-family: 'IBM Plex Sans', sans-serif; font-size: 0.95rem; font-weight: 600; color: #A39C8F; margin: 0.4em 0 0.2em; }
+  .rte-content h2 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 1.25rem; margin: 0.4em 0 0.2em; }
+  .rte-content h3 { font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 600; color: #A39C8F; margin: 0.4em 0 0.2em; }
   .rte-content ul { list-style: disc; padding-left: 1.4em; margin: 0.3em 0; }
   .rte-content p { margin: 0.3em 0; }
 </style>
@@ -841,6 +841,7 @@ const Layers = (p) => <Icon {...p}><path d="m12 3 9 5-9 5-9-5 9-5Z" /><path d="m
 const Shield = (p) => <Icon {...p}><path d="M12 3l7 3v6c0 5-3 8-7 9-4-1-7-4-7-9V6l7-3Z" /></Icon>;
 const Zap = (p) => <Icon {...p}><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" /></Icon>;
 const Eye = (p) => <Icon {...p}><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></Icon>;
+const EyeOff = (p) => <Icon {...p}><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c6.5 0 10 8 10 8a17.3 17.3 0 0 1-2.16 3.19m-3.24 2.44A9.12 9.12 0 0 1 12 20c-6.5 0-10-8-10-8a17.3 17.3 0 0 1 3.42-4.72" /><path d="M9.5 9.5a3 3 0 0 0 4.24 4.24" /><line x1="2" y1="2" x2="22" y2="22" /></Icon>;
 
 function tagIcon(name) {
   const n = name.toLowerCase();
@@ -2227,6 +2228,51 @@ const Pill = ({ children, tone = "default" }) => {
   return <span className={`px-2 py-0.5 rounded-full text-[11px] font-body font-medium border shrink-0 whitespace-nowrap ${tones[tone]}`}>{children}</span>;
 };
 
+/* ---------------- GAME GRID CARD (global, reusable — used by Collection grid & List detail) ---------------- */
+function GameGridCard({ game: g, playCount = 0, gridCols = 2, onClick, onTouchStart, onTouchEnd, onTouchMove }) {
+  return (
+    <button
+      onClick={onClick}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+      onTouchMove={onTouchMove}
+      className={`relative text-left rounded-2xl rise-in flex flex-col overflow-hidden ${gridCols === 4 ? "bg-transparent" : "bg-[#262422] border border-[#3A3631] p-1.5"}`}
+    >
+      <Cover game={g} size="lg" className={gridCols === 4 ? "!rounded-none !border-0" : "!rounded-xl"} />
+      {gridCols === 4 && g.rating && (
+        <span className="absolute top-1.5 left-1.5 flex items-center gap-0.5 bg-black/70 text-[#D4A24C] text-[10px] font-mono px-1.5 py-0.5 rounded-full">
+          <Star size={9} fill="currentColor" /> {g.rating}
+        </span>
+      )}
+      {gridCols === 4 && g.complexity && (
+        <span className="absolute top-1.5 right-1.5 flex items-center gap-0.5 bg-black/70 text-[#F2EDE4] text-[10px] font-body px-1.5 py-0.5 rounded-full">
+          <Puzzle size={9} /> {COMPLEXITY_SHORT[complexityLabel(g)] || parseFloat(g.complexity).toFixed(1)}
+        </span>
+      )}
+      {gridCols === 2 && (
+        <div className="px-1.5 pt-2 pb-1">
+          <p className="font-body text-[#F2EDE4] text-sm font-medium leading-tight truncate">{g.name}</p>
+          <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+            {g.rating ? (
+              <span className="flex items-center gap-0.5 text-[10px] text-[#D4A24C] font-mono"><Star size={10} fill="currentColor" /> {g.rating}</span>
+            ) : g.minPlayers ? (
+              <span className="flex items-center gap-0.5 text-[10px] text-[#5C574F] font-mono"><Users size={10} /> {g.minPlayers}-{g.maxPlayers}</span>
+            ) : null}
+            {g.complexity ? (
+              <span className="flex items-center gap-0.5 text-[10px] text-[#5C574F] font-body"><Puzzle size={10} /> {COMPLEXITY_SHORT[complexityLabel(g)] || parseFloat(g.complexity).toFixed(1)}</span>
+            ) : null}
+            {playCount > 0 ? (
+              <Pill tone="teal">{playCount}×</Pill>
+            ) : g.status === "owned" ? (
+              <Pill tone="amber">0×</Pill>
+            ) : null}
+          </div>
+        </div>
+      )}
+    </button>
+  );
+}
+
 const Cover = ({ game, size = "md", className: extraClass = "" }) => {
   const dims = size === "sm" ? "w-12 h-12" : size === "lg" ? "w-full aspect-square" : "w-16 h-16";
   const img = (game.images && game.images[0]) || game.image; // game.image kept as fallback for older saved entries
@@ -3215,11 +3261,17 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
 /* ---------------- DASHBOARD ---------------- */
 const DEFAULT_DASHBOARD_ORDER = ["month", "achievements", "records", "bestof", "wishlist", "topRated", "dust", "digital"];
 
-function DashboardReorderScreen({ order, sections, labels, onSave, onClose }) {
+function DashboardReorderScreen({ order, sections, labels, hiddenSections = [], onToggleHidden, onSave, onClose }) {
   const [items, setItems] = useState(order.filter((key) => sections[key]));
+  const [hidden, setHidden] = useState(hiddenSections);
   const dragIndex = React.useRef(null);
   const [draggingKey, setDraggingKey] = useState(null);
   const itemRefs = React.useRef({});
+
+  const toggleHidden = (key) => {
+    haptic(6);
+    setHidden((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
+  };
 
   const moveItem = (from, to) => {
     setItems((prev) => {
@@ -3258,12 +3310,14 @@ function DashboardReorderScreen({ order, sections, labels, onSave, onClose }) {
     <div className="fixed inset-0 z-[80] bg-[#1C1B1A] flex flex-col">
       <div className="shrink-0 px-5 flex items-center justify-between" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
         <button onClick={onClose} className="text-[#A39C8F] p-1" aria-label="Abbrechen"><ChevronLeft size={22} /></button>
-        <h2 className="font-display text-xl text-[#F2EDE4]">Neu anordnen</h2>
-        <button onClick={() => onSave(items)} className="text-[#E85D9C] text-sm font-medium px-2 py-1">Fertig</button>
+        <h2 className="font-display text-xl text-[#F2EDE4]">Sektionen</h2>
+        <button onClick={() => { onSave(items); onToggleHidden && onToggleHidden(hidden); }} className="text-[#E85D9C] text-sm font-medium px-2 py-1">Fertig</button>
       </div>
-      <p className="shrink-0 text-xs text-[#5C574F] px-5 pt-3 pb-1">Am Griff-Symbol ziehen, um die Reihenfolge zu ändern.</p>
+      <p className="shrink-0 text-xs text-[#5C574F] px-5 pt-3 pb-1">Am Griff-Symbol ziehen, um die Reihenfolge zu ändern. Mit dem Augen-Symbol Sektionen aus- und einblenden.</p>
       <div className="flex-1 overflow-y-auto p-4 space-y-2" style={{ touchAction: draggingKey ? "none" : "auto" }}>
-        {items.map((key, idx) => (
+        {items.map((key, idx) => {
+          const isHidden = hidden.includes(key);
+          return (
           <div
             key={key}
             ref={(el) => { itemRefs.current[key] = el; }}
@@ -3273,10 +3327,14 @@ function DashboardReorderScreen({ order, sections, labels, onSave, onClose }) {
               transform: draggingKey === key ? "scale(1.03)" : "none",
               boxShadow: draggingKey === key ? "0 8px 20px rgba(0,0,0,0.4)" : "none",
               zIndex: draggingKey === key ? 10 : 1,
-              transition: "border-color .15s, transform .15s, box-shadow .15s",
+              opacity: isHidden ? 0.5 : 1,
+              transition: "border-color .15s, transform .15s, box-shadow .15s, opacity .15s",
             }}
           >
-            <span className="text-sm text-[#F2EDE4] flex-1">{labels[key] || key}</span>
+            <button onClick={() => toggleHidden(key)} className="text-[#5C574F] p-1 -ml-1 shrink-0" aria-label={isHidden ? "Sektion einblenden" : "Sektion ausblenden"}>
+              {isHidden ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+            <span className={`text-sm flex-1 ${isHidden ? "text-[#5C574F]" : "text-[#F2EDE4]"}`}>{labels[key] || key}</span>
             <div
               className="text-[#5C574F] p-2 -mr-2"
               onTouchStart={() => handleTouchStart(idx)}
@@ -3286,13 +3344,14 @@ function DashboardReorderScreen({ order, sections, labels, onSave, onClose }) {
               <GripVertical size={18} />
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 }
 
-function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorder, onSearch, aiWorkerUrl }) {
+function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorder, hiddenSections = [], onToggleHidden, onSearch, aiWorkerUrl }) {
   const owned = games.filter(g => g.status === "owned");
   const [statInfo, setStatInfo] = useState(null);
   const statInfoClose = useSheetClose(() => setStatInfo(null));
@@ -3697,7 +3756,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
                 ))}
                 <button onClick={() => { sortMenuClose.requestClose(); setReorderScreenOpen(true); }} className="w-full flex items-center gap-3 px-5 py-3.5 text-left active:bg-white/5" style={{ paddingBottom: "max(0.875rem, env(safe-area-inset-bottom))" }}>
                   <GripVertical size={16} className="text-[#8B9AFA]" />
-                  <span className="text-sm text-[#8B9AFA] font-medium">Neu anordnen</span>
+                  <span className="text-sm text-[#8B9AFA] font-medium">Anordnen & Ausblenden</span>
                 </button>
               </div>
             </div>
@@ -3776,13 +3835,15 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
           )}
         </div>
       )}
-      {order.map((key) => sections[key] || null)}
+      {order.filter((key) => !hiddenSections.includes(key)).map((key) => sections[key] || null)}
       <BggBadge className="mt-auto" />
       {reorderScreenOpen && (
         <DashboardReorderScreen
           order={order}
           sections={sections}
           labels={SECTION_LABELS}
+          hiddenSections={hiddenSections}
+          onToggleHidden={onToggleHidden}
           onSave={(next) => { onReorder(next); setReorderScreenOpen(false); }}
           onClose={() => setReorderScreenOpen(false)}
         />
@@ -3899,7 +3960,7 @@ function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDelete
     <div className="fixed inset-0 z-[55] bg-[#1C1B1A]">
       <div className="w-full h-full max-w-3xl mx-auto flex flex-col overflow-hidden">
         <div className="shrink-0 px-5 flex items-center justify-between" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
-          <button onClick={onClose} className="glass w-9 h-9 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]" aria-label="Zurück"><ChevronLeft size={22} /></button>
+          <button onClick={onClose} className="glass w-9 h-9 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" aria-label="Zurück"><ChevronLeft size={22} /></button>
           <h2 className="font-display text-xl text-[#F2EDE4] truncate px-2">{list.name}</h2>
           {!demoMode ? (
             <button onClick={() => setConfirmDelete(true)} className="glass text-[#C1443C] p-1.5 border border-white/15 rounded-full" aria-label="Liste löschen"><Trash2 size={16} /></button>
@@ -3923,23 +3984,18 @@ function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDelete
           {listGames.length === 0 ? (
             <p className="text-[#5C574F] text-sm text-center mt-8">Noch keine Spiele in dieser Liste.</p>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               {listGames.map((g) => (
-                <button
+                <GameGridCard
                   key={g.id}
+                  game={g}
+                  playCount={playCounts[g.id] || 0}
+                  gridCols={2}
                   onClick={() => { if (longPressFired.current) { longPressFired.current = false; return; } onView(g); }}
                   onTouchStart={() => startLongPress(g)}
                   onTouchEnd={cancelLongPress}
                   onTouchMove={cancelLongPress}
-                  className="text-left glass border border-white/10 rounded-2xl p-3 flex flex-col"
-                >
-                  <Cover game={g} size="lg" />
-                  <p className="font-body text-[#F2EDE4] text-sm font-medium mt-2 leading-tight truncate">{g.name}</p>
-                  <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                    {g.minPlayers && <span className="flex items-center gap-0.5 text-[10px] text-[#A39C8F] font-mono"><Users size={10} /> {g.minPlayers}-{g.maxPlayers}</span>}
-                    {!playCounts[g.id] && g.status === "owned" && <Pill tone="amber">ungespielt</Pill>}
-                  </div>
-                </button>
+                />
               ))}
             </div>
           )}
@@ -4362,19 +4418,21 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           const listGames = l.gameIds.map((id) => games.find((g) => g.id === id)).filter(Boolean);
           return (
             <button key={l.id} onClick={() => onOpenList(l)}
-              className="shrink-0 w-36 text-left rounded-2xl p-2.5 border bg-[#262422] border-[#3A3631]">
-              <div className="grid grid-cols-2 gap-1 w-full aspect-square rounded-lg overflow-hidden bg-[#2E2B28]">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  listGames[i] ? (
-                    <Cover key={i} game={listGames[i]} size="sm" className="!w-full !h-full !aspect-square !rounded-none" />
-                  ) : (
-                    <div key={i} className="w-full h-full aspect-square bg-[#2E2B28]" />
-                  )
-                ))}
+              className="shrink-0 w-36 text-left rounded-2xl border bg-[#262422] border-[#3A3631] overflow-hidden">
+              <div className="p-1.5">
+                <div className="grid grid-cols-2 gap-1 w-full aspect-square rounded-lg overflow-hidden bg-[#2E2B28]">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    listGames[i] ? (
+                      <Cover key={i} game={listGames[i]} size="sm" className="!w-full !h-full !aspect-square !rounded-none" />
+                    ) : (
+                      <div key={i} className="w-full h-full aspect-square bg-[#2E2B28]" />
+                    )
+                  ))}
+                </div>
               </div>
-              <div className="flex items-center justify-between mt-2">
+              <div className="flex items-center justify-between px-2.5 pb-2.5 mt-1">
                 <p className="text-sm font-medium truncate text-[#F2EDE4]">{l.name}</p>
-                {l.gameIds.length > 4 && <span className="text-[11px] shrink-0 text-[#5C574F]">+{l.gameIds.length - 4}</span>}
+                <span className="text-[11px] shrink-0 text-[#5C574F]">{l.gameIds.length}</span>
               </div>
             </button>
           );
@@ -4401,46 +4459,16 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
       {list.length === 0 ? <p className="text-[#5C574F] text-sm font-body mt-8 mb-12 text-center">Keine Spiele gefunden.</p> : (
         <div className={`grid gap-3 mt-3 pb-32 ${gridCols === 4 ? "grid-cols-4" : "grid-cols-2"}`}>
           {list.map(g => (
-            <button
+            <GameGridCard
               key={g.id}
+              game={g}
+              playCount={playCounts[g.id] || 0}
+              gridCols={gridCols}
               onClick={() => { if (longPressFired.current) { longPressFired.current = false; return; } onView(g); }}
               onTouchStart={() => startLongPress(g)}
               onTouchEnd={cancelLongPress}
               onTouchMove={cancelLongPress}
-              className={`relative text-left rounded-2xl rise-in flex flex-col overflow-hidden ${gridCols === 4 ? "bg-transparent" : "bg-[#262422] border border-[#3A3631] p-1.5"}`}
-            >
-              <Cover game={g} size="lg" className={gridCols === 4 ? "!rounded-none !border-0" : "!rounded-xl"} />
-              {gridCols === 4 && g.rating && (
-                <span className="absolute top-1.5 left-1.5 flex items-center gap-0.5 bg-black/70 text-[#D4A24C] text-[10px] font-mono px-1.5 py-0.5 rounded-full">
-                  <Star size={9} fill="currentColor" /> {g.rating}
-                </span>
-              )}
-              {gridCols === 4 && g.complexity && (
-                <span className="absolute top-1.5 right-1.5 flex items-center gap-0.5 bg-black/70 text-[#F2EDE4] text-[10px] font-mono px-1.5 py-0.5 rounded-full">
-                  <Puzzle size={9} /> {parseFloat(g.complexity).toFixed(1)}
-                </span>
-              )}
-              {gridCols === 2 && (
-                <div className="px-1.5 pt-2 pb-1">
-                  <p className="font-body text-[#F2EDE4] text-sm font-medium leading-tight truncate">{g.name}</p>
-                  <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                    {g.rating ? (
-                      <span className="flex items-center gap-0.5 text-[10px] text-[#D4A24C] font-mono"><Star size={10} fill="currentColor" /> {g.rating}</span>
-                    ) : g.minPlayers ? (
-                      <span className="flex items-center gap-0.5 text-[10px] text-[#5C574F] font-mono"><Users size={10} /> {g.minPlayers}-{g.maxPlayers}</span>
-                    ) : null}
-                    {g.complexity ? (
-                      <span className="flex items-center gap-0.5 text-[10px] text-[#5C574F] font-mono"><Puzzle size={10} /> {parseFloat(g.complexity).toFixed(1)}</span>
-                    ) : null}
-                    {playCounts[g.id] > 0 ? (
-                      <Pill tone="teal">{playCounts[g.id]}×</Pill>
-                    ) : g.status === "owned" ? (
-                      <Pill tone="amber">0×</Pill>
-                    ) : null}
-                  </div>
-                </div>
-              )}
-            </button>
+            />
           ))}
         </div>
       )}
@@ -4480,10 +4508,10 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
         <>
           <button onClick={() => setSearchOpen((o) => !o)} aria-label="Suchen"
             className={`glass fixed z-30 w-11 h-11 flex items-center justify-center rounded-full border shadow-lg ${searchOpen ? "border-[#E85D9C]/50 text-[#F2EDE4]" : "border-white/15 text-[#A39C8F]"}`}
-            style={{ left: "calc(50% - 76px)", transform: "translateX(-50%)", bottom: "calc(76px + env(safe-area-inset-bottom))" }}>
+            style={{ left: "calc(50% - 76px)", transform: "translateX(-50%)", bottom: "calc(82px + env(safe-area-inset-bottom))" }}>
             <Search size={17} />
           </button>
-          <div className="fixed z-30" style={{ left: "calc(50% + 76px)", transform: "translateX(-50%)", bottom: "calc(76px + env(safe-area-inset-bottom))" }}>
+          <div className="fixed z-30" style={{ left: "calc(50% + 76px)", transform: "translateX(-50%)", bottom: "calc(82px + env(safe-area-inset-bottom))" }}>
             <button onClick={() => setFilterModalOpen(true)} aria-label="Filter"
               className="glass w-11 h-11 flex items-center justify-center border border-white/15 rounded-full text-[#A39C8F] shadow-lg">
               <SlidersFilter size={17} />
@@ -4689,10 +4717,10 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
         <>
           <button onClick={() => setSearchOpen((o) => !o)} aria-label="Suchen"
             className={`glass fixed z-30 w-11 h-11 flex items-center justify-center rounded-full border shadow-lg ${searchOpen ? "border-[#E85D9C]/50 text-[#F2EDE4]" : "border-white/15 text-[#A39C8F]"}`}
-            style={{ left: "calc(50% - 60px)", transform: "translateX(-50%)", bottom: "calc(76px + env(safe-area-inset-bottom))" }}>
+            style={{ left: "calc(50% - 76px)", transform: "translateX(-50%)", bottom: "calc(82px + env(safe-area-inset-bottom))" }}>
             <Search size={17} />
           </button>
-          <div className="fixed z-30" style={{ left: "calc(50% + 60px)", transform: "translateX(-50%)", bottom: "calc(76px + env(safe-area-inset-bottom))" }}>
+          <div className="fixed z-30" style={{ left: "calc(50% + 76px)", transform: "translateX(-50%)", bottom: "calc(82px + env(safe-area-inset-bottom))" }}>
             <button onClick={() => setFilterModalOpen(true)} aria-label="Filter"
               className="glass w-11 h-11 flex items-center justify-center border border-white/15 rounded-full text-[#A39C8F] shadow-lg">
               <SlidersFilter size={17} />
@@ -5199,16 +5227,15 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
   );
 
   return (
-    <div className="fixed top-0 left-0 right-0 bg-black/90 z-[56] flex items-end justify-center p-0" style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }}>
-      <div className="glass border border-white/10 rounded-t-[28px] w-full max-h-[var(--app-height,100dvh)] flex flex-col overflow-hidden rise-in font-body relative">
-        <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
-        <button onClick={onClose} className="absolute top-11 left-4 z-20 w-9 h-9 flex items-center justify-center rounded-full text-[#F2EDE4]" style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.6))" }} aria-label="Zurück"><ChevronLeft size={22} /></button>
+    <div className="fixed inset-0 z-[56] bg-[#1C1B1A]">
+      <div className="w-full h-full max-w-3xl mx-auto flex flex-col overflow-hidden relative font-body">
+        <button onClick={onClose} className="glass absolute left-4 z-20 w-9 h-9 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" style={{ top: "max(1rem, env(safe-area-inset-top))" }} aria-label="Zurück"><ChevronLeft size={22} /></button>
         {onEdit ? (
-          <button onClick={onEdit} className="glass absolute top-11 right-4 z-20 w-9 h-9 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" aria-label="Bearbeiten"><Pencil size={16} /></button>
+          <button onClick={onEdit} className="glass absolute right-4 z-20 w-9 h-9 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" style={{ top: "max(1rem, env(safe-area-inset-top))" }} aria-label="Bearbeiten"><Pencil size={16} /></button>
         ) : (
-          <span className="glass absolute top-11 right-4 z-20 text-[10px] text-[#F2EDE4] px-2 py-1 border border-white/15 rounded-full">Demo</span>
+          <span className="glass absolute right-4 z-20 text-[10px] text-[#F2EDE4] px-2 py-1 border border-white/15 rounded-full" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>Demo</span>
         )}
-        <div className="overflow-y-auto flex-1 p-5 space-y-5" style={{ backgroundImage: `linear-gradient(180deg, ${accentColor}35, transparent 220px)` }}>
+        <div className="overflow-y-auto flex-1 p-5 space-y-5" style={{ paddingTop: "calc(max(1rem, env(safe-area-inset-top)) + 3rem)", backgroundImage: `linear-gradient(180deg, ${accentColor}35, transparent 220px)` }}>
           <div>
             <h1 className="font-display text-2xl text-[#F2EDE4] leading-tight">{game.name}</h1>
             {game.germanName && game.germanName !== game.name && (
@@ -5226,7 +5253,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
 
           <PhotoGallerySection images={images} editable={false} hero onAdd={() => {}} onRemove={() => {}} />
 
-          <div className="flex items-stretch bg-[#262422] border border-[#3A3631] rounded-2xl overflow-hidden divide-x divide-[#3A3631]">
+          <div className="glass flex items-stretch border border-white/15 rounded-2xl overflow-hidden divide-x divide-white/10">
             {game.minPlayers && (
               <StatBlock icon={Users} value={`${game.minPlayers}–${game.maxPlayers}`} sub={formatBestPlayers(game) ? `Beste: ${formatBestPlayers(game)}` : "Spieler"} />
             )}
@@ -5266,11 +5293,16 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
           )}
 
           <div>
-            <div className="flex justify-center">
-              <button onClick={() => setDetailsOpen((o) => !o)} className="no-ripple inline-flex items-center gap-1 py-2 text-xs font-medium text-[#8B9AFA] tracking-wide">
+            <div className="flex gap-2">
+              <button onClick={() => setDetailsOpen((o) => !o)} className="glass flex-1 h-12 flex items-center justify-center gap-1.5 border border-white/15 rounded-[14px] text-[#F2EDE4] text-sm font-medium">
                 {detailsOpen ? "Weniger Details" : "Mehr Details"}
                 <ChevronDown size={14} className={`transition-transform ${detailsOpen ? "rotate-180" : ""}`} />
               </button>
+              {lists && onToggleList && (
+                <button onClick={() => setListPickerOpen(true)} className="glass flex-1 h-12 flex items-center justify-center gap-1.5 border border-white/15 rounded-[14px] text-[#F2EDE4] text-sm font-medium">
+                  <Plus size={15} /> {memberOfCount > 0 ? `Liste (${memberOfCount})` : "Zur Liste"}
+                </button>
+              )}
             </div>
             {detailsOpen && (
               <div className="space-y-5 pt-2">
@@ -5307,12 +5339,6 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
               </div>
             )}
           </div>
-
-          {lists && onToggleList && (
-            <button onClick={() => setListPickerOpen(true)} className="glass w-full h-12 flex items-center justify-center gap-2 border border-white/15 rounded-[14px] text-[#F2EDE4] text-sm font-medium">
-              <Plus size={15} /> {memberOfCount > 0 ? `In ${memberOfCount} Liste${memberOfCount > 1 ? "n" : ""}` : "Zu Liste hinzufügen"}
-            </button>
-          )}
 
           <div>
             <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-1">Partien</p>
@@ -5539,6 +5565,11 @@ function App() {
     catch { return DEFAULT_DASHBOARD_ORDER; }
   });
   useEffect(() => { try { localStorage.setItem("spielregal:dashboardOrder", JSON.stringify(dashboardOrder)); } catch {} }, [dashboardOrder]);
+  const [hiddenDashboardSections, setHiddenDashboardSections] = useState(() => {
+    try { const saved = localStorage.getItem("spielregal:hiddenDashboardSections"); return saved ? JSON.parse(saved) : []; }
+    catch { return []; }
+  });
+  useEffect(() => { try { localStorage.setItem("spielregal:hiddenDashboardSections", JSON.stringify(hiddenDashboardSections)); } catch {} }, [hiddenDashboardSections]);
   const moveDashboardSection = (key, dir) => {
     setDashboardOrder((prev) => {
       const arr = [...prev];
@@ -5972,7 +6003,7 @@ function App() {
           />
         </div>
         <div key={tab} className="tab-fade">
-          {tab === "dashboard" && <Dashboard games={displayGames} plays={displayPlays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} onView={(g) => setDetailGame(g)} sectionOrder={dashboardOrder} onReorder={setDashboardOrder} onSearch={() => setCommandBarOpen(true)} aiWorkerUrl={aiWorkerUrl} />}
+          {tab === "dashboard" && <Dashboard games={displayGames} plays={displayPlays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} onView={(g) => setDetailGame(g)} sectionOrder={dashboardOrder} onReorder={setDashboardOrder} hiddenSections={hiddenDashboardSections} onToggleHidden={setHiddenDashboardSections} onSearch={() => setCommandBarOpen(true)} aiWorkerUrl={aiWorkerUrl} />}
           {tab === "collection" && <Collection games={displayGames} plays={displayPlays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => !demoMode && setGameModal({ editing: null })} onView={(g) => setDetailGame(g)} onEdit={(g) => setGameModal({ editing: g })} onDelete={(g) => deleteGame(g.id)} categoryOptions={categoryOptions} mechanismOptions={mechanismOptions} demoMode={demoMode} lists={displayLists} onCreateList={(name) => !demoMode && addList(name)} onOpenList={(l) => setDetailList(l)} />}
           {tab === "playlog" && <PlayLog plays={displayPlays} games={displayGames} onAdd={() => !demoMode && setPlayModal({ editing: null })} onEdit={(p) => !demoMode && setPlayModal({ editing: p })} onDelete={deletePlay} demoMode={demoMode} />}
           {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} onView={(g) => setDetailGame(g)} aiWorkerUrl={aiWorkerUrl} chatMessages={aiChatMessages} setChatMessages={setAiChatMessages} onAddWishlist={addToWishlistFromRecommendation} />}
