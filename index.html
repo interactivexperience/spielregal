@@ -561,7 +561,7 @@ function DashboardGameTile({ game, onClick, children, large = false, rank, stagg
   return (
     <button
       onClick={onClick}
-      className={`shrink-0 text-left border rounded-2xl relative ${large ? "w-40 p-3" : "w-28 p-2.5 border-[#3A3631]"}`}
+      className={`shrink-0 text-left border rounded-2xl relative overflow-hidden ${large ? "w-40" : "w-28 border-[#3A3631]"}`}
       style={{
         backgroundImage: color ? `linear-gradient(160deg, ${color}70, #262422 80%)` : undefined,
         backgroundColor: "#262422",
@@ -576,9 +576,13 @@ function DashboardGameTile({ game, onClick, children, large = false, rank, stagg
           {rank}
         </span>
       )}
-      <Cover game={game} size="lg" />
-      <p className={`text-[#F2EDE4] font-body mt-1.5 truncate ${large ? "text-sm font-semibold" : "text-xs font-medium"}`}>{game.name}</p>
-      {children}
+      <div className={large ? "p-1.5" : "p-1"}>
+        <Cover game={game} size="lg" />
+      </div>
+      <div className={large ? "px-3 pb-3" : "px-2.5 pb-2.5"}>
+        <p className={`text-[#F2EDE4] font-body mt-1 truncate ${large ? "text-sm font-semibold" : "text-xs font-medium"}`}>{game.name}</p>
+        {children}
+      </div>
     </button>
   );
 }
@@ -3672,7 +3676,8 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
           </div>
         </div>
       )}
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between">
+        <h1 className="font-display text-3xl text-[#F2EDE4]">Spielregal</h1>
         <div className="relative">
             <button onClick={() => setSortMenuOpen((o) => !o)} aria-label="Sortieren" className="glass w-11 h-11 flex items-center justify-center border border-white/15 rounded-full text-[#5C574F]">
               <MoreHorizontal size={18} />
@@ -5935,8 +5940,8 @@ function App() {
         className="shrink-0 glass-strong border-b border-white/10 flex items-center justify-center overflow-hidden"
         style={{
           paddingTop: "max(0.75rem, env(safe-area-inset-top))",
-          height: titleCollapsed ? "calc(2.75rem + max(0.75rem, env(safe-area-inset-top)))" : "max(0.75rem, env(safe-area-inset-top))",
-          opacity: titleCollapsed ? 1 : 0,
+          height: titleCollapsed && tab !== "dashboard" ? "calc(2.75rem + max(0.75rem, env(safe-area-inset-top)))" : "max(0.75rem, env(safe-area-inset-top))",
+          opacity: titleCollapsed && tab !== "dashboard" ? 1 : 0,
           transition: "height 0.25s ease, opacity 0.2s ease",
         }}
       >
