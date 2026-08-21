@@ -1871,17 +1871,25 @@ async function cloudPull(syncUrl, apiKey) {
 
 /* ---------------- BGG API (best effort, needs internet) ---------------- */
 async function bggSearch(query) {
-  const url = `https://shiny-grass-80ec.contact-mdinh.workers.dev/xmlapi2/search?query=${encodeURIComponent(query)}&type=boardgame`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("BGG würfelt gerade nicht mit — nicht erreichbar");
-  const text = await res.text();
-  const xml = new DOMParser().parseFromString(text, "text/xml");
-  const items = Array.from(xml.getElementsByTagName("item")).slice(0, 8);
-  return items.map((it) => ({
-    bggId: it.getAttribute("id"),
-    name: it.getElementsByTagName("name")[0]?.getAttribute("value") || "Unbekannt",
-    year: it.getElementsByTagName("yearpublished")[0]?.getAttribute("value") || "",
-  }));
+  const fetchResults = async (exact) => {
+    const url = `https://shiny-grass-80ec.contact-mdinh.workers.dev/xmlapi2/search?query=${encodeURIComponent(query)}&type=boardgame${exact ? "&exact=1" : ""}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("BGG würfelt gerade nicht mit — nicht erreichbar");
+    const text = await res.text();
+    const xml = new DOMParser().parseFromString(text, "text/xml");
+    return Array.from(xml.getElementsByTagName("item")).slice(0, 8).map((it) => ({
+      bggId: it.getAttribute("id"),
+      name: it.getElementsByTagName("name")[0]?.getAttribute("value") || "Unbekannt",
+      year: it.getElementsByTagName("yearpublished")[0]?.getAttribute("value") || "",
+    }));
+  };
+  // Try an exact-title match first — BGG's plain fuzzy search can bury a
+  // short, common title (e.g. "My City") under unrelated partial matches
+  // within the first few results. If nothing exact turns up, fall back to
+  // the normal fuzzy search.
+  const exactResults = await fetchResults(true);
+  if (exactResults.length > 0) return exactResults;
+  return fetchResults(false);
 }
 async function bggThing(bggId) {
   const url = `https://shiny-grass-80ec.contact-mdinh.workers.dev/xmlapi2/thing?id=${bggId}&stats=1`;
