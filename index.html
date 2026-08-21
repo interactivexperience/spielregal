@@ -1107,6 +1107,7 @@ function ImageCropModal({ src, onConfirm, onCancel }) {
   const CROP = 300;
   const [natSize, setNatSize] = useState(null);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [corsBlocked, setCorsBlocked] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const imgRef = React.useRef(null);
@@ -1169,7 +1170,11 @@ function ImageCropModal({ src, onConfirm, onCancel }) {
       ctx.drawImage(imgRef.current, dx * outScale, dy * outScale, drawW * outScale, drawH * outScale);
       onConfirm(canvas.toDataURL("image/jpeg", 0.9));
     } catch {
-      onConfirm(src); // fallback: use the untouched image if cropping fails for any reason
+      // Cross-origin images (e.g. loaded straight from BGG's CDN) taint the
+      // canvas — the browser refuses to let us read pixel data back out, so
+      // there is no cropped version to save. Tell the person clearly instead
+      // of silently pretending it worked by handing back the original image.
+      setCorsBlocked(true);
     }
   };
 
@@ -1182,6 +1187,12 @@ function ImageCropModal({ src, onConfirm, onCancel }) {
           {natSize ? <Check size={20} /> : <Loader2 size={18} className="animate-spin" />}
         </button>
       </div>
+      {corsBlocked && (
+        <div className="shrink-0 mx-5 mb-3 bg-[#E85D9C]/10 border border-[#E85D9C]/30 rounded-[14px] px-4 py-3">
+          <p className="text-[#F2EDE4] text-sm mb-1">Zuschneiden hier nicht möglich</p>
+          <p className="text-[#A39C8F] text-xs leading-relaxed">Dieses Bild kommt direkt von BGG — aus Sicherheitsgründen kann dein Browser es nicht zuschneiden. Lade es stattdessen per Kamera oder aus deiner Fotomediathek hoch, dann klappt der Zuschnitt.</p>
+        </div>
+      )}
       <div className="flex-1 flex items-center justify-center">
         {loadFailed ? (
           <div className="text-center px-8">
