@@ -39,10 +39,9 @@
     pointer-events: none;
   }
   .glass-icon-btn {
-    background: rgba(22, 20, 19, 0.4);
-    backdrop-filter: blur(30px) saturate(140%);
-    -webkit-backdrop-filter: blur(30px) saturate(140%);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.35), inset 0 1px 1px rgba(255,255,255,0.12);
+    background: rgba(20, 19, 18, 0.16);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
     position: relative;
   }
   .glass-icon-btn::before {
@@ -50,7 +49,7 @@
     position: absolute; inset: 0;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0.05) 45%, rgba(255,255,255,0) 75%);
+    background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.04) 45%, rgba(255,255,255,0) 75%);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
@@ -175,7 +174,7 @@
 </script>
 
 <script type="text/babel" data-presets="react">
-const { useState, useEffect, useMemo } = React;
+const { useState, useEffect, useLayoutEffect, useMemo } = React;
 const { createRoot } = ReactDOM;
 
 /* ---------------- ICONS (hand-drawn, no external deps) ---------------- */
@@ -234,6 +233,11 @@ function formatDate(iso) {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
   if (!m) return iso;
   return `${m[3]}.${m[2]}.${m[1].slice(2)}`;
+}
+// A play's `winner` field holds one or more winner names, comma-separated
+// (multiple winners = tie). This is the single source of truth for reading it.
+function winnersOf(play) {
+  return (play && play.winner ? play.winner : "").split(",").map((n) => n.trim()).filter(Boolean);
 }
 function complexityStepTone(v) {
   if (v < 2) return "#4E8C82"; // Familienspiel
@@ -295,6 +299,12 @@ const GAMES_KEY = "spielregal:games";
 const PLAYS_KEY = "spielregal:plays";
 const SYNC_URL_KEY = "spielregal:syncUrl";
 const LOCAL_TS_KEY = "spielregal:localTs";
+const LISTS_KEY = "spielregal:lists";
+const PLAYERS_KEY = "spielregal:players";
+const CUSTOM_CATEGORIES_KEY = "spielregal:customCategories";
+const CUSTOM_MECHANISMS_KEY = "spielregal:customMechanisms";
+const CUSTOM_PLAYER_TYPES_KEY = "spielregal:customPlayerTypes";
+const CUSTOM_PLAYER_TYPE_DESCRIPTIONS_KEY = "spielregal:customPlayerTypeDescriptions";
 const loadKey = (key, fallback) => {
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
   catch (e) { return fallback; }
@@ -313,7 +323,7 @@ function useSheetClose(onClose) {
   const [closing, setClosing] = useState(false);
   const requestClose = () => {
     setClosing(true);
-    setTimeout(onClose, 210);
+    setTimeout(() => { onClose(); setClosing(false); }, 210);
   };
   return { closing, requestClose };
 }
@@ -1077,12 +1087,12 @@ function Segmented({ options, value, onChange }) {
           key={opt.v}
           type="button"
           onClick={() => { haptic(6); onChange(opt.v); }}
-          className={`relative flex-1 py-2 rounded-[10px] text-xs font-body flex flex-col items-center justify-center gap-1 transition-colors duration-300 ${
+          className={`relative flex-1 min-w-0 px-1 py-2 rounded-[10px] text-xs font-body flex flex-col items-center justify-center gap-1 transition-colors duration-300 ${
             value === opt.v ? "text-[#F2EDE4] font-medium" : "text-[#A39C8F]"
           }`}
         >
           {opt.icon && <opt.icon size={16} />}
-          {opt.label}
+          <span className="truncate max-w-full">{opt.label}</span>
         </button>
       ))}
     </div>
@@ -1095,6 +1105,7 @@ function Segmented({ options, value, onChange }) {
 function ImageCropModal({ src, onConfirm, onCancel }) {
   const CROP = 300;
   const [natSize, setNatSize] = useState(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const imgRef = React.useRef(null);
@@ -1166,9 +1177,17 @@ function ImageCropModal({ src, onConfirm, onCancel }) {
       <div className="shrink-0 flex items-center justify-between px-5" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
         <button onClick={onCancel} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]" aria-label="Abbrechen"><X size={20} /></button>
         <span className="text-[#F2EDE4] font-display text-lg">Zuschneiden</span>
-        <button onClick={confirm} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#E85D9C]" aria-label="Übernehmen"><Check size={20} /></button>
+        <button onClick={confirm} disabled={!natSize} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#E85D9C] disabled:opacity-40" aria-label="Übernehmen">
+          {natSize ? <Check size={20} /> : <Loader2 size={18} className="animate-spin" />}
+        </button>
       </div>
       <div className="flex-1 flex items-center justify-center">
+        {loadFailed ? (
+          <div className="text-center px-8">
+            <p className="text-[#A39C8F] text-sm mb-4">Bild konnte nicht zum Zuschneiden geladen werden.</p>
+            <button onClick={() => onConfirm(src)} className="bg-[#262422] border border-[#3A3631] text-[#F2EDE4] px-4 py-2.5 rounded-[14px] text-sm font-medium">Unverändert übernehmen</button>
+          </div>
+        ) : (
         <div
           className="relative overflow-hidden rounded-2xl border-2 border-[#F2EDE4]/40"
           style={{ width: CROP, height: CROP, touchAction: "none" }}
@@ -1181,6 +1200,7 @@ function ImageCropModal({ src, onConfirm, onCancel }) {
             src={src}
             alt="Zuschneiden"
             onLoad={(e) => { const { naturalWidth: w, naturalHeight: h } = e.target; setNatSize({ w, h }); }}
+            onError={() => setLoadFailed(true)}
             style={{
               position: "absolute", left: "50%", top: "50%",
               width: natSize ? natSize.w : "auto", height: natSize ? natSize.h : "auto",
@@ -1190,6 +1210,7 @@ function ImageCropModal({ src, onConfirm, onCancel }) {
             draggable={false}
           />
         </div>
+        )}
       </div>
       <div className="shrink-0 px-8" style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}>
         <p className="text-center text-xs text-[#5C574F] mb-3">Ziehen zum Verschieben, Regler zum Zoomen</p>
@@ -1228,7 +1249,7 @@ function ImagePickerSheet({ onAdd, onClose }) {
     setUrlError("");
     const img = new Image();
     const timer = setTimeout(() => { setUrlChecking(false); setUrlError("Diese Karte zieht nicht — Bild-Adresse nochmal prüfen."); }, 8000);
-    img.onload = () => { clearTimeout(timer); setUrlChecking(false); onAdd(trimmed); };
+    img.onload = () => { clearTimeout(timer); setUrlChecking(false); onAdd(trimmed); requestClose(); };
     img.onerror = () => { clearTimeout(timer); setUrlChecking(false); setUrlError("Diese Karte zieht nicht — Bild-Adresse nochmal prüfen."); };
     img.src = trimmed;
   };
@@ -1281,7 +1302,7 @@ function ImagePickerSheet({ onAdd, onClose }) {
       {cropSrc && (
         <ImageCropModal
           src={cropSrc}
-          onConfirm={(cropped) => { onAdd(cropped); setCropSrc(null); }}
+          onConfirm={(cropped) => { onAdd(cropped); setCropSrc(null); requestClose(); }}
           onCancel={() => setCropSrc(null)}
         />
       )}
@@ -2309,7 +2330,7 @@ const Cover = ({ game, size = "md", className: extraClass = "" }) => {
   const img = (game.images && game.images[0]) || game.image; // game.image kept as fallback for older saved entries
   const lentBadge = game.lentTo && game.lentTo.trim() && (
     <span className="glass absolute bottom-1 right-1 border border-white/25 text-[#F2EDE4] rounded-full flex items-center justify-center" style={{ width: size === "lg" ? 28 : 18, height: size === "lg" ? 28 : 18 }} title={`Verliehen an ${game.lentTo.trim()}`}>
-      <HandCoins size={size === "lg" ? 15 : 10} strokeWidth={2.25} />
+      <Handshake size={size === "lg" ? 15 : 10} strokeWidth={2.25} />
     </span>
   );
   return img ? (
@@ -2356,7 +2377,7 @@ function BggMergeModal({ current, fresh, onApply, onClose }) {
 
   return (
     <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[75] flex items-end justify-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
-      <div className={`glass border border-white/10 rounded-t-[28px] w-full max-h-[85vh] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
+      <div className={`glass border border-white/10 rounded-t-[28px] w-full flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`} style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) =>
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
@@ -2411,6 +2432,59 @@ function BggMergeModal({ current, fresh, onApply, onClose }) {
   );
 }
 
+function SearchStepSheet({ query, setQuery, runSearch, searching, searchError, results, games, pickResult, setStep, onClose }) {
+  const inputRef = React.useRef(null);
+  // useLayoutEffect fires synchronously right after the DOM is mutated but
+  // before the browser paints — focusing here (rather than in useEffect,
+  // which runs after paint) gives the keyboard the best chance of sliding up
+  // at the same time as the sheet's own rise-in animation, instead of visibly
+  // after it.
+  useLayoutEffect(() => {
+    if (inputRef.current) inputRef.current.focus();
+  }, []);
+  return (
+    <div className="fixed top-0 left-0 right-0 bg-black/70 z-[59] flex items-end justify-center p-0" style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={onClose}>
+      <div className="glass border border-white/10 rounded-t-[28px] w-full max-w-3xl mx-auto flex flex-col rise-in font-body" style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
+        <div className="shrink-0 px-5 py-4 flex items-center justify-between">
+          <h2 className="font-display text-xl text-[#F2EDE4]">Spiel hinzufügen</h2>
+          <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]" aria-label="Schließen"><X size={20} /></button>
+        </div>
+        <div className="shrink-0 px-5" style={{ paddingBottom: results.length > 0 || searchError ? "0.75rem" : "max(1.25rem, env(safe-area-inset-bottom))" }}>
+          <div className="flex gap-2">
+            <input ref={inputRef} autoFocus value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && runSearch()}
+              placeholder="z.B. Wingspan"
+              className="flex-1 h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 text-[#F2EDE4] text-base font-body placeholder-[#5C574F] focus:outline-none focus:border-[#E85D9C]" />
+            <button onClick={runSearch} className="bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] w-12 h-12 shrink-0 rounded-[14px] flex items-center justify-center active:scale-95">
+              {searching ? <Loader2 size={20} /> : <Search size={20} />}
+            </button>
+            <button onClick={() => setStep("manual")} aria-label="Manuell anlegen" className="bg-[#262422] border border-[#3A3631] text-[#F2EDE4] w-12 h-12 shrink-0 rounded-[14px] flex items-center justify-center active:scale-95">
+              <Plus size={20} />
+            </button>
+          </div>
+        </div>
+        {(results.length > 0 || searchError) && (
+          <div className="p-5 pt-0 space-y-2 overflow-y-auto" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
+            {searchError && <p className="text-sm text-[#E85D9C] font-body">{searchError}</p>}
+            {results.map((r) => {
+              const alreadyOwned = (games || []).find((g) => g.bggId && String(g.bggId) === String(r.bggId));
+              return (
+                <button key={r.bggId} onClick={() => pickResult(r)}
+                  className="w-full text-left bg-[#262422] hover:bg-[#2E2B28] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center justify-between gap-2">
+                  <span className="font-body text-[#F2EDE4] min-w-0 truncate">
+                    {r.name} <span className="text-[#5C574F]">({r.year || "?"})</span>
+                    {alreadyOwned && <span className="block text-[11px] text-[#E85D9C] mt-0.5">Bereits in deiner Sammlung</span>}
+                  </span>
+                  <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOptions, playerTypeOptions, designerOptions, customPlayerTypeDescriptions, onAddCategory, onAddMechanism, onAddPlayerType, onClose, onSave, onDelete, aiWorkerUrl, games, onSaveAndNavigate, hasPrev, hasNext }) {
   const [pitchLoading, setPitchLoading] = useState(false);
   const [saveCelebrating, setSaveCelebrating] = useState(false);
@@ -2554,7 +2628,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
   const [searchError, setSearchError] = useState("");
   const [pickerOpen, setPickerOpen] = useState(null);
   const FORM_DEFAULTS = {
-    id: uid(), bggId: "", name: "", year: "", publishers: [], designers: [], images: [],
+    id: uid(), bggId: "", name: "", germanName: "", primaryTitle: "original", year: "", publishers: [], designers: [], images: [],
     minPlayers: "", maxPlayers: "", bestPlayersMin: "", bestPlayersMax: "", minTime: "", maxTime: "", age: "",
     complexity: "", mechanisms: [], categories: [], playerTypes: [], status: "owned", format: "analog",
     location: "", summary: "", notes: "", rating: "", isCampaign: false, lentTo: "", addedDate: new Date().toISOString().slice(0, 10),
@@ -2590,6 +2664,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
     try {
       const details = await bggThing(r.bggId);
       setForm((f) => ({ ...f, ...details, status: "owned", addedDate: f.addedDate }));
+      setSummaryVersion((v) => v + 1);
       setStep("manual");
       // Best-effort fallback: if neither a German title nor a German publisher
       // could be confidently guessed, and the AI worker is set up, ask it.
@@ -2616,6 +2691,13 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
   const update = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const [formTitleCollapsed, setFormTitleCollapsed] = useState(false);
   const formTitle = initial ? (form.name || "Spiel bearbeiten") : step === "search" ? "Spiel suchen" : "Details";
+
+  if (step === "search") {
+    return (
+      <SearchStepSheet query={query} setQuery={setQuery} runSearch={runSearch} searching={searching} searchError={searchError}
+        results={results} games={games} pickResult={pickResult} setStep={setStep} onClose={onClose} />
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[59] bg-[#1C1B1A]">
@@ -2652,40 +2734,6 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
           ) : null}
         </div>
 
-        {step === "search" && (
-          <>
-            <div className="p-5 space-y-2 overflow-y-auto flex-1" onScroll={(e) => setFormTitleCollapsed(e.currentTarget.scrollTop > 24)}>
-              {searchError && <p className="text-sm text-[#E85D9C] font-body">{searchError}</p>}
-              {results.map((r) => {
-                const alreadyOwned = (games || []).find((g) => g.bggId && String(g.bggId) === String(r.bggId));
-                return (
-                  <button key={r.bggId} onClick={() => pickResult(r)}
-                    className="w-full text-left bg-[#262422] hover:bg-[#2E2B28] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center justify-between gap-2">
-                    <span className="font-body text-[#F2EDE4] min-w-0 truncate">
-                      {r.name} <span className="text-[#5C574F]">({r.year || "?"})</span>
-                      {alreadyOwned && <span className="block text-[11px] text-[#E85D9C] mt-0.5">Bereits in deiner Sammlung</span>}
-                    </span>
-                    <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
-                  </button>
-                );
-              })}
-            </div>
-            <div className="glass-strong shrink-0 border-t border-white/10 p-4" style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
-              <div className="flex gap-2">
-                <input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && runSearch()}
-                  placeholder="z.B. Wingspan"
-                  className="flex-1 h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 text-[#F2EDE4] text-base font-body placeholder-[#5C574F] focus:outline-none focus:border-[#E85D9C]" />
-                <button onClick={runSearch} className="bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] w-12 h-12 shrink-0 rounded-[14px] flex items-center justify-center active:scale-95">
-                  {searching ? <Loader2 size={20} /> : <Search size={20} />}
-                </button>
-                <button onClick={() => setStep("manual")} aria-label="Manuell anlegen" className="bg-[#262422] border border-[#3A3631] text-[#F2EDE4] w-12 h-12 shrink-0 rounded-[14px] flex items-center justify-center active:scale-95">
-                  <Plus size={20} />
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-
         {step === "manual" && (
           <div className="p-5 space-y-4 font-body overflow-y-auto flex-1" onScroll={(e) => setFormTitleCollapsed(e.currentTarget.scrollTop > 24)}>
             <PhotoGallerySection
@@ -2698,6 +2746,18 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
 
             <input value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="Titel *"
               className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#E85D9C] ${form.name ? "bg-[#262422]" : "bg-transparent"}`} />
+            <input value={form.germanName || ""} onChange={(e) => update("germanName", e.target.value)} placeholder="Deutscher Titel (optional)"
+              className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#E85D9C] ${form.germanName ? "bg-[#262422]" : "bg-transparent"}`} />
+            {form.germanName && form.germanName.trim() && form.germanName.trim() !== form.name.trim() && (
+              <div>
+                <label className="block text-[11px] text-[#5C574F] mb-1.5">Welcher Titel soll groß angezeigt werden?</label>
+                <Segmented
+                  options={[{ v: "original", label: form.name || "Original" }, { v: "german", label: form.germanName }]}
+                  value={form.primaryTitle === "german" ? "german" : "original"}
+                  onChange={(v) => update("primaryTitle", v)}
+                />
+              </div>
+            )}
             <input value={form.year} onChange={(e) => update("year", e.target.value.replace(/[^0-9]/g, "").slice(0, 4))} placeholder="Erscheinungsjahr" inputMode="numeric"
               className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#E85D9C] ${form.year ? "bg-[#262422]" : "bg-transparent"}`} />
             <div>
@@ -2711,7 +2771,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               <label className="block text-[11px] text-[#5C574F]">Verlag</label>
               <button type="button" onClick={() => setPickerOpen("publishers")}
                 className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex items-start gap-1.5 ${form.publishers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 items-center ${form.publishers.length === 1 ? "justify-center" : ""}`}>
+                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
                   {form.publishers.length ? form.publishers.map((p) => <Pill key={p}>{p}</Pill>) : "Verlag auswählen…"}
                 </span>
                 <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
@@ -2725,7 +2785,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               <label className="block text-[11px] text-[#5C574F]">Designer</label>
               <button type="button" onClick={() => setPickerOpen("designers")}
                 className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex items-start gap-1.5 ${form.designers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 items-center ${form.designers.length === 1 ? "justify-center" : ""}`}>
+                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
                   {form.designers.length ? form.designers.map((d) => <Pill key={d}>{d}</Pill>) : "Designer auswählen…"}
                 </span>
                 <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
@@ -2774,7 +2834,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               <label className="block text-[11px] text-[#5C574F]">Mechanismen</label>
               <button type="button" onClick={() => setPickerOpen("mechanisms")}
                 className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex items-start gap-1.5 ${form.mechanisms.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 items-center ${form.mechanisms.length === 1 ? "justify-center" : ""}`}>
+                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
                   {form.mechanisms.length ? form.mechanisms.map((m) => {
                     const MIcon = tagIcon(m);
                     return <Pill key={m}><MIcon size={10} className="inline -mt-0.5 mr-0.5" />{m}</Pill>;
@@ -2787,7 +2847,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               <label className="block text-[11px] text-[#5C574F]">Kategorien</label>
               <button type="button" onClick={() => setPickerOpen("categories")}
                 className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex items-start gap-1.5 ${form.categories.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 items-center ${form.categories.length === 1 ? "justify-center" : ""}`}>
+                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
                   {form.categories.length ? form.categories.map((c) => {
                     const CIcon = tagIcon(c);
                     return <Pill key={c}><CIcon size={10} className="inline -mt-0.5 mr-0.5" />{c}</Pill>;
@@ -2800,7 +2860,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               <label className="block text-[11px] text-[#5C574F]">Spielertyp</label>
               <button type="button" onClick={() => setPickerOpen("playerTypes")}
                 className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex items-start gap-1.5 ${form.playerTypes.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 items-center ${form.playerTypes.length === 1 ? "justify-center" : ""}`}>
+                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
                   {form.playerTypes.length ? form.playerTypes.map((t) => <Pill key={t}>{t}</Pill>) : "Spielertyp auswählen…"}
                 </span>
                 <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
@@ -2808,27 +2868,17 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             </div>
             {typesError && <p className="text-[11px] text-[#C1443C] -mt-2">{typesError}</p>}
 
-            <button type="button" onClick={() => update("status", form.status === "owned" ? "wishlist" : "owned")}
-              className={`w-full h-12 flex items-center justify-between px-3.5 rounded-[14px] border ${form.status === "owned" ? "bg-[#4E8C82]/15 border-[#4E8C82]/40" : "bg-transparent border-[#3A3631]"}`}>
-              <span className={`text-sm ${form.status === "owned" ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>Besitz</span>
-              <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.status === "owned" ? "bg-[#4E8C82] justify-end" : "bg-[#3A3631] justify-start"}`}>
-                <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
-              </div>
-            </button>
+            <Segmented
+              options={[{ v: "owned", label: "Besitz" }, { v: "wishlist", label: "Wunschliste" }, { v: "none", label: "Nur gespielt" }]}
+              value={form.status}
+              onChange={(v) => update("status", v)}
+            />
 
-            {form.status === "owned" ? (
+            {(form.status === "owned" || form.status === "none") && (
               <button type="button" onClick={() => update("format", form.format === "digital" ? "analog" : "digital")}
                 className={`w-full h-12 flex items-center justify-between px-3.5 rounded-[14px] border ${form.format === "digital" ? "bg-[#8B9AFA]/15 border-[#8B9AFA]/40" : "bg-transparent border-[#3A3631]"}`}>
-                <span className={`text-sm ${form.format === "digital" ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>Digital</span>
+                <span className={`text-sm ${form.format === "digital" ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>Digital {form.status === "owned" ? "besessen" : "gespielt"}</span>
                 <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.format === "digital" ? "bg-[#8B9AFA] justify-end" : "bg-[#3A3631] justify-start"}`}>
-                  <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
-                </div>
-              </button>
-            ) : (
-              <button type="button" onClick={() => update("status", form.status === "none" ? "wishlist" : "none")}
-                className={`w-full h-12 flex items-center justify-between px-3.5 rounded-[14px] border ${form.status === "none" ? "bg-[#8B9AFA]/15 border-[#8B9AFA]/40" : "bg-transparent border-[#3A3631]"}`}>
-                <span className={`text-sm ${form.status === "none" ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>Nur gespielt</span>
-                <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.status === "none" ? "bg-[#8B9AFA] justify-end" : "bg-[#3A3631] justify-start"}`}>
                   <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
                 </div>
               </button>
@@ -2845,7 +2895,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             <div>
               <button type="button" onClick={() => update("lentTo", form.lentTo ? "" : " ")}
                 className={`w-full h-12 flex items-center justify-between px-3.5 rounded-[14px] border ${form.lentTo ? "bg-[#D4A24C]/15 border-[#D4A24C]/40" : "bg-transparent border-[#3A3631]"}`}>
-                <span className={`text-sm flex items-center gap-2 ${form.lentTo ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}><HandCoins size={16} /> Verliehen</span>
+                <span className={`text-sm flex items-center gap-2 ${form.lentTo ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}><Handshake size={16} /> Verliehen</span>
                 <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.lentTo ? "bg-[#D4A24C] justify-end" : "bg-[#3A3631] justify-start"}`}>
                   <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
                 </div>
@@ -2902,24 +2952,24 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             <div className="p-3 space-y-2">
               {aiWorkerUrl && (
                 <>
-                  <button onClick={() => { setAiMenuOpen(false); runElevatorPitch(); }} disabled={pitchLoading}
+                  <button onClick={runElevatorPitch} disabled={pitchLoading}
                     className="w-full flex items-center gap-3 px-3.5 py-3 rounded-[14px] bg-[#262422] border border-[#3A3631] text-left disabled:opacity-50">
                     {pitchLoading ? <Loader2 size={16} className="text-[#8B9AFA]" /> : <Sparkles size={16} className="text-[#8B9AFA]" />}
                     <span className="text-sm text-[#F2EDE4]">Elevator-Pitch generieren</span>
                   </button>
-                  <button onClick={() => { setAiMenuOpen(false); runTagsSuggest(); }} disabled={typesLoading}
+                  <button onClick={runTagsSuggest} disabled={typesLoading}
                     className="w-full flex items-center gap-3 px-3.5 py-3 rounded-[14px] bg-[#262422] border border-[#3A3631] text-left disabled:opacity-50">
                     {typesLoading ? <Loader2 size={16} className="text-[#8B9AFA]" /> : <Sparkles size={16} className="text-[#8B9AFA]" />}
                     <span className="text-sm text-[#F2EDE4]">Kategorien, Mechanismen &amp; Spielertyp vorschlagen</span>
                   </button>
-                  <button onClick={() => { setAiMenuOpen(false); runGermanLookup(); }} disabled={germanLookupLoading}
+                  <button onClick={runGermanLookup} disabled={germanLookupLoading}
                     className="w-full flex items-center gap-3 px-3.5 py-3 rounded-[14px] bg-[#262422] border border-[#3A3631] text-left disabled:opacity-50">
                     {germanLookupLoading ? <Loader2 size={16} className="text-[#8B9AFA]" /> : <Sparkles size={16} className="text-[#8B9AFA]" />}
                     <span className="text-sm text-[#F2EDE4]">{form.bggId ? "Deutschen Titel/Verlag nachträglich suchen" : "Deutschen Titel/Verlag erraten lassen"}</span>
                   </button>
                 </>
               )}
-              <button onClick={() => { setAiMenuOpen(false); startBggFetch(); }} disabled={bggFetchLoading}
+              <button onClick={startBggFetch} disabled={bggFetchLoading}
                 className="w-full flex items-center gap-3 px-3.5 py-3 rounded-[14px] bg-[#262422] border border-[#3A3631] text-left disabled:opacity-50">
                 {bggFetchLoading ? <Loader2 size={16} className="text-[#8B9AFA]" /> : <Globe size={16} className="text-[#8B9AFA]" />}
                 <div>
@@ -3018,8 +3068,82 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
 }
 
 /* ---------------- ADD PLAY MODAL ---------------- */
-function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlayerPhoto, onUpdatePlayerName, onRemovePlayer, initial, onClose, onSave, onDelete }) {
+function PlayerOrderModal({ players, onSave, onClose }) {
+  const { closing, requestClose } = useSheetClose(onClose);
+  const [items, setItems] = useState(players);
+  const dragIndex = React.useRef(null);
+  const [draggingId, setDraggingId] = useState(null);
+  const rowRefs = React.useRef({});
+
+  const moveItem = (from, to) => {
+    setItems((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  };
+  const handleTouchStart = (idx, id) => { dragIndex.current = idx; setDraggingId(id); };
+  const handleTouchMove = (e) => {
+    if (dragIndex.current === null) return;
+    e.preventDefault();
+    const touchY = e.touches[0].clientY;
+    items.forEach((p, idx) => {
+      if (idx === dragIndex.current) return;
+      const el = rowRefs.current[p.id];
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const mid = rect.top + rect.height / 2;
+      if ((touchY < mid && idx < dragIndex.current) || (touchY > mid && idx > dragIndex.current)) {
+        moveItem(dragIndex.current, idx);
+        dragIndex.current = idx;
+      }
+    });
+  };
+  const handleTouchEnd = () => { dragIndex.current = null; setDraggingId(null); };
+
+  return (
+    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
+      <div className={`glass border border-white/10 rounded-t-[28px] w-full font-body flex flex-col ${closing ? "sheet-out" : "rise-in"}`} style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
+        <div className="shrink-0 px-5 py-4 flex items-center justify-between">
+          <h2 className="font-display text-xl text-[#F2EDE4]">Reihenfolge</h2>
+          <button onClick={() => { onSave(items.map((p) => p.id)); requestClose(); }} className="text-[#E85D9C] text-sm font-medium px-2 py-1">Fertig</button>
+        </div>
+        <p className="shrink-0 text-xs text-[#5C574F] px-5 pb-2">Am Griff-Symbol ziehen. Gilt überall, wo Mitspieler angezeigt werden.</p>
+        <div className="flex-1 overflow-y-auto p-4 space-y-2" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))", touchAction: draggingId ? "none" : "auto" }}>
+          {items.map((p, idx) => (
+            <div key={p.id} ref={(el) => { rowRefs.current[p.id] = el; }}
+              className="flex items-center gap-3 bg-[#262422] border rounded-[14px] px-3.5 h-14"
+              style={{
+                borderColor: draggingId === p.id ? "#E85D9C" : "#3A3631",
+                transform: draggingId === p.id ? "scale(1.02)" : "none",
+                boxShadow: draggingId === p.id ? "0 8px 20px rgba(0,0,0,0.4)" : "none",
+                zIndex: draggingId === p.id ? 10 : 1,
+                transition: "border-color .15s, transform .15s, box-shadow .15s",
+              }}>
+              <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 bg-[#1C1B1A] flex items-center justify-center">
+                {p.photo ? <img src={p.photo} alt={p.name} className="w-full h-full object-cover" /> : <Camera size={12} className="text-[#5C574F]" />}
+              </div>
+              <span className="text-sm text-[#F2EDE4] flex-1 truncate">{p.name}</span>
+              <div
+                className="text-[#5C574F] p-2 -mr-2"
+                onTouchStart={() => handleTouchStart(idx, p.id)}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                <GripVertical size={18} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlayerPhoto, onUpdatePlayerName, onRemovePlayer, onReorderPlayers, initial, onClose, onSave, onDelete }) {
   const [editingPlayer, setEditingPlayer] = useState(null); // { id, name }
+  const [playerOrderOpen, setPlayerOrderOpen] = useState(false);
   const playerLongPressTimer = React.useRef(null);
   const playerLongPressFired = React.useRef(false);
   const startPlayerLongPress = (p) => {
@@ -3042,24 +3166,46 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
   const [newPlayerName, setNewPlayerName] = useState("");
   const [newPlayerPhotoFor, setNewPlayerPhotoFor] = useState(null);
   const togglePlayerId = (id) => { haptic(6); setPlayerIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])); };
-  const knownPlayers = useMemo(() => {
-    const set = new Set();
-    const profileNames = new Set(playerProfiles.map((p) => p.name));
-    (plays || []).forEach((p) => (p.players || "").split(",").map((n) => n.trim()).filter(Boolean).forEach((n) => { if (!profileNames.has(n)) set.add(n); }));
-    return Array.from(set).sort();
-  }, [plays, playerProfiles]);
-  const addPlayerName = (name) => {
-    const current = players.split(",").map((n) => n.trim()).filter(Boolean);
-    if (current.includes(name)) return;
-    setPlayers(current.length ? `${current.join(", ")}, ${name}` : name);
+  const movePlayerId = (from, to) => {
+    setPlayerIds((prev) => {
+      const next = [...prev];
+      const [item] = next.splice(from, 1);
+      next.splice(to, 0, item);
+      return next;
+    });
   };
-  const removePlayerName = (name) => {
-    const current = players.split(",").map((n) => n.trim()).filter(Boolean);
-    setPlayers(current.filter((n) => n !== name).join(", "));
+  // Touch-based drag-reorder for the "Ergebnis" list (same pattern as the
+  // Dashboard section reorder screen — native HTML5 drag doesn't work on touch).
+  const dragIndex = React.useRef(null);
+  const [draggingPlayerId, setDraggingPlayerId] = useState(null);
+  const resultRowRefs = React.useRef({});
+  const handleResultTouchStart = (idx, id) => { dragIndex.current = idx; setDraggingPlayerId(id); };
+  const handleResultTouchMove = (e) => {
+    if (dragIndex.current === null) return;
+    e.preventDefault();
+    const touchY = e.touches[0].clientY;
+    playerIds.forEach((id, idx) => {
+      if (idx === dragIndex.current) return;
+      const el = resultRowRefs.current[id];
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const mid = rect.top + rect.height / 2;
+      if ((touchY < mid && idx < dragIndex.current) || (touchY > mid && idx > dragIndex.current)) {
+        movePlayerId(dragIndex.current, idx);
+        dragIndex.current = idx;
+      }
+    });
   };
+  const handleResultTouchEnd = () => { dragIndex.current = null; setDraggingPlayerId(null); };
   const [date, setDate] = useState(initial ? initial.date : new Date().toISOString().slice(0, 10));
-  const [players, setPlayers] = useState(initial ? initial.players || "" : "");
-  const [winner, setWinner] = useState(initial ? initial.winner || "" : "");
+  const [winnerIds, setWinnerIds] = useState(() => {
+    if (!initial || !initial.winner) return [];
+    const names = initial.winner.split(",").map((n) => n.trim()).filter(Boolean);
+    return names.map((n) => (playerProfiles.find((p) => p.name === n) || {}).id).filter(Boolean);
+  });
+  const [scores, setScores] = useState(initial && initial.scores ? initial.scores : {});
+  const toggleWinner = (id) => { haptic(6); setWinnerIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])); };
+  const setScore = (id, val) => setScores((prev) => ({ ...prev, [id]: val }));
   const [notes, setNotes] = useState(initial ? initial.notes || "" : "");
   const notesRef = React.useRef(null);
   useEffect(() => {
@@ -3073,14 +3219,16 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
   const save = () => {
     if (!selectedGame) return;
     const profileNames = playerIds.map((id) => (playerProfiles.find((p) => p.id === id) || {}).name).filter(Boolean);
-    const mergedPlayers = [...new Set([...profileNames, ...players.split(",").map((n) => n.trim()).filter(Boolean)])].join(", ");
+    const mergedPlayers = profileNames.join(", ");
+    const winnerName = winnerIds.map((id) => (playerProfiles.find((p) => p.id === id) || {}).name).filter(Boolean).join(", ");
+    const cleanScores = Object.fromEntries(Object.entries(scores).filter(([id, v]) => playerIds.includes(id) && String(v).trim() !== ""));
     if (!initial && quantity > 1) {
       const batch = Array.from({ length: quantity }, () => ({
-        id: uid(), gameId: selectedGame.id, gameName: selectedGame.name, date, mode, players: mergedPlayers, playerIds, winner, notes, images,
+        id: uid(), gameId: selectedGame.id, gameName: selectedGame.name, date, mode, players: mergedPlayers, playerIds, winner: winnerName, scores: cleanScores, notes, images,
       }));
       onSave(batch);
     } else {
-      onSave({ id: initial ? initial.id : uid(), gameId: selectedGame.id, gameName: selectedGame.name, date, mode, players: mergedPlayers, playerIds, winner, notes, images });
+      onSave({ id: initial ? initial.id : uid(), gameId: selectedGame.id, gameName: selectedGame.name, date, mode, players: mergedPlayers, playerIds, winner: winnerName, scores: cleanScores, notes, images });
     }
   };
 
@@ -3088,11 +3236,11 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
     <div className="fixed top-0 left-0 right-0 bg-black/90 z-50 flex items-end justify-center p-0" style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }}>
       <div onFocus={handleFocusScroll} className="glass border border-white/10 rounded-t-[28px] w-full max-h-[var(--app-height,100dvh)] flex flex-col overflow-hidden rise-in font-body">
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
-        <div className="shrink-0 bg-[#1C1B1A] px-5 py-4 flex items-center justify-between">
+        <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">{initial ? "Partie bearbeiten" : "Partie eintragen"}</h2>
           <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
         </div>
-        <div className="p-5 space-y-4 overflow-y-auto flex-1">
+        <div className="p-5 space-y-4 overflow-y-auto flex-1" style={{ touchAction: draggingPlayerId ? "none" : "auto" }}>
           {!selectedGame ? (
             <div>
               <input value={gameQuery} onChange={(e) => setGameQuery(e.target.value)} placeholder="Spiel suchen…"
@@ -3117,7 +3265,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                 <button onClick={() => setSelectedGame(null)} className="text-[#5C574F] text-xs shrink-0">Ändern</button>
               </div>
               <Segmented
-                options={[{ v: "physical-owned", label: "Eigene Sammlung", icon: Home }, { v: "physical-other", label: "Geliehen / Event", icon: Sofa }, { v: "bga", label: "BoardGameArena", icon: Globe }]}
+                options={[{ v: "physical-owned", label: "Sammlung", icon: Home }, { v: "physical-other", label: "Geliehen", icon: Sofa }, { v: "bga", label: "Digital", icon: Globe }]}
                 value={mode}
                 onChange={setMode}
               />
@@ -3137,7 +3285,14 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                 </div>
               )}
               <div>
-                <label className="block text-[11px] text-[#5C574F]">Mitspieler <span className="text-[10px]">(antippen zum Auswählen, halten zum Bearbeiten)</span></label>
+                <div className="flex items-center justify-between">
+                  <label className="block text-[11px] text-[#5C574F]">Mitspieler <span className="text-[10px]">(antippen zum Auswählen, halten zum Bearbeiten)</span></label>
+                  {onReorderPlayers && playerProfiles.length > 1 && (
+                    <button type="button" onClick={() => setPlayerOrderOpen(true)} className="shrink-0 text-[11px] text-[#8B9AFA] font-medium flex items-center gap-1">
+                      <GripVertical size={12} /> Reihenfolge
+                    </button>
+                  )}
+                </div>
                 <div className="flex items-start gap-3 overflow-x-auto pb-1 mt-1.5">
                   {playerProfiles.map((p) => {
                     const selected = playerIds.includes(p.id);
@@ -3156,7 +3311,13 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                           ) : (
                             <div className="w-full h-full bg-[#262422] flex items-center justify-center"><Camera size={20} className="text-[#5C574F]" /></div>
                           )}
-                          {selected && <div className="absolute inset-0 bg-[#E85D9C]/25 flex items-center justify-center"><Check size={18} className="text-white" /></div>}
+                          {winnerIds.includes(p.id) ? (
+                            <div className="absolute inset-0 bg-[#D4A24C]/35 flex items-center justify-center">
+                              <Crown size={22} className="text-[#D4A24C]" fill="currentColor" />
+                            </div>
+                          ) : selected && (
+                            <div className="absolute inset-0 bg-[#E85D9C]/25 flex items-center justify-center"><Check size={18} className="text-white" /></div>
+                          )}
                         </button>
                         <p className="text-[10px] text-[#5C574F] truncate w-full text-center">{p.name}</p>
                       </div>
@@ -3167,34 +3328,65 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                   </button>
                 </div>
               </div>
-              <input value={players} onChange={(e) => setPlayers(e.target.value)} placeholder="Weitere Mitspieler (Freitext, optional)"
-                className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#E85D9C] ${players ? "bg-[#262422]" : "bg-transparent"}`} />
-              {knownPlayers.length > 0 && (
-                <div className="flex gap-1.5 overflow-x-auto pb-1 -mt-1.5">
-                  {knownPlayers.map((n) => {
-                    const active = players.split(",").map((x) => x.trim()).includes(n);
-                    return (
-                      <button
-                        key={n}
-                        type="button"
-                        onClick={() => (active ? removePlayerName(n) : addPlayerName(n))}
-                        className={`shrink-0 px-2.5 py-1 rounded-full text-xs border flex items-center gap-1 ${active ? "bg-[#1C1B1A] border-[#3A3631] text-[#5C574F]" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}
-                      >
-                        {active ? <Check size={11} /> : "+"} {n}
-                      </button>
-                    );
-                  })}
+              {playerIds.length > 0 && (
+                <div>
+                  <label className="block text-[11px] text-[#5C574F]">Ergebnis <span className="text-[10px]">(Krone = Gewinner:in, mehrere bei Gleichstand möglich · Griff = Reihenfolge)</span></label>
+                  <div className="space-y-1.5 mt-1.5" style={{ touchAction: draggingPlayerId ? "none" : "auto" }}>
+                    {playerIds.map((id, idx) => {
+                      const p = playerProfiles.find((pp) => pp.id === id);
+                      if (!p) return null;
+                      const isWinner = winnerIds.includes(id);
+                      return (
+                        <div key={id} ref={(el) => { resultRowRefs.current[id] = el; }}
+                          className="flex items-center gap-2.5 h-12 pl-1.5 pr-2.5 rounded-[14px] bg-[#262422] border"
+                          style={{
+                            borderColor: draggingPlayerId === id ? "#E85D9C" : "#3A3631",
+                            transform: draggingPlayerId === id ? "scale(1.02)" : "none",
+                            boxShadow: draggingPlayerId === id ? "0 6px 16px rgba(0,0,0,0.4)" : "none",
+                            zIndex: draggingPlayerId === id ? 10 : 1,
+                            position: "relative",
+                            transition: "border-color .15s, transform .15s, box-shadow .15s",
+                          }}>
+                          <div
+                            className="text-[#5C574F] p-1 -ml-1 shrink-0"
+                            onTouchStart={() => handleResultTouchStart(idx, id)}
+                            onTouchMove={handleResultTouchMove}
+                            onTouchEnd={handleResultTouchEnd}
+                          >
+                            <GripVertical size={16} />
+                          </div>
+                          <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0">
+                            {p.photo ? <img src={p.photo} alt={p.name} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-[#1C1B1A] flex items-center justify-center"><Camera size={12} className="text-[#5C574F]" /></div>}
+                          </div>
+                          <span className="text-sm text-[#F2EDE4] flex-1 min-w-0 truncate">{p.name}</span>
+                          <input
+                            value={scores[id] || ""}
+                            onChange={(e) => setScore(id, e.target.value.replace(/[^0-9-]/g, ""))}
+                            onFocus={handleFocusScroll}
+                            placeholder="Punkte"
+                            inputMode="numeric"
+                            className="w-16 h-8 shrink-0 bg-[#1C1B1A] border border-[#3A3631] rounded-lg px-2 text-center text-[#F2EDE4] text-sm focus:outline-none focus:border-[#E85D9C]"
+                          />
+                          <button type="button" onClick={() => toggleWinner(id)} aria-label={isWinner ? "Gewinner entfernen" : "Als Gewinner markieren"}
+                            className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center border ${isWinner ? "bg-[#D4A24C]/20 border-[#D4A24C] text-[#D4A24C]" : "border-[#3A3631] text-[#5C574F]"}`}>
+                            <Crown size={15} fill={isWinner ? "currentColor" : "none"} />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
-              <input value={winner} onChange={(e) => setWinner(e.target.value)} placeholder="Gewinner (optional)"
-                className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#E85D9C] ${winner ? "bg-[#262422]" : "bg-transparent"}`} />
-              <textarea
-                ref={notesRef}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                onInput={(e) => { e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; }}
-                placeholder="Notiz (optional)" rows={2}
-                className={`w-full border border-[#3A3631] rounded-[14px] px-3.5 py-3 text-[#F2EDE4] text-base focus:outline-none focus:border-[#E85D9C] resize-none overflow-hidden ${notes ? "bg-[#262422]" : "bg-transparent"}`} />
+              <div>
+                <label className="block text-[11px] text-[#5C574F] mb-1.5">Notiz</label>
+                <textarea
+                  ref={notesRef}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  onInput={(e) => { e.target.style.height = "auto"; e.target.style.height = e.target.scrollHeight + "px"; }}
+                  placeholder="Notiz (optional)" rows={2}
+                  className={`w-full border border-[#3A3631] rounded-[14px] px-3.5 py-3 text-[#F2EDE4] text-base focus:outline-none focus:border-[#E85D9C] resize-none overflow-hidden ${notes ? "bg-[#262422]" : "bg-transparent"}`} />
+              </div>
               <div>
                 <label className="block text-[11px] text-[#5C574F]">Fotos</label>
                 <div className="mt-1.5">
@@ -3230,7 +3422,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
             <h3 className="font-display text-lg text-[#F2EDE4]">Neuer Mitspieler</h3>
             <input onFocus={handleFocusScroll} value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Name"
               className="w-full h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#E85D9C]" />
-            <button onClick={() => { if (newPlayerName.trim()) { const id = onAddPlayer(newPlayerName.trim()); setPlayerIds((prev) => [...prev, id]); setNewPlayerName(""); newPlayerClose.requestClose(); } }}
+            <button onClick={() => { if (newPlayerName.trim()) { const id = uid(); onAddPlayer(newPlayerName.trim(), null, id); setPlayerIds((prev) => [...prev, id]); setNewPlayerName(""); newPlayerClose.requestClose(); } }}
               className="w-full h-12 bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] rounded-[14px] font-medium">Anlegen</button>
             <p className="text-xs text-[#5C574F] text-center">Ein Profilbild kannst du danach über den Namen ergänzen.</p>
           </div>
@@ -3239,29 +3431,34 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
       {newPlayerPhotoFor && (
         <ImagePickerSheet onAdd={(img) => { onUpdatePlayerPhoto(newPlayerPhotoFor, img); setNewPlayerPhotoFor(null); }} onClose={() => setNewPlayerPhotoFor(null)} />
       )}
+      {playerOrderOpen && (
+        <PlayerOrderModal players={playerProfiles} onSave={(ids) => onReorderPlayers && onReorderPlayers(ids)} onClose={() => setPlayerOrderOpen(false)} />
+      )}
       {editingPlayer && (
         <div className="fixed top-0 left-0 right-0 bg-black/90 z-[65] flex items-end justify-center p-0" style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={() => setEditingPlayer(null)}>
           <div className="glass border border-white/10 rounded-t-[28px] w-full rise-in font-body p-5 space-y-3" onClick={(e) =>
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
             <h3 className="font-display text-lg text-[#F2EDE4]">Mitspieler bearbeiten</h3>
-            <button
-              type="button"
-              onClick={() => setNewPlayerPhotoFor(editingPlayer.id)}
-              className="w-20 h-20 rounded-full overflow-hidden border-2 border-[#3A3631] mx-auto flex items-center justify-center bg-[#262422] relative"
-            >
-              {(() => {
-                const p = playerProfiles.find((x) => x.id === editingPlayer.id);
-                return p && p.photo ? (
-                  <img src={p.photo} alt={p.name} className="w-full h-full block object-cover" />
-                ) : (
-                  <span className="text-[#A39C8F] font-display text-2xl">{editingPlayer.name.charAt(0).toUpperCase()}</span>
-                );
-              })()}
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 active:opacity-100">
-                <Camera size={20} className="text-white" />
-              </div>
-            </button>
+            <div className="relative mx-auto w-20 h-20">
+              <button
+                type="button"
+                onClick={() => setNewPlayerPhotoFor(editingPlayer.id)}
+                className="w-20 h-20 rounded-full overflow-hidden border-2 border-[#3A3631] flex items-center justify-center bg-[#262422]"
+              >
+                {(() => {
+                  const p = playerProfiles.find((x) => x.id === editingPlayer.id);
+                  return p && p.photo ? (
+                    <img src={p.photo} alt={p.name} className="w-full h-full block object-cover" />
+                  ) : (
+                    <span className="text-[#A39C8F] font-display text-2xl">{editingPlayer.name.charAt(0).toUpperCase()}</span>
+                  );
+                })()}
+              </button>
+              <span className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-[#E85D9C] border-2 border-[#1C1B1A] flex items-center justify-center pointer-events-none">
+                <Camera size={13} className="text-white" />
+              </span>
+            </div>
             <p className="text-xs text-[#5C574F] text-center -mt-1">Foto antippen zum Ändern</p>
             <input
               onFocus={handleFocusScroll}
@@ -4043,7 +4240,7 @@ function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDelete
       {!demoMode && (
         <button onClick={() => { haptic(8); setAddOpen(true); }} aria-label="Spiele hinzufügen"
           className="fixed z-30 left-1/2 -translate-x-1/2 text-[#F2EDE4] w-14 h-14 flex items-center justify-center rounded-full shadow-lg active:scale-95 border border-white/25"
-          style={{ background: "conic-gradient(from 0deg, #ff5a96, #ffc850, #78dcff, #b482ff, #ff5a96)", boxShadow: "0 8px 24px rgba(180,130,255,0.45), inset 0 1px 1px rgba(255,255,255,0.4)", bottom: "calc(76px + env(safe-area-inset-bottom))" }}>
+          style={{ background: "conic-gradient(from 0deg, #ff5a96, #ffc850, #78dcff, #b482ff, #ff5a96)", boxShadow: "0 8px 24px rgba(180,130,255,0.45), inset 0 1px 1px rgba(255,255,255,0.4)", bottom: "calc(100px + env(safe-area-inset-bottom))" }}>
           <BookmarkPlus size={22} />
         </button>
       )}
@@ -4184,7 +4381,7 @@ function PlayLogFilterModal({ filters, onChange, onClose, onReset, allWinners, v
   const { closing, requestClose } = useSheetClose(onClose);
   return (
     <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
-      <div className={`glass border border-white/10 rounded-t-[28px] w-full max-h-[85vh] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
+      <div className={`glass border border-white/10 rounded-t-[28px] w-full flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`} style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) =>
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
@@ -4439,6 +4636,9 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
     <div className="p-5 pb-6 overflow-x-hidden min-h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <h1 className="font-display text-3xl text-[#F2EDE4]">Sammlung</h1>
+        <div className="w-[84px] h-10" />
+      </div>
+      <div className="fixed z-30" style={{ top: "max(1rem, env(safe-area-inset-top))", right: "1.25rem" }}>
         <div className="glass relative flex items-center border border-white/15 rounded-full p-1 gap-1">
           <div
             className="absolute rounded-full bg-white/15"
@@ -4523,7 +4723,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           ))}
         </div>
       )}
-      <div className="w-full pb-28 mt-auto text-center">
+      <div className="w-full pb-40 pt-4 mt-auto text-center">
         <p className="text-[10px] font-body text-[#5C574F]">
           {games.filter((g) => g.status === "owned").length} im Besitz · {games.filter((g) => g.status === "wishlist").length} Wunschliste ·{" "}
           <a href="https://boardgamegeek.com" target="_blank" rel="noopener noreferrer" className="underline">Powered by BGG</a>
@@ -4551,7 +4751,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
       {!demoMode && (
         <button onClick={() => { haptic(8); onAdd(); }} aria-label="Spiel hinzufügen"
           className="fixed z-30 left-1/2 -translate-x-1/2 text-[#F2EDE4] w-14 h-14 flex items-center justify-center rounded-full shadow-lg active:scale-95 border border-white/25"
-          style={{ background: "conic-gradient(from 0deg, #ff5a96, #ffc850, #78dcff, #b482ff, #ff5a96)", boxShadow: "0 8px 24px rgba(180,130,255,0.45), inset 0 1px 1px rgba(255,255,255,0.4)", bottom: "calc(76px + env(safe-area-inset-bottom))" }}>
+          style={{ background: "conic-gradient(from 0deg, #ff5a96, #ffc850, #78dcff, #b482ff, #ff5a96)", boxShadow: "0 8px 24px rgba(180,130,255,0.45), inset 0 1px 1px rgba(255,255,255,0.4)", bottom: "calc(100px + env(safe-area-inset-bottom))" }}>
           <Plus size={22} />
         </button>
       )}
@@ -4559,10 +4759,10 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
         <>
           <button onClick={() => setSearchOpen((o) => !o)} aria-label="Suchen"
             className={`glass-icon-btn fixed z-30 w-10 h-10 flex items-center justify-center rounded-full border shadow-lg ${searchOpen ? "border-[#E85D9C]/50 text-[#F2EDE4]" : "border-white/15 text-[#A39C8F]"}`}
-            style={{ left: "calc(50% - 76px)", transform: "translateX(-50%)", bottom: "calc(82px + env(safe-area-inset-bottom))" }}>
+            style={{ left: "calc(50% - 76px)", transform: "translateX(-50%)", bottom: "calc(106px + env(safe-area-inset-bottom))" }}>
             <Search size={17} />
           </button>
-          <div className="fixed z-30" style={{ left: "calc(50% + 76px)", transform: "translateX(-50%)", bottom: "calc(82px + env(safe-area-inset-bottom))" }}>
+          <div className="fixed z-30" style={{ left: "calc(50% + 76px)", transform: "translateX(-50%)", bottom: "calc(106px + env(safe-area-inset-bottom))" }}>
             <button onClick={() => setFilterModalOpen(true)} aria-label="Filter"
               className="glass-icon-btn w-10 h-10 flex items-center justify-center border border-white/15 rounded-full text-[#A39C8F] shadow-lg">
               <SlidersFilter size={17} />
@@ -4670,18 +4870,18 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [filters, setFilters] = useState({ mode: "all", winner: "", from: "", to: "" });
   const modeIcon = { "physical-owned": Home, "physical-other": Sofa, bga: Globe };
-  const modeLabel = { "physical-owned": "Eigene Sammlung", "physical-other": "Geliehen / Event", bga: "BoardGameArena" };
+  const modeLabel = { "physical-owned": "Eigene Sammlung", "physical-other": "Geliehen / Event", bga: "Digital" };
   const activeFilterCount = (filters.mode !== "all" ? 1 : 0) + (filters.winner ? 1 : 0) + (filters.from ? 1 : 0) + (filters.to ? 1 : 0);
   const allWinners = useMemo(() => {
     const names = new Set();
-    plays.forEach((p) => { if (p.winner && p.winner.trim()) names.add(p.winner.trim()); });
+    plays.forEach((p) => winnersOf(p).forEach((n) => names.add(n)));
     return [...names].sort();
   }, [plays]);
 
   let filteredPlays = plays;
   if (query.trim()) filteredPlays = filteredPlays.filter((p) => p.gameName.toLowerCase().includes(query.toLowerCase()));
   if (filters.mode !== "all") filteredPlays = filteredPlays.filter((p) => p.mode === filters.mode);
-  if (filters.winner) filteredPlays = filteredPlays.filter((p) => (p.winner || "").trim() === filters.winner);
+  if (filters.winner) filteredPlays = filteredPlays.filter((p) => winnersOf(p).includes(filters.winner));
   if (filters.from) filteredPlays = filteredPlays.filter((p) => p.date && p.date >= filters.from);
   if (filters.to) filteredPlays = filteredPlays.filter((p) => p.date && p.date <= filters.to);
 
@@ -4730,7 +4930,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
 
   const winCounts = useMemo(() => {
     const tally = {};
-    plays.forEach(p => { if (p.winner && p.winner.trim()) { const name = p.winner.trim(); tally[name] = (tally[name] || 0) + 1; } });
+    plays.forEach(p => winnersOf(p).forEach((name) => { tally[name] = (tally[name] || 0) + 1; }));
     return Object.entries(tally).sort((a, b) => b[1] - a[1]).slice(0, 5);
   }, [plays]);
   const medals = ["🥇", "🥈", "🥉"];
@@ -4748,8 +4948,8 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
       const names = (p.players || "").split(",").map((s) => s.trim());
       return names.includes(h2hA) && names.includes(h2hB);
     });
-    const aWins = together.filter((p) => (p.winner || "").trim() === h2hA).length;
-    const bWins = together.filter((p) => (p.winner || "").trim() === h2hB).length;
+    const aWins = together.filter((p) => winnersOf(p).includes(h2hA)).length;
+    const bWins = together.filter((p) => winnersOf(p).includes(h2hB)).length;
     return { total: together.length, aWins, bWins };
   }, [plays, h2hA, h2hB]);
 
@@ -4761,7 +4961,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
       {!demoMode && (
         <button onClick={() => { haptic(8); onAdd(); }} aria-label="Partie eintragen"
           className="fixed z-30 left-1/2 -translate-x-1/2 text-[#F2EDE4] w-14 h-14 flex items-center justify-center rounded-full shadow-lg active:scale-95 border border-white/25"
-          style={{ background: "conic-gradient(from 0deg, #ff5a96, #ffc850, #78dcff, #b482ff, #ff5a96)", boxShadow: "0 8px 24px rgba(180,130,255,0.45), inset 0 1px 1px rgba(255,255,255,0.4)", bottom: "calc(76px + env(safe-area-inset-bottom))" }}>
+          style={{ background: "conic-gradient(from 0deg, #ff5a96, #ffc850, #78dcff, #b482ff, #ff5a96)", boxShadow: "0 8px 24px rgba(180,130,255,0.45), inset 0 1px 1px rgba(255,255,255,0.4)", bottom: "calc(100px + env(safe-area-inset-bottom))" }}>
           <Plus size={22} />
         </button>
       )}
@@ -4769,10 +4969,10 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
         <>
           <button onClick={() => setSearchOpen((o) => !o)} aria-label="Suchen"
             className={`glass-icon-btn fixed z-30 w-10 h-10 flex items-center justify-center rounded-full border shadow-lg ${searchOpen ? "border-[#E85D9C]/50 text-[#F2EDE4]" : "border-white/15 text-[#A39C8F]"}`}
-            style={{ left: "calc(50% - 76px)", transform: "translateX(-50%)", bottom: "calc(82px + env(safe-area-inset-bottom))" }}>
+            style={{ left: "calc(50% - 76px)", transform: "translateX(-50%)", bottom: "calc(106px + env(safe-area-inset-bottom))" }}>
             <Search size={17} />
           </button>
-          <div className="fixed z-30" style={{ left: "calc(50% + 76px)", transform: "translateX(-50%)", bottom: "calc(82px + env(safe-area-inset-bottom))" }}>
+          <div className="fixed z-30" style={{ left: "calc(50% + 76px)", transform: "translateX(-50%)", bottom: "calc(106px + env(safe-area-inset-bottom))" }}>
             <button onClick={() => setFilterModalOpen(true)} aria-label="Filter"
               className="glass-icon-btn w-10 h-10 flex items-center justify-center border border-white/15 rounded-full text-[#A39C8F] shadow-lg">
               <SlidersFilter size={17} />
@@ -5301,10 +5501,18 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
         </div>
         <div className="overflow-y-auto flex-1 p-5 space-y-5" style={{ paddingTop: "calc(max(1rem, env(safe-area-inset-top)) + 3rem)", backgroundImage: `linear-gradient(180deg, ${accentColor}35, transparent 220px)` }}>
           <div>
-            <h1 className="font-display text-2xl text-[#F2EDE4] leading-tight">{game.name}</h1>
-            {game.germanName && game.germanName !== game.name && (
-              <p className="text-[#A39C8F] text-sm mt-0.5">{game.germanName}</p>
-            )}
+            {(() => {
+              const hasGerman = game.germanName && game.germanName.trim() && game.germanName.trim() !== game.name.trim();
+              const showGermanFirst = hasGerman && game.primaryTitle === "german";
+              const primary = showGermanFirst ? game.germanName : game.name;
+              const secondary = hasGerman ? (showGermanFirst ? game.name : game.germanName) : null;
+              return (
+                <>
+                  <h1 className="font-display text-2xl text-[#F2EDE4] leading-tight">{primary}</h1>
+                  {secondary && <p className="text-[#A39C8F] text-sm mt-0.5">{secondary}</p>}
+                </>
+              );
+            })()}
             {(game.year || (game.publishers && game.publishers.length > 0)) && (
               <p className="text-[#5C574F] text-sm mt-0.5">
                 {game.year}{game.year && game.publishers && game.publishers.length ? " · " : ""}{(game.publishers || []).join(", ")}
@@ -5516,7 +5724,7 @@ function SyncModal({ initialUrl, initialApiKey, initialEmail, status, lastSynced
         </div>
         <div className="p-5 space-y-4">
           <p className="text-sm text-[#A39C8F]">
-            Deine Sammlung und Partien werden ausschließlich in dieser Firebase-Datenbank gespeichert — nicht auf dem Gerät selbst. Trage hier deine Datenbank-Adresse ein; auf jedem Gerät mit derselben Adresse siehst du automatisch dieselben Daten.
+            Deine Sammlung und Partien werden immer auf diesem Gerät gespeichert. Trägst du zusätzlich eine Firebase-Datenbank ein, werden sie außerdem dorthin synchronisiert — auf jedem Gerät mit derselben Adresse siehst du dann automatisch dieselben Daten.
           </p>
           <div>
             <label className="block text-[11px] text-[#5C574F]">Datenbank-Adresse</label>
@@ -5590,18 +5798,34 @@ function SyncModal({ initialUrl, initialApiKey, initialEmail, status, lastSynced
 
 /* ---------------- MAIN APP ---------------- */
 function App() {
-  const [games, setGames] = useState([]);
-  const [plays, setPlays] = useState([]);
-  const [customCategories, setCustomCategories] = useState([]);
-  const [customMechanisms, setCustomMechanisms] = useState([]);
-  const [customPlayerTypes, setCustomPlayerTypes] = useState([]);
-  const [customPlayerTypeDescriptions, setCustomPlayerTypeDescriptions] = useState({});
+  // Local persistence: this is the always-on baseline so data survives page
+  // reloads even when no cloud sync is configured. Cloud sync (below, if a
+  // syncUrl is set) layers on top of this — it overwrites these on pull and
+  // pushes them up on change, but it is never the *only* place data lives.
+  const [games, setGames] = useState(() => loadKey(GAMES_KEY, []));
+  const [plays, setPlays] = useState(() => loadKey(PLAYS_KEY, []));
+  const [customCategories, setCustomCategories] = useState(() => loadKey(CUSTOM_CATEGORIES_KEY, []));
+  const [customMechanisms, setCustomMechanisms] = useState(() => loadKey(CUSTOM_MECHANISMS_KEY, []));
+  const [customPlayerTypes, setCustomPlayerTypes] = useState(() => loadKey(CUSTOM_PLAYER_TYPES_KEY, []));
+  const [customPlayerTypeDescriptions, setCustomPlayerTypeDescriptions] = useState(() => loadKey(CUSTOM_PLAYER_TYPE_DESCRIPTIONS_KEY, {}));
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [commandBarOpen, setCommandBarOpen] = useState(false);
   const [demoMode, setDemoMode] = useState(false);
-  const [lists, setLists] = useState([]);
-  const [players, setPlayersList] = useState([]);
+  const [lists, setLists] = useState(() => loadKey(LISTS_KEY, []));
+  const [players, setPlayersList] = useState(() => loadKey(PLAYERS_KEY, []));
   const [celebrate, setCelebrate] = useState(false);
+
+  // Persist every core data slice to localStorage as soon as it changes —
+  // independent of whether cloud sync is set up. This is what makes "add a
+  // player", "log a play", etc. actually stick across reloads.
+  useEffect(() => { saveKey(GAMES_KEY, games); }, [games]);
+  useEffect(() => { saveKey(PLAYS_KEY, plays); }, [plays]);
+  useEffect(() => { saveKey(LISTS_KEY, lists); }, [lists]);
+  useEffect(() => { saveKey(PLAYERS_KEY, players); }, [players]);
+  useEffect(() => { saveKey(CUSTOM_CATEGORIES_KEY, customCategories); }, [customCategories]);
+  useEffect(() => { saveKey(CUSTOM_MECHANISMS_KEY, customMechanisms); }, [customMechanisms]);
+  useEffect(() => { saveKey(CUSTOM_PLAYER_TYPES_KEY, customPlayerTypes); }, [customPlayerTypes]);
+  useEffect(() => { saveKey(CUSTOM_PLAYER_TYPE_DESCRIPTIONS_KEY, customPlayerTypeDescriptions); }, [customPlayerTypeDescriptions]);
 
   // Whenever anything becomes focused — a text field, a textarea, or a dropdown/picker
   // button — make sure it's actually within the visible area (keyboard included).
@@ -5640,7 +5864,11 @@ function App() {
   const displayGames = demoMode ? DEMO_GAMES : games;
   const displayPlays = demoMode ? DEMO_PLAYS : plays;
   const displayLists = demoMode ? DEMO_LISTS : lists;
-  const displayPlayers = demoMode ? DEMO_PLAYERS : players;
+  // Unlike games/plays/lists, newly created players can't collide with or
+  // pollute the curated demo set (fresh uid()s), so we layer them on top
+  // instead of hiding them — otherwise "add a player" would silently never
+  // work for anyone testing with demo mode on.
+  const displayPlayers = demoMode ? [...DEMO_PLAYERS, ...players] : players;
   const [tab, setTab] = useState("dashboard");
   const [titleCollapsed, setTitleCollapsed] = useState(false);
   const TAB_TITLES = { dashboard: "Spielregal", collection: "Sammlung", playlog: "Partien", recommendations: "Was spielen wir heute?", settings: "Mehr" };
@@ -5661,7 +5889,7 @@ function App() {
   const [aiWorkerUrl, setAiWorkerUrl] = useState(() => localStorage.getItem(AI_WORKER_URL_KEY) || "");
   const saveAiWorkerUrl = (url) => { const trimmed = url.trim(); localStorage.setItem(AI_WORKER_URL_KEY, trimmed); setAiWorkerUrl(trimmed); };
   const [authEmail, setAuthEmail] = useState(() => localStorage.getItem(AUTH_KEYS.email) || "");
-  const [syncModalOpen, setSyncModalOpen] = useState(!localStorage.getItem(SYNC_URL_KEY));
+  const [syncModalOpen, setSyncModalOpen] = useState(false);
   const [syncStatus, setSyncStatus] = useState("idle");
   const [lastSynced, setLastSynced] = useState(null);
   const categoryOptions = useMemo(() => {
@@ -5716,14 +5944,15 @@ function App() {
       return { ...l, gameIds: has ? l.gameIds.filter((id) => id !== gameId) : [...l.gameIds, gameId] };
     }));
   };
-  const addPlayer = (name, photo) => {
-    const p = { id: uid(), name, photo: photo || "" };
+  const addPlayer = (name, photo, presetId) => {
+    const p = { id: presetId || uid(), name, photo: photo || "" };
     setPlayersList((prev) => [...prev, p]);
     return p.id;
   };
   const updatePlayerPhoto = (id, photo) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, photo } : p)));
   const updatePlayerName = (id, name) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, name } : p)));
   const removePlayer = (id) => setPlayersList((prev) => prev.filter((p) => p.id !== id));
+  const reorderPlayers = (orderedIds) => setPlayersList((prev) => orderedIds.map((id) => prev.find((p) => p.id === id)).filter(Boolean));
   const skipNextPush = React.useRef(true);
   const pushTimer = React.useRef(null);
   const scrollElRef = React.useRef(null);
@@ -5769,7 +5998,10 @@ function App() {
     }
   };
 
-  // On mount: load data directly from Firebase — this is the sole source of truth, nothing persists locally.
+  // On mount: if a cloud sync backend is configured, pull from it and let it
+  // take over as the source of truth (overwriting whatever was loaded from
+  // localStorage above). Without a syncUrl, the localStorage-loaded state
+  // from above is simply what's used — no cloud round-trip needed.
   useEffect(() => {
     if (!syncUrl) return;
     setSyncStatus("syncing");
@@ -5788,7 +6020,9 @@ function App() {
     }).catch(() => setSyncStatus("error"));
   }, []);
 
-  // Write to Firebase (debounced) whenever games/plays/taxonomy change. No local copy is kept anywhere else.
+  // Write to Firebase (debounced) whenever games/plays/taxonomy change, on top
+  // of the localStorage write above. Both always happen; cloud sync is an
+  // optional extra layer for cross-device sync, not the only persistence.
   useEffect(() => {
     if (!syncUrl) return;
     if (skipNextPush.current) { skipNextPush.current = false; return; }
@@ -6028,8 +6262,8 @@ function App() {
         className="shrink-0 glass-strong border-b border-white/10 flex items-center justify-center overflow-hidden"
         style={{
           paddingTop: "max(0.75rem, env(safe-area-inset-top))",
-          height: titleCollapsed && tab !== "dashboard" ? "calc(2.75rem + max(0.75rem, env(safe-area-inset-top)))" : "max(0.75rem, env(safe-area-inset-top))",
-          opacity: titleCollapsed && tab !== "dashboard" ? 1 : 0,
+          height: titleCollapsed && tab !== "dashboard" && tab !== "collection" ? "calc(2.75rem + max(0.75rem, env(safe-area-inset-top)))" : "max(0.75rem, env(safe-area-inset-top))",
+          opacity: titleCollapsed && tab !== "dashboard" && tab !== "collection" ? 1 : 0,
           transition: "height 0.25s ease, opacity 0.2s ease",
         }}
       >
@@ -6093,7 +6327,7 @@ function App() {
           )}
         </div>
       </div>
-      <div className="absolute bottom-0 left-0 right-0 px-4 z-40 pointer-events-none" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
+      <div className="absolute bottom-0 left-0 right-0 px-4 z-40 pointer-events-none" style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
         <div className="relative rounded-full px-1.5 py-1.5 overflow-hidden pointer-events-auto" style={{
           background: "rgba(24,22,21,0.18)",
           backdropFilter: "blur(8px) saturate(160%)",
@@ -6174,7 +6408,7 @@ function App() {
           hasNext={gameModal.editing ? displayGames.findIndex(g => g.id === gameModal.editing.id) < displayGames.length - 1 : false}
         />
       )}
-      {playModal && <PlayFormModal games={games} plays={plays} playerProfiles={displayPlayers} onAddPlayer={addPlayer} onUpdatePlayerPhoto={updatePlayerPhoto} onUpdatePlayerName={updatePlayerName} onRemovePlayer={removePlayer} initial={playModal.editing} onClose={() => setPlayModal(null)} onSave={savePlay} onDelete={deletePlay} />}
+      {playModal && <PlayFormModal games={games} plays={plays} playerProfiles={displayPlayers} onAddPlayer={addPlayer} onUpdatePlayerPhoto={updatePlayerPhoto} onUpdatePlayerName={updatePlayerName} onRemovePlayer={removePlayer} onReorderPlayers={reorderPlayers} initial={playModal.editing} onClose={() => setPlayModal(null)} onSave={savePlay} onDelete={deletePlay} />}
       {syncModalOpen && (
         <SyncModal
           initialUrl={syncUrl}
