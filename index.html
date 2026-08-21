@@ -287,7 +287,7 @@ const Building = (p) => <Icon {...p}><rect x="4" y="3" width="16" height="18" rx
 const Sword = (p) => <Icon {...p}><path d="m14.5 4.5 5 5-9 9-3 1 1-3Z" /><path d="M13 6l5 5M5 19l2 2" /></Icon>;
 const Puzzle = (p) => <Icon {...p}><path d="M9 3v2.2a1.8 1.8 0 0 1-3 1.4A1.8 1.8 0 0 0 3 8v3h2.2a1.8 1.8 0 0 1 0 3.6H3V18a2 2 0 0 0 2 2h3v-2.2a1.8 1.8 0 0 1 3.6 0V20H15a2 2 0 0 0 2-2v-3.2a1.8 1.8 0 0 1 0-3.6H21V8a2 2 0 0 0-2-2h-3V3.8a1.8 1.8 0 0 0-3.6 0V6H9Z" /></Icon>;
 const SlidersFilter = (p) => <Icon {...p}><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h13M21 18h0" /><circle cx="16" cy="6" r="2.2" /><circle cx="8" cy="12" r="2.2" /><circle cx="17" cy="18" r="2.2" /></Icon>;
-const Info = (p) => <Icon {...p}><circle cx="12" cy="12" r="9" /><path d="M12 8h.01" /><path d="M11 12h1v5h1" /></Icon>;
+const Info = (p) => <Icon {...p}><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></Icon>;
 const ChevronDown = (p) => <Icon {...p}><path d="m6 9 6 6 6-6" /></Icon>;
 const ChevronUp = (p) => <Icon {...p}><path d="m6 15 6-6 6 6" /></Icon>;
 const Maximize2 = (p) => <Icon {...p}><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></Icon>;
@@ -4961,6 +4961,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
   }, [plays]);
   const [h2hA, setH2hA] = useState(() => loadKey("spielregal:h2hA", ""));
   const [h2hB, setH2hB] = useState(() => loadKey("spielregal:h2hB", ""));
+  const [bestListInfoOpen, setBestListInfoOpen] = useState(false);
   useEffect(() => { saveKey("spielregal:h2hA", h2hA); }, [h2hA]);
   useEffect(() => { saveKey("spielregal:h2hB", h2hB); }, [h2hB]);
   const pickForH2h = (name) => {
@@ -5049,7 +5050,10 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
 
       {winCounts.length > 0 && (
         <div className="mb-5">
-          <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Bestenliste</h2>
+          <div className="flex items-center gap-1.5 mb-2">
+            <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide">Bestenliste</h2>
+            <button onClick={() => setBestListInfoOpen(true)} aria-label="Wie wird das berechnet?" className="text-[#5C574F]"><Info size={13} /></button>
+          </div>
           <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-4 space-y-2.5">
             {winCounts.map(({ name, count, total }, i) => (
               <button key={name} onClick={() => pickForH2h(name)} className="w-full flex items-center gap-3 text-left">
@@ -5060,6 +5064,25 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
                 <span className="text-[#E85D9C] text-sm font-mono shrink-0">{count}× gewonnen</span>
               </button>
             ))}
+          </div>
+        </div>
+      )}
+      {bestListInfoOpen && (
+        <div className="fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center p-0" style={{ height: "var(--app-height, 100dvh)" }} onClick={() => setBestListInfoOpen(false)}>
+          <div className="glass border border-white/10 rounded-t-[28px] w-full font-body" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
+            <div className="px-5 py-4" style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}>
+              <p className="text-[#F2EDE4] font-display text-lg mb-2">Wie wird die Bestenliste berechnet?</p>
+              <p className="text-[#A39C8F] text-sm leading-relaxed mb-2">
+                Gezählt werden über alle Partien hinweg zwei Werte pro Person: wie oft sie als Gewinner:in markiert wurde (mehrere Gewinner:innen bei Gleichstand zählen alle), und wie oft sie insgesamt mitgespielt hat.
+              </p>
+              <p className="text-[#A39C8F] text-sm leading-relaxed mb-2">
+                Sortiert wird nach <span className="text-[#F2EDE4]">Gewinnrate</span> (Siege ÷ Partien insgesamt), nicht nach roher Siegzahl. Bei gleicher Rate entscheidet die absolute Anzahl Siege. Wer z.B. 2 von 2 Partien gewonnen hat (100%), steht vor jemandem mit 21 von 40 Siegen (52,5%) — auch wenn die absolute Zahl kleiner ist. Angezeigt werden nur die Top 3.
+              </p>
+              <p className="text-[#5C574F] text-xs leading-relaxed">
+                Tippe auf einen Namen, um ihn direkt in den Kopf-an-Kopf-Vergleich zu laden.
+              </p>
+            </div>
           </div>
         </div>
       )}
