@@ -2625,25 +2625,25 @@ const Cover = ({ game, size = "md", className: extraClass = "" }) => {
   const img = (game.images && game.images[0]) || game.image; // game.image kept as fallback for older saved entries
   const isLent = game.lentTo && game.lentTo.trim();
   const lentTint = isLent && (
-    <div className="absolute inset-0 bg-[#C9A9E0] mix-blend-multiply opacity-40 rounded-lg pointer-events-none" />
+    <div className="absolute inset-0 bg-[#9C82D4] mix-blend-multiply opacity-60 rounded-lg pointer-events-none" />
   );
   const lentBadge = isLent && (
     size === "lg" ? (
-      <span className="absolute bottom-0 left-0 right-0 bg-[#F4E842] text-[#1C1B1A] text-xs font-body font-semibold flex items-center justify-center py-1.5 rounded-b-lg" title={`Verliehen an ${game.lentTo.trim()}`}>
+      <span className="absolute bottom-0 left-0 right-0 bg-[#9C82D4] text-[#1C1B1A] text-xs font-body font-semibold flex items-center justify-center py-1.5 rounded-b-lg" title={`Verliehen an ${game.lentTo.trim()}`}>
         Verliehen an {game.lentTo.trim()}
       </span>
     ) : (
-      <span className="absolute bottom-[4px] right-[4px] bg-[#F4E842] border-2 border-[#1C1B1A] rounded-full" style={{ width: 14, height: 14 }} title={`Verliehen an ${game.lentTo.trim()}`} />
+      <span className="absolute bottom-[4px] right-[4px] bg-[#9C82D4] border-2 border-[#1C1B1A] rounded-full" style={{ width: 14, height: 14 }} title={`Verliehen an ${game.lentTo.trim()}`} />
     )
   );
   return img ? (
-    <span className={`relative inline-block ${dims} ${extraClass}`}>
+    <span className={`relative inline-block ${dims} ${extraClass} ${isLent ? "opacity-75" : ""}`}>
       <img src={img} alt={game.name} className={`w-full h-full block object-cover rounded-lg border border-[#3A3631] ${game.saleStatus ? "grayscale" : ""} ${extraClass}`} />
       {lentTint}
       {lentBadge}
     </span>
   ) : (
-    <span className={`relative inline-flex ${dims} rounded-lg border border-[#3A3631] bg-[#2E2B28] items-center justify-center text-[#5C574F] ${extraClass}`}>
+    <span className={`relative inline-flex ${dims} rounded-lg border border-[#3A3631] bg-[#2E2B28] items-center justify-center text-[#5C574F] ${extraClass} ${isLent ? "opacity-75" : ""}`}>
       <Dices size={size === "lg" ? 28 : 18} />
       {lentTint}
       {lentBadge}
@@ -3248,7 +3248,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             <div>
               <button type="button" onClick={() => update("lentTo", form.lentTo ? "" : " ")}
                 className={`w-full h-12 flex items-center justify-between px-3.5 rounded-[14px] border ${form.lentTo ? "bg-[#D4A24C]/15 border-[#D4A24C]/40" : "bg-transparent border-[#3A3631]"}`}>
-                <span className={`text-sm flex items-center gap-2 ${form.lentTo ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}><Handshake size={16} /> Verliehen</span>
+                <span className={`text-sm flex items-center gap-2 ${form.lentTo ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>Verliehen</span>
                 <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.lentTo ? "bg-[#D4A24C] justify-end" : "bg-[#3A3631] justify-start"}`}>
                   <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
                 </div>
@@ -4870,12 +4870,18 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
           </div>
           {!guestMode && (
           <div>
-            <p className="text-[11px] text-[#5C574F] mb-1.5">Verkaufsstatus</p>
-            <Segmented
-              options={[{ v: "", label: "Alle" }, { v: "forSale", label: "Zum Verkauf" }, { v: "sold", label: "Verkauft" }]}
-              value={filters.saleStatus}
-              onChange={(v) => onChange({ ...filters, saleStatus: v })}
-            />
+            <p className="text-[11px] text-[#5C574F] mb-1.5">Verkaufsstatus <span className="text-[10px]">(standardmäßig ausgeblendet)</span></p>
+            <div className="flex flex-wrap gap-2">
+              {[{ v: "forSale", label: "Zum Verkauf" }, { v: "sold", label: "Verkauft" }].map((opt) => {
+                const isSel = filters.saleStatus.includes(opt.v);
+                return (
+                  <button key={opt.v} onClick={() => toggle("saleStatus", opt.v)}
+                    className={`px-3 py-1.5 rounded-full text-xs border ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}>
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
           )}
           <div>
@@ -4956,7 +4962,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
   const [gridCols, setGridCols] = useState(2);
   const [statusFilter, setStatusFilter] = useState("owned");
   const [filterModalOpen, setFilterModalOpen] = useState(false);
-  const [filters, setFilters] = useState({ categories: [], mechanisms: [], publishers: [], complexity: [], saleStatus: "", players: "", minRating: "" });
+  const [filters, setFilters] = useState({ categories: [], mechanisms: [], publishers: [], complexity: [], saleStatus: [], players: "", minRating: "" });
   const [sortBy, setSortBy] = useState("name-asc");
   const [contextGame, setContextGame] = useState(null);
   const contextGameClose2 = useSheetClose(() => setContextGame(null));
@@ -4972,7 +4978,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
     longPressTimer.current = setTimeout(() => { longPressFired.current = true; setContextGame(g); }, 500);
   };
   const cancelLongPress = () => { if (longPressTimer.current) clearTimeout(longPressTimer.current); };
-  const activeFilterCount = filters.categories.length + filters.mechanisms.length + filters.publishers.length + filters.complexity.length + (filters.saleStatus ? 1 : 0) + (filters.players ? 1 : 0) + (filters.minRating ? 1 : 0) + (statusFilter !== "owned" ? 1 : 0);
+  const activeFilterCount = filters.categories.length + filters.mechanisms.length + filters.publishers.length + filters.complexity.length + filters.saleStatus.length + (filters.players ? 1 : 0) + (filters.minRating ? 1 : 0) + (statusFilter !== "owned" ? 1 : 0);
   const presentCategories = useMemo(() => {
     const counts = {};
     games.forEach((g) => (g.categories || []).forEach((c) => { counts[c] = (counts[c] || 0) + 1; }));
@@ -5001,7 +5007,10 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
   if (filters.mechanisms.length) list = list.filter(g => filters.mechanisms.every(m => (g.mechanisms || []).includes(m)));
   if (filters.publishers.length) list = list.filter(g => filters.publishers.every(p => (g.publishers || []).includes(p)));
   if (filters.complexity.length) list = list.filter(g => filters.complexity.includes(complexityLabel(g)));
-  if (filters.saleStatus) list = list.filter(g => g.saleStatus === filters.saleStatus);
+  // Verkaufte / zum Verkauf markierte Spiele sind standardmäßig ausgeblendet —
+  // erst wenn im Filter gezielt eine oder beide Optionen ausgewählt sind, tauchen sie auf.
+  if (filters.saleStatus.length) list = list.filter(g => filters.saleStatus.includes(g.saleStatus));
+  else list = list.filter(g => !g.saleStatus);
   if (filters.players) list = list.filter(g => g.minPlayers && g.maxPlayers && parseInt(filters.players) >= parseInt(g.minPlayers) && parseInt(filters.players) <= parseInt(g.maxPlayers));
   if (filters.minRating) list = list.filter(g => g.rating && parseInt(g.rating) >= parseInt(filters.minRating));
 
@@ -5179,7 +5188,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           onChangeStatus={setStatusFilter}
           onChange={setFilters}
           onClose={() => setFilterModalOpen(false)}
-          onReset={() => { setFilters({ categories: [], mechanisms: [], publishers: [], complexity: [], saleStatus: "", players: "", minRating: "" }); setStatusFilter("owned"); }}
+          onReset={() => { setFilters({ categories: [], mechanisms: [], publishers: [], complexity: [], saleStatus: [], players: "", minRating: "" }); setStatusFilter("owned"); }}
           guestMode={guestMode}
         />
       )}
@@ -6041,7 +6050,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
             <div>
               <button type="button" onClick={() => onQuickUpdate(game.id, { lentTo: game.lentTo ? "" : " " })}
                 className={`w-full h-12 flex items-center justify-between px-3.5 rounded-[14px] border ${game.lentTo ? "bg-[#D4A24C]/15 border-[#D4A24C]/40" : "bg-transparent border-[#3A3631]"}`}>
-                <span className={`text-sm flex items-center gap-2 ${game.lentTo ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}><Handshake size={16} /> Verliehen</span>
+                <span className={`text-sm flex items-center gap-2 ${game.lentTo ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>Verliehen</span>
                 <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${game.lentTo ? "bg-[#D4A24C] justify-end" : "bg-[#3A3631] justify-start"}`}>
                   <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
                 </div>
