@@ -1563,7 +1563,7 @@ function SettingsSubPage({ title, onBack, children }) {
   );
 }
 
-function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, onAddCategory, onRemoveCategory, onAddMechanism, onRemoveMechanism, onAddPlayerType, onRemovePlayerType, demoMode, onToggleDemo, syncUrl, syncStatus, onOpenSync, bggImportStatus, bggImportResult, bggImportError, onImportBggPlays, games, plays, onMergeGames, aiWorkerUrl, onSaveAiWorkerUrl }) {
+function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, onAddCategory, onRemoveCategory, onAddMechanism, onRemoveMechanism, onAddPlayerType, onRemovePlayerType, demoMode, onToggleDemo, guestMode, onToggleGuest, syncUrl, syncStatus, onOpenSync, bggImportStatus, bggImportResult, bggImportError, onImportBggPlays, games, plays, onMergeGames, aiWorkerUrl, onSaveAiWorkerUrl }) {
   const [view, setView] = useState("menu"); // menu | sync | ai | bggImport | customize | duplicates | demo
   const [aiUrlInput, setAiUrlInput] = useState(aiWorkerUrl || "");
   const [bggUsername, setBggUsername] = useState("");
@@ -1835,6 +1835,26 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     );
   }
 
+  if (view === "guest") {
+    return (
+      <SettingsSubPage title="Gästemodus" onBack={() => setView("menu")}>
+        <div>
+          <p className="text-xs text-[#5C574F] mb-2">Zum Weiterreichen an Gäste, damit sie sich selbst ein Spiel aussuchen können. Zeigt deine echte Sammlung, aber:</p>
+          <ul className="text-xs text-[#5C574F] mb-3 space-y-1 list-disc list-inside">
+            <li>Kaufpreis, Verkaufspreis und Verkaufsstatus sind unsichtbar</li>
+            <li>Spiele/Partien können nicht hinzugefügt, bearbeitet oder gelöscht werden</li>
+            <li>Einstellungen sind gesperrt, bis der Gästemodus beendet wird</li>
+          </ul>
+          <p className="text-xs text-[#5C574F] mb-3">Bleibt aktiv, auch wenn die App neu geladen wird — sicherer, falls das Handy zwischendurch mal zugeklappt wird.</p>
+          <button onClick={onToggleGuest}
+            className={`w-full h-12 rounded-[14px] text-sm font-medium ${guestMode ? "bg-[#E85D9C] text-[#1C1B1A]" : "bg-[#262422] border border-[#3A3631] text-[#F2EDE4]"}`}>
+            {guestMode ? "Gästemodus beenden" : "Gästemodus starten"}
+          </button>
+        </div>
+      </SettingsSubPage>
+    );
+  }
+
   return (
     <div className="p-5 pb-6 space-y-2.5 font-body min-h-full flex flex-col">
       <h1 className="font-display text-3xl text-[#F2EDE4] mb-2">Einstellungen</h1>
@@ -1845,6 +1865,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
       <SettingsRow icon={Layers} label="Spiele zusammenführen" sub={duplicateGroups.length > 0 ? `${duplicateGroups.length} mögliche Duplikate gefunden` : "Manuell oder automatisch erkannt"} tone={duplicateGroups.length > 0 ? "#C1443C" : undefined} onClick={() => setView("duplicates")} />
       <SettingsRow icon={FileText} label="Für KI exportieren" sub="Für Gemini, ChatGPT & Co." onClick={() => setView("export")} />
       <SettingsRow icon={Eye} label="Vorschau-Modus" sub={demoMode ? "Aktiv" : "Aus"} onClick={() => setView("demo")} />
+      <SettingsRow icon={Users} label="Gästemodus" sub={guestMode ? "Aktiv" : "Aus"} tone={guestMode ? "#E85D9C" : undefined} onClick={() => setView("guest")} />
       <BggBadge className="mt-auto" />
     </div>
   );
@@ -2444,7 +2465,7 @@ const Pill = ({ children, tone = "default" }) => {
 };
 
 /* ---------------- GAME GRID CARD (global, reusable — used by Collection grid & List detail) ---------------- */
-function GameGridCard({ game: g, playCount = 0, gridCols = 2, onClick, onTouchStart, onTouchEnd, onTouchMove }) {
+function GameGridCard({ game: g, playCount = 0, gridCols = 2, onClick, onTouchStart, onTouchEnd, onTouchMove, hideSaleStatus }) {
   return (
     <button
       onClick={onClick}
@@ -2453,22 +2474,38 @@ function GameGridCard({ game: g, playCount = 0, gridCols = 2, onClick, onTouchSt
       onTouchMove={onTouchMove}
       className={`relative text-left rounded-2xl rise-in flex flex-col overflow-hidden ${gridCols === 4 ? "bg-transparent" : "bg-[#262422] border border-[#3A3631] p-1.5"}`}
     >
-      <Cover game={g} size="lg" className={gridCols === 4 ? "!rounded-none !border-0" : "!rounded-xl"} />
-      {gridCols === 4 && g.rating && (
-        <span className="absolute top-1.5 left-1.5 flex items-center gap-0.5 bg-black/70 text-[#D4A24C] text-[10px] font-mono px-1.5 py-0.5 rounded-full">
-          <Star size={9} fill="currentColor" /> {g.rating}
-        </span>
-      )}
-      {gridCols === 4 && g.complexity && (
-        <span className="absolute bottom-1.5 left-1.5 flex items-center gap-0.5 bg-black/70 text-[#F2EDE4] text-[10px] font-body px-1.5 py-0.5 rounded-full">
-          <Puzzle size={9} /> {COMPLEXITY_SHORT[complexityLabel(g)] || parseFloat(g.complexity).toFixed(1)}
-        </span>
-      )}
-      {g.saleStatus && (
-        <span className={`absolute top-3 right-3 text-[9px] font-body px-1.5 py-0.5 rounded-full ${g.saleStatus === "sold" ? "bg-[#C1443C]/90 text-white" : "bg-[#D4A24C]/90 text-[#1C1B1A]"}`}>
-          {g.saleStatus === "sold" ? "Verkauft" : "Zum Verkauf"}
-        </span>
-      )}
+      <div className={gridCols === 2 ? "relative" : "contents"}>
+        <Cover game={g} size="lg" className={gridCols === 4 ? "!rounded-none !border-0" : "!rounded-xl"} />
+        {gridCols === 4 && g.rating && (
+          <span className="absolute top-1.5 left-1.5 flex items-center gap-0.5 bg-black/70 text-[#D4A24C] text-[10px] font-mono px-1.5 py-0.5 rounded-full">
+            <Star size={9} fill="currentColor" /> {g.rating}
+          </span>
+        )}
+        {gridCols === 4 && (g.complexity || g.format === "digital") && (
+          <div className="absolute bottom-1.5 left-1.5 flex flex-col items-start gap-1">
+            {g.complexity && (
+              <span className="flex items-center gap-0.5 bg-black/70 text-[#F2EDE4] text-[10px] font-body px-1.5 py-0.5 rounded-full">
+                <Puzzle size={9} /> {COMPLEXITY_SHORT[complexityLabel(g)] || parseFloat(g.complexity).toFixed(1)}
+              </span>
+            )}
+            {g.format === "digital" && (
+              <span className="flex items-center gap-0.5 bg-black/70 text-[#8B9AFA] text-[10px] font-body px-1.5 py-0.5 rounded-full">
+                <Globe size={9} /> Digital
+              </span>
+            )}
+          </div>
+        )}
+        {gridCols === 2 && g.format === "digital" && (
+          <span className="absolute bottom-1.5 left-1.5 flex items-center gap-0.5 bg-black/70 text-[#8B9AFA] text-[10px] font-body px-1.5 py-0.5 rounded-full">
+            <Globe size={9} /> Digital
+          </span>
+        )}
+        {!hideSaleStatus && g.saleStatus && (
+          <span className={`absolute top-3 right-3 text-[9px] font-body px-1.5 py-0.5 rounded-full ${g.saleStatus === "sold" ? "bg-[#C1443C]/90 text-white" : "bg-[#D4A24C]/90 text-[#1C1B1A]"}`}>
+            {g.saleStatus === "sold" ? "Verkauft" : "Zum Verkauf"}
+          </span>
+        )}
+      </div>
       {gridCols === 2 && (
         <div className="px-1.5 pt-2 pb-1">
           <p className="font-body text-[#F2EDE4] text-sm font-medium leading-tight truncate">{g.name}</p>
@@ -2500,9 +2537,15 @@ const Cover = ({ game, size = "md", className: extraClass = "" }) => {
   const dims = size === "sm" ? "w-12 h-12" : size === "lg" ? "w-full aspect-square" : "w-16 h-16";
   const img = (game.images && game.images[0]) || game.image; // game.image kept as fallback for older saved entries
   const lentBadge = game.lentTo && game.lentTo.trim() && (
-    <span className="glass absolute bottom-1 right-1 border border-white/25 text-[#F2EDE4] rounded-full flex items-center justify-center" style={{ width: size === "lg" ? 28 : 18, height: size === "lg" ? 28 : 18 }} title={`Verliehen an ${game.lentTo.trim()}`}>
-      <Handshake size={size === "lg" ? 15 : 10} strokeWidth={2.25} />
-    </span>
+    size === "lg" ? (
+      <span className="absolute bottom-0 left-0 right-0 bg-[#D4A24C] text-[#1C1B1A] text-xs font-body font-semibold flex items-center justify-center gap-1.5 py-1.5 rounded-b-lg" title={`Verliehen an ${game.lentTo.trim()}`}>
+        <Handshake size={13} strokeWidth={2.5} /> Verliehen an {game.lentTo.trim()}
+      </span>
+    ) : (
+      <span className="absolute -bottom-0.5 -right-0.5 bg-[#D4A24C] text-[#1C1B1A] border-2 border-[#1C1B1A] rounded-full flex items-center justify-center" style={{ width: 20, height: 20 }} title={`Verliehen an ${game.lentTo.trim()}`}>
+        <Handshake size={11} strokeWidth={2.75} />
+      </span>
+    )
   );
   return img ? (
     <span className={`relative inline-block ${dims} ${extraClass}`}>
@@ -4395,7 +4438,7 @@ function AddGamesToListModal({ games, plays, list, onToggle, onClose, aiWorkerUr
 }
 
 /* ---------------- LIST DETAIL PAGE (view/add/remove games, delete the list) ---------------- */
-function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDeleteList, onToggleGame, demoMode, aiWorkerUrl }) {
+function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDeleteList, onToggleGame, demoMode, guestMode, aiWorkerUrl }) {
   const [addOpen, setAddOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [contextGame, setContextGame] = useState(null);
@@ -4447,6 +4490,7 @@ function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDelete
                   onTouchStart={() => startLongPress(g)}
                   onTouchEnd={cancelLongPress}
                   onTouchMove={cancelLongPress}
+                  hideSaleStatus={guestMode}
                 />
               ))}
             </div>
@@ -4655,7 +4699,7 @@ function PlayLogFilterModal({ filters, onChange, onClose, onReset, allWinners, v
   );
 }
 
-function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOptions, filters, statusFilter, onChangeStatus, onChange, onClose, onReset, sortBy, onChangeSort }) {
+function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOptions, filters, statusFilter, onChangeStatus, onChange, onClose, onReset, sortBy, onChangeSort, guestMode }) {
   const { closing, requestClose } = useSheetClose(onClose);
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [showAllMechanisms, setShowAllMechanisms] = useState(false);
@@ -4726,6 +4770,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
               })}
             </div>
           </div>
+          {!guestMode && (
           <div>
             <p className="text-[11px] text-[#5C574F] mb-1.5">Verkaufsstatus</p>
             <Segmented
@@ -4734,6 +4779,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
               onChange={(v) => onChange({ ...filters, saleStatus: v })}
             />
           </div>
+          )}
           <div>
             <p className="text-[11px] text-[#5C574F] mb-1.5">Kategorien</p>
             <div className="flex flex-wrap gap-2">
@@ -4806,7 +4852,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
   );
 }
 
-function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit, onDelete, categoryOptions, mechanismOptions, demoMode, lists, onCreateList, onOpenList }) {
+function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit, onDelete, categoryOptions, mechanismOptions, demoMode, guestMode, lists, onCreateList, onOpenList }) {
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [gridCols, setGridCols] = useState(2);
@@ -4960,6 +5006,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
               onTouchStart={() => startLongPress(g)}
               onTouchEnd={cancelLongPress}
               onTouchMove={cancelLongPress}
+              hideSaleStatus={guestMode}
             />
           ))}
         </div>
@@ -5031,6 +5078,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           onChange={setFilters}
           onClose={() => setFilterModalOpen(false)}
           onReset={() => { setFilters({ categories: [], mechanisms: [], publishers: [], complexity: [], saleStatus: "", players: "", minRating: "" }); setStatusFilter("owned"); }}
+          guestMode={guestMode}
         />
       )}
       {createListOpen && (
@@ -5767,7 +5815,7 @@ ${buildCollectionContextForAI(games, plays)}`;
 /* ---------------- GAME DETAIL VIEW ---------------- */
 const TONE_HEX = { teal: "#4E8C82", amber: "#E85D9C", red: "#C1443C", default: "#A39C8F" };
 
-function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList, onClose, onEdit, onViewOther }) {
+function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList, onClose, onEdit, onViewOther, readOnlyLabel, hidePrices, onQuickUpdate }) {
   const [campaignOpen, setCampaignOpen] = useState(false);
   const campaignSwipe = useEdgeSwipeBack(() => setCampaignOpen(false));
   const gamePlays = plays.filter((p) => p.gameId === game.id);
@@ -5815,9 +5863,9 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
           )}
           {onEdit ? (
             <button onClick={onEdit} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" aria-label="Bearbeiten"><Pencil size={16} /></button>
-          ) : (
-            <span className="glass text-[10px] text-[#F2EDE4] px-2 py-1 border border-white/15 rounded-full">Demo</span>
-          )}
+          ) : readOnlyLabel ? (
+            <span className="glass text-[10px] text-[#F2EDE4] px-2 py-1 border border-white/15 rounded-full">{readOnlyLabel}</span>
+          ) : null}
         </div>
         <div className="overflow-y-auto flex-1 p-5 space-y-5" style={{ paddingTop: "calc(max(1rem, env(safe-area-inset-top)) + 3rem)", backgroundImage: `linear-gradient(180deg, ${accentColor}35, transparent 220px)` }}>
           <div>
@@ -5887,6 +5935,22 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
             />
           </div>
 
+          {onQuickUpdate && game.status === "owned" && (
+            <div>
+              <button type="button" onClick={() => onQuickUpdate(game.id, { lentTo: game.lentTo ? "" : " " })}
+                className={`w-full h-12 flex items-center justify-between px-3.5 rounded-[14px] border ${game.lentTo ? "bg-[#D4A24C]/15 border-[#D4A24C]/40" : "bg-transparent border-[#3A3631]"}`}>
+                <span className={`text-sm flex items-center gap-2 ${game.lentTo ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}><Handshake size={16} /> Verliehen</span>
+                <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${game.lentTo ? "bg-[#D4A24C] justify-end" : "bg-[#3A3631] justify-start"}`}>
+                  <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
+                </div>
+              </button>
+              {game.lentTo && (
+                <input value={game.lentTo.trim()} onChange={(e) => onQuickUpdate(game.id, { lentTo: e.target.value })} onFocus={handleFocusScroll} placeholder="An wen?"
+                  className="w-full h-11 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base mt-2 focus:outline-none focus:border-[#D4A24C]" />
+              )}
+            </div>
+          )}
+
           {game.summary && (
             <div>
               <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-1">Zusammenfassung</p>
@@ -5940,7 +6004,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                     <div className="rte-content text-base text-[#F2EDE4]" dangerouslySetInnerHTML={{ __html: game.notes }} />
                   </div>
                 )}
-                {game.saleStatus && (game.purchasePrice || game.salePrice) && (
+                {!hidePrices && game.saleStatus && (game.purchasePrice || game.salePrice) && (
                   <div>
                     <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-1.5">{game.saleStatus === "sold" ? "Verkauft" : "Zum Verkauf"}</p>
                     <div className="flex items-center gap-3 flex-wrap">
@@ -6159,6 +6223,13 @@ function App() {
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [commandBarOpen, setCommandBarOpen] = useState(false);
   const [demoMode, setDemoMode] = useState(false);
+  // Guest mode: hand the phone to someone so they can pick a game to play.
+  // Unlike demo mode, it shows the REAL collection — just read-only, and with
+  // financial info (prices, sale status) hidden. Persisted across reloads on
+  // purpose, so it doesn't accidentally fall back to full access.
+  const [guestMode, setGuestMode] = useState(() => loadKey("spielregal:guestMode", false));
+  useEffect(() => { saveKey("spielregal:guestMode", guestMode); }, [guestMode]);
+  const readOnly = demoMode || guestMode;
   const [lists, setLists] = useState(() => loadKey(LISTS_KEY, []));
   const [players, setPlayersList] = useState(() => loadKey(PLAYERS_KEY, []));
   const [celebrate, setCelebrate] = useState(false);
@@ -6461,6 +6532,7 @@ function App() {
     });
   };
   const saveGame = (game) => { applyGameSave(game); setGameModal(null); };
+  const updateGameField = (id, patch) => setGames((prev) => prev.map((g) => (g.id === id ? { ...g, ...patch } : g)));
   const saveGameAndNavigate = (game, direction) => {
     applyGameSave(game);
     const list = displayGames;
@@ -6643,10 +6715,19 @@ function App() {
         </div>
         <div key={tab} className="tab-fade">
           {tab === "dashboard" && <Dashboard games={displayGames} plays={displayPlays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} onView={(g) => setDetailGame(g)} sectionOrder={dashboardOrder} onReorder={setDashboardOrder} hiddenSections={hiddenDashboardSections} onToggleHidden={setHiddenDashboardSections} onSearch={() => setCommandBarOpen(true)} aiWorkerUrl={aiWorkerUrl} />}
-          {tab === "collection" && <Collection games={displayGames} plays={displayPlays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => !demoMode && setGameModal({ editing: null })} onView={(g) => setDetailGame(g)} onEdit={(g) => setGameModal({ editing: g })} onDelete={(g) => deleteGame(g.id)} categoryOptions={categoryOptions} mechanismOptions={mechanismOptions} demoMode={demoMode} lists={displayLists} onCreateList={(name) => !demoMode && addList(name)} onOpenList={(l) => setDetailList(l)} />}
-          {tab === "playlog" && <PlayLog plays={displayPlays} games={displayGames} onAdd={() => !demoMode && setPlayModal({ editing: null })} onEdit={(p) => !demoMode && setPlayModal({ editing: p })} onDelete={deletePlay} demoMode={demoMode} />}
+          {tab === "collection" && <Collection games={displayGames} plays={displayPlays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => !readOnly && setGameModal({ editing: null })} onView={(g) => setDetailGame(g)} onEdit={(g) => setGameModal({ editing: g })} onDelete={(g) => deleteGame(g.id)} categoryOptions={categoryOptions} mechanismOptions={mechanismOptions} demoMode={readOnly} guestMode={guestMode} lists={displayLists} onCreateList={(name) => !readOnly && addList(name)} onOpenList={(l) => setDetailList(l)} />}
+          {tab === "playlog" && <PlayLog plays={displayPlays} games={displayGames} onAdd={() => !readOnly && setPlayModal({ editing: null })} onEdit={(p) => !readOnly && setPlayModal({ editing: p })} onDelete={deletePlay} demoMode={readOnly} />}
           {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} onView={(g) => setDetailGame(g)} aiWorkerUrl={aiWorkerUrl} chatMessages={aiChatMessages} setChatMessages={setAiChatMessages} onAddWishlist={addToWishlistFromRecommendation} />}
-          {tab === "settings" && (
+          {tab === "settings" && (guestMode ? (
+            <div className="p-5 min-h-full flex flex-col items-center justify-center text-center">
+              <Eye size={40} className="text-[#5C574F] mb-4" />
+              <h1 className="font-display text-2xl text-[#F2EDE4] mb-1.5">Gästemodus aktiv</h1>
+              <p className="text-sm text-[#A39C8F] max-w-xs mb-6">Preise, Bearbeiten und Einstellungen sind ausgeblendet. Zum Spiele-Aussuchen reicht das aber allemal.</p>
+              <button onClick={() => setGuestMode(false)} className="h-12 px-6 bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] rounded-[14px] font-medium">
+                Gästemodus beenden
+              </button>
+            </div>
+          ) : (
             <SettingsPage
               customCategories={customCategories}
               customMechanisms={customMechanisms}
@@ -6659,6 +6740,8 @@ function App() {
               onRemovePlayerType={removeCustomPlayerType}
               demoMode={demoMode}
               onToggleDemo={() => setDemoMode((d) => !d)}
+              guestMode={guestMode}
+              onToggleGuest={() => setGuestMode((g) => !g)}
               syncUrl={syncUrl}
               syncStatus={syncStatus}
               onOpenSync={() => setSyncModalOpen(true)}
@@ -6672,7 +6755,7 @@ function App() {
               aiWorkerUrl={aiWorkerUrl}
               onSaveAiWorkerUrl={saveAiWorkerUrl}
             />
-          )}
+          ))}
         </div>
       </div>
       <div className="absolute bottom-0 left-0 right-0 px-4 z-40 pointer-events-none" style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
@@ -6711,12 +6794,15 @@ function App() {
           game={detailGame}
           games={displayGames}
           plays={displayPlays}
-          lists={demoMode ? null : displayLists}
-          onToggleList={demoMode ? null : toggleGameInList}
-          onCreateList={demoMode ? null : addList}
+          lists={readOnly ? null : displayLists}
+          onToggleList={readOnly ? null : toggleGameInList}
+          onCreateList={readOnly ? null : addList}
           onClose={() => setDetailGame(null)}
-          onEdit={demoMode ? null : () => { setGameModal({ editing: detailGame }); setDetailGame(null); }}
+          onEdit={readOnly ? null : () => { setGameModal({ editing: detailGame }); setDetailGame(null); }}
           onViewOther={(g) => setDetailGame(g)}
+          readOnlyLabel={demoMode ? "Demo" : guestMode ? "Gast" : null}
+          hidePrices={guestMode}
+          onQuickUpdate={readOnly ? null : updateGameField}
         />
       )}
       {detailList && (
@@ -6724,7 +6810,8 @@ function App() {
           list={displayLists.find((l) => l.id === detailList.id) || detailList}
           games={displayGames}
           plays={displayPlays}
-          demoMode={demoMode}
+          demoMode={readOnly}
+          guestMode={guestMode}
           onClose={() => setDetailList(null)}
           onView={(g) => setDetailGame(g)}
           onEdit={(g) => setGameModal({ editing: g })}
