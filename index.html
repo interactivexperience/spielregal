@@ -844,7 +844,7 @@ function demoCover(text, bg, fg) {
   return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
 }
 const DEMO_GAMES = [
-  { id: "demo-1", name: "Vogelflug", germanName: "Flügelschlag", primaryTitle: "german", year: "2019", publishers: ["Feuerland Spiele"], designers: ["Elizabeth Hargrave"], images: [demoCover("Vogelflug", "#3E5C4A", "#F2EDE4"), demoCover("Spielplan", "#2E4A3A", "#F2EDE4"), demoCover("Kartendeck", "#4A6B4E", "#F2EDE4")], minPlayers: "1", maxPlayers: "5", bestPlayers: "3", minTime: "40", maxTime: "70", complexity: "2.4", mechanisms: ["Engine Building", "Hand Management", "Set Collection"], categories: ["Animals", "Card Game"], playerTypes: ["Sammler", "Entspannte Runde", "Optimierer"], status: "owned", format: "analog", location: "Regal 2", summary: "<p>In <b>Vogelflug</b> baust du über mehrere Runden ein blühendes Habitat für Vögel auf und legst Karten in drei verschiedene Lebensräume.</p><p>Jeder Vogel bringt eigene Fähigkeiten mit, die sich im Laufe der Partie zu kleinen Ketten-Reaktionen verbinden.</p>", notes: "Wunderschöne Illustrationen, entspanntes Spielgefühl.", rating: "9", addedDate: "2025-03-01" },
+  { id: "demo-1", name: "Vogelflug", germanName: "Flügelschlag", primaryTitle: "german", year: "2019", publishers: ["Feuerland Spiele"], designers: ["Elizabeth Hargrave"], images: [demoCover("Vogelflug", "#3E5C4A", "#F2EDE4"), demoCover("Spielplan", "#2E4A3A", "#F2EDE4"), demoCover("Kartendeck", "#4A6B4E", "#F2EDE4")], minPlayers: "1", maxPlayers: "5", bestPlayers: "3", minTime: "40", maxTime: "70", complexity: "2.4", mechanisms: ["Engine Building", "Hand Management", "Set Collection"], categories: ["Animals", "Card Game"], playerTypes: ["Sammler", "Entspannte Runde", "Optimierer"], status: "owned", format: "analog", lentTo: "Mia", location: "Regal 2", summary: "<p>In <b>Vogelflug</b> baust du über mehrere Runden ein blühendes Habitat für Vögel auf und legst Karten in drei verschiedene Lebensräume.</p><p>Jeder Vogel bringt eigene Fähigkeiten mit, die sich im Laufe der Partie zu kleinen Ketten-Reaktionen verbinden.</p>", notes: "Wunderschöne Illustrationen, entspanntes Spielgefühl.", rating: "9", addedDate: "2025-03-01" },
   { id: "demo-2", name: "Handelswege", year: "2021", publishers: ["Hans im Glück"], designers: ["Andreas Steding"], images: [demoCover("Handelswege", "#8A5A3B", "#F2EDE4")], minPlayers: "2", maxPlayers: "4", bestPlayers: "3", minTime: "30", maxTime: "45", complexity: "1.6", mechanisms: ["Route/Network Building", "Set Collection"], categories: ["Trains", "Card Game"], playerTypes: ["Familienspieler", "Einsteiger"], status: "owned", format: "digital", location: "Regal 1", summary: "<p>Verbinde Städte mit Handelsrouten und sammle Warenkarten, um am Ende der Partie die meisten Punkte zu erzielen.</p>", notes: "Auf dem iPad gekauft, spielen wir unterwegs.", rating: "7", addedDate: "2024-11-12" },
   { id: "demo-3", name: "Sternenreich", year: "2023", publishers: ["Pegasus Spiele", "Stronghold Games"], designers: ["Simone Luciani", "Daniele Tascini"], images: [demoCover("Sternenreich", "#2E2B5C", "#F2EDE4"), demoCover("Raumstation", "#221F4A", "#F2EDE4")], minPlayers: "2", maxPlayers: "4", bestPlayers: "2", minTime: "90", maxTime: "150", complexity: "4.1", mechanisms: ["Worker Placement", "Engine Building", "Variable Player Powers"], categories: ["Economic", "Space Exploration"], playerTypes: ["Optimierer", "Taktiker", "Vielspieler"], status: "owned", format: "analog", saleStatus: "forSale", purchasePrice: "59.90", location: "Regal 3", summary: "<p>Als Anführer einer Raumfahrernation baust du eine Wirtschaft auf, entsendest Arbeiter ins All und entwickelst Technologien.</p><p>Braucht einen ganzen Abend, lohnt sich aber.</p>", notes: "Braucht einen ganzen Abend, lohnt sich aber. Kommt bei uns leider zu selten auf den Tisch.", rating: "8", addedDate: "2025-01-20" },
   { id: "demo-4", name: "Trubel im Turm", year: "2020", publishers: ["Kosmos"], designers: [], images: [demoCover("Trubel im Turm", "#B0473E", "#F2EDE4")], minPlayers: "3", maxPlayers: "8", bestPlayers: "6", minTime: "20", maxTime: "20", complexity: "1.2", mechanisms: ["Simultaneous Action Selection", "Voting"], categories: ["Party Game", "Humor"], playerTypes: ["Party-Menschen", "Gelegenheitsspieler"], status: "owned", format: "analog", saleStatus: "sold", purchasePrice: "24.99", salePrice: "15", location: "Regal 1", summary: "<p>Ein kurzweiliges Partyspiel für große Runden — schnell erklärt, viel Gelächter garantiert.</p>", notes: "", rating: "6", addedDate: "2024-06-05" },
@@ -2623,25 +2623,29 @@ function GameGridCard({ game: g, expansions = [], playCounts = {}, gridCols = 2,
 const Cover = ({ game, size = "md", className: extraClass = "" }) => {
   const dims = size === "sm" ? "w-12 h-12" : size === "lg" ? "w-full aspect-square" : "w-16 h-16";
   const img = (game.images && game.images[0]) || game.image; // game.image kept as fallback for older saved entries
-  const lentBadge = game.lentTo && game.lentTo.trim() && (
+  const isLent = game.lentTo && game.lentTo.trim();
+  const lentTint = isLent && (
+    <div className="absolute inset-0 bg-[#C9A9E0] mix-blend-multiply opacity-40 rounded-lg pointer-events-none" />
+  );
+  const lentBadge = isLent && (
     size === "lg" ? (
-      <span className="absolute bottom-0 left-0 right-0 bg-[#D4A24C] text-[#1C1B1A] text-xs font-body font-semibold flex items-center justify-center gap-1.5 py-1.5 rounded-b-lg" title={`Verliehen an ${game.lentTo.trim()}`}>
-        <Handshake size={13} strokeWidth={2.5} /> Verliehen an {game.lentTo.trim()}
+      <span className="absolute bottom-0 left-0 right-0 bg-[#F4E842] text-[#1C1B1A] text-xs font-body font-semibold flex items-center justify-center py-1.5 rounded-b-lg" title={`Verliehen an ${game.lentTo.trim()}`}>
+        Verliehen an {game.lentTo.trim()}
       </span>
     ) : (
-      <span className="absolute bottom-[4px] right-[4px] bg-[#D4A24C] text-[#1C1B1A] border-2 border-[#1C1B1A] rounded-full flex items-center justify-center" style={{ width: 20, height: 20 }} title={`Verliehen an ${game.lentTo.trim()}`}>
-        <Handshake size={11} strokeWidth={2.75} />
-      </span>
+      <span className="absolute bottom-[4px] right-[4px] bg-[#F4E842] border-2 border-[#1C1B1A] rounded-full" style={{ width: 14, height: 14 }} title={`Verliehen an ${game.lentTo.trim()}`} />
     )
   );
   return img ? (
     <span className={`relative inline-block ${dims} ${extraClass}`}>
       <img src={img} alt={game.name} className={`w-full h-full block object-cover rounded-lg border border-[#3A3631] ${game.saleStatus ? "grayscale" : ""} ${extraClass}`} />
+      {lentTint}
       {lentBadge}
     </span>
   ) : (
     <span className={`relative inline-flex ${dims} rounded-lg border border-[#3A3631] bg-[#2E2B28] items-center justify-center text-[#5C574F] ${extraClass}`}>
       <Dices size={size === "lg" ? 28 : 18} />
+      {lentTint}
       {lentBadge}
     </span>
   );
@@ -3178,7 +3182,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             {(form.status === "owned" || form.status === "none") && (
               <button type="button" onClick={() => update("format", form.format === "digital" ? "analog" : "digital")}
                 className={`w-full h-12 flex items-center justify-between px-3.5 rounded-[14px] border ${form.format === "digital" ? "bg-[#8B9AFA]/15 border-[#8B9AFA]/40" : "bg-transparent border-[#3A3631]"}`}>
-                <span className={`text-sm ${form.format === "digital" ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>Digital {form.status === "owned" ? "besessen" : "gespielt"}</span>
+                <span className={`text-sm ${form.format === "digital" ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>{form.status === "owned" ? "Digitale Version" : "Digital gespielt"}</span>
                 <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.format === "digital" ? "bg-[#8B9AFA] justify-end" : "bg-[#3A3631] justify-start"}`}>
                   <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
                 </div>
