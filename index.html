@@ -239,6 +239,21 @@ function formatDate(iso) {
 function winnersOf(play) {
   return (play && play.winner ? play.winner : "").split(",").map((n) => n.trim()).filter(Boolean);
 }
+// Search should find a game by either its original or its German title —
+// people search for whichever one they remember.
+function gameMatchesQuery(g, q) {
+  const query = (q || "").trim().toLowerCase();
+  if (!query) return true;
+  return g.name.toLowerCase().includes(query) || (g.germanName && g.germanName.toLowerCase().includes(query));
+}
+// For result lists: show both titles together when both exist and differ, so
+// it's clear which game matched — e.g. "Vogelflug (Flügelschlag)".
+function gameSearchLabel(g) {
+  if (g.germanName && g.germanName.trim() && g.germanName.trim() !== g.name.trim()) {
+    return `${g.name} (${g.germanName.trim()})`;
+  }
+  return g.name;
+}
 function complexityStepTone(v) {
   if (v < 2) return "#4E8C82"; // Familienspiel
   if (v < 3.5) return "#E85D9C"; // Kennerspiel
@@ -1083,21 +1098,21 @@ function StarRating({ value, onChange }) {
 function SearchInput({ value, onChange, placeholder, autoFocus, className = "", inputClassName = "" }) {
   return (
     <div className={`relative ${className}`}>
-      <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5C574F] pointer-events-none" />
+      <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#F2EDE4]/70 pointer-events-none" />
       <input
         autoFocus={autoFocus}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onFocus={handleFocusScroll}
         placeholder={placeholder}
-        className={`w-full pl-10 text-[#F2EDE4] font-body focus:outline-none focus:border-[#E85D9C] ${value ? "pr-10" : "pr-3.5"} ${inputClassName}`}
+        className={`w-full pl-10 text-[#F2EDE4] placeholder-[#F2EDE4]/60 font-body focus:outline-none focus:border-[#E85D9C] ${value ? "pr-10" : "pr-3.5"} ${inputClassName}`}
       />
       {value && (
         <button
           type="button"
           onClick={() => onChange("")}
           aria-label="Suche löschen"
-          className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-full text-[#5C574F] active:bg-white/5"
+          className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-full text-[#F2EDE4]/80 active:bg-white/10"
         >
           <X size={15} />
         </button>
@@ -1605,7 +1620,7 @@ function GameSearchPicker({ games, excludeId, filter, selectedId, onSelect, plac
     if (filter) pool = pool.filter(filter);
     const sorted = [...pool].sort((a, b) => a.name.localeCompare(b.name, "de"));
     if (!query.trim() || query === (selectedGame && selectedGame.name)) return sorted;
-    return sorted.filter((g) => g.name.toLowerCase().includes(query.trim().toLowerCase()));
+    return sorted.filter((g) => gameMatchesQuery(g, query));
   }, [games, excludeId, filter, query, selectedGame]);
   return (
     <div className="relative">
@@ -1626,7 +1641,7 @@ function GameSearchPicker({ games, excludeId, filter, selectedId, onSelect, plac
               onClick={() => { onSelect(g.id); setQuery(g.name); setFocused(false); }}
               className="w-full text-left px-3.5 py-2 text-sm text-[#F2EDE4] active:bg-white/5 truncate"
             >
-              {g.name}
+              {gameSearchLabel(g)}
             </button>
           ))}
         </div>
@@ -1663,6 +1678,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
   }, [games]);
   const [manualMergeKeep, setManualMergeKeep] = useState("");
   const [manualMergeDrop, setManualMergeDrop] = useState("");
+  const [mergeFeedback, setMergeFeedback] = useState(null);
   const [exportCopied, setExportCopied] = useState(false);
   const [catInput, setCatInput] = useState("");
   const [mechInput, setMechInput] = useState("");
@@ -1776,6 +1792,12 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     return (
       <SettingsSubPage title="Mögliche Duplikate" onBack={() => setView("menu")}>
         <div>
+          {mergeFeedback && (
+            <div className="mb-3 bg-[#4E8C82]/15 border border-[#4E8C82]/40 rounded-[14px] px-3.5 py-2.5 flex items-center gap-2">
+              <Check size={15} className="text-[#7FB3AA] shrink-0" />
+              <p className="text-xs text-[#F2EDE4]">"{mergeFeedback.dropped}" wurde gelöscht, alle Partien laufen jetzt unter "{mergeFeedback.kept}".</p>
+            </div>
+          )}
           <p className="text-xs text-[#5C574F] mb-2">Diese Spiele haben sehr ähnliche Namen — vermutlich entstanden beim Import doppelte Einträge. Zusammenführen verschiebt alle Partien auf den behaltenen Eintrag und löscht den anderen.</p>
           <div className="space-y-2">
             {duplicateGroups.map((group) => (
@@ -1791,7 +1813,11 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
                         <p className="text-[#5C574F] text-xs font-body">{count} Partie{count === 1 ? "" : "n"}</p>
                       </div>
                       <button
-                        onClick={() => others.forEach((o) => onMergeGames(g.id, o.id))}
+                        onClick={() => {
+                          others.forEach((o) => onMergeGames(g.id, o.id));
+                          setMergeFeedback({ kept: g.name, dropped: others.map((o) => o.name).join(", ") });
+                          setTimeout(() => setMergeFeedback(null), 5000);
+                        }}
                         className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium bg-[#E85D9C]/15 text-[#E85D9C]"
                       >
                         Diesen behalten
@@ -1799,6 +1825,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
                     </div>
                   );
                 })}
+                <p className="text-[10px] text-[#5C574F] px-1 pt-1">Klick bei einem Eintrag auf "Diesen behalten" — die anderen {group.length > 2 ? "in dieser Gruppe" : "hier"} werden gelöscht, ihre Partien auf den behaltenen Eintrag übertragen.</p>
               </div>
             ))}
             {duplicateGroups.length === 0 && <p className="text-xs text-[#5C574F]">Keine automatisch erkannten Duplikate.</p>}
@@ -1806,12 +1833,27 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
 
           <div className="mt-6 pt-5 border-t border-[#3A3631]">
             <h3 className="font-display text-base text-[#F2EDE4] mb-1">Manuell zusammenführen</h3>
-            <p className="text-xs text-[#5C574F] mb-3">Für Spiele mit unterschiedlichem Namen, die trotzdem dasselbe sind (z.B. verschiedene Editionen). Wähl aus, welches Spiel du behalten willst — Partien des anderen werden übernommen, der andere Eintrag wird gelöscht.</p>
+            <p className="text-xs text-[#5C574F] mb-3">Für Spiele mit unterschiedlichem Namen, die trotzdem dasselbe sind (z.B. verschiedene Editionen).</p>
             <div className="space-y-2.5">
-              <GameSearchPicker games={games} selectedId={manualMergeKeep} onSelect={setManualMergeKeep} placeholder="Behalten: Spiel suchen…" />
-              <GameSearchPicker games={games} excludeId={manualMergeKeep} selectedId={manualMergeDrop} onSelect={setManualMergeDrop} placeholder="Zusammenführen mit…" />
+              <div>
+                <label className="block text-[11px] text-[#5C574F] mb-1">Bleibt bestehen</label>
+                <GameSearchPicker games={games} selectedId={manualMergeKeep} onSelect={setManualMergeKeep} placeholder="Spiel suchen…" />
+              </div>
+              <div>
+                <label className="block text-[11px] text-[#5C574F] mb-1">Wird gelöscht (Partien übernommen)</label>
+                <GameSearchPicker games={games} excludeId={manualMergeKeep} selectedId={manualMergeDrop} onSelect={setManualMergeDrop} placeholder="Spiel suchen…" />
+              </div>
               <button
-                onClick={() => { if (manualMergeKeep && manualMergeDrop && manualMergeKeep !== manualMergeDrop) { onMergeGames(manualMergeKeep, manualMergeDrop); setManualMergeKeep(""); setManualMergeDrop(""); } }}
+                onClick={() => {
+                  if (manualMergeKeep && manualMergeDrop && manualMergeKeep !== manualMergeDrop) {
+                    const keptGame = games.find((g) => g.id === manualMergeKeep);
+                    const droppedGame = games.find((g) => g.id === manualMergeDrop);
+                    onMergeGames(manualMergeKeep, manualMergeDrop);
+                    setMergeFeedback({ kept: keptGame ? keptGame.name : "?", dropped: droppedGame ? droppedGame.name : "?" });
+                    setTimeout(() => setMergeFeedback(null), 5000);
+                    setManualMergeKeep(""); setManualMergeDrop("");
+                  }
+                }}
                 disabled={!manualMergeKeep || !manualMergeDrop || manualMergeKeep === manualMergeDrop}
                 className="w-full h-12 bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] disabled:opacity-30 text-[#F2EDE4] rounded-[14px] font-medium"
               >
@@ -2426,8 +2468,9 @@ function buildCollectionContextForAI(games, plays) {
     const time = g.minTime ? `${g.minTime}-${g.maxTime} Min.` : "Dauer unbekannt";
     const comp = complexityLabel(g) || "Komplexität unbekannt";
     const rating = g.rating ? `, deine Bewertung ${g.rating}/10` : "";
+    const sale = g.saleStatus === "sold" ? " | STATUS: bereits verkauft" : g.saleStatus === "forSale" ? " | STATUS: zum Verkauf markiert" : "";
     const desc = g.summary ? ` | Beschreibung: ${g.summary.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 220)}` : "";
-    return `- ${g.name} | ${players} | ${time} | ${comp} | Themen: ${tags || "-"} | ${count}× gespielt${count === 0 ? " (noch nie gespielt)" : ""}${rating}${desc}`;
+    return `- ${g.name} | ${players} | ${time} | ${comp} | Themen: ${tags || "-"} | ${count}× gespielt${count === 0 ? " (noch nie gespielt)" : ""}${rating}${sale}${desc}`;
   });
   const recentPlays = [...plays].sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 8)
     .map((p) => `${p.gameName} am ${formatDate(p.date)}`).join("; ");
@@ -2538,6 +2581,7 @@ function GameGridCard({ game: g, expansions = [], playCounts = {}, gridCols = 2,
   const items = expansions.length > 0 ? [g, ...expansions] : [g];
   const [slide, setSlide] = useState(0);
   const active = items[Math.min(slide, items.length - 1)];
+  const isLentActive = active.lentTo && active.lentTo.trim();
   const playCount = playCounts[active.id] || 0;
   const dragStartX = React.useRef(null);
   const dragDeltaX = React.useRef(0);
@@ -2610,8 +2654,8 @@ function GameGridCard({ game: g, expansions = [], playCounts = {}, gridCols = 2,
           </span>
         )}
         {expansions.length > 0 && (
-          <span className="absolute flex items-center leading-none gap-0.5 bg-black/70 border border-white/15 text-[#F2EDE4] text-[10px] font-body px-1.5 py-0.5 rounded-full" style={{ bottom: 4, right: 4 }}>
-            <Layers size={9} /> +{expansions.length}
+          <span className="absolute flex items-center leading-none gap-0.5 bg-black/70 border border-white/15 text-[#F2EDE4] text-[10px] font-body px-1.5 py-0.5 rounded-full" style={{ bottom: isLentActive ? 32 : 4, right: 4 }}>
+            {active.expansionOf ? (<><Layers size={9} /> Erweiterung</>) : (<><Layers size={9} /> +{expansions.length}</>)}
           </span>
         )}
       </div>
@@ -2625,9 +2669,6 @@ function GameGridCard({ game: g, expansions = [], playCounts = {}, gridCols = 2,
       {gridCols === 2 && (
         <div className="px-1.5 pt-2 pb-1">
           <p className="font-body text-[#F2EDE4] text-sm font-medium leading-tight truncate">{active.name}</p>
-          {active.expansionOf && (
-            <p className="flex items-center gap-1 text-[9px] text-[#8B9AFA] truncate mt-0.5"><Layers size={9} className="shrink-0" /> Erweiterung</p>
-          )}
           <div className="flex items-center gap-1.5 mt-1 flex-wrap">
             {active.rating ? (
               <span className="flex items-center gap-0.5 text-[10px] text-[#D4A24C] font-mono"><Star size={10} fill="currentColor" /> {active.rating}</span>
@@ -2819,7 +2860,7 @@ function SearchStepSheet({ query, setQuery, runSearch, searching, searchError, r
     </div>
   );
 }
-function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOptions, playerTypeOptions, designerOptions, customPlayerTypeDescriptions, onAddCategory, onAddMechanism, onAddPlayerType, onClose, onSave, onDelete, aiWorkerUrl, games, onSaveAndNavigate, hasPrev, hasNext }) {
+function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOptions, playerTypeOptions, designerOptions, customPlayerTypeDescriptions, onAddCategory, onAddMechanism, onAddPlayerType, onClose, onSave, onDelete, aiWorkerUrl, games, onSaveAndNavigate, hasPrev, hasNext, onUpdateOtherGame }) {
   const [pitchLoading, setPitchLoading] = useState(false);
   const [saveCelebrating, setSaveCelebrating] = useState(false);
   const handleSaveClick = () => {
@@ -3023,8 +3064,19 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
   };
 
   const update = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+  const setExpansionLink = (childId, baseId) => onUpdateOtherGame && onUpdateOtherGame(childId, { expansionOf: baseId });
+  const childExpansions = games.filter((g) => g.expansionOf === form.id);
+  const updateSaleStatus = (v) => {
+    update("saleStatus", v);
+    // Ein Basisspiel gibt seinen neuen Verkaufsstatus als Startpunkt an alle
+    // Erweiterungen weiter — kann bei jeder Erweiterung danach noch einzeln
+    // manuell geändert werden.
+    if (onUpdateOtherGame && childExpansions.length > 0) {
+      childExpansions.forEach((exp) => onUpdateOtherGame(exp.id, { saleStatus: v }));
+    }
+  };
   const [formTitleCollapsed, setFormTitleCollapsed] = useState(false);
-  const formTitle = initial ? (form.name || "Spiel bearbeiten") : step === "search" ? "Spiel suchen" : "Details";
+  const formTitle = initial ? (form.name || "Spiel bearbeiten") : step === "search" ? "Spiel suchen" : (form.name || "Neues Spiel");
 
   if (step === "search") {
     return (
@@ -3092,6 +3144,12 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
                 />
               </div>
             )}
+            <div>
+              <label className="block text-[11px] text-[#5C574F]">Deine Bewertung</label>
+              <div className="mt-1.5">
+                <StarRating value={form.rating} onChange={(v) => update("rating", v)} />
+              </div>
+            </div>
             <input value={form.year} onChange={(e) => update("year", e.target.value.replace(/[^0-9]/g, "").slice(0, 4))} placeholder="Erscheinungsjahr" inputMode="numeric"
               className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#E85D9C] ${form.year ? "bg-[#262422]" : "bg-transparent"}`} />
             <div>
@@ -3104,8 +3162,8 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             <div>
               <label className="block text-[11px] text-[#5C574F]">Verlag</label>
               <button type="button" onClick={() => setPickerOpen("publishers")}
-                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex items-start gap-1.5 ${form.publishers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
+                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.publishers.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.publishers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 ${form.publishers.length === 1 ? "justify-center text-center" : "items-center"}`}>
                   {form.publishers.length ? form.publishers.map((p) => <Pill key={p}>{p}</Pill>) : "Verlag auswählen…"}
                 </span>
                 <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
@@ -3118,8 +3176,8 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             <div>
               <label className="block text-[11px] text-[#5C574F]">Designer</label>
               <button type="button" onClick={() => setPickerOpen("designers")}
-                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex items-start gap-1.5 ${form.designers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
+                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.designers.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.designers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 ${form.designers.length === 1 ? "justify-center text-center" : "items-center"}`}>
                   {form.designers.length ? form.designers.map((d) => <Pill key={d}>{d}</Pill>) : "Designer auswählen…"}
                 </span>
                 <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
@@ -3167,8 +3225,8 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             <div>
               <label className="block text-[11px] text-[#5C574F]">Mechanismen</label>
               <button type="button" onClick={() => setPickerOpen("mechanisms")}
-                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex items-start gap-1.5 ${form.mechanisms.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
+                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.mechanisms.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.mechanisms.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 ${form.mechanisms.length === 1 ? "justify-center text-center" : "items-center"}`}>
                   {form.mechanisms.length ? form.mechanisms.map((m) => {
                     const MIcon = tagIcon(m);
                     return <Pill key={m}><MIcon size={10} className="inline -mt-0.5 mr-0.5" />{m}</Pill>;
@@ -3180,8 +3238,8 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             <div>
               <label className="block text-[11px] text-[#5C574F]">Kategorien</label>
               <button type="button" onClick={() => setPickerOpen("categories")}
-                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex items-start gap-1.5 ${form.categories.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
+                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.categories.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.categories.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 ${form.categories.length === 1 ? "justify-center text-center" : "items-center"}`}>
                   {form.categories.length ? form.categories.map((c) => {
                     const CIcon = tagIcon(c);
                     return <Pill key={c}><CIcon size={10} className="inline -mt-0.5 mr-0.5" />{c}</Pill>;
@@ -3193,8 +3251,8 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             <div>
               <label className="block text-[11px] text-[#5C574F]">Spielertyp</label>
               <button type="button" onClick={() => setPickerOpen("playerTypes")}
-                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex items-start gap-1.5 ${form.playerTypes.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
-                <span className="flex-1 min-w-0 flex flex-wrap gap-1.5 items-center">
+                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.playerTypes.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.playerTypes.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 ${form.playerTypes.length === 1 ? "justify-center text-center" : "items-center"}`}>
                   {form.playerTypes.length ? form.playerTypes.map((t) => <Pill key={t}>{t}</Pill>) : "Spielertyp auswählen…"}
                 </span>
                 <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
@@ -3211,7 +3269,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             {(form.status === "owned" || form.status === "none") && (
               <button type="button" onClick={() => update("format", form.format === "digital" ? "analog" : "digital")}
                 className={`w-full h-12 flex items-center justify-between px-3.5 rounded-[14px] border ${form.format === "digital" ? "bg-[#8B9AFA]/15 border-[#8B9AFA]/40" : "bg-transparent border-[#3A3631]"}`}>
-                <span className={`text-sm ${form.format === "digital" ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>{form.status === "owned" ? "Digitale Version" : "Digital gespielt"}</span>
+                <span className={`text-base ${form.format === "digital" ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>{form.status === "owned" ? "Digitale Version" : "Digital gespielt"}</span>
                 <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.format === "digital" ? "bg-[#8B9AFA] justify-end" : "bg-[#3A3631] justify-start"}`}>
                   <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
                 </div>
@@ -3220,11 +3278,11 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
 
             {form.status === "owned" && (
               <div>
-                <label className="block text-[11px] text-[#5C574F] mb-1.5">Verkaufsstatus</label>
+                <label className="block text-[11px] text-[#5C574F] mb-1.5">Verkaufsstatus {childExpansions.length > 0 && <span className="text-[10px]">(wird an {childExpansions.length} Erweiterung{childExpansions.length === 1 ? "" : "en"} weitergegeben)</span>}</label>
                 <Segmented
                   options={[{ v: "", label: "Kein Verkauf" }, { v: "forSale", label: "Zum Verkauf" }, { v: "sold", label: "Verkauft" }]}
                   value={form.saleStatus || ""}
-                  onChange={(v) => update("saleStatus", v)}
+                  onChange={updateSaleStatus}
                 />
               </div>
             )}
@@ -3266,9 +3324,36 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               </div>
             )}
 
+            {initial && form.status === "owned" && !form.expansionOf && onUpdateOtherGame && (
+              <div>
+                <label className="block text-[11px] text-[#5C574F] mb-1.5">Erweiterungen dieses Spiels <span className="text-[10px]">(hier direkt verknüpfen, statt in jeder Erweiterung einzeln)</span></label>
+                {childExpansions.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {childExpansions.map((g) => (
+                      <span key={g.id} className="flex items-center gap-1.5 bg-[#262422] border border-[#3A3631] rounded-full pl-3 pr-1.5 py-1 text-[11px] text-[#F2EDE4]">
+                        {g.name}
+                        <button type="button" onClick={() => setExpansionLink(g.id, "")} className="w-5 h-5 flex items-center justify-center rounded-full text-[#5C574F] active:bg-white/5" aria-label={`${g.name} nicht mehr als Erweiterung verknüpfen`}>
+                          <X size={12} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <GameSearchPicker
+                  key={childExpansions.map((g) => g.id).join(",")}
+                  games={games}
+                  excludeId={form.id}
+                  filter={(g) => !g.expansionOf && g.id !== form.id}
+                  selectedId=""
+                  onSelect={(id) => { if (id) setExpansionLink(id, form.id); }}
+                  placeholder="Erweiterung suchen und verknüpfen…"
+                />
+              </div>
+            )}
+
             <button type="button" onClick={() => update("isCampaign", !form.isCampaign)}
               className={`w-full h-12 flex items-center justify-between px-3.5 rounded-[14px] border ${form.isCampaign ? "bg-[#E85D9C]/15 border-[#E85D9C]/40" : "bg-transparent border-[#3A3631]"}`}>
-              <span className={`text-sm ${form.isCampaign ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>Kampagnenspiel (Fortschritts-Historie)</span>
+              <span className={`text-base ${form.isCampaign ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>Kampagnenspiel (Fortschritts-Historie)</span>
               <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.isCampaign ? "bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] justify-end" : "bg-[#3A3631] justify-start"}`}>
                 <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
               </div>
@@ -3277,7 +3362,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             <div>
               <button type="button" onClick={() => update("lentTo", form.lentTo ? "" : " ")}
                 className={`w-full h-12 flex items-center justify-between px-3.5 rounded-[14px] border ${form.lentTo ? "bg-[#D4A24C]/15 border-[#D4A24C]/40" : "bg-transparent border-[#3A3631]"}`}>
-                <span className={`text-sm flex items-center gap-2 ${form.lentTo ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>Verliehen</span>
+                <span className={`text-base flex items-center gap-2 ${form.lentTo ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>Verliehen</span>
                 <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.lentTo ? "bg-[#D4A24C] justify-end" : "bg-[#3A3631] justify-start"}`}>
                   <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
                 </div>
@@ -3286,13 +3371,6 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
                 <input value={form.lentTo.trim()} onChange={(e) => update("lentTo", e.target.value)} placeholder="An wen?"
                   className="w-full h-11 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base mt-2 focus:outline-none focus:border-[#D4A24C]" />
               )}
-            </div>
-
-            <div>
-              <label className="block text-[11px] text-[#5C574F]">Deine Bewertung</label>
-              <div className="mt-1.5">
-                <StarRating value={form.rating} onChange={(v) => update("rating", v)} />
-              </div>
             </div>
 
             <div>
@@ -3599,7 +3677,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
   const filtered = useMemo(() => {
     const sorted = [...games].sort((a, b) => a.name.localeCompare(b.name, "de"));
     if (!gameQuery.trim()) return sorted;
-    return sorted.filter((g) => g.name.toLowerCase().includes(gameQuery.trim().toLowerCase()));
+    return sorted.filter((g) => gameMatchesQuery(g, gameQuery));
   }, [games, gameQuery]);
 
   const save = () => {
@@ -3635,7 +3713,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                 {filtered.map((g) => (
                   <button key={g.id} onClick={() => setSelectedGame(g)}
                     className="w-full text-left bg-[#262422] hover:bg-[#2E2B28] border border-[#3A3631] rounded-[14px] px-4 py-2.5 flex items-center gap-3">
-                    <Cover game={g} size="sm" /><span className="text-[#F2EDE4]">{g.name}</span>
+                    <Cover game={g} size="sm" /><span className="text-[#F2EDE4]">{gameSearchLabel(g)}</span>
                   </button>
                 ))}
                 {filtered.length === 0 && (
@@ -4479,7 +4557,7 @@ function AddGamesToListModal({ games, plays, list, onToggle, onClose, aiWorkerUr
   const [aiPicks, setAiPicks] = useState(null); // null = not run, [] = run but no matches, [...] = matched names
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
-  const filtered = games.filter((g) => g.name.toLowerCase().includes(query.toLowerCase()));
+  const filtered = games.filter((g) => gameMatchesQuery(g, query));
 
   // Local, instant "fits the list" signal (no AI needed): the categories/mechanisms
   // that show up most often among the games already in this list, used to flag
@@ -4537,7 +4615,7 @@ function AddGamesToListModal({ games, plays, list, onToggle, onClose, aiWorkerUr
                 <Cover game={g} size="sm" />
                 <div className="flex-1 min-w-0 text-left">
                   <p className="text-sm text-[#F2EDE4] truncate flex items-center gap-1.5">
-                    {g.name}
+                    {gameSearchLabel(g)}
                     {highlighted && <Sparkles size={11} className="text-[#E85D9C] shrink-0" />}
                   </p>
                   <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
@@ -4564,6 +4642,10 @@ function AddGamesToListModal({ games, plays, list, onToggle, onClose, aiWorkerUr
 function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDeleteList, onToggleGame, demoMode, guestMode, aiWorkerUrl }) {
   const [addOpen, setAddOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteMenuOpen, setDeleteMenuOpen] = useState(false);
+  const deleteMenuClose = useSheetClose(() => setDeleteMenuOpen(false));
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
   const [contextGame, setContextGame] = useState(null);
   const contextGameClose1 = useSheetClose(() => setContextGame(null));
   const longPressTimer = React.useRef(null);
@@ -4573,20 +4655,34 @@ function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDelete
     const map = {}; plays.forEach((p) => { map[p.gameId] = (map[p.gameId] || 0) + 1; }); return map;
   }, [plays]);
   const startLongPress = (g) => {
-    if (demoMode) return;
+    if (demoMode || selectMode) return;
     longPressFired.current = false;
     longPressTimer.current = setTimeout(() => { longPressFired.current = true; setContextGame(g); }, 500);
   };
   const cancelLongPress = () => { if (longPressTimer.current) clearTimeout(longPressTimer.current); };
+  const toggleSelected = (id) => { haptic(6); setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])); };
+  const removeSelected = () => {
+    selectedIds.forEach((id) => onToggleGame(list.id, id));
+    setSelectedIds([]);
+    setSelectMode(false);
+  };
 
   return (
     <div className="fixed inset-0 z-[55] bg-[#1C1B1A]">
       <div className="w-full h-full max-w-3xl mx-auto flex flex-col overflow-hidden">
         <div className="shrink-0 px-5 flex items-center justify-between" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
-          <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" aria-label="Zurück"><ChevronLeft size={22} /></button>
-          <h2 className="font-display text-xl text-[#F2EDE4] truncate px-2">{list.name}</h2>
+          {selectMode ? (
+            <button onClick={() => { setSelectMode(false); setSelectedIds([]); }} className="text-[#A39C8F] text-sm font-medium px-1">Abbrechen</button>
+          ) : (
+            <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" aria-label="Zurück"><ChevronLeft size={22} /></button>
+          )}
+          <h2 className="font-display text-xl text-[#F2EDE4] truncate px-2">{selectMode ? `${selectedIds.length} ausgewählt` : list.name}</h2>
           {!demoMode ? (
-            <button onClick={() => setConfirmDelete(true)} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#C1443C]" aria-label="Liste löschen"><Trash2 size={16} /></button>
+            selectMode ? (
+              <button onClick={removeSelected} disabled={selectedIds.length === 0} className="text-[#C1443C] text-sm font-medium px-1 disabled:opacity-30">Entfernen</button>
+            ) : (
+              <button onClick={() => setDeleteMenuOpen(true)} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#C1443C]" aria-label="Optionen"><Trash2 size={16} /></button>
+            )
           ) : <span className="w-8" />}
         </div>
         {confirmDelete && (
@@ -4604,23 +4700,33 @@ function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDelete
           ) : (
             <div className="grid grid-cols-2 gap-3">
               {listGames.map((g) => (
-                <GameGridCard
-                  key={g.id}
-                  game={g}
-                  playCounts={playCounts}
-                  gridCols={2}
-                  onClick={(activeGame) => { if (longPressFired.current) { longPressFired.current = false; return; } onView(activeGame); }}
-                  onTouchStart={() => startLongPress(g)}
-                  onTouchEnd={cancelLongPress}
-                  onTouchMove={cancelLongPress}
-                  hideSaleStatus={guestMode}
-                />
+                <div key={g.id} className="relative">
+                  <GameGridCard
+                    game={g}
+                    playCounts={playCounts}
+                    gridCols={2}
+                    onClick={(activeGame) => {
+                      if (selectMode) { toggleSelected(g.id); return; }
+                      if (longPressFired.current) { longPressFired.current = false; return; }
+                      onView(activeGame);
+                    }}
+                    onTouchStart={() => startLongPress(g)}
+                    onTouchEnd={cancelLongPress}
+                    onTouchMove={cancelLongPress}
+                    hideSaleStatus={guestMode}
+                  />
+                  {selectMode && (
+                    <div className={`absolute top-2 left-2 w-6 h-6 rounded-full border-2 flex items-center justify-center pointer-events-none ${selectedIds.includes(g.id) ? "bg-[#E85D9C] border-[#E85D9C]" : "bg-black/40 border-white/40"}`}>
+                      {selectedIds.includes(g.id) && <Check size={14} className="text-white" />}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           )}
         </div>
       </div>
-      {!demoMode && (
+      {!demoMode && !selectMode && (
         <button onClick={() => { haptic(8); setAddOpen(true); }} aria-label="Spiele hinzufügen"
           className="fixed z-30 left-1/2 -translate-x-1/2 text-[#F2EDE4] w-14 h-14 flex items-center justify-center rounded-full shadow-lg active:scale-95 border border-white/25"
           style={{ background: "conic-gradient(from 0deg, #ff5a96, #ffc850, #78dcff, #b482ff, #ff5a96)", boxShadow: "0 8px 24px rgba(180,130,255,0.45), inset 0 1px 1px rgba(255,255,255,0.4)", bottom: "calc(100px + env(safe-area-inset-bottom))" }}>
@@ -4629,6 +4735,20 @@ function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDelete
       )}
       {addOpen && (
         <AddGamesToListModal games={games} plays={plays} list={list} onToggle={(gameId) => onToggleGame(list.id, gameId)} onClose={() => setAddOpen(false)} aiWorkerUrl={aiWorkerUrl} />
+      )}
+      {deleteMenuOpen && (
+        <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[66] flex items-end justify-center p-0 ${deleteMenuClose.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={deleteMenuClose.requestClose}>
+          <div className={`glass border border-white/10 rounded-t-[28px] w-full font-body p-5 space-y-2 ${deleteMenuClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
+            <button onClick={() => { setSelectMode(true); deleteMenuClose.requestClose(); }} className="w-full h-12 flex items-center gap-3 px-3.5 bg-[#262422] border border-[#3A3631] rounded-[14px] text-[#F2EDE4] text-sm">
+              <Check size={16} /> Mehrere Spiele entfernen…
+            </button>
+            <button onClick={() => { setConfirmDelete(true); deleteMenuClose.requestClose(); }} className="w-full h-12 flex items-center gap-3 px-3.5 bg-[#262422] border border-[#3A3631] rounded-[14px] text-[#C1443C] text-sm">
+              <Trash2 size={16} /> Liste löschen
+            </button>
+            <button onClick={deleteMenuClose.requestClose} className="w-full text-center py-2 text-[#A39C8F] text-sm">Abbrechen</button>
+          </div>
+        </div>
       )}
       {contextGame && (
         <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[66] flex items-end justify-center p-0 ${contextGameClose1.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={contextGameClose1.requestClose}>
@@ -4658,7 +4778,7 @@ function CommandBarModal({ games, plays, lists, onClose, onOpenGame, onOpenList,
   const { closing, requestClose } = useSheetClose(onClose);
   const [query, setQuery] = useState("");
   const q = query.trim().toLowerCase();
-  const gameResults = q ? games.filter((g) => g.name.toLowerCase().includes(q)).slice(0, 6) : [];
+  const gameResults = q ? games.filter((g) => gameMatchesQuery(g, q)).slice(0, 6) : [];
   const listResults = q ? lists.filter((l) => l.name.toLowerCase().includes(q)).slice(0, 4) : [];
   const playResults = q ? plays.filter((p) => (p.gameName || "").toLowerCase().includes(q) || (p.players || "").toLowerCase().includes(q)).slice(0, 4) : [];
   const nothing = q && gameResults.length === 0 && listResults.length === 0 && playResults.length === 0;
@@ -4683,7 +4803,7 @@ function CommandBarModal({ games, plays, lists, onClose, onOpenGame, onOpenList,
               {gameResults.map((g) => (
                 <button key={g.id} onClick={() => onOpenGame(g)} className="w-full flex items-center gap-3 px-3 py-2 rounded-[14px] bg-[#262422] border border-[#3A3631]">
                   <Cover game={g} size="sm" />
-                  <span className="flex-1 min-w-0 text-left text-sm text-[#F2EDE4] truncate">{g.name}</span>
+                  <span className="flex-1 min-w-0 text-left text-sm text-[#F2EDE4] truncate">{gameSearchLabel(g)}</span>
                 </button>
               ))}
             </div>
@@ -4984,11 +5104,15 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
 function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit, onDelete, categoryOptions, mechanismOptions, demoMode, guestMode, lists, onCreateList, onOpenList }) {
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const [gridCols, setGridCols] = useState(2);
-  const [statusFilter, setStatusFilter] = useState("owned");
+  const [gridCols, setGridCols] = useState(() => loadKey("spielregal:collectionGridCols", 2));
+  useEffect(() => { saveKey("spielregal:collectionGridCols", gridCols); }, [gridCols]);
+  const [statusFilter, setStatusFilter] = useState(() => loadKey("spielregal:collectionStatusFilter", "owned"));
+  useEffect(() => { saveKey("spielregal:collectionStatusFilter", statusFilter); }, [statusFilter]);
   const [filterModalOpen, setFilterModalOpen] = useState(false);
-  const [filters, setFilters] = useState({ categories: [], mechanisms: [], publishers: [], complexity: [], saleStatus: [], players: "", minRating: "" });
-  const [sortBy, setSortBy] = useState("name-asc");
+  const [filters, setFilters] = useState(() => loadKey("spielregal:collectionFilters", { categories: [], mechanisms: [], publishers: [], complexity: [], saleStatus: [], players: "", minRating: "" }));
+  useEffect(() => { saveKey("spielregal:collectionFilters", filters); }, [filters]);
+  const [sortBy, setSortBy] = useState(() => loadKey("spielregal:collectionSortBy", "name-asc"));
+  useEffect(() => { saveKey("spielregal:collectionSortBy", sortBy); }, [sortBy]);
   const [contextGame, setContextGame] = useState(null);
   const contextGameClose2 = useSheetClose(() => setContextGame(null));
   const [newListName, setNewListName] = useState("");
@@ -5026,7 +5150,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
   // Expansions are shown nested in their base game's swipeable carousel, not
   // as standalone cards — unless someone searches directly for one by name.
   if (!query.trim()) list = list.filter(g => !g.expansionOf);
-  if (query) list = list.filter(g => g.name.toLowerCase().includes(query.toLowerCase()));
+  if (query) list = list.filter(g => gameMatchesQuery(g, query));
   if (filterFn) list = list.filter(filterFn);
   if (filters.categories.length) list = list.filter(g => filters.categories.every(c => (g.categories || []).includes(c)));
   if (filters.mechanisms.length) list = list.filter(g => filters.mechanisms.every(m => (g.mechanisms || []).includes(m)));
@@ -5034,8 +5158,12 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
   if (filters.complexity.length) list = list.filter(g => filters.complexity.includes(complexityLabel(g)));
   // Verkaufte / zum Verkauf markierte Spiele sind standardmäßig ausgeblendet —
   // erst wenn im Filter gezielt eine oder beide Optionen ausgewählt sind, tauchen sie auf.
-  if (filters.saleStatus.length) list = list.filter(g => filters.saleStatus.includes(g.saleStatus));
-  else list = list.filter(g => !g.saleStatus);
+  // Ausnahme: eine aktive Suche findet sie trotzdem, ohne dass man dafür extra
+  // den Filter umstellen muss.
+  if (!query.trim()) {
+    if (filters.saleStatus.length) list = list.filter(g => filters.saleStatus.includes(g.saleStatus));
+    else list = list.filter(g => !g.saleStatus);
+  }
   if (filters.players) list = list.filter(g => g.minPlayers && g.maxPlayers && parseInt(filters.players) >= parseInt(g.minPlayers) && parseInt(filters.players) <= parseInt(g.maxPlayers));
   if (filters.minRating) list = list.filter(g => g.rating && parseInt(g.rating) >= parseInt(filters.minRating));
 
@@ -5166,7 +5294,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
       <div className="fixed z-30 left-0 right-0 px-5 flex items-center justify-center gap-3" style={{ bottom: "calc(100px + env(safe-area-inset-bottom))" }}>
         <div className={`transition-all duration-300 ease-out ${searchOpen ? "flex-1 min-w-0" : "shrink-0"}`}>
           {searchOpen ? (
-            <SearchInput value={query} onChange={setQuery} placeholder="Suchen…" autoFocus inputClassName="glass-icon-btn h-11 border border-[#E85D9C]/50 rounded-full text-base" />
+            <SearchInput value={query} onChange={setQuery} placeholder="Suchen…" autoFocus inputClassName="glass h-11 border border-[#E85D9C]/50 rounded-full text-base" />
           ) : (
             games.length > 0 && (
               <button onClick={() => setSearchOpen(true)} aria-label="Suchen"
@@ -5289,14 +5417,16 @@ function SwipeableRow({ onDelete, children, disabled }) {
 
 function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
   const [detailGroupKey, setDetailGroupKey] = useState(null);
-  const [viewMode, setViewMode] = useState("game"); // "game" | "evening"
+  const [viewMode, setViewMode] = useState(() => loadKey("spielregal:playlogViewMode", "game")); // "game" | "evening"
+  useEffect(() => { saveKey("spielregal:playlogViewMode", viewMode); }, [viewMode]);
   const [detailEveningDate, setDetailEveningDate] = useState(null);
   const groupSwipe = useEdgeSwipeBack(() => setDetailGroupKey(null));
   const eveningSwipe = useEdgeSwipeBack(() => setDetailEveningDate(null));
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [filterModalOpen, setFilterModalOpen] = useState(false);
-  const [filters, setFilters] = useState({ mode: "all", winner: "", from: "", to: "" });
+  const [filters, setFilters] = useState(() => loadKey("spielregal:playlogFilters", { mode: "all", winner: "", from: "", to: "" }));
+  useEffect(() => { saveKey("spielregal:playlogFilters", filters); }, [filters]);
   const modeIcon = { "physical-owned": Home, "physical-other": Sofa, bga: Globe };
   const modeLabel = { "physical-owned": "Eigene Sammlung", "physical-other": "Geliehen / Event", bga: "Digital" };
   const activeFilterCount = (filters.mode !== "all" ? 1 : 0) + (filters.winner ? 1 : 0) + (filters.from ? 1 : 0) + (filters.to ? 1 : 0);
@@ -5418,7 +5548,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
       <div className="fixed z-30 left-0 right-0 px-5 flex items-center justify-center gap-3" style={{ bottom: "calc(100px + env(safe-area-inset-bottom))" }}>
         <div className={`transition-all duration-300 ease-out ${searchOpen ? "flex-1 min-w-0" : "shrink-0"}`}>
           {searchOpen ? (
-            <SearchInput value={query} onChange={setQuery} placeholder="Spiel suchen…" autoFocus inputClassName="glass-icon-btn h-11 border border-[#E85D9C]/50 rounded-full text-base" />
+            <SearchInput value={query} onChange={setQuery} placeholder="Spiel suchen…" autoFocus inputClassName="glass h-11 border border-[#E85D9C]/50 rounded-full text-base" />
           ) : (
             plays.length > 0 && (
               <button onClick={() => setSearchOpen(true)} aria-label="Suchen"
@@ -5734,6 +5864,8 @@ Beim VERKLEINERN/Ausmisten: Schau dir Spielanzahl, Bewertung und ob überhaupt g
 Beim VERGRÖSSERN/Neuanschaffungen: Schau dir an, was in der Sammlung fehlt oder unterrepräsentiert ist (z.B. nur schwere Spiele, aber nichts für spontane Runden; keine guten 2-Spieler-Spiele; eine Lieblings-Mechanik, von der es kaum was gibt). Beziehe die Wunschliste mit ein, falls vorhanden — die ist ein starkes Signal für das, was den Nutzer schon interessiert. Schlag zuerst vor, offene Lücken zu füllen, bevor du wahllos neue Spiele in die gleiche Nische vorschlägst, die schon gut abgedeckt ist. Für konkrete neue Titel außerhalb der Sammlung nutzt du wie gewohnt BGGSEARCH (bestimmter Titel) oder BGGDISCOVER (offene Empfehlung).
 
 In beiden Fällen: das ist ein Gespräch, kein Bericht — frag nach der einen Sache, die deine Einschätzung am meisten schärfen würde (z.B. "Geht's dir eher um Platz oder ums Geld zurückholen?" oder "Sollen es eher leichtere oder schwerere Spiele werden?"), statt sofort eine lange Liste runterzurattern.
+
+Manche Spiele unten sind mit "STATUS: bereits verkauft" oder "STATUS: zum Verkauf markiert" gekennzeichnet — die stehen noch in der Sammlung, sind aber schon weg bzw. auf dem Sprung. Wenn du so ein Spiel empfiehlst oder erwähnst, weise kurz und beiläufig darauf hin (z.B. "…allerdings hast du das ja schon verkauft" oder "…ist aber gerade zum Verkauf markiert"), statt es zu verschweigen.
 
 ${buildCollectionContextForAI(games, plays)}`;
 
@@ -6081,7 +6213,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
             <div>
               <button type="button" onClick={() => onQuickUpdate(game.id, { lentTo: game.lentTo ? "" : " " })}
                 className={`w-full h-12 flex items-center justify-between px-3.5 rounded-[14px] border ${game.lentTo ? "bg-[#D4A24C]/15 border-[#D4A24C]/40" : "bg-transparent border-[#3A3631]"}`}>
-                <span className={`text-sm flex items-center gap-2 ${game.lentTo ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>Verliehen</span>
+                <span className={`text-base flex items-center gap-2 ${game.lentTo ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>Verliehen</span>
                 <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${game.lentTo ? "bg-[#D4A24C] justify-end" : "bg-[#3A3631] justify-start"}`}>
                   <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
                 </div>
@@ -6127,17 +6259,21 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                     </div>
                   </div>
                 )}
-                {game.rating && (
+                {(game.rating || onQuickUpdate) && (
                   <div>
                     <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-1.5">Deine Bewertung</p>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <div className="flex">
-                        {Array.from({ length: 10 }, (_, i) => i + 1).map((s) => (
-                          <Star key={s} size={18} className={parseInt(game.rating) >= s ? "text-[#E85D9C]" : "text-[#3A3631]"} fill={parseInt(game.rating) >= s ? "#E85D9C" : "none"} />
-                        ))}
+                    {onQuickUpdate ? (
+                      <StarRating value={game.rating || ""} onChange={(v) => onQuickUpdate(game.id, { rating: v })} />
+                    ) : (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex">
+                          {Array.from({ length: 10 }, (_, i) => i + 1).map((s) => (
+                            <Star key={s} size={18} className={parseInt(game.rating) >= s ? "text-[#E85D9C]" : "text-[#3A3631]"} fill={parseInt(game.rating) >= s ? "#E85D9C" : "none"} />
+                          ))}
+                        </div>
+                        <span className="text-xs text-[#A39C8F]">{RATING_LABELS[parseInt(game.rating)]}</span>
                       </div>
-                      <span className="text-xs text-[#A39C8F]">{RATING_LABELS[parseInt(game.rating)]}</span>
-                    </div>
+                    )}
                   </div>
                 )}
                 {game.notes && (
@@ -6167,40 +6303,6 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
               <p className="text-sm text-[#F2EDE4]">{gamePlays.length}× gespielt{lastPlay ? `, zuletzt am ${formatDate(lastPlay.date)}` : ""}</p>
             )}
           </div>
-
-          {(() => {
-            const baseGame = game.baseGameId ? (games || []).find((g) => g.id === game.baseGameId) : null;
-            const expansions = (games || []).filter((g) => g.baseGameId === game.id);
-            if (!baseGame && expansions.length === 0) return null;
-            return (
-              <div className="space-y-2">
-                {baseGame && (
-                  <button onClick={() => onViewOther(baseGame)} className="w-full text-left glass border border-white/10 rounded-2xl p-3.5 flex items-center gap-3">
-                    <Cover game={baseGame} size="sm" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[#5C574F] text-xs font-body">Erweiterung zu</p>
-                      <p className="text-[#F2EDE4] text-sm font-body truncate">{baseGame.name}</p>
-                    </div>
-                    <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
-                  </button>
-                )}
-                {expansions.length > 0 && (
-                  <div>
-                    <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-1.5">Erweiterungen ({expansions.length})</p>
-                    <div className="space-y-2">
-                      {expansions.map((ex) => (
-                        <button key={ex.id} onClick={() => onViewOther(ex)} className="w-full text-left glass border border-white/10 rounded-2xl p-3.5 flex items-center gap-3">
-                          <Cover game={ex} size="sm" />
-                          <span className="flex-1 min-w-0 text-[#F2EDE4] text-sm font-body truncate">{ex.name}</span>
-                          <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })()}
 
           {game.isCampaign && gamePlays.length > 0 && (() => {
             const sorted = [...gamePlays].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
@@ -6983,6 +7085,7 @@ function App() {
           onSaveAndNavigate={gameModal.editing ? saveGameAndNavigate : null}
           hasPrev={gameModal.editing ? displayGames.findIndex(g => g.id === gameModal.editing.id) > 0 : false}
           hasNext={gameModal.editing ? displayGames.findIndex(g => g.id === gameModal.editing.id) < displayGames.length - 1 : false}
+          onUpdateOtherGame={updateGameField}
         />
       )}
       {playModal && <PlayFormModal games={games} plays={plays} playerProfiles={displayPlayers} onAddPlayer={addPlayer} onUpdatePlayerPhoto={updatePlayerPhoto} onUpdatePlayerName={updatePlayerName} onRemovePlayer={removePlayer} onReorderPlayers={reorderPlayers} initial={playModal.editing} onClose={() => setPlayModal(null)} onSave={savePlay} onDelete={deletePlay} />}
