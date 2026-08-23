@@ -570,7 +570,12 @@ function TextWithGameLinks({ text, games, onView, color }) {
         const g = mentioned.find((x) => x.name === part);
         if (!g) return <span key={i}>{part}</span>;
         return (
-          <span key={i} onClick={() => onView(g)} className="font-semibold underline underline-offset-2 cursor-pointer" style={{ color }}>
+          <span key={i} onClick={() => onView(g)} className="font-semibold underline underline-offset-2 cursor-pointer inline-flex items-center gap-1" style={{ color }}>
+            {(() => {
+              const label = complexityLabel(g);
+              const CIcon = label && COMPLEXITY_ICON[label];
+              return CIcon ? <CIcon size={13} className="shrink-0" /> : null;
+            })()}
             {part}
           </span>
         );
@@ -4053,7 +4058,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
 }
 
 /* ---------------- DASHBOARD ---------------- */
-const DEFAULT_DASHBOARD_ORDER = ["month", "achievements", "records", "bestof", "wishlist", "topRated", "dust", "digital"];
+const DEFAULT_DASHBOARD_ORDER = ["month", "records", "bestof", "wishlist", "topRated", "dust", "digital"];
 
 function DashboardReorderScreen({ order, sections, labels, hiddenSections = [], onToggleHidden, onSave, onClose }) {
   const [items, setItems] = useState(order.filter((key) => sections[key]));
@@ -4322,35 +4327,6 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
         </div>
       </button>
     ),
-    achievements: (
-      <div key="achievements">
-        <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Erfolge</h2>
-        <div className="flex gap-3 overflow-x-auto pb-1 px-1">
-          {achievements.map((a, i) => {
-            const palette = ["#E85D9C", "#E85D9C", "#4E8C82", "#C1443C", "#8B5FBF"];
-            const c = palette[i % palette.length];
-            return (
-              <div key={a.id} className="shrink-0 flex flex-col items-center gap-1.5 w-16 text-center">
-                <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl ${a.unlocked ? "" : "grayscale"}`}
-                  style={a.unlocked ? {
-                    background: `radial-gradient(circle at 32% 26%, ${c}f0, ${c}99 55%, ${c}cc 100%)`,
-                    boxShadow: `0 3px 8px ${c}66, 0 1px 0 rgba(255,255,255,0.25) inset, 0 -4px 8px rgba(0,0,0,0.3) inset`,
-                    border: `1px solid ${c}`,
-                  } : {
-                    background: "#242220",
-                    boxShadow: "0 -3px 6px rgba(0,0,0,0.3) inset",
-                    border: "1px solid #3A3631",
-                    opacity: 0.35,
-                  }}>
-                  {a.emoji}
-                </div>
-                <p className={`text-[10px] leading-tight ${a.unlocked ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>{a.label}</p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    ),
     bestof: bestOf && (
       <div key="bestof">
         <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Best of</h2>
@@ -4360,39 +4336,49 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
         <div className="grid grid-cols-2 gap-2.5">
           {bestOf.topYear && bestOf.topYear.game && (
             <button onClick={() => onView(bestOf.topYear.game)} className="text-left glass border border-white/10 rounded-2xl p-3 flex flex-col">
-              <p className="text-[10px] text-[#5C574F] font-body mb-1">📅 Meistgespielt {new Date().getFullYear()}</p>
-              <p className="text-[#F2EDE4] text-sm font-body font-medium truncate">{bestOf.topYear.game.name}</p>
+              <p className="text-[10px] text-[#5C574F] font-body mb-1">Meistgespielt {new Date().getFullYear()}</p>
+              <p className="text-[#F2EDE4] text-sm font-body font-medium truncate flex items-center gap-1.5">
+                {(() => {
+                  const label = complexityLabel(bestOf.topYear.game);
+                  const CIcon = label && COMPLEXITY_ICON[label];
+                  return CIcon ? <CIcon size={14} className="shrink-0" /> : null;
+                })()}
+                {bestOf.topYear.game.name}
+              </p>
               <p className="text-[#E85D9C] text-xs font-body">{bestOf.topYear.count}× dieses Jahr</p>
             </button>
           )}
           {bestOf.favCount && (
             <div className="glass border border-white/10 rounded-2xl p-3">
-              <p className="text-[10px] text-[#5C574F] font-body mb-1">👤 Liebste Spielerzahl</p>
+              <p className="text-[10px] text-[#5C574F] font-body mb-1">Liebste Spielerzahl</p>
               <p className="text-[#F2EDE4] text-sm font-body font-medium">{bestOf.favCount.count} Spieler</p>
               <p className="text-[#E85D9C] text-xs font-body">{bestOf.favCount.times}× so gespielt</p>
             </div>
           )}
           {bestOf.favCat && (
             <div className="glass border border-white/10 rounded-2xl p-3">
-              <p className="text-[10px] text-[#5C574F] font-body mb-1">🏷️ Lieblingsgenre</p>
+              <p className="text-[10px] text-[#5C574F] font-body mb-1">Lieblingsgenre</p>
               <p className="text-[#F2EDE4] text-sm font-body font-medium truncate">{bestOf.favCat[0]}</p>
               <p className="text-[#4E8C82] text-xs font-body">am häufigsten gespielt</p>
             </div>
           )}
           {bestOf.favMech && (
             <div className="glass border border-white/10 rounded-2xl p-3">
-              <p className="text-[10px] text-[#5C574F] font-body mb-1">⚙️ Lieblingsmechanismus</p>
+              <p className="text-[10px] text-[#5C574F] font-body mb-1">Lieblingsmechanismus</p>
               <p className="text-[#F2EDE4] text-sm font-body font-medium truncate">{bestOf.favMech[0]}</p>
               <p className="text-[#C1443C] text-xs font-body">am häufigsten gespielt</p>
             </div>
           )}
-          {bestOf.complexityLabel && (
-            <button onClick={() => setStatInfo("playedComplexity")} className="text-left glass border border-white/10 rounded-2xl p-3">
-              <p className="text-[10px] text-[#5C574F] font-body mb-1">{COMPLEXITY_SHORT[bestOf.complexityLabel] === "Familie" ? "🏠" : COMPLEXITY_SHORT[bestOf.complexityLabel] === "Kenner" ? "🧩" : "🧠"} Deine Komplexität</p>
-              <p className="text-[#F2EDE4] text-sm font-body font-medium">{COMPLEXITY_SHORT[bestOf.complexityLabel]}</p>
-              <p className="text-[#A39C8F] text-xs font-body">Ø {bestOf.avgPlayedComplexity.toFixed(1)}/5 gespielt</p>
-            </button>
-          )}
+          {bestOf.complexityLabel && (() => {
+            const CIcon = COMPLEXITY_ICON[bestOf.complexityLabel];
+            return (
+              <button onClick={() => setStatInfo("playedComplexity")} className="text-left glass border border-white/10 rounded-2xl p-3">
+                <p className="text-[10px] text-[#5C574F] font-body mb-1">Deine Komplexität</p>
+                <p className="text-[#F2EDE4] text-sm font-body font-medium flex items-center gap-1.5">{CIcon && <CIcon size={14} />} {COMPLEXITY_SHORT[bestOf.complexityLabel]}</p>
+                <p className="text-[#A39C8F] text-xs font-body">Ø {bestOf.avgPlayedComplexity.toFixed(1)}/5 gespielt</p>
+              </button>
+            );
+          })()}
         </div>
         )}
       </div>
@@ -4403,30 +4389,26 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
         <div className="grid grid-cols-2 gap-2.5">
           {mostPlayed && mostPlayed.game && mostPlayed.count >= 2 && (
             <button onClick={() => onView(mostPlayed.game)} className="glass text-left rounded-2xl p-4 border border-white/10">
-              <span className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "#E85D9C26" }}>🏆</span>
-              <p className="font-display text-2xl text-[#F2EDE4] mt-2.5">{mostPlayed.count}×</p>
-              <p className="text-xs text-[#A39C8F] mt-1">Meistgespielt · <span className="text-[#E85D9C]">{mostPlayed.game.name}</span></p>
+              <p className="font-display text-4xl font-bold text-[#F2EDE4]">{mostPlayed.count}×</p>
+              <p className="text-xs text-[#A39C8F] mt-1.5">Meistgespielt · <span className="text-[#E85D9C]">{mostPlayed.game.name}</span></p>
             </button>
           )}
           {bestStreak && (
             <div className="glass rounded-2xl p-4 border border-white/10">
-              <span className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "#C1443C26" }}>🔥</span>
-              <p className="font-display text-2xl text-[#F2EDE4] mt-2.5">{bestStreak}</p>
-              <p className="text-xs text-[#A39C8F] mt-1">Tage-Serie am Stück</p>
+              <p className="font-display text-4xl font-bold text-[#F2EDE4]">{bestStreak}</p>
+              <p className="text-xs text-[#A39C8F] mt-1.5">Tage-Serie am Stück</p>
             </div>
           )}
           {bestDay && (
             <div className="glass rounded-2xl p-4 border border-white/10">
-              <span className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "#4E8C8226" }}>📅</span>
-              <p className="font-display text-2xl text-[#F2EDE4] mt-2.5">{bestDay.count}×</p>
-              <p className="text-xs text-[#A39C8F] mt-1">Partien an einem Tag</p>
+              <p className="font-display text-4xl font-bold text-[#F2EDE4]">{bestDay.count}×</p>
+              <p className="text-xs text-[#A39C8F] mt-1.5">Partien an einem Tag</p>
             </div>
           )}
           {biggestPlayGroup && (
             <div className="glass rounded-2xl p-4 border border-white/10">
-              <span className="w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: "#E85D9C26" }}>👥</span>
-              <p className="font-display text-2xl text-[#F2EDE4] mt-2.5">{biggestPlayGroup}</p>
-              <p className="text-xs text-[#A39C8F] mt-1">Spieler in einer Runde</p>
+              <p className="font-display text-4xl font-bold text-[#F2EDE4]">{biggestPlayGroup}</p>
+              <p className="text-xs text-[#A39C8F] mt-1.5">Spieler in einer Runde</p>
             </div>
           )}
         </div>
@@ -4509,11 +4491,11 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const sortMenuClose = useSheetClose(() => setSortMenuOpen(false));
   const [reorderScreenOpen, setReorderScreenOpen] = useState(false);
-  const SECTION_LABELS = { month: "Spiel des Monats", records: "Rekorde", wishlist: "Wunschliste", topRated: "Top 10 Spiele", dust: "Staubfänger", digital: "Digital vs. Physisch", achievements: "Erfolge", bestof: "Best of" };
+  const SECTION_LABELS = { month: "Spiel des Monats", records: "Rekorde", wishlist: "Wunschliste", topRated: "Top 10 Spiele", dust: "Staubfänger", digital: "Digital vs. Physisch", bestof: "Best of" };
   const PRESETS = [
     { key: "default", label: "Standard", icon: ListChecks, order: DEFAULT_DASHBOARD_ORDER },
-    { key: "activity", label: "Nach Aktivität", icon: Sparkles, order: ["month", "dust", "achievements", "topRated", "records", "bestof", "wishlist", "digital"] },
-    { key: "collection", label: "Nach Sammlung", icon: Library, order: ["records", "bestof", "topRated", "wishlist", "dust", "achievements", "month", "digital"] },
+    { key: "activity", label: "Nach Aktivität", icon: Sparkles, order: ["month", "dust", "topRated", "records", "bestof", "wishlist", "digital"] },
+    { key: "collection", label: "Nach Sammlung", icon: Library, order: ["records", "bestof", "topRated", "wishlist", "dust", "month", "digital"] },
   ];
 
   return (
@@ -5368,9 +5350,25 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           ))}
         </div>
       )}
-      <div className="w-full pb-40 pt-4 mt-auto text-center">
+      <div className="w-full pb-56 pt-4 mt-auto text-center">
         <p className="text-[10px] font-body text-[#5C574F]">
-          {games.filter((g) => g.status === "owned").length} im Besitz · {games.filter((g) => g.status === "wishlist").length} Wunschliste ·{" "}
+          {(() => {
+            const filtersActive = activeFilterCount > 0 || query.trim();
+            if (!filtersActive) {
+              return (
+                <>
+                  {games.filter((g) => g.status === "owned").length} im Besitz · {games.filter((g) => g.status === "wishlist").length} Wunschliste ·{" "}
+                </>
+              );
+            }
+            // With exactly one complexity tier selected (and nothing else), give
+            // a specific label like "4 Expertenspiele" instead of a generic count.
+            if (filters.complexity.length === 1 && activeFilterCount === 1 && !query.trim()) {
+              const plural = { Einsteigerspiel: "Einsteigerspiele", Familienspiel: "Familienspiele", "Gehobenes Familienspiel": "Gehobene Familienspiele", "Leichtes Kennerspiel": "Leichte Kennerspiele", Kennerspiel: "Kennerspiele", "Anspruchsvolles Kennerspiel": "Anspruchsvolle Kennerspiele", Expertenspiel: "Expertenspiele", Partyspiel: "Partyspiele" };
+              return <>{list.length} {plural[filters.complexity[0]] || filters.complexity[0]} ·{" "}</>;
+            }
+            return <>{list.length} Treffer ·{" "}</>;
+          })()}
           <a href="https://boardgamegeek.com" target="_blank" rel="noopener noreferrer" className="underline">Powered by BGG</a>
         </p>
       </div>
@@ -5517,7 +5515,7 @@ function SwipeableRow({ onDelete, children, disabled }) {
   );
 }
 
-function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
+function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfiles = [] }) {
   const [detailGroupKey, setDetailGroupKey] = useState(null);
   const [viewMode, setViewMode] = useState(() => loadKey("spielregal:playlogViewMode", "game")); // "game" | "evening"
   useEffect(() => { saveKey("spielregal:playlogViewMode", viewMode); }, [viewMode]);
@@ -5755,15 +5753,31 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
           <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Kopf-an-Kopf</h2>
           <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
-              <select value={h2hA} onChange={(e) => setH2hA(e.target.value)} className="flex-1 min-w-0 bg-[#1C1B1A] border border-[#3A3631] rounded-[14px] px-2.5 py-2 text-[#F2EDE4] text-sm">
-                <option value="">Spieler A</option>
-                {allPlayerNames.map((n) => <option key={n} value={n}>{n}</option>)}
-              </select>
+              <div className="flex-1 min-w-0 flex items-center gap-2 bg-[#1C1B1A] border border-[#3A3631] rounded-[14px] pl-1.5 pr-2 py-1.5">
+                <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 bg-[#2E2B28] flex items-center justify-center">
+                  {(() => {
+                    const prof = playerProfiles.find((p) => p.name === h2hA);
+                    return prof && prof.photo ? <img src={prof.photo} alt={h2hA} className="w-full h-full object-cover" /> : <Users size={13} className="text-[#5C574F]" />;
+                  })()}
+                </div>
+                <select value={h2hA} onChange={(e) => setH2hA(e.target.value)} className="flex-1 min-w-0 bg-transparent text-[#F2EDE4] text-sm focus:outline-none">
+                  <option value="">Spieler A</option>
+                  {allPlayerNames.map((n) => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </div>
               <span className="text-[#5C574F] text-xs shrink-0">vs.</span>
-              <select value={h2hB} onChange={(e) => setH2hB(e.target.value)} className="flex-1 min-w-0 bg-[#1C1B1A] border border-[#3A3631] rounded-[14px] px-2.5 py-2 text-[#F2EDE4] text-sm">
-                <option value="">Spieler B</option>
-                {allPlayerNames.map((n) => <option key={n} value={n}>{n}</option>)}
-              </select>
+              <div className="flex-1 min-w-0 flex items-center gap-2 bg-[#1C1B1A] border border-[#3A3631] rounded-[14px] pl-1.5 pr-2 py-1.5">
+                <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 bg-[#2E2B28] flex items-center justify-center">
+                  {(() => {
+                    const prof = playerProfiles.find((p) => p.name === h2hB);
+                    return prof && prof.photo ? <img src={prof.photo} alt={h2hB} className="w-full h-full object-cover" /> : <Users size={13} className="text-[#5C574F]" />;
+                  })()}
+                </div>
+                <select value={h2hB} onChange={(e) => setH2hB(e.target.value)} className="flex-1 min-w-0 bg-transparent text-[#F2EDE4] text-sm focus:outline-none">
+                  <option value="">Spieler B</option>
+                  {allPlayerNames.map((n) => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </div>
             </div>
             {h2hStats && (
               h2hStats.total === 0 ? (
@@ -5772,12 +5786,24 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode }) {
                 <div>
                   <p className="text-[#5C574F] text-xs font-body mb-2">{h2hStats.total} gemeinsame Partie{h2hStats.total === 1 ? "" : "n"}</p>
                   <div className="flex items-center gap-3">
-                    <div className="flex-1 text-center">
+                    <div className="flex-1 flex flex-col items-center">
+                      <div className="w-11 h-11 rounded-full overflow-hidden bg-[#2E2B28] flex items-center justify-center mb-1.5">
+                        {(() => {
+                          const prof = playerProfiles.find((p) => p.name === h2hA);
+                          return prof && prof.photo ? <img src={prof.photo} alt={h2hA} className="w-full h-full object-cover" /> : <Users size={18} className="text-[#5C574F]" />;
+                        })()}
+                      </div>
                       <p className="font-display text-2xl text-[#F2EDE4]">{h2hStats.aWins}</p>
                       <p className="text-[#A39C8F] text-[11px] font-body truncate">{h2hA}</p>
                     </div>
                     <div className="h-8 w-px bg-[#3A3631]" />
-                    <div className="flex-1 text-center">
+                    <div className="flex-1 flex flex-col items-center">
+                      <div className="w-11 h-11 rounded-full overflow-hidden bg-[#2E2B28] flex items-center justify-center mb-1.5">
+                        {(() => {
+                          const prof = playerProfiles.find((p) => p.name === h2hB);
+                          return prof && prof.photo ? <img src={prof.photo} alt={h2hB} className="w-full h-full object-cover" /> : <Users size={18} className="text-[#5C574F]" />;
+                        })()}
+                      </div>
                       <p className="font-display text-2xl text-[#F2EDE4]">{h2hStats.bWins}</p>
                       <p className="text-[#A39C8F] text-[11px] font-body truncate">{h2hB}</p>
                     </div>
@@ -7062,7 +7088,7 @@ function App() {
         <div key={tab} className="tab-fade">
           {tab === "dashboard" && <Dashboard games={displayGames} plays={displayPlays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} onView={(g) => setDetailGame(g)} sectionOrder={dashboardOrder} onReorder={setDashboardOrder} hiddenSections={hiddenDashboardSections} onToggleHidden={setHiddenDashboardSections} onSearch={() => setCommandBarOpen(true)} aiWorkerUrl={aiWorkerUrl} />}
           {tab === "collection" && <Collection games={displayGames} plays={displayPlays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => !readOnly && setGameModal({ editing: null })} onView={(g) => setDetailGame(g)} onEdit={(g) => setGameModal({ editing: g })} onDelete={(g) => deleteGame(g.id)} categoryOptions={categoryOptions} mechanismOptions={mechanismOptions} demoMode={readOnly} guestMode={guestMode} lists={displayLists} onCreateList={(name) => !readOnly && addList(name)} onOpenList={(l) => setDetailList(l)} />}
-          {tab === "playlog" && <PlayLog plays={displayPlays} games={displayGames} onAdd={() => !readOnly && setPlayModal({ editing: null })} onEdit={(p) => !readOnly && setPlayModal({ editing: p })} onDelete={deletePlay} demoMode={readOnly} />}
+          {tab === "playlog" && <PlayLog plays={displayPlays} games={displayGames} onAdd={() => !readOnly && setPlayModal({ editing: null })} onEdit={(p) => !readOnly && setPlayModal({ editing: p })} onDelete={deletePlay} demoMode={readOnly} playerProfiles={displayPlayers} />}
           {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} onView={(g) => setDetailGame(g)} aiWorkerUrl={aiWorkerUrl} chatMessages={aiChatMessages} setChatMessages={setAiChatMessages} onAddWishlist={addToWishlistFromRecommendation} />}
           {tab === "settings" && (guestMode ? (
             <div className="p-5 min-h-full flex flex-col items-center justify-center text-center">
