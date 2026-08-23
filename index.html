@@ -5234,26 +5234,31 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
   const playCounts = useMemo(() => {
     const map = {}; plays.forEach(p => { map[p.gameId] = (map[p.gameId] || 0) + 1; }); return map;
   }, [plays]);
-  let list = games.filter(g => (statusFilter === "all" ? true : g.status === statusFilter));
-  // Expansions are shown nested in their base game's swipeable carousel, not
-  // as standalone cards — unless someone searches directly for one by name.
-  if (!query.trim()) list = list.filter(g => !g.expansionOf);
-  if (query) list = list.filter(g => gameMatchesQuery(g, query));
-  if (filterFn) list = list.filter(filterFn);
-  if (filters.categories.length) list = list.filter(g => filters.categories.every(c => (g.categories || []).includes(c)));
-  if (filters.mechanisms.length) list = list.filter(g => filters.mechanisms.every(m => (g.mechanisms || []).includes(m)));
-  if (filters.publishers.length) list = list.filter(g => filters.publishers.every(p => (g.publishers || []).includes(p)));
-  if (filters.complexity.length) list = list.filter(g => filters.complexity.includes(complexityLabel(g)));
-  // Verkaufte / zum Verkauf markierte Spiele sind standardmäßig ausgeblendet —
-  // erst wenn im Filter gezielt eine oder beide Optionen ausgewählt sind, tauchen sie auf.
-  // Ausnahme: eine aktive Suche findet sie trotzdem, ohne dass man dafür extra
-  // den Filter umstellen muss.
-  if (!query.trim()) {
+  const isSearching = !!query.trim();
+  let list;
+  if (isSearching) {
+    // A search should find anything by name, independent of whatever filters
+    // happen to be active — status, category, complexity, sale status, etc.
+    // all get bypassed while searching, so nothing is hidden from a direct
+    // lookup by name.
+    list = games.filter(g => gameMatchesQuery(g, query));
+  } else {
+    list = games.filter(g => (statusFilter === "all" ? true : g.status === statusFilter));
+    // Expansions are shown nested in their base game's swipeable carousel, not
+    // as standalone cards — unless someone searches directly for one by name.
+    list = list.filter(g => !g.expansionOf);
+    if (filterFn) list = list.filter(filterFn);
+    if (filters.categories.length) list = list.filter(g => filters.categories.every(c => (g.categories || []).includes(c)));
+    if (filters.mechanisms.length) list = list.filter(g => filters.mechanisms.every(m => (g.mechanisms || []).includes(m)));
+    if (filters.publishers.length) list = list.filter(g => filters.publishers.every(p => (g.publishers || []).includes(p)));
+    if (filters.complexity.length) list = list.filter(g => filters.complexity.includes(complexityLabel(g)));
+    // Verkaufte / zum Verkauf markierte Spiele sind standardmäßig ausgeblendet —
+    // erst wenn im Filter gezielt eine oder beide Optionen ausgewählt sind, tauchen sie auf.
     if (filters.saleStatus.length) list = list.filter(g => filters.saleStatus.includes(g.saleStatus));
     else list = list.filter(g => !g.saleStatus);
+    if (filters.players) list = list.filter(g => g.minPlayers && g.maxPlayers && parseInt(filters.players) >= parseInt(g.minPlayers) && parseInt(filters.players) <= parseInt(g.maxPlayers));
+    if (filters.minRating) list = list.filter(g => g.rating && parseInt(g.rating) >= parseInt(filters.minRating));
   }
-  if (filters.players) list = list.filter(g => g.minPlayers && g.maxPlayers && parseInt(filters.players) >= parseInt(g.minPlayers) && parseInt(filters.players) <= parseInt(g.maxPlayers));
-  if (filters.minRating) list = list.filter(g => g.rating && parseInt(g.rating) >= parseInt(filters.minRating));
 
   list = [...list].sort((a, b) => {
     switch (sortBy) {
