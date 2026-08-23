@@ -4267,6 +4267,10 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
   const [weeklyTip, setWeeklyTip] = useState(() => { try { return JSON.parse(localStorage.getItem("spielregal:weeklyTip") || "null"); } catch { return null; } });
   const [yearlyInsight, setYearlyInsight] = useState(() => { try { return JSON.parse(localStorage.getItem("spielregal:yearlyInsight") || "null"); } catch { return null; } });
   const [tipLoading, setTipLoading] = useState(false);
+  // A cheap fingerprint of the actual play data (not just its length) — so
+  // correcting a play's date, winner, etc. invalidates the cached AI insights
+  // too, not just adding/removing a play outright.
+  const playsFingerprint = useMemo(() => plays.map((p) => `${p.id}:${p.date}:${p.winner || ""}`).join("|"), [plays]);
 
   useEffect(() => {
     if (!aiWorkerUrl || plays.length === 0) return;
@@ -4274,8 +4278,8 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     const weekMs = 7 * 24 * 60 * 60 * 1000;
     const yearKey = new Date().getFullYear();
 
-    const needsWeekly = !weeklyTip || (now - weeklyTip.generatedAt) > weekMs;
-    const needsYearly = !yearlyInsight || yearlyInsight.year !== yearKey;
+    const needsWeekly = !weeklyTip || (now - weeklyTip.generatedAt) > weekMs || weeklyTip.fingerprint !== playsFingerprint;
+    const needsYearly = !yearlyInsight || yearlyInsight.year !== yearKey || yearlyInsight.fingerprint !== playsFingerprint;
     if (!needsWeekly && !needsYearly) return;
 
     (async () => {
@@ -4284,20 +4288,20 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
       try {
         if (needsWeekly) {
           const text = await aiChat(aiWorkerUrl, [{ role: "user", content: `Du bist ein Brettspiel-Kumpel. Schreib EINEN kurzen, persönlichen Tipp (max. 2 Sätze) auf Deutsch für diese Woche, basierend auf dem Spielverhalten unten — z.B. ein Spiel, das lange nicht dran war, ein Muster das auffällt, oder eine Ermutigung. Kein Grußwort, direkt der Tipp.\n\n${context}` }]);
-          const val = { text, generatedAt: now };
+          const val = { text, generatedAt: now, fingerprint: playsFingerprint };
           setWeeklyTip(val);
           localStorage.setItem("spielregal:weeklyTip", JSON.stringify(val));
         }
         if (needsYearly) {
           const text = await aiChat(aiWorkerUrl, [{ role: "user", content: `Du bist ein Brettspiel-Kumpel. Schreib EINE kurze, interessante Beobachtung (max. 2-3 Sätze) auf Deutsch über das Spieljahr ${yearKey} des Nutzers, basierend auf den Daten unten — z.B. ein Muster, eine Entwicklung, ein Rekord. Kein Grußwort, direkt die Beobachtung.\n\n${context}` }]);
-          const val = { text, year: yearKey, generatedAt: now };
+          const val = { text, year: yearKey, generatedAt: now, fingerprint: playsFingerprint };
           setYearlyInsight(val);
           localStorage.setItem("spielregal:yearlyInsight", JSON.stringify(val));
         }
       } catch { /* silently skip — these are a nice-to-have, not critical */ }
       setTipLoading(false);
     })();
-  }, [aiWorkerUrl, plays.length]);
+  }, [aiWorkerUrl, plays.length, playsFingerprint]);
   const unlockedIdsKey = achievements.filter((a) => a.unlocked).map((a) => a.id).sort().join(",");
   useEffect(() => {
     const seenKey = "spielregal:seenAchievements";
