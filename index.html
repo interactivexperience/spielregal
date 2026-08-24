@@ -3930,13 +3930,22 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                             {p.photo ? <img src={p.photo} alt={p.name} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-[#1C1B1A] flex items-center justify-center"><Camera size={12} className="text-[#5C574F]" /></div>}
                           </div>
                           <span className="text-sm text-[#F2EDE4] flex-1 min-w-0 truncate">{p.name}</span>
+                          <button type="button"
+                            onClick={() => {
+                              const cur = scores[id] || "";
+                              setScore(id, cur.startsWith("-") ? cur.slice(1) : (cur ? `-${cur}` : "-"));
+                            }}
+                            aria-label="Vorzeichen umkehren"
+                            className={`w-7 h-8 shrink-0 rounded-lg border flex items-center justify-center text-sm font-medium ${(scores[id] || "").startsWith("-") ? "bg-[#C1443C]/15 border-[#C1443C]/40 text-[#C1443C]" : "border-[#3A3631] text-[#5C574F]"}`}>
+                            −
+                          </button>
                           <input
                             value={scores[id] || ""}
                             onChange={(e) => { const v = e.target.value.replace(/[^0-9-]/g, ""); setScore(id, v.replace(/(?!^)-/g, "")); }}
                             onFocus={handleFocusScroll}
                             placeholder="Punkte"
                             inputMode="tel"
-                            className="w-16 h-8 shrink-0 bg-[#1C1B1A] border border-[#3A3631] rounded-lg px-2 text-center text-[#F2EDE4] text-sm focus:outline-none focus:border-[#E85D9C]"
+                            className="w-14 h-8 shrink-0 bg-[#1C1B1A] border border-[#3A3631] rounded-lg px-2 text-center text-[#F2EDE4] text-sm focus:outline-none focus:border-[#E85D9C]"
                           />
                           <button type="button" onClick={() => toggleWinner(id)} aria-label={isWinner ? "Gewinner entfernen" : "Als Gewinner markieren"}
                             className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center border ${isWinner ? "bg-[#D4A24C]/20 border-[#D4A24C] text-[#D4A24C]" : "border-[#3A3631] text-[#5C574F]"}`}>
@@ -5898,8 +5907,8 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                       <div className="w-9 h-9 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#A39C8F] shrink-0"><IconC size={16} /></div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[#F2EDE4] font-body truncate">{formatDate(p.date)}{p.gameId !== rootId ? ` · ${p.gameName}` : ""}</p>
-                        <p className="text-[#5C574F] text-xs font-body">{modeLabel[p.mode]}{p.winner ? ` · Sieger: ${p.winner}` : ""}</p>
-                        {p.notes && p.notes.trim() && <p className="text-[#8B9AFA] text-xs font-body mt-0.5">{p.notes}</p>}
+                        <p className="text-[#5C574F] text-xs font-body">{modeLabel[p.mode]}{p.winner ? <> · Sieger: <span className="text-[#8B9AFA] font-medium">{p.winner}</span></> : ""}</p>
+                        {p.notes && p.notes.trim() && <p className="text-[#F2EDE4] text-xs font-body mt-0.5">{p.notes}</p>}
                       </div>
                       <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
                     </button>
@@ -5932,8 +5941,8 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                       {game ? <Cover game={game} size="sm" /> : <div className="w-12 h-12 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#A39C8F] shrink-0"><IconC size={16} /></div>}
                       <div className="flex-1 min-w-0">
                         <p className="text-[#F2EDE4] font-body truncate">{p.gameName}</p>
-                        <p className="text-[#5C574F] text-xs font-body">{modeLabel[p.mode]}{p.winner ? ` · Sieger: ${p.winner}` : ""}</p>
-                        {p.notes && p.notes.trim() && <p className="text-[#8B9AFA] text-xs font-body mt-0.5">{p.notes}</p>}
+                        <p className="text-[#5C574F] text-xs font-body">{modeLabel[p.mode]}{p.winner ? <> · Sieger: <span className="text-[#8B9AFA] font-medium">{p.winner}</span></> : ""}</p>
+                        {p.notes && p.notes.trim() && <p className="text-[#F2EDE4] text-xs font-body mt-0.5">{p.notes}</p>}
                       </div>
                       <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
                     </button>
@@ -6227,8 +6236,7 @@ ${buildCollectionContextForAI(games, plays)}`;
 const TONE_HEX = { teal: "#4E8C82", amber: "#E85D9C", red: "#C1443C", default: "#A39C8F" };
 
 function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList, onClose, onEdit, onViewOther, readOnlyLabel, hidePrices, onQuickUpdate }) {
-  const [campaignOpen, setCampaignOpen] = useState(false);
-  const campaignSwipe = useEdgeSwipeBack(() => setCampaignOpen(false));
+  const [campaignPhotoOpen, setCampaignPhotoOpen] = useState(false);
   const gamePlays = plays.filter((p) => p.gameId === game.id);
   const lastPlay = [...gamePlays].sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0];
   const label = complexityLabel(game);
@@ -6322,6 +6330,19 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
           </div>
 
           <PhotoGallerySection images={images} editable={false} hero onAdd={() => {}} onRemove={() => {}} />
+
+          {game.isCampaign && onQuickUpdate && (
+            <button onClick={() => setCampaignPhotoOpen(true)}
+              className="w-full h-11 border border-dashed border-[#3A3631] rounded-[14px] text-sm text-[#A39C8F] flex items-center justify-center gap-1.5">
+              <Camera size={15} /> Aktuellen Kampagnenstand fotografieren
+            </button>
+          )}
+          {campaignPhotoOpen && (
+            <ImagePickerSheet
+              onAdd={(img) => { onQuickUpdate(game.id, { images: [...(game.images || []), img] }); setCampaignPhotoOpen(false); }}
+              onClose={() => setCampaignPhotoOpen(false)}
+            />
+          )}
 
           <div className="glass flex items-stretch border border-white/15 rounded-2xl overflow-hidden divide-x divide-white/10">
             {game.minPlayers && (
@@ -6441,53 +6462,8 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
             )}
           </div>
 
-          {game.isCampaign && gamePlays.length > 0 && (() => {
-            const sorted = [...gamePlays].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
-            const last = sorted[sorted.length - 1];
-            return (
-              <button onClick={() => setCampaignOpen(true)} className="w-full text-left bg-[#262422] border border-[#3A3631] rounded-2xl p-4 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#E85D9C]/15 flex items-center justify-center shrink-0 text-[#E85D9C]"><ListChecks size={18} /></div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[#F2EDE4] text-sm font-medium">Kampagnen-Verlauf</p>
-                  <p className="text-[#5C574F] text-xs font-body">{gamePlays.length} Partie{gamePlays.length === 1 ? "" : "n"} · zuletzt am {last.date || "?"}</p>
-                </div>
-                <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
-              </button>
-            );
-          })()}
         </div>
       </div>
-      {campaignOpen && (
-        <div className="fixed inset-0 z-[60] bg-[#1C1B1A]" {...campaignSwipe}>
-          <div className="w-full h-full max-w-3xl mx-auto overflow-y-auto font-body">
-            <div className="shrink-0 relative" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", height: "calc(2.75rem + max(1rem, env(safe-area-inset-top)))" }}>
-              <button onClick={() => setCampaignOpen(false)} className="glass-icon-btn absolute left-4 w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" style={{ top: "max(1rem, env(safe-area-inset-top))" }} aria-label="Zurück"><ChevronLeft size={22} /></button>
-            </div>
-            <h2 className="font-display text-2xl text-[#F2EDE4] px-5 mb-4">Kampagnen-Verlauf</h2>
-            <div className="p-5 space-y-3">
-              {[...gamePlays].sort((a, b) => (a.date || "").localeCompare(b.date || "")).map((p, i, arr) => (
-                <div key={p.id} className="flex gap-3">
-                  <div className="flex flex-col items-center shrink-0">
-                    <div className="w-2.5 h-2.5 rounded-full bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] mt-1.5" />
-                    {i < arr.length - 1 && <div className="flex-1 w-px bg-[#3A3631] mt-1" />}
-                  </div>
-                  <div className="flex-1 min-w-0 pb-3">
-                    <p className="text-xs text-[#5C574F] font-mono">{formatDate(p.date)}</p>
-                    {p.images && p.images.length > 0 && (
-                      <div className="flex gap-2 mt-1.5 overflow-x-auto">
-                        {p.images.map((img, j) => (
-                          <img key={j} src={img} alt="Spielstand" className="w-20 h-20 rounded-lg block object-cover border border-[#3A3631] shrink-0" />
-                        ))}
-                      </div>
-                    )}
-                    {p.notes && <p className="text-sm text-[#F2EDE4] mt-1.5">{p.notes}</p>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
       {listPickerOpen && lists && (
         <ListPickerModal
           lists={lists}
