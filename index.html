@@ -2694,7 +2694,7 @@ function GameGridCard({ game: g, expansions = [], playCounts = {}, gridCols = 2,
       onTouchMove={handleTouchMove}
       className={`relative text-left rounded-2xl rise-in flex flex-col overflow-hidden ${gridCols === 4 ? "bg-transparent" : "bg-[#262422] border border-[#3A3631] p-1.5"}`}
     >
-      <div className="relative flex">
+      <div className="relative flex aspect-square w-full">
         <Cover game={active} size="lg" compact={gridCols === 4} className={gridCols === 4 ? "!rounded-lg !border-0" : "!rounded-xl"} />
         {gridCols === 4 && active.rating && (
           <span className="absolute flex items-center leading-none gap-0.5 bg-black/70 border border-white/15 text-[#D4A24C] text-[10px] font-mono px-1.5 py-0.5 rounded-full" style={{ top: 4, left: 4 }}>
@@ -6258,8 +6258,10 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
   const memberOfCount = lists ? lists.filter((l) => l.gameIds.includes(game.id)).length : 0;
 
   const StatBlock = ({ icon: Icon, value, sub, iconSize = 16 }) => (
-    <div className="flex-1 p-3 text-center min-w-[70px]">
-      <Icon size={iconSize} className="mx-auto mb-1 text-[#F2EDE4]" />
+    <div className="flex-1 p-3 text-center min-w-[70px] flex flex-col items-center">
+      <div className="h-7 flex items-end justify-center mb-1">
+        <Icon size={iconSize} className="text-[#F2EDE4]" />
+      </div>
       <p className="text-sm font-medium text-[#F2EDE4]">{value}</p>
       <p className="text-[11px] text-[#A39C8F]">{sub}</p>
     </div>
