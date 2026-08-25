@@ -6659,6 +6659,11 @@ function App() {
   };
   const [gameModal, setGameModal] = useState(null);
   const [detailGame, setDetailGame] = useState(null);
+  // detailGame only tracks WHICH game is open (by identity at the time it was
+  // opened) — always re-resolve the actual data to display from the live
+  // array, so edits made while the detail view is open (photo, rating,
+  // Verliehen, etc.) show up immediately instead of needing a close/reopen.
+  const liveDetailGame = detailGame ? (displayGames.find((g) => g.id === detailGame.id) || detailGame) : null;
   const [detailList, setDetailList] = useState(null);
   const [playModal, setPlayModal] = useState(null);
   const [quickFilter, setQuickFilter] = useState(null);
@@ -7150,14 +7155,14 @@ function App() {
       </div>
       {detailGame && (
         <GameDetailModal
-          game={detailGame}
+          game={liveDetailGame}
           games={displayGames}
           plays={displayPlays}
           lists={readOnly ? null : displayLists}
           onToggleList={readOnly ? null : toggleGameInList}
           onCreateList={readOnly ? null : addList}
           onClose={() => setDetailGame(null)}
-          onEdit={readOnly ? null : () => { setGameModal({ editing: detailGame }); setDetailGame(null); }}
+          onEdit={readOnly ? null : () => { setGameModal({ editing: liveDetailGame }); setDetailGame(null); }}
           onViewOther={(g) => setDetailGame(g)}
           readOnlyLabel={demoMode ? "Demo" : guestMode ? "Gast" : null}
           hidePrices={guestMode}
