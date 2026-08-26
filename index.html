@@ -6084,6 +6084,8 @@ WICHTIG, sobald du ein KONKRETES Spiel empfiehlst: erklär in ein bis zwei knapp
 
 Lies zwischen den Zeilen: wenn der Nutzer z.B. erwähnt "die Kinder sind da", "wir sind neu dabei", "nach der Arbeit noch schnell", "größere Familienrunde an Weihnachten" — zieh daraus selbst Schlüsse (Zielgruppe, Energielevel, Regelkenntnis, verfügbare Zeit), statt stur nach Spieleranzahl/Zeit zu fragen, wenn's schon impliziert ist. Merk dir außerdem alles, was im bisherigen Gespräch schon gesagt wurde, und frag das nie nochmal.
 
+Wenn du über die Komplexität eines Spiels sprichst, nutze die Einstufung, die auch in der Sammlung unten steht (Einsteiger, Familie, Familie+, Kenner–, Kenner, Kenner+, Experte) — nicht eigene, davon abweichende Wörter wie pauschal "komplex" oder "schwer", die eine andere Stufe suggerieren als die tatsächliche (z.B. ein "Kennerspiel" NICHT als "komplex" bezeichnen, das klingt nach Expertenspiel-Niveau — sag stattdessen z.B. "mittelschwer" oder nenn die Stufe direkt beim Namen).
+
 Wenn du noch was Wichtiges nicht weißt, frag GEZIELT nach der einen Sache, die deine Empfehlung gerade am meisten einschränkt — nicht nach einem Standard-Set von Fragen (Spieleranzahl/Zeit) nach Schema F. Manchmal ist die entscheidende Frage etwas anderes: ob schon mal gespielt wurde, wie viel Konzentration gerade drin ist, ob's ums Gewinnen oder ums Zusammensein geht, wer dabei ist. Wähl die Frage, die dich am schnellsten zu einer guten, konkreten Empfehlung bringt. Höchstens EINE Rückfrage pro Nachricht, und nur wenn's wirklich nötig ist — reicht das Gesagte schon aus, empfiehl direkt.
 
 Die OPTIONS-Zeile ist NUR für kurze Antwortmöglichkeiten gedacht, die der NUTZER als nächstes plausibel sagen würde — niemals Spielnamen, Erweiterungsnamen oder andere Datenfragmente. Beispiele für gute Optionen bei einer Rückfrage: "2 Spieler" | "4 Spieler" | "Egal". Nachdem du ein KONKRETES Spiel empfohlen hast, sind die einzig sinnvollen Optionen kurze Reaktionen wie "Klingt gut" | "Zeig mir eine Alternative" | "Erzähl mehr dazu" — nie mehrere andere Spiele auf einmal ohne dass der Nutzer danach gefragt hat. Häng die Zeile nur an, wenn sie wirklich sinnvolle, kurze Nutzer-Antworten enthält, sonst ganz weglassen, in exakt diesem Format:
@@ -6095,7 +6097,7 @@ BGGSEARCH: <Spielname>
 Fragt der Nutzer allgemein nach einer NEUEN Kaufempfehlung / einem Spiel, das er noch nicht hat, ohne einen bestimmten Titel zu nennen (z.B. "Was soll ich mir als nächstes kaufen?", "Empfiehl mir was Neues"), antworte NUR mit dieser einen Zeile, ebenfalls ganz ohne Satz davor oder danach:
 BGGDISCOVER
 
-Nutze BGGSEARCH/BGGDISCOVER NUR, wenn es wirklich um ein Spiel außerhalb der Sammlung geht — für Empfehlungen aus der Sammlung unten brauchst du das nicht, da antwortest du direkt normal. Bekommst du nach einer BGGSEARCH-Anfrage echte Spieler-Rezensionen mitgeliefert, beziehe deren Meinung natürlich mit ein (z.B. "Spieler sagen, dass..."), statt sie zu ignorieren — aber erfinde nichts dazu, was nicht in den Rezensionen steht.
+Nutze BGGSEARCH/BGGDISCOVER, wenn dir Informationen fehlen, um die Frage zu beantworten — das gilt auch für Spiele, die schon (z.B. auf der Wunschliste) in der Sammlung stehen, wenn dort keine Beschreibung oder Rezensionen hinterlegt sind. Nur wenn du die Frage schon vollständig aus den Daten unten beantworten kannst (z.B. reine Empfehlung aus der Sammlung), brauchst du keine Suche. Fragt der Nutzer explizit nach Meinungen/Rezensionen/was andere Spieler sagen, und du hast dazu noch keine echten Rezensionen aus einer vorherigen BGGSEARCH-Antwort in diesem Gespräch, dann IMMER erst BGGSEARCH nutzen, bevor du antwortest — erfinde niemals Rezensionen oder Meinungen, die du nicht wirklich bekommen hast. Bekommst du nach einer BGGSEARCH-Anfrage echte Spieler-Rezensionen mitgeliefert, beziehe deren Meinung natürlich mit ein (z.B. "Spieler sagen, dass..."), statt sie zu ignorieren — aber erfinde nichts dazu, was nicht in den Rezensionen steht.
 
 Du bist außerdem der Ratgeber, wenn's um die Sammlung als Ganzes geht — nicht nur "was spielen wir heute", sondern auch "was mach ich mit meiner Sammlung":
 
@@ -6216,14 +6218,6 @@ ${buildCollectionContextForAI(games, plays)}`;
     <div className="min-h-full flex flex-col">
       <div className="p-5 pb-3 flex items-center justify-between gap-3">
         <h1 className="font-display text-3xl text-[#F2EDE4]">Was spielen wir heute?</h1>
-        {aiWorkerUrl && chatMessages.length > 0 && (
-          <button
-            onClick={() => { haptic(6); greetedRef.current = false; setChatMessages([]); }}
-            className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full bg-[#262422] border border-[#3A3631] text-[#A39C8F] text-xs font-body"
-          >
-            <Sparkles size={12} /> Neuer Chat
-          </button>
-        )}
       </div>
       {aiWorkerUrl && (
         <div className="px-5 pb-3 flex gap-2 overflow-x-auto">
@@ -6276,11 +6270,21 @@ ${buildCollectionContextForAI(games, plays)}`;
                         ))}
                       </div>
                     )}
-                    {m.externalGame && !games.some((g) => g.bggId && String(g.bggId) === String(m.externalGame.bggId)) && (
-                      <button onClick={() => onAddWishlist(m.externalGame)} className="flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full bg-[#D4A24C]/15 border border-[#D4A24C]/40 text-xs text-[#D4A24C] font-medium">
-                        {m.externalGame.images && m.externalGame.images[0] ? <img src={m.externalGame.images[0]} alt="" className="w-5 h-5 rounded-full object-cover" /> : <Heart size={12} />}
-                        {m.externalGame.name} zur Wunschliste
-                      </button>
+                    {m.externalGame && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {m.externalGame.bggId && (
+                          <a href={`https://boardgamegeek.com/boardgame/${m.externalGame.bggId}`} target="_blank" rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full bg-[#1C1B1A] border border-[#3A3631] text-xs text-[#A39C8F]">
+                            {m.externalGame.images && m.externalGame.images[0] ? <img src={m.externalGame.images[0]} alt="" className="w-5 h-5 rounded-full object-cover" /> : <Globe size={12} />}
+                            {m.externalGame.name} auf BGG ansehen <ChevronRight size={11} />
+                          </a>
+                        )}
+                        {!games.some((g) => g.bggId && String(g.bggId) === String(m.externalGame.bggId)) && (
+                          <button onClick={() => onAddWishlist(m.externalGame)} className="flex items-center gap-1.5 pl-2.5 pr-2.5 py-1 rounded-full bg-[#D4A24C]/15 border border-[#D4A24C]/40 text-xs text-[#D4A24C] font-medium">
+                            <Heart size={12} /> Zur Wunschliste
+                          </button>
+                        )}
+                      </div>
                     )}
                     {m.role === "assistant" && isLast && m.options && m.options.length > 0 && !chatLoading && (
                       <div className="flex gap-1.5 flex-wrap mt-0.5">
@@ -6309,6 +6313,12 @@ ${buildCollectionContextForAI(games, plays)}`;
 
           <div className="fixed left-0 right-0 z-30 p-4" style={{ bottom: "calc(72px + env(safe-area-inset-bottom))" }}>
             <div className="flex gap-2">
+              {chatMessages.length > 0 && (
+                <button onClick={() => { haptic(6); greetedRef.current = false; setChatMessages([]); }} aria-label="Neuer Chat"
+                  className="glass shrink-0 w-12 h-12 rounded-full border border-white/10 text-[#A39C8F] shadow-lg flex items-center justify-center">
+                  <Sparkles size={18} />
+                </button>
+              )}
               <input
                 onFocus={handleFocusScroll}
                 value={chatInput}
