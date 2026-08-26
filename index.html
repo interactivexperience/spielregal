@@ -6089,10 +6089,10 @@ Wenn du noch was Wichtiges nicht weißt, frag GEZIELT nach der einen Sache, die 
 Die OPTIONS-Zeile ist NUR für kurze Antwortmöglichkeiten gedacht, die der NUTZER als nächstes plausibel sagen würde — niemals Spielnamen, Erweiterungsnamen oder andere Datenfragmente. Beispiele für gute Optionen bei einer Rückfrage: "2 Spieler" | "4 Spieler" | "Egal". Nachdem du ein KONKRETES Spiel empfohlen hast, sind die einzig sinnvollen Optionen kurze Reaktionen wie "Klingt gut" | "Zeig mir eine Alternative" | "Erzähl mehr dazu" — nie mehrere andere Spiele auf einmal ohne dass der Nutzer danach gefragt hat. Häng die Zeile nur an, wenn sie wirklich sinnvolle, kurze Nutzer-Antworten enthält, sonst ganz weglassen, in exakt diesem Format:
 OPTIONS: Option1 | Option2 | Option3
 
-Du hast KEINEN Zugriff auf das freie Internet — aber du kannst gezielt bei BoardGameGeek (der größten Brettspiel-Datenbank) nachschlagen, wenn der Nutzer nach einem SPEZIFISCHEN Spiel fragt, das nicht in seiner Sammlung ist (z.B. "Was hältst du von X?", "Warum sollte ich X kaufen?", "Kennst du X?"). Antworte in diesem Fall NUR mit einer einzigen Zeile, sonst nichts:
+Du hast KEINEN Zugriff auf das freie Internet — aber du kannst gezielt bei BoardGameGeek (der größten Brettspiel-Datenbank) nachschlagen, wenn der Nutzer nach einem SPEZIFISCHEN Spiel fragt, das nicht in seiner Sammlung ist (z.B. "Was hältst du von X?", "Warum sollte ich X kaufen?", "Kennst du X?"). Antworte in diesem Fall NUR mit dieser einen Zeile, KOMPLETT OHNE einleitenden Satz davor oder danach — die Zeile muss deine gesamte Antwort sein, sonst funktioniert die Suche technisch nicht:
 BGGSEARCH: <Spielname>
 
-Fragt der Nutzer allgemein nach einer NEUEN Kaufempfehlung / einem Spiel, das er noch nicht hat, ohne einen bestimmten Titel zu nennen (z.B. "Was soll ich mir als nächstes kaufen?", "Empfiehl mir was Neues"), antworte NUR mit dieser einen Zeile:
+Fragt der Nutzer allgemein nach einer NEUEN Kaufempfehlung / einem Spiel, das er noch nicht hat, ohne einen bestimmten Titel zu nennen (z.B. "Was soll ich mir als nächstes kaufen?", "Empfiehl mir was Neues"), antworte NUR mit dieser einen Zeile, ebenfalls ganz ohne Satz davor oder danach:
 BGGDISCOVER
 
 Nutze BGGSEARCH/BGGDISCOVER NUR, wenn es wirklich um ein Spiel außerhalb der Sammlung geht — für Empfehlungen aus der Sammlung unten brauchst du das nicht, da antwortest du direkt normal. Bekommst du nach einer BGGSEARCH-Anfrage echte Spieler-Rezensionen mitgeliefert, beziehe deren Meinung natürlich mit ein (z.B. "Spieler sagen, dass..."), statt sie zu ignorieren — aber erfinde nichts dazu, was nicht in den Rezensionen steht.
@@ -6123,8 +6123,13 @@ ${buildCollectionContextForAI(games, plays)}`;
       let raw = await aiChat(aiWorkerUrl, apiMessages);
       let externalGame = null;
 
-      const bggSearchMatch = raw.trim().match(/^BGGSEARCH:\s*(.+)$/i);
-      const isDiscover = /^BGGDISCOVER\s*$/i.test(raw.trim());
+      // Not anchored to the very start — the model sometimes writes a short
+      // lead-in sentence before the BGGSEARCH/BGGDISCOVER directive instead
+      // of outputting it as the entire reply. Detect it anywhere so the
+      // search still actually runs instead of the raw directive leaking into
+      // the visible chat as plain text.
+      const bggSearchMatch = raw.match(/BGGSEARCH:\s*(.+?)\s*$/im);
+      const isDiscover = /BGGDISCOVER\b/i.test(raw);
 
       if (bggSearchMatch || isDiscover) {
         setChatLoadingLabel(isDiscover ? "durchstöbert BGG…" : "schaut bei BGG nach…");
