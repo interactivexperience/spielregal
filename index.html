@@ -21,9 +21,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
 <style>
   html, body {
+    height: 100%;
     background-color: #1C1B1A;
     background-image: radial-gradient(circle at 85% 0%, rgba(108,127,224,0.10), transparent 45%), radial-gradient(circle at 0% 55%, rgba(212,162,76,0.06), transparent 40%);
-    background-attachment: fixed;
+    background-repeat: no-repeat;
     margin:0; overscroll-behavior:none;
   }
   .glass {
@@ -1331,12 +1332,27 @@ function ImagePickerSheet({ onAdd, onClose }) {
   const cameraRef = React.useRef(null);
   const uploadRef = React.useRef(null);
 
+  const [bulkUploading, setBulkUploading] = useState(false);
   const handleFile = async (e) => {
-    const file = e.target.files && e.target.files[0];
+    const files = e.target.files ? Array.from(e.target.files) : [];
     e.target.value = "";
-    if (!file) return;
-    const dataUrl = await resizeImageFile(file);
-    setCropSrc(dataUrl);
+    if (files.length === 0) return;
+    if (files.length === 1) {
+      const dataUrl = await resizeImageFile(files[0]);
+      setCropSrc(dataUrl);
+      return;
+    }
+    // Mehrere Dateien auf einmal: Zuschneiden pro Bild wäre zu umständlich —
+    // alle werden direkt in voller Größe hinzugefügt.
+    setBulkUploading(true);
+    for (const file of files) {
+      try {
+        const dataUrl = await resizeImageFile(file);
+        onAdd(dataUrl);
+      } catch { /* skip files that fail to load/resize, keep going with the rest */ }
+    }
+    setBulkUploading(false);
+    requestClose();
   };
 
   const submitUrl = () => {
@@ -1362,8 +1378,9 @@ function ImagePickerSheet({ onAdd, onClose }) {
             <button onClick={() => cameraRef.current && cameraRef.current.click()} className="w-full flex items-center gap-3 bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 text-[#F2EDE4] text-sm">
               <Camera size={18} className="text-[#E85D9C]" /> Foto aufnehmen
             </button>
-            <button onClick={() => uploadRef.current && uploadRef.current.click()} className="w-full flex items-center gap-3 bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 text-[#F2EDE4] text-sm">
-              <Upload size={18} className="text-[#E85D9C]" /> Hochladen
+            <button onClick={() => uploadRef.current && uploadRef.current.click()} disabled={bulkUploading} className="w-full flex items-center gap-3 bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 text-[#F2EDE4] text-sm disabled:opacity-50">
+              {bulkUploading ? <Loader2 size={18} className="text-[#E85D9C]" /> : <Upload size={18} className="text-[#E85D9C]" />}
+              {bulkUploading ? "Fotos werden hinzugefügt…" : "Hochladen (mehrere möglich)"}
             </button>
             <button onClick={() => setUrlMode(true)} className="w-full flex items-center gap-3 bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 text-[#F2EDE4] text-sm">
               <LinkIcon size={18} className="text-[#E85D9C]" /> Per URL einfügen
@@ -1391,6 +1408,7 @@ function ImagePickerSheet({ onAdd, onClose }) {
           ref={uploadRef}
           type="file"
           accept="image/*"
+          multiple
           style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", border: 0 }}
           onChange={handleFile}
         />
@@ -7133,7 +7151,7 @@ function App() {
   ];
 
   return (
-    <div className="fixed inset-0 font-body flex flex-col max-w-3xl mx-auto overflow-hidden" style={{ backgroundColor: tab === "dashboard" ? "transparent" : "#1C1B1A" }}>
+    <div className="fixed inset-0 font-body flex flex-col max-w-3xl mx-auto overflow-hidden" style={{ backgroundColor: "transparent" }}>
       <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
         <defs>
           <filter id="glass-distort" x="-20%" y="-20%" width="140%" height="140%">
