@@ -1343,14 +1343,19 @@ function ImagePickerSheet({ onAdd, onClose }) {
       return;
     }
     // Mehrere Dateien auf einmal: Zuschneiden pro Bild wäre zu umständlich —
-    // alle werden direkt in voller Größe hinzugefügt.
+    // alle werden direkt in voller Größe hinzugefügt. Wichtig: onAdd wird nur
+    // EINMAL mit dem kompletten Array aufgerufen, nicht einmal pro Bild in
+    // einer Schleife — sonst greifen die meisten onAdd-Handler beim schnellen
+    // Hintereinander-Aufrufen noch auf den alten (veralteten) Bilder-Stand zu
+    // und überschreiben sich gegenseitig, sodass am Ende nur 1 Bild ankommt.
     setBulkUploading(true);
+    const newImages = [];
     for (const file of files) {
       try {
-        const dataUrl = await resizeImageFile(file);
-        onAdd(dataUrl);
+        newImages.push(await resizeImageFile(file));
       } catch { /* skip files that fail to load/resize, keep going with the rest */ }
     }
+    if (newImages.length > 0) onAdd(newImages);
     setBulkUploading(false);
     requestClose();
   };
@@ -3349,7 +3354,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
           <div className="p-5 space-y-4 font-body overflow-y-auto flex-1" onScroll={(e) => setFormTitleCollapsed(e.currentTarget.scrollTop > 24)}>
             <PhotoGallerySection
               images={form.images}
-              onAdd={(img) => update("images", [...form.images, img])}
+              onAdd={(img) => update("images", [...form.images, ...(Array.isArray(img) ? img : [img])])}
               onRemove={(i) => update("images", form.images.filter((_, idx) => idx !== i))}
               onReplace={(i, img) => update("images", form.images.map((x, idx) => (idx === i ? img : x)))}
               hero
@@ -4100,7 +4105,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                 <div className="mt-1.5">
                   <PhotoGallerySection
                     images={images}
-                    onAdd={(img) => setImages((prev) => [...prev, img])}
+                    onAdd={(img) => setImages((prev) => [...prev, ...(Array.isArray(img) ? img : [img])])}
                     onRemove={(i) => setImages((prev) => prev.filter((_, idx) => idx !== i))}
                     onReplace={(i, img) => setImages((prev) => prev.map((x, idx) => (idx === i ? img : x)))}
                   />
@@ -4137,7 +4142,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
         </div>
       )}
       {newPlayerPhotoFor && (
-        <ImagePickerSheet onAdd={(img) => { onUpdatePlayerPhoto(newPlayerPhotoFor, img); setNewPlayerPhotoFor(null); }} onClose={() => setNewPlayerPhotoFor(null)} />
+        <ImagePickerSheet onAdd={(img) => { onUpdatePlayerPhoto(newPlayerPhotoFor, Array.isArray(img) ? img[0] : img); setNewPlayerPhotoFor(null); }} onClose={() => setNewPlayerPhotoFor(null)} />
       )}
       {playerOrderOpen && (
         <PlayerOrderModal players={playerProfiles} onSave={(ids) => onReorderPlayers && onReorderPlayers(ids)} onClose={() => setPlayerOrderOpen(false)} />
@@ -6496,7 +6501,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
           )}
           {campaignPhotoOpen && (
             <ImagePickerSheet
-              onAdd={(img) => { onQuickUpdate(game.id, { images: [...(game.images || []), img] }); setCampaignPhotoOpen(false); }}
+              onAdd={(img) => { onQuickUpdate(game.id, { images: [...(game.images || []), ...(Array.isArray(img) ? img : [img])] }); setCampaignPhotoOpen(false); }}
               onClose={() => setCampaignPhotoOpen(false)}
             />
           )}
