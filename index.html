@@ -4585,7 +4585,24 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
           localStorage.setItem("spielregal:weeklyTip", JSON.stringify(val));
         }
         if (needsYearly) {
-          const text = await aiChat(aiWorkerUrl, [{ role: "user", content: `Du bist ein Brettspiel-Kumpel. Schreib EINE kurze, interessante Beobachtung (max. 2-3 Sätze) auf Deutsch über das Spieljahr ${yearKey} des Nutzers, basierend auf den Daten unten — z.B. ein Muster, eine Entwicklung, ein Rekord. Kein Grußwort, direkt die Beobachtung.\n\n${context}` }]);
+          // Die allgemeine Sammlungs-Übersicht enthält nur Gesamt-Spielzahlen
+          // über die komplette Laufzeit — für eine Aussage über EIN Jahr
+          // braucht es echte, nach Jahr gefilterte Zahlen, sonst kann die KI
+          // nur raten bzw. Gesamtzahlen fälschlich als Jahreszahlen ausgeben.
+          const yearPlays = plays.filter((p) => (p.date || "").startsWith(String(yearKey)));
+          const yearCounts = {};
+          yearPlays.forEach((p) => { yearCounts[p.gameName] = (yearCounts[p.gameName] || 0) + 1; });
+          const yearLines = Object.entries(yearCounts).sort((a, b) => b[1] - a[1])
+            .map(([name, count]) => `- ${name}: ${count}× im Jahr ${yearKey}`).join("\n");
+          const yearContext = yearPlays.length === 0
+            ? (() => {
+                const wishlist = games.filter((g) => g.status === "wishlist");
+                return wishlist.length > 0
+                  ? `Im Jahr ${yearKey} wurden bisher noch KEINE Partien eingetragen. Da es dazu nichts zu sagen gibt, nutze stattdessen die Wunschliste für eine interessante Beobachtung (z.B. wie viele Spiele drauf stehen, oder ein auffälliges Muster bei Thema/Komplexität): ${wishlist.map((g) => g.name).join(", ")}`
+                  : `Im Jahr ${yearKey} wurden bisher noch KEINE Partien eingetragen, und die Wunschliste ist auch leer. Sag einfach ehrlich, dass es dafür noch nichts zu berichten gibt.`;
+              })()
+            : `Echte Partien-Zahlen NUR für das Jahr ${yearKey} (insgesamt ${yearPlays.length} Partien) — nutze AUSSCHLIESSLICH diese Zahlen für Aussagen über das Jahr, nicht die Gesamtzahlen aus der Sammlung unten:\n${yearLines}`;
+          const text = await aiChat(aiWorkerUrl, [{ role: "user", content: `Du bist ein Brettspiel-Kumpel. Schreib EINE kurze, interessante Beobachtung (max. 2-3 Sätze) auf Deutsch über das Spieljahr ${yearKey} des Nutzers. Halte dich für alle Zahlen/Häufigkeiten STRIKT an den Abschnitt "Echte Partien-Zahlen NUR für das Jahr ${yearKey}" weiter unten — NICHT an die allgemeinen Sammlungsdaten danach, die enthalten Gesamtzahlen über die komplette Laufzeit, keine Jahreszahlen. Erfinde oder schätze keine Zahlen. Ist noch nichts für dieses Jahr eingetragen, sag das ehrlich statt etwas zu erfinden. Kein Grußwort, direkt die Beobachtung.\n\n${yearContext}\n\n${context}` }]);
           const val = { text, year: yearKey, generatedAt: now, fingerprint: playsFingerprint };
           setYearlyInsight(val);
           localStorage.setItem("spielregal:yearlyInsight", JSON.stringify(val));
@@ -6544,7 +6561,7 @@ ${buildCollectionContextForAI(games, plays)}`;
                         })()}
                       </div>
                     )}
-                    {m.role === "assistant" && isLast && m.options && m.options.length > 0 && !chatLoading && (
+                    {m.role === "assistant" && isLast && m.options && m.options.length > 0 && !m.showFlowButtons && !chatLoading && (
                       <div className="flex gap-1.5 flex-wrap mt-0.5">
                         {m.options.map((opt) => (
                           <button key={opt} onClick={() => sendChat(opt)} className="px-3.5 py-2 rounded-full text-sm bg-[#E85D9C]/15 border border-[#E85D9C]/40 text-[#8B9AFA] font-medium">
