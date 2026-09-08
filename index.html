@@ -99,6 +99,10 @@
     0% { transform: translate(-50%, -50%) scale(0); opacity: 0.5; }
     100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
   }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); opacity: 0.85; }
+    50% { transform: translateY(-5px); opacity: 1; }
+  }
   .save-pop { animation: savePop 0.38s cubic-bezier(0.34, 1.56, 0.64, 1); }
   @keyframes savePop {
     0% { transform: scale(1); }
@@ -643,30 +647,42 @@ function TextWithGameLinks({ text, games, onView, color }) {
   );
 }
 
-function PipAvatar({ size = 36 }) {
+function PipAvatar({ size = 36, sleeping = false }) {
   return (
     <div
       className="rounded-full flex items-center justify-center shrink-0 overflow-hidden"
-      style={{ width: size, height: size, background: "conic-gradient(from 0deg, #ff5a96, #ffc850, #78dcff, #b482ff, #ff5a96)" }}
+      style={{ width: size, height: size, background: sleeping ? "#3A3631" : "conic-gradient(from 0deg, #ff5a96, #ffc850, #78dcff, #b482ff, #ff5a96)" }}
     >
       <svg width={size * 0.72} height={size * 0.72} viewBox="0 0 40 40" fill="none">
         {/* Rundlicher Wesen-Körper */}
-        <path d="M20 4C10 4 5 12 5 21c0 9 6 15 15 15s15-6 15-15C35 12 30 4 20 4Z" fill="#F2EDE4" />
+        <path d="M20 4C10 4 5 12 5 21c0 9 6 15 15 15s15-6 15-15C35 12 30 4 20 4Z" fill="#F2EDE4" opacity={sleeping ? 0.55 : 1} />
         {/* Kleine Öhrchen/Hörnchen */}
-        <circle cx="11" cy="9" r="3.2" fill="#F2EDE4" />
-        <circle cx="29" cy="9" r="3.2" fill="#F2EDE4" />
-        <circle cx="11" cy="9" r="1.4" fill="#E85D9C" />
-        <circle cx="29" cy="9" r="1.4" fill="#78dcff" />
+        <circle cx="11" cy="9" r="3.2" fill="#F2EDE4" opacity={sleeping ? 0.55 : 1} />
+        <circle cx="29" cy="9" r="3.2" fill="#F2EDE4" opacity={sleeping ? 0.55 : 1} />
+        {!sleeping && <circle cx="11" cy="9" r="1.4" fill="#E85D9C" />}
+        {!sleeping && <circle cx="29" cy="9" r="1.4" fill="#78dcff" />}
         {/* Wangen */}
-        <circle cx="10.5" cy="24" r="3" fill="#E85D9C" opacity="0.35" />
-        <circle cx="29.5" cy="24" r="3" fill="#E85D9C" opacity="0.35" />
-        {/* Augen */}
-        <circle cx="14.5" cy="20" r="3.4" fill="#1C1B1A" />
-        <circle cx="25.5" cy="20" r="3.4" fill="#1C1B1A" />
-        <circle cx="15.6" cy="18.8" r="1.1" fill="#F2EDE4" />
-        <circle cx="26.6" cy="18.8" r="1.1" fill="#F2EDE4" />
-        {/* Lächeln */}
-        <path d="M15 27c1.8 2.2 8.2 2.2 10 0" stroke="#1C1B1A" strokeWidth="1.8" strokeLinecap="round" fill="none" />
+        <circle cx="10.5" cy="24" r="3" fill="#E85D9C" opacity={sleeping ? 0.15 : 0.35} />
+        <circle cx="29.5" cy="24" r="3" fill="#E85D9C" opacity={sleeping ? 0.15 : 0.35} />
+        {sleeping ? (
+          <>
+            {/* Geschlossene, schlafende Augen */}
+            <path d="M12 20c1.2-1.4 3.8-1.4 5 0" stroke="#5C574F" strokeWidth="1.8" strokeLinecap="round" fill="none" />
+            <path d="M23 20c1.2-1.4 3.8-1.4 5 0" stroke="#5C574F" strokeWidth="1.8" strokeLinecap="round" fill="none" />
+            {/* Entspannter Mund */}
+            <path d="M17 27.5c1 .8 5 .8 6 0" stroke="#5C574F" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+          </>
+        ) : (
+          <>
+            {/* Augen */}
+            <circle cx="14.5" cy="20" r="3.4" fill="#1C1B1A" />
+            <circle cx="25.5" cy="20" r="3.4" fill="#1C1B1A" />
+            <circle cx="15.6" cy="18.8" r="1.1" fill="#F2EDE4" />
+            <circle cx="26.6" cy="18.8" r="1.1" fill="#F2EDE4" />
+            {/* Lächeln */}
+            <path d="M15 27c1.8 2.2 8.2 2.2 10 0" stroke="#1C1B1A" strokeWidth="1.8" strokeLinecap="round" fill="none" />
+          </>
+        )}
       </svg>
     </div>
   );
@@ -5473,6 +5489,17 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [filters, setFilters] = useState(() => loadKey("spielregal:collectionFilters", { categories: [], mechanisms: [], publishers: [], complexity: [], saleStatus: [], players: "", minRating: "" }));
   useEffect(() => { saveKey("spielregal:collectionFilters", filters); }, [filters]);
+  // Ein Status-/Verkaufsstatus-Filter, der noch aus dem normalen Modus stammt
+  // (z.B. "Wunschliste" oder "Verkauft" ausgewählt), würde im Gästemodus sonst
+  // unsichtbar im Hintergrund weiterbestehen — und stumm zu "keine Treffer"
+  // führen, weil die Wunschliste/Verkauft-Sperre weiter unten alles rausfiltert.
+  // Beim Wechsel in den Gästemodus deshalb aktiv zurücksetzen.
+  useEffect(() => {
+    if (guestMode) {
+      if (statusFilter !== "owned") setStatusFilter("owned");
+      if (filters.saleStatus.length > 0) setFilters((f) => ({ ...f, saleStatus: [] }));
+    }
+  }, [guestMode]);
   const [sortBy, setSortBy] = useState(() => loadKey("spielregal:collectionSortBy", "name-asc"));
   useEffect(() => { saveKey("spielregal:collectionSortBy", sortBy); }, [sortBy]);
   const [contextGame, setContextGame] = useState(null);
@@ -6230,7 +6257,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
 }
 
 /* ---------------- RECOMMENDATIONS ---------------- */
-function Recommendations({ games, plays, onView, aiWorkerUrl, chatMessages, setChatMessages, onAddWishlist, onSaveMechanismsNote }) {
+function Recommendations({ games, plays, onView, aiWorkerUrl, chatMessages, setChatMessages, onAddWishlist, onSaveMechanismsNote, guestMode }) {
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const [chatLoadingLabel, setChatLoadingLabel] = useState("überlegt…");
@@ -6258,6 +6285,16 @@ Wichtige Chat-Regeln, damit es sich nicht wie ein Bot anfühlt:
 Empfiehl in erster Linie Spiele aus der Sammlung unten. Wenn wirklich nichts passt, darfst du auch ein fremdes Spiel nennen — dann klar als "nicht in deiner Sammlung" kennzeichnen und kurz begründen, warum es besser passt. Berücksichtige die Partien-Historie (nicht gerade erst Gespieltes bevorzugt vorschlagen, außer gewünscht; schlag gern auch mal was lange nicht Gespieltes vor).
 
 WICHTIG bei "was hab ich noch nicht/lange nicht gespielt" o.ä.: Es gibt drei verschiedene Kategorien, die du NIE vermischen darfst, ohne es zu sagen — Spiele im Besitz (tatsächlich vorhanden, kann man einfach aus dem Regal holen), Spiele auf der Wunschliste (NICHT vorhanden, nur ein Wunsch) und fremde Spiele außerhalb der Sammlung. Erwähnst du ein Wunschlisten-Spiel oder ein fremdes Spiel als Antwort auf "was hab ich nicht gespielt", MUSS unmissverständlich klar werden, dass man es (noch) gar nicht besitzt — sonst denkt der Nutzer (besonders ein Gast, der die Sammlung nicht auswendig kennt), es stünde spielbereit im Regal.
+
+${guestMode ? `Der Nutzer ist gerade ein GAST (nicht der Sammlungsbesitzer) — es gibt für ihn nur den "Passendes Spiel finden"-Flow (siehe unten). "Sammlung verkleinern" oder "Neues Spiel entdecken" sind für einen Gast nicht relevant (er kauft/verkauft nichts) — biete sie nicht an und geh direkt in den Passendes-Spiel-finden-Flow.` : `Es gibt DREI unterschiedliche Gesprächsrichtungen — welche gerade gilt, ergibt sich daraus, was der Nutzer zuletzt ausgewählt/geschrieben hat (z.B. per Option-Button "Sammlung verkleinern" / "Passendes Spiel finden" / "Neues Spiel entdecken", oder sinngemäß im Fließtext). Bleib in der einmal gewählten Richtung, bis das Gespräch klar in eine andere wechselt.
+
+RICHTUNG "Sammlung verkleinern": Der Nutzer will Spiele aus seiner EIGENEN Sammlung loswerden (verkaufen/weggeben). Schlag dafür gezielt Kandidaten aus der Sammlung unten vor — bevorzugt Spiele mit 0 Partien, niedriger Bewertung, oder die lange nicht gespielt wurden. Frag kurz nach, wonach er aussortieren will (z.B. "was hast du nie gespielt" vs. "was gefällt dir nicht mehr"), falls nicht klar. NIEMALS in dieser Richtung neue/fremde Spiele von BGG vorschlagen — es geht nur um Abbau der bestehenden Sammlung.
+
+RICHTUNG "Neues Spiel entdecken": Der Nutzer will sein Regal ERWEITERN — er will NEUE Spiele kennenlernen, die er noch NICHT besitzt. Schlag hier NIE Spiele aus der eigenen Sammlung unten vor (die hat er ja schon) — nutze stattdessen BGGSEARCH/BGGDISCOVER, um wirklich neue, ihm unbekannte Spiele zu finden. Frag vorher kurz, in welche Richtung es gehen soll (Thema, Komplexität, für wie viele Spieler er meistens plant, oder was er von seinen Favoriten mag, um ähnliches zu finden).
+
+RICHTUNG "Passendes Spiel finden": Das ist der Flow weiter unten (Spieleranzahl/Zeit/Anspruch erfragen, dann aus der EIGENEN Sammlung empfehlen, wie im Detail unten beschrieben).`}
+
+Der folgende Ablauf (Spieleranzahl → Zeit → Anspruch, dann Empfehlung) gilt NUR für die Richtung "Passendes Spiel finden" (bzw. immer, wenn der Nutzer ein Gast ist). Bei "Sammlung verkleinern" oder "Neues Spiel entdecken" gilt er NICHT — dort gehst du nach den jeweiligen Anweisungen oben vor.
 
 Bevor du ein KONKRETES Spiel vorschlägst, brauchst du drei Dinge — aber in fester Reihenfolge, nicht alles auf einmal:
 
@@ -6307,17 +6344,17 @@ Manche Spiele unten sind mit "STATUS: bereits verkauft" oder "STATUS: zum Verkau
 
 ${buildCollectionContextForAI(games, plays)}`;
 
-  const sendChat = async (text) => {
+  const sendChat = async (text, displayText) => {
     const question = (text || chatInput).trim();
     if (!question || chatLoading) return;
     haptic(6);
-    const nextMessages = [...chatMessages, { role: "user", content: question }];
+    const nextMessages = [...chatMessages, { role: "user", content: question, display: displayText }];
     setChatMessages(nextMessages);
     setChatInput("");
     setChatLoading(true);
     setChatError("");
     try {
-      const apiMessages = [{ role: "system", content: systemPrompt() }, ...nextMessages];
+      const apiMessages = [{ role: "system", content: systemPrompt() }, ...nextMessages.map(({ display, ...m }) => m)];
       let raw = await aiChat(aiWorkerUrl, apiMessages);
       let externalGame = null;
 
@@ -6383,57 +6420,52 @@ ${buildCollectionContextForAI(games, plays)}`;
   };
 
   // Pip greets you first, as a real chat message — once per fresh conversation.
+  // Im Gästemodus gibt's nur den "passendes Spiel finden"-Flow (kein Sammlung
+  // verkleinern/entdecken, das ergibt für einen Gast keinen Sinn) — startet
+  // deshalb direkt mit der Spieleranzahl/Zeit-Frage. Im normalen Modus
+  // präsentiert Pip erst die drei Grundrichtungen zur Auswahl.
   useEffect(() => {
     if (!aiWorkerUrl || chatMessages.length > 0 || greetedRef.current) return;
     greetedRef.current = true;
     (async () => {
       setChatLoading(true);
       try {
-        const greetingVariants = [
-          "[Begrüß mich kurz und locker mit deinem Namen Pip (nicht immer gleich formuliert), erwähn beiläufig dass du beim Spielefinden hilfst, und frag direkt nach der Spieleranzahl.]",
-          "[Begrüß mich kurz, leger, mit deinem Namen Pip, und frag direkt, wie viel Zeit heute für ein Spiel da ist.]",
-          "[Begrüß mich kurz und locker als Pip und frag gleich, worauf ich heute Lust hab — eher was Entspanntes oder was Kniffliges.]",
-          "[Begrüß mich kurz, mit deinem Namen Pip, und frag direkt, ob's heute eher eine kleine oder größere Runde wird.]",
-        ];
-        const greeting = greetingVariants[Math.floor(Math.random() * greetingVariants.length)];
+        const greeting = guestMode
+          ? "[Begrüß mich kurz und locker mit deinem Namen Pip, erwähn beiläufig dass du beim Spielefinden hilfst, und frag direkt nach der Spieleranzahl und der Zeit zusammen in einer Frage.]"
+          : "[Begrüß mich kurz und locker mit deinem Namen Pip, und frag dann in einem knappen Satz, worum es heute gehen soll — OHNE selbst Optionen aufzuzählen, die kommen separat als Buttons.]";
         const raw = await aiChat(aiWorkerUrl, [
           { role: "system", content: systemPrompt() },
           { role: "user", content: greeting },
         ], 1.0);
         const { text, options } = parseReply(raw);
-        setChatMessages([{ role: "assistant", content: text, options }]);
+        // Die drei Grundrichtungen kommen als feste, im Code hinterlegte Buttons
+        // statt vom Modell frei generierten OPTIONS — zuverlässiger als sich
+        // darauf zu verlassen, dass das Modell exakt dieselben drei Texte jedes
+        // Mal korrekt ausgibt.
+        setChatMessages([{ role: "assistant", content: text, options, showFlowButtons: !guestMode }]);
       } catch {
-        setChatMessages([{ role: "assistant", content: "Hey, ich bin Pip! Ich helf dir, das passende Spiel für heute zu finden. Wie viele seid ihr denn und wie viel Zeit habt ihr?", options: [] }]);
+        setChatMessages([{ role: "assistant", content: "Hey, ich bin Pip! Ich helf dir, das passende Spiel für heute zu finden. Wie viele seid ihr denn und wie viel Zeit habt ihr?", options: [], showFlowButtons: !guestMode }]);
       } finally {
         setChatLoading(false);
       }
     })();
-  }, [aiWorkerUrl]);
+  }, [aiWorkerUrl, guestMode]);
 
   return (
     <div className="min-h-full flex flex-col">
       <div className="p-5 pb-3 flex items-center justify-between gap-3">
         <h1 className="font-display text-3xl text-[#F2EDE4]">Was spielen wir heute?</h1>
       </div>
-      {aiWorkerUrl && (
-        <div className="px-5 pb-3 flex gap-2 overflow-x-auto">
-          <button onClick={() => sendChat("Ich möchte meine Sammlung verkleinern — welche Spiele könnte ich abgeben?")}
-            className="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#262422] border border-[#3A3631] text-[#A39C8F] text-xs font-body">
-            <Library size={12} /> Sammlung verkleinern
-          </button>
-          <button onClick={() => sendChat("Ich möchte meine Sammlung erweitern — was fehlt mir noch?")}
-            className="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#262422] border border-[#3A3631] text-[#A39C8F] text-xs font-body">
-            <Plus size={12} /> Sammlung erweitern
-          </button>
-        </div>
-      )}
 
       {!aiWorkerUrl ? (
         <div className="flex-1 flex items-center justify-center p-5 text-center">
           <div className="flex flex-col items-center">
-            <PipAvatar size={104} />
-            <p className="text-[#F2EDE4] font-display text-xl mt-4">Hier ist noch niemand</p>
-            <p className="text-[#A39C8F] text-sm font-body mt-1.5 max-w-xs">Richte in den Einstellungen den KI-Assistenten ein, damit Pip dir beim Spielefinden helfen kann.</p>
+            <div className="relative">
+              <PipAvatar size={104} sleeping />
+              <span className="absolute -top-1 -right-2 text-2xl" style={{ animation: "float 2.5s ease-in-out infinite" }}>💤</span>
+            </div>
+            <p className="text-[#F2EDE4] font-display text-xl mt-4">Pip schläft noch</p>
+            <p className="text-[#A39C8F] text-sm font-body mt-1.5 max-w-xs">Richte in den Einstellungen den KI-Assistenten ein, damit Pip aufwacht und dir beim Spielefinden helfen kann.</p>
           </div>
         </div>
       ) : (
@@ -6453,7 +6485,21 @@ ${buildCollectionContextForAI(games, plays)}`;
                         backgroundSize: "100vw 100vh",
                       } : undefined}
                     >
-                      {m.role === "assistant" ? renderPipMessage(m.content, games, onView) : m.content}
+                      {m.role === "assistant" ? renderPipMessage(m.content, games, onView) : (m.display || m.content)}
+                      {m.role === "assistant" && isLast && m.showFlowButtons && !chatLoading && (
+                        <div className="flex flex-col gap-1.5 mt-2.5 pt-2.5 border-t border-white/10">
+                          {[
+                            { label: "Sammlung verkleinern", msg: "Ich will meine Sammlung verkleinern — zeig mir Kandidaten aus meiner Sammlung zum Aussortieren." },
+                            { label: "Passendes Spiel finden", msg: "Ich will ein passendes Spiel für heute finden." },
+                            { label: "Neues Spiel entdecken", msg: "Ich will ein neues Spiel entdecken, das noch nicht in meiner Sammlung ist — schlag mir dafür was von BoardGameGeek vor, nicht aus meiner Sammlung." },
+                          ].map((f) => (
+                            <button key={f.label} onClick={() => sendChat(f.msg, f.label)}
+                              className="w-full text-left px-3.5 py-2.5 rounded-[14px] text-sm bg-[#1C1B1A] border border-[#3A3631] text-[#8B9AFA] font-medium flex items-center justify-between">
+                              {f.label} <ChevronRight size={15} className="text-[#5C574F] shrink-0" />
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     {m.externalGame && (
                       <div className="flex flex-wrap gap-1.5">
@@ -7408,7 +7454,7 @@ function App() {
           {tab === "dashboard" && <Dashboard games={displayGames} plays={displayPlays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} onView={(g) => setDetailGame(g)} sectionOrder={dashboardOrder} onReorder={setDashboardOrder} hiddenSections={hiddenDashboardSections} onToggleHidden={setHiddenDashboardSections} onSearch={() => setCommandBarOpen(true)} aiWorkerUrl={aiWorkerUrl} />}
           {tab === "collection" && <Collection games={displayGames} plays={displayPlays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => !readOnly && setGameModal({ editing: null })} onView={(g) => setDetailGame(g)} onEdit={(g) => setGameModal({ editing: g })} onDelete={(g) => deleteGame(g.id)} categoryOptions={categoryOptions} mechanismOptions={mechanismOptions} demoMode={readOnly} guestMode={guestMode} lists={displayLists} onCreateList={(name) => !readOnly && addList(name)} onOpenList={(l) => setDetailList(l)} />}
           {tab === "playlog" && <PlayLog plays={displayPlays} games={displayGames} onAdd={() => !readOnly && setPlayModal({ editing: null })} onEdit={(p) => !readOnly && setPlayModal({ editing: p })} onDelete={deletePlay} demoMode={readOnly} playerProfiles={displayPlayers} />}
-          {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} onView={(g) => setDetailGame(g)} aiWorkerUrl={aiWorkerUrl} chatMessages={aiChatMessages} setChatMessages={setAiChatMessages} onAddWishlist={addToWishlistFromRecommendation} onSaveMechanismsNote={readOnly ? null : (id, text) => updateGameField(id, { mechanismsNote: text })} />}
+          {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} onView={(g) => setDetailGame(g)} aiWorkerUrl={aiWorkerUrl} chatMessages={aiChatMessages} setChatMessages={setAiChatMessages} onAddWishlist={addToWishlistFromRecommendation} onSaveMechanismsNote={readOnly ? null : (id, text) => updateGameField(id, { mechanismsNote: text })} guestMode={guestMode} />}
           {tab === "settings" && (guestMode ? (
             <div className="p-5 min-h-full flex flex-col items-center justify-center text-center">
               <Eye size={40} className="text-[#5C574F] mb-4" />
