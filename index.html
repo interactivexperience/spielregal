@@ -570,8 +570,9 @@ function findMentionedGames(text, games) {
 // several game suggestions), inline "**bold**" elsewhere just highlights
 // (e.g. a game name mentioned mid-sentence), and blank lines become spaced
 // paragraphs/segments instead of one dense block of text.
-function renderPipMessage(text) {
+function renderPipMessage(text, games = [], onView) {
   const paragraphs = text.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+  const findGame = (name) => games.find((g) => g.name.trim().toLowerCase() === name.trim().toLowerCase());
   const renderInline = (line, key) => {
     const bits = line.split(/(\*\*[^*]+\*\*)/g).filter((s) => s !== "");
     return (
@@ -592,7 +593,21 @@ function renderPipMessage(text) {
             {lines.map((line, j) => {
               const headingMatch = /^\*\*([^*]+)\*\*$/.exec(line.trim());
               if (headingMatch) {
-                return <p key={j} className="font-display text-base text-[#F2EDE4] mb-0.5">{headingMatch[1]}</p>;
+                const g = findGame(headingMatch[1]);
+                return (
+                  <div key={j} className="mb-1">
+                    {g && (
+                      <button onClick={(e) => { e.stopPropagation(); onView && onView(g); }} className="block w-16 mb-1.5">
+                        <Cover game={g} size="lg" className="!rounded-xl" />
+                      </button>
+                    )}
+                    <p className={`font-display text-base text-[#F2EDE4] ${g ? "underline decoration-[#5C574F]/50 underline-offset-2" : ""}`}
+                      onClick={g ? () => onView && onView(g) : undefined}
+                      style={g ? { cursor: "pointer" } : undefined}>
+                      {headingMatch[1]}
+                    </p>
+                  </div>
+                );
               }
               return renderInline(line, j);
             })}
@@ -5328,7 +5343,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
             <label className="block text-[11px] text-[#5C574F]">Status</label>
             <div className="mt-1.5">
               <Segmented
-                options={[{ v: "owned", label: "Besitz" }, { v: "wishlist", label: "Wunschliste" }, { v: "all", label: "Alle" }]}
+                options={guestMode ? [{ v: "owned", label: "Besitz" }] : [{ v: "owned", label: "Besitz" }, { v: "wishlist", label: "Wunschliste" }, { v: "all", label: "Alle" }]}
                 value={statusFilter}
                 onChange={onChangeStatus}
               />
@@ -5499,7 +5514,9 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
     // A search should find anything by name, independent of whatever filters
     // happen to be active — status, category, complexity, sale status, etc.
     // all get bypassed while searching, so nothing is hidden from a direct
-    // lookup by name.
+    // lookup by name. Exception: guest mode's wishlist/sold exclusion below
+    // still applies even during search — that's an access restriction, not
+    // just a default filter, so it can't be bypassed by searching.
     list = games.filter(g => gameMatchesQuery(g, query));
   } else {
     list = games.filter(g => (statusFilter === "all" ? true : g.status === statusFilter));
@@ -5518,6 +5535,10 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
     if (filters.players) list = list.filter(g => g.minPlayers && g.maxPlayers && parseInt(filters.players) >= parseInt(g.minPlayers) && parseInt(filters.players) <= parseInt(g.maxPlayers));
     if (filters.minRating) list = list.filter(g => g.rating && parseInt(g.rating) >= parseInt(filters.minRating));
   }
+  // Gästemodus: Wunschliste und verkaufte Spiele nie zeigen — egal welcher
+  // Filter/welche Suche aktiv ist. Das ist eine Zugriffsbeschränkung, keine
+  // gewöhnliche Standard-Einstellung, die man durch Filtern/Suchen umgehen kann.
+  if (guestMode) list = list.filter(g => g.status !== "wishlist" && g.saleStatus !== "sold");
 
   list = [...list].sort((a, b) => {
     switch (sortBy) {
@@ -6419,7 +6440,6 @@ ${buildCollectionContextForAI(games, plays)}`;
         <>
           <div className="flex-1 px-5 space-y-3" style={{ paddingBottom: "calc(72px + env(safe-area-inset-bottom) + 76px)" }}>
             {chatMessages.map((m, i) => {
-              const mentioned = m.role === "assistant" ? findMentionedGames(m.content, games) : [];
               const isLast = i === chatMessages.length - 1;
               return (
                 <div key={i} className={`flex gap-2 items-end ${m.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -6433,18 +6453,8 @@ ${buildCollectionContextForAI(games, plays)}`;
                         backgroundSize: "100vw 100vh",
                       } : undefined}
                     >
-                      {m.role === "assistant" ? renderPipMessage(m.content) : m.content}
+                      {m.role === "assistant" ? renderPipMessage(m.content, games, onView) : m.content}
                     </div>
-                    {mentioned.length > 0 && (
-                      <div className="flex gap-2 overflow-x-auto pb-0.5 -mx-1 px-1" style={{ maxWidth: "80vw" }}>
-                        {mentioned.map((g) => (
-                          <button key={g.id} onClick={() => onView(g)} className="shrink-0 w-20 text-left">
-                            <Cover game={g} size="lg" className="!rounded-xl" />
-                            <p className="text-[11px] text-[#A39C8F] mt-1 truncate">{g.name}</p>
-                          </button>
-                        ))}
-                      </div>
-                    )}
                     {m.externalGame && (
                       <div className="flex flex-wrap gap-1.5">
                         {m.externalGame.bggId && (
