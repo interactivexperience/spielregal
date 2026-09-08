@@ -571,50 +571,88 @@ function findMentionedGames(text, games) {
 }
 
 // Renders Pip's chat replies with a small amount of structure: a line that is
-// ENTIRELY a "**Game Name**" becomes a little heading (used when Pip lists
-// several game suggestions), inline "**bold**" elsewhere just highlights
-// (e.g. a game name mentioned mid-sentence), and blank lines become spaced
-// paragraphs/segments instead of one dense block of text.
+// ENTIRELY a "**Game Name**" (or a markdown "# Heading") becomes a little
+// heading (used when Pip lists several game suggestions, or writes a longer
+// structured answer), inline "**bold**" elsewhere just highlights (e.g. a
+// game name mentioned mid-sentence), "- "/"* " and "1. " lines become real
+// bullet/numbered lists instead of leaving the raw marker as literal text,
+// and blank lines become spaced paragraphs/segments instead of one dense
+// block of text.
 function renderPipMessage(text, games = [], onView) {
   const paragraphs = text.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
   const findGame = (name) => games.find((g) => g.name.trim().toLowerCase() === name.trim().toLowerCase());
-  const renderInline = (line, key) => {
+  const renderInlineBits = (line) => {
     const bits = line.split(/(\*\*[^*]+\*\*)/g).filter((s) => s !== "");
+    return bits.map((bit, j) => {
+      const m = /^\*\*([^*]+)\*\*$/.exec(bit);
+      return m ? <strong key={j} className="font-semibold text-[#E85D9C]">{m[1]}</strong> : <React.Fragment key={j}>{bit}</React.Fragment>;
+    });
+  };
+  const renderInline = (line, key) => <p key={key} className="leading-snug">{renderInlineBits(line)}</p>;
+  const renderHeading = (title, key) => {
+    const g = findGame(title);
     return (
-      <p key={key} className="leading-snug">
-        {bits.map((bit, j) => {
-          const m = /^\*\*([^*]+)\*\*$/.exec(bit);
-          return m ? <strong key={j} className="font-semibold text-[#E85D9C]">{m[1]}</strong> : <React.Fragment key={j}>{bit}</React.Fragment>;
-        })}
-      </p>
+      <div key={key} className="mb-1">
+        {g && (
+          <button onClick={(e) => { e.stopPropagation(); onView && onView(g); }} className="block w-16 mb-1.5">
+            <Cover game={g} size="lg" className="!rounded-xl" />
+          </button>
+        )}
+        <p className={`font-display text-base text-[#F2EDE4] ${g ? "underline decoration-[#5C574F]/50 underline-offset-2" : ""}`}
+          onClick={g ? () => onView && onView(g) : undefined}
+          style={g ? { cursor: "pointer" } : undefined}>
+          {title}
+        </p>
+      </div>
     );
   };
   return (
     <div className="space-y-2.5">
       {paragraphs.map((para, i) => {
         const lines = para.split("\n");
+        // Consecutive "- "/"* " or "1. " lines are grouped into one real
+        // <ul>/<ol> instead of each becoming its own loose line with the
+        // raw marker left in as text.
+        const blocks = [];
+        lines.forEach((line) => {
+          const trimmed = line.trim();
+          const bullet = /^[*-]\s+(.+)$/.exec(trimmed);
+          const numbered = !bullet && /^\d+[.)]\s+(.+)$/.exec(trimmed);
+          if (bullet) {
+            const last = blocks[blocks.length - 1];
+            if (last && last.type === "ul") last.items.push(bullet[1]);
+            else blocks.push({ type: "ul", items: [bullet[1]] });
+          } else if (numbered) {
+            const last = blocks[blocks.length - 1];
+            if (last && last.type === "ol") last.items.push(numbered[1]);
+            else blocks.push({ type: "ol", items: [numbered[1]] });
+          } else {
+            blocks.push({ type: "line", text: line });
+          }
+        });
         return (
           <div key={i} className={i > 0 ? "pt-0.5" : ""}>
-            {lines.map((line, j) => {
-              const headingMatch = /^\*\*([^*]+)\*\*$/.exec(line.trim());
-              if (headingMatch) {
-                const g = findGame(headingMatch[1]);
+            {blocks.map((block, j) => {
+              if (block.type === "ul") {
                 return (
-                  <div key={j} className="mb-1">
-                    {g && (
-                      <button onClick={(e) => { e.stopPropagation(); onView && onView(g); }} className="block w-16 mb-1.5">
-                        <Cover game={g} size="lg" className="!rounded-xl" />
-                      </button>
-                    )}
-                    <p className={`font-display text-base text-[#F2EDE4] ${g ? "underline decoration-[#5C574F]/50 underline-offset-2" : ""}`}
-                      onClick={g ? () => onView && onView(g) : undefined}
-                      style={g ? { cursor: "pointer" } : undefined}>
-                      {headingMatch[1]}
-                    </p>
-                  </div>
+                  <ul key={j} className="list-disc pl-4 space-y-0.5 my-1">
+                    {block.items.map((item, k) => <li key={k} className="leading-snug">{renderInlineBits(item)}</li>)}
+                  </ul>
                 );
               }
-              return renderInline(line, j);
+              if (block.type === "ol") {
+                return (
+                  <ol key={j} className="list-decimal pl-4 space-y-0.5 my-1">
+                    {block.items.map((item, k) => <li key={k} className="leading-snug">{renderInlineBits(item)}</li>)}
+                  </ol>
+                );
+              }
+              const trimmed = block.text.trim();
+              const boldHeading = /^\*\*([^*]+)\*\*$/.exec(trimmed);
+              const mdHeading = /^#{1,6}\s+(.+)$/.exec(trimmed);
+              if (boldHeading) return renderHeading(boldHeading[1], j);
+              if (mdHeading) return renderHeading(mdHeading[1].replace(/\*\*/g, "").trim(), j);
+              return renderInline(block.text, j);
             })}
           </div>
         );
@@ -6478,6 +6516,12 @@ ${buildCollectionContextForAI(games, plays)}`;
       if (bggSearchMatch || isDiscover) {
         setChatLoadingLabel(isDiscover ? "durchstöbert BGG…" : "schaut bei BGG nach…");
         let toolResultText = "";
+        // Bei BGGDISCOVER stehen mehrere Kandidaten zur Wahl — welchen Pip
+        // davon tatsächlich empfiehlt, steht erst in der finalen Antwort
+        // (raw nach dem Follow-up) fest, daher hier nur sammeln statt schon
+        // externalGame festzulegen (sonst zeigt der Link unten manchmal ein
+        // anderes Spiel als das im Text empfohlene).
+        let discoverCandidates = [];
         try {
           if (bggSearchMatch) {
             const results = await bggSearch(bggSearchMatch[1].trim());
@@ -6502,7 +6546,7 @@ ${buildCollectionContextForAI(games, plays)}`;
             for (const h of top.slice(0, 3)) {
               try { enriched.push(await bggThing(h.bggId)); } catch { /* skip this one */ }
             }
-            if (enriched.length > 0) externalGame = enriched[0];
+            discoverCandidates = enriched;
             toolResultText = `Aktuell angesagte Spiele auf BGG:\n${enriched.map((d) => `- ${d.name} (${d.year || "?"}) | ${d.minPlayers || "?"}-${d.maxPlayers || "?"} Sp. | Komplexität ${d.complexity || "?"}/5 | Themen: ${(d.categories || []).slice(0, 3).join(", ")}`).join("\n") || "Keine Daten verfügbar."}`;
           }
         } catch {
@@ -6515,6 +6559,13 @@ ${buildCollectionContextForAI(games, plays)}`;
           { role: "user", content: `[BGG-Ergebnis]: ${toolResultText}\n\nBeantworte jetzt meine ursprüngliche Frage damit — normal, wie mit einem Freund, kein Datengestammel. Schreib danach zusätzlich einen kurzen eigenen Abschnitt zu den Mechanismen des Spiels (2-3 Sätze): welche der genannten Mechanismen das Spiel prägen und was das für das Spielgefühl bedeutet — nicht nur die Begriffe auflisten, sondern kurz erklären.` },
         ];
         raw = await aiChat(aiWorkerUrl, followUp);
+
+        if (discoverCandidates.length > 0) {
+          externalGame = discoverCandidates.find((d) => {
+            const escaped = d.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            return new RegExp(`(^|[^\\p{L}\\p{N}])${escaped}([^\\p{L}\\p{N}]|$)`, "iu").test(raw);
+          }) || discoverCandidates[0];
+        }
       }
 
       const { text: replyText, options } = parseReply(raw);
@@ -6589,9 +6640,7 @@ ${buildCollectionContextForAI(games, plays)}`;
                     <div
                       className={`text-sm font-body rounded-2xl px-4 py-2.5 ${m.role === "user" ? "text-white rounded-br-md" : "bg-[#262422] border border-[#3A3631] text-[#F2EDE4] rounded-bl-md"}`}
                       style={m.role === "user" ? {
-                        backgroundImage: "linear-gradient(180deg, #ff5a96, #ffc850, #78dcff, #b482ff)",
-                        backgroundAttachment: "fixed",
-                        backgroundSize: "100vw 100vh",
+                        backgroundImage: "linear-gradient(135deg, #ff5a96, #ffc850, #78dcff, #b482ff)",
                       } : undefined}
                     >
                       {m.role === "assistant" ? renderPipMessage(m.content, games, onView) : (m.display || m.content)}
