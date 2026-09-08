@@ -6412,8 +6412,23 @@ function Recommendations({ games, plays, onView, aiWorkerUrl, chatMessages, setC
   const [chatLoading, setChatLoading] = useState(false);
   const [chatLoadingLabel, setChatLoadingLabel] = useState("überlegt…");
   const [chatError, setChatError] = useState("");
+  // Cloudflare Workers AI hat ein tägliches Freikontingent ("Neurons") —
+  // ist das aufgebraucht, zeigen wir statt der rohen Fehlermeldung den
+  // schlafenden Pip mit Info, wann das Kontingent wieder auflädt (nächste
+  // UTC-Mitternacht), statt den Nutzer mit Cloudflare-Rohtext zu verwirren.
+  const [quotaResetAt, setQuotaResetAt] = useState(null);
   const chatEndRef = React.useRef(null);
   const greetedRef = React.useRef(false);
+
+  const handleAiError = (e) => {
+    const msg = (e && e.message) || "";
+    if (/neurons|\b4006\b/i.test(msg)) {
+      const now = new Date();
+      setQuotaResetAt(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0)));
+      return true;
+    }
+    return false;
+  };
 
   // Parses a trailing "OPTIONS: a | b | c" line off a reply into quick-reply chips.
   const parseReply = (raw) => {
@@ -6579,7 +6594,7 @@ ${buildCollectionContextForAI(games, plays)}`;
       setChatMessages([...nextMessages, { role: "assistant", content: replyText, options, externalGame }]);
       setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
     } catch (e) {
-      setChatError(e.message || "Fehlgeschlagen");
+      if (!handleAiError(e)) setChatError(e.message || "Fehlgeschlagen");
     } finally {
       setChatLoading(false);
       setChatLoadingLabel("überlegt…");
@@ -6610,8 +6625,10 @@ ${buildCollectionContextForAI(games, plays)}`;
         // darauf zu verlassen, dass das Modell exakt dieselben drei Texte jedes
         // Mal korrekt ausgibt.
         setChatMessages([{ role: "assistant", content: text, options, showFlowButtons: !guestMode }]);
-      } catch {
-        setChatMessages([{ role: "assistant", content: "Hey, ich bin Pip! Ich helf dir, das passende Spiel für heute zu finden. Wie viele seid ihr denn und wie viel Zeit habt ihr?", options: [], showFlowButtons: !guestMode }]);
+      } catch (e) {
+        if (!handleAiError(e)) {
+          setChatMessages([{ role: "assistant", content: "Hey, ich bin Pip! Ich helf dir, das passende Spiel für heute zu finden. Wie viele seid ihr denn und wie viel Zeit habt ihr?", options: [], showFlowButtons: !guestMode }]);
+        }
       } finally {
         setChatLoading(false);
       }
@@ -6633,6 +6650,17 @@ ${buildCollectionContextForAI(games, plays)}`;
             </div>
             <p className="text-[#F2EDE4] font-display text-xl mt-4">Pip schläft noch</p>
             <p className="text-[#A39C8F] text-sm font-body mt-1.5 max-w-xs">Richte in den Einstellungen den KI-Assistenten ein, damit Pip aufwacht und dir beim Spielefinden helfen kann.</p>
+          </div>
+        </div>
+      ) : quotaResetAt ? (
+        <div className="flex-1 flex items-center justify-center p-5 text-center">
+          <div className="flex flex-col items-center">
+            <div className="relative">
+              <PipAvatar size={104} sleeping />
+              <span className="absolute -top-1 -right-2 text-2xl" style={{ animation: "float 2.5s ease-in-out infinite" }}>💤</span>
+            </div>
+            <p className="text-[#F2EDE4] font-display text-xl mt-4">Pip ist für heute müde</p>
+            <p className="text-[#A39C8F] text-sm font-body mt-1.5 max-w-xs">Sein tägliches KI-Kontingent ist aufgebraucht. Ab ca. {quotaResetAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} Uhr ist er wieder wach.</p>
           </div>
         </div>
       ) : (
