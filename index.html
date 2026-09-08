@@ -4570,7 +4570,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     const weekMs = 7 * 24 * 60 * 60 * 1000;
     const yearKey = new Date().getFullYear();
 
-    const needsWeekly = !weeklyTip || (now - weeklyTip.generatedAt) > weekMs || weeklyTip.fingerprint !== playsFingerprint;
+    const needsWeekly = !weeklyTip || !weeklyTip.gameId || (now - weeklyTip.generatedAt) > weekMs || weeklyTip.fingerprint !== playsFingerprint;
     const needsYearly = !yearlyInsight || yearlyInsight.year !== yearKey || yearlyInsight.fingerprint !== playsFingerprint;
     if (!needsWeekly && !needsYearly) return;
 
