@@ -773,11 +773,13 @@ function TextWithGameLinks({ text, games, onView, color }) {
   if (mentioned.length === 0) return <p className="text-ink text-[13px] font-body leading-relaxed">{text}</p>;
   const escaped = mentioned.map((g) => g.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).sort((a, b) => b.length - a.length);
   const parts = text.split(new RegExp(`(${escaped.join("|")})`, "g"));
+  const linked = new Set();
   return (
     <p className="text-ink text-[13px] font-body leading-relaxed">
       {parts.map((part, i) => {
         const g = mentioned.find((x) => x.name === part);
-        if (!g) return <span key={i}>{part}</span>;
+        if (!g || linked.has(g.id)) return <span key={i}>{part}</span>;
+        linked.add(g.id);
         return (
           <span key={i} onClick={() => onView(g)} className="font-semibold cursor-pointer" style={{ color }}>
             {part}
@@ -3196,32 +3198,19 @@ function GameGridCard({ game: g, expansions = [], playCounts = {}, gridCols = 2,
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onTouchMove={handleTouchMove}
-      className={`relative text-left rounded-2xl rise-in flex flex-col overflow-hidden ${gridCols === 4 ? "bg-transparent" : "bg-transparent"}`}
+      className={`relative text-left rise-in flex flex-col overflow-hidden bg-transparent ${gridCols === 4 ? "rounded-md" : "rounded-2xl"}`}
     >
       <div className="relative flex aspect-square w-full">
-        <Cover game={active} size="lg" compact={gridCols === 4} className={gridCols === 4 ? "!rounded-lg !border-0" : "!rounded-xl"} />
+        <Cover game={active} size="lg" compact={gridCols === 4} className={gridCols === 4 ? "!rounded-md !border-0" : "!rounded-xl"} />
         {gridCols === 4 && active.rating && (
-          <span className="absolute flex items-center leading-none gap-0.5 bg-black/70 border border-rim/15 text-gold text-[10px] font-mono px-1.5 py-0.5 rounded-full" style={{ top: 4, left: 4 }}>
+          <span className="absolute flex items-center leading-none gap-0.5 bg-black/70 text-gold text-[10px] font-mono px-1.5 py-0.5 rounded-full" style={{ top: 4, left: 4 }}>
             <Star size={9} fill="currentColor" /> {active.rating}
           </span>
         )}
-        {gridCols === 4 && (active.complexity || active.format === "digital") && (
-          <div className="absolute flex flex-col items-start gap-1" style={{ bottom: 4, left: 4 }}>
-            {active.complexity && (() => {
-              const CIcon = COMPLEXITY_ICON[complexityLabel(active)] || Puzzle;
-              const bg = COMPLEXITY_BADGE_BG[complexityLabel(active)] || "#000";
-              return (
-                <span className="flex items-center justify-center leading-none border border-rim/20 rounded-full w-6 h-6" style={{ background: bg }} title={complexityLabel(active)}>
-                  <CIcon size={17} />
-                </span>
-              );
-            })()}
-            {active.format === "digital" && (
-              <span className="flex items-center justify-center leading-none bg-black/70 border border-rim/15 text-info rounded-full w-5 h-5" title="Digital">
-                <Globe size={11} />
-              </span>
-            )}
-          </div>
+        {gridCols === 4 && active.format === "digital" && (
+          <span className="absolute flex items-center justify-center leading-none bg-black/70 text-white rounded-full w-5 h-5" style={{ bottom: 4, left: 4 }} title="Digital">
+            <Globe size={11} />
+          </span>
         )}
         {gridCols === 2 && active.format === "digital" && (
           <span className="absolute flex items-center leading-none gap-0.5 bg-black/70 border border-rim/15 text-info text-[10px] font-body px-1.5 py-0.5 rounded-full" style={{ bottom: 4, left: 4 }}>
@@ -6404,8 +6393,8 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
           <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-2">Kopf-an-Kopf</h2>
           <div className="border-t border-line pt-4">
             <div className="flex items-center gap-2 mb-3">
-              <div className="flex-1 min-w-0 flex items-center gap-2 bg-bg border border-line rounded-[14px] pl-1.5 pr-2 py-1.5">
-                <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 bg-surface2 flex items-center justify-center">
+              <div className="flex-1 min-w-0 flex items-center gap-2 border border-line rounded-[14px] pl-1.5 pr-2 py-1.5">
+                <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 bg-line/50 flex items-center justify-center">
                   {(() => {
                     const prof = playerProfiles.find((p) => p.name === h2hA);
                     return prof && prof.photo ? <img src={prof.photo} alt={h2hA} className="w-full h-full object-cover" /> : <Users size={13} className="text-dim" />;
@@ -6417,8 +6406,8 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                 </select>
               </div>
               <span className="text-dim text-xs shrink-0">vs.</span>
-              <div className="flex-1 min-w-0 flex items-center gap-2 bg-bg border border-line rounded-[14px] pl-1.5 pr-2 py-1.5">
-                <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 bg-surface2 flex items-center justify-center">
+              <div className="flex-1 min-w-0 flex items-center gap-2 border border-line rounded-[14px] pl-1.5 pr-2 py-1.5">
+                <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 bg-line/50 flex items-center justify-center">
                   {(() => {
                     const prof = playerProfiles.find((p) => p.name === h2hB);
                     return prof && prof.photo ? <img src={prof.photo} alt={h2hB} className="w-full h-full object-cover" /> : <Users size={13} className="text-dim" />;
@@ -6438,7 +6427,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                   <p className="text-dim text-xs font-body mb-2">{h2hStats.total} gemeinsame Partie{h2hStats.total === 1 ? "" : "n"}</p>
                   <div className="flex items-center gap-3">
                     <div className="flex-1 flex flex-col items-center">
-                      <div className="w-11 h-11 rounded-full overflow-hidden bg-surface2 flex items-center justify-center mb-1.5">
+                      <div className="w-11 h-11 rounded-full overflow-hidden bg-line/50 flex items-center justify-center mb-1.5">
                         {(() => {
                           const prof = playerProfiles.find((p) => p.name === h2hA);
                           return prof && prof.photo ? <img src={prof.photo} alt={h2hA} className="w-full h-full object-cover" /> : <Users size={18} className="text-dim" />;
@@ -6449,7 +6438,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                     </div>
                     <div className="h-8 w-px bg-line" />
                     <div className="flex-1 flex flex-col items-center">
-                      <div className="w-11 h-11 rounded-full overflow-hidden bg-surface2 flex items-center justify-center mb-1.5">
+                      <div className="w-11 h-11 rounded-full overflow-hidden bg-line/50 flex items-center justify-center mb-1.5">
                         {(() => {
                           const prof = playerProfiles.find((p) => p.name === h2hB);
                           return prof && prof.photo ? <img src={prof.photo} alt={h2hB} className="w-full h-full object-cover" /> : <Users size={18} className="text-dim" />;
@@ -6480,7 +6469,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                 <div className="flex -space-x-3 shrink-0">
                   {distinctGames.slice(0, 3).map((p, i) => {
                     const g = games.find((x) => x.id === p.gameId);
-                    return g ? <Cover key={i} game={g} size="sm" className="!border-2 !border-surface" /> : <div key={i} className="w-12 h-12 rounded-lg bg-surface2 border-2 border-surface flex items-center justify-center text-dim"><Dices size={16} /></div>;
+                    return g ? <Cover key={i} game={g} size="sm" className="!border-2 !border-surface" /> : <div key={i} className="w-12 h-12 rounded-lg bg-line/50 border-2 border-surface flex items-center justify-center text-dim"><Dices size={16} /></div>;
                   })}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -6505,7 +6494,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
             const lastPlayerCount = first.players ? first.players.split(",").map((s) => s.trim()).filter(Boolean).length : 0;
             return (
               <button key={groupKey} onClick={() => setDetailGroupKey(groupKey)} className="w-full text-left border-b border-line py-3 flex items-center gap-3">
-                {game ? <Cover game={game} size="sm" /> : <div className="w-12 h-12 rounded-lg bg-surface2 flex items-center justify-center text-dim shrink-0"><Dices size={18} /></div>}
+                {game ? <Cover game={game} size="sm" /> : <div className="w-12 h-12 rounded-lg bg-line/50 flex items-center justify-center text-dim shrink-0"><Dices size={18} /></div>}
                 <div className="flex-1 min-w-0">
                   <p className="text-ink font-body truncate">{game ? game.name : first.gameName}</p>
                   <p className="text-dim text-xs font-body">
@@ -7870,7 +7859,7 @@ function App() {
       </div>
       <div className="absolute bottom-0 left-0 right-0 px-4 z-40 pointer-events-none"
         style={{
-          paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
+          paddingBottom: "max(0.5rem, calc(env(safe-area-inset-bottom) - 1.1rem))",
           paddingTop: "3.5rem",
           backgroundImage: "linear-gradient(to bottom, transparent, rgb(var(--bg)) 55%)",
         }}>

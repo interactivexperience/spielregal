@@ -48,6 +48,18 @@ for (const theme of ["dark", "light"]) {
     if (await btn.count()) { await btn.click({ timeout: 3000 }).catch(()=>{}); await page.waitForTimeout(900); }
     await page.screenshot({ path: `${SP}/app_${theme}_${t.replace(/[^\wÜ]/g,"")}.png` });
   }
+  // Sammlung in der 4-Spalten-Ansicht
+  await page.locator('button:has-text("Sammlung")').last().click();
+  await page.waitForTimeout(700);
+  const four = page.locator('button[aria-label="4 Spalten"]').first();
+  if (await four.count()) {
+    await four.click({ timeout: 3000 }).catch(() => {});
+    await page.waitForTimeout(800);
+    await page.screenshot({ path: `${SP}/app_${theme}_Grid4.png` });
+    await page.locator('button[aria-label="2 Spalten"]').first().click({ timeout: 2000 }).catch(() => {});
+    await page.waitForTimeout(400);
+  }
+
   // Einstellungen -> Synchronisation: eigene Unterseite, kein Sheet mehr
   await page.locator('button:has-text("Mehr")').last().click();
   await page.waitForTimeout(700);
