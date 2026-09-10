@@ -31,6 +31,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Stamp build id
+        # Lets the client detect a stale, CDN-cached copy of index.html and
+        # offer a fresh reload instead of silently keeping an old version.
+        run: sed -i "s/__BUILD_ID__/${GITHUB_SHA::7}-$(date -u +%s)/" index.html
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
