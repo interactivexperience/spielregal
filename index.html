@@ -300,6 +300,8 @@ function Icon({ children, size = 18, className = "", strokeWidth = 1.7 }) {
   );
 }
 const Home = (p) => <Icon {...p}><path d="M3 10.5 12 3l9 7.5" /><path d="M5 9.5V21h14V9.5" /></Icon>;
+const NavDie = (p) => <Icon {...p}><rect x="3" y="3" width="18" height="18" rx="4" /><circle cx="8.5" cy="8.5" r="1.3" fill="currentColor" stroke="none" /><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none" /><circle cx="15.5" cy="15.5" r="1.3" fill="currentColor" stroke="none" /></Icon>;
+const NavMore = (p) => <Icon {...p}><circle cx="5.5" cy="12" r="1.4" fill="currentColor" stroke="none" /><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" /><circle cx="18.5" cy="12" r="1.4" fill="currentColor" stroke="none" /></Icon>;
 const GridSquares = (p) => <Icon {...p}><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></Icon>;
 const ChatBubble = (p) => <Icon {...p}><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z" /></Icon>;
 const Library = (p) => <Icon {...p}><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16M15 4v16" /></Icon>;
@@ -795,7 +797,7 @@ function PipAvatar({ size = 36, sleeping = false }) {
   return (
     <div
       className="rounded-full flex items-center justify-center shrink-0 overflow-hidden"
-      style={{ width: size, height: size, background: sleeping ? "#3A3631" : "rgb(var(--accent))" }}
+      style={{ width: size, height: size, background: sleeping ? "rgb(var(--line))" : "rgb(var(--accent))" }}
     >
       <svg width={size * 0.72} height={size * 0.72} viewBox="0 0 40 40" fill="none">
         {/* Rundlicher Wesen-Körper */}
@@ -5187,14 +5189,14 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             // eigene Spielen) fehl am Platz wirkt.
             const coverGame = tipGame ? { ...tipGame, saleStatus: null } : { name: weeklyTip.gameName, image: weeklyTip.image };
             const cardBody = (
-              <div className="flex items-start gap-4">
-                <div className="w-24 shrink-0">
-                  <Cover game={coverGame} size="lg" className="!rounded-xl" />
+              <div>
+                <div className="flex items-center gap-2.5 mb-2">
+                  <div className="w-7 shrink-0">
+                    <Cover game={coverGame} size="lg" className="!rounded-md" />
+                  </div>
+                  <p className="font-display text-lg tracking-[-0.015em] text-ink min-w-0 truncate">{weeklyTip.gameName}</p>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-display text-lg tracking-[-0.015em] text-ink mb-1.5">{weeklyTip.gameName}</p>
-                  <p className="text-dim text-[13px] font-body leading-relaxed">{weeklyTip.reason}</p>
-                </div>
+                <p className="text-dim text-[13px] font-body leading-relaxed">{weeklyTip.reason}</p>
               </div>
             );
             return (
@@ -6282,7 +6284,6 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
       .sort((a, b) => b.rate - a.rate || b.count - a.count)
       .slice(0, 3);
   }, [plays]);
-  const medals = ["🥇", "🥈", "🥉"];
 
   const allPlayerNames = useMemo(() => {
     const names = new Set();
@@ -6373,10 +6374,10 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
       {yearPlays.length > 0 && (
         <div className="border-t border-line pt-5 mb-6">
           <p className="text-[10px] font-semibold text-accent uppercase tracking-[0.16em] mb-2">{currentYear} bisher</p>
-          <div className="flex items-center gap-5">
-            <div><p className="font-display text-2xl tracking-[-0.025em] leading-tight text-ink">{yearPlays.length}</p><p className="text-dim text-[11px] font-body">Partien</p></div>
-            <div><p className="font-display text-2xl tracking-[-0.025em] leading-tight text-ink">{yearGameCount}</p><p className="text-dim text-[11px] font-body">Spiele</p></div>
-            <div><p className="font-display text-2xl tracking-[-0.025em] leading-tight text-ink">{estimatedHours > 0 ? `~${estimatedHours}` : "—"}</p><p className="text-dim text-[11px] font-body">Stunden</p></div>
+          <div className="flex">
+            <div className="flex-1 pr-4"><p className="font-display text-[2.1rem] leading-none tracking-[-0.04em] text-ink">{yearPlays.length}</p><p className="text-dim text-[11px] font-body mt-1.5">Partien</p></div>
+            <div className="flex-1 px-4 border-l border-line"><p className="font-display text-[2.1rem] leading-none tracking-[-0.04em] text-ink">{yearGameCount}</p><p className="text-dim text-[11px] font-body mt-1.5">Spiele</p></div>
+            <div className="flex-1 pl-4 border-l border-line"><p className="font-display text-[2.1rem] leading-none tracking-[-0.04em] text-ink">{estimatedHours > 0 ? `~${estimatedHours}` : "—"}</p><p className="text-dim text-[11px] font-body mt-1.5">Stunden</p></div>
           </div>
         </div>
       )}
@@ -6387,14 +6388,14 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
             <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em]">Bestenliste</h2>
             <button onClick={() => setBestListInfoOpen(true)} aria-label="Wie wird das berechnet?" className="text-dim"><Info size={13} /></button>
           </div>
-          <div className="border border-line rounded-2xl p-4 space-y-2.5">
+          <div>
             {winCounts.map(({ name, count, total }, i) => (
-              <button key={name} onClick={() => pickForH2h(name)} className="w-full flex items-center gap-3 text-left">
-                <span className="text-lg w-6 shrink-0">{medals[i] || `${i + 1}.`}</span>
-                <span className="flex-1 min-w-0 text-ink font-body truncate">
+              <button key={name} onClick={() => pickForH2h(name)} className="w-full flex items-center gap-3 text-left py-3 border-b border-line">
+                <span className={`w-5 shrink-0 font-display text-sm tracking-[-0.01em] ${i === 0 ? "text-accent" : "text-dim"}`}>{i + 1}</span>
+                <span className="flex-1 min-w-0 text-ink font-body text-sm truncate">
                   {name} <span className="text-dim text-xs font-body">· {total} Partie{total === 1 ? "" : "n"}</span>
                 </span>
-                <span className="text-accent text-sm font-mono shrink-0">{count}× gewonnen</span>
+                <span className="text-dim text-xs font-body shrink-0"><b className="text-ink font-semibold">{count}×</b> gewonnen</span>
               </button>
             ))}
           </div>
@@ -6423,7 +6424,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
       {allPlayerNames.length >= 2 && (
         <div className="mb-5">
           <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-2">Kopf-an-Kopf</h2>
-          <div className="bg-surface border border-line rounded-2xl p-4">
+          <div className="border-t border-line pt-4">
             <div className="flex items-center gap-2 mb-3">
               <div className="flex-1 min-w-0 flex items-center gap-2 bg-bg border border-line rounded-[14px] pl-1.5 pr-2 py-1.5">
                 <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 bg-surface2 flex items-center justify-center">
@@ -6488,7 +6489,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
       )}
 
       {sorted.length === 0 ? <p className="text-dim text-sm font-body mt-8 text-center">Noch keine Partien eingetragen — auch geliehene oder online gespielte Spiele zählen.</p> : viewMode === "evening" ? (
-        <div className="space-y-2 pb-32">
+        <div className="pb-32">
           {eveningGroups.map(([date, group]) => {
             const distinctGames = [...new Map(group.map((p) => [p.gameId || p.gameName, p])).values()];
             const estMinutes = group.reduce((sum, p) => {
@@ -6497,7 +6498,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
               return sum + (parseInt(g.minTime) + parseInt(g.maxTime || g.minTime)) / 2;
             }, 0);
             return (
-              <button key={date} onClick={() => setDetailEveningDate(date)} className="w-full text-left bg-surface border border-line rounded-[14px] px-4 py-3 flex items-center gap-3">
+              <button key={date} onClick={() => setDetailEveningDate(date)} className="w-full text-left border-b border-line py-3 flex items-center gap-3">
                 <div className="flex -space-x-3 shrink-0">
                   {distinctGames.slice(0, 3).map((p, i) => {
                     const g = games.find((x) => x.id === p.gameId);
@@ -6517,7 +6518,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
           })}
         </div>
       ) : (
-        <div className="space-y-2 pb-32">
+        <div className="pb-32">
           {grouped.map((group) => {
             const first = group[0];
             const rootId = rootGameId(first.gameId) || first.gameId;
@@ -6525,7 +6526,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
             const game = games.find((g) => g.id === rootId);
             const lastPlayerCount = first.players ? first.players.split(",").map((s) => s.trim()).filter(Boolean).length : 0;
             return (
-              <button key={groupKey} onClick={() => setDetailGroupKey(groupKey)} className="w-full text-left bg-surface border border-line rounded-[14px] px-4 py-3 flex items-center gap-3">
+              <button key={groupKey} onClick={() => setDetailGroupKey(groupKey)} className="w-full text-left border-b border-line py-3 flex items-center gap-3">
                 {game ? <Cover game={game} size="sm" /> : <div className="w-12 h-12 rounded-lg bg-surface2 flex items-center justify-center text-dim shrink-0"><Dices size={18} /></div>}
                 <div className="flex-1 min-w-0">
                   <p className="text-ink font-body truncate">{game ? game.name : first.gameName}</p>
@@ -6557,7 +6558,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                 const IconC = modeIcon[p.mode] || Home;
                 return (
                   <SwipeableRow key={p.id} onDelete={() => onDelete(p.id)} disabled={demoMode}>
-                    <button onClick={() => onEdit(p)} className="w-full text-left bg-surface border border-line rounded-[14px] px-4 py-3 flex items-center gap-3">
+                    <button onClick={() => onEdit(p)} className="w-full text-left border-b border-line py-3 flex items-center gap-3">
                       <div className="w-9 h-9 rounded-lg bg-surface2 flex items-center justify-center text-dim shrink-0"><IconC size={16} /></div>
                       <div className="flex-1 min-w-0">
                         <p className="text-ink font-body truncate">{formatDate(p.date)}{p.gameId !== rootId ? ` · ${p.gameName}` : ""}</p>
@@ -6591,7 +6592,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                 const IconC = modeIcon[p.mode] || Home;
                 return (
                   <SwipeableRow key={p.id} onDelete={() => onDelete(p.id)} disabled={demoMode}>
-                    <button onClick={() => onEdit(p)} className="w-full text-left bg-surface border border-line rounded-[14px] px-4 py-3 flex items-center gap-3">
+                    <button onClick={() => onEdit(p)} className="w-full text-left border-b border-line py-3 flex items-center gap-3">
                       {game ? <Cover game={game} size="sm" /> : <div className="w-12 h-12 rounded-lg bg-surface2 flex items-center justify-center text-dim shrink-0"><IconC size={16} /></div>}
                       <div className="flex-1 min-w-0">
                         <p className="text-ink font-body truncate">{p.gameName}</p>
@@ -6879,7 +6880,7 @@ ${buildCollectionContextForAI(games, plays)}`;
                   {m.role === "assistant" && <PipAvatar size={30} />}
                   <div className={`max-w-[80%] flex flex-col gap-1.5 ${m.role === "user" ? "items-end" : "items-start"}`}>
                     <div
-                      className={`text-sm font-body rounded-2xl px-4 py-2.5 ${m.role === "user" ? "text-white rounded-br-md" : "border-l-2 border-accent pl-3.5 text-ink !rounded-none !px-0"}`}
+                      className={`text-sm font-body rounded-2xl px-4 py-2.5 ${m.role === "user" ? "text-white rounded-br-md" : "border-l-2 border-accent text-ink !rounded-none !pl-4 !pr-0"}`}
                       style={m.role === "user" ? {
                         backgroundColor: "rgb(var(--accent))",
                       } : undefined}
@@ -6945,7 +6946,7 @@ ${buildCollectionContextForAI(games, plays)}`;
             {chatLoading && (
               <div className="flex gap-2 justify-start items-end">
                 <PipAvatar size={30} />
-                <div className="border-l-2 border-accent pl-3.5 py-1 flex items-center gap-2 text-dim text-sm">
+                <div className="border-l-2 border-accent pl-4 py-1 flex items-center gap-2 text-dim text-sm">
                   <Loader2 size={13} /> {chatLoadingLabel}
                 </div>
               </div>
@@ -7783,14 +7784,14 @@ function App() {
     ? [
         { id: "collection", label: "Sammlung", icon: GridSquares },
         { id: "recommendations", label: "Ideen", icon: ChatBubble },
-        { id: "settings", label: "Mehr", icon: MoreHorizontal },
+        { id: "settings", label: "Mehr", icon: NavMore },
       ]
     : [
         { id: "dashboard", label: "Übersicht", icon: Home },
         { id: "collection", label: "Sammlung", icon: GridSquares },
-        { id: "playlog", label: "Partien", icon: Dices },
+        { id: "playlog", label: "Partien", icon: NavDie },
         { id: "recommendations", label: "Ideen", icon: ChatBubble },
-        { id: "settings", label: "Mehr", icon: MoreHorizontal },
+        { id: "settings", label: "Mehr", icon: NavMore },
       ];
 
   return (
