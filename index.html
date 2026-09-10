@@ -146,10 +146,10 @@
   input::placeholder, textarea::placeholder { color: #5C574F !important; opacity: 1 !important; -webkit-text-fill-color: #5C574F !important; }
   .rte-content:empty:before { content: attr(data-placeholder); color: #5C574F; }
   input:focus-visible, textarea:focus-visible, button:focus-visible, [contenteditable]:focus-visible { outline: 2px solid #6C7FE0; outline-offset: 2px; }
-  .rte-content h2 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 1.25rem; margin: 0.4em 0 0.2em; }
-  .rte-content h3 { font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 600; color: #5C574F; margin: 0.4em 0 0.2em; }
-  .rte-content ul { list-style: disc; padding-left: 1.4em; margin: 0.3em 0; }
-  .rte-content p { margin: 0.3em 0; }
+  .rte-content h2 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 1.25rem; margin: 0.4em 0 0.3em; }
+  .rte-content h3 { font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 600; margin: 0.9em 0 0.3em; }
+  .rte-content ul { list-style: disc; padding-left: 1.4em; margin: 0.6em 0; }
+  .rte-content p { margin: 0.7em 0; }
 </style>
 </head>
 <body>
@@ -2198,7 +2198,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
             </div>
           )}
 
-          <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-2">Partien pro Spiel (alle, absteigend)</p>
+          <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-2">Partien pro Spiel (alle, absteigend)</p>
           <div className="space-y-1.5">
             {perGame.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine Partien eingetragen.</p>}
             {perGame.map(({ game, gameId, count }) => (
@@ -5372,7 +5372,7 @@ function CommandBarModal({ games, plays, lists, onClose, onOpenGame, onOpenList,
         {nothing && <p className="text-sm text-[#5C574F] text-center mt-8">Nichts gefunden für "{query}".</p>}
         {gameResults.length > 0 && (
           <div>
-            <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-2">Spiele</p>
+            <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-2">Spiele</p>
             <div className="space-y-2">
               {gameResults.map((g) => (
                 <button key={g.id} onClick={() => onOpenGame(g)} className="w-full flex items-center gap-3 px-3 py-2 rounded-[14px] bg-[#262422] border border-[#3A3631]">
@@ -5385,7 +5385,7 @@ function CommandBarModal({ games, plays, lists, onClose, onOpenGame, onOpenList,
         )}
         {listResults.length > 0 && (
           <div>
-            <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-2">Listen</p>
+            <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-2">Listen</p>
             <div className="space-y-2">
               {listResults.map((l) => (
                 <button key={l.id} onClick={() => onOpenList(l)} className="w-full flex items-center gap-3 px-3.5 h-11 rounded-[14px] bg-[#262422] border border-[#3A3631]">
@@ -5398,7 +5398,7 @@ function CommandBarModal({ games, plays, lists, onClose, onOpenGame, onOpenList,
         )}
         {playResults.length > 0 && (
           <div>
-            <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-2">Partien</p>
+            <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-2">Partien</p>
             <div className="space-y-2">
               {playResults.map((p) => (
                 <button key={p.id} onClick={onGoToPlaylog} className="glass w-full flex items-center justify-between px-3.5 h-11 rounded-[14px] border border-white/15">
@@ -6880,7 +6880,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
             <span className="glass text-[10px] text-[#F2EDE4] px-2 py-1 border border-white/15 rounded-full">{readOnlyLabel}</span>
           ) : null}
         </div>
-        <div className="overflow-y-auto flex-1 p-5 space-y-5" style={{ paddingTop: "calc(max(1rem, env(safe-area-inset-top)) + 3rem)", backgroundImage: `linear-gradient(180deg, ${accentColor}35, transparent 220px)` }}>
+        <div className="overflow-y-auto flex-1 p-5 space-y-7" style={{ paddingTop: "calc(max(1rem, env(safe-area-inset-top)) + 3rem)", backgroundImage: `linear-gradient(180deg, ${accentColor}35, transparent 220px)` }}>
           <div>
             {(() => {
               const hasGerman = game.germanName && game.germanName.trim() && game.germanName.trim() !== game.name.trim();
@@ -6890,7 +6890,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
               return (
                 <>
                   <h1 className="font-display text-2xl text-[#F2EDE4] leading-tight">{primary}</h1>
-                  {secondary && <p className="text-[#5C574F] text-sm mt-0.5">{secondary}</p>}
+                  {secondary && <p className="font-body text-2xl font-medium text-[#5C574F] leading-tight mt-0.5">{secondary}</p>}
                 </>
               );
             })()}
@@ -6900,7 +6900,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
               </p>
             )}
             {game.designers && game.designers.length > 0 && (
-              <p className="text-[#5C574F] text-xs mt-0.5">Design: {game.designers.join(", ")}</p>
+              <p className="text-[#5C574F] text-sm mt-0.5">Design: {game.designers.join(", ")}</p>
             )}
             {(() => {
               const baseGame = game.expansionOf ? (games || []).find((g) => g.id === game.expansionOf) : null;
@@ -6979,14 +6979,14 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
 
           {game.summary && (
             <div>
-              <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-1">Zusammenfassung</p>
+              <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-1">Zusammenfassung</p>
               <div className="rte-content text-base text-[#F2EDE4]" dangerouslySetInnerHTML={{ __html: game.summary }} />
             </div>
           )}
 
           {game.playerTypes && game.playerTypes.length > 0 && (
             <div>
-              <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-1.5">Passt zu diesen Spielertypen</p>
+              <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-1.5">Passt zu diesen Spielertypen</p>
               <div className="flex flex-wrap gap-1.5">
                 {game.playerTypes.map((t) => <Pill key={t} tone="teal">{t}</Pill>)}
               </div>
@@ -6999,10 +6999,10 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
               <ChevronDown size={14} className={`transition-transform ${detailsOpen ? "rotate-180" : ""}`} />
             </button>
             {detailsOpen && (
-              <div className="space-y-5 pt-5">
+              <div className="space-y-7 pt-7">
                 {tags.length > 0 && (
                   <div>
-                    <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-1.5">Kategorien & Mechanismen</p>
+                    <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-1.5">Kategorien & Mechanismen</p>
                     <div className="flex flex-wrap gap-1.5">
                       {tags.map((t) => {
                         const TIcon = tagIcon(t);
@@ -7013,7 +7013,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                 )}
                 {(game.rating || onQuickUpdate) && (
                   <div>
-                    <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-1.5">Deine Bewertung</p>
+                    <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-1.5">Deine Bewertung</p>
                     {onQuickUpdate ? (
                       <StarRating value={game.rating || ""} onChange={(v) => onQuickUpdate(game.id, { rating: v })} />
                     ) : (
@@ -7030,13 +7030,13 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                 )}
                 {game.notes && (
                   <div>
-                    <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-1">Notizen</p>
+                    <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-1">Notizen</p>
                     <div className="rte-content text-base text-[#F2EDE4]" dangerouslySetInnerHTML={{ __html: game.notes }} />
                   </div>
                 )}
                 {game.mechanismsNote && (
                   <div>
-                    <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-1 flex items-center gap-1.5"><Sparkles size={11} className="text-[#8B9AFA]" /> Mechanismen (von Pip)</p>
+                    <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-1 flex items-center gap-1.5"><Sparkles size={11} className="text-[#8B9AFA]" /> Mechanismen (von Pip)</p>
                     <p className="text-base text-[#F2EDE4]">{game.mechanismsNote}</p>
                     {onQuickUpdate && (
                       <button onClick={() => onQuickUpdate(game.id, { mechanismsNote: "" })} className="text-xs text-[#5C574F] underline mt-1">entfernen</button>
@@ -7045,7 +7045,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                 )}
                 {!hidePrices && game.saleStatus && (game.purchasePrice || game.salePrice) && (
                   <div>
-                    <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-1.5">{game.saleStatus === "sold" ? "Verkauft" : "Zum Verkauf"}</p>
+                    <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-1.5">{game.saleStatus === "sold" ? "Verkauft" : "Zum Verkauf"}</p>
                     <div className="flex items-center gap-3 flex-wrap">
                       {game.purchasePrice && <span className="text-xs text-[#5C574F]">Kaufpreis: <span className="text-[#F2EDE4]">{game.purchasePrice} €</span></span>}
                       {game.saleStatus === "sold" && game.salePrice && <span className="text-xs text-[#5C574F]">Verkaufspreis: <span className="text-[#D4A24C]">{game.salePrice} €</span></span>}
@@ -7057,7 +7057,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
           </div>
 
           <div>
-            <p className="text-xs text-[#5C574F] uppercase tracking-wide mb-1">Partien</p>
+            <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-1">Partien</p>
             {gamePlays.length === 0 ? (
               <p className="text-sm text-[#5C574F]">Noch nie gespielt.</p>
             ) : (
