@@ -162,8 +162,9 @@
     mask-composite: exclude;
     pointer-events: none;
   }
+  /* Kein position hier -- das Element traegt bereits Tailwinds .absolute,
+     eine Regel dazu wuerde je nach Reihenfolge der CDN-Styles gewinnen. */
   .tab-sheen {
-    position: relative;
     box-shadow: 0 4px 14px rgb(0 0 0 / var(--shadow-a));
     backdrop-filter: blur(14px) saturate(160%);
     -webkit-backdrop-filter: blur(14px) saturate(160%);
@@ -179,6 +180,14 @@
     backdrop-filter: blur(28px) saturate(180%);
     -webkit-backdrop-filter: blur(28px) saturate(180%);
   }
+  /* .glass, .glass-icon-btn und button setzen oben position:relative, damit ihre
+     ::before/::after-Layer sitzen. Steht auf demselben Element eine Tailwind-
+     Positionsklasse, haben beide Regeln gleiche Spezifitaet -- dann entscheidet,
+     ob das CDN seine Styles vor oder nach diesem Block einhaengt. Diese Regeln
+     sind spezifischer und machen das Ergebnis unabhaengig von der Reihenfolge. */
+  .glass.absolute, .glass-icon-btn.absolute, button.absolute { position: absolute; }
+  .glass.fixed, .glass-icon-btn.fixed, button.fixed { position: fixed; }
+  .glass.sticky, .glass-icon-btn.sticky, button.sticky { position: sticky; }
   button { transition: transform 0.15s cubic-bezier(0.34, 1.2, 0.64, 1), opacity 0.15s ease, background-color 0.2s ease, border-color 0.2s ease; }
   button:active { transform: scale(0.96); }
   button { position: relative; isolation: isolate; overflow: hidden; }
@@ -213,7 +222,7 @@
   }
   .save-ring {
     position: absolute; top: 50%; left: 50%; width: 40px; height: 40px;
-    border: 2px solid #F2EDE4; border-radius: 50%;
+    border: 2px solid rgb(var(--ink)); border-radius: 50%;
     transform: translate(-50%, -50%) scale(0.3);
     opacity: 0.8;
     animation: saveRing 0.5s ease-out forwards;
@@ -229,7 +238,7 @@
   .font-mono { font-family:'IBM Plex Mono', monospace; }
   ::-webkit-scrollbar { width:8px; height:8px; }
   ::-webkit-scrollbar-track { background:transparent; }
-  ::-webkit-scrollbar-thumb { background:#3A3631; border-radius:4px; }
+  ::-webkit-scrollbar-thumb { background:rgb(var(--line)); border-radius:4px; }
   @keyframes riseIn { from{opacity:0; transform:translateY(24px);} to{opacity:1; transform:translateY(0);} }
   .rise-in { animation: riseIn .38s cubic-bezier(0.32, 0.72, 0, 1); }
   @keyframes sheetOut { from{opacity:1; transform:translateY(0);} to{opacity:0; transform:translateY(24px);} }
@@ -245,11 +254,11 @@
   .spin { animation: spin 1s linear infinite; }
   #loading { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; padding:24px; text-align:center; color:#F2EDE4; font-family:'Inter',sans-serif; }
   input, textarea, select { font-size: 16px !important; }
-  input::placeholder, textarea::placeholder { color: #A39C8F !important; opacity: 1 !important; -webkit-text-fill-color: #A39C8F !important; }
-  .rte-content:empty:before { content: attr(data-placeholder); color: #A39C8F; }
-  input:focus-visible, textarea:focus-visible, button:focus-visible, [contenteditable]:focus-visible { outline: 2px solid #6C7FE0; outline-offset: 2px; }
+  input::placeholder, textarea::placeholder { color: rgb(var(--dim)) !important; opacity: 1 !important; -webkit-text-fill-color: rgb(var(--dim)) !important; }
+  .rte-content:empty:before { content: attr(data-placeholder); color: rgb(var(--dim)); }
+  input:focus-visible, textarea:focus-visible, button:focus-visible, [contenteditable]:focus-visible { outline: 2px solid rgb(var(--info)); outline-offset: 2px; }
   .rte-content h2 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 1.25rem; margin: 0.4em 0 0.4em; }
-  .rte-content h3 { font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600; color: #A39C8F; margin: 1.4em 0 0.15em; }
+  .rte-content h3 { font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600; color: rgb(var(--dim)); margin: 1.4em 0 0.15em; }
   .rte-content h3 + p, .rte-content h3 + ul { margin-top: 0; }
   .rte-content ul { list-style: disc; padding-left: 1.4em; margin: 0.9em 0; }
   .rte-content p { margin: 0.9em 0; }
@@ -393,7 +402,7 @@ function ComplexityPicker({ value, onChange }) {
           >
             <Block
               size={30}
-              style={{ color: v >= n ? tone : "#3A3631" }}
+              style={{ color: v >= n ? tone : "rgb(var(--line))" }}
               fill={v >= n ? tone : "none"}
             />
           </button>
@@ -510,7 +519,7 @@ function playChime() {
 
 function Confetti({ active }) {
   if (!active) return null;
-  const colors = ["rgb(var(--accent))", "rgb(var(--accent))", "rgb(var(--tealdeep))", "rgb(var(--danger))", "#F2EDE4"];
+  const colors = ["rgb(var(--accent))", "rgb(var(--accent))", "rgb(var(--tealdeep))", "rgb(var(--danger))", "rgb(var(--ink))"];
   const pieces = Array.from({ length: 26 }, (_, i) => ({
     left: 8 + Math.random() * 84,
     delay: Math.random() * 0.25,
@@ -1160,36 +1169,83 @@ const Eye = (p) => <Icon {...p}><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-1
 const EyeOff = (p) => <Icon {...p}><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c6.5 0 10 8 10 8a17.3 17.3 0 0 1-2.16 3.19m-3.24 2.44A9.12 9.12 0 0 1 12 20c-6.5 0-10-8-10-8a17.3 17.3 0 0 1 3.42-4.72" /><path d="M9.5 9.5a3 3 0 0 0 4.24 4.24" /><line x1="2" y1="2" x2="22" y2="22" /></Icon>;
 const BookmarkPlus = (p) => <Icon {...p}><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16Z" /><line x1="12" y1="7" x2="12" y2="13" /><line x1="9" y1="10" x2="15" y2="10" /></Icon>;
 
+const HandCards = (p) => <Icon {...p}><path d="M4 14l4-8 5 2.4" /><path d="M9.5 15.5l2.5-8.5 5.5 1.6" /><path d="M15 16V7h5v9z" /></Icon>;
+const DeckStack = (p) => <Icon {...p}><rect x="6" y="8" width="12" height="13" rx="2" /><path d="M8 5.5h8" /><path d="M9.5 3h5" /></Icon>;
+const DraftPick = (p) => <Icon {...p}><rect x="3" y="10" width="5" height="9" rx="1" /><rect x="16" y="10" width="5" height="9" rx="1" /><path d="M12 14V3" /><path d="m9 6 3-3 3 3" /></Icon>;
+const Meeple = (p) => <Icon {...p}><circle cx="12" cy="5.5" r="2.5" /><path d="M12 8.5c-3 0-4 2-4 4l-3 2v2h14v-2l-3-2c0-2-1-4-4-4z" /></Icon>;
+const Gear = (p) => <Icon {...p}><circle cx="12" cy="12" r="3.2" /><path d="M12 3.2 13.5 5h-3zM12 20.8 10.5 19h3zM3.2 12 5 10.5v3zM20.8 12 19 13.5v-3zM5.8 5.8 8.2 6.2 6.2 8.2zM18.2 18.2l-2.4-.4 2-2zM18.2 5.8l-.4 2.4-2-2zM5.8 18.2l.4-2.4 2 2z" /><circle cx="12" cy="12" r="7.6" strokeDasharray="2.6 2.9" /></Icon>;
+const FlagIcon = (p) => <Icon {...p}><path d="M5 21V3" /><path d="M5 4h11l-2 3.5L16 11H5z" /></Icon>;
+const TrickPile = (p) => <Icon {...p}><rect x="3" y="7" width="10" height="13" rx="1.5" transform="rotate(-10 8 13.5)" /><rect x="11" y="6" width="10" height="13" rx="1.5" transform="rotate(8 16 12.5)" /></Icon>;
+const PlayerPower = (p) => <Icon {...p}><circle cx="10" cy="7" r="3" /><path d="M4 20c0-3.3 2.7-5 6-5" /><path d="m18 11 1.2 3.3L22.5 15.5l-3.3 1.2L18 20l-1.2-3.3L13.5 15.5l3.3-1.2z" /></Icon>;
+const TilePlace = (p) => <Icon {...p}><rect x="3" y="12" width="9" height="9" rx="1" /><rect x="12" y="12" width="9" height="9" rx="1" /><rect x="7.5" y="3" width="9" height="9" rx="1" strokeDasharray="3 2.5" /></Icon>;
+const HexIcon = (p) => <Icon {...p}><path d="M12 2.5 20 7v10l-8 4.5L4 17V7z" /></Icon>;
+const ModularBoard = (p) => <Icon {...p}><rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="5" width="8" height="8" rx="1" /><rect x="5" y="13" width="8" height="8" rx="1" /></Icon>;
+const TargetIcon = (p) => <Icon {...p}><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="4" /><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" /></Icon>;
+const PushLuck = (p) => <Icon {...p}><path d="M3 17 9 11l4 4 8-8" /><path d="M15 7h6v6" /></Icon>;
+const Battery = (p) => <Icon {...p}><rect x="2" y="7" width="17" height="10" rx="3" /><path d="M22 10v4" /><path d="M6 10v4" /><path d="M10 10v4" /></Icon>;
+const Anchor = (p) => <Icon {...p}><circle cx="12" cy="5" r="2" /><path d="M12 7v14" /><path d="M5 13a7 7 0 0 0 14 0" /><path d="M8 11H4" /><path d="M20 11h-4" /></Icon>;
+const MapIcon = (p) => <Icon {...p}><path d="m3 6 6-2 6 2 6-2v14l-6 2-6-2-6 2z" /><path d="M9 4v14" /><path d="M15 6v14" /></Icon>;
+const Checkered = (p) => <Icon {...p}><path d="M5 21V4" /><rect x="5" y="4.5" width="12" height="9" /><path d="M5 4.5h4v4.5h4v4.5H9V9H5zm8 0h4V9h-4z" fill="currentColor" stroke="none" /></Icon>;
+const LetterTile = (p) => <Icon {...p}><rect x="4" y="4" width="16" height="16" rx="3" /><path d="M9 15.5 12 8l3 7.5" /><path d="M10 13.5h4" /></Icon>;
+const Gavel = (p) => <Icon {...p}><path d="m14 4 6 6" /><path d="m17.5 6.5-4 4" /><path d="m15.5 8.5-8 8" /><path d="m5 15 4 4" /><path d="M3 21h8" /></Icon>;
+const Truck = (p) => <Icon {...p}><path d="M3 7h11v9H3z" /><path d="M14 10h4l3 3v3h-7z" /><circle cx="7" cy="18" r="1.6" /><circle cx="17" cy="18" r="1.6" /></Icon>;
+const TrainIcon = (p) => <Icon {...p}><rect x="5" y="4" width="14" height="12" rx="3" /><path d="M5 10h14" /><path d="M8 16 6 20" /><path d="M16 16l2 4" /><circle cx="9" cy="13" r="0.6" /><circle cx="15" cy="13" r="0.6" /></Icon>;
+
 function tagIcon(name) {
   const n = name.toLowerCase();
-  if (/card|hand management|deck building|drafting/.test(n)) return CardIcon;
-  if (/^dice$|dice rolling|roll.*spin|push your luck/.test(n)) return Dices;
+  // Jede Kategorie und jeder Mechanismus bekommt ein eigenes Icon -- vorher
+  // teilten sich z.B. Card Game, Hand Management und Deck Building eines,
+  // wodurch nebeneinanderstehende Tags nicht unterscheidbar waren.
+  if (/deck building/.test(n)) return DeckStack;
+  if (/hand management/.test(n)) return HandCards;
+  if (/drafting/.test(n)) return DraftPick;
+  if (/trick-taking/.test(n)) return TrickPile;
+  if (/^card|card game/.test(n)) return CardIcon;
+  if (/push your luck/.test(n)) return PushLuck;
+  if (/^dice$|dice rolling|roll.*spin/.test(n)) return Dices;
   if (/^party/.test(n)) return Sparkles;
   if (/humor/.test(n)) return Laugh;
   if (/fantasy|mytholog/.test(n)) return Star;
-  if (/sci-?fi|space exploration|video game/.test(n)) return Rocket;
-  if (/economic|city building|industry|trains?|transport/.test(n)) return Building;
+  if (/sci-?fi|science fiction|space|video game/.test(n)) return Rocket;
+  if (/city building/.test(n)) return Building;
+  if (/trains?/.test(n)) return TrainIcon;
+  if (/transport/.test(n)) return Truck;
+  if (/economic|industry/.test(n)) return HandCoins;
   if (/civilization|political|medieval/.test(n)) return Crown;
   if (/fighting|wargame|military|miniature/.test(n)) return Sword;
   if (/horror|zombies/.test(n)) return Skull;
   if (/puzzle|pattern building/.test(n)) return Puzzle;
-  if (/deduction|memory|spies/.test(n)) return Eye;
+  if (/deduction|spies/.test(n)) return Eye;
+  if (/memory/.test(n)) return Brain;
   if (/bluffing|murder.?mystery/.test(n)) return MaskIcon;
-  if (/negotiat|trading|auction|bidding/.test(n)) return Handshake;
+  if (/negotiat|trading/.test(n)) return Handshake;
+  if (/auction|bidding/.test(n)) return Gavel;
   if (/voting/.test(n)) return Users;
-  if (/real-time|action points|simultaneous/.test(n)) return Zap;
+  if (/action.*dexterity/.test(n)) return TargetIcon;
+  if (/real-time|simultaneous/.test(n)) return Zap;
+  if (/action points/.test(n)) return Battery;
   if (/time$/.test(n)) return Clock;
-  if (/travel|nautical|explorat|racing|adventure|route.?network|point to point/.test(n)) return Compass;
+  if (/nautical|pirates/.test(n)) return Anchor;
+  if (/racing/.test(n)) return Checkered;
+  if (/adventure|maze/.test(n)) return MapIcon;
+  if (/travel|explorat|route.?network|point to point/.test(n)) return Compass;
   if (/animals/.test(n)) return PawPrint;
   if (/movies|tv|radio/.test(n)) return Tv;
-  if (/word game|storytelling|role playing/.test(n)) return BookOpen;
-  if (/grid movement|hex-and-counter|modular board|tile placement/.test(n)) return Grid3x3;
+  if (/word game/.test(n)) return LetterTile;
+  if (/storytelling|role playing|novel/.test(n)) return BookOpen;
+  if (/tile placement/.test(n)) return TilePlace;
+  if (/hex-and-counter/.test(n)) return HexIcon;
+  if (/modular board/.test(n)) return ModularBoard;
+  if (/grid movement/.test(n)) return Grid3x3;
   if (/legacy game/.test(n)) return Archive;
   if (/cooperative/.test(n)) return Heart;
-  if (/area control|territory building|worker placement|engine building/.test(n)) return Shield;
-  if (/set collection|trick-taking|variable player powers/.test(n)) return Layers;
+  if (/worker placement/.test(n)) return Meeple;
+  if (/engine building/.test(n)) return Gear;
+  if (/territory building/.test(n)) return FlagIcon;
+  if (/area control/.test(n)) return Shield;
+  if (/variable player powers/.test(n)) return PlayerPower;
+  if (/set collection/.test(n)) return Layers;
   if (/abstract strategy/.test(n)) return Block;
-  if (/action.*dexterity/.test(n)) return Zap;
   if (/sports/.test(n)) return TrendingUp;
   return Dices;
 }
@@ -1617,7 +1673,7 @@ function ImagePickerSheet({ onAdd, onClose }) {
               className="w-full bg-surface border border-line rounded-[14px] px-3 py-2 text-ink text-sm focus:outline-none focus:border-accent" />
             {urlError && <p className="text-xs text-danger">{urlError}</p>}
             <button onClick={submitUrl} disabled={urlChecking || !url.trim()}
-              className="w-full bg-[color:rgb(var(--accent))] disabled:opacity-50 text-ink rounded-[14px] py-2.5 text-sm font-medium flex items-center justify-center gap-2">
+              className="w-full bg-accent disabled:opacity-50 text-white rounded-[14px] py-2.5 text-sm font-medium flex items-center justify-center gap-2">
               {urlChecking ? <Loader2 size={14} /> : <Check size={14} />} {urlChecking ? "Prüfe Bild…" : "Hinzufügen"}
             </button>
           </div>
@@ -1911,7 +1967,7 @@ function TagPickerModal({ title, options, selected, onToggle, onAddCustom, onClo
 
   return (
     <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[60] flex items-end justify-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }}>
-      <div className={`glass border border-rim/10 rounded-t-[28px] w-full max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top))] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`}>
+      <div className={`glass border border-rim/10 rounded-t-[28px] w-full max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top)-1.5rem)] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl tracking-[-0.02em] text-ink">{title}</h2>
@@ -2211,7 +2267,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
                 try { await navigator.clipboard.writeText(exportText); setExportCopied(true); setTimeout(() => setExportCopied(false), 2000); }
                 catch { setExportCopied("error"); setTimeout(() => setExportCopied(false), 2000); }
               }}
-              className="flex-1 h-12 bg-[color:rgb(var(--accent))] text-ink rounded-[14px] font-medium flex items-center justify-center gap-2"
+              className="flex-1 h-12 bg-accent text-white rounded-[14px] font-medium flex items-center justify-center gap-2"
             >
               {exportCopied === true ? <Check size={16} /> : <Copy size={16} />}
               {exportCopied === true ? "Kopiert!" : exportCopied === "error" ? "Fehlgeschlagen" : "In Zwischenablage kopieren"}
@@ -2241,7 +2297,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
           <div className="flex gap-2">
             <input value={aiUrlInput} onChange={(e) => setAiUrlInput(e.target.value)} placeholder="https://spielregal-ai.dein-name.workers.dev"
               className="flex-1 min-w-0 bg-surface border border-line rounded-[14px] px-3 py-2 text-ink text-sm focus:outline-none focus:border-accent" />
-            <button onClick={() => onSaveAiWorkerUrl(aiUrlInput)} disabled={!aiUrlInput.trim()} className="shrink-0 px-4 rounded-lg bg-[color:rgb(var(--accent))] disabled:opacity-40 text-ink text-sm font-medium">Speichern</button>
+            <button onClick={() => onSaveAiWorkerUrl(aiUrlInput)} disabled={!aiUrlInput.trim()} className="shrink-0 px-4 rounded-lg bg-accent disabled:opacity-40 text-white text-sm font-medium">Speichern</button>
           </div>
           {aiWorkerUrl && <p className="text-[11px] text-teal mt-1.5">Eingerichtet</p>}
         </div>
@@ -2420,7 +2476,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
                   }
                 }}
                 disabled={!manualMergeKeep || !manualMergeDrop || manualMergeKeep === manualMergeDrop}
-                className="w-full h-12 bg-[color:rgb(var(--accent))] disabled:opacity-30 text-ink rounded-[14px] font-medium"
+                className="w-full h-12 bg-accent disabled:opacity-30 text-white rounded-[14px] font-medium"
               >
                 Zusammenführen
               </button>
@@ -3422,7 +3478,7 @@ function SearchStepSheet({ query, setQuery, runSearch, searching, searchError, r
             <input ref={inputRef} autoFocus value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && runSearch()}
               placeholder="z.B. Wingspan"
               className="flex-1 h-12 bg-surface border border-line rounded-[14px] px-4 text-ink text-base font-body placeholder-dim focus:outline-none focus:border-accent" />
-            <button onClick={runSearch} className="bg-[color:rgb(var(--accent))] text-ink w-12 h-12 shrink-0 rounded-[14px] flex items-center justify-center active:scale-95">
+            <button onClick={runSearch} className="bg-accent text-white w-12 h-12 shrink-0 rounded-[14px] flex items-center justify-center active:scale-95">
               {searching ? <Loader2 size={20} /> : <Search size={20} />}
             </button>
             <button onClick={() => setStep("manual")} aria-label="Manuell anlegen" className="bg-surface border border-line text-ink w-12 h-12 shrink-0 rounded-[14px] flex items-center justify-center active:scale-95">
@@ -3958,7 +4014,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             <button type="button" onClick={() => update("isCampaign", !form.isCampaign)}
               className={`w-full h-12 flex items-center justify-between text-left px-3.5 rounded-[14px] border ${form.isCampaign ? "bg-accent/15 border-accent/40" : "bg-transparent border-line"}`}>
               <span className={`text-base flex-1 min-w-0 text-left pr-2 ${form.isCampaign ? "text-ink" : "text-dim"}`}>Kampagnenspiel (Fortschritts-Historie)</span>
-              <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.isCampaign ? "bg-[color:rgb(var(--accent))] justify-end" : "bg-line justify-start"}`}>
+              <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.isCampaign ? "bg-accent justify-end" : "bg-line justify-start"}`}>
                 <div className="w-5 h-5 rounded-full bg-ink" />
               </div>
             </button>
@@ -3994,7 +4050,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               </button>
             )}
             <button disabled={!form.name.trim()} onClick={handleSaveClick}
-              className={`w-full bg-[color:rgb(var(--accent))] disabled:opacity-40 text-ink rounded-[14px] py-3 font-medium active:scale-[0.99] flex items-center justify-center gap-2 relative ${saveCelebrating ? "save-pop" : ""}`}>
+              className={`w-full bg-accent disabled:opacity-40 text-white rounded-[14px] py-3 font-medium active:scale-[0.99] flex items-center justify-center gap-2 relative ${saveCelebrating ? "save-pop" : ""}`}>
               {saveCelebrating && <span className="save-ring" />}
               <Check size={18} /> Speichern
             </button>
@@ -4180,7 +4236,7 @@ function PlayerOrderModal({ players, onSave, onClose }) {
             <div key={p.id} ref={(el) => { rowRefs.current[p.id] = el; }}
               className="flex items-center gap-3 bg-surface border rounded-[14px] px-3.5 h-14"
               style={{
-                borderColor: draggingId === p.id ? "rgb(var(--accent))" : "#3A3631",
+                borderColor: draggingId === p.id ? "rgb(var(--accent))" : "rgb(var(--line))",
                 transform: draggingId === p.id ? "scale(1.02)" : "none",
                 boxShadow: draggingId === p.id ? "0 8px 20px rgba(0,0,0,0.4)" : "none",
                 zIndex: draggingId === p.id ? 10 : 1,
@@ -4302,7 +4358,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
 
   return (
     <div className="fixed top-0 left-0 right-0 bg-black/90 z-50 flex items-end justify-center p-0" style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }}>
-      <div onFocus={handleFocusScroll} className="glass border border-rim/10 rounded-t-[28px] w-full max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top))] flex flex-col overflow-hidden rise-in font-body">
+      <div onFocus={handleFocusScroll} className="glass border border-rim/10 rounded-t-[28px] w-full max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top)-1.5rem)] flex flex-col overflow-hidden rise-in font-body">
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl tracking-[-0.02em] text-ink">{initial ? "Partie bearbeiten" : "Partie eintragen"}</h2>
@@ -4373,7 +4429,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                           onTouchEnd={cancelPlayerLongPress}
                           onTouchMove={cancelPlayerLongPress}
                           onContextMenu={(e) => e.preventDefault()}
-                          className="relative w-14 h-14 rounded-full overflow-hidden border-2" style={{ borderColor: selected ? "rgb(var(--accent))" : "#3A3631" }}>
+                          className="relative w-14 h-14 rounded-full overflow-hidden border-2" style={{ borderColor: selected ? "rgb(var(--accent))" : "rgb(var(--line))" }}>
                           {p.photo ? (
                             <img src={p.photo} alt={p.name} className="w-full h-full block object-cover" />
                           ) : (
@@ -4408,7 +4464,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                         <div key={id} ref={(el) => { resultRowRefs.current[id] = el; }}
                           className="flex items-center gap-2.5 h-12 pl-1.5 pr-2.5 rounded-[14px] bg-surface border"
                           style={{
-                            borderColor: draggingPlayerId === id ? "rgb(var(--accent))" : "#3A3631",
+                            borderColor: draggingPlayerId === id ? "rgb(var(--accent))" : "rgb(var(--line))",
                             transform: draggingPlayerId === id ? "scale(1.02)" : "none",
                             boxShadow: draggingPlayerId === id ? "0 6px 16px rgba(0,0,0,0.4)" : "none",
                             zIndex: draggingPlayerId === id ? 10 : 1,
@@ -4480,7 +4536,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
         </div>
         {selectedGame && (
           <div className="glass-strong shrink-0 border-t border-rim/10 p-4 space-y-2">
-            <button onClick={save} className="w-full bg-[color:rgb(var(--accent))] text-ink rounded-[14px] py-3 font-medium active:scale-[0.99] flex items-center justify-center gap-2">
+            <button onClick={save} className="w-full bg-accent text-white rounded-[14px] py-3 font-medium active:scale-[0.99] flex items-center justify-center gap-2">
               <Check size={18} /> Partie speichern
             </button>
             {initial && (
@@ -4500,7 +4556,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
             <input onFocus={handleFocusScroll} value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Name"
               className="w-full h-12 bg-surface border border-line rounded-[14px] px-3.5 text-ink text-base focus:outline-none focus:border-accent" />
             <button onClick={() => { if (newPlayerName.trim()) { const id = uid(); onAddPlayer(newPlayerName.trim(), null, id); setPlayerIds((prev) => [...prev, id]); setNewPlayerName(""); newPlayerClose.requestClose(); } }}
-              className="w-full h-12 bg-[color:rgb(var(--accent))] text-ink rounded-[14px] font-medium">Anlegen</button>
+              className="w-full h-12 bg-accent text-white rounded-[14px] font-medium">Anlegen</button>
             <p className="text-xs text-dim text-center">Ein Profilbild kannst du danach über den Namen ergänzen.</p>
           </div>
         </div>
@@ -4546,7 +4602,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
             />
             <button
               onClick={() => { if (editingPlayer.name.trim()) onUpdatePlayerName(editingPlayer.id, editingPlayer.name.trim()); setEditingPlayer(null); }}
-              className="w-full h-12 bg-[color:rgb(var(--accent))] text-ink rounded-[14px] font-medium"
+              className="w-full h-12 bg-accent text-white rounded-[14px] font-medium"
             >
               Speichern
             </button>
@@ -4628,7 +4684,7 @@ function DashboardReorderScreen({ order, sections, labels, hiddenSections = [], 
             ref={(el) => { itemRefs.current[key] = el; }}
             className="flex items-center gap-3 bg-surface border rounded-[14px] px-3.5 h-14"
             style={{
-              borderColor: draggingKey === key ? "rgb(var(--accent))" : "#3A3631",
+              borderColor: draggingKey === key ? "rgb(var(--accent))" : "rgb(var(--line))",
               transform: draggingKey === key ? "scale(1.03)" : "none",
               boxShadow: draggingKey === key ? "0 8px 20px rgba(0,0,0,0.4)" : "none",
               zIndex: draggingKey === key ? 10 : 1,
@@ -5291,7 +5347,7 @@ function AddGamesToListModal({ games, plays, list, onToggle, onClose, aiWorkerUr
 
   return (
     <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
-      <div className={`glass border border-rim/10 rounded-t-[28px] w-full max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top))] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
+      <div className={`glass border border-rim/10 rounded-t-[28px] w-full max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top)-1.5rem)] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
@@ -5330,7 +5386,7 @@ function AddGamesToListModal({ games, plays, list, onToggle, onClose, aiWorkerUr
                     {g.status === "wishlist" && <Pill tone="amber">Wunschliste</Pill>}
                   </div>
                 </div>
-                <div className={`w-6 h-6 rounded-full border flex items-center justify-center shrink-0 ${checked ? "bg-[color:rgb(var(--accent))] border-transparent" : "border-line"}`}>
+                <div className={`w-6 h-6 rounded-full border flex items-center justify-center shrink-0 ${checked ? "bg-accent border-transparent" : "border-line"}`}>
                   {checked && <Check size={14} className="text-ink" />}
                 </div>
               </button>
@@ -5553,7 +5609,7 @@ function ListPickerModal({ lists, gameId, onToggle, onCreate, onClose }) {
   const [nameError, setNameError] = useState(false);
   return (
     <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
-      <div className={`glass border border-rim/10 rounded-t-[28px] w-full max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top))] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
+      <div className={`glass border border-rim/10 rounded-t-[28px] w-full max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top)-1.5rem)] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
@@ -5578,7 +5634,7 @@ function ListPickerModal({ lists, gameId, onToggle, onCreate, onClose }) {
             <input onFocus={handleFocusScroll} value={newName} onChange={(e) => { setNewName(e.target.value); if (nameError) setNameError(false); }} placeholder="Neue Liste…"
               className={`flex-1 min-w-0 h-11 bg-surface border rounded-[14px] px-3.5 text-ink text-sm focus:outline-none focus:border-accent ${nameError ? "border-danger" : "border-line"}`} />
             <button onClick={() => { if (newName.trim()) { onCreate(newName.trim()); setNewName(""); setNameError(false); } else { setNameError(true); } }}
-              className="shrink-0 h-11 px-4 bg-[color:rgb(var(--accent))] text-ink rounded-[14px] text-sm font-medium">Anlegen</button>
+              className="shrink-0 h-11 px-4 bg-accent text-white rounded-[14px] text-sm font-medium">Anlegen</button>
           </div>
           {nameError && <p className="text-[11px] text-danger mt-1.5">Bitte einen Namen für die Liste eingeben.</p>}
         </div>
@@ -5662,7 +5718,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
 
   return (
     <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[60] flex items-end justify-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }}>
-      <div className={`glass border border-rim/10 rounded-t-[28px] w-full max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top))] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`}>
+      <div className={`glass border border-rim/10 rounded-t-[28px] w-full max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top)-1.5rem)] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Filter</h2>
@@ -6099,7 +6155,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
               className={`w-full h-12 bg-surface border rounded-[14px] px-3.5 text-ink text-base focus:outline-none focus:border-accent ${newListNameError ? "border-danger" : "border-line"}`} />
             {newListNameError && <p className="text-[11px] text-danger -mt-1.5">Bitte einen Namen für die Liste eingeben.</p>}
             <button onClick={() => { if (newListName.trim()) { const name = newListName.trim(); const id = onCreateList(name); setNewListName(""); setNewListNameError(false); createListClose.requestClose(); if (id) onOpenList({ id, name, gameIds: [] }); } else { setNewListNameError(true); } }}
-              className="w-full h-12 bg-[color:rgb(var(--accent))] text-ink rounded-[14px] font-medium">Anlegen</button>
+              className="w-full h-12 bg-accent text-white rounded-[14px] font-medium">Anlegen</button>
           </div>
         </div>
       )}
@@ -6940,7 +6996,7 @@ ${buildCollectionContextForAI(games, plays)}`;
                 className="glass flex-1 min-w-0 h-12 border border-rim/10 rounded-full px-4 text-ink text-base shadow-lg focus:outline-none disabled:opacity-60"
               />
               <button onClick={() => sendChat()} disabled={chatLoading || !chatInput.trim()}
-                className="shrink-0 w-12 h-12 rounded-full bg-[color:rgb(var(--accent))] disabled:opacity-40 text-ink flex items-center justify-center">
+                className="shrink-0 w-12 h-12 rounded-full bg-accent disabled:opacity-40 text-white flex items-center justify-center">
                 <ChevronRight size={20} />
               </button>
             </div>
@@ -6953,14 +7009,14 @@ ${buildCollectionContextForAI(games, plays)}`;
 
 /* ---------------- SYNC MODAL ---------------- */
 /* ---------------- GAME DETAIL VIEW ---------------- */
-const TONE_HEX = { teal: "rgb(var(--tealdeep))", amber: "rgb(var(--accent))", red: "rgb(var(--danger))", default: "#A39C8F" };
+const TONE_HEX = { teal: "rgb(var(--tealdeep))", amber: "rgb(var(--accent))", red: "rgb(var(--danger))", default: "rgb(var(--dim))" };
 
 function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList, onClose, onEdit, onViewOther, readOnlyLabel, hidePrices, onQuickUpdate }) {
   const [campaignPhotoOpen, setCampaignPhotoOpen] = useState(false);
   const gamePlays = plays.filter((p) => p.gameId === game.id);
   const lastPlay = [...gamePlays].sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0];
   const label = complexityLabel(game);
-  const labelTone = label ? TONE_HEX[COMPLEXITY_TONE[label]] : "#A39C8F";
+  const labelTone = label ? TONE_HEX[COMPLEXITY_TONE[label]] : "rgb(var(--dim))";
   const images = (game.images && game.images.length) ? game.images : (game.image ? [game.image] : []);
   const tags = [...(game.categories || []), ...(game.mechanisms || [])];
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -7817,7 +7873,7 @@ function App() {
               <Eye size={40} className="text-dim mb-4" />
               <h1 className="font-display text-2xl tracking-[-0.025em] leading-tight text-ink mb-1.5">Gästemodus aktiv</h1>
               <p className="text-sm text-dim max-w-xs mb-6">Preise, Bearbeiten und Einstellungen sind ausgeblendet. Zum Spiele-Aussuchen reicht das aber allemal.</p>
-              <button onClick={() => setGuestMode(false)} className="h-12 px-6 bg-[color:rgb(var(--accent))] text-ink rounded-[14px] font-medium">
+              <button onClick={() => setGuestMode(false)} className="h-12 px-6 bg-accent text-white rounded-[14px] font-medium">
                 Gästemodus beenden
               </button>
             </div>
@@ -7974,7 +8030,7 @@ class ErrorBoundary extends React.Component {
             <Dices size={32} className="text-danger mx-auto mb-3" />
             <p className="text-ink font-display text-xl tracking-[-0.02em] mb-2">Kurz gestolpert</p>
             <p className="text-dim text-sm mb-5">Hier ist etwas schiefgelaufen. Deine Daten in Firebase sind davon nicht betroffen.</p>
-            <button onClick={() => this.setState({ error: null })} className="w-full h-12 bg-[color:rgb(var(--accent))] text-ink rounded-[14px] font-medium mb-2">Nochmal versuchen</button>
+            <button onClick={() => this.setState({ error: null })} className="w-full h-12 bg-accent text-white rounded-[14px] font-medium mb-2">Nochmal versuchen</button>
             <button onClick={() => window.location.reload()} className="w-full h-12 bg-surface border border-line text-ink rounded-[14px] font-medium">App neu laden</button>
           </div>
         </div>
