@@ -147,7 +147,7 @@
   .rte-content:empty:before { content: attr(data-placeholder); color: #5C574F; }
   input:focus-visible, textarea:focus-visible, button:focus-visible, [contenteditable]:focus-visible { outline: 2px solid #6C7FE0; outline-offset: 2px; }
   .rte-content h2 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 1.25rem; margin: 0.4em 0 0.2em; }
-  .rte-content h3 { font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 600; color: #A39C8F; margin: 0.4em 0 0.2em; }
+  .rte-content h3 { font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 600; color: #5C574F; margin: 0.4em 0 0.2em; }
   .rte-content ul { list-style: disc; padding-left: 1.4em; margin: 0.3em 0; }
   .rte-content p { margin: 0.3em 0; }
 </style>
@@ -155,7 +155,7 @@
 <body>
 <div id="root"><div id="loading">
   <div style="color:#E85D9C;">Lädt…</div>
-  <div id="load-hint" style="display:none; color:#A39C8F; font-size:14px; max-width:320px;">
+  <div id="load-hint" style="display:none; color:#5C574F; font-size:14px; max-width:320px;">
     Das dauert normalerweise nur eine Sekunde. Falls hier nichts weiter passiert: diese App lädt React beim Öffnen einmalig aus dem Internet – bitte prüfe, ob dein iPad gerade online ist, und lade die Seite neu (nach unten ziehen).
   </div>
 </div></div>
@@ -266,7 +266,7 @@ function gameSearchLabel(g) {
   return g.name;
 }
 function complexityStepTone(v) {
-  if (v < 2) return "#4E8C82"; // Familienspiel
+  if (v < 2) return "#7FB3AA"; // Familienspiel
   if (v < 3.5) return "#E85D9C"; // Kennerspiel
   return "#C1443C"; // Expertenspiel
 }
@@ -293,7 +293,7 @@ function ComplexityPicker({ value, onChange }) {
         ))}
       </div>
       {v > 0 && (
-        <p className="text-xs text-[#A39C8F] mt-1.5">
+        <p className="text-xs text-[#5C574F] mt-1.5">
           <span className="font-mono" style={{ color: tone }}>{v}/5</span> · {COMPLEXITY_STEP_LABELS[v]}
         </p>
       )}
@@ -532,7 +532,7 @@ function TopTenCarousel({ games, onView }) {
                   <div className="w-full h-full flex items-center justify-center text-[#5C574F]"><Dices size={28} /></div>
                 )}
                 {isFront && (
-                  <span className="absolute top-2 left-2 w-6 h-6 rounded-full bg-[#E85D9C] text-[#1C1B1A] text-[11px] font-display font-bold flex items-center justify-center border-2 border-[#1C1B1A]">
+                  <span className="absolute top-2 left-2 w-6 h-6 rounded-full bg-[#E85D9C] text-[#1C1B1A] text-[11px] font-display flex items-center justify-center border-2 border-[#1C1B1A]">
                     {safeIndex + 1}
                   </span>
                 )}
@@ -1150,7 +1150,7 @@ function RichTextEditor({ value, onChange, placeholder, minHeight = 100 }) {
     { label: "Standard", value: "#F2EDE4" },
     { label: "Flieder", value: "#6C7FE0" },
     { label: "Amber", value: "#E85D9C" },
-    { label: "Türkis", value: "#4E8C82" },
+    { label: "Türkis", value: "#7FB3AA" },
     { label: "Rot", value: "#C1443C" },
   ];
 
@@ -1170,9 +1170,9 @@ function RichTextEditor({ value, onChange, placeholder, minHeight = 100 }) {
             <ToolBtn ariaLabel="Aufzählung" onClick={() => exec("insertUnorderedList")}>• Liste</ToolBtn>
             <ToolBtn ariaLabel="Titel" onClick={() => exec("formatBlock", "H2")} className="font-semibold">Titel</ToolBtn>
             <ToolBtn ariaLabel="Subheadline" onClick={() => exec("formatBlock", "H3")}>Subheadline</ToolBtn>
-            <ToolBtn ariaLabel="Normaler Text" onClick={() => exec("formatBlock", "P")} className="text-[#A39C8F]">Text</ToolBtn>
+            <ToolBtn ariaLabel="Normaler Text" onClick={() => exec("formatBlock", "P")} className="text-[#5C574F]">Text</ToolBtn>
             <ToolBtn ariaLabel="Textfarbe" onClick={() => setColorPickerOpen((o) => !o)}>
-              <span className="w-3.5 h-3.5 rounded-full border border-[#F2EDE4]/40" style={{ background: "conic-gradient(#E85D9C,#E85D9C,#4E8C82,#C1443C,#E85D9C)" }} />
+              <span className="w-3.5 h-3.5 rounded-full border border-[#F2EDE4]/40" style={{ background: "conic-gradient(#E85D9C,#E85D9C,#7FB3AA,#C1443C,#E85D9C)" }} />
             </ToolBtn>
             <ToolBtn ariaLabel="Gesamten Text löschen" onClick={clearAll} className="text-[#C1443C]"><Trash2 size={13} /></ToolBtn>
           </div>
@@ -1234,7 +1234,7 @@ function StarRating({ value, onChange }) {
         ))}
       </div>
       {v > 0 && (
-        <p className="text-xs text-[#A39C8F] mt-1.5">
+        <p className="text-xs text-[#5C574F] mt-1.5">
           <span className="font-mono text-[#E85D9C]">{v}/10</span> · {RATING_LABELS[v]}
         </p>
       )}
@@ -1294,7 +1294,7 @@ function Segmented({ options, value, onChange }) {
           type="button"
           onClick={() => { haptic(6); onChange(opt.v); }}
           className={`relative flex-1 min-w-0 px-1 py-2 rounded-[10px] text-xs font-body flex flex-col items-center justify-center gap-1 transition-colors duration-300 ${
-            value === opt.v ? "text-[#F2EDE4] font-medium" : "text-[#A39C8F]"
+            value === opt.v ? "text-[#F2EDE4] font-medium" : "text-[#5C574F]"
           }`}
         >
           {opt.icon && <opt.icon size={16} />}
@@ -1388,7 +1388,7 @@ function ImageCropModal({ src, onConfirm, onCancel }) {
   return (
     <div className="fixed inset-0 bg-black z-[75] flex flex-col">
       <div className="shrink-0 flex items-center justify-between px-5" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
-        <button onClick={onCancel} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]" aria-label="Abbrechen"><X size={20} /></button>
+        <button onClick={onCancel} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]" aria-label="Abbrechen"><X size={20} /></button>
         <span className="text-[#F2EDE4] font-display text-lg">Zuschneiden</span>
         <button onClick={confirm} disabled={!natSize} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#E85D9C] disabled:opacity-40" aria-label="Übernehmen">
           {natSize ? <Check size={20} /> : <Loader2 size={18} className="animate-spin" />}
@@ -1397,13 +1397,13 @@ function ImageCropModal({ src, onConfirm, onCancel }) {
       {corsBlocked && (
         <div className="shrink-0 mx-5 mb-3 bg-[#E85D9C]/10 border border-[#E85D9C]/30 rounded-[14px] px-4 py-3">
           <p className="text-[#F2EDE4] text-sm mb-1">Zuschneiden hier nicht möglich</p>
-          <p className="text-[#A39C8F] text-xs leading-relaxed">Dieses Bild kommt direkt von BGG — aus Sicherheitsgründen kann dein Browser es nicht zuschneiden. Lade es stattdessen per Kamera oder aus deiner Fotomediathek hoch, dann klappt der Zuschnitt.</p>
+          <p className="text-[#5C574F] text-xs leading-relaxed">Dieses Bild kommt direkt von BGG — aus Sicherheitsgründen kann dein Browser es nicht zuschneiden. Lade es stattdessen per Kamera oder aus deiner Fotomediathek hoch, dann klappt der Zuschnitt.</p>
         </div>
       )}
       <div className="flex-1 flex items-center justify-center">
         {loadFailed ? (
           <div className="text-center px-8">
-            <p className="text-[#A39C8F] text-sm mb-4">Bild konnte nicht zum Zuschneiden geladen werden.</p>
+            <p className="text-[#5C574F] text-sm mb-4">Bild konnte nicht zum Zuschneiden geladen werden.</p>
             <button onClick={() => onConfirm(src)} className="bg-[#262422] border border-[#3A3631] text-[#F2EDE4] px-4 py-2.5 rounded-[14px] text-sm font-medium">Unverändert übernehmen</button>
           </div>
         ) : (
@@ -1538,7 +1538,7 @@ function ImagePickerSheet({ onAdd, onClose }) {
           style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", border: 0 }}
           onChange={handleFile}
         />
-        <button onClick={onClose} className="w-full text-center py-2 text-[#A39C8F] text-sm">Abbrechen</button>
+        <button onClick={onClose} className="w-full text-center py-2 text-[#5C574F] text-sm">Abbrechen</button>
       </div>
       {cropSrc && (
         <ImageCropModal
@@ -1676,7 +1676,7 @@ function PhotoGallerySection({ images, onAdd, onRemove, onReplace, hero = false,
       <div>
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm text-[#F2EDE4] font-medium">{selected.length > 0 ? `${selected.length} ausgewählt` : "Fotos auswählen"}</p>
-          <button onClick={() => { setManageMode(false); setSelected([]); }} className="text-xs text-[#A39C8F]">Fertig</button>
+          <button onClick={() => { setManageMode(false); setSelected([]); }} className="text-xs text-[#5C574F]">Fertig</button>
         </div>
         <div className={`grid gap-2 ${hero ? "grid-cols-3" : "grid-cols-4"}`}>
           {images.map((img, i) => (
@@ -1816,7 +1816,7 @@ function TagPickerModal({ title, options, selected, onToggle, onAddCustom, onClo
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">{title}</h2>
-          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
+          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]"><X size={20} /></button>
         </div>
         {descriptions && <p className="shrink-0 px-4 pt-3 text-xs text-[#5C574F]">Tippe auf das <span className="inline-flex items-center justify-center w-4 h-4 rounded-full border border-[#5C574F] text-[10px] mx-0.5">i</span> für eine kurze Erklärung.</p>}
         <div className="shrink-0 p-4 border-b border-[#3A3631] space-y-2">
@@ -1848,7 +1848,7 @@ function TagPickerModal({ title, options, selected, onToggle, onAddCustom, onClo
                     <button
                       type="button"
                       onClick={() => onToggle(opt)}
-                      className={`flex-1 text-left text-sm ${isSel ? "text-[#1C1B1A] font-medium" : "text-[#A39C8F]"}`}
+                      className={`flex-1 text-left text-sm ${isSel ? "text-[#1C1B1A] font-medium" : "text-[#5C574F]"}`}
                     >
                       {opt}
                     </button>
@@ -1864,7 +1864,7 @@ function TagPickerModal({ title, options, selected, onToggle, onAddCustom, onClo
                     )}
                   </div>
                   {expandedInfo === opt && desc && (
-                    <p className={`px-3.5 pb-3 text-xs ${isSel ? "text-[#1C1B1A]" : "text-[#A39C8F]"}`}>{desc}</p>
+                    <p className={`px-3.5 pb-3 text-xs ${isSel ? "text-[#1C1B1A]" : "text-[#5C574F]"}`}>{desc}</p>
                   )}
                 </div>
               );
@@ -1873,7 +1873,7 @@ function TagPickerModal({ title, options, selected, onToggle, onAddCustom, onClo
               <button
                 key={opt}
                 onClick={() => onToggle(opt)}
-                className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}
+                className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#5C574F]"}`}
               >
                 {OptIcon && <OptIcon size={12} />}
                 {opt}
@@ -1896,7 +1896,7 @@ function TagPickerModal({ title, options, selected, onToggle, onAddCustom, onClo
 function SettingsRow({ icon: Icon, label, sub, onClick, tone }) {
   return (
     <button onClick={onClick} className="glass w-full flex items-center gap-3 border border-white/15 rounded-[14px] px-4 py-3.5 text-left">
-      <div className="w-9 h-9 rounded-lg bg-[#1C1B1A] flex items-center justify-center shrink-0" style={{ color: tone || "#A39C8F" }}>
+      <div className="w-9 h-9 rounded-lg bg-[#1C1B1A] flex items-center justify-center shrink-0" style={{ color: tone || "#5C574F" }}>
         <Icon size={17} />
       </div>
       <div className="flex-1 min-w-0">
@@ -1913,7 +1913,7 @@ function SettingsSubPage({ title, onBack, children }) {
   return (
     <div className="p-5 pb-10 space-y-6 font-body min-h-full flex flex-col" {...swipe}>
       <div className="flex items-center gap-3">
-        <button onClick={onBack} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]" aria-label="Zurück"><ChevronLeft size={22} /></button>
+        <button onClick={onBack} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]" aria-label="Zurück"><ChevronLeft size={22} /></button>
         <h1 className="font-display text-2xl text-[#F2EDE4]">{title}</h1>
       </div>
       {children}
@@ -2087,7 +2087,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
             )}
           </div>
           <textarea readOnly value={exportText} rows={14}
-            className="w-full bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 py-3 text-[#A39C8F] text-xs font-mono focus:outline-none resize-none" />
+            className="w-full bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 py-3 text-[#5C574F] text-xs font-mono focus:outline-none resize-none" />
         </div>
       </SettingsSubPage>
     );
@@ -2103,7 +2103,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
               className="flex-1 min-w-0 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#E85D9C]" />
             <button onClick={() => onSaveAiWorkerUrl(aiUrlInput)} disabled={!aiUrlInput.trim()} className="shrink-0 px-4 rounded-lg bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] disabled:opacity-40 text-[#F2EDE4] text-sm font-medium">Speichern</button>
           </div>
-          {aiWorkerUrl && <p className="text-[11px] text-[#4E8C82] mt-1.5">Eingerichtet</p>}
+          {aiWorkerUrl && <p className="text-[11px] text-[#7FB3AA] mt-1.5">Eingerichtet</p>}
         </div>
       </SettingsSubPage>
     );
@@ -2127,7 +2127,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
             {bggImportStatus === "importing" ? "Importiere… kann bei vielen Partien dauern" : "Partien importieren"}
           </button>
           {bggImportStatus === "done" && bggImportResult && (
-            <p className={`text-xs mt-2 ${bggImportResult.incomplete ? "text-[#E85D9C]" : "text-[#4E8C82]"}`}>
+            <p className={`text-xs mt-2 ${bggImportResult.incomplete ? "text-[#E85D9C]" : "text-[#7FB3AA]"}`}>
               {bggImportResult.playsImported} neue Partie{bggImportResult.playsImported === 1 ? "" : "n"} importiert
               {bggImportResult.gamesAdded > 0 ? `, ${bggImportResult.gamesAdded} neue Spiel${bggImportResult.gamesAdded === 1 ? "" : "e"} angelegt` : ""}.
               {bggImportResult.totalFound > bggImportResult.playsImported ? ` (${bggImportResult.totalFound - bggImportResult.playsImported} bereits vorher importiert.)` : ""}
@@ -2178,7 +2178,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
           {dupGroups.length > 0 ? (
             <div className="mb-4 bg-[#C1443C]/15 border border-[#C1443C]/40 rounded-[14px] p-3.5">
               <p className="text-sm text-[#F2EDE4] font-medium mb-1.5">{dupGroups.length} mögliche{dupGroups.length === 1 ? "s" : ""} Partien-Duplikat{dupGroups.length === 1 ? "" : "e"} gefunden</p>
-              <p className="text-xs text-[#A39C8F] mb-2">Gleiches Spiel, gleiches Datum, gleiche Mitspieler und Notiz — das entsteht typischerweise durch doppeltes Speichern oder einen Mehrfach-Import.</p>
+              <p className="text-xs text-[#5C574F] mb-2">Gleiches Spiel, gleiches Datum, gleiche Mitspieler und Notiz — das entsteht typischerweise durch doppeltes Speichern oder einen Mehrfach-Import.</p>
               <div className="space-y-1.5">
                 {dupGroups.map((group, i) => {
                   const g = games.find((x) => x.id === group[0].gameId);
@@ -2295,7 +2295,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     return (
       <SettingsSubPage title="Sammlung anpassen" onBack={() => setView("menu")}>
         <div>
-          <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Eigene Kategorien</h3>
+          <h3 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide mb-2">Eigene Kategorien</h3>
           <p className="text-xs text-[#5C574F] mb-2">Die BGG-Standardkategorien sind immer verfügbar. Hier ergänzt du eigene.</p>
           <div className="flex gap-2 mb-3">
             <input value={catInput} onChange={(e) => setCatInput(e.target.value)} placeholder="Neue Kategorie"
@@ -2306,7 +2306,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
           <div className="flex flex-wrap gap-2">
             {customCategories.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine eigenen Kategorien.</p>}
             {customCategories.map((c) => (
-              <span key={c} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[#262422] border-[#3A3631] text-[#A39C8F]">
+              <span key={c} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[#262422] border-[#3A3631] text-[#5C574F]">
                 {c}
                 <button onClick={() => onRemoveCategory(c)} className="text-[#5C574F]"><X size={12} /></button>
               </span>
@@ -2314,7 +2314,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
           </div>
         </div>
         <div>
-          <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Eigene Mechanismen</h3>
+          <h3 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide mb-2">Eigene Mechanismen</h3>
           <p className="text-xs text-[#5C574F] mb-2">Die BGG-Standardmechanismen sind immer verfügbar. Hier ergänzt du eigene.</p>
           <div className="flex gap-2 mb-3">
             <input value={mechInput} onChange={(e) => setMechInput(e.target.value)} placeholder="Neuer Mechanismus"
@@ -2325,7 +2325,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
           <div className="flex flex-wrap gap-2">
             {customMechanisms.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine eigenen Mechanismen.</p>}
             {customMechanisms.map((m) => (
-              <span key={m} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[#262422] border-[#3A3631] text-[#A39C8F]">
+              <span key={m} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[#262422] border-[#3A3631] text-[#5C574F]">
                 {m}
                 <button onClick={() => onRemoveMechanism(m)} className="text-[#5C574F]"><X size={12} /></button>
               </span>
@@ -2333,7 +2333,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
           </div>
         </div>
         <div>
-          <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Eigene Spielertypen</h3>
+          <h3 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide mb-2">Eigene Spielertypen</h3>
           <p className="text-xs text-[#5C574F] mb-2">Zielgruppen wie Optimierer oder Taktiker sind vorgegeben. Hier ergänzt du eigene.</p>
           <div className="space-y-2 mb-3">
             <input value={typeInput} onChange={(e) => setTypeInput(e.target.value)} placeholder="Neuer Spielertyp"
@@ -2346,7 +2346,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
           <div className="flex flex-wrap gap-2">
             {customPlayerTypes.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine eigenen Spielertypen.</p>}
             {customPlayerTypes.map((t) => (
-              <span key={t} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[#262422] border-[#3A3631] text-[#A39C8F]">
+              <span key={t} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[#262422] border-[#3A3631] text-[#5C574F]">
                 {t}
                 <button onClick={() => onRemovePlayerType(t)} className="text-[#5C574F]"><X size={12} /></button>
               </span>
@@ -2396,7 +2396,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
       <h1 className="font-display text-3xl text-[#F2EDE4] mb-2">Einstellungen</h1>
       <SettingsRow icon={Globe} label="Synchronisation" sub={syncUrl ? "Eingerichtet" : "Nicht eingerichtet"} tone="#E85D9C" onClick={() => setView("sync")} />
       <SettingsRow icon={Sparkles} label="KI-Assistent" sub={aiWorkerUrl ? "Eingerichtet" : "Nicht eingerichtet"} tone="#E85D9C" onClick={() => setView("ai")} />
-      <SettingsRow icon={ListChecks} label="BGG-Partien importieren" tone="#4E8C82" onClick={() => setView("bggImport")} />
+      <SettingsRow icon={ListChecks} label="BGG-Partien importieren" tone="#7FB3AA" onClick={() => setView("bggImport")} />
       <SettingsRow icon={Puzzle} label="Sammlung anpassen" sub="Kategorien, Mechanismen, Spielertypen" onClick={() => setView("customize")} />
       <SettingsRow icon={Layers} label="Spiele zusammenführen" sub={duplicateGroups.length > 0 ? `${duplicateGroups.length} mögliche Duplikate gefunden` : "Manuell oder automatisch erkannt"} tone={duplicateGroups.length > 0 ? "#C1443C" : undefined} onClick={() => setView("duplicates")} />
       <SettingsRow icon={ListChecks} label="Statistik-Abgleich" sub="Dashboard-Zahlen live nachrechnen" onClick={() => setView("statCheck")} />
@@ -3005,7 +3005,7 @@ async function bggFetchAllPlays(username) {
 /* ---------------- UI PRIMITIVES ---------------- */
 const Pill = ({ children, tone = "default" }) => {
   const tones = {
-    default: "bg-[#2E2B28] text-[#A39C8F] border-[#3A3631]",
+    default: "bg-[#2E2B28] text-[#5C574F] border-[#3A3631]",
     amber: "bg-[#E85D9C]/15 text-[#E85D9C] border-[#E85D9C]/30",
     red: "bg-[#C1443C]/15 text-[#C1443C] border-[#C1443C]/30",
     teal: "bg-[#4E8C82]/15 text-[#7FB3AA] border-[#4E8C82]/30",
@@ -3116,7 +3116,7 @@ function GameGridCard({ game: g, expansions = [], playCounts = {}, gridCols = 2,
             {active.rating ? (
               <span className="flex items-center gap-0.5 text-[10px] text-[#D4A24C] font-mono"><Star size={10} fill="currentColor" /> {active.rating}</span>
             ) : active.minPlayers ? (
-              <span className="flex items-center gap-0.5 text-[10px] text-[#8B8478] font-mono"><Users size={10} /> {active.minPlayers}-{active.maxPlayers}</span>
+              <span className="flex items-center gap-0.5 text-[10px] text-[#5C574F] font-mono"><Users size={10} /> {active.minPlayers}-{active.maxPlayers}</span>
             ) : null}
             {active.complexity ? (() => {
               const CIcon2 = COMPLEXITY_ICON[complexityLabel(active)] || Puzzle;
@@ -3125,9 +3125,9 @@ function GameGridCard({ game: g, expansions = [], playCounts = {}, gridCols = 2,
               );
             })() : null}
             {playCount > 0 ? (
-              <span className="text-[10px] text-[#8B8478] font-mono">{playCount}×</span>
+              <span className="text-[10px] text-[#5C574F] font-mono">{playCount}×</span>
             ) : active.status === "owned" ? (
-              <span className="text-[10px] text-[#8B8478] font-mono">0×</span>
+              <span className="text-[10px] text-[#5C574F] font-mono">0×</span>
             ) : null}
           </div>
         </div>
@@ -3218,7 +3218,7 @@ function BggMergeModal({ current, fresh, onApply, onClose }) {
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">BGG-Daten übernehmen</h2>
-          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
+          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]"><X size={20} /></button>
         </div>
         <p className="text-xs text-[#5C574F] px-5 pt-3">Wähl aus, was übernommen werden soll — alles andere bleibt unverändert.</p>
         <div className="p-5 overflow-y-auto flex-1 space-y-2">
@@ -3284,7 +3284,7 @@ function SearchStepSheet({ query, setQuery, runSearch, searching, searchError, r
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Spiel hinzufügen</h2>
-          <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]" aria-label="Schließen"><X size={20} /></button>
+          <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]" aria-label="Schließen"><X size={20} /></button>
         </div>
         <div className="shrink-0 px-5" style={{ paddingBottom: results.length > 0 || searchError ? "0.75rem" : "max(1.25rem, env(safe-area-inset-bottom))" }}>
           <div className="flex gap-2">
@@ -3803,7 +3803,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
                   </div>
                 )}
                 <button type="button" onClick={() => setExpansionPickerOpen(true)}
-                  className="w-full h-11 border border-dashed border-[#3A3631] rounded-[14px] text-sm text-[#A39C8F] flex items-center justify-center gap-1.5">
+                  className="w-full h-11 border border-dashed border-[#3A3631] rounded-[14px] text-sm text-[#5C574F] flex items-center justify-center gap-1.5">
                   <Plus size={14} /> Erweiterungen verknüpfen…
                 </button>
                 {expansionPickerOpen && (
@@ -3880,7 +3880,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
           <div className={`bg-[#1C1B1A] border border-[#3A3631] rounded-t-[28px] w-full max-w-3xl mx-auto font-body ${aiMenuClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) => e.stopPropagation()} style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
             <div className="px-5 py-4 flex items-center justify-between">
               <h2 className="font-display text-lg text-[#F2EDE4]">{aiWorkerUrl ? "KI-Werkzeuge" : "Spieldaten holen"}</h2>
-              <button onClick={aiMenuClose.requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={18} /></button>
+              <button onClick={aiMenuClose.requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]"><X size={18} /></button>
             </div>
             <div className="p-3 space-y-2">
               {aiWorkerUrl && (
@@ -3980,7 +3980,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
             <div className="shrink-0 px-5 py-4 flex items-center justify-between">
               <h2 className="font-display text-lg text-[#F2EDE4]">Welches Spiel?</h2>
-              <button onClick={bggCandClose.requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={18} /></button>
+              <button onClick={bggCandClose.requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]"><X size={18} /></button>
             </div>
             <div className="p-4 overflow-y-auto flex-1 space-y-2">
               {bggFetchCandidates.map((r) => (
@@ -4175,7 +4175,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">{initial ? "Partie bearbeiten" : "Partie eintragen"}</h2>
-          <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
+          <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]"><X size={20} /></button>
         </div>
         <div className="p-5 space-y-4 overflow-y-auto flex-1" style={{ touchAction: draggingPlayerId ? "none" : "auto" }}>
           {!selectedGame ? (
@@ -4397,7 +4397,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                   return p && p.photo ? (
                     <img src={p.photo} alt={p.name} className="w-full h-full block object-cover" />
                   ) : (
-                    <span className="text-[#A39C8F] font-display text-2xl">{editingPlayer.name.charAt(0).toUpperCase()}</span>
+                    <span className="text-[#5C574F] font-display text-2xl">{editingPlayer.name.charAt(0).toUpperCase()}</span>
                   );
                 })()}
               </button>
@@ -4775,13 +4775,13 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
         <Cover game={topMonthGame} size="sm" />
         <div className="min-w-0 flex-1">
           <p className="text-[#5C574F] text-[10px] font-body flex items-center gap-1"><TrendingUp size={10} /> Spiel des Monats</p>
-          <p className="text-[#F2EDE4] font-body text-sm font-medium truncate">{topMonthGame.name} <span className="text-[#5C574F] font-normal">· {topMonth[1]}× diesen Monat</span></p>
+          <p className="text-[#F2EDE4] font-body text-sm font-medium truncate">{topMonthGame.name} <span className="text-[#5C574F] font-medium">· {topMonth[1]}× diesen Monat</span></p>
         </div>
       </button>
     ),
     bestof: bestOf && (
       <div key="bestof">
-        <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Best of</h2>
+        <h2 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide mb-2">Best of</h2>
         {plays.length < 5 ? (
           <p className="text-xs text-[#5C574F]">Trag noch ein paar mehr Partien ein, dann zeigen wir dir hier deine Vorlieben.</p>
         ) : (
@@ -4811,7 +4811,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             <div className="glass border border-white/10 rounded-2xl p-3">
               <p className="text-[10px] text-[#5C574F] font-body mb-1">Lieblingsgenre</p>
               <p className="text-[#F2EDE4] text-sm font-body font-medium truncate">{bestOf.favCat[0]}</p>
-              <p className="text-[#4E8C82] text-xs font-body">am häufigsten gespielt</p>
+              <p className="text-[#7FB3AA] text-xs font-body">am häufigsten gespielt</p>
             </div>
           )}
           {bestOf.favMech && (
@@ -4827,7 +4827,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
               <button onClick={() => setStatInfo("playedComplexity")} className="text-left glass border border-white/10 rounded-2xl p-3">
                 <p className="text-[10px] text-[#5C574F] font-body mb-1">Deine Komplexität</p>
                 <p className="text-[#F2EDE4] text-sm font-body font-medium flex items-center gap-1.5">{CIcon && <CIcon size={14} />} {COMPLEXITY_SHORT[bestOf.complexityLabel]}</p>
-                <p className="text-[#A39C8F] text-xs font-body">Ø {bestOf.avgPlayedComplexity.toFixed(1)}/5 gespielt</p>
+                <p className="text-[#5C574F] text-xs font-body">Ø {bestOf.avgPlayedComplexity.toFixed(1)}/5 gespielt</p>
               </button>
             );
           })()}
@@ -4837,30 +4837,30 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     ),
     records: (mostPlayed || bestDay || bestStreak || biggestPlayGroup) && (
       <div key="records">
-        <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Rekorde</h2>
+        <h2 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide mb-2">Rekorde</h2>
         <div className="grid grid-cols-2 gap-2.5">
           {mostPlayed && mostPlayed.game && mostPlayed.count >= 2 && (
             <button onClick={() => onView(mostPlayed.game)} className="glass text-left rounded-2xl p-4 border border-white/10">
-              <p className="font-display text-4xl font-bold text-[#F2EDE4]">{mostPlayed.count}×</p>
-              <p className="text-xs text-[#A39C8F] mt-1.5">Meistgespielt · <span className="text-[#E85D9C]">{mostPlayed.game.name}</span></p>
+              <p className="font-display text-4xl text-[#F2EDE4]">{mostPlayed.count}×</p>
+              <p className="text-xs text-[#5C574F] mt-1.5">Meistgespielt · <span className="text-[#E85D9C]">{mostPlayed.game.name}</span></p>
             </button>
           )}
           {bestStreak && (
             <div className="glass rounded-2xl p-4 border border-white/10">
-              <p className="font-display text-4xl font-bold text-[#F2EDE4]">{bestStreak}</p>
-              <p className="text-xs text-[#A39C8F] mt-1.5">Tage-Serie am Stück</p>
+              <p className="font-display text-4xl text-[#F2EDE4]">{bestStreak}</p>
+              <p className="text-xs text-[#5C574F] mt-1.5">Tage-Serie am Stück</p>
             </div>
           )}
           {bestDay && (
             <div className="glass rounded-2xl p-4 border border-white/10">
-              <p className="font-display text-4xl font-bold text-[#F2EDE4]">{bestDay.count}×</p>
-              <p className="text-xs text-[#A39C8F] mt-1.5">Partien an einem Tag</p>
+              <p className="font-display text-4xl text-[#F2EDE4]">{bestDay.count}×</p>
+              <p className="text-xs text-[#5C574F] mt-1.5">Partien an einem Tag</p>
             </div>
           )}
           {biggestPlayGroup && (
             <div className="glass rounded-2xl p-4 border border-white/10">
-              <p className="font-display text-4xl font-bold text-[#F2EDE4]">{biggestPlayGroup}</p>
-              <p className="text-xs text-[#A39C8F] mt-1.5">Spieler in einer Runde</p>
+              <p className="font-display text-4xl text-[#F2EDE4]">{biggestPlayGroup}</p>
+              <p className="text-xs text-[#5C574F] mt-1.5">Spieler in einer Runde</p>
             </div>
           )}
         </div>
@@ -4868,7 +4868,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     ),
     wishlist: wishlist.length > 0 && (
       <div key="wishlist">
-        <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Von der Wunschliste</h2>
+        <h2 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide mb-2">Von der Wunschliste</h2>
         <div className="flex gap-3 overflow-x-auto pb-1">
           {wishlist.map(g => (
             <DashboardGameTile key={g.id} game={g} onClick={() => onView(g)}>
@@ -4880,7 +4880,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     ),
     topRated: topRated.length > 0 && (
       <div key="topRated">
-        <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Top 10 Spiele</h2>
+        <h2 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide mb-2">Top 10 Spiele</h2>
         {topRated.length < 3 ? (
           <p className="text-xs text-[#5C574F]">Bewerte noch ein paar mehr Spiele, dann gibt's hier eine richtige Bestenliste.</p>
         ) : (
@@ -4894,7 +4894,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
                   ) : (
                     <div className="w-full aspect-square rounded-xl border border-[#3A3631] bg-[#2E2B28] flex items-center justify-center text-[#5C574F]"><Dices size={18} /></div>
                   )}
-                  <span className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-[#E85D9C] text-[#1C1B1A] text-[10px] font-display font-bold flex items-center justify-center border-2 border-[#1C1B1A] shadow">{i + 1}</span>
+                  <span className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-[#E85D9C] text-[#1C1B1A] text-[10px] font-display flex items-center justify-center border-2 border-[#1C1B1A] shadow">{i + 1}</span>
                 </button>
               );
             })}
@@ -4904,7 +4904,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     ),
     dust: (
       <div key="dust">
-        <div className="flex items-center gap-2 mb-1"><Archive size={15} className="text-[#5C574F]" /><h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide">Staubfänger</h2></div>
+        <div className="flex items-center gap-2 mb-1"><Archive size={15} className="text-[#5C574F]" /><h2 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide">Staubfänger</h2></div>
         <p className="text-xs text-[#5C574F] mb-2">Spiele in deinem Regal, die schon am längsten auf ihre erste Partie warten.</p>
         {dustCollectors.length === 0 ? <p className="text-[#5C574F] text-sm font-body">Alles im Regal wurde schon gespielt. Sehr gut!</p> : (
           <div className="flex gap-3 overflow-x-auto pb-1">
@@ -4919,7 +4919,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     ),
     digital: plays.length > 0 && (
       <div key="digital" className="bg-gradient-to-br from-[#262422] to-[#1C1B1A] border border-[#3A3631] rounded-2xl p-4">
-        <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-3">Digital vs. Physisch</h2>
+        <h2 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide mb-3">Digital vs. Physisch</h2>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <span className="text-xl">🎲</span>
@@ -4935,7 +4935,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
           <div className="h-full" style={{ width: `${(physicalCount / plays.length) * 100}%`, background: "linear-gradient(90deg, #5A6BD0, #8B9AFA)" }} />
           <div className="h-full" style={{ width: `${(digitalCount / plays.length) * 100}%`, background: "linear-gradient(90deg, #3F7A6E, #6FBBA9)" }} />
         </div>
-        <div className="flex justify-between mt-2 text-xs font-body"><span className="text-[#8B9AFA]">{physicalCount} physisch</span><span className="text-[#6FBBA9]">{digitalCount} BGA</span></div>
+        <div className="flex justify-between mt-2 text-xs font-body"><span className="text-[#8B9AFA]">{physicalCount} physisch</span><span className="text-[#7FB3AA]">{digitalCount} BGA</span></div>
       </div>
     ),
   };
@@ -4980,7 +4980,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
               </div>
               {PRESETS.map((p) => (
                 <button key={p.key} onClick={() => { onReorder(p.order); sortMenuClose.requestClose(); }} className="w-full flex items-center gap-3 px-5 py-3.5 text-left active:bg-white/5">
-                  <p.icon size={16} className="text-[#A39C8F]" />
+                  <p.icon size={16} className="text-[#5C574F]" />
                   <span className="text-sm text-[#F2EDE4]">{p.label}</span>
                 </button>
               ))}
@@ -4997,7 +4997,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
                   setRefreshToken((t) => t + 1);
                   sortMenuClose.requestClose();
                 }} className="w-full flex items-center gap-3 px-5 py-3.5 text-left active:bg-white/5" style={{ paddingBottom: "max(5.5rem, calc(env(safe-area-inset-bottom) + 4.5rem))" }}>
-                  <RefreshCw size={16} className="text-[#4E8C82]" />
+                  <RefreshCw size={16} className="text-[#7FB3AA]" />
                   <span className="text-sm text-[#7FB3AA] font-medium">Dashboard neu abgleichen</span>
                 </button>
               )}
@@ -5009,19 +5009,19 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
         <button onClick={() => setStatInfo("collection")} className="glass text-left border border-white/10 rounded-2xl p-4">
           <p className="text-[#5C574F] text-xs font-body">Sammlung</p>
           <p className="font-display text-3xl text-[#F2EDE4] mt-1">{owned.length}</p>
-          <p className="text-[#A39C8F] text-xs font-body mt-0.5">Spiele im Regal</p>
+          <p className="text-[#5C574F] text-xs font-body mt-0.5">Spiele im Regal</p>
         </button>
         <button onClick={() => setStatInfo("complexity")} className="glass text-left border border-white/10 rounded-2xl p-4">
           <p className="text-[#5C574F] text-xs font-body">Ø Komplexität</p>
           <p className="font-display text-3xl text-[#F2EDE4] mt-1">{avgComplexity}</p>
-          <p className="text-[#A39C8F] text-xs font-body mt-0.5">von 5</p>
+          <p className="text-[#5C574F] text-xs font-body mt-0.5">von 5</p>
         </button>
       </div>
       {statInfo && (
         <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[70] flex items-center justify-center p-6 ${statInfoClose.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)" }} onClick={statInfoClose.requestClose}>
           <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-2xl p-5 w-full max-w-xs rise-in font-body" onClick={(e) => e.stopPropagation()}>
             <p className="text-[#F2EDE4] font-display text-lg mb-1.5">{statInfo === "collection" ? "Sammlung" : statInfo === "playedComplexity" ? "Deine Komplexität" : "Ø Komplexität"}</p>
-            <p className="text-[#A39C8F] text-sm">
+            <p className="text-[#5C574F] text-sm">
               {statInfo === "collection"
                 ? "Zählt alle Spiele mit dem Status \"Besitz\". Spiele auf der Wunschliste oder Spiele, die du nur gespielt hast, ohne sie zu besitzen, zählen hier nicht mit."
                 : statInfo === "playedComplexity"
@@ -5050,7 +5050,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
                 </div>
                 <div className="min-w-0">
                   <p className="text-[#F2EDE4] font-body text-base font-semibold mb-1">{weeklyTip.gameName}</p>
-                  <p className="text-[#A39C8F] text-sm font-body leading-snug">{weeklyTip.reason}</p>
+                  <p className="text-[#5C574F] text-sm font-body leading-snug">{weeklyTip.reason}</p>
                 </div>
               </>
             );
@@ -5095,7 +5095,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
               {tasteProfile.slice(1).map(([tag, weight]) => {
                 const TIcon = tagIcon(tag);
                 return (
-                  <span key={tag} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs bg-[#1C1B1A]/50 border border-[#3A3631] text-[#A39C8F] font-body">
+                  <span key={tag} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs bg-[#1C1B1A]/50 border border-[#3A3631] text-[#5C574F] font-body">
                     <TIcon size={11} />{tag} <span className="text-[#5C574F]">· {weight}</span>
                   </span>
                 );
@@ -5163,7 +5163,7 @@ function AddGamesToListModal({ games, plays, list, onToggle, onClose, aiWorkerUr
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Spiele hinzufügen</h2>
-          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
+          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]"><X size={20} /></button>
         </div>
         <div className="shrink-0 p-4 border-b border-[#3A3631] space-y-2.5">
           <SearchInput value={query} onChange={setQuery} placeholder="Suchen…" inputClassName="h-11 bg-[#262422] border border-[#3A3631] rounded-[14px] text-sm" />
@@ -5246,7 +5246,7 @@ function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDelete
       <div className="w-full h-full max-w-3xl mx-auto flex flex-col overflow-hidden">
         <div className="shrink-0 px-5 flex items-center justify-between" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
           {selectMode ? (
-            <button onClick={() => { setSelectMode(false); setSelectedIds([]); }} className="text-[#A39C8F] text-sm font-medium px-1">Abbrechen</button>
+            <button onClick={() => { setSelectMode(false); setSelectedIds([]); }} className="text-[#5C574F] text-sm font-medium px-1">Abbrechen</button>
           ) : (
             <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" aria-label="Zurück"><ChevronLeft size={22} /></button>
           )}
@@ -5320,7 +5320,7 @@ function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDelete
             <button onClick={() => { setConfirmDelete(true); deleteMenuClose.requestClose(); }} className="w-full h-12 flex items-center gap-3 px-3.5 bg-[#262422] border border-[#3A3631] rounded-[14px] text-[#C1443C] text-sm">
               <Trash2 size={16} /> Liste löschen
             </button>
-            <button onClick={deleteMenuClose.requestClose} className="w-full text-center py-2 text-[#A39C8F] text-sm">Abbrechen</button>
+            <button onClick={deleteMenuClose.requestClose} className="w-full text-center py-2 text-[#5C574F] text-sm">Abbrechen</button>
           </div>
         </div>
       )}
@@ -5339,7 +5339,7 @@ function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDelete
             <button onClick={() => { onToggleGame(list.id, contextGame.id); contextGameClose1.requestClose(); }} className="w-full h-12 flex items-center gap-3 px-3.5 bg-[#262422] border border-[#3A3631] rounded-[14px] text-[#C1443C] text-sm">
               <X size={16} /> Aus Liste entfernen
             </button>
-            <button onClick={contextGameClose1.requestClose} className="w-full text-center py-2 text-[#A39C8F] text-sm">Abbrechen</button>
+            <button onClick={contextGameClose1.requestClose} className="w-full text-center py-2 text-[#5C574F] text-sm">Abbrechen</button>
           </div>
         </div>
       )}
@@ -5425,7 +5425,7 @@ function ListPickerModal({ lists, gameId, onToggle, onCreate, onClose }) {
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Zu Liste hinzufügen</h2>
-          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
+          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]"><X size={20} /></button>
         </div>
         <div className="p-4 overflow-y-auto flex-1 space-y-2">
           {lists.length === 0 && <p className="text-sm text-[#5C574F] px-1">Noch keine Listen — leg unten deine erste an.</p>}
@@ -5463,7 +5463,7 @@ function PlayLogFilterModal({ filters, onChange, onClose, onReset, allWinners, v
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Filter</h2>
-          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
+          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]"><X size={20} /></button>
         </div>
         <div className="p-5 overflow-y-auto flex-1 space-y-6">
           <div>
@@ -5533,7 +5533,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Filter</h2>
-          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
+          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]"><X size={20} /></button>
         </div>
         <div className="p-5 overflow-y-auto flex-1 space-y-6">
           <div>
@@ -5580,7 +5580,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
                 const CIcon = COMPLEXITY_ICON[full];
                 return (
                   <button key={full} onClick={() => toggle("complexity", full)}
-                    className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}>
+                    className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#5C574F]"}`}>
                     {CIcon && <CIcon size={15} />}{short}
                   </button>
                 );
@@ -5595,7 +5595,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
                 const isSel = filters.saleStatus.includes(opt.v);
                 return (
                   <button key={opt.v} onClick={() => toggle("saleStatus", opt.v)}
-                    className={`px-3 py-1.5 rounded-full text-xs border ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}>
+                    className={`px-3 py-1.5 rounded-full text-xs border ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#5C574F]"}`}>
                     {opt.label}
                   </button>
                 );
@@ -5611,7 +5611,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
                 const CIcon = tagIcon(c);
                 return (
                   <button key={c} onClick={() => toggle("categories", c)}
-                    className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}>
+                    className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#5C574F]"}`}>
                     <CIcon size={12} />{c}
                   </button>
                 );
@@ -5632,7 +5632,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
                 const MIcon = tagIcon(m);
                 return (
                   <button key={m} onClick={() => toggle("mechanisms", m)}
-                    className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}>
+                    className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#5C574F]"}`}>
                     <MIcon size={12} />{m}
                   </button>
                 );
@@ -5652,7 +5652,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
                 const isSel = filters.publishers.includes(p);
                 return (
                   <button key={p} onClick={() => toggle("publishers", p)}
-                    className={`px-3 py-1.5 rounded-full text-xs border ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}>
+                    className={`px-3 py-1.5 rounded-full text-xs border ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#5C574F]"}`}>
                     {p}
                   </button>
                 );
@@ -5829,7 +5829,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
               </div>
               <div className="flex items-center justify-between px-2.5 pb-2.5 mt-1">
                 <p className="text-sm font-medium truncate text-[#F2EDE4]">{l.name}</p>
-                <span className="text-[11px] shrink-0 text-[#8B8478]">{l.gameIds.length}</span>
+                <span className="text-[11px] shrink-0 text-[#5C574F]">{l.gameIds.length}</span>
               </div>
             </button>
           );
@@ -5899,7 +5899,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
             <button onClick={() => { onDelete(contextGame); contextGameClose2.requestClose(); }} className="w-full h-12 flex items-center gap-3 px-3.5 bg-[#262422] border border-[#3A3631] rounded-[14px] text-[#C1443C] text-sm">
               <Trash2 size={16} /> Löschen
             </button>
-            <button onClick={contextGameClose2.requestClose} className="w-full text-center py-2 text-[#A39C8F] text-sm">Abbrechen</button>
+            <button onClick={contextGameClose2.requestClose} className="w-full text-center py-2 text-[#5C574F] text-sm">Abbrechen</button>
           </div>
         </div>
       )}
@@ -5910,7 +5910,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           ) : (
             games.length > 0 && (
               <button onClick={() => setSearchOpen(true)} aria-label="Suchen"
-                className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#A39C8F] shadow-lg">
+                className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#5C574F] shadow-lg">
                 <Search size={17} />
               </button>
             )
@@ -5926,13 +5926,13 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
         {games.length > 0 && (
           searchOpen ? (
             <button onClick={() => { setSearchOpen(false); setQuery(""); }} aria-label="Suche schließen"
-              className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#A39C8F] shadow-lg shrink-0">
+              className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#5C574F] shadow-lg shrink-0">
               <X size={18} />
             </button>
           ) : (
             <div className="relative shrink-0">
               <button onClick={() => setFilterModalOpen(true)} aria-label="Filter"
-                className="glass-icon-btn w-10 h-10 flex items-center justify-center border border-white/15 rounded-full text-[#A39C8F] shadow-lg">
+                className="glass-icon-btn w-10 h-10 flex items-center justify-center border border-white/15 rounded-full text-[#5C574F] shadow-lg">
                 <SlidersFilter size={17} />
               </button>
               {activeFilterCount > 0 && (
@@ -6164,7 +6164,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
           ) : (
             plays.length > 0 && (
               <button onClick={() => setSearchOpen(true)} aria-label="Suchen"
-                className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#A39C8F] shadow-lg">
+                className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#5C574F] shadow-lg">
                 <Search size={17} />
               </button>
             )
@@ -6180,13 +6180,13 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
         {plays.length > 0 && (
           searchOpen ? (
             <button onClick={() => { setSearchOpen(false); setQuery(""); }} aria-label="Suche schließen"
-              className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#A39C8F] shadow-lg shrink-0">
+              className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#5C574F] shadow-lg shrink-0">
               <X size={18} />
             </button>
           ) : (
             <div className="relative shrink-0">
               <button onClick={() => setFilterModalOpen(true)} aria-label="Filter"
-                className="glass-icon-btn w-10 h-10 flex items-center justify-center border border-white/15 rounded-full text-[#A39C8F] shadow-lg">
+                className="glass-icon-btn w-10 h-10 flex items-center justify-center border border-white/15 rounded-full text-[#5C574F] shadow-lg">
                 <SlidersFilter size={17} />
               </button>
               {activeFilterCount > 0 && (
@@ -6214,9 +6214,9 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
         <div className="bg-gradient-to-r from-[#E85D9C]/15 to-transparent border border-[#E85D9C]/30 rounded-2xl p-4 mb-4">
           <p className="text-xs font-semibold text-[#E85D9C] uppercase tracking-wide mb-2">{currentYear} bisher</p>
           <div className="flex items-center gap-5">
-            <div><p className="font-display text-2xl text-[#F2EDE4]">{yearPlays.length}</p><p className="text-[#A39C8F] text-[11px] font-body">Partien</p></div>
-            <div><p className="font-display text-2xl text-[#F2EDE4]">{yearGameCount}</p><p className="text-[#A39C8F] text-[11px] font-body">Spiele</p></div>
-            <div><p className="font-display text-2xl text-[#F2EDE4]">{estimatedHours > 0 ? `~${estimatedHours}` : "—"}</p><p className="text-[#A39C8F] text-[11px] font-body">Stunden</p></div>
+            <div><p className="font-display text-2xl text-[#F2EDE4]">{yearPlays.length}</p><p className="text-[#5C574F] text-[11px] font-body">Partien</p></div>
+            <div><p className="font-display text-2xl text-[#F2EDE4]">{yearGameCount}</p><p className="text-[#5C574F] text-[11px] font-body">Spiele</p></div>
+            <div><p className="font-display text-2xl text-[#F2EDE4]">{estimatedHours > 0 ? `~${estimatedHours}` : "—"}</p><p className="text-[#5C574F] text-[11px] font-body">Stunden</p></div>
           </div>
         </div>
       )}
@@ -6224,7 +6224,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
       {winCounts.length > 0 && (
         <div className="mb-5">
           <div className="flex items-center gap-1.5 mb-2">
-            <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide">Bestenliste</h2>
+            <h2 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide">Bestenliste</h2>
             <button onClick={() => setBestListInfoOpen(true)} aria-label="Wie wird das berechnet?" className="text-[#5C574F]"><Info size={13} /></button>
           </div>
           <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-4 space-y-2.5">
@@ -6246,10 +6246,10 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
             <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
             <div className="px-5 py-4" style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}>
               <p className="text-[#F2EDE4] font-display text-lg mb-2">Wie wird die Bestenliste berechnet?</p>
-              <p className="text-[#A39C8F] text-sm leading-relaxed mb-2">
+              <p className="text-[#5C574F] text-sm leading-relaxed mb-2">
                 Gezählt werden über alle Partien hinweg zwei Werte pro Person: wie oft sie als Gewinner:in markiert wurde (mehrere Gewinner:innen bei Gleichstand zählen alle), und wie oft sie insgesamt mitgespielt hat.
               </p>
-              <p className="text-[#A39C8F] text-sm leading-relaxed mb-2">
+              <p className="text-[#5C574F] text-sm leading-relaxed mb-2">
                 Sortiert wird nach <span className="text-[#F2EDE4]">Gewinnrate</span> (Siege ÷ Partien insgesamt), nicht nach roher Siegzahl. Bei gleicher Rate entscheidet die absolute Anzahl Siege. Wer z.B. 2 von 2 Partien gewonnen hat (100%), steht vor jemandem mit 21 von 40 Siegen (52,5%) — auch wenn die absolute Zahl kleiner ist. Angezeigt werden nur die Top 3.
               </p>
               <p className="text-[#5C574F] text-xs leading-relaxed">
@@ -6262,7 +6262,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
 
       {allPlayerNames.length >= 2 && (
         <div className="mb-5">
-          <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Kopf-an-Kopf</h2>
+          <h2 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide mb-2">Kopf-an-Kopf</h2>
           <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <div className="flex-1 min-w-0 flex items-center gap-2 bg-[#1C1B1A] border border-[#3A3631] rounded-[14px] pl-1.5 pr-2 py-1.5">
@@ -6306,7 +6306,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                         })()}
                       </div>
                       <p className="font-display text-2xl text-[#F2EDE4]">{h2hStats.aWins}</p>
-                      <p className="text-[#A39C8F] text-[11px] font-body truncate">{h2hA}</p>
+                      <p className="text-[#5C574F] text-[11px] font-body truncate">{h2hA}</p>
                     </div>
                     <div className="h-8 w-px bg-[#3A3631]" />
                     <div className="flex-1 flex flex-col items-center">
@@ -6317,7 +6317,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                         })()}
                       </div>
                       <p className="font-display text-2xl text-[#F2EDE4]">{h2hStats.bWins}</p>
-                      <p className="text-[#A39C8F] text-[11px] font-body truncate">{h2hB}</p>
+                      <p className="text-[#5C574F] text-[11px] font-body truncate">{h2hB}</p>
                     </div>
                   </div>
                 </div>
@@ -6341,7 +6341,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                 <div className="flex -space-x-3 shrink-0">
                   {distinctGames.slice(0, 3).map((p, i) => {
                     const g = games.find((x) => x.id === p.gameId);
-                    return g ? <Cover key={i} game={g} size="sm" className="!border-2 !border-[#262422]" /> : <div key={i} className="w-12 h-12 rounded-lg bg-[#2E2B28] border-2 border-[#262422] flex items-center justify-center text-[#A39C8F]"><Dices size={16} /></div>;
+                    return g ? <Cover key={i} game={g} size="sm" className="!border-2 !border-[#262422]" /> : <div key={i} className="w-12 h-12 rounded-lg bg-[#2E2B28] border-2 border-[#262422] flex items-center justify-center text-[#5C574F]"><Dices size={16} /></div>;
                   })}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -6366,7 +6366,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
             const lastPlayerCount = first.players ? first.players.split(",").map((s) => s.trim()).filter(Boolean).length : 0;
             return (
               <button key={groupKey} onClick={() => setDetailGroupKey(groupKey)} className="w-full text-left bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center gap-3">
-                {game ? <Cover game={game} size="sm" /> : <div className="w-12 h-12 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#A39C8F] shrink-0"><Dices size={18} /></div>}
+                {game ? <Cover game={game} size="sm" /> : <div className="w-12 h-12 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#5C574F] shrink-0"><Dices size={18} /></div>}
                 <div className="flex-1 min-w-0">
                   <p className="text-[#F2EDE4] font-body truncate">{game ? game.name : first.gameName}</p>
                   <p className="text-[#5C574F] text-xs font-body">
@@ -6398,7 +6398,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                 return (
                   <SwipeableRow key={p.id} onDelete={() => onDelete(p.id)} disabled={demoMode}>
                     <button onClick={() => onEdit(p)} className="w-full text-left bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#A39C8F] shrink-0"><IconC size={16} /></div>
+                      <div className="w-9 h-9 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#5C574F] shrink-0"><IconC size={16} /></div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[#F2EDE4] font-body truncate">{formatDate(p.date)}{p.gameId !== rootId ? ` · ${p.gameName}` : ""}</p>
                         <p className="text-[#5C574F] text-xs font-body">{modeLabel[p.mode]}{p.winner ? <> · Sieger: <span className="text-[#8B9AFA] font-medium">{p.winner}</span></> : ""}</p>
@@ -6432,7 +6432,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                 return (
                   <SwipeableRow key={p.id} onDelete={() => onDelete(p.id)} disabled={demoMode}>
                     <button onClick={() => onEdit(p)} className="w-full text-left bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center gap-3">
-                      {game ? <Cover game={game} size="sm" /> : <div className="w-12 h-12 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#A39C8F] shrink-0"><IconC size={16} /></div>}
+                      {game ? <Cover game={game} size="sm" /> : <div className="w-12 h-12 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#5C574F] shrink-0"><IconC size={16} /></div>}
                       <div className="flex-1 min-w-0">
                         <p className="text-[#F2EDE4] font-body truncate">{p.gameName}</p>
                         <p className="text-[#5C574F] text-xs font-body">{modeLabel[p.mode]}{p.winner ? <> · Sieger: <span className="text-[#8B9AFA] font-medium">{p.winner}</span></> : ""}</p>
@@ -6695,7 +6695,7 @@ ${buildCollectionContextForAI(games, plays)}`;
               <span className="absolute -top-1 -right-2 text-2xl" style={{ animation: "float 2.5s ease-in-out infinite" }}>💤</span>
             </div>
             <p className="text-[#F2EDE4] font-display text-xl mt-4">Pip schläft noch</p>
-            <p className="text-[#A39C8F] text-sm font-body mt-1.5 max-w-xs">Richte in den Einstellungen den KI-Assistenten ein, damit Pip aufwacht und dir beim Spielefinden helfen kann.</p>
+            <p className="text-[#5C574F] text-sm font-body mt-1.5 max-w-xs">Richte in den Einstellungen den KI-Assistenten ein, damit Pip aufwacht und dir beim Spielefinden helfen kann.</p>
           </div>
         </div>
       ) : quotaResetAt ? (
@@ -6706,7 +6706,7 @@ ${buildCollectionContextForAI(games, plays)}`;
               <span className="absolute -top-1 -right-2 text-2xl" style={{ animation: "float 2.5s ease-in-out infinite" }}>💤</span>
             </div>
             <p className="text-[#F2EDE4] font-display text-xl mt-4">Pip ist für heute müde</p>
-            <p className="text-[#A39C8F] text-sm font-body mt-1.5 max-w-xs">Sein tägliches KI-Kontingent ist aufgebraucht. Ab ca. {quotaResetAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} Uhr ist er wieder wach.</p>
+            <p className="text-[#5C574F] text-sm font-body mt-1.5 max-w-xs">Sein tägliches KI-Kontingent ist aufgebraucht. Ab ca. {quotaResetAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} Uhr ist er wieder wach.</p>
           </div>
         </div>
       ) : (
@@ -6745,7 +6745,7 @@ ${buildCollectionContextForAI(games, plays)}`;
                       <div className="flex flex-wrap gap-1.5">
                         {m.externalGame.bggId && (
                           <a href={`https://boardgamegeek.com/boardgame/${m.externalGame.bggId}`} target="_blank" rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full bg-[#1C1B1A] border border-[#3A3631] text-xs text-[#A39C8F]">
+                            className="flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full bg-[#1C1B1A] border border-[#3A3631] text-xs text-[#5C574F]">
                             {m.externalGame.images && m.externalGame.images[0] ? <img src={m.externalGame.images[0]} alt="" className="w-5 h-5 rounded-full object-cover" /> : <Globe size={12} />}
                             {m.externalGame.name} auf BGG ansehen <ChevronRight size={11} />
                           </a>
@@ -6798,7 +6798,7 @@ ${buildCollectionContextForAI(games, plays)}`;
             <div className="flex gap-2">
               {chatMessages.length > 0 && (
                 <button onClick={() => { haptic(6); greetedRef.current = false; setChatMessages([]); }} aria-label="Neuer Chat"
-                  className="glass shrink-0 w-12 h-12 rounded-full border border-white/10 text-[#A39C8F] shadow-lg flex items-center justify-center">
+                  className="glass shrink-0 w-12 h-12 rounded-full border border-white/10 text-[#5C574F] shadow-lg flex items-center justify-center">
                   <Sparkles size={18} />
                 </button>
               )}
@@ -6855,7 +6855,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
         <Icon size={iconSize} className="text-[#F2EDE4]" />
       </div>
       <p className="text-sm font-medium text-[#F2EDE4]">{value}</p>
-      <p className="text-[11px] text-[#A39C8F]">{sub}</p>
+      <p className="text-[11px] text-[#5C574F]">{sub}</p>
     </div>
   );
 
@@ -6890,7 +6890,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
               return (
                 <>
                   <h1 className="font-display text-2xl text-[#F2EDE4] leading-tight">{primary}</h1>
-                  {secondary && <p className="text-[#A39C8F] text-sm mt-0.5">{secondary}</p>}
+                  {secondary && <p className="text-[#5C574F] text-sm mt-0.5">{secondary}</p>}
                 </>
               );
             })()}
@@ -6914,7 +6914,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                     </button>
                   )}
                   {expansions.map((exp) => (
-                    <button key={exp.id} onClick={() => onViewOther && onViewOther(exp)} className="flex items-center gap-1 text-xs text-[#A39C8F] bg-[#262422] border border-[#3A3631] rounded-full px-2.5 py-1">
+                    <button key={exp.id} onClick={() => onViewOther && onViewOther(exp)} className="flex items-center gap-1 text-xs text-[#5C574F] bg-[#262422] border border-[#3A3631] rounded-full px-2.5 py-1">
                       <Layers size={11} /> {exp.name}
                     </button>
                   ))}
@@ -6927,7 +6927,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
 
           {game.isCampaign && onQuickUpdate && (
             <button onClick={() => setCampaignPhotoOpen(true)}
-              className="w-full h-11 border border-dashed border-[#3A3631] rounded-[14px] text-sm text-[#A39C8F] flex items-center justify-center gap-1.5">
+              className="w-full h-11 border border-dashed border-[#3A3631] rounded-[14px] text-sm text-[#5C574F] flex items-center justify-center gap-1.5">
               <Camera size={15} /> Aktuellen Kampagnenstand fotografieren
             </button>
           )}
@@ -7023,7 +7023,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                             <Star key={s} size={18} className={parseInt(game.rating) >= s ? "text-[#E85D9C]" : "text-[#3A3631]"} fill={parseInt(game.rating) >= s ? "#E85D9C" : "none"} />
                           ))}
                         </div>
-                        <span className="text-xs text-[#A39C8F]">{RATING_LABELS[parseInt(game.rating)]}</span>
+                        <span className="text-xs text-[#5C574F]">{RATING_LABELS[parseInt(game.rating)]}</span>
                       </div>
                     )}
                   </div>
@@ -7095,7 +7095,7 @@ function SyncModal({ initialUrl, initialApiKey, initialEmail, status, lastSynced
           <button onClick={onClose} className="glass-icon-btn shrink-0 w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]"><X size={20} /></button>
         </div>
         <div className="p-5 space-y-4">
-          <p className="text-sm text-[#A39C8F]">
+          <p className="text-sm text-[#5C574F]">
             Deine Sammlung und Partien werden immer auf diesem Gerät gespeichert. Trägst du zusätzlich eine Firebase-Datenbank ein, werden sie außerdem dorthin synchronisiert — auf jedem Gerät mit derselben Adresse siehst du dann automatisch dieselben Daten.
           </p>
           <div>
@@ -7140,8 +7140,8 @@ function SyncModal({ initialUrl, initialApiKey, initialEmail, status, lastSynced
             <p className="text-[11px] text-[#5C574F] mt-1.5">Diesen Nutzer legst du einmalig in der Firebase-Konsole unter Authentication → Users an. Die App meldet sich damit automatisch im Hintergrund an — kein Login-Bildschirm im Alltag.</p>
           </div>
           <div className="flex items-center gap-2 text-xs">
-            {status === "syncing" && <><Loader2 size={13} /> <span className="text-[#A39C8F]">Synchronisiere…</span></>}
-            {status === "synced" && <span className="text-[#4E8C82]">Zuletzt synchronisiert: {lastSynced ? new Date(lastSynced).toLocaleTimeString("de-DE") : "gerade eben"}</span>}
+            {status === "syncing" && <><Loader2 size={13} /> <span className="text-[#5C574F]">Synchronisiere…</span></>}
+            {status === "synced" && <span className="text-[#7FB3AA]">Zuletzt synchronisiert: {lastSynced ? new Date(lastSynced).toLocaleTimeString("de-DE") : "gerade eben"}</span>}
             {status === "error" && <span className="text-[#C1443C]">Patzer beim Synchronisieren — Internet, Zugangsdaten oder API-Schlüssel prüfen</span>}
             {status === "idle" && !initialUrl && <span className="text-[#5C574F]">Noch nicht eingerichtet</span>}
           </div>
@@ -7157,7 +7157,7 @@ function SyncModal({ initialUrl, initialApiKey, initialEmail, status, lastSynced
               <button onClick={onSyncNow} className="glass w-full border border-white/15 text-[#F2EDE4] rounded-[14px] py-3 font-medium active:scale-[0.99]">
                 Jetzt synchronisieren
               </button>
-              <button onClick={onRemove} className="w-full text-[#A39C8F] text-sm font-body py-2">
+              <button onClick={onRemove} className="w-full text-[#5C574F] text-sm font-body py-2">
                 Verbindung trennen (Daten bleiben in Firebase erhalten)
               </button>
             </>
@@ -7699,7 +7699,7 @@ function App() {
             <div className="p-5 min-h-full flex flex-col items-center justify-center text-center">
               <Eye size={40} className="text-[#5C574F] mb-4" />
               <h1 className="font-display text-2xl text-[#F2EDE4] mb-1.5">Gästemodus aktiv</h1>
-              <p className="text-sm text-[#A39C8F] max-w-xs mb-6">Preise, Bearbeiten und Einstellungen sind ausgeblendet. Zum Spiele-Aussuchen reicht das aber allemal.</p>
+              <p className="text-sm text-[#5C574F] max-w-xs mb-6">Preise, Bearbeiten und Einstellungen sind ausgeblendet. Zum Spiele-Aussuchen reicht das aber allemal.</p>
               <button onClick={() => setGuestMode(false)} className="h-12 px-6 bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] rounded-[14px] font-medium">
                 Gästemodus beenden
               </button>
@@ -7759,8 +7759,8 @@ function App() {
                 onClick={() => requestTabSwitch(t.id)}
                 className="relative flex flex-col items-center justify-center gap-1 py-1.5 rounded-full"
               >
-                <t.icon size={19} className={`relative transition-colors duration-300 ${tab === t.id ? "text-white" : "text-[#A39C8F]"}`} strokeWidth={1.5} />
-                <span className={`relative text-[9px] font-body leading-none whitespace-nowrap transition-colors duration-300 ${tab === t.id ? "text-white font-semibold" : "text-[#A39C8F]"}`}>{t.label}</span>
+                <t.icon size={19} className={`relative transition-colors duration-300 ${tab === t.id ? "text-white" : "text-[#5C574F]"}`} strokeWidth={1.5} />
+                <span className={`relative text-[9px] font-body leading-none whitespace-nowrap transition-colors duration-300 ${tab === t.id ? "text-white font-semibold" : "text-[#5C574F]"}`}>{t.label}</span>
               </button>
             ))}
           </div>
@@ -7862,7 +7862,7 @@ class ErrorBoundary extends React.Component {
           <div className="max-w-sm text-center">
             <Dices size={32} className="text-[#C1443C] mx-auto mb-3" />
             <p className="text-[#F2EDE4] font-display text-xl mb-2">Kurz gestolpert</p>
-            <p className="text-[#A39C8F] text-sm mb-5">Hier ist etwas schiefgelaufen. Deine Daten in Firebase sind davon nicht betroffen.</p>
+            <p className="text-[#5C574F] text-sm mb-5">Hier ist etwas schiefgelaufen. Deine Daten in Firebase sind davon nicht betroffen.</p>
             <button onClick={() => this.setState({ error: null })} className="w-full h-12 bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] rounded-[14px] font-medium mb-2">Nochmal versuchen</button>
             <button onClick={() => window.location.reload()} className="w-full h-12 bg-[#262422] border border-[#3A3631] text-[#F2EDE4] rounded-[14px] font-medium">App neu laden</button>
           </div>
