@@ -1474,8 +1474,8 @@ function ImageCropModal({ src, onConfirm, onCancel }) {
   return (
     <div className="fixed inset-0 bg-black z-[75] flex flex-col">
       <div className="shrink-0 flex items-center justify-between px-5" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
-        <button onClick={onCancel} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-rim/10 text-dim" aria-label="Abbrechen"><X size={20} /></button>
-        <span className="text-ink font-display text-lg">Zuschneiden</span>
+        <button onClick={onCancel} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur text-dim" aria-label="Abbrechen"><X size={20} /></button>
+        <span className="text-ink font-display text-lg tracking-[-0.015em]">Zuschneiden</span>
         <button onClick={confirm} disabled={!natSize} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-rim/15 text-accent disabled:opacity-40" aria-label="Übernehmen">
           {natSize ? <Check size={20} /> : <Loader2 size={18} className="animate-spin" />}
         </button>
@@ -1584,7 +1584,7 @@ function ImagePickerSheet({ onAdd, onClose }) {
       <div className={`glass border border-rim/10 rounded-t-[28px] w-full font-body p-5 space-y-2 ${closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
-        <h3 className="font-display text-lg text-ink mb-1">Foto hinzufügen</h3>
+        <h3 className="font-display text-lg tracking-[-0.015em] text-ink mb-1">Foto hinzufügen</h3>
         {!urlMode ? (
           <>
             <button onClick={() => cameraRef.current && cameraRef.current.click()} className="w-full flex items-center gap-3 bg-surface border border-line rounded-[14px] px-4 py-3 text-ink text-sm">
@@ -1901,8 +1901,8 @@ function TagPickerModal({ title, options, selected, onToggle, onAddCustom, onClo
       <div className={`glass border border-rim/10 rounded-t-[28px] w-full max-h-[var(--app-height,100dvh)] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
-          <h2 className="font-display text-xl text-ink">{title}</h2>
-          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-rim/10 text-dim"><X size={20} /></button>
+          <h2 className="font-display text-xl tracking-[-0.02em] text-ink">{title}</h2>
+          <button onClick={requestClose} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur text-dim"><X size={20} /></button>
         </div>
         {descriptions && <p className="shrink-0 px-4 pt-3 text-xs text-dim">Tippe auf das <span className="inline-flex items-center justify-center w-4 h-4 rounded-full border border-faint text-[10px] mx-0.5">i</span> für eine kurze Erklärung.</p>}
         <div className="shrink-0 p-4 border-b border-line space-y-2">
@@ -1959,7 +1959,7 @@ function TagPickerModal({ title, options, selected, onToggle, onAddCustom, onClo
               <button
                 key={opt}
                 onClick={() => onToggle(opt)}
-                className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "glass border-accent/50 text-ink font-medium" : "bg-surface border-line text-dim"}`}
+                className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "border-accent/50 bg-accent/10 text-ink font-medium" : "bg-surface border-line text-dim"}`}
               >
                 {OptIcon && <OptIcon size={12} />}
                 {opt}
@@ -1983,11 +1983,11 @@ function ThemeSetting() {
   const [mode, setMode] = useState(() => (typeof window !== "undefined" && window.__getTheme ? window.__getTheme() : "system"));
   const pick = (v) => { setMode(v); if (window.__setTheme) window.__setTheme(v); };
   return (
-    <div className="glass border border-rim/15 rounded-[14px] px-4 py-3.5">
-      <div className="flex items-center gap-3 mb-3">
-        <div className="w-9 h-9 rounded-lg bg-bg flex items-center justify-center shrink-0 text-gold">
-          <Sun size={17} />
-        </div>
+    <div className="py-4 border-b border-line">
+      <div className="flex items-center gap-3.5 mb-3">
+        <span className="shrink-0 text-dim">
+          <Sun size={18} />
+        </span>
         <div className="min-w-0">
           <p className="text-ink font-body text-sm font-medium">Darstellung</p>
           <p className="text-dim text-xs font-body mt-0.5">Hell, dunkel oder wie das System</p>
@@ -2004,10 +2004,10 @@ function ThemeSetting() {
 
 function SettingsRow({ icon: Icon, label, sub, onClick, tone }) {
   return (
-    <button onClick={onClick} className="glass w-full flex items-center gap-3 border border-rim/15 rounded-[14px] px-4 py-3.5 text-left">
-      <div className="w-9 h-9 rounded-lg bg-bg flex items-center justify-center shrink-0" style={{ color: tone || "rgb(var(--faint))" }}>
-        <Icon size={17} />
-      </div>
+    <button onClick={onClick} className="w-full flex items-center gap-3.5 py-4 text-left border-b border-line">
+      <span className="shrink-0" style={{ color: tone || "rgb(var(--dim))" }}>
+        <Icon size={18} />
+      </span>
       <div className="flex-1 min-w-0">
         <p className="text-ink font-body text-sm font-medium">{label}</p>
         {sub && <p className="text-dim text-xs font-body mt-0.5 truncate">{sub}</p>}
@@ -2022,8 +2022,8 @@ function SettingsSubPage({ title, onBack, children }) {
   return (
     <div className="p-5 pb-10 space-y-6 font-body min-h-full flex flex-col" {...swipe}>
       <div className="flex items-center gap-3">
-        <button onClick={onBack} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-rim/10 text-dim" aria-label="Zurück"><ChevronLeft size={22} /></button>
-        <h1 className="font-display text-2xl text-ink">{title}</h1>
+        <button onClick={onBack} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur text-dim" aria-label="Zurück"><ChevronLeft size={22} /></button>
+        <h1 className="font-display text-2xl tracking-[-0.025em] leading-tight text-ink">{title}</h1>
       </div>
       {children}
       <BggBadge className="mt-auto" />
@@ -2098,7 +2098,7 @@ function MultiGamePickerSheet({ games, excludeId, filter, initialSelected = [], 
       <div className={`glass border border-rim/10 rounded-t-[28px] w-full font-body flex flex-col ${closing ? "sheet-out" : "rise-in"}`} style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
-          <h2 className="font-display text-xl text-ink">{title}</h2>
+          <h2 className="font-display text-xl tracking-[-0.02em] text-ink">{title}</h2>
           <button onClick={() => { onConfirm(selected); requestClose(); }} className="text-accent text-sm font-medium px-2 py-1">Fertig{selected.length > 0 ? ` (${selected.length})` : ""}</button>
         </div>
         <div className="shrink-0 px-5 pb-3">
@@ -2307,7 +2307,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
             </div>
           )}
 
-          <p className="text-xs text-dim uppercase tracking-wider mb-2">Partien pro Spiel (alle, absteigend)</p>
+          <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-2">Partien pro Spiel (alle, absteigend)</p>
           <div className="space-y-1.5">
             {perGame.length === 0 && <p className="text-xs text-dim">Noch keine Partien eingetragen.</p>}
             {perGame.map(({ game, gameId, count }) => (
@@ -2404,7 +2404,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     return (
       <SettingsSubPage title="Sammlung anpassen" onBack={() => setView("menu")}>
         <div>
-          <h3 className="font-body text-sm font-semibold text-dim uppercase tracking-wide mb-2">Eigene Kategorien</h3>
+          <h3 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-2">Eigene Kategorien</h3>
           <p className="text-xs text-dim mb-2">Die BGG-Standardkategorien sind immer verfügbar. Hier ergänzt du eigene.</p>
           <div className="flex gap-2 mb-3">
             <input value={catInput} onChange={(e) => setCatInput(e.target.value)} placeholder="Neue Kategorie"
@@ -2423,7 +2423,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
           </div>
         </div>
         <div>
-          <h3 className="font-body text-sm font-semibold text-dim uppercase tracking-wide mb-2">Eigene Mechanismen</h3>
+          <h3 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-2">Eigene Mechanismen</h3>
           <p className="text-xs text-dim mb-2">Die BGG-Standardmechanismen sind immer verfügbar. Hier ergänzt du eigene.</p>
           <div className="flex gap-2 mb-3">
             <input value={mechInput} onChange={(e) => setMechInput(e.target.value)} placeholder="Neuer Mechanismus"
@@ -2442,7 +2442,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
           </div>
         </div>
         <div>
-          <h3 className="font-body text-sm font-semibold text-dim uppercase tracking-wide mb-2">Eigene Spielertypen</h3>
+          <h3 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-2">Eigene Spielertypen</h3>
           <p className="text-xs text-dim mb-2">Zielgruppen wie Optimierer oder Taktiker sind vorgegeben. Hier ergänzt du eigene.</p>
           <div className="space-y-2 mb-3">
             <input value={typeInput} onChange={(e) => setTypeInput(e.target.value)} placeholder="Neuer Spielertyp"
@@ -2501,8 +2501,8 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
   }
 
   return (
-    <div className="p-5 pb-6 space-y-2.5 font-body min-h-full flex flex-col">
-      <h1 className="font-display text-3xl text-ink mb-2">Einstellungen</h1>
+    <div className="p-5 pb-6 font-body min-h-full flex flex-col">
+      <h1 className="font-display text-3xl tracking-[-0.03em] leading-[1.05] text-ink mb-2">Einstellungen</h1>
       <ThemeSetting />
       <SettingsRow icon={Globe} label="Synchronisation" sub={syncUrl ? "Eingerichtet" : "Nicht eingerichtet"} tone="rgb(var(--accent))" onClick={() => setView("sync")} />
       <SettingsRow icon={Sparkles} label="KI-Assistent" sub={aiWorkerUrl ? "Eingerichtet" : "Nicht eingerichtet"} tone="rgb(var(--accent))" onClick={() => setView("ai")} />
@@ -3330,8 +3330,8 @@ function BggMergeModal({ current, fresh, onApply, onClose }) {
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
-          <h2 className="font-display text-xl text-ink">BGG-Daten übernehmen</h2>
-          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-rim/10 text-dim"><X size={20} /></button>
+          <h2 className="font-display text-xl tracking-[-0.02em] text-ink">BGG-Daten übernehmen</h2>
+          <button onClick={requestClose} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur text-dim"><X size={20} /></button>
         </div>
         <p className="text-xs text-dim px-5 pt-3">Wähl aus, was übernommen werden soll — alles andere bleibt unverändert.</p>
         <div className="p-5 overflow-y-auto flex-1 space-y-2">
@@ -3373,7 +3373,7 @@ function BggMergeModal({ current, fresh, onApply, onClose }) {
           })}
         </div>
         <div className="shrink-0 p-4 border-t border-line flex gap-2">
-          <button onClick={onClose} className="glass flex-1 border border-rim/15 text-ink rounded-[14px] py-3 font-medium">Abbrechen</button>
+          <button onClick={onClose} className="flex-1 border border-line text-ink rounded-[14px] py-3 font-medium">Abbrechen</button>
           <button onClick={() => onApply(selected)} className="flex-1 bg-[color:rgb(var(--accent))] text-ink rounded-[14px] py-3 font-medium">Übernehmen</button>
         </div>
       </div>
@@ -3396,8 +3396,8 @@ function SearchStepSheet({ query, setQuery, runSearch, searching, searchError, r
       <div className="glass border border-rim/10 rounded-t-[28px] w-full max-w-3xl mx-auto flex flex-col rise-in font-body" style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
-          <h2 className="font-display text-xl text-ink">Spiel hinzufügen</h2>
-          <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-rim/10 text-dim" aria-label="Schließen"><X size={20} /></button>
+          <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Spiel hinzufügen</h2>
+          <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur text-dim" aria-label="Schließen"><X size={20} /></button>
         </div>
         <div className="shrink-0 px-5" style={{ paddingBottom: results.length > 0 || searchError ? "0.75rem" : "max(1.25rem, env(safe-area-inset-bottom))" }}>
           <div className="flex gap-2">
@@ -3671,7 +3671,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             <p className="font-display text-sm text-ink truncate max-w-[50vw] text-center">{formTitle}</p>
           </div>
           <div className="absolute left-4 flex items-center gap-2" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>
-            <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-rim/15 text-ink" aria-label="Zurück"><ChevronLeft size={22} /></button>
+            <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur text-ink" aria-label="Zurück"><ChevronLeft size={22} /></button>
           </div>
           {onSaveAndNavigate ? (
             <div className="glass absolute right-4 flex items-center gap-1 rounded-full border border-rim/15 p-0.5" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>
@@ -3992,8 +3992,8 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
         <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[70] flex items-end justify-center ${aiMenuClose.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)" }} onClick={aiMenuClose.requestClose}>
           <div className={`bg-bg border border-line rounded-t-[28px] w-full max-w-3xl mx-auto font-body ${aiMenuClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) => e.stopPropagation()} style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
             <div className="px-5 py-4 flex items-center justify-between">
-              <h2 className="font-display text-lg text-ink">{aiWorkerUrl ? "KI-Werkzeuge" : "Spieldaten holen"}</h2>
-              <button onClick={aiMenuClose.requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-rim/10 text-dim"><X size={18} /></button>
+              <h2 className="font-display text-lg tracking-[-0.015em] text-ink">{aiWorkerUrl ? "KI-Werkzeuge" : "Spieldaten holen"}</h2>
+              <button onClick={aiMenuClose.requestClose} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur text-dim"><X size={18} /></button>
             </div>
             <div className="p-3 space-y-2">
               {aiWorkerUrl && (
@@ -4092,8 +4092,8 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
             <div className="shrink-0 px-5 py-4 flex items-center justify-between">
-              <h2 className="font-display text-lg text-ink">Welches Spiel?</h2>
-              <button onClick={bggCandClose.requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-rim/10 text-dim"><X size={18} /></button>
+              <h2 className="font-display text-lg tracking-[-0.015em] text-ink">Welches Spiel?</h2>
+              <button onClick={bggCandClose.requestClose} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur text-dim"><X size={18} /></button>
             </div>
             <div className="p-4 overflow-y-auto flex-1 space-y-2">
               {bggFetchCandidates.map((r) => (
@@ -4153,7 +4153,7 @@ function PlayerOrderModal({ players, onSave, onClose }) {
       <div className={`glass border border-rim/10 rounded-t-[28px] w-full font-body flex flex-col ${closing ? "sheet-out" : "rise-in"}`} style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
-          <h2 className="font-display text-xl text-ink">Reihenfolge</h2>
+          <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Reihenfolge</h2>
           <button onClick={() => { onSave(items.map((p) => p.id)); requestClose(); }} className="text-accent text-sm font-medium px-2 py-1">Fertig</button>
         </div>
         <p className="shrink-0 text-xs text-dim px-5 pb-2">Am Griff-Symbol ziehen. Gilt überall, wo Mitspieler angezeigt werden.</p>
@@ -4287,8 +4287,8 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
       <div onFocus={handleFocusScroll} className="glass border border-rim/10 rounded-t-[28px] w-full max-h-[var(--app-height,100dvh)] flex flex-col overflow-hidden rise-in font-body">
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
-          <h2 className="font-display text-xl text-ink">{initial ? "Partie bearbeiten" : "Partie eintragen"}</h2>
-          <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-rim/10 text-dim"><X size={20} /></button>
+          <h2 className="font-display text-xl tracking-[-0.02em] text-ink">{initial ? "Partie bearbeiten" : "Partie eintragen"}</h2>
+          <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur text-dim"><X size={20} /></button>
         </div>
         <div className="p-5 space-y-4 overflow-y-auto flex-1" style={{ touchAction: draggingPlayerId ? "none" : "auto" }}>
           {!selectedGame ? (
@@ -4328,7 +4328,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                   <label className="block text-[11px] text-dim">Wie oft an diesem Tag gespielt?</label>
                   <div className="flex items-center gap-3 mt-2.5">
                     <button type="button" onClick={() => { haptic(5); setQuantity((q) => Math.max(1, q - 1)); }} className="w-11 h-11 rounded-full bg-surface border border-line text-ink flex items-center justify-center text-lg">–</button>
-                    <span className="font-display text-xl text-ink w-8 text-center">{quantity}</span>
+                    <span className="font-display text-xl tracking-[-0.02em] text-ink w-8 text-center">{quantity}</span>
                     <button type="button" onClick={() => { haptic(5); setQuantity((q) => Math.min(20, q + 1)); }} className="w-11 h-11 rounded-full bg-surface border border-line text-ink flex items-center justify-center text-lg">+</button>
                     {quantity > 1 && <span className="text-xs text-dim">legt {quantity} gleiche Partien an</span>}
                   </div>
@@ -4478,7 +4478,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
           <div className={`glass border border-rim/10 rounded-t-[28px] w-full font-body p-5 space-y-3 ${newPlayerClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
-            <h3 className="font-display text-lg text-ink">Neuer Mitspieler</h3>
+            <h3 className="font-display text-lg tracking-[-0.015em] text-ink">Neuer Mitspieler</h3>
             <input onFocus={handleFocusScroll} value={newPlayerName} onChange={(e) => setNewPlayerName(e.target.value)} placeholder="Name"
               className="w-full h-12 bg-surface border border-line rounded-[14px] px-3.5 text-ink text-base focus:outline-none focus:border-accent" />
             <button onClick={() => { if (newPlayerName.trim()) { const id = uid(); onAddPlayer(newPlayerName.trim(), null, id); setPlayerIds((prev) => [...prev, id]); setNewPlayerName(""); newPlayerClose.requestClose(); } }}
@@ -4498,7 +4498,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
           <div className="glass border border-rim/10 rounded-t-[28px] w-full rise-in font-body p-5 space-y-3" onClick={(e) =>
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
-            <h3 className="font-display text-lg text-ink">Mitspieler bearbeiten</h3>
+            <h3 className="font-display text-lg tracking-[-0.015em] text-ink">Mitspieler bearbeiten</h3>
             <div className="relative mx-auto w-20 h-20">
               <button
                 type="button"
@@ -4510,7 +4510,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                   return p && p.photo ? (
                     <img src={p.photo} alt={p.name} className="w-full h-full block object-cover" />
                   ) : (
-                    <span className="text-dim font-display text-2xl">{editingPlayer.name.charAt(0).toUpperCase()}</span>
+                    <span className="text-dim font-display text-2xl tracking-[-0.025em] leading-tight">{editingPlayer.name.charAt(0).toUpperCase()}</span>
                   );
                 })()}
               </button>
@@ -4596,8 +4596,8 @@ function DashboardReorderScreen({ order, sections, labels, hiddenSections = [], 
   return (
     <div className="fixed inset-0 z-[80] bg-bg flex flex-col">
       <div className="shrink-0 px-5 flex items-center justify-between" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
-        <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-rim/15 text-ink" aria-label="Abbrechen"><ChevronLeft size={22} /></button>
-        <h2 className="font-display text-xl text-ink">Sektionen</h2>
+        <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur text-ink" aria-label="Abbrechen"><ChevronLeft size={22} /></button>
+        <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Sektionen</h2>
         <button onClick={() => { onSave(items); onToggleHidden && onToggleHidden(hidden); }} className="text-accent text-sm font-medium px-2 py-1">Fertig</button>
       </div>
       <p className="shrink-0 text-xs text-dim px-5 pt-3 pb-1">Am Griff-Symbol ziehen, um die Reihenfolge zu ändern. Mit dem Augen-Symbol Sektionen aus- und einblenden.</p>
@@ -4894,7 +4894,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     ),
     bestof: bestOf && (
       <div key="bestof">
-        <h2 className="font-body text-[11px] font-semibold text-dim uppercase tracking-[0.14em] mb-3">Best of</h2>
+        <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-3">Best of</h2>
         {plays.length < 5 ? (
           <p className="text-xs text-ink">Trag noch ein paar mehr Partien ein, dann zeigen wir dir hier deine Vorlieben.</p>
         ) : (
@@ -4950,29 +4950,29 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     ),
     records: (mostPlayed || bestDay || bestStreak || biggestPlayGroup) && (
       <div key="records">
-        <h2 className="font-body text-[11px] font-semibold text-dim uppercase tracking-[0.14em] mb-3">Rekorde</h2>
+        <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-3">Rekorde</h2>
         <div className="grid grid-cols-2 gap-2.5">
           {mostPlayed && mostPlayed.game && mostPlayed.count >= 2 && (
             <button onClick={() => onView(mostPlayed.game)} className="text-left border border-line rounded-2xl p-4">
-              <p className="font-display text-4xl text-ink">{mostPlayed.count}×</p>
+              <p className="font-display text-4xl tracking-[-0.035em] leading-[1.02] text-ink">{mostPlayed.count}×</p>
               <p className="text-xs text-dim mt-1.5">Meistgespielt · <span className="text-accent">{mostPlayed.game.name}</span></p>
             </button>
           )}
           {bestStreak && (
             <div className="border border-line rounded-2xl p-4">
-              <p className="font-display text-4xl text-ink">{bestStreak}</p>
+              <p className="font-display text-4xl tracking-[-0.035em] leading-[1.02] text-ink">{bestStreak}</p>
               <p className="text-xs text-dim mt-1.5">Tage-Serie am Stück</p>
             </div>
           )}
           {bestDay && (
             <div className="border border-line rounded-2xl p-4">
-              <p className="font-display text-4xl text-ink">{bestDay.count}×</p>
+              <p className="font-display text-4xl tracking-[-0.035em] leading-[1.02] text-ink">{bestDay.count}×</p>
               <p className="text-xs text-dim mt-1.5">Partien an einem Tag</p>
             </div>
           )}
           {biggestPlayGroup && (
             <div className="border border-line rounded-2xl p-4">
-              <p className="font-display text-4xl text-ink">{biggestPlayGroup}</p>
+              <p className="font-display text-4xl tracking-[-0.035em] leading-[1.02] text-ink">{biggestPlayGroup}</p>
               <p className="text-xs text-dim mt-1.5">Spieler in einer Runde</p>
             </div>
           )}
@@ -4981,7 +4981,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     ),
     wishlist: wishlist.length > 0 && (
       <div key="wishlist">
-        <h2 className="font-body text-[11px] font-semibold text-dim uppercase tracking-[0.14em] mb-3">Von der Wunschliste</h2>
+        <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-3">Von der Wunschliste</h2>
         <div className="flex gap-3 overflow-x-auto pb-1">
           {wishlist.map(g => (
             <DashboardGameTile key={g.id} game={g} onClick={() => onView(g)}>
@@ -4993,7 +4993,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     ),
     topRated: topRated.length > 0 && (
       <div key="topRated">
-        <h2 className="font-body text-[11px] font-semibold text-dim uppercase tracking-[0.14em] mb-3">Top 10 Spiele</h2>
+        <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-3">Top 10 Spiele</h2>
         {topRated.length < 3 ? (
           <p className="text-xs text-ink">Bewerte noch ein paar mehr Spiele, dann gibt's hier eine richtige Bestenliste.</p>
         ) : (
@@ -5017,7 +5017,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     ),
     dust: (
       <div key="dust">
-        <div className="flex items-center gap-2 mb-1"><Archive size={15} className="text-dim" /><h2 className="font-body text-[11px] font-semibold text-dim uppercase tracking-[0.14em]">Staubfänger</h2></div>
+        <div className="flex items-center gap-2 mb-1"><Archive size={15} className="text-dim" /><h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em]">Staubfänger</h2></div>
         <p className="text-xs text-ink mb-2">Spiele in deinem Regal, die schon am längsten auf ihre erste Partie warten.</p>
         {dustCollectors.length === 0 ? <p className="text-ink text-sm font-body">Alles im Regal wurde schon gespielt. Sehr gut!</p> : (
           <div className="flex gap-3 overflow-x-auto pb-1">
@@ -5032,15 +5032,15 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     ),
     digital: plays.length > 0 && (
       <div key="digital" className="border border-line rounded-2xl p-4">
-        <h2 className="font-body text-[11px] font-semibold text-dim uppercase tracking-[0.14em] mb-3">Digital vs. Physisch</h2>
+        <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-3">Digital vs. Physisch</h2>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <span className="text-xl">🎲</span>
-            <span className="font-display text-3xl text-ink">{Math.round((physicalCount / plays.length) * 100)}%</span>
+            <span className="font-display text-3xl tracking-[-0.03em] leading-[1.05] text-ink">{Math.round((physicalCount / plays.length) * 100)}%</span>
           </div>
           <span className="text-dim text-xs font-mono tracking-widest">VS</span>
           <div className="flex items-center gap-2">
-            <span className="font-display text-3xl text-ink">{Math.round((digitalCount / plays.length) * 100)}%</span>
+            <span className="font-display text-3xl tracking-[-0.03em] leading-[1.05] text-ink">{Math.round((digitalCount / plays.length) * 100)}%</span>
             <span className="text-xl">💻</span>
           </div>
         </div>
@@ -5070,14 +5070,14 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
           <div className="flex items-center gap-2.5 bg-bg border border-accent/50 rounded-full pl-2 pr-4 py-2 shadow-xl" style={{ boxShadow: "0 4px 24px rgb(var(--gold) / 0.35)" }}>
             <span className="text-2xl">{justUnlocked.emoji}</span>
             <div>
-              <p className="text-[10px] text-accent font-semibold uppercase tracking-wide">Neuer Erfolg!</p>
+              <p className="text-[10px] text-accent font-semibold uppercase tracking-[0.16em]">Neuer Erfolg!</p>
               <p className="text-sm text-ink font-medium leading-tight">{justUnlocked.label}</p>
             </div>
           </div>
         </div>
       )}
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl text-ink">Spielregal</h1>
+        <h1 className="font-display text-3xl tracking-[-0.03em] leading-[1.05] text-ink">Spielregal</h1>
         <div className="w-10 h-10" />
       </div>
       <div className="fixed z-30" style={{ top: "max(1rem, env(safe-area-inset-top))", right: "1.25rem" }}>
@@ -5089,7 +5089,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             <div className={`glass border border-rim/10 rounded-t-[28px] w-full font-body ${sortMenuClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) => e.stopPropagation()}>
               <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
               <div className="px-5 py-3">
-                <h2 className="font-display text-lg text-ink">Dashboard sortieren</h2>
+                <h2 className="font-display text-lg tracking-[-0.015em] text-ink">Dashboard sortieren</h2>
               </div>
               {PRESETS.map((p) => (
                 <button key={p.key} onClick={() => { onReorder(p.order); sortMenuClose.requestClose(); }} className="w-full flex items-center gap-3 px-5 py-3.5 text-left active:bg-rim/5">
@@ -5133,7 +5133,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
       {statInfo && (
         <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[70] flex items-center justify-center p-6 ${statInfoClose.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)" }} onClick={statInfoClose.requestClose}>
           <div className="bg-bg border border-line rounded-2xl p-5 w-full max-w-xs rise-in font-body" onClick={(e) => e.stopPropagation()}>
-            <p className="text-ink font-display text-lg mb-1.5">{statInfo === "collection" ? "Sammlung" : statInfo === "playedComplexity" ? "Deine Komplexität" : "Ø Komplexität"}</p>
+            <p className="text-ink font-display text-lg tracking-[-0.015em] mb-1.5">{statInfo === "collection" ? "Sammlung" : statInfo === "playedComplexity" ? "Deine Komplexität" : "Ø Komplexität"}</p>
             <p className="text-dim text-sm">
               {statInfo === "collection"
                 ? "Zählt alle Spiele mit dem Status \"Besitz\". Spiele auf der Wunschliste oder Spiele, die du nur gespielt hast, ohne sie zu besitzen, zählen hier nicht mit."
@@ -5169,7 +5169,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             );
             return (
               <div className="border-t border-line pt-5">
-                <p className="text-[11px] font-semibold text-accent uppercase tracking-[0.14em] mb-2.5 flex items-center gap-1.5"><Sparkles size={12} /> Tipp der Woche</p>
+                <p className="text-[10px] font-semibold text-accent uppercase tracking-[0.16em] mb-2.5 flex items-center gap-1.5"><Sparkles size={12} /> Tipp der Woche</p>
                 {tipGame ? (
                   <button onClick={() => onView(tipGame)} className="w-full text-left flex flex-col items-start">{cardBody}</button>
                 ) : (
@@ -5180,7 +5180,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
           })()}
           {yearlyInsight && (
             <div className="border-t border-line pt-5">
-              <p className="text-[11px] font-semibold text-accent uppercase tracking-[0.14em] mb-1.5 flex items-center gap-1.5"><Sparkles size={12} /> Dein Spieljahr {yearlyInsight.year}</p>
+              <p className="text-[10px] font-semibold text-accent uppercase tracking-[0.16em] mb-1.5 flex items-center gap-1.5"><Sparkles size={12} /> Dein Spieljahr {yearlyInsight.year}</p>
               <TextWithGameLinks text={yearlyInsight.text} games={games} onView={onView} color="rgb(var(--accent))" />
             </div>
           )}
@@ -5188,7 +5188,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
       )}
       {tasteProfile.length > 0 && (
         <div className="border-t border-line pt-5">
-          <p className="text-[11px] font-semibold text-accent uppercase tracking-[0.14em] mb-3 flex items-center gap-1.5"><Sparkles size={13} /> Dein Geschmack</p>
+          <p className="text-[10px] font-semibold text-accent uppercase tracking-[0.16em] mb-3 flex items-center gap-1.5"><Sparkles size={13} /> Dein Geschmack</p>
           {(() => {
             const TopIcon = tagIcon(tasteProfile[0][0]);
             return (
@@ -5197,7 +5197,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
                   <TopIcon size={19} />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-ink font-display text-xl leading-tight truncate">{tasteProfile[0][0]}</p>
+                  <p className="text-ink font-display text-xl tracking-[-0.02em] leading-tight truncate">{tasteProfile[0][0]}</p>
                   <p className="text-ink text-xs font-body">Dein Lieblingsthema · {tasteProfile[0][1]}× bei deinen 8+-Bewertungen</p>
                 </div>
               </div>
@@ -5275,8 +5275,8 @@ function AddGamesToListModal({ games, plays, list, onToggle, onClose, aiWorkerUr
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
-          <h2 className="font-display text-xl text-ink">Spiele hinzufügen</h2>
-          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-rim/10 text-dim"><X size={20} /></button>
+          <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Spiele hinzufügen</h2>
+          <button onClick={requestClose} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur text-dim"><X size={20} /></button>
         </div>
         <div className="shrink-0 p-4 border-b border-line space-y-2.5">
           <SearchInput value={query} onChange={setQuery} placeholder="Suchen…" inputClassName="h-11 bg-surface border border-line rounded-[14px] text-sm" />
@@ -5361,9 +5361,9 @@ function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDelete
           {selectMode ? (
             <button onClick={() => { setSelectMode(false); setSelectedIds([]); }} className="text-dim text-sm font-medium px-1">Abbrechen</button>
           ) : (
-            <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-rim/15 text-ink" aria-label="Zurück"><ChevronLeft size={22} /></button>
+            <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur text-ink" aria-label="Zurück"><ChevronLeft size={22} /></button>
           )}
-          <h2 className="font-display text-xl text-ink truncate px-2">{selectMode ? `${selectedIds.length} ausgewählt` : list.name}</h2>
+          <h2 className="font-display text-xl tracking-[-0.02em] text-ink truncate px-2">{selectMode ? `${selectedIds.length} ausgewählt` : list.name}</h2>
           {!demoMode ? (
             selectMode ? (
               <button onClick={removeSelected} disabled={selectedIds.length === 0} className="text-danger text-sm font-medium px-1 disabled:opacity-30">Entfernen</button>
@@ -5485,7 +5485,7 @@ function CommandBarModal({ games, plays, lists, onClose, onOpenGame, onOpenList,
         {nothing && <p className="text-sm text-dim text-center mt-8">Nichts gefunden für "{query}".</p>}
         {gameResults.length > 0 && (
           <div>
-            <p className="text-xs text-dim uppercase tracking-wider mb-2">Spiele</p>
+            <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-2">Spiele</p>
             <div className="space-y-2">
               {gameResults.map((g) => (
                 <button key={g.id} onClick={() => onOpenGame(g)} className="w-full flex items-center gap-3 px-3 py-2 rounded-[14px] bg-surface border border-line">
@@ -5498,7 +5498,7 @@ function CommandBarModal({ games, plays, lists, onClose, onOpenGame, onOpenList,
         )}
         {listResults.length > 0 && (
           <div>
-            <p className="text-xs text-dim uppercase tracking-wider mb-2">Listen</p>
+            <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-2">Listen</p>
             <div className="space-y-2">
               {listResults.map((l) => (
                 <button key={l.id} onClick={() => onOpenList(l)} className="w-full flex items-center gap-3 px-3.5 h-11 rounded-[14px] bg-surface border border-line">
@@ -5511,7 +5511,7 @@ function CommandBarModal({ games, plays, lists, onClose, onOpenGame, onOpenList,
         )}
         {playResults.length > 0 && (
           <div>
-            <p className="text-xs text-dim uppercase tracking-wider mb-2">Partien</p>
+            <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-2">Partien</p>
             <div className="space-y-2">
               {playResults.map((p) => (
                 <button key={p.id} onClick={onGoToPlaylog} className="glass w-full flex items-center justify-between px-3.5 h-11 rounded-[14px] border border-rim/15">
@@ -5537,8 +5537,8 @@ function ListPickerModal({ lists, gameId, onToggle, onCreate, onClose }) {
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
-          <h2 className="font-display text-xl text-ink">Zu Liste hinzufügen</h2>
-          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-rim/10 text-dim"><X size={20} /></button>
+          <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Zu Liste hinzufügen</h2>
+          <button onClick={requestClose} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur text-dim"><X size={20} /></button>
         </div>
         <div className="p-4 overflow-y-auto flex-1 space-y-2">
           {lists.length === 0 && <p className="text-sm text-dim px-1">Noch keine Listen — leg unten deine erste an.</p>}
@@ -5546,7 +5546,7 @@ function ListPickerModal({ lists, gameId, onToggle, onCreate, onClose }) {
             const checked = l.gameIds.includes(gameId);
             return (
               <button key={l.id} onClick={() => onToggle(l.id)}
-                className={`w-full h-12 flex items-center justify-between text-left px-3.5 rounded-[14px] border ${checked ? "glass border-accent/50 text-ink font-medium" : "bg-surface border-line text-ink"}`}>
+                className={`w-full h-12 flex items-center justify-between text-left px-3.5 rounded-[14px] border ${checked ? "border-accent/50 bg-accent/10 text-ink font-medium" : "bg-surface border-line text-ink"}`}>
                 <span className="truncate">{l.name}</span>
                 {checked && <Check size={16} />}
               </button>
@@ -5575,8 +5575,8 @@ function PlayLogFilterModal({ filters, onChange, onClose, onReset, allWinners, v
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
-          <h2 className="font-display text-xl text-ink">Filter</h2>
-          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-rim/10 text-dim"><X size={20} /></button>
+          <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Filter</h2>
+          <button onClick={requestClose} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur text-dim"><X size={20} /></button>
         </div>
         <div className="p-5 overflow-y-auto flex-1 space-y-6">
           <div>
@@ -5621,7 +5621,7 @@ function PlayLogFilterModal({ filters, onChange, onClose, onReset, allWinners, v
           </div>
         </div>
         <div className="shrink-0 p-4 border-t border-line flex gap-2">
-          <button onClick={onReset} className="glass flex-1 border border-rim/15 text-ink rounded-[14px] py-3 font-medium">Zurücksetzen</button>
+          <button onClick={onReset} className="flex-1 border border-line text-ink rounded-[14px] py-3 font-medium">Zurücksetzen</button>
           <button onClick={requestClose} className="flex-1 bg-[color:rgb(var(--accent))] text-ink rounded-[14px] py-3 font-medium">Anwenden</button>
         </div>
       </div>
@@ -5645,8 +5645,8 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
       <div className={`glass border border-rim/10 rounded-t-[28px] w-full max-h-[var(--app-height,100dvh)] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
-          <h2 className="font-display text-xl text-ink">Filter</h2>
-          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-rim/10 text-dim"><X size={20} /></button>
+          <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Filter</h2>
+          <button onClick={requestClose} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur text-dim"><X size={20} /></button>
         </div>
         <div className="p-5 overflow-y-auto flex-1 space-y-6">
           <div>
@@ -5693,7 +5693,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
                 const CIcon = COMPLEXITY_ICON[full];
                 return (
                   <button key={full} onClick={() => toggle("complexity", full)}
-                    className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "glass border-accent/50 text-ink font-medium" : "bg-surface border-line text-dim"}`}>
+                    className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "border-accent/50 bg-accent/10 text-ink font-medium" : "bg-surface border-line text-dim"}`}>
                     {CIcon && <CIcon size={15} />}{short}
                   </button>
                 );
@@ -5708,7 +5708,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
                 const isSel = filters.saleStatus.includes(opt.v);
                 return (
                   <button key={opt.v} onClick={() => toggle("saleStatus", opt.v)}
-                    className={`px-3 py-1.5 rounded-full text-xs border ${isSel ? "glass border-accent/50 text-ink font-medium" : "bg-surface border-line text-dim"}`}>
+                    className={`px-3 py-1.5 rounded-full text-xs border ${isSel ? "border-accent/50 bg-accent/10 text-ink font-medium" : "bg-surface border-line text-dim"}`}>
                     {opt.label}
                   </button>
                 );
@@ -5724,7 +5724,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
                 const CIcon = tagIcon(c);
                 return (
                   <button key={c} onClick={() => toggle("categories", c)}
-                    className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "glass border-accent/50 text-ink font-medium" : "bg-surface border-line text-dim"}`}>
+                    className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "border-accent/50 bg-accent/10 text-ink font-medium" : "bg-surface border-line text-dim"}`}>
                     <CIcon size={12} />{c}
                   </button>
                 );
@@ -5745,7 +5745,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
                 const MIcon = tagIcon(m);
                 return (
                   <button key={m} onClick={() => toggle("mechanisms", m)}
-                    className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "glass border-accent/50 text-ink font-medium" : "bg-surface border-line text-dim"}`}>
+                    className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "border-accent/50 bg-accent/10 text-ink font-medium" : "bg-surface border-line text-dim"}`}>
                     <MIcon size={12} />{m}
                   </button>
                 );
@@ -5765,7 +5765,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
                 const isSel = filters.publishers.includes(p);
                 return (
                   <button key={p} onClick={() => toggle("publishers", p)}
-                    className={`px-3 py-1.5 rounded-full text-xs border ${isSel ? "glass border-accent/50 text-ink font-medium" : "bg-surface border-line text-dim"}`}>
+                    className={`px-3 py-1.5 rounded-full text-xs border ${isSel ? "border-accent/50 bg-accent/10 text-ink font-medium" : "bg-surface border-line text-dim"}`}>
                     {p}
                   </button>
                 );
@@ -5780,7 +5780,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
           </div>
         </div>
         <div className="shrink-0 p-4 border-t border-line flex gap-2">
-          <button onClick={onReset} className="glass flex-1 border border-rim/15 text-ink rounded-[14px] py-3 font-medium">Zurücksetzen</button>
+          <button onClick={onReset} className="flex-1 border border-line text-ink rounded-[14px] py-3 font-medium">Zurücksetzen</button>
           <button onClick={onClose} className="flex-1 bg-[color:rgb(var(--accent))] text-ink rounded-[14px] py-3 font-medium">Anwenden</button>
         </div>
       </div>
@@ -5894,7 +5894,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
   return (
     <div className="p-5 pb-6 overflow-x-hidden min-h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="font-display text-3xl text-ink">Sammlung</h1>
+        <h1 className="font-display text-3xl tracking-[-0.03em] leading-[1.05] text-ink">Sammlung</h1>
         <div className="w-[84px] h-10" />
       </div>
       <div className="fixed z-30" style={{ top: "max(1rem, env(safe-area-inset-top))", right: "1.25rem" }}>
@@ -6049,7 +6049,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
                 <SlidersFilter size={17} />
               </button>
               {activeFilterCount > 0 && (
-                <span className="glass absolute -top-1 -right-1 text-ink text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-semibold border border-rim/25">
+                <span className="absolute -top-1 -right-1 bg-accent text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-semibold">
                   {activeFilterCount}
                 </span>
               )}
@@ -6078,7 +6078,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           <div className={`glass border border-rim/10 rounded-t-[28px] w-full font-body p-5 space-y-3 ${createListClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
-            <h3 className="font-display text-lg text-ink">Neue Liste</h3>
+            <h3 className="font-display text-lg tracking-[-0.015em] text-ink">Neue Liste</h3>
             <input onFocus={handleFocusScroll} value={newListName} onChange={(e) => { setNewListName(e.target.value); if (newListNameError) setNewListNameError(false); }} placeholder="z.B. Partyabend"
               className={`w-full h-12 bg-surface border rounded-[14px] px-3.5 text-ink text-base focus:outline-none focus:border-accent ${newListNameError ? "border-danger" : "border-line"}`} />
             {newListNameError && <p className="text-[11px] text-danger -mt-1.5">Bitte einen Namen für die Liste eingeben.</p>}
@@ -6268,7 +6268,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
   return (
     <div className="p-5 pb-6 min-h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="font-display text-3xl text-ink">Partien</h1>
+        <h1 className="font-display text-3xl tracking-[-0.03em] leading-[1.05] text-ink">Partien</h1>
       </div>
       <div className="fixed z-30 left-0 right-0 px-5 flex items-center justify-center gap-3" style={{ bottom: "calc(100px + env(safe-area-inset-bottom))" }}>
         <div className={`transition-all duration-300 ease-out ${searchOpen ? "flex-1 min-w-0" : "shrink-0"}`}>
@@ -6303,7 +6303,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                 <SlidersFilter size={17} />
               </button>
               {activeFilterCount > 0 && (
-                <span className="glass absolute -top-1 -right-1 text-ink text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-semibold border border-rim/25">
+                <span className="absolute -top-1 -right-1 bg-accent text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-semibold">
                   {activeFilterCount}
                 </span>
               )}
@@ -6324,12 +6324,12 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
       )}
 
       {yearPlays.length > 0 && (
-        <div className="bg-gradient-to-r from-accent/15 to-transparent border border-accent/30 rounded-2xl p-4 mb-4">
-          <p className="text-xs font-semibold text-accent uppercase tracking-wide mb-2">{currentYear} bisher</p>
+        <div className="border-t border-line pt-5 mb-6">
+          <p className="text-[10px] font-semibold text-accent uppercase tracking-[0.16em] mb-2">{currentYear} bisher</p>
           <div className="flex items-center gap-5">
-            <div><p className="font-display text-2xl text-ink">{yearPlays.length}</p><p className="text-dim text-[11px] font-body">Partien</p></div>
-            <div><p className="font-display text-2xl text-ink">{yearGameCount}</p><p className="text-dim text-[11px] font-body">Spiele</p></div>
-            <div><p className="font-display text-2xl text-ink">{estimatedHours > 0 ? `~${estimatedHours}` : "—"}</p><p className="text-dim text-[11px] font-body">Stunden</p></div>
+            <div><p className="font-display text-2xl tracking-[-0.025em] leading-tight text-ink">{yearPlays.length}</p><p className="text-dim text-[11px] font-body">Partien</p></div>
+            <div><p className="font-display text-2xl tracking-[-0.025em] leading-tight text-ink">{yearGameCount}</p><p className="text-dim text-[11px] font-body">Spiele</p></div>
+            <div><p className="font-display text-2xl tracking-[-0.025em] leading-tight text-ink">{estimatedHours > 0 ? `~${estimatedHours}` : "—"}</p><p className="text-dim text-[11px] font-body">Stunden</p></div>
           </div>
         </div>
       )}
@@ -6337,10 +6337,10 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
       {winCounts.length > 0 && (
         <div className="mb-5">
           <div className="flex items-center gap-1.5 mb-2">
-            <h2 className="font-body text-sm font-semibold text-dim uppercase tracking-wide">Bestenliste</h2>
+            <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em]">Bestenliste</h2>
             <button onClick={() => setBestListInfoOpen(true)} aria-label="Wie wird das berechnet?" className="text-dim"><Info size={13} /></button>
           </div>
-          <div className="bg-surface border border-line rounded-2xl p-4 space-y-2.5">
+          <div className="border border-line rounded-2xl p-4 space-y-2.5">
             {winCounts.map(({ name, count, total }, i) => (
               <button key={name} onClick={() => pickForH2h(name)} className="w-full flex items-center gap-3 text-left">
                 <span className="text-lg w-6 shrink-0">{medals[i] || `${i + 1}.`}</span>
@@ -6358,7 +6358,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
           <div className="glass border border-rim/10 rounded-t-[28px] w-full font-body" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
             <div className="px-5 py-4" style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}>
-              <p className="text-ink font-display text-lg mb-2">Wie wird die Bestenliste berechnet?</p>
+              <p className="text-ink font-display text-lg tracking-[-0.015em] mb-2">Wie wird die Bestenliste berechnet?</p>
               <p className="text-dim text-sm leading-relaxed mb-2">
                 Gezählt werden über alle Partien hinweg zwei Werte pro Person: wie oft sie als Gewinner:in markiert wurde (mehrere Gewinner:innen bei Gleichstand zählen alle), und wie oft sie insgesamt mitgespielt hat.
               </p>
@@ -6375,7 +6375,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
 
       {allPlayerNames.length >= 2 && (
         <div className="mb-5">
-          <h2 className="font-body text-sm font-semibold text-dim uppercase tracking-wide mb-2">Kopf-an-Kopf</h2>
+          <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-2">Kopf-an-Kopf</h2>
           <div className="bg-surface border border-line rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <div className="flex-1 min-w-0 flex items-center gap-2 bg-bg border border-line rounded-[14px] pl-1.5 pr-2 py-1.5">
@@ -6418,7 +6418,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                           return prof && prof.photo ? <img src={prof.photo} alt={h2hA} className="w-full h-full object-cover" /> : <Users size={18} className="text-dim" />;
                         })()}
                       </div>
-                      <p className="font-display text-2xl text-ink">{h2hStats.aWins}</p>
+                      <p className="font-display text-2xl tracking-[-0.025em] leading-tight text-ink">{h2hStats.aWins}</p>
                       <p className="text-dim text-[11px] font-body truncate">{h2hA}</p>
                     </div>
                     <div className="h-8 w-px bg-line" />
@@ -6429,7 +6429,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                           return prof && prof.photo ? <img src={prof.photo} alt={h2hB} className="w-full h-full object-cover" /> : <Users size={18} className="text-dim" />;
                         })()}
                       </div>
-                      <p className="font-display text-2xl text-ink">{h2hStats.bWins}</p>
+                      <p className="font-display text-2xl tracking-[-0.025em] leading-tight text-ink">{h2hStats.bWins}</p>
                       <p className="text-dim text-[11px] font-body truncate">{h2hB}</p>
                     </div>
                   </div>
@@ -6504,7 +6504,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
             <div className="shrink-0 relative" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", height: "calc(2.75rem + max(1rem, env(safe-area-inset-top)))" }}>
               <button onClick={() => setDetailGroupKey(null)} className="glass-icon-btn absolute left-4 w-10 h-10 flex items-center justify-center rounded-full border border-rim/15 text-ink" style={{ top: "max(1rem, env(safe-area-inset-top))" }} aria-label="Zurück"><ChevronLeft size={22} /></button>
             </div>
-            <h2 className="font-display text-2xl text-ink px-5 mb-4">{rootGame ? rootGame.name : liveGroup[0].gameName}</h2>
+            <h2 className="font-display text-2xl tracking-[-0.025em] leading-tight text-ink px-5 mb-4">{rootGame ? rootGame.name : liveGroup[0].gameName}</h2>
             <div className="p-5 space-y-2">
               {liveGroup.map((p) => {
                 const IconC = modeIcon[p.mode] || Home;
@@ -6537,7 +6537,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
             <div className="shrink-0 relative" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", height: "calc(2.75rem + max(1rem, env(safe-area-inset-top)))" }}>
               <button onClick={() => setDetailEveningDate(null)} className="glass-icon-btn absolute left-4 w-10 h-10 flex items-center justify-center rounded-full border border-rim/15 text-ink" style={{ top: "max(1rem, env(safe-area-inset-top))" }} aria-label="Zurück"><ChevronLeft size={22} /></button>
             </div>
-            <h2 className="font-display text-2xl text-ink px-5 mb-4">{formatDate(date)}</h2>
+            <h2 className="font-display text-2xl tracking-[-0.025em] leading-tight text-ink px-5 mb-4">{formatDate(date)}</h2>
             <div className="p-5 space-y-2">
               {dayPlays.map((p) => {
                 const game = games.find((g) => g.id === p.gameId);
@@ -6797,7 +6797,7 @@ ${buildCollectionContextForAI(games, plays)}`;
   return (
     <div className="min-h-full flex flex-col">
       <div className="p-5 pb-3 flex items-center justify-between gap-3">
-        <h1 className="font-display text-3xl text-ink">Was spielen wir heute?</h1>
+        <h1 className="font-display text-3xl tracking-[-0.03em] leading-[1.05] text-ink">Was spielen wir heute?</h1>
       </div>
 
       {!aiWorkerUrl ? (
@@ -6807,7 +6807,7 @@ ${buildCollectionContextForAI(games, plays)}`;
               <PipAvatar size={104} sleeping />
               <span className="absolute -top-1 -right-2 text-2xl" style={{ animation: "float 2.5s ease-in-out infinite" }}>💤</span>
             </div>
-            <p className="text-ink font-display text-xl mt-4">Pip schläft noch</p>
+            <p className="text-ink font-display text-xl tracking-[-0.02em] mt-4">Pip schläft noch</p>
             <p className="text-dim text-sm font-body mt-1.5 max-w-xs">Richte in den Einstellungen den KI-Assistenten ein, damit Pip aufwacht und dir beim Spielefinden helfen kann.</p>
           </div>
         </div>
@@ -6818,7 +6818,7 @@ ${buildCollectionContextForAI(games, plays)}`;
               <PipAvatar size={104} sleeping />
               <span className="absolute -top-1 -right-2 text-2xl" style={{ animation: "float 2.5s ease-in-out infinite" }}>💤</span>
             </div>
-            <p className="text-ink font-display text-xl mt-4">Pip ist für heute müde</p>
+            <p className="text-ink font-display text-xl tracking-[-0.02em] mt-4">Pip ist für heute müde</p>
             <p className="text-dim text-sm font-body mt-1.5 max-w-xs">Sein tägliches KI-Kontingent ist aufgebraucht. Ab ca. {quotaResetAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} Uhr ist er wieder wach.</p>
           </div>
         </div>
@@ -6832,7 +6832,7 @@ ${buildCollectionContextForAI(games, plays)}`;
                   {m.role === "assistant" && <PipAvatar size={30} />}
                   <div className={`max-w-[80%] flex flex-col gap-1.5 ${m.role === "user" ? "items-end" : "items-start"}`}>
                     <div
-                      className={`text-sm font-body rounded-2xl px-4 py-2.5 ${m.role === "user" ? "text-white rounded-br-md" : "bg-surface border border-line text-ink rounded-bl-md"}`}
+                      className={`text-sm font-body rounded-2xl px-4 py-2.5 ${m.role === "user" ? "text-white rounded-br-md" : "border-l-2 border-accent pl-3.5 text-ink !rounded-none !px-0"}`}
                       style={m.role === "user" ? {
                         backgroundColor: "rgb(var(--accent))",
                       } : undefined}
@@ -6898,7 +6898,7 @@ ${buildCollectionContextForAI(games, plays)}`;
             {chatLoading && (
               <div className="flex gap-2 justify-start items-end">
                 <PipAvatar size={30} />
-                <div className="bg-surface border border-line rounded-2xl rounded-bl-md px-4 py-2.5 flex items-center gap-2 text-dim text-sm">
+                <div className="border-l-2 border-accent pl-3.5 py-1 flex items-center gap-2 text-dim text-sm">
                   <Loader2 size={13} /> {chatLoadingLabel}
                 </div>
               </div>
@@ -6975,11 +6975,11 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
   return (
     <div className="fixed inset-0 z-[56] bg-bg">
       <div className="w-full h-full max-w-3xl mx-auto flex flex-col overflow-hidden relative font-body">
-        <button onClick={onClose} className="glass-icon-btn absolute left-4 z-20 w-10 h-10 flex items-center justify-center rounded-full border border-rim/15 text-ink" style={{ top: "max(1rem, env(safe-area-inset-top))" }} aria-label="Zurück"><ChevronLeft size={22} /></button>
+        <button onClick={onClose} className="absolute left-4 z-20 w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur text-ink" style={{ top: "max(1rem, env(safe-area-inset-top))" }} aria-label="Zurück"><ChevronLeft size={22} /></button>
         <div className="absolute right-4 z-20 flex items-center gap-2" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>
           {lists && onToggleList && (
             <div className="relative">
-              <button onClick={() => setListPickerOpen(true)} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-rim/15 text-ink" aria-label="Zur Liste hinzufügen">
+              <button onClick={() => setListPickerOpen(true)} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur text-ink" aria-label="Zur Liste hinzufügen">
                 <BookmarkPlus size={16} />
               </button>
               {memberOfCount > 0 && (
@@ -6988,7 +6988,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
             </div>
           )}
           {onEdit ? (
-            <button onClick={onEdit} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-rim/15 text-ink" aria-label="Bearbeiten"><Pencil size={16} /></button>
+            <button onClick={onEdit} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur text-ink" aria-label="Bearbeiten"><Pencil size={16} /></button>
           ) : readOnlyLabel ? (
             <span className="glass text-[10px] text-ink px-2 py-1 border border-rim/15 rounded-full">{readOnlyLabel}</span>
           ) : null}
@@ -7002,7 +7002,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
               const secondary = hasGerman ? (showGermanFirst ? game.name : game.germanName) : null;
               return (
                 <div className="flex items-baseline flex-wrap gap-x-2 gap-y-0.5">
-                  <h1 className="font-display text-2xl text-ink leading-tight">{primary}</h1>
+                  <h1 className="font-display text-2xl tracking-[-0.025em] leading-tight text-ink leading-tight">{primary}</h1>
                   {secondary && <span className="font-display-thin text-2xl text-dim leading-tight">{secondary}</span>}
                 </div>
               );
@@ -7051,7 +7051,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
             />
           )}
 
-          <div className="glass flex items-stretch border border-rim/15 rounded-2xl overflow-hidden divide-x divide-rim/10">
+          <div className="flex items-stretch border-y border-line divide-x divide-line">
             {game.minPlayers && (
               <StatBlock icon={Users} value={`${game.minPlayers}–${game.maxPlayers}`} sub={formatBestPlayers(game) ? `Beste: ${formatBestPlayers(game)}` : "Spieler"} />
             )}
@@ -7092,14 +7092,14 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
 
           {game.summary && (
             <div>
-              <p className="text-xs text-dim uppercase tracking-wider mb-1">Zusammenfassung</p>
+              <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1">Zusammenfassung</p>
               <div className="rte-content text-base text-ink" dangerouslySetInnerHTML={{ __html: game.summary }} />
             </div>
           )}
 
           {game.playerTypes && game.playerTypes.length > 0 && (
             <div>
-              <p className="text-xs text-dim uppercase tracking-wider mb-1.5">Passt zu diesen Spielertypen</p>
+              <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1.5">Passt zu diesen Spielertypen</p>
               <div className="flex flex-wrap gap-1.5">
                 {game.playerTypes.map((t) => <Pill key={t} tone="teal">{t}</Pill>)}
               </div>
@@ -7107,7 +7107,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
           )}
 
           <div>
-            <button onClick={() => setDetailsOpen((o) => !o)} className="glass w-full h-12 flex items-center justify-center gap-1.5 border border-rim/15 rounded-[14px] text-ink text-sm font-medium">
+            <button onClick={() => setDetailsOpen((o) => !o)} className="w-full h-12 flex items-center justify-center gap-1.5 border border-line rounded-[14px] text-ink text-sm font-medium">
               {detailsOpen ? "Weniger Details" : "Mehr Details"}
               <ChevronDown size={14} className={`transition-transform ${detailsOpen ? "rotate-180" : ""}`} />
             </button>
@@ -7115,7 +7115,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
               <div className="space-y-7 pt-7">
                 {tags.length > 0 && (
                   <div>
-                    <p className="text-xs text-dim uppercase tracking-wider mb-1.5">Kategorien & Mechanismen</p>
+                    <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1.5">Kategorien & Mechanismen</p>
                     <div className="flex flex-wrap gap-1.5">
                       {tags.map((t) => {
                         const TIcon = tagIcon(t);
@@ -7126,7 +7126,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                 )}
                 {(game.rating || onQuickUpdate) && (
                   <div>
-                    <p className="text-xs text-dim uppercase tracking-wider mb-1.5">Deine Bewertung</p>
+                    <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1.5">Deine Bewertung</p>
                     {onQuickUpdate ? (
                       <StarRating value={game.rating || ""} onChange={(v) => onQuickUpdate(game.id, { rating: v })} />
                     ) : (
@@ -7143,13 +7143,13 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                 )}
                 {game.notes && (
                   <div>
-                    <p className="text-xs text-dim uppercase tracking-wider mb-1">Notizen</p>
+                    <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1">Notizen</p>
                     <div className="rte-content text-base text-ink" dangerouslySetInnerHTML={{ __html: game.notes }} />
                   </div>
                 )}
                 {game.mechanismsNote && (
                   <div>
-                    <p className="text-xs text-dim uppercase tracking-wider mb-1 flex items-center gap-1.5"><Sparkles size={11} className="text-info" /> Mechanismen (von Pip)</p>
+                    <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1 flex items-center gap-1.5"><Sparkles size={11} className="text-info" /> Mechanismen (von Pip)</p>
                     <p className="text-base text-ink">{game.mechanismsNote}</p>
                     {onQuickUpdate && (
                       <button onClick={() => onQuickUpdate(game.id, { mechanismsNote: "" })} className="text-xs text-dim underline mt-1">entfernen</button>
@@ -7158,7 +7158,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                 )}
                 {!hidePrices && game.saleStatus && (game.purchasePrice || game.salePrice) && (
                   <div>
-                    <p className="text-xs text-dim uppercase tracking-wider mb-1.5">{game.saleStatus === "sold" ? "Verkauft" : "Zum Verkauf"}</p>
+                    <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1.5">{game.saleStatus === "sold" ? "Verkauft" : "Zum Verkauf"}</p>
                     <div className="flex items-center gap-3 flex-wrap">
                       {game.purchasePrice && <span className="text-xs text-dim">Kaufpreis: <span className="text-ink">{game.purchasePrice} €</span></span>}
                       {game.saleStatus === "sold" && game.salePrice && <span className="text-xs text-dim">Verkaufspreis: <span className="text-gold">{game.salePrice} €</span></span>}
@@ -7170,7 +7170,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
           </div>
 
           <div>
-            <p className="text-xs text-dim uppercase tracking-wider mb-1">Partien</p>
+            <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1">Partien</p>
             {gamePlays.length === 0 ? (
               <p className="text-sm text-dim">Noch nie gespielt.</p>
             ) : (
@@ -7204,7 +7204,7 @@ function SyncModal({ initialUrl, initialApiKey, initialEmail, status, lastSynced
       <div onFocus={handleFocusScroll} className="glass border border-rim/10 rounded-t-[28px] w-full max-h-[var(--app-height,100dvh)] overflow-y-auto rise-in font-body relative">
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="px-5 pt-2 pb-2 flex items-center justify-between gap-3">
-          <h2 className="font-display text-xl text-ink">Geräte-Synchronisation</h2>
+          <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Geräte-Synchronisation</h2>
           <button onClick={onClose} className="glass-icon-btn shrink-0 w-10 h-10 flex items-center justify-center rounded-full border border-rim/15 text-ink"><X size={20} /></button>
         </div>
         <div className="p-5 space-y-4">
@@ -7811,7 +7811,7 @@ function App() {
           {tab === "settings" && (guestMode ? (
             <div className="p-5 min-h-full flex flex-col items-center justify-center text-center">
               <Eye size={40} className="text-dim mb-4" />
-              <h1 className="font-display text-2xl text-ink mb-1.5">Gästemodus aktiv</h1>
+              <h1 className="font-display text-2xl tracking-[-0.025em] leading-tight text-ink mb-1.5">Gästemodus aktiv</h1>
               <p className="text-sm text-dim max-w-xs mb-6">Preise, Bearbeiten und Einstellungen sind ausgeblendet. Zum Spiele-Aussuchen reicht das aber allemal.</p>
               <button onClick={() => setGuestMode(false)} className="h-12 px-6 bg-[color:rgb(var(--accent))] text-ink rounded-[14px] font-medium">
                 Gästemodus beenden
@@ -7974,7 +7974,7 @@ class ErrorBoundary extends React.Component {
         <div className="min-h-screen bg-bg flex items-center justify-center p-6">
           <div className="max-w-sm text-center">
             <Dices size={32} className="text-danger mx-auto mb-3" />
-            <p className="text-ink font-display text-xl mb-2">Kurz gestolpert</p>
+            <p className="text-ink font-display text-xl tracking-[-0.02em] mb-2">Kurz gestolpert</p>
             <p className="text-dim text-sm mb-5">Hier ist etwas schiefgelaufen. Deine Daten in Firebase sind davon nicht betroffen.</p>
             <button onClick={() => this.setState({ error: null })} className="w-full h-12 bg-[color:rgb(var(--accent))] text-ink rounded-[14px] font-medium mb-2">Nochmal versuchen</button>
             <button onClick={() => window.location.reload()} className="w-full h-12 bg-surface border border-line text-ink rounded-[14px] font-medium">App neu laden</button>

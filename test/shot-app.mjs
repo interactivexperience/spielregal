@@ -48,5 +48,17 @@ for (const theme of ["dark", "light"]) {
     if (await btn.count()) { await btn.click({ timeout: 3000 }).catch(()=>{}); await page.waitForTimeout(900); }
     await page.screenshot({ path: `${SP}/app_${theme}_${t.replace(/[^\wÜ]/g,"")}.png` });
   }
+  // Spiel-Detail: erstes Cover in der Sammlung antippen
+  await page.locator('button:has-text("Sammlung")').last().click();
+  await page.waitForTimeout(800);
+  const card = page.locator('button:has(img[alt])').nth(3);
+  if (await card.count()) {
+    await card.click({ timeout: 3000 }).catch(() => {});
+    await page.waitForTimeout(1200);
+    await page.screenshot({ path: `${SP}/app_${theme}_Detail.png` });
+    await page.keyboard.press("Escape").catch(() => {});
+    await page.locator('button[aria-label="Zurück"]').first().click({ timeout: 2000 }).catch(() => {});
+    await page.waitForTimeout(600);
+  }
 }
 await b.close(); server.close(); console.log("ok");
