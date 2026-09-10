@@ -145,11 +145,12 @@
   .spin { animation: spin 1s linear infinite; }
   #loading { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; padding:24px; text-align:center; color:#F2EDE4; font-family:'Inter',sans-serif; }
   input, textarea, select { font-size: 16px !important; }
-  input::placeholder, textarea::placeholder { color: #5C574F !important; opacity: 1 !important; -webkit-text-fill-color: #5C574F !important; }
-  .rte-content:empty:before { content: attr(data-placeholder); color: #5C574F; }
+  input::placeholder, textarea::placeholder { color: #A39C8F !important; opacity: 1 !important; -webkit-text-fill-color: #A39C8F !important; }
+  .rte-content:empty:before { content: attr(data-placeholder); color: #A39C8F; }
   input:focus-visible, textarea:focus-visible, button:focus-visible, [contenteditable]:focus-visible { outline: 2px solid #6C7FE0; outline-offset: 2px; }
   .rte-content h2 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 1.25rem; margin: 0.4em 0 0.4em; }
   .rte-content h3 { font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600; margin: 1.4em 0 0.15em; }
+  .rte-content h3 + p, .rte-content h3 + ul { margin-top: 0; }
   .rte-content ul { list-style: disc; padding-left: 1.4em; margin: 0.9em 0; }
   .rte-content p { margin: 0.9em 0; }
 </style>
@@ -157,7 +158,7 @@
 <body>
 <div id="root"><div id="loading">
   <div style="color:#E85D9C;">Lädt…</div>
-  <div id="load-hint" style="display:none; color:#5C574F; font-size:14px; max-width:320px;">
+  <div id="load-hint" style="display:none; color:#A39C8F; font-size:14px; max-width:320px;">
     Das dauert normalerweise nur eine Sekunde. Falls hier nichts weiter passiert: diese App lädt React beim Öffnen einmalig aus dem Internet – bitte prüfe, ob dein iPad gerade online ist, und lade die Seite neu (nach unten ziehen).
   </div>
 </div></div>
@@ -295,7 +296,7 @@ function ComplexityPicker({ value, onChange }) {
         ))}
       </div>
       {v > 0 && (
-        <p className="text-xs text-[#5C574F] mt-1.5">
+        <p className="text-xs text-[#A39C8F] mt-1.5">
           <span className="font-mono" style={{ color: tone }}>{v}/5</span> · {COMPLEXITY_STEP_LABELS[v]}
         </p>
       )}
@@ -531,7 +532,7 @@ function TopTenCarousel({ games, onView }) {
                 {img ? (
                   <img src={img} alt={g.name} className="w-full h-full block object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-[#5C574F]"><Dices size={28} /></div>
+                  <div className="w-full h-full flex items-center justify-center text-[#A39C8F]"><Dices size={28} /></div>
                 )}
                 {isFront && (
                   <span className="absolute top-2 left-2 w-6 h-6 rounded-full bg-[#E85D9C] text-[#1C1B1A] text-[11px] font-display flex items-center justify-center border-2 border-[#1C1B1A]">
@@ -600,7 +601,7 @@ function renderPipMessage(text, games = [], onView) {
             <Cover game={g} size="lg" className="!rounded-xl" />
           </button>
         )}
-        <p className={`font-display text-base text-[#F2EDE4] ${g ? "underline decoration-[#5C574F]/50 underline-offset-2" : ""}`}
+        <p className={`font-display text-base text-[#F2EDE4] ${g ? "underline decoration-[#A39C8F]/50 underline-offset-2" : ""}`}
           onClick={g ? () => onView && onView(g) : undefined}
           style={g ? { cursor: "pointer" } : undefined}>
           {title}
@@ -736,7 +737,7 @@ function BggBadge({ className: extraClass = "" }) {
         href="https://boardgamegeek.com"
         target="_blank"
         rel="noopener noreferrer"
-        className="text-[10px] font-body text-[#5C574F]"
+        className="text-[10px] font-body text-[#A39C8F]"
       >
         Powered by BGG
       </a>
@@ -1172,7 +1173,7 @@ function RichTextEditor({ value, onChange, placeholder, minHeight = 100 }) {
             <ToolBtn ariaLabel="Aufzählung" onClick={() => exec("insertUnorderedList")}>• Liste</ToolBtn>
             <ToolBtn ariaLabel="Titel" onClick={() => exec("formatBlock", "H2")} className="font-semibold">Titel</ToolBtn>
             <ToolBtn ariaLabel="Subheadline" onClick={() => exec("formatBlock", "H3")}>Subheadline</ToolBtn>
-            <ToolBtn ariaLabel="Normaler Text" onClick={() => exec("formatBlock", "P")} className="text-[#5C574F]">Text</ToolBtn>
+            <ToolBtn ariaLabel="Normaler Text" onClick={() => exec("formatBlock", "P")} className="text-[#A39C8F]">Text</ToolBtn>
             <ToolBtn ariaLabel="Textfarbe" onClick={() => setColorPickerOpen((o) => !o)}>
               <span className="w-3.5 h-3.5 rounded-full border border-[#F2EDE4]/40" style={{ background: "conic-gradient(#E85D9C,#E85D9C,#7FB3AA,#C1443C,#E85D9C)" }} />
             </ToolBtn>
@@ -1236,7 +1237,7 @@ function StarRating({ value, onChange }) {
         ))}
       </div>
       {v > 0 && (
-        <p className="text-xs text-[#5C574F] mt-1.5">
+        <p className="text-xs text-[#A39C8F] mt-1.5">
           <span className="font-mono text-[#E85D9C]">{v}/10</span> · {RATING_LABELS[v]}
         </p>
       )}
@@ -1296,7 +1297,7 @@ function Segmented({ options, value, onChange }) {
           type="button"
           onClick={() => { haptic(6); onChange(opt.v); }}
           className={`relative flex-1 min-w-0 px-1 py-2 rounded-[10px] text-xs font-body flex flex-col items-center justify-center gap-1 transition-colors duration-300 ${
-            value === opt.v ? "text-[#F2EDE4] font-medium" : "text-[#5C574F]"
+            value === opt.v ? "text-[#F2EDE4] font-medium" : "text-[#A39C8F]"
           }`}
         >
           {opt.icon && <opt.icon size={16} />}
@@ -1390,7 +1391,7 @@ function ImageCropModal({ src, onConfirm, onCancel }) {
   return (
     <div className="fixed inset-0 bg-black z-[75] flex flex-col">
       <div className="shrink-0 flex items-center justify-between px-5" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
-        <button onClick={onCancel} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]" aria-label="Abbrechen"><X size={20} /></button>
+        <button onClick={onCancel} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]" aria-label="Abbrechen"><X size={20} /></button>
         <span className="text-[#F2EDE4] font-display text-lg">Zuschneiden</span>
         <button onClick={confirm} disabled={!natSize} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#E85D9C] disabled:opacity-40" aria-label="Übernehmen">
           {natSize ? <Check size={20} /> : <Loader2 size={18} className="animate-spin" />}
@@ -1399,13 +1400,13 @@ function ImageCropModal({ src, onConfirm, onCancel }) {
       {corsBlocked && (
         <div className="shrink-0 mx-5 mb-3 bg-[#E85D9C]/10 border border-[#E85D9C]/30 rounded-[14px] px-4 py-3">
           <p className="text-[#F2EDE4] text-sm mb-1">Zuschneiden hier nicht möglich</p>
-          <p className="text-[#5C574F] text-xs leading-relaxed">Dieses Bild kommt direkt von BGG — aus Sicherheitsgründen kann dein Browser es nicht zuschneiden. Lade es stattdessen per Kamera oder aus deiner Fotomediathek hoch, dann klappt der Zuschnitt.</p>
+          <p className="text-[#A39C8F] text-xs leading-relaxed">Dieses Bild kommt direkt von BGG — aus Sicherheitsgründen kann dein Browser es nicht zuschneiden. Lade es stattdessen per Kamera oder aus deiner Fotomediathek hoch, dann klappt der Zuschnitt.</p>
         </div>
       )}
       <div className="flex-1 flex items-center justify-center">
         {loadFailed ? (
           <div className="text-center px-8">
-            <p className="text-[#5C574F] text-sm mb-4">Bild konnte nicht zum Zuschneiden geladen werden.</p>
+            <p className="text-[#A39C8F] text-sm mb-4">Bild konnte nicht zum Zuschneiden geladen werden.</p>
             <button onClick={() => onConfirm(src)} className="bg-[#262422] border border-[#3A3631] text-[#F2EDE4] px-4 py-2.5 rounded-[14px] text-sm font-medium">Unverändert übernehmen</button>
           </div>
         ) : (
@@ -1434,7 +1435,7 @@ function ImageCropModal({ src, onConfirm, onCancel }) {
         )}
       </div>
       <div className="shrink-0 px-8" style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}>
-        <p className="text-center text-xs text-[#5C574F] mb-3">Ziehen zum Verschieben, Regler zum Zoomen</p>
+        <p className="text-center text-xs text-[#A39C8F] mb-3">Ziehen zum Verschieben, Regler zum Zoomen</p>
         <input
           type="range" min={1} max={3} step={0.01} value={zoom}
           onChange={(e) => handleZoomSlider(parseFloat(e.target.value))}
@@ -1540,7 +1541,7 @@ function ImagePickerSheet({ onAdd, onClose }) {
           style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", border: 0 }}
           onChange={handleFile}
         />
-        <button onClick={onClose} className="w-full text-center py-2 text-[#5C574F] text-sm">Abbrechen</button>
+        <button onClick={onClose} className="w-full text-center py-2 text-[#A39C8F] text-sm">Abbrechen</button>
       </div>
       {cropSrc && (
         <ImageCropModal
@@ -1678,7 +1679,7 @@ function PhotoGallerySection({ images, onAdd, onRemove, onReplace, hero = false,
       <div>
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm text-[#F2EDE4] font-medium">{selected.length > 0 ? `${selected.length} ausgewählt` : "Fotos auswählen"}</p>
-          <button onClick={() => { setManageMode(false); setSelected([]); }} className="text-xs text-[#5C574F]">Fertig</button>
+          <button onClick={() => { setManageMode(false); setSelected([]); }} className="text-xs text-[#A39C8F]">Fertig</button>
         </div>
         <div className={`grid gap-2 ${hero ? "grid-cols-3" : "grid-cols-4"}`}>
           {images.map((img, i) => (
@@ -1706,7 +1707,7 @@ function PhotoGallerySection({ images, onAdd, onRemove, onReplace, hero = false,
           <div className="relative" style={{ width: 200, height: 200, maxWidth: "55vw", maxHeight: "55vw" }}>
             {images.length === 0 ? (
               <div className="w-full h-full rounded-2xl overflow-hidden border border-[#3A3631] bg-[#2E2B28] flex items-center justify-center">
-                <Dices size={40} className="text-[#5C574F]" />
+                <Dices size={40} className="text-[#A39C8F]" />
               </div>
             ) : (
               [2, 1, 0].map((offset) => {
@@ -1749,7 +1750,7 @@ function PhotoGallerySection({ images, onAdd, onRemove, onReplace, hero = false,
       )}
       {hero && editable && images.length > 1 && (
         <div className="flex justify-center -mt-3 mb-3">
-          <button type="button" onClick={() => setManageMode(true)} className="text-xs text-[#5C574F] underline">Fotos verwalten</button>
+          <button type="button" onClick={() => setManageMode(true)} className="text-xs text-[#A39C8F] underline">Fotos verwalten</button>
         </div>
       )}
       {!hero && (images.length > 0 || editable) && (
@@ -1761,13 +1762,13 @@ function PhotoGallerySection({ images, onAdd, onRemove, onReplace, hero = false,
               </button>
             ))}
             {editable && (
-              <button type="button" onClick={() => setSheetOpen(true)} className="shrink-0 w-16 h-16 rounded-lg border-2 border-dashed border-[#3A3631] flex items-center justify-center text-[#5C574F]">
+              <button type="button" onClick={() => setSheetOpen(true)} className="shrink-0 w-16 h-16 rounded-lg border-2 border-dashed border-[#3A3631] flex items-center justify-center text-[#A39C8F]">
                 <Plus size={18} />
               </button>
             )}
           </div>
           {editable && images.length > 1 && (
-            <button type="button" onClick={() => setManageMode(true)} className="text-xs text-[#5C574F] underline mt-1.5">Fotos verwalten</button>
+            <button type="button" onClick={() => setManageMode(true)} className="text-xs text-[#A39C8F] underline mt-1.5">Fotos verwalten</button>
           )}
         </div>
       )}
@@ -1818,9 +1819,9 @@ function TagPickerModal({ title, options, selected, onToggle, onAddCustom, onClo
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">{title}</h2>
-          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]"><X size={20} /></button>
+          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
         </div>
-        {descriptions && <p className="shrink-0 px-4 pt-3 text-xs text-[#5C574F]">Tippe auf das <span className="inline-flex items-center justify-center w-4 h-4 rounded-full border border-[#5C574F] text-[10px] mx-0.5">i</span> für eine kurze Erklärung.</p>}
+        {descriptions && <p className="shrink-0 px-4 pt-3 text-xs text-[#A39C8F]">Tippe auf das <span className="inline-flex items-center justify-center w-4 h-4 rounded-full border border-[#5C574F] text-[10px] mx-0.5">i</span> für eine kurze Erklärung.</p>}
         <div className="shrink-0 p-4 border-b border-[#3A3631] space-y-2">
           <input
             onFocus={handleFocusScroll}
@@ -1850,7 +1851,7 @@ function TagPickerModal({ title, options, selected, onToggle, onAddCustom, onClo
                     <button
                       type="button"
                       onClick={() => onToggle(opt)}
-                      className={`flex-1 text-left text-sm ${isSel ? "text-[#1C1B1A] font-medium" : "text-[#5C574F]"}`}
+                      className={`flex-1 text-left text-sm ${isSel ? "text-[#1C1B1A] font-medium" : "text-[#A39C8F]"}`}
                     >
                       {opt}
                     </button>
@@ -1859,14 +1860,14 @@ function TagPickerModal({ title, options, selected, onToggle, onAddCustom, onClo
                         type="button"
                         onClick={() => setExpandedInfo(expandedInfo === opt ? null : opt)}
                         aria-label="Erklärung anzeigen"
-                        className={`shrink-0 w-7 h-7 rounded-full border flex items-center justify-center text-sm font-semibold ${isSel ? "border-[#1C1B1A]/30 text-[#1C1B1A]" : "border-[#5C574F] text-[#5C574F]"}`}
+                        className={`shrink-0 w-7 h-7 rounded-full border flex items-center justify-center text-sm font-semibold ${isSel ? "border-[#1C1B1A]/30 text-[#1C1B1A]" : "border-[#5C574F] text-[#A39C8F]"}`}
                       >
                         i
                       </button>
                     )}
                   </div>
                   {expandedInfo === opt && desc && (
-                    <p className={`px-3.5 pb-3 text-xs ${isSel ? "text-[#1C1B1A]" : "text-[#5C574F]"}`}>{desc}</p>
+                    <p className={`px-3.5 pb-3 text-xs ${isSel ? "text-[#1C1B1A]" : "text-[#A39C8F]"}`}>{desc}</p>
                   )}
                 </div>
               );
@@ -1875,14 +1876,14 @@ function TagPickerModal({ title, options, selected, onToggle, onAddCustom, onClo
               <button
                 key={opt}
                 onClick={() => onToggle(opt)}
-                className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#5C574F]"}`}
+                className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}
               >
                 {OptIcon && <OptIcon size={12} />}
                 {opt}
               </button>
             );
           })}
-          {filtered.length === 0 && <p className="text-sm text-[#5C574F] w-full">Kein Treffer — trag oben einen neuen Begriff ein.</p>}
+          {filtered.length === 0 && <p className="text-sm text-[#A39C8F] w-full">Kein Treffer — trag oben einen neuen Begriff ein.</p>}
         </div>
         <div className="shrink-0 p-4 border-t border-[#3A3631]">
           <button onClick={onClose} className="glass w-full border border-white/15 text-[#F2EDE4] rounded-[14px] py-3 font-medium">
@@ -1903,9 +1904,9 @@ function SettingsRow({ icon: Icon, label, sub, onClick, tone }) {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[#F2EDE4] font-body text-sm font-medium">{label}</p>
-        {sub && <p className="text-[#5C574F] text-xs font-body mt-0.5 truncate">{sub}</p>}
+        {sub && <p className="text-[#A39C8F] text-xs font-body mt-0.5 truncate">{sub}</p>}
       </div>
-      <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
+      <ChevronRight size={16} className="text-[#A39C8F] shrink-0" />
     </button>
   );
 }
@@ -1915,7 +1916,7 @@ function SettingsSubPage({ title, onBack, children }) {
   return (
     <div className="p-5 pb-10 space-y-6 font-body min-h-full flex flex-col" {...swipe}>
       <div className="flex items-center gap-3">
-        <button onClick={onBack} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]" aria-label="Zurück"><ChevronLeft size={22} /></button>
+        <button onClick={onBack} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]" aria-label="Zurück"><ChevronLeft size={22} /></button>
         <h1 className="font-display text-2xl text-[#F2EDE4]">{title}</h1>
       </div>
       {children}
@@ -1946,7 +1947,7 @@ function GameSearchPicker({ games, excludeId, filter, selectedId, onSelect, plac
         onFocus={(e) => { handleFocusScroll(e); setFocused(true); }}
         onBlur={() => setTimeout(() => setFocused(false), 150)}
         placeholder={placeholder}
-        className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-base focus:outline-none focus:border-[#E85D9C] ${selectedId ? "bg-[#262422] text-[#F2EDE4]" : "bg-transparent text-[#F2EDE4] placeholder-[#5C574F]"}`}
+        className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-base focus:outline-none focus:border-[#E85D9C] ${selectedId ? "bg-[#262422] text-[#F2EDE4]" : "bg-transparent text-[#F2EDE4] placeholder-[#A39C8F]"}`}
       />
       {focused && results.length > 0 && (
         <div className="absolute z-10 left-0 right-0 mt-1.5 max-h-56 overflow-y-auto bg-[#262422] border border-[#3A3631] rounded-[14px] py-1.5 shadow-lg">
@@ -1964,7 +1965,7 @@ function GameSearchPicker({ games, excludeId, filter, selectedId, onSelect, plac
       )}
       {focused && query.trim() && results.length === 0 && (
         <div className="absolute z-10 left-0 right-0 mt-1.5 bg-[#262422] border border-[#3A3631] rounded-[14px] py-2.5 px-3.5">
-          <p className="text-xs text-[#5C574F]">Kein Spiel gefunden.</p>
+          <p className="text-xs text-[#A39C8F]">Kein Spiel gefunden.</p>
         </div>
       )}
     </div>
@@ -1998,7 +1999,7 @@ function MultiGamePickerSheet({ games, excludeId, filter, initialSelected = [], 
           <SearchInput value={query} onChange={setQuery} placeholder="Suchen…" inputClassName="h-11 bg-[#262422] border border-[#3A3631] rounded-[14px] text-sm" />
         </div>
         <div className="flex-1 overflow-y-auto px-5 pb-5 space-y-1.5" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
-          {results.length === 0 && <p className="text-xs text-[#5C574F] text-center mt-4">Kein Spiel gefunden.</p>}
+          {results.length === 0 && <p className="text-xs text-[#A39C8F] text-center mt-4">Kein Spiel gefunden.</p>}
           {results.map((g) => {
             const isSel = selected.includes(g.id);
             return (
@@ -2051,9 +2052,9 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     return (
       <SettingsSubPage title="Synchronisation" onBack={() => setView("menu")}>
         <div>
-          <p className="text-xs text-[#5C574F] mb-2">{syncUrl ? "Deine Daten werden über Firebase mit deinen Geräten abgeglichen." : "Noch nicht eingerichtet — deine Daten bleiben nur auf diesem Gerät."}</p>
+          <p className="text-xs text-[#A39C8F] mb-2">{syncUrl ? "Deine Daten werden über Firebase mit deinen Geräten abgeglichen." : "Noch nicht eingerichtet — deine Daten bleiben nur auf diesem Gerät."}</p>
           <button onClick={onOpenSync} className="glass w-full h-12 rounded-[14px] text-sm font-medium border border-white/15 text-[#F2EDE4] flex items-center justify-center gap-2">
-            {syncStatus === "syncing" ? <Loader2 size={16} className="text-[#E85D9C]" /> : <Globe size={16} className={syncStatus === "error" ? "text-[#C1443C]" : "text-[#5C574F]"} />}
+            {syncStatus === "syncing" ? <Loader2 size={16} className="text-[#E85D9C]" /> : <Globe size={16} className={syncStatus === "error" ? "text-[#C1443C]" : "text-[#A39C8F]"} />}
             {syncUrl ? "Synchronisation verwalten" : "Synchronisation einrichten"}
           </button>
         </div>
@@ -2066,7 +2067,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     return (
       <SettingsSubPage title="Für KI exportieren" onBack={() => setView("menu")}>
         <div>
-          <p className="text-xs text-[#5C574F] mb-3">Erzeugt eine vollständige Textübersicht deiner Sammlung — Spiele, Bewertungen, Partien, Sieg-Statistik. Zum Einfügen in Gemini, ChatGPT oder eine andere KI, um gezielte Fragen zu deiner Sammlung zu stellen (z.B. "Welche meiner Spiele passen zu Fans von Terraforming Mars?").</p>
+          <p className="text-xs text-[#A39C8F] mb-3">Erzeugt eine vollständige Textübersicht deiner Sammlung — Spiele, Bewertungen, Partien, Sieg-Statistik. Zum Einfügen in Gemini, ChatGPT oder eine andere KI, um gezielte Fragen zu deiner Sammlung zu stellen (z.B. "Welche meiner Spiele passen zu Fans von Terraforming Mars?").</p>
           <div className="flex gap-2 mb-3">
             <button
               onClick={async () => {
@@ -2089,7 +2090,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
             )}
           </div>
           <textarea readOnly value={exportText} rows={14}
-            className="w-full bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 py-3 text-[#5C574F] text-xs font-mono focus:outline-none resize-none" />
+            className="w-full bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 py-3 text-[#A39C8F] text-xs font-mono focus:outline-none resize-none" />
         </div>
       </SettingsSubPage>
     );
@@ -2099,7 +2100,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     return (
       <SettingsSubPage title="KI-Assistent" onBack={() => setView("menu")}>
         <div>
-          <p className="text-xs text-[#5C574F] mb-2">Für Elevator-Pitch-Zusammenfassungen beim Spiel-Import und Spielvorschläge im Gespräch. Läuft über deinen eigenen Cloudflare Worker — nichts geht an einen fremden KI-Anbieter.</p>
+          <p className="text-xs text-[#A39C8F] mb-2">Für Elevator-Pitch-Zusammenfassungen beim Spiel-Import und Spielvorschläge im Gespräch. Läuft über deinen eigenen Cloudflare Worker — nichts geht an einen fremden KI-Anbieter.</p>
           <div className="flex gap-2">
             <input value={aiUrlInput} onChange={(e) => setAiUrlInput(e.target.value)} placeholder="https://spielregal-ai.dein-name.workers.dev"
               className="flex-1 min-w-0 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#E85D9C]" />
@@ -2115,7 +2116,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     return (
       <SettingsSubPage title="BGG-Partien importieren" onBack={() => setView("menu")}>
         <div>
-          <p className="text-xs text-[#5C574F] mb-2">Holt alle Partien, die du je auf BoardGameGeek zu deinem Namen eingetragen hast. Spiele, die noch nicht in deiner Sammlung sind, werden automatisch mit Status "nur gespielt" angelegt. Bereits importierte Partien werden bei erneutem Import übersprungen.</p>
+          <p className="text-xs text-[#A39C8F] mb-2">Holt alle Partien, die du je auf BoardGameGeek zu deinem Namen eingetragen hast. Spiele, die noch nicht in deiner Sammlung sind, werden automatisch mit Status "nur gespielt" angelegt. Bereits importierte Partien werden bei erneutem Import übersprungen.</p>
           <div className="flex gap-2 mb-2">
             <input value={bggUsername} onChange={(e) => setBggUsername(e.target.value)} placeholder="Dein BGG-Nutzername"
               className="flex-1 min-w-0 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#E85D9C]" />
@@ -2125,7 +2126,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
             disabled={!bggUsername.trim() || bggImportStatus === "importing"}
             className="w-full h-12 rounded-[14px] text-sm font-medium bg-[#262422] border border-[#3A3631] text-[#F2EDE4] disabled:opacity-40 flex items-center justify-center gap-2"
           >
-            {bggImportStatus === "importing" ? <Loader2 size={16} className="text-[#E85D9C]" /> : <ListChecks size={16} className="text-[#5C574F]" />}
+            {bggImportStatus === "importing" ? <Loader2 size={16} className="text-[#E85D9C]" /> : <ListChecks size={16} className="text-[#A39C8F]" />}
             {bggImportStatus === "importing" ? "Importiere… kann bei vielen Partien dauern" : "Partien importieren"}
           </button>
           {bggImportStatus === "done" && bggImportResult && (
@@ -2140,7 +2141,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
             <div className="mt-2 bg-[#C1443C]/10 border border-[#C1443C]/30 rounded-lg p-2.5">
               <p className="text-xs text-[#C1443C] font-medium mb-1">{bggImportResult.failures.length} Partie{bggImportResult.failures.length === 1 ? "" : "n"} konnte{bggImportResult.failures.length === 1 ? "" : "n"} nicht verarbeitet werden:</p>
               {bggImportResult.failures.slice(0, 10).map((f, i) => (
-                <p key={i} className="text-[11px] text-[#5C574F] font-mono">{f}</p>
+                <p key={i} className="text-[11px] text-[#A39C8F] font-mono">{f}</p>
               ))}
             </div>
           )}
@@ -2175,12 +2176,12 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     return (
       <SettingsSubPage title="Statistik-Abgleich" onBack={() => setView("menu")}>
         <div>
-          <p className="text-xs text-[#5C574F] mb-3">Live aus den {plays.length} aktuell gespeicherten Partien nachgerechnet — kein Cache, jedes Mal frisch beim Öffnen dieser Seite.</p>
+          <p className="text-xs text-[#A39C8F] mb-3">Live aus den {plays.length} aktuell gespeicherten Partien nachgerechnet — kein Cache, jedes Mal frisch beim Öffnen dieser Seite.</p>
 
           {dupGroups.length > 0 ? (
             <div className="mb-4 bg-[#C1443C]/15 border border-[#C1443C]/40 rounded-[14px] p-3.5">
               <p className="text-sm text-[#F2EDE4] font-medium mb-1.5">{dupGroups.length} mögliche{dupGroups.length === 1 ? "s" : ""} Partien-Duplikat{dupGroups.length === 1 ? "" : "e"} gefunden</p>
-              <p className="text-xs text-[#5C574F] mb-2">Gleiches Spiel, gleiches Datum, gleiche Mitspieler und Notiz — das entsteht typischerweise durch doppeltes Speichern oder einen Mehrfach-Import.</p>
+              <p className="text-xs text-[#A39C8F] mb-2">Gleiches Spiel, gleiches Datum, gleiche Mitspieler und Notiz — das entsteht typischerweise durch doppeltes Speichern oder einen Mehrfach-Import.</p>
               <div className="space-y-1.5">
                 {dupGroups.map((group, i) => {
                   const g = games.find((x) => x.id === group[0].gameId);
@@ -2191,7 +2192,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
                   );
                 })}
               </div>
-              <p className="text-[10px] text-[#5C574F] mt-2">Prüfe diese Partien im Partien-Tab manuell — automatisches Löschen bauen wir bewusst nicht ein, falls es doch zwei echte, identische Runden am selben Tag waren.</p>
+              <p className="text-[10px] text-[#A39C8F] mt-2">Prüfe diese Partien im Partien-Tab manuell — automatisches Löschen bauen wir bewusst nicht ein, falls es doch zwei echte, identische Runden am selben Tag waren.</p>
             </div>
           ) : (
             <div className="mb-4 bg-[#4E8C82]/15 border border-[#4E8C82]/40 rounded-[14px] p-3.5 flex items-center gap-2">
@@ -2200,9 +2201,9 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
             </div>
           )}
 
-          <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-2">Partien pro Spiel (alle, absteigend)</p>
+          <p className="text-xs text-[#A39C8F] uppercase tracking-wider mb-2">Partien pro Spiel (alle, absteigend)</p>
           <div className="space-y-1.5">
-            {perGame.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine Partien eingetragen.</p>}
+            {perGame.length === 0 && <p className="text-xs text-[#A39C8F]">Noch keine Partien eingetragen.</p>}
             {perGame.map(({ game, gameId, count }) => (
               <div key={gameId} className="flex items-center justify-between bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 py-2.5">
                 <span className="text-sm text-[#F2EDE4] truncate">{game ? game.name : `Unbekannte Spiel-ID: ${gameId}`}</span>
@@ -2225,7 +2226,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
               <p className="text-xs text-[#F2EDE4]">"{mergeFeedback.dropped}" wurde gelöscht, alle Partien laufen jetzt unter "{mergeFeedback.kept}".</p>
             </div>
           )}
-          <p className="text-xs text-[#5C574F] mb-2">Diese Spiele haben sehr ähnliche Namen — vermutlich entstanden beim Import doppelte Einträge. Zusammenführen verschiebt alle Partien auf den behaltenen Eintrag und löscht den anderen.</p>
+          <p className="text-xs text-[#A39C8F] mb-2">Diese Spiele haben sehr ähnliche Namen — vermutlich entstanden beim Import doppelte Einträge. Zusammenführen verschiebt alle Partien auf den behaltenen Eintrag und löscht den anderen.</p>
           <div className="space-y-2">
             {duplicateGroups.map((group) => (
               <div key={group.map((g) => g.id).join("-")} className="glass border border-white/10 rounded-2xl p-3">
@@ -2237,7 +2238,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
                       <Cover game={g} size="sm" />
                       <div className="flex-1 min-w-0">
                         <p className="text-[#F2EDE4] font-body text-sm truncate">{g.name}</p>
-                        <p className="text-[#5C574F] text-xs font-body">{count} Partie{count === 1 ? "" : "n"}</p>
+                        <p className="text-[#A39C8F] text-xs font-body">{count} Partie{count === 1 ? "" : "n"}</p>
                       </div>
                       <button
                         onClick={() => {
@@ -2252,22 +2253,22 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
                     </div>
                   );
                 })}
-                <p className="text-[10px] text-[#5C574F] px-1 pt-1">Klick bei einem Eintrag auf "Diesen behalten" — die anderen {group.length > 2 ? "in dieser Gruppe" : "hier"} werden gelöscht, ihre Partien auf den behaltenen Eintrag übertragen.</p>
+                <p className="text-[10px] text-[#A39C8F] px-1 pt-1">Klick bei einem Eintrag auf "Diesen behalten" — die anderen {group.length > 2 ? "in dieser Gruppe" : "hier"} werden gelöscht, ihre Partien auf den behaltenen Eintrag übertragen.</p>
               </div>
             ))}
-            {duplicateGroups.length === 0 && <p className="text-xs text-[#5C574F]">Keine automatisch erkannten Duplikate.</p>}
+            {duplicateGroups.length === 0 && <p className="text-xs text-[#A39C8F]">Keine automatisch erkannten Duplikate.</p>}
           </div>
 
           <div className="mt-6 pt-5 border-t border-[#3A3631]">
             <h3 className="font-display text-base text-[#F2EDE4] mb-1">Manuell zusammenführen</h3>
-            <p className="text-xs text-[#5C574F] mb-3">Für Spiele mit unterschiedlichem Namen, die trotzdem dasselbe sind (z.B. verschiedene Editionen).</p>
+            <p className="text-xs text-[#A39C8F] mb-3">Für Spiele mit unterschiedlichem Namen, die trotzdem dasselbe sind (z.B. verschiedene Editionen).</p>
             <div className="space-y-2.5">
               <div>
-                <label className="block text-[11px] text-[#5C574F] mb-1">Bleibt bestehen</label>
+                <label className="block text-[11px] text-[#A39C8F] mb-1">Bleibt bestehen</label>
                 <GameSearchPicker games={games} selectedId={manualMergeKeep} onSelect={setManualMergeKeep} placeholder="Spiel suchen…" />
               </div>
               <div>
-                <label className="block text-[11px] text-[#5C574F] mb-1">Wird gelöscht (Partien übernommen)</label>
+                <label className="block text-[11px] text-[#A39C8F] mb-1">Wird gelöscht (Partien übernommen)</label>
                 <GameSearchPicker games={games} excludeId={manualMergeKeep} selectedId={manualMergeDrop} onSelect={setManualMergeDrop} placeholder="Spiel suchen…" />
               </div>
               <button
@@ -2297,8 +2298,8 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     return (
       <SettingsSubPage title="Sammlung anpassen" onBack={() => setView("menu")}>
         <div>
-          <h3 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide mb-2">Eigene Kategorien</h3>
-          <p className="text-xs text-[#5C574F] mb-2">Die BGG-Standardkategorien sind immer verfügbar. Hier ergänzt du eigene.</p>
+          <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Eigene Kategorien</h3>
+          <p className="text-xs text-[#A39C8F] mb-2">Die BGG-Standardkategorien sind immer verfügbar. Hier ergänzt du eigene.</p>
           <div className="flex gap-2 mb-3">
             <input value={catInput} onChange={(e) => setCatInput(e.target.value)} placeholder="Neue Kategorie"
               className="flex-1 min-w-0 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#E85D9C]" />
@@ -2306,18 +2307,18 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
               className="glass shrink-0 border border-white/15 text-[#F2EDE4] px-4 rounded-[14px] text-sm">Hinzufügen</button>
           </div>
           <div className="flex flex-wrap gap-2">
-            {customCategories.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine eigenen Kategorien.</p>}
+            {customCategories.length === 0 && <p className="text-xs text-[#A39C8F]">Noch keine eigenen Kategorien.</p>}
             {customCategories.map((c) => (
-              <span key={c} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[#262422] border-[#3A3631] text-[#5C574F]">
+              <span key={c} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[#262422] border-[#3A3631] text-[#A39C8F]">
                 {c}
-                <button onClick={() => onRemoveCategory(c)} className="text-[#5C574F]"><X size={12} /></button>
+                <button onClick={() => onRemoveCategory(c)} className="text-[#A39C8F]"><X size={12} /></button>
               </span>
             ))}
           </div>
         </div>
         <div>
-          <h3 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide mb-2">Eigene Mechanismen</h3>
-          <p className="text-xs text-[#5C574F] mb-2">Die BGG-Standardmechanismen sind immer verfügbar. Hier ergänzt du eigene.</p>
+          <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Eigene Mechanismen</h3>
+          <p className="text-xs text-[#A39C8F] mb-2">Die BGG-Standardmechanismen sind immer verfügbar. Hier ergänzt du eigene.</p>
           <div className="flex gap-2 mb-3">
             <input value={mechInput} onChange={(e) => setMechInput(e.target.value)} placeholder="Neuer Mechanismus"
               className="flex-1 min-w-0 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#E85D9C]" />
@@ -2325,18 +2326,18 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
               className="glass shrink-0 border border-white/15 text-[#F2EDE4] px-4 rounded-[14px] text-sm">Hinzufügen</button>
           </div>
           <div className="flex flex-wrap gap-2">
-            {customMechanisms.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine eigenen Mechanismen.</p>}
+            {customMechanisms.length === 0 && <p className="text-xs text-[#A39C8F]">Noch keine eigenen Mechanismen.</p>}
             {customMechanisms.map((m) => (
-              <span key={m} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[#262422] border-[#3A3631] text-[#5C574F]">
+              <span key={m} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[#262422] border-[#3A3631] text-[#A39C8F]">
                 {m}
-                <button onClick={() => onRemoveMechanism(m)} className="text-[#5C574F]"><X size={12} /></button>
+                <button onClick={() => onRemoveMechanism(m)} className="text-[#A39C8F]"><X size={12} /></button>
               </span>
             ))}
           </div>
         </div>
         <div>
-          <h3 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide mb-2">Eigene Spielertypen</h3>
-          <p className="text-xs text-[#5C574F] mb-2">Zielgruppen wie Optimierer oder Taktiker sind vorgegeben. Hier ergänzt du eigene.</p>
+          <h3 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Eigene Spielertypen</h3>
+          <p className="text-xs text-[#A39C8F] mb-2">Zielgruppen wie Optimierer oder Taktiker sind vorgegeben. Hier ergänzt du eigene.</p>
           <div className="space-y-2 mb-3">
             <input value={typeInput} onChange={(e) => setTypeInput(e.target.value)} placeholder="Neuer Spielertyp"
               className="w-full bg-[#262422] border border-[#3A3631] rounded-[14px] px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#E85D9C]" />
@@ -2346,11 +2347,11 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
               className="glass w-full border border-white/15 text-[#F2EDE4] py-2 rounded-[14px] text-sm">Hinzufügen</button>
           </div>
           <div className="flex flex-wrap gap-2">
-            {customPlayerTypes.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine eigenen Spielertypen.</p>}
+            {customPlayerTypes.length === 0 && <p className="text-xs text-[#A39C8F]">Noch keine eigenen Spielertypen.</p>}
             {customPlayerTypes.map((t) => (
-              <span key={t} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[#262422] border-[#3A3631] text-[#5C574F]">
+              <span key={t} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-[#262422] border-[#3A3631] text-[#A39C8F]">
                 {t}
-                <button onClick={() => onRemovePlayerType(t)} className="text-[#5C574F]"><X size={12} /></button>
+                <button onClick={() => onRemovePlayerType(t)} className="text-[#A39C8F]"><X size={12} /></button>
               </span>
             ))}
           </div>
@@ -2363,7 +2364,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     return (
       <SettingsSubPage title="Vorschau-Modus" onBack={() => setView("menu")}>
         <div>
-          <p className="text-xs text-[#5C574F] mb-2">Füllt die App vorübergehend mit Beispiel-Spielen, damit du siehst, wie's mit Inhalt aussieht. Wird nirgends gespeichert.</p>
+          <p className="text-xs text-[#A39C8F] mb-2">Füllt die App vorübergehend mit Beispiel-Spielen, damit du siehst, wie's mit Inhalt aussieht. Wird nirgends gespeichert.</p>
           <button onClick={onToggleDemo}
             className={`w-full h-12 rounded-[14px] text-sm font-medium ${demoMode ? "bg-[#E85D9C] text-[#1C1B1A]" : "bg-[#262422] border border-[#3A3631] text-[#F2EDE4]"}`}>
             {demoMode ? "Demo-Vorschau beenden" : "Demo-Vorschau anzeigen"}
@@ -2377,13 +2378,13 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     return (
       <SettingsSubPage title="Gästemodus" onBack={() => setView("menu")}>
         <div>
-          <p className="text-xs text-[#5C574F] mb-2">Zum Weiterreichen an Gäste, damit sie sich selbst ein Spiel aussuchen können. Zeigt deine echte Sammlung, aber:</p>
-          <ul className="text-xs text-[#5C574F] mb-3 space-y-1 list-disc list-inside">
+          <p className="text-xs text-[#A39C8F] mb-2">Zum Weiterreichen an Gäste, damit sie sich selbst ein Spiel aussuchen können. Zeigt deine echte Sammlung, aber:</p>
+          <ul className="text-xs text-[#A39C8F] mb-3 space-y-1 list-disc list-inside">
             <li>Kaufpreis, Verkaufspreis und Verkaufsstatus sind unsichtbar</li>
             <li>Spiele/Partien können nicht hinzugefügt, bearbeitet oder gelöscht werden</li>
             <li>Einstellungen sind gesperrt, bis der Gästemodus beendet wird</li>
           </ul>
-          <p className="text-xs text-[#5C574F] mb-3">Bleibt aktiv, auch wenn die App neu geladen wird — sicherer, falls das Handy zwischendurch mal zugeklappt wird.</p>
+          <p className="text-xs text-[#A39C8F] mb-3">Bleibt aktiv, auch wenn die App neu geladen wird — sicherer, falls das Handy zwischendurch mal zugeklappt wird.</p>
           <button onClick={onToggleGuest}
             className={`w-full h-12 rounded-[14px] text-sm font-medium ${guestMode ? "bg-[#E85D9C] text-[#1C1B1A]" : "bg-[#262422] border border-[#3A3631] text-[#F2EDE4]"}`}>
             {guestMode ? "Gästemodus beenden" : "Gästemodus starten"}
@@ -3007,7 +3008,7 @@ async function bggFetchAllPlays(username) {
 /* ---------------- UI PRIMITIVES ---------------- */
 const Pill = ({ children, tone = "default" }) => {
   const tones = {
-    default: "bg-[#2E2B28] text-[#5C574F] border-[#3A3631]",
+    default: "bg-[#2E2B28] text-[#A39C8F] border-[#3A3631]",
     amber: "bg-[#E85D9C]/15 text-[#E85D9C] border-[#E85D9C]/30",
     red: "bg-[#C1443C]/15 text-[#C1443C] border-[#C1443C]/30",
     teal: "bg-[#4E8C82]/15 text-[#7FB3AA] border-[#4E8C82]/30",
@@ -3118,7 +3119,7 @@ function GameGridCard({ game: g, expansions = [], playCounts = {}, gridCols = 2,
             {active.rating ? (
               <span className="flex items-center gap-0.5 text-[10px] text-[#D4A24C] font-mono"><Star size={10} fill="currentColor" /> {active.rating}</span>
             ) : active.minPlayers ? (
-              <span className="flex items-center gap-0.5 text-[10px] text-[#5C574F] font-mono"><Users size={10} /> {active.minPlayers}-{active.maxPlayers}</span>
+              <span className="flex items-center gap-0.5 text-[10px] text-[#A39C8F] font-mono"><Users size={10} /> {active.minPlayers}-{active.maxPlayers}</span>
             ) : null}
             {active.complexity ? (() => {
               const CIcon2 = COMPLEXITY_ICON[complexityLabel(active)] || Puzzle;
@@ -3127,9 +3128,9 @@ function GameGridCard({ game: g, expansions = [], playCounts = {}, gridCols = 2,
               );
             })() : null}
             {playCount > 0 ? (
-              <span className="text-[10px] text-[#5C574F] font-mono">{playCount}×</span>
+              <span className="text-[10px] text-[#A39C8F] font-mono">{playCount}×</span>
             ) : active.status === "owned" ? (
-              <span className="text-[10px] text-[#5C574F] font-mono">0×</span>
+              <span className="text-[10px] text-[#A39C8F] font-mono">0×</span>
             ) : null}
           </div>
         </div>
@@ -3176,7 +3177,7 @@ const Cover = ({ game, size = "md", className: extraClass = "", compact = false 
       {lentBadge}
     </span>
   ) : (
-    <span className={`relative inline-flex ${dims} rounded-lg border border-[#3A3631] bg-[#2E2B28] items-center justify-center text-[#5C574F] ${extraClass} ${isLent ? "opacity-75" : ""}`}>
+    <span className={`relative inline-flex ${dims} rounded-lg border border-[#3A3631] bg-[#2E2B28] items-center justify-center text-[#A39C8F] ${extraClass} ${isLent ? "opacity-75" : ""}`}>
       <Dices size={size === "lg" ? 28 : 18} />
       {lentTint}
       {lentBadge}
@@ -3220,11 +3221,11 @@ function BggMergeModal({ current, fresh, onApply, onClose }) {
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">BGG-Daten übernehmen</h2>
-          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]"><X size={20} /></button>
+          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
         </div>
-        <p className="text-xs text-[#5C574F] px-5 pt-3">Wähl aus, was übernommen werden soll — alles andere bleibt unverändert.</p>
+        <p className="text-xs text-[#A39C8F] px-5 pt-3">Wähl aus, was übernommen werden soll — alles andere bleibt unverändert.</p>
         <div className="p-5 overflow-y-auto flex-1 space-y-2">
-          {relevant.length === 0 && <p className="text-sm text-[#5C574F]">BGG hat nichts Neues geliefert.</p>}
+          {relevant.length === 0 && <p className="text-sm text-[#A39C8F]">BGG hat nichts Neues geliefert.</p>}
           {relevant.map((f) => {
             const isPair = f.pairWith;
             const currentVal = isPair ? `${current[f.key] || "?"}–${current[f.pairWith] || "?"}` : f.list ? fmtList(current[f.key]) : (current[f.key] || "—");
@@ -3243,15 +3244,15 @@ function BggMergeModal({ current, fresh, onApply, onClose }) {
                 <div className="flex items-start gap-3">
                   <div className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 mt-0.5 ${selected[f.key] ? "bg-[#E85D9C] border-[#E85D9C]" : "border-[#3A3631]"}`}>{selected[f.key] && <Check size={12} className="text-white" />}</div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs text-[#5C574F] mb-0.5">{f.label}</p>
+                    <p className="text-xs text-[#A39C8F] mb-0.5">{f.label}</p>
                     {f.long ? (
                       <>
-                        <p className="text-[11px] text-[#5C574F] line-through truncate">{(current[f.key] || "").replace(/<[^>]+>/g, " ").slice(0, 80) || "—"}</p>
+                        <p className="text-[11px] text-[#A39C8F] line-through truncate">{(current[f.key] || "").replace(/<[^>]+>/g, " ").slice(0, 80) || "—"}</p>
                         <p className="text-sm text-[#F2EDE4]">{(freshVal || "").replace(/<[^>]+>/g, " ").slice(0, 120)}…</p>
                       </>
                     ) : (
                       <>
-                        <p className="text-[11px] text-[#5C574F] line-through truncate">{currentVal}</p>
+                        <p className="text-[11px] text-[#A39C8F] line-through truncate">{currentVal}</p>
                         <p className="text-sm text-[#F2EDE4] truncate">{freshVal}</p>
                       </>
                     )}
@@ -3286,13 +3287,13 @@ function SearchStepSheet({ query, setQuery, runSearch, searching, searchError, r
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Spiel hinzufügen</h2>
-          <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]" aria-label="Schließen"><X size={20} /></button>
+          <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]" aria-label="Schließen"><X size={20} /></button>
         </div>
         <div className="shrink-0 px-5" style={{ paddingBottom: results.length > 0 || searchError ? "0.75rem" : "max(1.25rem, env(safe-area-inset-bottom))" }}>
           <div className="flex gap-2">
             <input ref={inputRef} autoFocus value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && runSearch()}
               placeholder="z.B. Wingspan"
-              className="flex-1 h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 text-[#F2EDE4] text-base font-body placeholder-[#5C574F] focus:outline-none focus:border-[#E85D9C]" />
+              className="flex-1 h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 text-[#F2EDE4] text-base font-body placeholder-[#A39C8F] focus:outline-none focus:border-[#E85D9C]" />
             <button onClick={runSearch} className="bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] w-12 h-12 shrink-0 rounded-[14px] flex items-center justify-center active:scale-95">
               {searching ? <Loader2 size={20} /> : <Search size={20} />}
             </button>
@@ -3310,10 +3311,10 @@ function SearchStepSheet({ query, setQuery, runSearch, searching, searchError, r
                 <button key={r.bggId} onClick={() => pickResult(r)}
                   className="w-full text-left bg-[#262422] hover:bg-[#2E2B28] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center justify-between gap-2">
                   <span className="font-body text-[#F2EDE4] min-w-0 truncate">
-                    {r.name} <span className="text-[#5C574F]">({r.year || "?"})</span>
+                    {r.name} <span className="text-[#A39C8F]">({r.year || "?"})</span>
                     {alreadyOwned && <span className="block text-[11px] text-[#E85D9C] mt-0.5">Bereits in deiner Sammlung</span>}
                   </span>
-                  <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
+                  <ChevronRight size={16} className="text-[#A39C8F] shrink-0" />
                 </button>
               );
             })}
@@ -3600,7 +3601,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#E85D9C] ${form.germanName ? "bg-[#262422]" : "bg-transparent"}`} />
             {form.germanName && form.germanName.trim() && form.germanName.trim() !== form.name.trim() && (
               <div>
-                <label className="block text-[11px] text-[#5C574F] mb-1.5">Welcher Titel soll groß angezeigt werden?</label>
+                <label className="block text-[11px] text-[#A39C8F] mb-1.5">Welcher Titel soll groß angezeigt werden?</label>
                 <Segmented
                   options={[{ v: "original", label: form.name || "Original" }, { v: "german", label: form.germanName }]}
                   value={form.primaryTitle === "german" ? "german" : "original"}
@@ -3609,7 +3610,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               </div>
             )}
             <div>
-              <label className="block text-[11px] text-[#5C574F]">Deine Bewertung</label>
+              <label className="block text-[11px] text-[#A39C8F]">Deine Bewertung</label>
               <div className="mt-1.5">
                 <StarRating value={form.rating} onChange={(v) => update("rating", v)} />
               </div>
@@ -3624,109 +3625,109 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             />
 
             <div>
-              <label className="block text-[11px] text-[#5C574F]">Zusammenfassung</label>
+              <label className="block text-[11px] text-[#A39C8F]">Zusammenfassung</label>
               {pitchError && <p className="text-[11px] text-[#C1443C] mt-1">{pitchError}</p>}
               <div className="mt-1.5">
                 <RichTextEditor key={summaryVersion} value={form.summary} onChange={(html) => update("summary", html)} placeholder="Worum geht's in diesem Spiel?" />
               </div>
             </div>
             <div>
-              <label className="block text-[11px] text-[#5C574F]">Verlag</label>
+              <label className="block text-[11px] text-[#A39C8F]">Verlag</label>
               <button type="button" onClick={() => setPickerOpen("publishers")}
-                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.publishers.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.publishers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.publishers.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.publishers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#A39C8F] text-base"}`}>
                 <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 ${form.publishers.length === 1 ? "justify-center text-center" : "items-center"}`}>
                   {form.publishers.length ? form.publishers.map((p) => <Pill key={p}>{p}</Pill>) : "Verlag auswählen…"}
                 </span>
-                <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
+                <ChevronDown size={16} className="shrink-0 text-[#A39C8F] mt-1.5" />
               </button>
               {publisherTrimLoading && (
-                <p className="flex items-center gap-1 text-[11px] text-[#5C574F] mt-2"><Loader2 size={11} /> Verlagsliste wird auf Original + Deutsch reduziert…</p>
+                <p className="flex items-center gap-1 text-[11px] text-[#A39C8F] mt-2"><Loader2 size={11} /> Verlagsliste wird auf Original + Deutsch reduziert…</p>
               )}
               {germanLookupError && <p className="text-[11px] text-[#C1443C] mt-1">{germanLookupError}</p>}
             </div>
             <div>
-              <label className="block text-[11px] text-[#5C574F]">Designer</label>
+              <label className="block text-[11px] text-[#A39C8F]">Designer</label>
               <button type="button" onClick={() => setPickerOpen("designers")}
-                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.designers.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.designers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.designers.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.designers.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#A39C8F] text-base"}`}>
                 <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 ${form.designers.length === 1 ? "justify-center text-center" : "items-center"}`}>
                   {form.designers.length ? form.designers.map((d) => <Pill key={d}>{d}</Pill>) : "Designer auswählen…"}
                 </span>
-                <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
+                <ChevronDown size={16} className="shrink-0 text-[#A39C8F] mt-1.5" />
               </button>
             </div>
 
             <div>
-              <label className="block text-[11px] text-[#5C574F]">Spieleranzahl (min–max)</label>
+              <label className="block text-[11px] text-[#A39C8F]">Spieleranzahl (min–max)</label>
               <div className="flex items-center gap-2 mt-1.5">
                 <input value={form.minPlayers} onChange={(e) => update("minPlayers", e.target.value)} placeholder="min" inputMode="numeric"
                   className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base text-center ${form.minPlayers ? "bg-[#262422]" : "bg-transparent"}`} />
-                <span className="shrink-0 text-[#5C574F]">–</span>
+                <span className="shrink-0 text-[#A39C8F]">–</span>
                 <input value={form.maxPlayers} onChange={(e) => update("maxPlayers", e.target.value)} placeholder="max" inputMode="numeric"
                   className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base text-center ${form.maxPlayers ? "bg-[#262422]" : "bg-transparent"}`} />
               </div>
             </div>
             <div>
-              <label className="block text-[11px] text-[#5C574F]">Beste Spieleranzahl (optional, von–bis)</label>
+              <label className="block text-[11px] text-[#A39C8F]">Beste Spieleranzahl (optional, von–bis)</label>
               <div className="flex items-center gap-2 mt-1.5">
                 <input value={form.bestPlayersMin} onChange={(e) => update("bestPlayersMin", e.target.value)} placeholder="von" inputMode="numeric"
                   className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base text-center ${form.bestPlayersMin ? "bg-[#262422]" : "bg-transparent"}`} />
-                <span className="shrink-0 text-[#5C574F]">–</span>
+                <span className="shrink-0 text-[#A39C8F]">–</span>
                 <input value={form.bestPlayersMax} onChange={(e) => update("bestPlayersMax", e.target.value)} placeholder="bis" inputMode="numeric"
                   className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base text-center ${form.bestPlayersMax ? "bg-[#262422]" : "bg-transparent"}`} />
               </div>
             </div>
             <div>
-              <label className="block text-[11px] text-[#5C574F]">Dauer in Minuten (min–max)</label>
+              <label className="block text-[11px] text-[#A39C8F]">Dauer in Minuten (min–max)</label>
               <div className="flex items-center gap-2 mt-1.5">
                 <input value={form.minTime} onChange={(e) => update("minTime", e.target.value)} placeholder="min" inputMode="numeric"
                   className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base text-center ${form.minTime ? "bg-[#262422]" : "bg-transparent"}`} />
-                <span className="shrink-0 text-[#5C574F]">–</span>
+                <span className="shrink-0 text-[#A39C8F]">–</span>
                 <input value={form.maxTime} onChange={(e) => update("maxTime", e.target.value)} placeholder="max" inputMode="numeric"
                   className={`w-full h-12 border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base text-center ${form.maxTime ? "bg-[#262422]" : "bg-transparent"}`} />
               </div>
             </div>
             <div>
-              <label className="block text-[11px] text-[#5C574F]">Komplexität</label>
+              <label className="block text-[11px] text-[#A39C8F]">Komplexität</label>
               <div className="mt-1.5">
                 <ComplexityPicker value={form.complexity} onChange={(v) => update("complexity", v)} />
               </div>
-              {complexityLabel(form) && <p className="text-xs text-[#5C574F] mt-1.5">→ {complexityLabel(form)}</p>}
+              {complexityLabel(form) && <p className="text-xs text-[#A39C8F] mt-1.5">→ {complexityLabel(form)}</p>}
             </div>
 
             <div>
-              <label className="block text-[11px] text-[#5C574F]">Mechanismen</label>
+              <label className="block text-[11px] text-[#A39C8F]">Mechanismen</label>
               <button type="button" onClick={() => setPickerOpen("mechanisms")}
-                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.mechanisms.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.mechanisms.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.mechanisms.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.mechanisms.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#A39C8F] text-base"}`}>
                 <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 ${form.mechanisms.length === 1 ? "justify-center text-center" : "items-center"}`}>
                   {form.mechanisms.length ? form.mechanisms.map((m) => {
                     const MIcon = tagIcon(m);
                     return <Pill key={m}><MIcon size={10} className="inline -mt-0.5 mr-0.5" />{m}</Pill>;
                   }) : "Mechanismen auswählen…"}
                 </span>
-                <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
+                <ChevronDown size={16} className="shrink-0 text-[#A39C8F] mt-1.5" />
               </button>
             </div>
             <div>
-              <label className="block text-[11px] text-[#5C574F]">Kategorien</label>
+              <label className="block text-[11px] text-[#A39C8F]">Kategorien</label>
               <button type="button" onClick={() => setPickerOpen("categories")}
-                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.categories.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.categories.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.categories.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.categories.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#A39C8F] text-base"}`}>
                 <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 ${form.categories.length === 1 ? "justify-center text-center" : "items-center"}`}>
                   {form.categories.length ? form.categories.map((c) => {
                     const CIcon = tagIcon(c);
                     return <Pill key={c}><CIcon size={10} className="inline -mt-0.5 mr-0.5" />{c}</Pill>;
                   }) : "Kategorien auswählen…"}
                 </span>
-                <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
+                <ChevronDown size={16} className="shrink-0 text-[#A39C8F] mt-1.5" />
               </button>
             </div>
             <div>
-              <label className="block text-[11px] text-[#5C574F]">Spielertyp</label>
+              <label className="block text-[11px] text-[#A39C8F]">Spielertyp</label>
               <button type="button" onClick={() => setPickerOpen("playerTypes")}
-                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.playerTypes.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.playerTypes.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#5C574F] text-base"}`}>
+                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.playerTypes.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.playerTypes.length ? "bg-[#262422] border-[#3A3631]" : "bg-transparent border-[#3A3631] text-[#A39C8F] text-base"}`}>
                 <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 ${form.playerTypes.length === 1 ? "justify-center text-center" : "items-center"}`}>
                   {form.playerTypes.length ? form.playerTypes.map((t) => <Pill key={t}>{t}</Pill>) : "Spielertyp auswählen…"}
                 </span>
-                <ChevronDown size={16} className="shrink-0 text-[#5C574F] mt-1.5" />
+                <ChevronDown size={16} className="shrink-0 text-[#A39C8F] mt-1.5" />
               </button>
             </div>
             {typesError && <p className="text-[11px] text-[#C1443C] -mt-2">{typesError}</p>}
@@ -3734,7 +3735,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             {(form.status === "owned" || form.status === "none") && (
               <button type="button" onClick={() => update("format", form.format === "digital" ? "analog" : "digital")}
                 className={`w-full h-12 flex items-center justify-between text-left px-3.5 rounded-[14px] border ${form.format === "digital" ? "bg-[#8B9AFA]/15 border-[#8B9AFA]/40" : "bg-transparent border-[#3A3631]"}`}>
-                <span className={`text-base flex-1 min-w-0 text-left pr-2 ${form.format === "digital" ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>{form.status === "owned" ? "Digitale Version" : "Digital gespielt"}</span>
+                <span className={`text-base flex-1 min-w-0 text-left pr-2 ${form.format === "digital" ? "text-[#F2EDE4]" : "text-[#A39C8F]"}`}>{form.status === "owned" ? "Digitale Version" : "Digital gespielt"}</span>
                 <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.format === "digital" ? "bg-[#8B9AFA] justify-end" : "bg-[#3A3631] justify-start"}`}>
                   <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
                 </div>
@@ -3743,7 +3744,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
 
             {form.status === "owned" && (
               <div>
-                <label className="block text-[11px] text-[#5C574F] mb-1.5">Verkaufsstatus {childExpansions.length > 0 && <span className="text-[10px]">(wird an {childExpansions.length} Erweiterung{childExpansions.length === 1 ? "" : "en"} weitergegeben)</span>}</label>
+                <label className="block text-[11px] text-[#A39C8F] mb-1.5">Verkaufsstatus {childExpansions.length > 0 && <span className="text-[10px]">(wird an {childExpansions.length} Erweiterung{childExpansions.length === 1 ? "" : "en"} weitergegeben)</span>}</label>
                 <Segmented
                   options={[{ v: "", label: "Kein Verkauf" }, { v: "forSale", label: "Zum Verkauf" }, { v: "sold", label: "Verkauft" }]}
                   value={form.saleStatus || ""}
@@ -3755,20 +3756,20 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             {form.status === "owned" && (form.saleStatus === "forSale" || form.saleStatus === "sold") && (
               <div className="flex gap-3">
                 <div className="flex-1 min-w-0">
-                  <label className="block text-[11px] text-[#5C574F] mb-1.5">Kaufpreis</label>
+                  <label className="block text-[11px] text-[#A39C8F] mb-1.5">Kaufpreis</label>
                   <div className="relative">
                     <input value={form.purchasePrice || ""} onChange={(e) => update("purchasePrice", e.target.value.replace(/[^0-9.,]/g, ""))} placeholder="0" inputMode="decimal"
                       className={`w-full h-12 border border-[#3A3631] rounded-[14px] pl-3.5 pr-8 text-[#F2EDE4] text-base focus:outline-none focus:border-[#E85D9C] ${form.purchasePrice ? "bg-[#262422]" : "bg-transparent"}`} />
-                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#5C574F] text-sm pointer-events-none">€</span>
+                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#A39C8F] text-sm pointer-events-none">€</span>
                   </div>
                 </div>
                 {form.saleStatus === "sold" && (
                   <div className="flex-1 min-w-0">
-                    <label className="block text-[11px] text-[#5C574F] mb-1.5">Verkaufspreis</label>
+                    <label className="block text-[11px] text-[#A39C8F] mb-1.5">Verkaufspreis</label>
                     <div className="relative">
                       <input value={form.salePrice || ""} onChange={(e) => update("salePrice", e.target.value.replace(/[^0-9.,]/g, ""))} placeholder="0" inputMode="decimal"
                         className={`w-full h-12 border border-[#3A3631] rounded-[14px] pl-3.5 pr-8 text-[#F2EDE4] text-base focus:outline-none focus:border-[#E85D9C] ${form.salePrice ? "bg-[#262422]" : "bg-transparent"}`} />
-                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#5C574F] text-sm pointer-events-none">€</span>
+                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#A39C8F] text-sm pointer-events-none">€</span>
                     </div>
                   </div>
                 )}
@@ -3777,7 +3778,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
 
             {form.status === "owned" && (
               <div>
-                <label className="block text-[11px] text-[#5C574F] mb-1.5">Erweiterung von <span className="text-[10px]">(optional — ein Basisspiel kann mehrere Erweiterungen haben)</span></label>
+                <label className="block text-[11px] text-[#A39C8F] mb-1.5">Erweiterung von <span className="text-[10px]">(optional — ein Basisspiel kann mehrere Erweiterungen haben)</span></label>
                 <GameSearchPicker
                   games={games}
                   excludeId={form.id}
@@ -3791,13 +3792,13 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
 
             {initial && form.status === "owned" && !form.expansionOf && onUpdateOtherGame && (
               <div>
-                <label className="block text-[11px] text-[#5C574F] mb-1.5">Erweiterungen dieses Spiels <span className="text-[10px]">(mehrere auf einmal verknüpfbar)</span></label>
+                <label className="block text-[11px] text-[#A39C8F] mb-1.5">Erweiterungen dieses Spiels <span className="text-[10px]">(mehrere auf einmal verknüpfbar)</span></label>
                 {childExpansions.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mb-2">
                     {childExpansions.map((g) => (
                       <span key={g.id} className="flex items-center gap-1.5 bg-[#262422] border border-[#3A3631] rounded-full pl-3 pr-1.5 py-1 text-[11px] text-[#F2EDE4]">
                         {g.name}
-                        <button type="button" onClick={() => setExpansionLink(g.id, "")} className="w-5 h-5 flex items-center justify-center rounded-full text-[#5C574F] active:bg-white/5" aria-label={`${g.name} nicht mehr als Erweiterung verknüpfen`}>
+                        <button type="button" onClick={() => setExpansionLink(g.id, "")} className="w-5 h-5 flex items-center justify-center rounded-full text-[#A39C8F] active:bg-white/5" aria-label={`${g.name} nicht mehr als Erweiterung verknüpfen`}>
                           <X size={12} />
                         </button>
                       </span>
@@ -3805,7 +3806,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
                   </div>
                 )}
                 <button type="button" onClick={() => setExpansionPickerOpen(true)}
-                  className="w-full h-11 border border-dashed border-[#3A3631] rounded-[14px] text-sm text-[#5C574F] flex items-center justify-center gap-1.5">
+                  className="w-full h-11 border border-dashed border-[#3A3631] rounded-[14px] text-sm text-[#A39C8F] flex items-center justify-center gap-1.5">
                   <Plus size={14} /> Erweiterungen verknüpfen…
                 </button>
                 {expansionPickerOpen && (
@@ -3828,7 +3829,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
 
             <button type="button" onClick={() => update("isCampaign", !form.isCampaign)}
               className={`w-full h-12 flex items-center justify-between text-left px-3.5 rounded-[14px] border ${form.isCampaign ? "bg-[#E85D9C]/15 border-[#E85D9C]/40" : "bg-transparent border-[#3A3631]"}`}>
-              <span className={`text-base flex-1 min-w-0 text-left pr-2 ${form.isCampaign ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>Kampagnenspiel (Fortschritts-Historie)</span>
+              <span className={`text-base flex-1 min-w-0 text-left pr-2 ${form.isCampaign ? "text-[#F2EDE4]" : "text-[#A39C8F]"}`}>Kampagnenspiel (Fortschritts-Historie)</span>
               <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.isCampaign ? "bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] justify-end" : "bg-[#3A3631] justify-start"}`}>
                 <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
               </div>
@@ -3837,7 +3838,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             <div>
               <button type="button" onClick={() => update("lentTo", form.lentTo ? "" : " ")}
                 className={`w-full h-12 flex items-center justify-between text-left px-3.5 rounded-[14px] border ${form.lentTo ? "bg-[#D4A24C]/15 border-[#D4A24C]/40" : "bg-transparent border-[#3A3631]"}`}>
-                <span className={`text-base flex items-center gap-2 ${form.lentTo ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>Verliehen</span>
+                <span className={`text-base flex items-center gap-2 ${form.lentTo ? "text-[#F2EDE4]" : "text-[#A39C8F]"}`}>Verliehen</span>
                 <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.lentTo ? "bg-[#D4A24C] justify-end" : "bg-[#3A3631] justify-start"}`}>
                   <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
                 </div>
@@ -3849,7 +3850,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
             </div>
 
             <div>
-              <label className="block text-[11px] text-[#5C574F]">Notizen, Hausregeln</label>
+              <label className="block text-[11px] text-[#A39C8F]">Notizen, Hausregeln</label>
               <div className="mt-1.5">
                 <RichTextEditor value={form.notes} onChange={(html) => update("notes", html)} placeholder="Notizen, Hausregeln…" />
               </div>
@@ -3882,7 +3883,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
           <div className={`bg-[#1C1B1A] border border-[#3A3631] rounded-t-[28px] w-full max-w-3xl mx-auto font-body ${aiMenuClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) => e.stopPropagation()} style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
             <div className="px-5 py-4 flex items-center justify-between">
               <h2 className="font-display text-lg text-[#F2EDE4]">{aiWorkerUrl ? "KI-Werkzeuge" : "Spieldaten holen"}</h2>
-              <button onClick={aiMenuClose.requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]"><X size={18} /></button>
+              <button onClick={aiMenuClose.requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={18} /></button>
             </div>
             <div className="p-3 space-y-2">
               {aiWorkerUrl && (
@@ -3909,7 +3910,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
                 {bggFetchLoading ? <Loader2 size={16} className="text-[#8B9AFA]" /> : <Globe size={16} className="text-[#8B9AFA]" />}
                 <div>
                   <p className="text-sm text-[#F2EDE4]">BGG-Daten {form.bggId ? "aktualisieren" : "nachträglich holen"}</p>
-                  <p className="text-[11px] text-[#5C574F]">Zeigt eine Auswahl, was übernommen wird</p>
+                  <p className="text-[11px] text-[#A39C8F]">Zeigt eine Auswahl, was übernommen wird</p>
                 </div>
               </button>
             </div>
@@ -3982,13 +3983,13 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
             <div className="shrink-0 px-5 py-4 flex items-center justify-between">
               <h2 className="font-display text-lg text-[#F2EDE4]">Welches Spiel?</h2>
-              <button onClick={bggCandClose.requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]"><X size={18} /></button>
+              <button onClick={bggCandClose.requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={18} /></button>
             </div>
             <div className="p-4 overflow-y-auto flex-1 space-y-2">
               {bggFetchCandidates.map((r) => (
                 <button key={r.bggId} onClick={() => pickBggCandidate(r.bggId)} className="w-full text-left bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center justify-between">
-                  <span className="text-[#F2EDE4] text-sm">{r.name} <span className="text-[#5C574F]">({r.year || "?"})</span></span>
-                  <ChevronRight size={15} className="text-[#5C574F]" />
+                  <span className="text-[#F2EDE4] text-sm">{r.name} <span className="text-[#A39C8F]">({r.year || "?"})</span></span>
+                  <ChevronRight size={15} className="text-[#A39C8F]" />
                 </button>
               ))}
             </div>
@@ -4045,7 +4046,7 @@ function PlayerOrderModal({ players, onSave, onClose }) {
           <h2 className="font-display text-xl text-[#F2EDE4]">Reihenfolge</h2>
           <button onClick={() => { onSave(items.map((p) => p.id)); requestClose(); }} className="text-[#E85D9C] text-sm font-medium px-2 py-1">Fertig</button>
         </div>
-        <p className="shrink-0 text-xs text-[#5C574F] px-5 pb-2">Am Griff-Symbol ziehen. Gilt überall, wo Mitspieler angezeigt werden.</p>
+        <p className="shrink-0 text-xs text-[#A39C8F] px-5 pb-2">Am Griff-Symbol ziehen. Gilt überall, wo Mitspieler angezeigt werden.</p>
         <div className="flex-1 overflow-y-auto p-4 space-y-2" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))", touchAction: draggingId ? "none" : "auto" }}>
           {items.map((p, idx) => (
             <div key={p.id} ref={(el) => { rowRefs.current[p.id] = el; }}
@@ -4058,11 +4059,11 @@ function PlayerOrderModal({ players, onSave, onClose }) {
                 transition: "border-color .15s, transform .15s, box-shadow .15s",
               }}>
               <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 bg-[#1C1B1A] flex items-center justify-center">
-                {p.photo ? <img src={p.photo} alt={p.name} className="w-full h-full object-cover" /> : <Camera size={12} className="text-[#5C574F]" />}
+                {p.photo ? <img src={p.photo} alt={p.name} className="w-full h-full object-cover" /> : <Camera size={12} className="text-[#A39C8F]" />}
               </div>
               <span className="text-sm text-[#F2EDE4] flex-1 truncate">{p.name}</span>
               <div
-                className="text-[#5C574F] p-2 -mr-2"
+                className="text-[#A39C8F] p-2 -mr-2"
                 onTouchStart={() => handleTouchStart(idx, p.id)}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
@@ -4177,13 +4178,13 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">{initial ? "Partie bearbeiten" : "Partie eintragen"}</h2>
-          <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]"><X size={20} /></button>
+          <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
         </div>
         <div className="p-5 space-y-4 overflow-y-auto flex-1" style={{ touchAction: draggingPlayerId ? "none" : "auto" }}>
           {!selectedGame ? (
             <div>
               <input value={gameQuery} onChange={(e) => setGameQuery(e.target.value)} placeholder="Spiel suchen…"
-                className="w-full bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 text-[#F2EDE4] placeholder-[#5C574F] focus:outline-none focus:border-[#E85D9C]" />
+                className="w-full bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 text-[#F2EDE4] placeholder-[#A39C8F] focus:outline-none focus:border-[#E85D9C]" />
               <div className="mt-3 space-y-2">
                 {filtered.map((g) => (
                   <button key={g.id} onClick={() => setSelectedGame(g)}
@@ -4192,7 +4193,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                   </button>
                 ))}
                 {filtered.length === 0 && (
-                  <p className="text-sm text-[#5C574F] px-1">Nicht in deiner Liste? Lege es erst kurz über „Spiel hinzufügen" in der Sammlung an — auch ungespielt, ohne Besitz.</p>
+                  <p className="text-sm text-[#A39C8F] px-1">Nicht in deiner Liste? Lege es erst kurz über „Spiel hinzufügen" in der Sammlung an — auch ungespielt, ohne Besitz.</p>
                 )}
               </div>
             </div>
@@ -4201,7 +4202,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
               <div className="flex items-center gap-3 bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3">
                 <Cover game={selectedGame} size="sm" />
                 <span className="text-[#F2EDE4] font-medium flex-1 min-w-0 truncate">{selectedGame.name}</span>
-                <button onClick={() => setSelectedGame(null)} className="text-[#5C574F] text-xs shrink-0">Ändern</button>
+                <button onClick={() => setSelectedGame(null)} className="text-[#A39C8F] text-xs shrink-0">Ändern</button>
               </div>
               <Segmented
                 options={[{ v: "physical-owned", label: "Sammlung", icon: Home }, { v: "physical-other", label: "Geliehen", icon: Sofa }, { v: "bga", label: "Digital", icon: Globe }]}
@@ -4209,23 +4210,23 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                 onChange={setMode}
               />
               <div>
-                <label className="block text-[11px] text-[#5C574F]">Datum</label>
+                <label className="block text-[11px] text-[#A39C8F]">Datum</label>
                 <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-auto min-w-[180px] h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base mt-2.5" />
               </div>
               {!initial && (
                 <div>
-                  <label className="block text-[11px] text-[#5C574F]">Wie oft an diesem Tag gespielt?</label>
+                  <label className="block text-[11px] text-[#A39C8F]">Wie oft an diesem Tag gespielt?</label>
                   <div className="flex items-center gap-3 mt-2.5">
                     <button type="button" onClick={() => { haptic(5); setQuantity((q) => Math.max(1, q - 1)); }} className="w-11 h-11 rounded-full bg-[#262422] border border-[#3A3631] text-[#F2EDE4] flex items-center justify-center text-lg">–</button>
                     <span className="font-display text-xl text-[#F2EDE4] w-8 text-center">{quantity}</span>
                     <button type="button" onClick={() => { haptic(5); setQuantity((q) => Math.min(20, q + 1)); }} className="w-11 h-11 rounded-full bg-[#262422] border border-[#3A3631] text-[#F2EDE4] flex items-center justify-center text-lg">+</button>
-                    {quantity > 1 && <span className="text-xs text-[#5C574F]">legt {quantity} gleiche Partien an</span>}
+                    {quantity > 1 && <span className="text-xs text-[#A39C8F]">legt {quantity} gleiche Partien an</span>}
                   </div>
                 </div>
               )}
               <div>
                 <div className="flex items-center justify-between">
-                  <label className="block text-[11px] text-[#5C574F]">Mitspieler <span className="text-[10px]">(antippen zum Auswählen, halten zum Bearbeiten)</span></label>
+                  <label className="block text-[11px] text-[#A39C8F]">Mitspieler <span className="text-[10px]">(antippen zum Auswählen, halten zum Bearbeiten)</span></label>
                   {onReorderPlayers && playerProfiles.length > 1 && (
                     <button type="button" onClick={() => setPlayerOrderOpen(true)} className="shrink-0 text-[11px] text-[#8B9AFA] font-medium flex items-center gap-1">
                       <GripVertical size={12} /> Reihenfolge
@@ -4248,7 +4249,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                           {p.photo ? (
                             <img src={p.photo} alt={p.name} className="w-full h-full block object-cover" />
                           ) : (
-                            <div className="w-full h-full bg-[#262422] flex items-center justify-center"><Camera size={20} className="text-[#5C574F]" /></div>
+                            <div className="w-full h-full bg-[#262422] flex items-center justify-center"><Camera size={20} className="text-[#A39C8F]" /></div>
                           )}
                           {winnerIds.includes(p.id) ? (
                             <div className="absolute inset-0 bg-[#D4A24C]/35 flex items-center justify-center">
@@ -4258,18 +4259,18 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                             <div className="absolute inset-0 bg-[#E85D9C]/25 flex items-center justify-center"><Check size={18} className="text-white" /></div>
                           )}
                         </button>
-                        <p className="text-[10px] text-[#5C574F] truncate w-full text-center">{p.name}</p>
+                        <p className="text-[10px] text-[#A39C8F] truncate w-full text-center">{p.name}</p>
                       </div>
                     );
                   })}
-                  <button type="button" onClick={() => setNewPlayerOpen(true)} className="shrink-0 w-14 h-14 rounded-full border-2 border-dashed border-[#3A3631] flex items-center justify-center text-[#5C574F]">
+                  <button type="button" onClick={() => setNewPlayerOpen(true)} className="shrink-0 w-14 h-14 rounded-full border-2 border-dashed border-[#3A3631] flex items-center justify-center text-[#A39C8F]">
                     <Plus size={18} />
                   </button>
                 </div>
               </div>
               {playerIds.length > 0 && (
                 <div>
-                  <label className="block text-[11px] text-[#5C574F]">Ergebnis <span className="text-[10px]">(Krone = Gewinner:in, mehrere bei Gleichstand möglich · Griff = Reihenfolge)</span></label>
+                  <label className="block text-[11px] text-[#A39C8F]">Ergebnis <span className="text-[10px]">(Krone = Gewinner:in, mehrere bei Gleichstand möglich · Griff = Reihenfolge)</span></label>
                   <div className="space-y-1.5 mt-1.5" style={{ touchAction: draggingPlayerId ? "none" : "auto" }}>
                     {playerIds.map((id, idx) => {
                       const p = playerProfiles.find((pp) => pp.id === id);
@@ -4287,7 +4288,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                             transition: "border-color .15s, transform .15s, box-shadow .15s",
                           }}>
                           <div
-                            className="text-[#5C574F] p-1 -ml-1 shrink-0"
+                            className="text-[#A39C8F] p-1 -ml-1 shrink-0"
                             onTouchStart={() => handleResultTouchStart(idx, id)}
                             onTouchMove={handleResultTouchMove}
                             onTouchEnd={handleResultTouchEnd}
@@ -4295,7 +4296,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                             <GripVertical size={16} />
                           </div>
                           <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0">
-                            {p.photo ? <img src={p.photo} alt={p.name} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-[#1C1B1A] flex items-center justify-center"><Camera size={12} className="text-[#5C574F]" /></div>}
+                            {p.photo ? <img src={p.photo} alt={p.name} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-[#1C1B1A] flex items-center justify-center"><Camera size={12} className="text-[#A39C8F]" /></div>}
                           </div>
                           <span className="text-sm text-[#F2EDE4] flex-1 min-w-0 truncate">{p.name}</span>
                           <button type="button"
@@ -4304,7 +4305,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                               setScore(id, cur.startsWith("-") ? cur.slice(1) : (cur ? `-${cur}` : "-"));
                             }}
                             aria-label="Vorzeichen umkehren"
-                            className={`w-7 h-8 shrink-0 rounded-lg border flex items-center justify-center text-sm font-medium ${(scores[id] || "").startsWith("-") ? "bg-[#C1443C]/15 border-[#C1443C]/40 text-[#C1443C]" : "border-[#3A3631] text-[#5C574F]"}`}>
+                            className={`w-7 h-8 shrink-0 rounded-lg border flex items-center justify-center text-sm font-medium ${(scores[id] || "").startsWith("-") ? "bg-[#C1443C]/15 border-[#C1443C]/40 text-[#C1443C]" : "border-[#3A3631] text-[#A39C8F]"}`}>
                             −
                           </button>
                           <input
@@ -4316,7 +4317,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                             className="w-14 h-8 shrink-0 bg-[#1C1B1A] border border-[#3A3631] rounded-lg px-2 text-center text-[#F2EDE4] text-sm focus:outline-none focus:border-[#E85D9C]"
                           />
                           <button type="button" onClick={() => toggleWinner(id)} aria-label={isWinner ? "Gewinner entfernen" : "Als Gewinner markieren"}
-                            className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center border ${isWinner ? "bg-[#D4A24C]/20 border-[#D4A24C] text-[#D4A24C]" : "border-[#3A3631] text-[#5C574F]"}`}>
+                            className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center border ${isWinner ? "bg-[#D4A24C]/20 border-[#D4A24C] text-[#D4A24C]" : "border-[#3A3631] text-[#A39C8F]"}`}>
                             <Crown size={15} fill={isWinner ? "currentColor" : "none"} />
                           </button>
                         </div>
@@ -4326,7 +4327,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                 </div>
               )}
               <div>
-                <label className="block text-[11px] text-[#5C574F] mb-1.5">Notiz</label>
+                <label className="block text-[11px] text-[#A39C8F] mb-1.5">Notiz</label>
                 <textarea
                   ref={notesRef}
                   value={notes}
@@ -4336,7 +4337,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                   className={`w-full border border-[#3A3631] rounded-[14px] px-3.5 py-3 text-[#F2EDE4] text-base focus:outline-none focus:border-[#E85D9C] resize-none overflow-hidden ${notes ? "bg-[#262422]" : "bg-transparent"}`} />
               </div>
               <div>
-                <label className="block text-[11px] text-[#5C574F]">Fotos</label>
+                <label className="block text-[11px] text-[#A39C8F]">Fotos</label>
                 <div className="mt-1.5">
                   <PhotoGallerySection
                     images={images}
@@ -4372,7 +4373,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
               className="w-full h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#E85D9C]" />
             <button onClick={() => { if (newPlayerName.trim()) { const id = uid(); onAddPlayer(newPlayerName.trim(), null, id); setPlayerIds((prev) => [...prev, id]); setNewPlayerName(""); newPlayerClose.requestClose(); } }}
               className="w-full h-12 bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] rounded-[14px] font-medium">Anlegen</button>
-            <p className="text-xs text-[#5C574F] text-center">Ein Profilbild kannst du danach über den Namen ergänzen.</p>
+            <p className="text-xs text-[#A39C8F] text-center">Ein Profilbild kannst du danach über den Namen ergänzen.</p>
           </div>
         </div>
       )}
@@ -4399,7 +4400,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                   return p && p.photo ? (
                     <img src={p.photo} alt={p.name} className="w-full h-full block object-cover" />
                   ) : (
-                    <span className="text-[#5C574F] font-display text-2xl">{editingPlayer.name.charAt(0).toUpperCase()}</span>
+                    <span className="text-[#A39C8F] font-display text-2xl">{editingPlayer.name.charAt(0).toUpperCase()}</span>
                   );
                 })()}
               </button>
@@ -4407,7 +4408,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                 <Camera size={13} className="text-white" />
               </span>
             </div>
-            <p className="text-xs text-[#5C574F] text-center -mt-1">Foto antippen zum Ändern</p>
+            <p className="text-xs text-[#A39C8F] text-center -mt-1">Foto antippen zum Ändern</p>
             <input
               onFocus={handleFocusScroll}
               value={editingPlayer.name}
@@ -4489,7 +4490,7 @@ function DashboardReorderScreen({ order, sections, labels, hiddenSections = [], 
         <h2 className="font-display text-xl text-[#F2EDE4]">Sektionen</h2>
         <button onClick={() => { onSave(items); onToggleHidden && onToggleHidden(hidden); }} className="text-[#E85D9C] text-sm font-medium px-2 py-1">Fertig</button>
       </div>
-      <p className="shrink-0 text-xs text-[#5C574F] px-5 pt-3 pb-1">Am Griff-Symbol ziehen, um die Reihenfolge zu ändern. Mit dem Augen-Symbol Sektionen aus- und einblenden.</p>
+      <p className="shrink-0 text-xs text-[#A39C8F] px-5 pt-3 pb-1">Am Griff-Symbol ziehen, um die Reihenfolge zu ändern. Mit dem Augen-Symbol Sektionen aus- und einblenden.</p>
       <div className="flex-1 overflow-y-auto p-4 space-y-2" style={{ touchAction: draggingKey ? "none" : "auto" }}>
         {items.map((key, idx) => {
           const isHidden = hidden.includes(key);
@@ -4507,12 +4508,12 @@ function DashboardReorderScreen({ order, sections, labels, hiddenSections = [], 
               transition: "border-color .15s, transform .15s, box-shadow .15s, opacity .15s",
             }}
           >
-            <button onClick={() => toggleHidden(key)} className="text-[#5C574F] p-1 -ml-1 shrink-0" aria-label={isHidden ? "Sektion einblenden" : "Sektion ausblenden"}>
+            <button onClick={() => toggleHidden(key)} className="text-[#A39C8F] p-1 -ml-1 shrink-0" aria-label={isHidden ? "Sektion einblenden" : "Sektion ausblenden"}>
               {isHidden ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
-            <span className={`text-sm flex-1 ${isHidden ? "text-[#5C574F]" : "text-[#F2EDE4]"}`}>{labels[key] || key}</span>
+            <span className={`text-sm flex-1 ${isHidden ? "text-[#A39C8F]" : "text-[#F2EDE4]"}`}>{labels[key] || key}</span>
             <div
-              className="text-[#5C574F] p-2 -mr-2"
+              className="text-[#A39C8F] p-2 -mr-2"
               onTouchStart={() => handleTouchStart(idx)}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
@@ -4776,21 +4777,21 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
       <button key="month" onClick={() => onView(topMonthGame)} className="w-full text-left bg-[#262422] border border-[#3A3631] rounded-xl px-3.5 py-2.5 flex items-center gap-2.5">
         <Cover game={topMonthGame} size="sm" />
         <div className="min-w-0 flex-1">
-          <p className="text-[#5C574F] text-[10px] font-body flex items-center gap-1"><TrendingUp size={10} /> Spiel des Monats</p>
-          <p className="text-[#F2EDE4] font-body text-sm font-medium truncate">{topMonthGame.name} <span className="text-[#5C574F] font-medium">· {topMonth[1]}× diesen Monat</span></p>
+          <p className="text-[#A39C8F] text-[10px] font-body flex items-center gap-1"><TrendingUp size={10} /> Spiel des Monats</p>
+          <p className="text-[#F2EDE4] font-body text-sm font-medium truncate">{topMonthGame.name} <span className="text-[#A39C8F] font-medium">· {topMonth[1]}× diesen Monat</span></p>
         </div>
       </button>
     ),
     bestof: bestOf && (
       <div key="bestof">
-        <h2 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide mb-2">Best of</h2>
+        <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Best of</h2>
         {plays.length < 5 ? (
           <p className="text-xs text-[#F2EDE4]">Trag noch ein paar mehr Partien ein, dann zeigen wir dir hier deine Vorlieben.</p>
         ) : (
         <div className="grid grid-cols-2 gap-2.5">
           {bestOf.topYear && bestOf.topYear.game && (
             <button onClick={() => onView(bestOf.topYear.game)} className="text-left glass border border-white/10 rounded-2xl p-3 flex flex-col">
-              <p className="text-[10px] text-[#5C574F] font-body mb-1">Meistgespielt {new Date().getFullYear()}</p>
+              <p className="text-[10px] text-[#A39C8F] font-body mb-1">Meistgespielt {new Date().getFullYear()}</p>
               <p className="text-[#F2EDE4] text-sm font-body font-medium truncate flex items-center gap-1.5">
                 {(() => {
                   const label = complexityLabel(bestOf.topYear.game);
@@ -4804,21 +4805,21 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
           )}
           {bestOf.favCount && (
             <div className="glass border border-white/10 rounded-2xl p-3">
-              <p className="text-[10px] text-[#5C574F] font-body mb-1">Liebste Spielerzahl</p>
+              <p className="text-[10px] text-[#A39C8F] font-body mb-1">Liebste Spielerzahl</p>
               <p className="text-[#F2EDE4] text-sm font-body font-medium">{bestOf.favCount.count} Spieler</p>
               <p className="text-[#E85D9C] text-xs font-body">{bestOf.favCount.times}× so gespielt</p>
             </div>
           )}
           {bestOf.favCat && (
             <div className="glass border border-white/10 rounded-2xl p-3">
-              <p className="text-[10px] text-[#5C574F] font-body mb-1">Lieblingsgenre</p>
+              <p className="text-[10px] text-[#A39C8F] font-body mb-1">Lieblingsgenre</p>
               <p className="text-[#F2EDE4] text-sm font-body font-medium truncate">{bestOf.favCat[0]}</p>
               <p className="text-[#7FB3AA] text-xs font-body">am häufigsten gespielt</p>
             </div>
           )}
           {bestOf.favMech && (
             <div className="glass border border-white/10 rounded-2xl p-3">
-              <p className="text-[10px] text-[#5C574F] font-body mb-1">Lieblingsmechanismus</p>
+              <p className="text-[10px] text-[#A39C8F] font-body mb-1">Lieblingsmechanismus</p>
               <p className="text-[#F2EDE4] text-sm font-body font-medium truncate">{bestOf.favMech[0]}</p>
               <p className="text-[#C1443C] text-xs font-body">am häufigsten gespielt</p>
             </div>
@@ -4827,9 +4828,9 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             const CIcon = COMPLEXITY_ICON[bestOf.complexityLabel];
             return (
               <button onClick={() => setStatInfo("playedComplexity")} className="text-left glass border border-white/10 rounded-2xl p-3">
-                <p className="text-[10px] text-[#5C574F] font-body mb-1">Deine Komplexität</p>
+                <p className="text-[10px] text-[#A39C8F] font-body mb-1">Deine Komplexität</p>
                 <p className="text-[#F2EDE4] text-sm font-body font-medium flex items-center gap-1.5">{CIcon && <CIcon size={14} />} {COMPLEXITY_SHORT[bestOf.complexityLabel]}</p>
-                <p className="text-[#5C574F] text-xs font-body">Ø {bestOf.avgPlayedComplexity.toFixed(1)}/5 gespielt</p>
+                <p className="text-[#A39C8F] text-xs font-body">Ø {bestOf.avgPlayedComplexity.toFixed(1)}/5 gespielt</p>
               </button>
             );
           })()}
@@ -4839,30 +4840,30 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     ),
     records: (mostPlayed || bestDay || bestStreak || biggestPlayGroup) && (
       <div key="records">
-        <h2 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide mb-2">Rekorde</h2>
+        <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Rekorde</h2>
         <div className="grid grid-cols-2 gap-2.5">
           {mostPlayed && mostPlayed.game && mostPlayed.count >= 2 && (
             <button onClick={() => onView(mostPlayed.game)} className="glass text-left rounded-2xl p-4 border border-white/10">
               <p className="font-display text-4xl text-[#F2EDE4]">{mostPlayed.count}×</p>
-              <p className="text-xs text-[#5C574F] mt-1.5">Meistgespielt · <span className="text-[#E85D9C]">{mostPlayed.game.name}</span></p>
+              <p className="text-xs text-[#A39C8F] mt-1.5">Meistgespielt · <span className="text-[#E85D9C]">{mostPlayed.game.name}</span></p>
             </button>
           )}
           {bestStreak && (
             <div className="glass rounded-2xl p-4 border border-white/10">
               <p className="font-display text-4xl text-[#F2EDE4]">{bestStreak}</p>
-              <p className="text-xs text-[#5C574F] mt-1.5">Tage-Serie am Stück</p>
+              <p className="text-xs text-[#A39C8F] mt-1.5">Tage-Serie am Stück</p>
             </div>
           )}
           {bestDay && (
             <div className="glass rounded-2xl p-4 border border-white/10">
               <p className="font-display text-4xl text-[#F2EDE4]">{bestDay.count}×</p>
-              <p className="text-xs text-[#5C574F] mt-1.5">Partien an einem Tag</p>
+              <p className="text-xs text-[#A39C8F] mt-1.5">Partien an einem Tag</p>
             </div>
           )}
           {biggestPlayGroup && (
             <div className="glass rounded-2xl p-4 border border-white/10">
               <p className="font-display text-4xl text-[#F2EDE4]">{biggestPlayGroup}</p>
-              <p className="text-xs text-[#5C574F] mt-1.5">Spieler in einer Runde</p>
+              <p className="text-xs text-[#A39C8F] mt-1.5">Spieler in einer Runde</p>
             </div>
           )}
         </div>
@@ -4870,11 +4871,11 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     ),
     wishlist: wishlist.length > 0 && (
       <div key="wishlist">
-        <h2 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide mb-2">Von der Wunschliste</h2>
+        <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Von der Wunschliste</h2>
         <div className="flex gap-3 overflow-x-auto pb-1">
           {wishlist.map(g => (
             <DashboardGameTile key={g.id} game={g} onClick={() => onView(g)}>
-              {g.year && <p className="text-[#5C574F] text-[10px] font-body">{g.year}</p>}
+              {g.year && <p className="text-[#A39C8F] text-[10px] font-body">{g.year}</p>}
             </DashboardGameTile>
           ))}
         </div>
@@ -4882,7 +4883,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     ),
     topRated: topRated.length > 0 && (
       <div key="topRated">
-        <h2 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide mb-2">Top 10 Spiele</h2>
+        <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Top 10 Spiele</h2>
         {topRated.length < 3 ? (
           <p className="text-xs text-[#F2EDE4]">Bewerte noch ein paar mehr Spiele, dann gibt's hier eine richtige Bestenliste.</p>
         ) : (
@@ -4894,7 +4895,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
                   {img ? (
                     <img src={img} alt={g.name} className="w-full aspect-square block object-cover rounded-xl border border-[#3A3631]" />
                   ) : (
-                    <div className="w-full aspect-square rounded-xl border border-[#3A3631] bg-[#2E2B28] flex items-center justify-center text-[#5C574F]"><Dices size={18} /></div>
+                    <div className="w-full aspect-square rounded-xl border border-[#3A3631] bg-[#2E2B28] flex items-center justify-center text-[#A39C8F]"><Dices size={18} /></div>
                   )}
                   <span className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-[#E85D9C] text-[#1C1B1A] text-[10px] font-display flex items-center justify-center border-2 border-[#1C1B1A] shadow">{i + 1}</span>
                 </button>
@@ -4906,13 +4907,13 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     ),
     dust: (
       <div key="dust">
-        <div className="flex items-center gap-2 mb-1"><Archive size={15} className="text-[#5C574F]" /><h2 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide">Staubfänger</h2></div>
+        <div className="flex items-center gap-2 mb-1"><Archive size={15} className="text-[#A39C8F]" /><h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide">Staubfänger</h2></div>
         <p className="text-xs text-[#F2EDE4] mb-2">Spiele in deinem Regal, die schon am längsten auf ihre erste Partie warten.</p>
         {dustCollectors.length === 0 ? <p className="text-[#F2EDE4] text-sm font-body">Alles im Regal wurde schon gespielt. Sehr gut!</p> : (
           <div className="flex gap-3 overflow-x-auto pb-1">
             {dustCollectors.map(g => (
               <DashboardGameTile key={g.id} game={g} onClick={() => onView(g)}>
-                <p className="text-[#5C574F] text-[10px] font-body">seit {g.addedDate ? formatDate(g.addedDate) : "?"}</p>
+                <p className="text-[#A39C8F] text-[10px] font-body">seit {g.addedDate ? formatDate(g.addedDate) : "?"}</p>
               </DashboardGameTile>
             ))}
           </div>
@@ -4921,13 +4922,13 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     ),
     digital: plays.length > 0 && (
       <div key="digital" className="bg-gradient-to-br from-[#262422] to-[#1C1B1A] border border-[#3A3631] rounded-2xl p-4">
-        <h2 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide mb-3">Digital vs. Physisch</h2>
+        <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-3">Digital vs. Physisch</h2>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <span className="text-xl">🎲</span>
             <span className="font-display text-3xl text-[#F2EDE4]">{Math.round((physicalCount / plays.length) * 100)}%</span>
           </div>
-          <span className="text-[#5C574F] text-xs font-mono tracking-widest">VS</span>
+          <span className="text-[#A39C8F] text-xs font-mono tracking-widest">VS</span>
           <div className="flex items-center gap-2">
             <span className="font-display text-3xl text-[#F2EDE4]">{Math.round((digitalCount / plays.length) * 100)}%</span>
             <span className="text-xl">💻</span>
@@ -4970,7 +4971,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
         <div className="w-10 h-10" />
       </div>
       <div className="fixed z-30" style={{ top: "max(1rem, env(safe-area-inset-top))", right: "1.25rem" }}>
-        <button onClick={() => setSortMenuOpen((o) => !o)} aria-label="Sortieren" className="glass-icon-btn w-10 h-10 flex items-center justify-center border border-white/15 rounded-full text-[#5C574F]">
+        <button onClick={() => setSortMenuOpen((o) => !o)} aria-label="Sortieren" className="glass-icon-btn w-10 h-10 flex items-center justify-center border border-white/15 rounded-full text-[#A39C8F]">
           <MoreHorizontal size={18} />
         </button>
         {sortMenuOpen && (
@@ -4982,7 +4983,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
               </div>
               {PRESETS.map((p) => (
                 <button key={p.key} onClick={() => { onReorder(p.order); sortMenuClose.requestClose(); }} className="w-full flex items-center gap-3 px-5 py-3.5 text-left active:bg-white/5">
-                  <p.icon size={16} className="text-[#5C574F]" />
+                  <p.icon size={16} className="text-[#A39C8F]" />
                   <span className="text-sm text-[#F2EDE4]">{p.label}</span>
                 </button>
               ))}
@@ -5009,21 +5010,21 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
       </div>
       <div className="grid grid-cols-2 gap-3">
         <button onClick={() => setStatInfo("collection")} className="glass text-left border border-white/10 rounded-2xl p-4">
-          <p className="text-[#5C574F] text-xs font-body">Sammlung</p>
+          <p className="text-[#A39C8F] text-xs font-body">Sammlung</p>
           <p className="font-display text-3xl text-[#F2EDE4] mt-1">{owned.length}</p>
-          <p className="text-[#5C574F] text-xs font-body mt-0.5">Spiele im Regal</p>
+          <p className="text-[#A39C8F] text-xs font-body mt-0.5">Spiele im Regal</p>
         </button>
         <button onClick={() => setStatInfo("complexity")} className="glass text-left border border-white/10 rounded-2xl p-4">
-          <p className="text-[#5C574F] text-xs font-body">Ø Komplexität</p>
+          <p className="text-[#A39C8F] text-xs font-body">Ø Komplexität</p>
           <p className="font-display text-3xl text-[#F2EDE4] mt-1">{avgComplexity}</p>
-          <p className="text-[#5C574F] text-xs font-body mt-0.5">von 5</p>
+          <p className="text-[#A39C8F] text-xs font-body mt-0.5">von 5</p>
         </button>
       </div>
       {statInfo && (
         <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[70] flex items-center justify-center p-6 ${statInfoClose.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)" }} onClick={statInfoClose.requestClose}>
           <div className="bg-[#1C1B1A] border border-[#3A3631] rounded-2xl p-5 w-full max-w-xs rise-in font-body" onClick={(e) => e.stopPropagation()}>
             <p className="text-[#F2EDE4] font-display text-lg mb-1.5">{statInfo === "collection" ? "Sammlung" : statInfo === "playedComplexity" ? "Deine Komplexität" : "Ø Komplexität"}</p>
-            <p className="text-[#5C574F] text-sm">
+            <p className="text-[#A39C8F] text-sm">
               {statInfo === "collection"
                 ? "Zählt alle Spiele mit dem Status \"Besitz\". Spiele auf der Wunschliste oder Spiele, die du nur gespielt hast, ohne sie zu besitzen, zählen hier nicht mit."
                 : statInfo === "playedComplexity"
@@ -5165,7 +5166,7 @@ function AddGamesToListModal({ games, plays, list, onToggle, onClose, aiWorkerUr
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Spiele hinzufügen</h2>
-          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]"><X size={20} /></button>
+          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
         </div>
         <div className="shrink-0 p-4 border-b border-[#3A3631] space-y-2.5">
           <SearchInput value={query} onChange={setQuery} placeholder="Suchen…" inputClassName="h-11 bg-[#262422] border border-[#3A3631] rounded-[14px] text-sm" />
@@ -5175,10 +5176,10 @@ function AddGamesToListModal({ games, plays, list, onToggle, onClose, aiWorkerUr
             </button>
           )}
           {aiError && <p className="text-[11px] text-[#C1443C]">{aiError}</p>}
-          {aiPicks && aiPicks.length === 0 && !aiLoading && <p className="text-[11px] text-[#5C574F]">Keine der übrigen Spiele passt der KI zufolge besonders gut.</p>}
+          {aiPicks && aiPicks.length === 0 && !aiLoading && <p className="text-[11px] text-[#A39C8F]">Keine der übrigen Spiele passt der KI zufolge besonders gut.</p>}
         </div>
         <div className="p-4 overflow-y-auto flex-1 space-y-2">
-          {filtered.length === 0 && <p className="text-sm text-[#5C574F] px-1">Keine Spiele gefunden.</p>}
+          {filtered.length === 0 && <p className="text-sm text-[#A39C8F] px-1">Keine Spiele gefunden.</p>}
           {filtered.map((g) => {
             const checked = list.gameIds.includes(g.id);
             const aiMatch = aiPicks && aiPicks.includes(g.name);
@@ -5248,7 +5249,7 @@ function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDelete
       <div className="w-full h-full max-w-3xl mx-auto flex flex-col overflow-hidden">
         <div className="shrink-0 px-5 flex items-center justify-between" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
           {selectMode ? (
-            <button onClick={() => { setSelectMode(false); setSelectedIds([]); }} className="text-[#5C574F] text-sm font-medium px-1">Abbrechen</button>
+            <button onClick={() => { setSelectMode(false); setSelectedIds([]); }} className="text-[#A39C8F] text-sm font-medium px-1">Abbrechen</button>
           ) : (
             <button onClick={onClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]" aria-label="Zurück"><ChevronLeft size={22} /></button>
           )}
@@ -5272,7 +5273,7 @@ function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDelete
         )}
         <div className="flex-1 overflow-y-auto p-5 pb-28">
           {listGames.length === 0 ? (
-            <p className="text-[#5C574F] text-sm text-center mt-8">Noch keine Spiele in dieser Liste.</p>
+            <p className="text-[#A39C8F] text-sm text-center mt-8">Noch keine Spiele in dieser Liste.</p>
           ) : (
             <div className="grid grid-cols-2 gap-3">
               {listGames.map((g) => (
@@ -5322,7 +5323,7 @@ function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDelete
             <button onClick={() => { setConfirmDelete(true); deleteMenuClose.requestClose(); }} className="w-full h-12 flex items-center gap-3 px-3.5 bg-[#262422] border border-[#3A3631] rounded-[14px] text-[#C1443C] text-sm">
               <Trash2 size={16} /> Liste löschen
             </button>
-            <button onClick={deleteMenuClose.requestClose} className="w-full text-center py-2 text-[#5C574F] text-sm">Abbrechen</button>
+            <button onClick={deleteMenuClose.requestClose} className="w-full text-center py-2 text-[#A39C8F] text-sm">Abbrechen</button>
           </div>
         </div>
       )}
@@ -5341,7 +5342,7 @@ function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDelete
             <button onClick={() => { onToggleGame(list.id, contextGame.id); contextGameClose1.requestClose(); }} className="w-full h-12 flex items-center gap-3 px-3.5 bg-[#262422] border border-[#3A3631] rounded-[14px] text-[#C1443C] text-sm">
               <X size={16} /> Aus Liste entfernen
             </button>
-            <button onClick={contextGameClose1.requestClose} className="w-full text-center py-2 text-[#5C574F] text-sm">Abbrechen</button>
+            <button onClick={contextGameClose1.requestClose} className="w-full text-center py-2 text-[#A39C8F] text-sm">Abbrechen</button>
           </div>
         </div>
       )}
@@ -5363,18 +5364,18 @@ function CommandBarModal({ games, plays, lists, onClose, onOpenGame, onOpenList,
     <div className={`fixed inset-0 bg-black/80 z-[75] flex flex-col ${closing ? "backdrop-fade-out" : ""}`} onClick={requestClose}>
       <div className="shrink-0 px-4" style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }} onClick={(e) => e.stopPropagation()}>
         <div className="relative">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5C574F] pointer-events-none" />
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A39C8F] pointer-events-none" />
           <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Spiele, Partien, Listen durchsuchen…"
             className="w-full h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] pl-10 pr-10 text-[#F2EDE4] text-base font-body focus:outline-none focus:border-[#E85D9C]" />
-          <button onClick={() => (query ? setQuery("") : requestClose())} aria-label={query ? "Suche löschen" : "Schließen"} className="absolute right-2 top-1/2 -translate-y-1/2 text-[#5C574F] p-1.5"><X size={18} /></button>
+          <button onClick={() => (query ? setQuery("") : requestClose())} aria-label={query ? "Suche löschen" : "Schließen"} className="absolute right-2 top-1/2 -translate-y-1/2 text-[#A39C8F] p-1.5"><X size={18} /></button>
         </div>
       </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-5" onClick={(e) => e.stopPropagation()}>
-        {!q && <p className="text-sm text-[#5C574F] text-center mt-8">Tippe, um in deiner ganzen Sammlung zu suchen.</p>}
-        {nothing && <p className="text-sm text-[#5C574F] text-center mt-8">Nichts gefunden für "{query}".</p>}
+        {!q && <p className="text-sm text-[#A39C8F] text-center mt-8">Tippe, um in deiner ganzen Sammlung zu suchen.</p>}
+        {nothing && <p className="text-sm text-[#A39C8F] text-center mt-8">Nichts gefunden für "{query}".</p>}
         {gameResults.length > 0 && (
           <div>
-            <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-2">Spiele</p>
+            <p className="text-xs text-[#A39C8F] uppercase tracking-wider mb-2">Spiele</p>
             <div className="space-y-2">
               {gameResults.map((g) => (
                 <button key={g.id} onClick={() => onOpenGame(g)} className="w-full flex items-center gap-3 px-3 py-2 rounded-[14px] bg-[#262422] border border-[#3A3631]">
@@ -5387,12 +5388,12 @@ function CommandBarModal({ games, plays, lists, onClose, onOpenGame, onOpenList,
         )}
         {listResults.length > 0 && (
           <div>
-            <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-2">Listen</p>
+            <p className="text-xs text-[#A39C8F] uppercase tracking-wider mb-2">Listen</p>
             <div className="space-y-2">
               {listResults.map((l) => (
                 <button key={l.id} onClick={() => onOpenList(l)} className="w-full flex items-center gap-3 px-3.5 h-11 rounded-[14px] bg-[#262422] border border-[#3A3631]">
                   <span className="flex-1 min-w-0 text-left text-sm text-[#F2EDE4] truncate">{l.name}</span>
-                  <span className="text-xs text-[#5C574F] shrink-0">{l.gameIds.length}</span>
+                  <span className="text-xs text-[#A39C8F] shrink-0">{l.gameIds.length}</span>
                 </button>
               ))}
             </div>
@@ -5400,12 +5401,12 @@ function CommandBarModal({ games, plays, lists, onClose, onOpenGame, onOpenList,
         )}
         {playResults.length > 0 && (
           <div>
-            <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-2">Partien</p>
+            <p className="text-xs text-[#A39C8F] uppercase tracking-wider mb-2">Partien</p>
             <div className="space-y-2">
               {playResults.map((p) => (
                 <button key={p.id} onClick={onGoToPlaylog} className="glass w-full flex items-center justify-between px-3.5 h-11 rounded-[14px] border border-white/15">
                   <span className="text-left text-sm text-[#F2EDE4] truncate">{p.gameName}</span>
-                  <span className="text-xs text-[#5C574F] shrink-0">{formatDate(p.date)}</span>
+                  <span className="text-xs text-[#A39C8F] shrink-0">{formatDate(p.date)}</span>
                 </button>
               ))}
             </div>
@@ -5427,10 +5428,10 @@ function ListPickerModal({ lists, gameId, onToggle, onCreate, onClose }) {
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Zu Liste hinzufügen</h2>
-          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]"><X size={20} /></button>
+          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
         </div>
         <div className="p-4 overflow-y-auto flex-1 space-y-2">
-          {lists.length === 0 && <p className="text-sm text-[#5C574F] px-1">Noch keine Listen — leg unten deine erste an.</p>}
+          {lists.length === 0 && <p className="text-sm text-[#A39C8F] px-1">Noch keine Listen — leg unten deine erste an.</p>}
           {lists.map((l) => {
             const checked = l.gameIds.includes(gameId);
             return (
@@ -5465,11 +5466,11 @@ function PlayLogFilterModal({ filters, onChange, onClose, onReset, allWinners, v
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Filter</h2>
-          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]"><X size={20} /></button>
+          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
         </div>
         <div className="p-5 overflow-y-auto flex-1 space-y-6">
           <div>
-            <label className="block text-[11px] text-[#5C574F]">Ansicht</label>
+            <label className="block text-[11px] text-[#A39C8F]">Ansicht</label>
             <div className="mt-1.5">
               <Segmented
                 options={[{ v: "game", label: "Nach Spiel" }, { v: "evening", label: "Nach Abend" }]}
@@ -5479,7 +5480,7 @@ function PlayLogFilterModal({ filters, onChange, onClose, onReset, allWinners, v
             </div>
           </div>
           <div>
-            <label className="block text-[11px] text-[#5C574F]">Modus</label>
+            <label className="block text-[11px] text-[#A39C8F]">Modus</label>
             <div className="mt-1.5">
               <Segmented
                 options={[{ v: "all", label: "Alle" }, { v: "physical-owned", label: "Eigene" }, { v: "physical-other", label: "Geliehen" }, { v: "bga", label: "Online" }]}
@@ -5490,7 +5491,7 @@ function PlayLogFilterModal({ filters, onChange, onClose, onReset, allWinners, v
           </div>
           {allWinners.length > 0 && (
             <div>
-              <label className="block text-[11px] text-[#5C574F]">Sieger</label>
+              <label className="block text-[11px] text-[#A39C8F]">Sieger</label>
               <select value={filters.winner} onChange={(e) => onChange({ ...filters, winner: e.target.value })}
                 className="w-full mt-1.5 h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#E85D9C]">
                 <option value="">Egal</option>
@@ -5499,11 +5500,11 @@ function PlayLogFilterModal({ filters, onChange, onClose, onReset, allWinners, v
             </div>
           )}
           <div>
-            <label className="block text-[11px] text-[#5C574F]">Zeitraum</label>
+            <label className="block text-[11px] text-[#A39C8F]">Zeitraum</label>
             <div className="flex items-center gap-2 mt-1.5">
               <input type="date" value={filters.from} onChange={(e) => onChange({ ...filters, from: e.target.value })}
                 className="flex-1 min-w-0 h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#E85D9C]" />
-              <span className="shrink-0 text-[#5C574F]">–</span>
+              <span className="shrink-0 text-[#A39C8F]">–</span>
               <input type="date" value={filters.to} onChange={(e) => onChange({ ...filters, to: e.target.value })}
                 className="flex-1 min-w-0 h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#E85D9C]" />
             </div>
@@ -5535,11 +5536,11 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl text-[#F2EDE4]">Filter</h2>
-          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#5C574F]"><X size={20} /></button>
+          <button onClick={requestClose} className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/10 text-[#A39C8F]"><X size={20} /></button>
         </div>
         <div className="p-5 overflow-y-auto flex-1 space-y-6">
           <div>
-            <label className="block text-[11px] text-[#5C574F]">Sortierung</label>
+            <label className="block text-[11px] text-[#A39C8F]">Sortierung</label>
             <select value={sortBy} onChange={(e) => onChangeSort(e.target.value)}
               className="w-full mt-1.5 h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#E85D9C]">
               <option value="name-asc">Name (A–Z)</option>
@@ -5554,7 +5555,7 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
             </select>
           </div>
           <div>
-            <label className="block text-[11px] text-[#5C574F]">Status</label>
+            <label className="block text-[11px] text-[#A39C8F]">Status</label>
             <div className="mt-1.5">
               <Segmented
                 options={guestMode ? [{ v: "owned", label: "Besitz" }] : [{ v: "owned", label: "Besitz" }, { v: "wishlist", label: "Wunschliste" }, { v: "all", label: "Alle" }]}
@@ -5564,25 +5565,25 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
             </div>
           </div>
           <div>
-            <label className="block text-[11px] text-[#5C574F]">Spielbar mit … Personen</label>
+            <label className="block text-[11px] text-[#A39C8F]">Spielbar mit … Personen</label>
             <input value={filters.players} onChange={(e) => onChange({ ...filters, players: e.target.value })} placeholder="z.B. 4" inputMode="numeric"
               className="w-full mt-1.5 h-12 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3.5 text-[#F2EDE4] text-base focus:outline-none focus:border-[#E85D9C]" />
           </div>
           <div>
-            <label className="block text-[11px] text-[#5C574F]">Mindestbewertung</label>
+            <label className="block text-[11px] text-[#A39C8F]">Mindestbewertung</label>
             <div className="mt-1.5">
               <StarRating value={filters.minRating} onChange={(v) => onChange({ ...filters, minRating: v })} />
             </div>
           </div>
           <div>
-            <p className="text-[11px] text-[#5C574F] mb-1.5">Komplexität</p>
+            <p className="text-[11px] text-[#A39C8F] mb-1.5">Komplexität</p>
             <div className="flex flex-wrap gap-2">
               {Object.entries(COMPLEXITY_SHORT).map(([full, short]) => {
                 const isSel = filters.complexity.includes(full);
                 const CIcon = COMPLEXITY_ICON[full];
                 return (
                   <button key={full} onClick={() => toggle("complexity", full)}
-                    className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#5C574F]"}`}>
+                    className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}>
                     {CIcon && <CIcon size={15} />}{short}
                   </button>
                 );
@@ -5591,13 +5592,13 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
           </div>
           {!guestMode && (
           <div>
-            <p className="text-[11px] text-[#5C574F] mb-1.5">Verkaufsstatus <span className="text-[10px]">(standardmäßig ausgeblendet)</span></p>
+            <p className="text-[11px] text-[#A39C8F] mb-1.5">Verkaufsstatus <span className="text-[10px]">(standardmäßig ausgeblendet)</span></p>
             <div className="flex flex-wrap gap-2">
               {[{ v: "forSale", label: "Zum Verkauf" }, { v: "sold", label: "Verkauft" }].map((opt) => {
                 const isSel = filters.saleStatus.includes(opt.v);
                 return (
                   <button key={opt.v} onClick={() => toggle("saleStatus", opt.v)}
-                    className={`px-3 py-1.5 rounded-full text-xs border ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#5C574F]"}`}>
+                    className={`px-3 py-1.5 rounded-full text-xs border ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}>
                     {opt.label}
                   </button>
                 );
@@ -5606,19 +5607,19 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
           </div>
           )}
           <div>
-            <p className="text-[11px] text-[#5C574F] mb-1.5">Kategorien</p>
+            <p className="text-[11px] text-[#A39C8F] mb-1.5">Kategorien</p>
             <div className="flex flex-wrap gap-2">
               {(showAllCategories ? categoryOptions : categoryOptions.slice(0, CAP)).map((c) => {
                 const isSel = filters.categories.includes(c);
                 const CIcon = tagIcon(c);
                 return (
                   <button key={c} onClick={() => toggle("categories", c)}
-                    className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#5C574F]"}`}>
+                    className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}>
                     <CIcon size={12} />{c}
                   </button>
                 );
               })}
-              {categoryOptions.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine Kategorien in deiner Sammlung.</p>}
+              {categoryOptions.length === 0 && <p className="text-xs text-[#A39C8F]">Noch keine Kategorien in deiner Sammlung.</p>}
               {categoryOptions.length > CAP && (
                 <button onClick={() => setShowAllCategories((v) => !v)} className="px-3 py-1.5 rounded-full text-xs text-[#E85D9C]">
                   {showAllCategories ? "Weniger anzeigen" : `+${categoryOptions.length - CAP} mehr`}
@@ -5627,19 +5628,19 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
             </div>
           </div>
           <div>
-            <p className="text-[11px] text-[#5C574F] mb-1.5">Mechanismen</p>
+            <p className="text-[11px] text-[#A39C8F] mb-1.5">Mechanismen</p>
             <div className="flex flex-wrap gap-2">
               {(showAllMechanisms ? mechanismOptions : mechanismOptions.slice(0, CAP)).map((m) => {
                 const isSel = filters.mechanisms.includes(m);
                 const MIcon = tagIcon(m);
                 return (
                   <button key={m} onClick={() => toggle("mechanisms", m)}
-                    className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#5C574F]"}`}>
+                    className={`px-3 py-1.5 rounded-full text-xs border flex items-center gap-1.5 ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}>
                     <MIcon size={12} />{m}
                   </button>
                 );
               })}
-              {mechanismOptions.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine Mechanismen in deiner Sammlung.</p>}
+              {mechanismOptions.length === 0 && <p className="text-xs text-[#A39C8F]">Noch keine Mechanismen in deiner Sammlung.</p>}
               {mechanismOptions.length > CAP && (
                 <button onClick={() => setShowAllMechanisms((v) => !v)} className="px-3 py-1.5 rounded-full text-xs text-[#E85D9C]">
                   {showAllMechanisms ? "Weniger anzeigen" : `+${mechanismOptions.length - CAP} mehr`}
@@ -5648,18 +5649,18 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
             </div>
           </div>
           <div>
-            <p className="text-[11px] text-[#5C574F] mb-1.5">Verlag</p>
+            <p className="text-[11px] text-[#A39C8F] mb-1.5">Verlag</p>
             <div className="flex flex-wrap gap-2">
               {(showAllPublishers ? publisherOptions : publisherOptions.slice(0, CAP)).map((p) => {
                 const isSel = filters.publishers.includes(p);
                 return (
                   <button key={p} onClick={() => toggle("publishers", p)}
-                    className={`px-3 py-1.5 rounded-full text-xs border ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#5C574F]"}`}>
+                    className={`px-3 py-1.5 rounded-full text-xs border ${isSel ? "glass border-[#E85D9C]/50 text-[#F2EDE4] font-medium" : "bg-[#262422] border-[#3A3631] text-[#A39C8F]"}`}>
                     {p}
                   </button>
                 );
               })}
-              {publisherOptions.length === 0 && <p className="text-xs text-[#5C574F]">Noch keine Verlage in deiner Sammlung.</p>}
+              {publisherOptions.length === 0 && <p className="text-xs text-[#A39C8F]">Noch keine Verlage in deiner Sammlung.</p>}
               {publisherOptions.length > CAP && (
                 <button onClick={() => setShowAllPublishers((v) => !v)} className="px-3 py-1.5 rounded-full text-xs text-[#E85D9C]">
                   {showAllPublishers ? "Weniger anzeigen" : `+${publisherOptions.length - CAP} mehr`}
@@ -5796,13 +5797,13 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
               transition: "left 0.3s cubic-bezier(0.34, 1.2, 0.64, 1)",
             }}
           />
-          <button onClick={() => { haptic(6); setGridCols(2); }} aria-label="2 Spalten" className={`relative w-10 h-10 flex items-center justify-center rounded-full transition-colors duration-200 ${gridCols === 2 ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>
+          <button onClick={() => { haptic(6); setGridCols(2); }} aria-label="2 Spalten" className={`relative w-10 h-10 flex items-center justify-center rounded-full transition-colors duration-200 ${gridCols === 2 ? "text-[#F2EDE4]" : "text-[#A39C8F]"}`}>
             <div className="flex gap-0.5">
               <div className="w-2 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
               <div className="w-2 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
             </div>
           </button>
-          <button onClick={() => { haptic(6); setGridCols(4); }} aria-label="4 Spalten" className={`relative w-10 h-10 flex items-center justify-center rounded-full transition-colors duration-200 ${gridCols === 4 ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>
+          <button onClick={() => { haptic(6); setGridCols(4); }} aria-label="4 Spalten" className={`relative w-10 h-10 flex items-center justify-center rounded-full transition-colors duration-200 ${gridCols === 4 ? "text-[#F2EDE4]" : "text-[#A39C8F]"}`}>
             <div className="flex gap-0.5">
               <div className="w-1 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
               <div className="w-1 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
@@ -5831,12 +5832,12 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
               </div>
               <div className="flex items-center justify-between px-2.5 pb-2.5 mt-1">
                 <p className="text-sm font-medium truncate text-[#F2EDE4]">{l.name}</p>
-                <span className="text-[11px] shrink-0 text-[#5C574F]">{l.gameIds.length}</span>
+                <span className="text-[11px] shrink-0 text-[#A39C8F]">{l.gameIds.length}</span>
               </div>
             </button>
           );
         })}
-        <button onClick={() => setCreateListOpen(true)} className="shrink-0 w-36 rounded-2xl border-2 border-dashed border-[#3A3631] flex flex-col items-center justify-center gap-1.5 text-[#5C574F] aspect-square">
+        <button onClick={() => setCreateListOpen(true)} className="shrink-0 w-36 rounded-2xl border-2 border-dashed border-[#3A3631] flex flex-col items-center justify-center gap-1.5 text-[#A39C8F] aspect-square">
           <Plus size={24} />
           <span className="text-xs">Neue Liste</span>
         </button>
@@ -5846,7 +5847,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           <button onClick={clearFilter} className="shrink-0 px-3 py-1.5 rounded-full text-xs font-body border border-[#E85D9C] text-[#E85D9C] flex items-center gap-1"><X size={12} /> Filter</button>
         </div>
       )}
-      {list.length === 0 ? <p className="text-[#5C574F] text-sm font-body mt-8 mb-12 text-center">Keine Spiele gefunden.</p> : (
+      {list.length === 0 ? <p className="text-[#A39C8F] text-sm font-body mt-8 mb-12 text-center">Keine Spiele gefunden.</p> : (
         <div className={`grid gap-3 mt-3 pb-32 ${gridCols === 4 ? "grid-cols-4" : "grid-cols-2"}`}>
           {list.map(g => (
             <GameGridCard
@@ -5865,7 +5866,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
         </div>
       )}
       <div className="w-full pb-56 pt-4 mt-auto text-center">
-        <p className="text-[10px] font-body text-[#5C574F]">
+        <p className="text-[10px] font-body text-[#A39C8F]">
           {(() => {
             const filtersActive = activeFilterCount > 0 || query.trim();
             if (!filtersActive) {
@@ -5901,7 +5902,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
             <button onClick={() => { onDelete(contextGame); contextGameClose2.requestClose(); }} className="w-full h-12 flex items-center gap-3 px-3.5 bg-[#262422] border border-[#3A3631] rounded-[14px] text-[#C1443C] text-sm">
               <Trash2 size={16} /> Löschen
             </button>
-            <button onClick={contextGameClose2.requestClose} className="w-full text-center py-2 text-[#5C574F] text-sm">Abbrechen</button>
+            <button onClick={contextGameClose2.requestClose} className="w-full text-center py-2 text-[#A39C8F] text-sm">Abbrechen</button>
           </div>
         </div>
       )}
@@ -5912,7 +5913,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           ) : (
             games.length > 0 && (
               <button onClick={() => setSearchOpen(true)} aria-label="Suchen"
-                className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#5C574F] shadow-lg">
+                className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#A39C8F] shadow-lg">
                 <Search size={17} />
               </button>
             )
@@ -5928,13 +5929,13 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
         {games.length > 0 && (
           searchOpen ? (
             <button onClick={() => { setSearchOpen(false); setQuery(""); }} aria-label="Suche schließen"
-              className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#5C574F] shadow-lg shrink-0">
+              className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#A39C8F] shadow-lg shrink-0">
               <X size={18} />
             </button>
           ) : (
             <div className="relative shrink-0">
               <button onClick={() => setFilterModalOpen(true)} aria-label="Filter"
-                className="glass-icon-btn w-10 h-10 flex items-center justify-center border border-white/15 rounded-full text-[#5C574F] shadow-lg">
+                className="glass-icon-btn w-10 h-10 flex items-center justify-center border border-white/15 rounded-full text-[#A39C8F] shadow-lg">
                 <SlidersFilter size={17} />
               </button>
               {activeFilterCount > 0 && (
@@ -6166,7 +6167,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
           ) : (
             plays.length > 0 && (
               <button onClick={() => setSearchOpen(true)} aria-label="Suchen"
-                className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#5C574F] shadow-lg">
+                className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#A39C8F] shadow-lg">
                 <Search size={17} />
               </button>
             )
@@ -6182,13 +6183,13 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
         {plays.length > 0 && (
           searchOpen ? (
             <button onClick={() => { setSearchOpen(false); setQuery(""); }} aria-label="Suche schließen"
-              className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#5C574F] shadow-lg shrink-0">
+              className="glass-icon-btn w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#A39C8F] shadow-lg shrink-0">
               <X size={18} />
             </button>
           ) : (
             <div className="relative shrink-0">
               <button onClick={() => setFilterModalOpen(true)} aria-label="Filter"
-                className="glass-icon-btn w-10 h-10 flex items-center justify-center border border-white/15 rounded-full text-[#5C574F] shadow-lg">
+                className="glass-icon-btn w-10 h-10 flex items-center justify-center border border-white/15 rounded-full text-[#A39C8F] shadow-lg">
                 <SlidersFilter size={17} />
               </button>
               {activeFilterCount > 0 && (
@@ -6216,9 +6217,9 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
         <div className="bg-gradient-to-r from-[#E85D9C]/15 to-transparent border border-[#E85D9C]/30 rounded-2xl p-4 mb-4">
           <p className="text-xs font-semibold text-[#E85D9C] uppercase tracking-wide mb-2">{currentYear} bisher</p>
           <div className="flex items-center gap-5">
-            <div><p className="font-display text-2xl text-[#F2EDE4]">{yearPlays.length}</p><p className="text-[#5C574F] text-[11px] font-body">Partien</p></div>
-            <div><p className="font-display text-2xl text-[#F2EDE4]">{yearGameCount}</p><p className="text-[#5C574F] text-[11px] font-body">Spiele</p></div>
-            <div><p className="font-display text-2xl text-[#F2EDE4]">{estimatedHours > 0 ? `~${estimatedHours}` : "—"}</p><p className="text-[#5C574F] text-[11px] font-body">Stunden</p></div>
+            <div><p className="font-display text-2xl text-[#F2EDE4]">{yearPlays.length}</p><p className="text-[#A39C8F] text-[11px] font-body">Partien</p></div>
+            <div><p className="font-display text-2xl text-[#F2EDE4]">{yearGameCount}</p><p className="text-[#A39C8F] text-[11px] font-body">Spiele</p></div>
+            <div><p className="font-display text-2xl text-[#F2EDE4]">{estimatedHours > 0 ? `~${estimatedHours}` : "—"}</p><p className="text-[#A39C8F] text-[11px] font-body">Stunden</p></div>
           </div>
         </div>
       )}
@@ -6226,15 +6227,15 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
       {winCounts.length > 0 && (
         <div className="mb-5">
           <div className="flex items-center gap-1.5 mb-2">
-            <h2 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide">Bestenliste</h2>
-            <button onClick={() => setBestListInfoOpen(true)} aria-label="Wie wird das berechnet?" className="text-[#5C574F]"><Info size={13} /></button>
+            <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide">Bestenliste</h2>
+            <button onClick={() => setBestListInfoOpen(true)} aria-label="Wie wird das berechnet?" className="text-[#A39C8F]"><Info size={13} /></button>
           </div>
           <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-4 space-y-2.5">
             {winCounts.map(({ name, count, total }, i) => (
               <button key={name} onClick={() => pickForH2h(name)} className="w-full flex items-center gap-3 text-left">
                 <span className="text-lg w-6 shrink-0">{medals[i] || `${i + 1}.`}</span>
                 <span className="flex-1 min-w-0 text-[#F2EDE4] font-body truncate">
-                  {name} <span className="text-[#5C574F] text-xs font-body">· {total} Partie{total === 1 ? "" : "n"}</span>
+                  {name} <span className="text-[#A39C8F] text-xs font-body">· {total} Partie{total === 1 ? "" : "n"}</span>
                 </span>
                 <span className="text-[#E85D9C] text-sm font-mono shrink-0">{count}× gewonnen</span>
               </button>
@@ -6248,13 +6249,13 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
             <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-[#3A3631]" /></div>
             <div className="px-5 py-4" style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}>
               <p className="text-[#F2EDE4] font-display text-lg mb-2">Wie wird die Bestenliste berechnet?</p>
-              <p className="text-[#5C574F] text-sm leading-relaxed mb-2">
+              <p className="text-[#A39C8F] text-sm leading-relaxed mb-2">
                 Gezählt werden über alle Partien hinweg zwei Werte pro Person: wie oft sie als Gewinner:in markiert wurde (mehrere Gewinner:innen bei Gleichstand zählen alle), und wie oft sie insgesamt mitgespielt hat.
               </p>
-              <p className="text-[#5C574F] text-sm leading-relaxed mb-2">
+              <p className="text-[#A39C8F] text-sm leading-relaxed mb-2">
                 Sortiert wird nach <span className="text-[#F2EDE4]">Gewinnrate</span> (Siege ÷ Partien insgesamt), nicht nach roher Siegzahl. Bei gleicher Rate entscheidet die absolute Anzahl Siege. Wer z.B. 2 von 2 Partien gewonnen hat (100%), steht vor jemandem mit 21 von 40 Siegen (52,5%) — auch wenn die absolute Zahl kleiner ist. Angezeigt werden nur die Top 3.
               </p>
-              <p className="text-[#5C574F] text-xs leading-relaxed">
+              <p className="text-[#A39C8F] text-xs leading-relaxed">
                 Tippe auf einen Namen, um ihn direkt in den Kopf-an-Kopf-Vergleich zu laden.
               </p>
             </div>
@@ -6264,14 +6265,14 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
 
       {allPlayerNames.length >= 2 && (
         <div className="mb-5">
-          <h2 className="font-body text-sm font-semibold text-[#5C574F] uppercase tracking-wide mb-2">Kopf-an-Kopf</h2>
+          <h2 className="font-body text-sm font-semibold text-[#A39C8F] uppercase tracking-wide mb-2">Kopf-an-Kopf</h2>
           <div className="bg-[#262422] border border-[#3A3631] rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <div className="flex-1 min-w-0 flex items-center gap-2 bg-[#1C1B1A] border border-[#3A3631] rounded-[14px] pl-1.5 pr-2 py-1.5">
                 <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 bg-[#2E2B28] flex items-center justify-center">
                   {(() => {
                     const prof = playerProfiles.find((p) => p.name === h2hA);
-                    return prof && prof.photo ? <img src={prof.photo} alt={h2hA} className="w-full h-full object-cover" /> : <Users size={13} className="text-[#5C574F]" />;
+                    return prof && prof.photo ? <img src={prof.photo} alt={h2hA} className="w-full h-full object-cover" /> : <Users size={13} className="text-[#A39C8F]" />;
                   })()}
                 </div>
                 <select value={h2hA} onChange={(e) => setH2hA(e.target.value)} className="flex-1 min-w-0 bg-transparent text-[#F2EDE4] text-sm focus:outline-none">
@@ -6279,12 +6280,12 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                   {allPlayerNames.map((n) => <option key={n} value={n}>{n}</option>)}
                 </select>
               </div>
-              <span className="text-[#5C574F] text-xs shrink-0">vs.</span>
+              <span className="text-[#A39C8F] text-xs shrink-0">vs.</span>
               <div className="flex-1 min-w-0 flex items-center gap-2 bg-[#1C1B1A] border border-[#3A3631] rounded-[14px] pl-1.5 pr-2 py-1.5">
                 <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 bg-[#2E2B28] flex items-center justify-center">
                   {(() => {
                     const prof = playerProfiles.find((p) => p.name === h2hB);
-                    return prof && prof.photo ? <img src={prof.photo} alt={h2hB} className="w-full h-full object-cover" /> : <Users size={13} className="text-[#5C574F]" />;
+                    return prof && prof.photo ? <img src={prof.photo} alt={h2hB} className="w-full h-full object-cover" /> : <Users size={13} className="text-[#A39C8F]" />;
                   })()}
                 </div>
                 <select value={h2hB} onChange={(e) => setH2hB(e.target.value)} className="flex-1 min-w-0 bg-transparent text-[#F2EDE4] text-sm focus:outline-none">
@@ -6295,31 +6296,31 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
             </div>
             {h2hStats && (
               h2hStats.total === 0 ? (
-                <p className="text-[#5C574F] text-xs font-body">Noch keine gemeinsame Partie gefunden.</p>
+                <p className="text-[#A39C8F] text-xs font-body">Noch keine gemeinsame Partie gefunden.</p>
               ) : (
                 <div>
-                  <p className="text-[#5C574F] text-xs font-body mb-2">{h2hStats.total} gemeinsame Partie{h2hStats.total === 1 ? "" : "n"}</p>
+                  <p className="text-[#A39C8F] text-xs font-body mb-2">{h2hStats.total} gemeinsame Partie{h2hStats.total === 1 ? "" : "n"}</p>
                   <div className="flex items-center gap-3">
                     <div className="flex-1 flex flex-col items-center">
                       <div className="w-11 h-11 rounded-full overflow-hidden bg-[#2E2B28] flex items-center justify-center mb-1.5">
                         {(() => {
                           const prof = playerProfiles.find((p) => p.name === h2hA);
-                          return prof && prof.photo ? <img src={prof.photo} alt={h2hA} className="w-full h-full object-cover" /> : <Users size={18} className="text-[#5C574F]" />;
+                          return prof && prof.photo ? <img src={prof.photo} alt={h2hA} className="w-full h-full object-cover" /> : <Users size={18} className="text-[#A39C8F]" />;
                         })()}
                       </div>
                       <p className="font-display text-2xl text-[#F2EDE4]">{h2hStats.aWins}</p>
-                      <p className="text-[#5C574F] text-[11px] font-body truncate">{h2hA}</p>
+                      <p className="text-[#A39C8F] text-[11px] font-body truncate">{h2hA}</p>
                     </div>
                     <div className="h-8 w-px bg-[#3A3631]" />
                     <div className="flex-1 flex flex-col items-center">
                       <div className="w-11 h-11 rounded-full overflow-hidden bg-[#2E2B28] flex items-center justify-center mb-1.5">
                         {(() => {
                           const prof = playerProfiles.find((p) => p.name === h2hB);
-                          return prof && prof.photo ? <img src={prof.photo} alt={h2hB} className="w-full h-full object-cover" /> : <Users size={18} className="text-[#5C574F]" />;
+                          return prof && prof.photo ? <img src={prof.photo} alt={h2hB} className="w-full h-full object-cover" /> : <Users size={18} className="text-[#A39C8F]" />;
                         })()}
                       </div>
                       <p className="font-display text-2xl text-[#F2EDE4]">{h2hStats.bWins}</p>
-                      <p className="text-[#5C574F] text-[11px] font-body truncate">{h2hB}</p>
+                      <p className="text-[#A39C8F] text-[11px] font-body truncate">{h2hB}</p>
                     </div>
                   </div>
                 </div>
@@ -6329,7 +6330,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
         </div>
       )}
 
-      {sorted.length === 0 ? <p className="text-[#5C574F] text-sm font-body mt-8 text-center">Noch keine Partien eingetragen — auch geliehene oder online gespielte Spiele zählen.</p> : viewMode === "evening" ? (
+      {sorted.length === 0 ? <p className="text-[#A39C8F] text-sm font-body mt-8 text-center">Noch keine Partien eingetragen — auch geliehene oder online gespielte Spiele zählen.</p> : viewMode === "evening" ? (
         <div className="space-y-2 pb-32">
           {eveningGroups.map(([date, group]) => {
             const distinctGames = [...new Map(group.map((p) => [p.gameId || p.gameName, p])).values()];
@@ -6343,17 +6344,17 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                 <div className="flex -space-x-3 shrink-0">
                   {distinctGames.slice(0, 3).map((p, i) => {
                     const g = games.find((x) => x.id === p.gameId);
-                    return g ? <Cover key={i} game={g} size="sm" className="!border-2 !border-[#262422]" /> : <div key={i} className="w-12 h-12 rounded-lg bg-[#2E2B28] border-2 border-[#262422] flex items-center justify-center text-[#5C574F]"><Dices size={16} /></div>;
+                    return g ? <Cover key={i} game={g} size="sm" className="!border-2 !border-[#262422]" /> : <div key={i} className="w-12 h-12 rounded-lg bg-[#2E2B28] border-2 border-[#262422] flex items-center justify-center text-[#A39C8F]"><Dices size={16} /></div>;
                   })}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[#F2EDE4] font-body">{formatDate(date)}</p>
-                  <p className="text-[#5C574F] text-xs font-body">
+                  <p className="text-[#A39C8F] text-xs font-body">
                     {group.length} Partie{group.length === 1 ? "" : "n"} · {distinctGames.length} Spiel{distinctGames.length === 1 ? "" : "e"}
                     {estMinutes > 0 ? ` · ~${Math.round((estMinutes / 60) * 10) / 10} Std.` : ""}
                   </p>
                 </div>
-                <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
+                <ChevronRight size={16} className="text-[#A39C8F] shrink-0" />
               </button>
             );
           })}
@@ -6368,14 +6369,14 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
             const lastPlayerCount = first.players ? first.players.split(",").map((s) => s.trim()).filter(Boolean).length : 0;
             return (
               <button key={groupKey} onClick={() => setDetailGroupKey(groupKey)} className="w-full text-left bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center gap-3">
-                {game ? <Cover game={game} size="sm" /> : <div className="w-12 h-12 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#5C574F] shrink-0"><Dices size={18} /></div>}
+                {game ? <Cover game={game} size="sm" /> : <div className="w-12 h-12 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#A39C8F] shrink-0"><Dices size={18} /></div>}
                 <div className="flex-1 min-w-0">
                   <p className="text-[#F2EDE4] font-body truncate">{game ? game.name : first.gameName}</p>
-                  <p className="text-[#5C574F] text-xs font-body">
+                  <p className="text-[#A39C8F] text-xs font-body">
                     {group.length}× gespielt · zuletzt {first.date || "?"}
                   </p>
                 </div>
-                <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
+                <ChevronRight size={16} className="text-[#A39C8F] shrink-0" />
               </button>
             );
           })}
@@ -6400,13 +6401,13 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                 return (
                   <SwipeableRow key={p.id} onDelete={() => onDelete(p.id)} disabled={demoMode}>
                     <button onClick={() => onEdit(p)} className="w-full text-left bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#5C574F] shrink-0"><IconC size={16} /></div>
+                      <div className="w-9 h-9 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#A39C8F] shrink-0"><IconC size={16} /></div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[#F2EDE4] font-body truncate">{formatDate(p.date)}{p.gameId !== rootId ? ` · ${p.gameName}` : ""}</p>
-                        <p className="text-[#5C574F] text-xs font-body">{modeLabel[p.mode]}{p.winner ? <> · Sieger: <span className="text-[#8B9AFA] font-medium">{p.winner}</span></> : ""}</p>
+                        <p className="text-[#A39C8F] text-xs font-body">{modeLabel[p.mode]}{p.winner ? <> · Sieger: <span className="text-[#8B9AFA] font-medium">{p.winner}</span></> : ""}</p>
                         {p.notes && p.notes.trim() && <p className="text-[#F2EDE4] text-xs font-body mt-0.5">{p.notes}</p>}
                       </div>
-                      <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
+                      <ChevronRight size={16} className="text-[#A39C8F] shrink-0" />
                     </button>
                   </SwipeableRow>
                 );
@@ -6434,13 +6435,13 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                 return (
                   <SwipeableRow key={p.id} onDelete={() => onDelete(p.id)} disabled={demoMode}>
                     <button onClick={() => onEdit(p)} className="w-full text-left bg-[#262422] border border-[#3A3631] rounded-[14px] px-4 py-3 flex items-center gap-3">
-                      {game ? <Cover game={game} size="sm" /> : <div className="w-12 h-12 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#5C574F] shrink-0"><IconC size={16} /></div>}
+                      {game ? <Cover game={game} size="sm" /> : <div className="w-12 h-12 rounded-lg bg-[#2E2B28] flex items-center justify-center text-[#A39C8F] shrink-0"><IconC size={16} /></div>}
                       <div className="flex-1 min-w-0">
                         <p className="text-[#F2EDE4] font-body truncate">{p.gameName}</p>
-                        <p className="text-[#5C574F] text-xs font-body">{modeLabel[p.mode]}{p.winner ? <> · Sieger: <span className="text-[#8B9AFA] font-medium">{p.winner}</span></> : ""}</p>
+                        <p className="text-[#A39C8F] text-xs font-body">{modeLabel[p.mode]}{p.winner ? <> · Sieger: <span className="text-[#8B9AFA] font-medium">{p.winner}</span></> : ""}</p>
                         {p.notes && p.notes.trim() && <p className="text-[#F2EDE4] text-xs font-body mt-0.5">{p.notes}</p>}
                       </div>
-                      <ChevronRight size={16} className="text-[#5C574F] shrink-0" />
+                      <ChevronRight size={16} className="text-[#A39C8F] shrink-0" />
                     </button>
                   </SwipeableRow>
                 );
@@ -6697,7 +6698,7 @@ ${buildCollectionContextForAI(games, plays)}`;
               <span className="absolute -top-1 -right-2 text-2xl" style={{ animation: "float 2.5s ease-in-out infinite" }}>💤</span>
             </div>
             <p className="text-[#F2EDE4] font-display text-xl mt-4">Pip schläft noch</p>
-            <p className="text-[#5C574F] text-sm font-body mt-1.5 max-w-xs">Richte in den Einstellungen den KI-Assistenten ein, damit Pip aufwacht und dir beim Spielefinden helfen kann.</p>
+            <p className="text-[#A39C8F] text-sm font-body mt-1.5 max-w-xs">Richte in den Einstellungen den KI-Assistenten ein, damit Pip aufwacht und dir beim Spielefinden helfen kann.</p>
           </div>
         </div>
       ) : quotaResetAt ? (
@@ -6708,7 +6709,7 @@ ${buildCollectionContextForAI(games, plays)}`;
               <span className="absolute -top-1 -right-2 text-2xl" style={{ animation: "float 2.5s ease-in-out infinite" }}>💤</span>
             </div>
             <p className="text-[#F2EDE4] font-display text-xl mt-4">Pip ist für heute müde</p>
-            <p className="text-[#5C574F] text-sm font-body mt-1.5 max-w-xs">Sein tägliches KI-Kontingent ist aufgebraucht. Ab ca. {quotaResetAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} Uhr ist er wieder wach.</p>
+            <p className="text-[#A39C8F] text-sm font-body mt-1.5 max-w-xs">Sein tägliches KI-Kontingent ist aufgebraucht. Ab ca. {quotaResetAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} Uhr ist er wieder wach.</p>
           </div>
         </div>
       ) : (
@@ -6737,7 +6738,7 @@ ${buildCollectionContextForAI(games, plays)}`;
                           ].map((f) => (
                             <button key={f.label} onClick={() => sendChat(f.msg, f.label)}
                               className="w-full text-left px-3.5 py-2.5 rounded-[14px] text-sm bg-[#1C1B1A] border border-[#3A3631] text-[#8B9AFA] font-medium flex items-center justify-between">
-                              {f.label} <ChevronRight size={15} className="text-[#5C574F] shrink-0" />
+                              {f.label} <ChevronRight size={15} className="text-[#A39C8F] shrink-0" />
                             </button>
                           ))}
                         </div>
@@ -6747,7 +6748,7 @@ ${buildCollectionContextForAI(games, plays)}`;
                       <div className="flex flex-wrap gap-1.5">
                         {m.externalGame.bggId && (
                           <a href={`https://boardgamegeek.com/boardgame/${m.externalGame.bggId}`} target="_blank" rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full bg-[#1C1B1A] border border-[#3A3631] text-xs text-[#5C574F]">
+                            className="flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full bg-[#1C1B1A] border border-[#3A3631] text-xs text-[#A39C8F]">
                             {m.externalGame.images && m.externalGame.images[0] ? <img src={m.externalGame.images[0]} alt="" className="w-5 h-5 rounded-full object-cover" /> : <Globe size={12} />}
                             {m.externalGame.name} auf BGG ansehen <ChevronRight size={11} />
                           </a>
@@ -6787,7 +6788,7 @@ ${buildCollectionContextForAI(games, plays)}`;
             {chatLoading && (
               <div className="flex gap-2 justify-start items-end">
                 <PipAvatar size={30} />
-                <div className="bg-[#262422] border border-[#3A3631] rounded-2xl rounded-bl-md px-4 py-2.5 flex items-center gap-2 text-[#5C574F] text-sm">
+                <div className="bg-[#262422] border border-[#3A3631] rounded-2xl rounded-bl-md px-4 py-2.5 flex items-center gap-2 text-[#A39C8F] text-sm">
                   <Loader2 size={13} /> {chatLoadingLabel}
                 </div>
               </div>
@@ -6800,7 +6801,7 @@ ${buildCollectionContextForAI(games, plays)}`;
             <div className="flex gap-2">
               {chatMessages.length > 0 && (
                 <button onClick={() => { haptic(6); greetedRef.current = false; setChatMessages([]); }} aria-label="Neuer Chat"
-                  className="glass shrink-0 w-12 h-12 rounded-full border border-white/10 text-[#5C574F] shadow-lg flex items-center justify-center">
+                  className="glass shrink-0 w-12 h-12 rounded-full border border-white/10 text-[#A39C8F] shadow-lg flex items-center justify-center">
                   <Sparkles size={18} />
                 </button>
               )}
@@ -6857,7 +6858,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
         <Icon size={iconSize} className="text-[#F2EDE4]" />
       </div>
       <p className="text-sm font-medium text-[#F2EDE4]">{value}</p>
-      <p className="text-[11px] text-[#5C574F]">{sub}</p>
+      <p className="text-[11px] text-[#A39C8F]">{sub}</p>
     </div>
   );
 
@@ -6892,17 +6893,17 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
               return (
                 <div className="flex items-baseline flex-wrap gap-x-2 gap-y-0.5">
                   <h1 className="font-display text-2xl text-[#F2EDE4] leading-tight">{primary}</h1>
-                  {secondary && <span className="font-display-thin text-2xl text-[#5C574F] leading-tight">{secondary}</span>}
+                  {secondary && <span className="font-display-thin text-2xl text-[#A39C8F] leading-tight">{secondary}</span>}
                 </div>
               );
             })()}
             {(game.year || (game.publishers && game.publishers.length > 0)) && (
-              <p className="text-[#5C574F] text-sm mt-0.5">
+              <p className="text-[#A39C8F] text-sm mt-0.5">
                 {game.year}{game.year && game.publishers && game.publishers.length ? " · " : ""}{(game.publishers || []).join(", ")}
               </p>
             )}
             {game.designers && game.designers.length > 0 && (
-              <p className="text-[#5C574F] text-sm mt-0.5">Design: {game.designers.join(", ")}</p>
+              <p className="text-[#A39C8F] text-sm mt-0.5">Design: {game.designers.join(", ")}</p>
             )}
             {(() => {
               const baseGame = game.expansionOf ? (games || []).find((g) => g.id === game.expansionOf) : null;
@@ -6916,7 +6917,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                     </button>
                   )}
                   {expansions.map((exp) => (
-                    <button key={exp.id} onClick={() => onViewOther && onViewOther(exp)} className="flex items-center gap-1 text-xs text-[#5C574F] bg-[#262422] border border-[#3A3631] rounded-full px-2.5 py-1">
+                    <button key={exp.id} onClick={() => onViewOther && onViewOther(exp)} className="flex items-center gap-1 text-xs text-[#A39C8F] bg-[#262422] border border-[#3A3631] rounded-full px-2.5 py-1">
                       <Layers size={11} /> {exp.name}
                     </button>
                   ))}
@@ -6929,7 +6930,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
 
           {game.isCampaign && onQuickUpdate && (
             <button onClick={() => setCampaignPhotoOpen(true)}
-              className="w-full h-11 border border-dashed border-[#3A3631] rounded-[14px] text-sm text-[#5C574F] flex items-center justify-center gap-1.5">
+              className="w-full h-11 border border-dashed border-[#3A3631] rounded-[14px] text-sm text-[#A39C8F] flex items-center justify-center gap-1.5">
               <Camera size={15} /> Aktuellen Kampagnenstand fotografieren
             </button>
           )}
@@ -6967,7 +6968,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
             <div>
               <button type="button" onClick={() => onQuickUpdate(game.id, { lentTo: game.lentTo ? "" : " " })}
                 className={`w-full h-12 flex items-center justify-between text-left px-3.5 rounded-[14px] border ${game.lentTo ? "bg-[#D4A24C]/15 border-[#D4A24C]/40" : "bg-transparent border-[#3A3631]"}`}>
-                <span className={`text-base flex items-center gap-2 ${game.lentTo ? "text-[#F2EDE4]" : "text-[#5C574F]"}`}>Verliehen</span>
+                <span className={`text-base flex items-center gap-2 ${game.lentTo ? "text-[#F2EDE4]" : "text-[#A39C8F]"}`}>Verliehen</span>
                 <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${game.lentTo ? "bg-[#D4A24C] justify-end" : "bg-[#3A3631] justify-start"}`}>
                   <div className="w-5 h-5 rounded-full bg-[#F2EDE4]" />
                 </div>
@@ -6981,14 +6982,14 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
 
           {game.summary && (
             <div>
-              <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-1">Zusammenfassung</p>
+              <p className="text-xs text-[#A39C8F] uppercase tracking-wider mb-1">Zusammenfassung</p>
               <div className="rte-content text-base text-[#F2EDE4]" dangerouslySetInnerHTML={{ __html: game.summary }} />
             </div>
           )}
 
           {game.playerTypes && game.playerTypes.length > 0 && (
             <div>
-              <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-1.5">Passt zu diesen Spielertypen</p>
+              <p className="text-xs text-[#A39C8F] uppercase tracking-wider mb-1.5">Passt zu diesen Spielertypen</p>
               <div className="flex flex-wrap gap-1.5">
                 {game.playerTypes.map((t) => <Pill key={t} tone="teal">{t}</Pill>)}
               </div>
@@ -7004,7 +7005,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
               <div className="space-y-7 pt-7">
                 {tags.length > 0 && (
                   <div>
-                    <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-1.5">Kategorien & Mechanismen</p>
+                    <p className="text-xs text-[#A39C8F] uppercase tracking-wider mb-1.5">Kategorien & Mechanismen</p>
                     <div className="flex flex-wrap gap-1.5">
                       {tags.map((t) => {
                         const TIcon = tagIcon(t);
@@ -7015,7 +7016,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                 )}
                 {(game.rating || onQuickUpdate) && (
                   <div>
-                    <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-1.5">Deine Bewertung</p>
+                    <p className="text-xs text-[#A39C8F] uppercase tracking-wider mb-1.5">Deine Bewertung</p>
                     {onQuickUpdate ? (
                       <StarRating value={game.rating || ""} onChange={(v) => onQuickUpdate(game.id, { rating: v })} />
                     ) : (
@@ -7025,32 +7026,32 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                             <Star key={s} size={18} className={parseInt(game.rating) >= s ? "text-[#E85D9C]" : "text-[#3A3631]"} fill={parseInt(game.rating) >= s ? "#E85D9C" : "none"} />
                           ))}
                         </div>
-                        <span className="text-xs text-[#5C574F]">{RATING_LABELS[parseInt(game.rating)]}</span>
+                        <span className="text-xs text-[#A39C8F]">{RATING_LABELS[parseInt(game.rating)]}</span>
                       </div>
                     )}
                   </div>
                 )}
                 {game.notes && (
                   <div>
-                    <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-1">Notizen</p>
+                    <p className="text-xs text-[#A39C8F] uppercase tracking-wider mb-1">Notizen</p>
                     <div className="rte-content text-base text-[#F2EDE4]" dangerouslySetInnerHTML={{ __html: game.notes }} />
                   </div>
                 )}
                 {game.mechanismsNote && (
                   <div>
-                    <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-1 flex items-center gap-1.5"><Sparkles size={11} className="text-[#8B9AFA]" /> Mechanismen (von Pip)</p>
+                    <p className="text-xs text-[#A39C8F] uppercase tracking-wider mb-1 flex items-center gap-1.5"><Sparkles size={11} className="text-[#8B9AFA]" /> Mechanismen (von Pip)</p>
                     <p className="text-base text-[#F2EDE4]">{game.mechanismsNote}</p>
                     {onQuickUpdate && (
-                      <button onClick={() => onQuickUpdate(game.id, { mechanismsNote: "" })} className="text-xs text-[#5C574F] underline mt-1">entfernen</button>
+                      <button onClick={() => onQuickUpdate(game.id, { mechanismsNote: "" })} className="text-xs text-[#A39C8F] underline mt-1">entfernen</button>
                     )}
                   </div>
                 )}
                 {!hidePrices && game.saleStatus && (game.purchasePrice || game.salePrice) && (
                   <div>
-                    <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-1.5">{game.saleStatus === "sold" ? "Verkauft" : "Zum Verkauf"}</p>
+                    <p className="text-xs text-[#A39C8F] uppercase tracking-wider mb-1.5">{game.saleStatus === "sold" ? "Verkauft" : "Zum Verkauf"}</p>
                     <div className="flex items-center gap-3 flex-wrap">
-                      {game.purchasePrice && <span className="text-xs text-[#5C574F]">Kaufpreis: <span className="text-[#F2EDE4]">{game.purchasePrice} €</span></span>}
-                      {game.saleStatus === "sold" && game.salePrice && <span className="text-xs text-[#5C574F]">Verkaufspreis: <span className="text-[#D4A24C]">{game.salePrice} €</span></span>}
+                      {game.purchasePrice && <span className="text-xs text-[#A39C8F]">Kaufpreis: <span className="text-[#F2EDE4]">{game.purchasePrice} €</span></span>}
+                      {game.saleStatus === "sold" && game.salePrice && <span className="text-xs text-[#A39C8F]">Verkaufspreis: <span className="text-[#D4A24C]">{game.salePrice} €</span></span>}
                     </div>
                   </div>
                 )}
@@ -7059,9 +7060,9 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
           </div>
 
           <div>
-            <p className="text-xs text-[#5C574F] uppercase tracking-wider mb-1">Partien</p>
+            <p className="text-xs text-[#A39C8F] uppercase tracking-wider mb-1">Partien</p>
             {gamePlays.length === 0 ? (
-              <p className="text-sm text-[#5C574F]">Noch nie gespielt.</p>
+              <p className="text-sm text-[#A39C8F]">Noch nie gespielt.</p>
             ) : (
               <p className="text-sm text-[#F2EDE4]">{gamePlays.length}× gespielt{lastPlay ? `, zuletzt am ${formatDate(lastPlay.date)}` : ""}</p>
             )}
@@ -7097,11 +7098,11 @@ function SyncModal({ initialUrl, initialApiKey, initialEmail, status, lastSynced
           <button onClick={onClose} className="glass-icon-btn shrink-0 w-10 h-10 flex items-center justify-center rounded-full border border-white/15 text-[#F2EDE4]"><X size={20} /></button>
         </div>
         <div className="p-5 space-y-4">
-          <p className="text-sm text-[#5C574F]">
+          <p className="text-sm text-[#A39C8F]">
             Deine Sammlung und Partien werden immer auf diesem Gerät gespeichert. Trägst du zusätzlich eine Firebase-Datenbank ein, werden sie außerdem dorthin synchronisiert — auf jedem Gerät mit derselben Adresse siehst du dann automatisch dieselben Daten.
           </p>
           <div>
-            <label className="block text-[11px] text-[#5C574F]">Datenbank-Adresse</label>
+            <label className="block text-[11px] text-[#A39C8F]">Datenbank-Adresse</label>
             <input
               value={url}
               onChange={(e) => setUrl(e.target.value)}
@@ -7110,17 +7111,17 @@ function SyncModal({ initialUrl, initialApiKey, initialEmail, status, lastSynced
             />
           </div>
           <div>
-            <label className="block text-[11px] text-[#5C574F]">Web-API-Schlüssel</label>
+            <label className="block text-[11px] text-[#A39C8F]">Web-API-Schlüssel</label>
             <input
               value={key}
               onChange={(e) => setKey(e.target.value)}
               placeholder="AIzaSy…"
               className="w-full mt-1 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#E85D9C]"
             />
-            <p className="text-[11px] text-[#5C574F] mt-1.5">Findest du in der Firebase-Konsole unter Projekteinstellungen → Allgemein → "Web-API-Schlüssel".</p>
+            <p className="text-[11px] text-[#A39C8F] mt-1.5">Findest du in der Firebase-Konsole unter Projekteinstellungen → Allgemein → "Web-API-Schlüssel".</p>
           </div>
           <div>
-            <label className="block text-[11px] text-[#5C574F]">E-Mail (für sichere Anmeldung)</label>
+            <label className="block text-[11px] text-[#A39C8F]">E-Mail (für sichere Anmeldung)</label>
             <input
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -7130,7 +7131,7 @@ function SyncModal({ initialUrl, initialApiKey, initialEmail, status, lastSynced
             />
           </div>
           <div>
-            <label className="block text-[11px] text-[#5C574F]">Passwort</label>
+            <label className="block text-[11px] text-[#A39C8F]">Passwort</label>
             <input
               type="password"
               value={password}
@@ -7139,13 +7140,13 @@ function SyncModal({ initialUrl, initialApiKey, initialEmail, status, lastSynced
               autoComplete="current-password"
               className="w-full mt-1 bg-[#262422] border border-[#3A3631] rounded-[14px] px-3 py-2 text-[#F2EDE4] text-sm focus:outline-none focus:border-[#E85D9C]"
             />
-            <p className="text-[11px] text-[#5C574F] mt-1.5">Diesen Nutzer legst du einmalig in der Firebase-Konsole unter Authentication → Users an. Die App meldet sich damit automatisch im Hintergrund an — kein Login-Bildschirm im Alltag.</p>
+            <p className="text-[11px] text-[#A39C8F] mt-1.5">Diesen Nutzer legst du einmalig in der Firebase-Konsole unter Authentication → Users an. Die App meldet sich damit automatisch im Hintergrund an — kein Login-Bildschirm im Alltag.</p>
           </div>
           <div className="flex items-center gap-2 text-xs">
-            {status === "syncing" && <><Loader2 size={13} /> <span className="text-[#5C574F]">Synchronisiere…</span></>}
+            {status === "syncing" && <><Loader2 size={13} /> <span className="text-[#A39C8F]">Synchronisiere…</span></>}
             {status === "synced" && <span className="text-[#7FB3AA]">Zuletzt synchronisiert: {lastSynced ? new Date(lastSynced).toLocaleTimeString("de-DE") : "gerade eben"}</span>}
             {status === "error" && <span className="text-[#C1443C]">Patzer beim Synchronisieren — Internet, Zugangsdaten oder API-Schlüssel prüfen</span>}
-            {status === "idle" && !initialUrl && <span className="text-[#5C574F]">Noch nicht eingerichtet</span>}
+            {status === "idle" && !initialUrl && <span className="text-[#A39C8F]">Noch nicht eingerichtet</span>}
           </div>
           <button
             onClick={() => onSave(url, key, email, password)}
@@ -7159,7 +7160,7 @@ function SyncModal({ initialUrl, initialApiKey, initialEmail, status, lastSynced
               <button onClick={onSyncNow} className="glass w-full border border-white/15 text-[#F2EDE4] rounded-[14px] py-3 font-medium active:scale-[0.99]">
                 Jetzt synchronisieren
               </button>
-              <button onClick={onRemove} className="w-full text-[#5C574F] text-sm font-body py-2">
+              <button onClick={onRemove} className="w-full text-[#A39C8F] text-sm font-body py-2">
                 Verbindung trennen (Daten bleiben in Firebase erhalten)
               </button>
             </>
@@ -7688,7 +7689,7 @@ function App() {
         >
           <Loader2
             size={20}
-            className={refreshing ? "text-[#E85D9C]" : "text-[#5C574F]"}
+            className={refreshing ? "text-[#E85D9C]" : "text-[#A39C8F]"}
             style={{ opacity: Math.min(pullY / PULL_THRESHOLD, 1) }}
           />
         </div>
@@ -7699,9 +7700,9 @@ function App() {
           {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} onView={(g) => setDetailGame(g)} aiWorkerUrl={aiWorkerUrl} chatMessages={aiChatMessages} setChatMessages={setAiChatMessages} onAddWishlist={addToWishlistFromRecommendation} onSaveMechanismsNote={readOnly ? null : (id, text) => updateGameField(id, { mechanismsNote: text })} guestMode={guestMode} />}
           {tab === "settings" && (guestMode ? (
             <div className="p-5 min-h-full flex flex-col items-center justify-center text-center">
-              <Eye size={40} className="text-[#5C574F] mb-4" />
+              <Eye size={40} className="text-[#A39C8F] mb-4" />
               <h1 className="font-display text-2xl text-[#F2EDE4] mb-1.5">Gästemodus aktiv</h1>
-              <p className="text-sm text-[#5C574F] max-w-xs mb-6">Preise, Bearbeiten und Einstellungen sind ausgeblendet. Zum Spiele-Aussuchen reicht das aber allemal.</p>
+              <p className="text-sm text-[#A39C8F] max-w-xs mb-6">Preise, Bearbeiten und Einstellungen sind ausgeblendet. Zum Spiele-Aussuchen reicht das aber allemal.</p>
               <button onClick={() => setGuestMode(false)} className="h-12 px-6 bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] rounded-[14px] font-medium">
                 Gästemodus beenden
               </button>
@@ -7864,7 +7865,7 @@ class ErrorBoundary extends React.Component {
           <div className="max-w-sm text-center">
             <Dices size={32} className="text-[#C1443C] mx-auto mb-3" />
             <p className="text-[#F2EDE4] font-display text-xl mb-2">Kurz gestolpert</p>
-            <p className="text-[#5C574F] text-sm mb-5">Hier ist etwas schiefgelaufen. Deine Daten in Firebase sind davon nicht betroffen.</p>
+            <p className="text-[#A39C8F] text-sm mb-5">Hier ist etwas schiefgelaufen. Deine Daten in Firebase sind davon nicht betroffen.</p>
             <button onClick={() => this.setState({ error: null })} className="w-full h-12 bg-[conic-gradient(from_0deg,#ff5a96,#ffc850,#78dcff,#b482ff,#ff5a96)] text-[#F2EDE4] rounded-[14px] font-medium mb-2">Nochmal versuchen</button>
             <button onClick={() => window.location.reload()} className="w-full h-12 bg-[#262422] border border-[#3A3631] text-[#F2EDE4] rounded-[14px] font-medium">App neu laden</button>
           </div>
