@@ -81,9 +81,15 @@
     --glass-strong: 28 27 26;  --glass-strong-a: 0.72;
     --glass-btn: 20 19 18;     --glass-btn-a: 0.16;
     --shadow-a: 0.35;
+    /* Vollstaendige Schattenwerte, weil sich none nicht in eine Liste mischen laesst */
+    --elev-fab: 0 8px 24px rgb(var(--accent) / 0.45), inset 0 1px 1px rgba(255,255,255,0.35);
+    --elev-gold: 0 4px 24px rgb(var(--gold) / 0.35);
+    --elev-nav: inset 0 1px 1px rgba(255,255,255,0.22), inset 0 -1px 1px rgba(255,255,255,0.05), 0 8px 28px rgba(0,0,0,0.45);
     --glow1: rgba(250,99,73,0.10);
     --glow2: rgba(224,162,76,0.06);
   }
+  /* Im Light Mode traegt die Haarlinie die Abgrenzung, nicht der Schatten. */
+  :root[data-theme="light"] [class*="shadow-"] { box-shadow: none !important; }
   :root[data-theme="light"] {
     color-scheme: light;
     --bg: 244 239 230;     --surface: 251 248 242; --surface2: 255 255 255;
@@ -99,6 +105,9 @@
     --glass-strong: 250 247 241; --glass-strong-a: 0.85;
     --glass-btn: 255 255 255;  --glass-btn-a: 0.55;
     --shadow-a: 0.12;
+    --elev-fab: none;
+    --elev-gold: none;
+    --elev-nav: inset 0 0 0 1px rgb(var(--line));
     --glow1: rgba(220,74,43,0.07);
     --glow2: rgba(158,112,32,0.05);
   }
@@ -106,9 +115,14 @@
   html, body {
     height: 100%;
     background-color: rgb(var(--bg));
+    margin:0; overscroll-behavior:none;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background-color: rgb(var(--bg));
     background-image: radial-gradient(circle at 85% 0%, var(--glow1), transparent 45%), radial-gradient(circle at 0% 55%, var(--glow2), transparent 40%);
     background-repeat: no-repeat;
-    margin:0; overscroll-behavior:none;
   }
   .glass {
     background: rgb(var(--glass) / var(--glass-a));
@@ -1993,6 +2007,33 @@ function useIsDark() {
   return dark;
 }
 
+function AppMark({ size = 30 }) {
+  const id = "am" + size;
+  // Ohne Kachel: die Buchstaben erben die Textfarbe, der Wuerfel bleibt koralle.
+  // Mit cremefarbener Kachel waere die Marke im Light Mode unsichtbar gewesen.
+  return (
+    <svg viewBox="60 100 380 280" width={size} height={size * 280 / 380}
+      style={{ display: "block", flex: "none", overflow: "visible" }} aria-label="pip">
+      <defs>
+        <mask id={id}>
+          <rect x="0" y="0" width="512" height="512" fill="#fff" />
+          <circle cx="152.05" cy="255.6" r="34.7" />
+          <circle cx="359.95" cy="255.6" r="34.7" />
+        </mask>
+      </defs>
+      <g fill="currentColor" mask={`url(#${id})`}>
+        <path d="M85.35 255.6v102.1a16 16 0 0 0 32 0V255.6z" />
+        <circle cx="152.05" cy="255.6" r="66.7" />
+        <rect x="237.75" y="191.6" width="32" height="128.7" rx="16" />
+        <path d="M293.25 255.6v102.1a16 16 0 0 0 32 0V255.6z" />
+        <circle cx="359.95" cy="255.6" r="66.7" />
+      </g>
+      <rect x="233.25" y="129.97" width="41" height="41" rx="10.2" fill="rgb(var(--accent))"
+        transform="rotate(18 253.75 150.47)" />
+    </svg>
+  );
+}
+
 function ThemeSetting() {
   const [mode, setMode] = useState(() => (typeof window !== "undefined" && window.__getTheme ? window.__getTheme() : "system"));
   const pick = (v) => { setMode(v); if (window.__setTheme) window.__setTheme(v); };
@@ -2515,7 +2556,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
   }
 
   return (
-    <div className="p-5 pb-6 font-body min-h-full flex flex-col">
+    <div className="p-5 font-body min-h-full flex flex-col" style={{ paddingBottom: "calc(8.5rem + env(safe-area-inset-bottom))" }}>
       <h1 className="font-display text-3xl tracking-[-0.03em] leading-[1.05] text-ink mb-2">Einstellungen</h1>
       <ThemeSetting />
       <SettingsRow icon={Globe} label="Synchronisation" sub={syncUrl ? "Eingerichtet" : "Nicht eingerichtet"} tone="rgb(var(--accent))" onClick={() => setView("sync")} />
@@ -3225,14 +3266,14 @@ function GameGridCard({ game: g, expansions = [], playCounts = {}, gridCols = 2,
             ) : (<><Layers size={9} /> +{expansions.length}</>)}
           </span>
         )}
-      </div>
       {items.length > 1 && (
-        <div className="flex items-center justify-center gap-1 py-1.5">
+        <div className="absolute inset-x-0 bottom-1.5 flex items-center justify-center gap-1 pointer-events-none">
           {items.map((_, i) => (
-            <span key={i} className={`rounded-full transition-all ${i === slide ? "w-3 h-1.5 bg-accent" : "w-1.5 h-1.5 bg-faint"}`} />
+            <span key={i} className={`rounded-full transition-all ${i === slide ? "w-3 h-1.5 bg-accent" : "w-1.5 h-1.5 bg-ink/40"}`} />
           ))}
         </div>
       )}
+      </div>
       {gridCols === 2 && (
         <div className="px-1.5 pt-2 pb-1">
           <p className="font-body text-ink text-sm font-medium leading-tight truncate">{active.name}</p>
@@ -4907,7 +4948,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
       </button>
     ),
     bestof: bestOf && (
-      <div key="bestof">
+      <div key="bestof" className="border-t border-line pt-5">
         <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-3">Best of</h2>
         {plays.length < 5 ? (
           <p className="text-xs text-ink">Trag noch ein paar mehr Partien ein, dann zeigen wir dir hier deine Vorlieben.</p>
@@ -4963,7 +5004,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
       </div>
     ),
     records: (mostPlayed || bestDay || bestStreak || biggestPlayGroup) && (
-      <div key="records">
+      <div key="records" className="border-t border-line pt-5">
         <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-3">Rekorde</h2>
         <div className="grid grid-cols-2 gap-2.5">
           {mostPlayed && mostPlayed.game && mostPlayed.count >= 2 && (
@@ -4994,7 +5035,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
       </div>
     ),
     wishlist: wishlist.length > 0 && (
-      <div key="wishlist">
+      <div key="wishlist" className="border-t border-line pt-5">
         <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-3">Von der Wunschliste</h2>
         <div className="flex gap-3 overflow-x-auto pb-1">
           {wishlist.map(g => (
@@ -5006,7 +5047,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
       </div>
     ),
     topRated: topRated.length > 0 && (
-      <div key="topRated">
+      <div key="topRated" className="border-t border-line pt-5">
         <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-3">Top 10 Spiele</h2>
         {topRated.length < 3 ? (
           <p className="text-xs text-ink">Bewerte noch ein paar mehr Spiele, dann gibt's hier eine richtige Bestenliste.</p>
@@ -5030,7 +5071,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
       </div>
     ),
     dust: (
-      <div key="dust">
+      <div key="dust" className="border-t border-line pt-5">
         <div className="flex items-center gap-2 mb-1"><Archive size={15} className="text-dim" /><h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em]">Staubfänger</h2></div>
         <p className="text-xs text-ink mb-2">Spiele in deinem Regal, die schon am längsten auf ihre erste Partie warten.</p>
         {dustCollectors.length === 0 ? <p className="text-ink text-sm font-body">Alles im Regal wurde schon gespielt. Sehr gut!</p> : (
@@ -5045,7 +5086,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
       </div>
     ),
     digital: plays.length > 0 && (
-      <div key="digital" className="border border-line rounded-2xl p-4">
+      <div key="digital" className="border-t border-line pt-5">
         <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-3">Digital vs. Physisch</h2>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
@@ -5078,10 +5119,10 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
   ];
 
   return (
-    <div className="p-5 space-y-8 pb-28 min-h-full flex flex-col">
+    <div className="p-5 space-y-8 min-h-full flex flex-col" style={{ paddingBottom: "calc(8.5rem + env(safe-area-inset-bottom))" }}>
       {justUnlocked && (
         <div className="fixed left-1/2 z-40 rise-in" style={{ top: "max(1rem, env(safe-area-inset-top))", transform: "translateX(-50%)" }}>
-          <div className="flex items-center gap-2.5 bg-bg border border-accent/50 rounded-full pl-2 pr-4 py-2 shadow-xl" style={{ boxShadow: "0 4px 24px rgb(var(--gold) / 0.35)" }}>
+          <div className="flex items-center gap-2.5 bg-bg border border-accent/50 rounded-full pl-2 pr-4 py-2 shadow-xl" style={{ boxShadow: "var(--elev-gold)" }}>
             <span className="text-2xl">{justUnlocked.emoji}</span>
             <div>
               <p className="text-[10px] text-accent font-semibold uppercase tracking-[0.16em]">Neuer Erfolg!</p>
@@ -5090,9 +5131,10 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
           </div>
         </div>
       )}
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl tracking-[-0.03em] leading-[1.05] text-ink">Spielregal</h1>
-        <div className="w-10 h-10" />
+      <div className="flex items-center gap-2.5 text-ink">
+        <AppMark size={30} />
+        <h1 className="font-display text-xl tracking-[-0.02em] text-ink">Spielregal</h1>
+        <div className="w-10 h-10 ml-auto" />
       </div>
       <div className="fixed z-30" style={{ top: "max(1rem, env(safe-area-inset-top))", right: "1.25rem" }}>
         <button onClick={() => setSortMenuOpen((o) => !o)} aria-label="Sortieren" className="glass-icon-btn w-10 h-10 flex items-center justify-center border border-rim/15 rounded-full text-dim">
@@ -5218,12 +5260,14 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             );
           })()}
           {tasteProfile.length > 1 && (
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-x-5 mt-4">
               {tasteProfile.slice(1).map(([tag, weight]) => {
                 const TIcon = tagIcon(tag);
                 return (
-                  <span key={tag} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs bg-bg/50 border border-line text-ink font-body">
-                    <TIcon size={11} />{tag} <span className="text-ink">· {weight}</span>
+                  <span key={tag} className="flex items-center gap-2 flex-[1_1_42%] min-w-0 py-2 border-b border-line text-[13px] text-ink font-body">
+                    <TIcon size={13} className="shrink-0 text-dim" />
+                    <span className="truncate">{tag}</span>
+                    <b className="ml-auto font-medium text-dim">{weight}</b>
                   </span>
                 );
               })}
@@ -5312,7 +5356,7 @@ function AddGamesToListModal({ games, plays, list, onToggle, onClose, aiWorkerUr
             return (
               <button key={g.id} onClick={() => onToggle(g.id)}
                 className={`w-full flex items-center gap-3 px-2 py-2 rounded-[14px] bg-surface border ${highlighted ? "border-accent" : "border-line"}`}
-                style={highlighted ? { boxShadow: "0 0 0 1px #E85D9C, 0 0 16px rgba(108,127,224,0.35)" } : undefined}>
+                style={highlighted ? { boxShadow: "0 0 0 1px rgb(var(--accent)), 0 0 16px rgb(var(--accent) / 0.35)" } : undefined}>
                 <Cover game={g} size="sm" />
                 <div className="flex-1 min-w-0 text-left">
                   <p className="text-sm text-ink truncate flex items-center gap-1.5">
@@ -5430,7 +5474,7 @@ function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDelete
       {!demoMode && !selectMode && (
         <button onClick={() => { haptic(8); setAddOpen(true); }} aria-label="Spiele hinzufügen"
           className="fixed z-30 left-1/2 -translate-x-1/2 text-ink w-14 h-14 flex items-center justify-center rounded-full shadow-lg active:scale-95 border border-rim/25"
-          style={{ background: "rgb(var(--accent))", boxShadow: "0 8px 24px rgb(var(--accent) / 0.45), inset 0 1px 1px rgba(255,255,255,0.35)", bottom: "calc(100px + env(safe-area-inset-bottom))" }}>
+          style={{ background: "rgb(var(--accent))", boxShadow: "var(--elev-fab)", bottom: "calc(100px + env(safe-area-inset-bottom))" }}>
           <BookmarkPlus size={22} />
         </button>
       )}
@@ -5802,6 +5846,14 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
   );
 }
 
+const SORT_LABEL = {
+  "name-asc": "nach Name", "name-desc": "nach Name, absteigend",
+  "rating-desc": "nach Bewertung", "rating-asc": "nach Bewertung, aufsteigend",
+  "plays-desc": "nach Partien", "added-desc": "zuletzt hinzugefügt",
+  "added-asc": "zuerst hinzugefügt",
+  "complexity-desc": "nach Komplexität", "complexity-asc": "nach Komplexität, aufsteigend",
+};
+
 function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit, onDelete, categoryOptions, mechanismOptions, demoMode, guestMode, lists, onCreateList, onOpenList }) {
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -5906,10 +5958,11 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
   });
 
   return (
-    <div className="p-5 pb-6 overflow-x-hidden min-h-full flex flex-col">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="font-display text-3xl tracking-[-0.03em] leading-[1.05] text-ink">Sammlung</h1>
-        <div className="w-[84px] h-10" />
+    <div className="p-5 overflow-x-hidden min-h-full flex flex-col" style={{ paddingBottom: "calc(8.5rem + env(safe-area-inset-bottom))" }}>
+      <div className="flex items-center gap-2.5 mb-5 text-ink">
+        <AppMark size={30} />
+        <h1 className="font-display text-xl tracking-[-0.02em] text-ink">Sammlung</h1>
+        <div className="w-[84px] h-10 ml-auto" />
       </div>
       <div className="fixed z-30" style={{ top: "max(1rem, env(safe-area-inset-top))", right: "1.25rem" }}>
         <div className="relative flex items-center border border-line bg-bg/90 backdrop-blur rounded-full p-1 gap-1">
@@ -5944,12 +5997,12 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
             <button key={l.id} onClick={() => onOpenList(l)}
               className="shrink-0 w-36 text-left rounded-2xl border border-line overflow-hidden">
               <div className="p-1.5">
-                <div className="grid grid-cols-2 gap-1 w-full aspect-square rounded-lg overflow-hidden bg-surface2">
+                <div className="grid grid-cols-2 gap-1 w-full aspect-square rounded-lg overflow-hidden bg-line/40">
                   {Array.from({ length: 4 }).map((_, i) => (
                     listGames[i] ? (
                       <Cover key={i} game={listGames[i]} size="sm" className="!w-full !h-full !aspect-square !rounded-md" />
                     ) : (
-                      <div key={i} className="w-full h-full aspect-square rounded-md bg-surface2" />
+                      <div key={i} className="w-full h-full aspect-square rounded-md bg-line/40" />
                     )
                   ))}
                 </div>
@@ -5972,7 +6025,11 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
         </div>
       )}
       {list.length === 0 ? <p className="text-dim text-sm font-body mt-8 mb-12 text-center">Keine Spiele gefunden.</p> : (
-        <div className={`grid gap-3 mt-3 pb-32 ${gridCols === 4 ? "grid-cols-4" : "grid-cols-2"}`}>
+        <>
+        <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] pb-2.5 border-b border-line mt-4">
+          {list.length} {list.length === 1 ? "Spiel" : "Spiele"}{SORT_LABEL[sortBy] ? ` · ${SORT_LABEL[sortBy]}` : ""}
+        </p>
+        <div className={`grid gap-x-3 gap-y-6 mt-4 ${gridCols === 4 ? "grid-cols-4" : "grid-cols-2"}`}>
           {list.map(g => (
             <GameGridCard
               key={g.id}
@@ -5988,6 +6045,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
             />
           ))}
         </div>
+        </>
       )}
       <div className="w-full pb-56 pt-6 mt-auto text-center border-t border-line">
         <p className="text-[10px] font-body text-dim">
@@ -6046,7 +6104,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
         {!demoMode && (
           <button onClick={() => { haptic(8); onAdd(); }} aria-label="Spiel hinzufügen"
             className={`text-white w-14 h-14 flex items-center justify-center rounded-full shadow-lg active:scale-95 border border-white/25 transition-all duration-300 ease-out shrink-0 ${searchOpen ? "opacity-0 scale-0 w-0 border-0 pointer-events-none" : "opacity-100 scale-100"}`}
-            style={{ background: "rgb(var(--accent))", boxShadow: "0 8px 24px rgb(var(--accent) / 0.45), inset 0 1px 1px rgba(255,255,255,0.35)" }}>
+            style={{ background: "rgb(var(--accent))", boxShadow: "var(--elev-fab)" }}>
             <Plus size={22} />
           </button>
         )}
@@ -6300,7 +6358,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
         {!demoMode && (
           <button onClick={() => { haptic(8); onAdd(); }} aria-label="Partie eintragen"
             className={`text-white w-14 h-14 flex items-center justify-center rounded-full shadow-lg active:scale-95 border border-white/25 transition-all duration-300 ease-out shrink-0 ${searchOpen ? "opacity-0 scale-0 w-0 border-0 pointer-events-none" : "opacity-100 scale-100"}`}
-            style={{ background: "rgb(var(--accent))", boxShadow: "0 8px 24px rgb(var(--accent) / 0.45), inset 0 1px 1px rgba(255,255,255,0.35)" }}>
+            style={{ background: "rgb(var(--accent))", boxShadow: "var(--elev-fab)" }}>
             <Plus size={22} />
           </button>
         )}
@@ -7868,7 +7926,7 @@ function App() {
           background: "rgba(24,22,21,0.18)",
           backdropFilter: "blur(8px) saturate(160%)",
           WebkitBackdropFilter: "blur(8px) saturate(160%)",
-          boxShadow: "inset 0 1px 1px rgba(255,255,255,0.22), inset 0 -1px 1px rgba(255,255,255,0.05), 0 8px 28px rgba(0,0,0,0.45)",
+          boxShadow: "var(--elev-nav)",
         }}>
           <div className="relative grid" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
             <div
