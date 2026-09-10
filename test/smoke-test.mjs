@@ -77,8 +77,19 @@ async function main() {
   await page.route("**/cdnjs.cloudflare.com/**/babel.min.js", (route) =>
     route.fulfill({ path: vendor("@babel", "standalone", "babel.min.js"), contentType: "application/javascript" })
   );
+  // Echtes Tailwind statt Stub: das CDN-Script wird durch einen kleinen Shim
+  // ersetzt, der tailwind.config entgegennimmt (damit index.html nicht
+  // fehlschlaegt) und das vorgebaute CSS einhaengt. Nur so werden optische
+  // Fehler im Test ueberhaupt sichtbar. Neu bauen mit:
+  //   npx tailwindcss -c tailwind.build.config.js -i tw-input.css -o tw-built.css --minify
+  const twCss = readFileSync(path.join(__dirname, "tw-built.css"), "utf8");
   await page.route("**/cdn.tailwindcss.com/**", (route) =>
-    route.fulfill({ body: "/* stubbed for offline smoke test */", contentType: "application/javascript" })
+    route.fulfill({
+      contentType: "application/javascript",
+      body: `window.tailwind = { config: {} };
+             (function(){var s=document.createElement("style");
+              s.textContent=${JSON.stringify(twCss)};document.head.appendChild(s);})();`,
+    })
   );
   await page.route("**/fonts.googleapis.com/**", (route) =>
     route.fulfill({ body: "/* stubbed for offline smoke test */", contentType: "text/css" })
