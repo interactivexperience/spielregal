@@ -2202,7 +2202,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     return (
       <SettingsSubPage title="Für KI exportieren" onBack={() => setView("menu")}>
         <div>
-          <p className="text-xs text-dim mb-3">Erzeugt eine vollständige Textübersicht deiner Sammlung — Spiele, Bewertungen, Partien, Sieg-Statistik. Zum Einfügen in Gemini, ChatGPT oder eine andere KI, um gezielte Fragen zu deiner Sammlung zu stellen (z.B. "Welche meiner Spiele passen zu Fans von Terraforming Mars?").</p>
+          <p className="text-xs text-dim mb-3">Textübersicht deiner Sammlung zum Einfügen in eine KI — etwa für „Welche meiner Spiele passen zu Fans von Terraforming Mars?“.</p>
           <div className="flex gap-2 mb-3">
             <button
               onClick={async () => {
@@ -2235,7 +2235,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     return (
       <SettingsSubPage title="KI-Assistent" onBack={() => setView("menu")}>
         <div>
-          <p className="text-xs text-dim mb-2">Für Elevator-Pitch-Zusammenfassungen beim Spiel-Import und Spielvorschläge im Gespräch. Läuft über deinen eigenen Cloudflare Worker — nichts geht an einen fremden KI-Anbieter.</p>
+          <p className="text-xs text-dim mb-2">Für Elevator Pitches und Pips Vorschläge. Läuft über deinen eigenen Cloudflare Worker.</p>
           <div className="flex gap-2">
             <input value={aiUrlInput} onChange={(e) => setAiUrlInput(e.target.value)} placeholder="https://spielregal-ai.dein-name.workers.dev"
               className="flex-1 min-w-0 bg-surface border border-line rounded-[14px] px-3 py-2 text-ink text-sm focus:outline-none focus:border-accent" />
@@ -2251,7 +2251,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     return (
       <SettingsSubPage title="BGG-Partien importieren" onBack={() => setView("menu")}>
         <div>
-          <p className="text-xs text-dim mb-2">Holt alle Partien, die du je auf BoardGameGeek zu deinem Namen eingetragen hast. Spiele, die noch nicht in deiner Sammlung sind, werden automatisch mit Status "nur gespielt" angelegt. Bereits importierte Partien werden bei erneutem Import übersprungen.</p>
+          <p className="text-xs text-dim mb-2">Holt deine Partien von BoardGameGeek. Fehlende Spiele werden als „nur gespielt“ angelegt, bereits importierte übersprungen.</p>
           <div className="flex gap-2 mb-2">
             <input value={bggUsername} onChange={(e) => setBggUsername(e.target.value)} placeholder="Dein BGG-Nutzername"
               className="flex-1 min-w-0 bg-surface border border-line rounded-[14px] px-3 py-2 text-ink text-sm focus:outline-none focus:border-accent" />
@@ -2434,7 +2434,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
       <SettingsSubPage title="Sammlung anpassen" onBack={() => setView("menu")}>
         <div>
           <h3 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-2">Eigene Kategorien</h3>
-          <p className="text-xs text-dim mb-2">Die BGG-Standardkategorien sind immer verfügbar. Hier ergänzt du eigene.</p>
+          <p className="text-xs text-dim mb-2">BGG-Standardkategorien sind immer verfügbar.</p>
           <div className="flex gap-2 mb-3">
             <input value={catInput} onChange={(e) => setCatInput(e.target.value)} placeholder="Neue Kategorie"
               className="flex-1 min-w-0 bg-surface border border-line rounded-[14px] px-3 py-2 text-ink text-sm focus:outline-none focus:border-accent" />
@@ -2453,7 +2453,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
         </div>
         <div>
           <h3 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-2">Eigene Mechanismen</h3>
-          <p className="text-xs text-dim mb-2">Die BGG-Standardmechanismen sind immer verfügbar. Hier ergänzt du eigene.</p>
+          <p className="text-xs text-dim mb-2">BGG-Standardmechanismen sind immer verfügbar.</p>
           <div className="flex gap-2 mb-3">
             <input value={mechInput} onChange={(e) => setMechInput(e.target.value)} placeholder="Neuer Mechanismus"
               className="flex-1 min-w-0 bg-surface border border-line rounded-[14px] px-3 py-2 text-ink text-sm focus:outline-none focus:border-accent" />
@@ -2472,7 +2472,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
         </div>
         <div>
           <h3 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-2">Eigene Spielertypen</h3>
-          <p className="text-xs text-dim mb-2">Zielgruppen wie Optimierer oder Taktiker sind vorgegeben. Hier ergänzt du eigene.</p>
+          <p className="text-xs text-dim mb-2">Zielgruppen wie Optimierer oder Taktiker sind vorgegeben.</p>
           <div className="space-y-2 mb-3">
             <input value={typeInput} onChange={(e) => setTypeInput(e.target.value)} placeholder="Neuer Spielertyp"
               className="w-full bg-surface border border-line rounded-[14px] px-3 py-2 text-ink text-sm focus:outline-none focus:border-accent" />
@@ -2499,7 +2499,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     return (
       <SettingsSubPage title="Vorschau-Modus" onBack={() => setView("menu")}>
         <div>
-          <p className="text-xs text-dim mb-2">Füllt die App vorübergehend mit Beispiel-Spielen, damit du siehst, wie's mit Inhalt aussieht. Wird nirgends gespeichert.</p>
+          <p className="text-xs text-dim mb-2">Beispiel-Spiele zum Ausprobieren. Wird nichts gespeichert.</p>
           <button onClick={onToggleDemo}
             className={`w-full h-12 rounded-[14px] text-sm font-medium ${demoMode ? "bg-accent text-bg" : "bg-surface border border-line text-ink"}`}>
             {demoMode ? "Demo-Vorschau beenden" : "Demo-Vorschau anzeigen"}
@@ -3362,7 +3362,7 @@ function BggMergeModal({ current, fresh, onApply, onClose }) {
           <h2 className="font-display text-xl tracking-[-0.02em] text-ink">BGG-Daten übernehmen</h2>
           <button onClick={requestClose} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg/80 backdrop-blur text-dim"><X size={20} /></button>
         </div>
-        <p className="text-xs text-dim px-5 pt-3">Wähl aus, was übernommen werden soll — alles andere bleibt unverändert.</p>
+        <p className="text-xs text-dim px-5 pt-3">Alles andere bleibt unverändert.</p>
         <div className="p-5 overflow-y-auto flex-1 space-y-2">
           {relevant.length === 0 && <p className="text-sm text-dim">BGG hat nichts Neues geliefert.</p>}
           {relevant.map((f) => {
@@ -4185,7 +4185,7 @@ function PlayerOrderModal({ players, onSave, onClose }) {
           <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Reihenfolge</h2>
           <button onClick={() => { onSave(items.map((p) => p.id)); requestClose(); }} className="text-accent text-sm font-medium px-2 py-1">Fertig</button>
         </div>
-        <p className="shrink-0 text-xs text-dim px-5 pb-2">Am Griff-Symbol ziehen. Gilt überall, wo Mitspieler angezeigt werden.</p>
+        <p className="shrink-0 text-xs text-dim px-5 pb-2">Gilt überall, wo Mitspieler angezeigt werden.</p>
         <div className="flex-1 overflow-y-auto p-4 space-y-2" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))", touchAction: draggingId ? "none" : "auto" }}>
           {items.map((p, idx) => (
             <div key={p.id} ref={(el) => { rowRefs.current[p.id] = el; }}
@@ -4629,7 +4629,7 @@ function DashboardReorderScreen({ order, sections, labels, hiddenSections = [], 
         <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Sektionen</h2>
         <button onClick={() => { onSave(items); onToggleHidden && onToggleHidden(hidden); }} className="text-accent text-sm font-medium px-2 py-1">Fertig</button>
       </div>
-      <p className="shrink-0 text-xs text-dim px-5 pt-3 pb-1">Am Griff-Symbol ziehen, um die Reihenfolge zu ändern. Mit dem Augen-Symbol Sektionen aus- und einblenden.</p>
+      <p className="shrink-0 text-xs text-dim px-5 pt-3 pb-1">Ziehen zum Sortieren, Auge zum Ausblenden.</p>
       <div className="flex-1 overflow-y-auto p-4 space-y-2" style={{ touchAction: draggingKey ? "none" : "auto" }}>
         {items.map((key, idx) => {
           const isHidden = hidden.includes(key);
@@ -5047,7 +5047,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     dust: (
       <div key="dust" className="border-t border-line pt-5">
         <div className="flex items-center gap-2 mb-1"><Archive size={15} className="text-dim" /><h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em]">Staubfänger</h2></div>
-        <p className="text-xs text-ink mb-2">Spiele in deinem Regal, die schon am längsten auf ihre erste Partie warten.</p>
+        <p className="text-xs text-ink mb-2">Am längsten ungespielt.</p>
         {dustCollectors.length === 0 ? <p className="text-ink text-sm font-body">Alles im Regal wurde schon gespielt. Sehr gut!</p> : (
           <div className="flex gap-3 overflow-x-auto pb-1">
             {dustCollectors.map(g => (
@@ -6021,23 +6021,6 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
       )}
       <div className="w-full pb-56 pt-6 mt-auto text-center border-t border-line">
         <p className="text-[10px] font-body text-dim">
-          {(() => {
-            const filtersActive = activeFilterCount > 0 || query.trim();
-            if (!filtersActive) {
-              return (
-                <>
-                  {games.filter((g) => g.status === "owned").length} im Besitz · {games.filter((g) => g.status === "wishlist").length} Wunschliste ·{" "}
-                </>
-              );
-            }
-            // With exactly one complexity tier selected (and nothing else), give
-            // a specific label like "4 Expertenspiele" instead of a generic count.
-            if (filters.complexity.length === 1 && activeFilterCount === 1 && !query.trim()) {
-              const plural = { Einsteigerspiel: "Einsteigerspiele", Familienspiel: "Familienspiele", "Gehobenes Familienspiel": "Gehobene Familienspiele", "Leichtes Kennerspiel": "Leichte Kennerspiele", Kennerspiel: "Kennerspiele", "Anspruchsvolles Kennerspiel": "Anspruchsvolle Kennerspiele", Expertenspiel: "Expertenspiele", Partyspiel: "Partyspiele" };
-              return <>{list.length} {plural[filters.complexity[0]] || filters.complexity[0]} ·{" "}</>;
-            }
-            return <>{list.length} Treffer ·{" "}</>;
-          })()}
           <a href="https://boardgamegeek.com" target="_blank" rel="noopener noreferrer" className="underline">Powered by BGG</a>
         </p>
       </div>
@@ -7114,7 +7097,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                 if (hasOnline && hasAnalog) return "Gemischt";
                 return hasOnline ? "Online" : "Analog";
               })()}
-              sub={game.status === "owned" && game.format === "digital" ? "Status · digital" : "Status"}
+              sub={game.status === "owned" && game.format === "digital" ? "digital" : ""}
             />
           </div>
 
@@ -7143,7 +7126,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
 
           {game.playerTypes && game.playerTypes.length > 0 && (
             <div>
-              <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1.5">Passt zu diesen Spielertypen</p>
+              <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1.5">Spielertypen</p>
               <div className="flex flex-wrap gap-1.5">
                 {game.playerTypes.map((t) => <Pill key={t} tone="teal">{t}</Pill>)}
               </div>
@@ -7246,7 +7229,7 @@ function SyncSettings({ initialUrl, initialApiKey, initialEmail, status, lastSyn
   return (
     <div onFocus={handleFocusScroll} className="space-y-4 font-body">
           <p className="text-sm text-dim">
-            Deine Sammlung und Partien werden immer auf diesem Gerät gespeichert. Trägst du zusätzlich eine Firebase-Datenbank ein, werden sie außerdem dorthin synchronisiert — auf jedem Gerät mit derselben Adresse siehst du dann automatisch dieselben Daten.
+            Deine Daten liegen immer auf diesem Gerät. Mit einer Firebase-Datenbank siehst du sie zusätzlich auf jedem Gerät mit derselben Adresse.
           </p>
           <div>
             <label className="block text-[11px] text-dim">Datenbank-Adresse</label>
@@ -7265,7 +7248,7 @@ function SyncSettings({ initialUrl, initialApiKey, initialEmail, status, lastSyn
               placeholder="AIzaSy…"
               className="w-full mt-1 bg-surface border border-line rounded-[14px] px-3 py-2 text-ink text-sm focus:outline-none focus:border-accent"
             />
-            <p className="text-[11px] text-dim mt-1.5">Findest du in der Firebase-Konsole unter Projekteinstellungen → Allgemein → "Web-API-Schlüssel".</p>
+            <p className="text-[11px] text-dim mt-1.5">Firebase-Konsole → Projekteinstellungen → Allgemein.</p>
           </div>
           <div>
             <label className="block text-[11px] text-dim">E-Mail (für sichere Anmeldung)</label>
@@ -7287,7 +7270,7 @@ function SyncSettings({ initialUrl, initialApiKey, initialEmail, status, lastSyn
               autoComplete="current-password"
               className="w-full mt-1 bg-surface border border-line rounded-[14px] px-3 py-2 text-ink text-sm focus:outline-none focus:border-accent"
             />
-            <p className="text-[11px] text-dim mt-1.5">Diesen Nutzer legst du einmalig in der Firebase-Konsole unter Authentication → Users an. Die App meldet sich damit automatisch im Hintergrund an — kein Login-Bildschirm im Alltag.</p>
+            <p className="text-[11px] text-dim mt-1.5">Nutzer einmalig in der Firebase-Konsole unter Authentication → Users anlegen. Die App meldet sich dann automatisch an.</p>
           </div>
           <div className="flex items-center gap-2 text-xs">
             {status === "syncing" && <><Loader2 size={13} /> <span className="text-dim">Synchronisiere…</span></>}
