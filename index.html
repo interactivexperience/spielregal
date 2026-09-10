@@ -2007,33 +2007,6 @@ function useIsDark() {
   return dark;
 }
 
-function AppMark({ size = 30 }) {
-  const id = "am" + size;
-  // Ohne Kachel: die Buchstaben erben die Textfarbe, der Wuerfel bleibt koralle.
-  // Mit cremefarbener Kachel waere die Marke im Light Mode unsichtbar gewesen.
-  return (
-    <svg viewBox="60 100 380 280" width={size} height={size * 280 / 380}
-      style={{ display: "block", flex: "none", overflow: "visible" }} aria-label="pip">
-      <defs>
-        <mask id={id}>
-          <rect x="0" y="0" width="512" height="512" fill="#fff" />
-          <circle cx="152.05" cy="255.6" r="34.7" />
-          <circle cx="359.95" cy="255.6" r="34.7" />
-        </mask>
-      </defs>
-      <g fill="currentColor" mask={`url(#${id})`}>
-        <path d="M85.35 255.6v102.1a16 16 0 0 0 32 0V255.6z" />
-        <circle cx="152.05" cy="255.6" r="66.7" />
-        <rect x="237.75" y="191.6" width="32" height="128.7" rx="16" />
-        <path d="M293.25 255.6v102.1a16 16 0 0 0 32 0V255.6z" />
-        <circle cx="359.95" cy="255.6" r="66.7" />
-      </g>
-      <rect x="233.25" y="129.97" width="41" height="41" rx="10.2" fill="rgb(var(--accent))"
-        transform="rotate(18 253.75 150.47)" />
-    </svg>
-  );
-}
-
 function ThemeSetting() {
   const [mode, setMode] = useState(() => (typeof window !== "undefined" && window.__getTheme ? window.__getTheme() : "system"));
   const pick = (v) => { setMode(v); if (window.__setTheme) window.__setTheme(v); };
@@ -5133,10 +5106,9 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
           </div>
         </div>
       )}
-      <div className="flex items-center gap-2.5 text-ink">
-        <AppMark size={30} />
-        <h1 className="font-display text-xl tracking-[-0.02em] text-ink">Spielregal</h1>
-        <div className="w-10 h-10 ml-auto" />
+      <div className="flex items-center justify-between">
+        <h1 className="font-display text-3xl tracking-[-0.03em] leading-[1.05] text-ink">Spielregal</h1>
+        <div className="w-10 h-10" />
       </div>
       <div className="fixed z-30" style={{ top: "max(1rem, env(safe-area-inset-top))", right: "1.25rem" }}>
         <button onClick={() => setSortMenuOpen((o) => !o)} aria-label="Sortieren" className="glass-icon-btn w-10 h-10 flex items-center justify-center border border-rim/15 rounded-full text-dim">
@@ -5963,10 +5935,9 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
 
   return (
     <div className="p-5 overflow-x-hidden min-h-full flex flex-col" style={{ paddingBottom: "calc(8.5rem + env(safe-area-inset-bottom))" }}>
-      <div className="flex items-center gap-2.5 mb-5 text-ink">
-        <AppMark size={30} />
-        <h1 className="font-display text-xl tracking-[-0.02em] text-ink">Sammlung</h1>
-        <div className="w-[84px] h-10 ml-auto" />
+      <div className="flex items-center justify-between mb-5">
+        <h1 className="font-display text-3xl tracking-[-0.03em] leading-[1.05] text-ink">Sammlung</h1>
+        <div className="w-[84px] h-10" />
       </div>
       <div className="fixed z-30" style={{ top: "max(1rem, env(safe-area-inset-top))", right: "1.25rem" }}>
         <div className="relative flex items-center border border-line bg-bg/90 backdrop-blur rounded-full p-1 gap-1">
