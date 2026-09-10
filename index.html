@@ -2615,18 +2615,62 @@ const AI_WORKER_URL_KEY = "spielregal:aiWorkerUrl";
 // Rewrites a BGG game description into a short, mechanics-focused elevator
 // pitch via the user's own Cloudflare Workers AI worker (never sent to any
 // third party AI service — stays entirely within their own Cloudflare account).
+// Turns the AI's lightweight-markdown pitch body ("## " subheadings, blank-line
+// paragraphs, "- " bullets, "**bold**") into the HTML the RichTextEditor already
+// understands (h3/p/ul/li/strong — same tags its own toolbar produces).
+function pitchMarkdownToHtml(text) {
+  const escapeHtml = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const inline = (s) => escapeHtml(s).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  const lines = text.split("\n").map((l) => l.trim());
+  // Line-by-line, not paragraph-split-first — a heading/bullet is recognized
+  // even when the model doesn't put a blank line right after it.
+  const blocks = [];
+  let paraBuf = [];
+  const flushPara = () => {
+    if (paraBuf.length > 0) { blocks.push({ type: "p", lines: paraBuf }); paraBuf = []; }
+  };
+  lines.forEach((line) => {
+    if (!line) { flushPara(); return; }
+    const heading = /^#{1,3}\s+(.+)$/.exec(line);
+    const bullet = /^[-*]\s+(.+)$/.exec(line);
+    if (heading) {
+      flushPara();
+      blocks.push({ type: "h3", text: heading[1] });
+    } else if (bullet) {
+      flushPara();
+      const last = blocks[blocks.length - 1];
+      if (last && last.type === "ul") last.items.push(bullet[1]);
+      else blocks.push({ type: "ul", items: [bullet[1]] });
+    } else {
+      paraBuf.push(line);
+    }
+  });
+  flushPara();
+  return blocks.map((b) => {
+    if (b.type === "h3") return `<h3>${inline(b.text)}</h3>`;
+    if (b.type === "ul") return `<ul>${b.items.map((i) => `<li>${inline(i)}</li>`).join("")}</ul>`;
+    return `<p>${b.lines.map(inline).join("<br>")}</p>`;
+  }).join("");
+}
+
 async function aiElevatorPitch(workerUrl, gameName, originalSummary) {
   const prompt = `Du bist ein Brettspiel-Experte und schreibst kurze, klare Zusammenfassungen auf Deutsch.
 
 Schreib einen Elevator-Pitch für das Brettspiel "${gameName}" mit zwei Teilen:
 1. Eine kurze, prägnante TITELZEILE (3-6 Wörter, wie ein Schlagwort-Motto), die die Kernmechanik auf den Punkt bringt — z.B. im Stil von "Zwei Würfel. Ein Fürstentum. Deine Strategie."
-2. Darunter ein Fließtext, der NICHT nur Mechanik-Schlagworte nennt, sondern den groben SPIELABLAUF erzählt: wie läuft ein Zug bzw. eine Runde konkret ab (was macht man Schritt für Schritt), und wie endet die Partie bzw. wie gewinnt man. Jemand, der das liest, soll ein klares Bild davon bekommen, wie sich eine Partie tatsächlich anfühlt und abspielt — nicht nur welche Mechanismen drinstecken, sondern wie sie im Spielverlauf konkret zusammenspielen. Es gibt KEIN Satz- oder Längenlimit — schreib so viel, wie nötig ist, um den Spielablauf wirklich verständlich zu machen (bei einem simplen Spiel reichen wenige Sätze, bei einem komplexeren ruhig mehr), aber ohne unnötiges Füllmaterial oder Wiederholungen.
+2. Darunter ein STRUKTURIERTER Text mit Überschriften/Subtiteln statt einem einzigen langen Absatz — gliedere ihn sinnvoll in Abschnitte (Abschnittsnamen frei wählbar, passend zum Spiel, z.B. "Worum geht's", "Spielablauf", "Spielende & Sieg"), der NICHT nur Mechanik-Schlagworte nennt, sondern den groben SPIELABLAUF erzählt: wie läuft ein Zug bzw. eine Runde konkret ab (was macht man Schritt für Schritt), und wie endet die Partie bzw. wie gewinnt man. Jemand, der das liest, soll ein klares Bild davon bekommen, wie sich eine Partie tatsächlich anfühlt und abspielt — nicht nur welche Mechanismen drinstecken, sondern wie sie im Spielverlauf konkret zusammenspielen. Es gibt KEIN Satz- oder Längenlimit — schreib so viel, wie nötig ist, um den Spielablauf wirklich verständlich zu machen (bei einem simplen Spiel reichen wenige Sätze, bei einem komplexeren ruhig mehr), aber ohne unnötiges Füllmaterial oder Wiederholungen.
+
+Nutze für den Text dieses einfache Markdown:
+- "## Abschnittsname" auf einer eigenen Zeile für eine Zwischenüberschrift
+- Leerzeile zwischen Absätzen/Abschnitten
+- "- " am Zeilenanfang für Aufzählungspunkte, wenn sich z.B. der Zugablauf in Schritte gliedern lässt
+- "**Text**" für Betonung einzelner Begriffe (sparsam einsetzen)
 
 Kein Marketing-Geschwafel, keine Einleitung wie "Willkommen zu" — direkt zur Sache.
 
 Antworte in genau diesem Format, sonst nichts:
 TITEL: <die Titelzeile>
-TEXT: <der Fließtext>
+TEXT: <der strukturierte Text im Markdown-Format oben>
 
 Original-Beschreibung (Englisch, von BoardGameGeek):
 ${(originalSummary || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 2000)}`;
@@ -2649,9 +2693,10 @@ ${(originalSummary || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().s
   const textMatch = raw.match(/TEXT:\s*([\s\S]+)/i);
   const title = titleMatch ? titleMatch[1].trim() : "";
   const body = textMatch ? textMatch[1].trim() : raw.replace(/TITEL:.*$/im, "").trim();
+  const bodyHtml = pitchMarkdownToHtml(body);
 
-  if (title) return `<h2>${title}</h2><p>${body}</p>`;
-  return `<p>${body}</p>`;
+  if (title) return `<h2>${title.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</h2>${bodyHtml}`;
+  return bodyHtml;
 }
 
 
