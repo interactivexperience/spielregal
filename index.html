@@ -6890,10 +6890,10 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
               const primary = showGermanFirst ? game.germanName : game.name;
               const secondary = hasGerman ? (showGermanFirst ? game.name : game.germanName) : null;
               return (
-                <>
+                <div className="flex items-baseline flex-wrap gap-x-2 gap-y-0.5">
                   <h1 className="font-display text-2xl text-[#F2EDE4] leading-tight">{primary}</h1>
-                  {secondary && <p className="font-display-thin text-2xl text-[#5C574F] leading-tight mt-0.5">{secondary}</p>}
-                </>
+                  {secondary && <span className="font-display-thin text-2xl text-[#5C574F] leading-tight">{secondary}</span>}
+                </div>
               );
             })()}
             {(game.year || (game.publishers && game.publishers.length > 0)) && (
