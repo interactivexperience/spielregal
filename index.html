@@ -770,21 +770,16 @@ function renderPipMessage(text, games = [], onView) {
 
 function TextWithGameLinks({ text, games, onView, color }) {
   const mentioned = findMentionedGames(text, games);
-  if (mentioned.length === 0) return <p className="text-ink text-sm font-body leading-snug">{text}</p>;
+  if (mentioned.length === 0) return <p className="text-ink text-[13px] font-body leading-relaxed">{text}</p>;
   const escaped = mentioned.map((g) => g.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).sort((a, b) => b.length - a.length);
   const parts = text.split(new RegExp(`(${escaped.join("|")})`, "g"));
   return (
-    <p className="text-ink text-sm font-body leading-snug">
+    <p className="text-ink text-[13px] font-body leading-relaxed">
       {parts.map((part, i) => {
         const g = mentioned.find((x) => x.name === part);
         if (!g) return <span key={i}>{part}</span>;
         return (
-          <span key={i} onClick={() => onView(g)} className="font-semibold underline underline-offset-2 cursor-pointer inline-flex items-center gap-1" style={{ color }}>
-            {(() => {
-              const label = complexityLabel(g);
-              const CIcon = label && COMPLEXITY_ICON[label];
-              return CIcon ? <CIcon size={13} className="shrink-0" /> : null;
-            })()}
+          <span key={i} onClick={() => onView(g)} className="font-semibold cursor-pointer" style={{ color }}>
             {part}
           </span>
         );
@@ -5196,7 +5191,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
                   </div>
                   <p className="font-display text-lg tracking-[-0.015em] text-ink min-w-0 truncate">{weeklyTip.gameName}</p>
                 </div>
-                <p className="text-dim text-[13px] font-body leading-relaxed">{weeklyTip.reason}</p>
+                <p className="text-ink text-[13px] font-body leading-relaxed">{weeklyTip.reason}</p>
               </div>
             );
             return (
