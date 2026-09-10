@@ -48,6 +48,19 @@ for (const theme of ["dark", "light"]) {
     if (await btn.count()) { await btn.click({ timeout: 3000 }).catch(()=>{}); await page.waitForTimeout(900); }
     await page.screenshot({ path: `${SP}/app_${theme}_${t.replace(/[^\wÜ]/g,"")}.png` });
   }
+  // Einstellungen -> Synchronisation: eigene Unterseite, kein Sheet mehr
+  await page.locator('button:has-text("Mehr")').last().click();
+  await page.waitForTimeout(700);
+  const syncRow = page.locator('button:has-text("Synchronisation")').first();
+  if (await syncRow.count()) {
+    await syncRow.click({ timeout: 3000 }).catch(() => {});
+    await page.waitForTimeout(900);
+    await page.screenshot({ path: `${SP}/app_${theme}_Sync.png` });
+    await page.locator('button[aria-label="Zurück"], button[aria-label="Abbrechen"]').first()
+      .click({ timeout: 2000 }).catch(() => {});
+    await page.waitForTimeout(500);
+  }
+
   // Spiel-Detail: erstes Cover in der Sammlung antippen
   await page.locator('button:has-text("Sammlung")').last().click();
   await page.waitForTimeout(800);

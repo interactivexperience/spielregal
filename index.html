@@ -2179,7 +2179,8 @@ function MultiGamePickerSheet({ games, excludeId, filter, initialSelected = [], 
   );
 }
 
-function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, onAddCategory, onRemoveCategory, onAddMechanism, onRemoveMechanism, onAddPlayerType, onRemovePlayerType, demoMode, onToggleDemo, guestMode, onToggleGuest, syncUrl, syncStatus, onOpenSync, bggImportStatus, bggImportResult, bggImportError, onImportBggPlays, games, plays, onMergeGames, aiWorkerUrl, onSaveAiWorkerUrl }) {
+function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, onAddCategory, onRemoveCategory, onAddMechanism, onRemoveMechanism, onAddPlayerType, onRemovePlayerType, demoMode, onToggleDemo, guestMode, onToggleGuest, syncUrl, syncStatus,
+  syncApiKey, syncEmail, syncLastSynced, onSaveSync, onSyncNow, onRemoveSync, bggImportStatus, bggImportResult, bggImportError, onImportBggPlays, games, plays, onMergeGames, aiWorkerUrl, onSaveAiWorkerUrl }) {
   const [view, setView] = useState("menu"); // menu | sync | ai | bggImport | customize | duplicates | demo
   const [aiUrlInput, setAiUrlInput] = useState(aiWorkerUrl || "");
   const [bggUsername, setBggUsername] = useState("");
@@ -2212,13 +2213,16 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
   if (view === "sync") {
     return (
       <SettingsSubPage title="Synchronisation" onBack={() => setView("menu")}>
-        <div>
-          <p className="text-xs text-dim mb-2">{syncUrl ? "Deine Daten werden über Firebase mit deinen Geräten abgeglichen." : "Noch nicht eingerichtet — deine Daten bleiben nur auf diesem Gerät."}</p>
-          <button onClick={onOpenSync} className="glass w-full h-12 rounded-[14px] text-sm font-medium border border-rim/15 text-ink flex items-center justify-center gap-2">
-            {syncStatus === "syncing" ? <Loader2 size={16} className="text-accent" /> : <Globe size={16} className={syncStatus === "error" ? "text-danger" : "text-dim"} />}
-            {syncUrl ? "Synchronisation verwalten" : "Synchronisation einrichten"}
-          </button>
-        </div>
+        <SyncSettings
+          initialUrl={syncUrl}
+          initialApiKey={syncApiKey}
+          initialEmail={syncEmail}
+          status={syncStatus}
+          lastSynced={syncLastSynced}
+          onSave={onSaveSync}
+          onSyncNow={onSyncNow}
+          onRemove={onRemoveSync}
+        />
       </SettingsSubPage>
     );
   }
@@ -7266,21 +7270,14 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
   );
 }
 
-function SyncModal({ initialUrl, initialApiKey, initialEmail, status, lastSynced, onClose, onSave, onSyncNow, onRemove }) {
+function SyncSettings({ initialUrl, initialApiKey, initialEmail, status, lastSynced, onSave, onSyncNow, onRemove }) {
   const [url, setUrl] = useState(initialUrl || "");
   const [key, setKey] = useState(initialApiKey || "");
   const [email, setEmail] = useState(initialEmail || "");
   const [password, setPassword] = useState("");
 
   return (
-    <div className="fixed top-0 left-0 right-0 bg-black/90 z-50 flex items-end justify-center p-0" style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }}>
-      <div onFocus={handleFocusScroll} className="glass border border-rim/10 rounded-t-[28px] w-full max-h-[var(--app-height,100dvh)] overflow-y-auto rise-in font-body relative">
-        <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
-        <div className="px-5 pt-2 pb-2 flex items-center justify-between gap-3">
-          <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Geräte-Synchronisation</h2>
-          <button onClick={onClose} className="glass-icon-btn shrink-0 w-10 h-10 flex items-center justify-center rounded-full border border-rim/15 text-ink"><X size={20} /></button>
-        </div>
-        <div className="p-5 space-y-4">
+    <div onFocus={handleFocusScroll} className="space-y-4 font-body">
           <p className="text-sm text-dim">
             Deine Sammlung und Partien werden immer auf diesem Gerät gespeichert. Trägst du zusätzlich eine Firebase-Datenbank ein, werden sie außerdem dorthin synchronisiert — auf jedem Gerät mit derselben Adresse siehst du dann automatisch dieselben Daten.
           </p>
@@ -7334,13 +7331,13 @@ function SyncModal({ initialUrl, initialApiKey, initialEmail, status, lastSynced
           <button
             onClick={() => onSave(url, key, email, password)}
             disabled={!url.trim()}
-            className="w-full bg-[color:rgb(var(--accent))] disabled:opacity-40 text-ink rounded-[14px] py-3 font-medium active:scale-[0.99] flex items-center justify-center gap-2"
+            className="w-full bg-accent disabled:opacity-40 text-white rounded-[14px] py-3 font-medium active:scale-[0.99] flex items-center justify-center gap-2"
           >
             <Check size={18} /> Speichern
           </button>
           {initialUrl && (
             <>
-              <button onClick={onSyncNow} className="glass w-full border border-rim/15 text-ink rounded-[14px] py-3 font-medium active:scale-[0.99]">
+              <button onClick={onSyncNow} className="w-full border border-line text-ink rounded-[14px] py-3 font-medium active:scale-[0.99]">
                 Jetzt synchronisieren
               </button>
               <button onClick={onRemove} className="w-full text-dim text-sm font-body py-2">
@@ -7348,8 +7345,6 @@ function SyncModal({ initialUrl, initialApiKey, initialEmail, status, lastSynced
               </button>
             </>
           )}
-        </div>
-      </div>
     </div>
   );
 }
@@ -7465,7 +7460,6 @@ function App() {
   const [aiWorkerUrl, setAiWorkerUrl] = useState(() => localStorage.getItem(AI_WORKER_URL_KEY) || "");
   const saveAiWorkerUrl = (url) => { const trimmed = url.trim(); localStorage.setItem(AI_WORKER_URL_KEY, trimmed); setAiWorkerUrl(trimmed); };
   const [authEmail, setAuthEmail] = useState(() => localStorage.getItem(AUTH_KEYS.email) || "");
-  const [syncModalOpen, setSyncModalOpen] = useState(false);
   const [syncStatus, setSyncStatus] = useState("idle");
   const [lastSynced, setLastSynced] = useState(null);
   const categoryOptions = useMemo(() => {
@@ -7646,7 +7640,6 @@ function App() {
       setSyncStatus("synced");
       setLastSynced(Date.now());
     }).catch(() => setSyncStatus("error"));
-    setSyncModalOpen(false);
   };
 
   const syncNow = () => {
@@ -7670,7 +7663,6 @@ function App() {
     setApiKey("");
     setAuthEmail("");
     setSyncStatus("idle");
-    setSyncModalOpen(false);
   };
 
   const applyGameSave = (game) => {
@@ -7907,7 +7899,12 @@ function App() {
               onToggleGuest={() => setGuestMode((g) => !g)}
               syncUrl={syncUrl}
               syncStatus={syncStatus}
-              onOpenSync={() => setSyncModalOpen(true)}
+              syncApiKey={apiKey}
+              syncEmail={authEmail}
+              syncLastSynced={lastSynced}
+              onSaveSync={saveSyncUrl}
+              onSyncNow={syncNow}
+              onRemoveSync={removeSync}
               bggImportStatus={bggImportStatus}
               bggImportResult={bggImportResult}
               bggImportError={bggImportError}
@@ -8008,20 +8005,6 @@ function App() {
         />
       )}
       {playModal && <PlayFormModal games={games} plays={plays} playerProfiles={displayPlayers} onAddPlayer={addPlayer} onUpdatePlayerPhoto={updatePlayerPhoto} onUpdatePlayerName={updatePlayerName} onRemovePlayer={removePlayer} onReorderPlayers={reorderPlayers} initial={playModal.editing} onClose={() => setPlayModal(null)} onSave={savePlay} onDelete={deletePlay} />}
-      {syncModalOpen && (
-        <SyncModal
-          initialUrl={syncUrl}
-          initialApiKey={apiKey}
-          initialEmail={authEmail}
-          status={syncStatus}
-          lastSynced={lastSynced}
-          onClose={() => setSyncModalOpen(false)}
-          onSave={saveSyncUrl}
-          onSyncNow={syncNow}
-          onRemove={removeSync}
-        />
-      )}
-
       {commandBarOpen && (
         <CommandBarModal
           games={displayGames}
