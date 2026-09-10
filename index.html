@@ -1979,6 +1979,20 @@ function TagPickerModal({ title, options, selected, onToggle, onAddCustom, onClo
 }
 
 /* ---------------- SETTINGS MODAL (manage custom categories & mechanisms) ---------------- */
+function useIsDark() {
+  const [dark, setDark] = useState(() =>
+    typeof document === "undefined" || document.documentElement.dataset.theme !== "light");
+  useEffect(() => {
+    const el = document.documentElement;
+    const read = () => setDark(el.dataset.theme !== "light");
+    const obs = new MutationObserver(read);
+    obs.observe(el, { attributes: true, attributeFilter: ["data-theme"] });
+    read();
+    return () => obs.disconnect();
+  }, []);
+  return dark;
+}
+
 function ThemeSetting() {
   const [mode, setMode] = useState(() => (typeof window !== "undefined" && window.__getTheme ? window.__getTheme() : "system"));
   const pick = (v) => { setMode(v); if (window.__setTheme) window.__setTheme(v); };
@@ -6951,6 +6965,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [listPickerOpen, setListPickerOpen] = useState(false);
   const [accentColor, setAccentColor] = useState(() => fallbackAccentColor(game.id || game.name));
+  const isDark = useIsDark();
   useEffect(() => {
     let cancelled = false;
     if (images[0]) {
@@ -6993,7 +7008,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
             <span className="glass text-[10px] text-ink px-2 py-1 border border-rim/15 rounded-full">{readOnlyLabel}</span>
           ) : null}
         </div>
-        <div className="overflow-y-auto flex-1 p-5 space-y-7" style={{ paddingTop: "calc(max(1rem, env(safe-area-inset-top)) + 3rem)", backgroundImage: `linear-gradient(180deg, ${accentColor}35, transparent 220px)` }}>
+        <div className="overflow-y-auto flex-1 p-5 space-y-7" style={{ paddingTop: "calc(max(1rem, env(safe-area-inset-top)) + 3rem)", backgroundImage: isDark ? `linear-gradient(180deg, ${accentColor}35, transparent 220px)` : "none" }}>
           <div>
             {(() => {
               const hasGerman = game.germanName && game.germanName.trim() && game.germanName.trim() !== game.name.trim();
