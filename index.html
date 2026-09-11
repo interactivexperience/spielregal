@@ -7023,23 +7023,45 @@ ${buildCollectionContextForAI(games, plays)}`;
                       } : undefined}
                     >
                       {m.role === "assistant" && (() => {
-                        // Vorschlagskarte aus der SPIEL:-Markerzeile. Findet sie
-                        // kein Spiel, faellt es auf die fette Namenszeile im
-                        // Text zurueck, die renderPipMessage selbst erkennt.
-                        if (!m.vorschlag) return null;
-                        const n = m.vorschlag.trim().toLowerCase();
-                        const g = games.find((x) => x.name.trim().toLowerCase() === n)
-                          || games.find((x) => (x.germanName || "").trim().toLowerCase() === n);
-                        if (!g) return null;
-                        return (
-                          <button onClick={() => onView && onView(g)} className="block text-left mb-2.5">
+                        // Vorschlagskarte: aus der SPIEL:-Markerzeile fuer Spiele
+                        // der Sammlung, sonst aus externalGame fuer Vorschlaege
+                        // von BGG. Beide sehen gleich aus -- nur das Ziel
+                        // unterscheidet sich, Detailseite gegen BGG-Seite.
+                        const n = (m.vorschlag || "").trim().toLowerCase();
+                        const g = n && (games.find((x) => x.name.trim().toLowerCase() === n)
+                          || games.find((x) => (x.germanName || "").trim().toLowerCase() === n));
+                        if (g) {
+                          return (
+                            <button onClick={() => onView && onView(g)} className="block text-left mb-2.5">
+                              <div className="w-32 mb-2">
+                                <Cover game={g} size="lg" className="!rounded-2xl" />
+                              </div>
+                              <p className="font-display text-lg leading-tight text-ink underline decoration-dim/50 underline-offset-2">
+                                {m.vorschlag.trim()}
+                              </p>
+                            </button>
+                          );
+                        }
+                        const ex = m.externalGame;
+                        if (!ex || !ex.name) return null;
+                        const karte = (
+                          <>
                             <div className="w-32 mb-2">
-                              <Cover game={g} size="lg" className="!rounded-2xl" />
+                              <Cover game={{ name: ex.name, images: ex.images || [], image: null }} size="lg" className="!rounded-2xl" />
                             </div>
                             <p className="font-display text-lg leading-tight text-ink underline decoration-dim/50 underline-offset-2">
-                              {m.vorschlag.trim()}
+                              {ex.name}
                             </p>
-                          </button>
+                            <p className="text-[11px] text-dim font-body mt-1 flex items-center gap-1">
+                              <Globe size={11} /> Nicht in deiner Sammlung{ex.bggId ? " · auf BGG ansehen" : ""}
+                            </p>
+                          </>
+                        );
+                        return ex.bggId ? (
+                          <a href={`https://boardgamegeek.com/boardgame/${ex.bggId}`} target="_blank" rel="noopener noreferrer"
+                            className="block text-left mb-2.5">{karte}</a>
+                        ) : (
+                          <div className="mb-2.5">{karte}</div>
                         );
                       })()}
                       {m.role === "assistant" ? renderPipMessage(m.content, games, onView) : (m.display || m.content)}
@@ -7061,13 +7083,6 @@ ${buildCollectionContextForAI(games, plays)}`;
                     </div>
                     {m.externalGame && (
                       <div className="flex flex-wrap gap-1.5">
-                        {m.externalGame.bggId && (
-                          <a href={`https://boardgamegeek.com/boardgame/${m.externalGame.bggId}`} target="_blank" rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full bg-bg border border-line text-xs text-dim">
-                            {m.externalGame.images && m.externalGame.images[0] ? <img src={m.externalGame.images[0]} alt="" className="w-5 h-5 rounded-full object-cover" /> : <Globe size={12} />}
-                            {m.externalGame.name} auf BGG ansehen <ChevronRight size={11} />
-                          </a>
-                        )}
                         {!games.some((g) => g.bggId && String(g.bggId) === String(m.externalGame.bggId)) && (
                           <button onClick={() => onAddWishlist(m.externalGame)} className="flex items-center gap-1.5 pl-2.5 pr-2.5 py-1 rounded-full bg-gold/15 border border-gold/40 text-xs text-gold font-medium">
                             <Heart size={12} /> Zur Wunschliste
