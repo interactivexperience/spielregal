@@ -726,19 +726,17 @@ function renderPipMessage(text, games = [], onView) {
   const renderInline = (line, key) => <p key={key} className="leading-snug">{renderInlineBits(line)}</p>;
   const renderHeading = (title, key) => {
     const g = findGame(title);
+    if (!g) return <p key={key} className="font-display text-base text-ink mb-1">{title}</p>;
     return (
-      <div key={key} className="mb-1">
-        {g && (
-          <button onClick={(e) => { e.stopPropagation(); onView && onView(g); }} className="block w-16 mb-1.5">
-            <Cover game={g} size="lg" className="!rounded-xl" />
-          </button>
-        )}
-        <p className={`font-display text-base text-ink ${g ? "underline decoration-dim/50 underline-offset-2" : ""}`}
-          onClick={g ? () => onView && onView(g) : undefined}
-          style={g ? { cursor: "pointer" } : undefined}>
+      <button key={key} onClick={(e) => { e.stopPropagation(); onView && onView(g); }}
+        className="block text-left mb-1.5">
+        <div className="w-32 mb-2">
+          <Cover game={g} size="lg" className="!rounded-2xl" />
+        </div>
+        <p className="font-display text-lg leading-tight text-ink underline decoration-dim/50 underline-offset-2">
           {title}
         </p>
-      </div>
+      </button>
     );
   };
   return (
