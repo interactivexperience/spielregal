@@ -818,6 +818,60 @@ function TextWithGameLinks({ text, games, onView, color }) {
 // spitze Ohren, leicht geneigter Kopf, unterschiedlich grosse Augen, ein
 // schiefes Laecheln und eine hochgezogene Braue. Die Braue erst ab 56px, sonst
 // verstopft sie das Gesicht in der kleinen Groesse.
+// Pull-to-Refresh laedt die App neu -- index.html kommt ohne Build-Step direkt
+// von GitHub Pages, ein frischer Ladevorgang ist also das Update. Die Geste
+// hing bisher nur am Haupt-Scrollbereich; Vollbild-Ansichten wie Spieldetail
+// oder Partiendetail scrollen in einem eigenen Container, dort passierte
+// nichts. Als Hook laesst sie sich an jeden Scroller haengen.
+function usePullToRefresh() {
+  const elRef = React.useRef(null);
+  const startY = React.useRef(0);
+  const startX = React.useRef(0);
+  const tracking = React.useRef(false);
+  const [pullY, setPullY] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const SCHWELLE = 70;
+
+  const onTouchStart = (e) => {
+    if (elRef.current && elRef.current.scrollTop <= 0) {
+      startY.current = e.touches[0].clientY;
+      startX.current = e.touches[0].clientX;
+      tracking.current = true;
+    }
+  };
+  const onTouchMove = (e) => {
+    if (!tracking.current || refreshing) return;
+    const dy = e.touches[0].clientY - startY.current;
+    const dx = Math.abs(e.touches[0].clientX - startX.current);
+    // Waagerechte Wischer gehoeren dem Zurueck-Gesten-Handler der Detailseiten,
+    // sonst zieht schon ein leicht schraeger Wischer die Leiste auf.
+    if (dy > 0 && dy > dx && elRef.current && elRef.current.scrollTop <= 0) {
+      setPullY(Math.min(dy * 0.5, 110));
+    } else {
+      tracking.current = false;
+      setPullY(0);
+    }
+  };
+  const onTouchEnd = () => {
+    if (!tracking.current) return;
+    tracking.current = false;
+    if (pullY >= SCHWELLE) {
+      setPullY(56);
+      setRefreshing(true);
+      window.location.href = window.location.pathname + "?refresh=" + Date.now() + window.location.hash;
+    } else {
+      setPullY(0);
+    }
+  };
+
+  const anzeige = (
+    <div className="flex items-center justify-center overflow-hidden transition-[height] duration-200" style={{ height: pullY }}>
+      <Loader2 size={20} className={refreshing ? "text-accent" : "text-dim"} style={{ opacity: Math.min(pullY / SCHWELLE, 1) }} />
+    </div>
+  );
+  return { ref: elRef, handlers: { onTouchStart, onTouchMove, onTouchEnd }, anzeige };
+}
+
 function PipAvatar({ size = 36, sleeping = false }) {
   const strich = sleeping ? "rgb(var(--dim))" : "#fff";
   const breit = size >= 56;
@@ -6180,6 +6234,9 @@ function SwipeableRow({ onDelete, children, disabled }) {
 }
 
 function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfiles = [] }) {
+  const ptrListe = usePullToRefresh();
+  const ptrGruppe = usePullToRefresh();
+  const ptrAbend = usePullToRefresh();
   const [detailGroupKey, setDetailGroupKey] = useState(null);
   const [fullListOpen, setFullListOpen] = useState(false);
   const [viewMode, setViewMode] = useState(() => loadKey("spielregal:playlogViewMode", "game")); // "game" | "evening"
@@ -6551,7 +6608,8 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                   <h1 className="font-display text-2xl tracking-[-0.02em] text-ink">{titel}</h1>
                   <span className="ml-auto font-body text-xs text-dim">{eintraege.length}</span>
                 </div>
-                <div className="flex-1 overflow-y-auto px-5" style={{ paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}>
+                <div ref={ptrListe.ref} {...ptrListe.handlers} className="flex-1 overflow-y-auto px-5" style={{ paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}>
+                  {ptrListe.anzeige}
                   <div className="border-t border-line">{eintraege.map(zeile)}</div>
                 </div>
               </div>
@@ -6603,7 +6661,8 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
         const rootGame = games.find((g) => g.id === rootId);
         return (
         <div className="fixed inset-0 z-50 bg-bg" {...groupSwipe}>
-          <div className="w-full h-full max-w-3xl mx-auto overflow-y-auto font-body">
+          <div ref={ptrGruppe.ref} {...ptrGruppe.handlers} className="w-full h-full max-w-3xl mx-auto overflow-y-auto font-body">
+            {ptrGruppe.anzeige}
             <div className="shrink-0 relative" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", height: "calc(2.75rem + max(1rem, env(safe-area-inset-top)))" }}>
               <button onClick={() => setDetailGroupKey(null)} className="glass-icon-btn absolute left-4 w-10 h-10 flex items-center justify-center rounded-full border border-rim/15 text-ink" style={{ top: "max(1rem, env(safe-area-inset-top))" }} aria-label="Zurück"><ChevronLeft size={22} /></button>
             </div>
@@ -6636,7 +6695,8 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
         const [date, dayPlays] = liveGroup;
         return (
         <div className="fixed inset-0 z-50 bg-bg" {...eveningSwipe}>
-          <div className="w-full h-full max-w-3xl mx-auto overflow-y-auto font-body">
+          <div ref={ptrAbend.ref} {...ptrAbend.handlers} className="w-full h-full max-w-3xl mx-auto overflow-y-auto font-body">
+            {ptrAbend.anzeige}
             <div className="shrink-0 relative" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", height: "calc(2.75rem + max(1rem, env(safe-area-inset-top)))" }}>
               <button onClick={() => setDetailEveningDate(null)} className="glass-icon-btn absolute left-4 w-10 h-10 flex items-center justify-center rounded-full border border-rim/15 text-ink" style={{ top: "max(1rem, env(safe-area-inset-top))" }} aria-label="Zurück"><ChevronLeft size={22} /></button>
             </div>
@@ -7045,6 +7105,7 @@ const TONE_HEX = { teal: "rgb(var(--tealdeep))", amber: "rgb(var(--accent))", re
 
 function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList, onClose, onEdit, onViewOther, readOnlyLabel, hidePrices, onQuickUpdate }) {
   const [campaignPhotoOpen, setCampaignPhotoOpen] = useState(false);
+  const ptr = usePullToRefresh();
   const gamePlays = plays.filter((p) => p.gameId === game.id);
   const lastPlay = [...gamePlays].sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0];
   const label = complexityLabel(game);
@@ -7097,7 +7158,8 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
             <span className="glass text-[10px] text-ink px-2 py-1 border border-rim/15 rounded-full">{readOnlyLabel}</span>
           ) : null}
         </div>
-        <div className="overflow-y-auto flex-1 p-5 space-y-7" style={{ paddingTop: "calc(max(1rem, env(safe-area-inset-top)) + 3rem)", backgroundImage: isDark ? `linear-gradient(180deg, ${accentColor}35, transparent 220px)` : "none" }}>
+        <div ref={ptr.ref} {...ptr.handlers} className="overflow-y-auto flex-1 p-5 space-y-7" style={{ paddingTop: "calc(max(1rem, env(safe-area-inset-top)) + 3rem)", backgroundImage: isDark ? `linear-gradient(180deg, ${accentColor}35, transparent 220px)` : "none" }}>
+          {ptr.anzeige}
           <div>
             {(() => {
               const hasGerman = game.germanName && game.germanName.trim() && game.germanName.trim() !== game.name.trim();
@@ -7554,47 +7616,7 @@ function App() {
   const skipNextPush = React.useRef(true);
   const pushTimer = React.useRef(null);
   const scrollElRef = React.useRef(null);
-  const touchStartY = React.useRef(0);
-  const tracking = React.useRef(false);
-  const [pullY, setPullY] = useState(0);
-  const [refreshing, setRefreshing] = useState(false);
-  const PULL_THRESHOLD = 70;
-
-  const pullLatest = () => {
-    setRefreshing(true);
-    // Force a truly fresh load of the app itself (bypasses any stale cached version,
-    // including the stubborn home-screen-icon cache) — safe because nothing is stored
-    // locally; all data lives in Firebase and reloads automatically on next mount.
-    const url = window.location.pathname + "?refresh=" + Date.now() + window.location.hash;
-    window.location.href = url;
-  };
-
-  const onTouchStart = (e) => {
-    if (scrollElRef.current && scrollElRef.current.scrollTop <= 0) {
-      touchStartY.current = e.touches[0].clientY;
-      tracking.current = true;
-    }
-  };
-  const onTouchMove = (e) => {
-    if (!tracking.current || refreshing) return;
-    const delta = e.touches[0].clientY - touchStartY.current;
-    if (delta > 0 && scrollElRef.current && scrollElRef.current.scrollTop <= 0) {
-      setPullY(Math.min(delta * 0.5, 110));
-    } else {
-      tracking.current = false;
-      setPullY(0);
-    }
-  };
-  const onTouchEnd = () => {
-    if (!tracking.current) return;
-    tracking.current = false;
-    if (pullY >= PULL_THRESHOLD) {
-      setPullY(56);
-      pullLatest();
-    } else {
-      setPullY(0);
-    }
-  };
+  const ptr = usePullToRefresh();
 
   // On mount: if a cloud sync backend is configured, pull from it and let it
   // take over as the source of truth (overwriting whatever was loaded from
@@ -7882,23 +7904,12 @@ function App() {
         </div>
       )}
       <div
-        ref={scrollElRef}
+        ref={(el) => { scrollElRef.current = el; ptr.ref.current = el; }}
         className="flex-1 overflow-y-auto min-h-0 relative"
         onScroll={(e) => setTitleCollapsed(e.currentTarget.scrollTop > 36)}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
+        {...ptr.handlers}
       >
-        <div
-          className="flex items-center justify-center overflow-hidden transition-[height] duration-200"
-          style={{ height: pullY }}
-        >
-          <Loader2
-            size={20}
-            className={refreshing ? "text-accent" : "text-dim"}
-            style={{ opacity: Math.min(pullY / PULL_THRESHOLD, 1) }}
-          />
-        </div>
+        {ptr.anzeige}
         <div key={tab} className="tab-fade">
           {tab === "dashboard" && <Dashboard games={displayGames} plays={displayPlays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} onView={(g) => setDetailGame(g)} sectionOrder={dashboardOrder} onReorder={setDashboardOrder} hiddenSections={hiddenDashboardSections} onToggleHidden={setHiddenDashboardSections} onSearch={() => setCommandBarOpen(true)} aiWorkerUrl={aiWorkerUrl} />}
           {tab === "collection" && <Collection games={displayGames} plays={displayPlays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => !readOnly && setGameModal({ editing: null })} onView={(g) => setDetailGame(g)} onEdit={(g) => setGameModal({ editing: g })} onDelete={(g) => deleteGame(g.id)} categoryOptions={categoryOptions} mechanismOptions={mechanismOptions} demoMode={readOnly} guestMode={guestMode} lists={displayLists} onCreateList={(name) => !readOnly && addList(name)} onOpenList={(l) => setDetailList(l)} />}
