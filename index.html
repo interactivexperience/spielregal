@@ -18,7 +18,7 @@
      abgeschnitten und die Navigationsleiste schwebt genau um diesen Betrag zu
      hoch. Mit "default" sitzt die Webview unter der Statusleiste und reicht
      bis zur Unterkante. -->
-<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
 <meta name="theme-color" content="#1C1B1A" />
 <meta name="apple-mobile-web-app-title" content="Spielregal" />
 <script>
@@ -35,6 +35,11 @@
       document.documentElement.dataset.theme = dark ? "dark" : "light";
       var meta = document.querySelector('meta[name="theme-color"]');
       if (meta) meta.setAttribute("content", dark ? "#1C1B1A" : "#F4EFE6");
+      // Den Streifen hinter der Statusleiste malt iOS selbst; theme-color gilt
+      // dort nicht, nur dieser Wert. Er wird beim Start gelesen, also mitfuehren
+      // -- greift je nach iOS-Version sofort oder erst beim naechsten Oeffnen.
+      var bar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+      if (bar) bar.setAttribute("content", dark ? "black" : "default");
     }
     window.__getTheme = read;
     window.__setTheme = function (mode) {
