@@ -715,7 +715,11 @@ function findMentionedGames(text, games) {
 // block of text.
 function renderPipMessage(text, games = [], onView) {
   const paragraphs = text.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
-  const findGame = (name) => games.find((g) => g.name.trim().toLowerCase() === name.trim().toLowerCase());
+  const findGame = (name) => {
+    const n = name.trim().toLowerCase();
+    return games.find((g) => g.name.trim().toLowerCase() === n)
+      || games.find((g) => (g.germanName || "").trim().toLowerCase() === n);
+  };
   const renderInlineBits = (line) => {
     const bits = line.split(/(\*\*[^*]+\*\*)/g).filter((s) => s !== "");
     return bits.map((bit, j) => {
@@ -6805,7 +6809,7 @@ Kurzer Pitch (was man macht) + Eckdaten (Spieleranzahl, Dauer, Stufe) in ein bis
 **Zweiter Spielname**
 Kurzer Pitch + Eckdaten.
 
-Kein Fließtext-Absatz davor oder danach, der die Spiele schon vorwegnimmt oder zusammenfasst — die Einleitung ist maximal ein kurzer halber Satz, dann direkt die Liste im obigen Format. Bei nur EINEM einzelnen empfohlenen Spiel (keine Auswahl) reicht normaler Fließtext ohne dieses Format.
+Kein Fließtext-Absatz davor oder danach, der die Spiele schon vorwegnimmt oder zusammenfasst — die Einleitung ist maximal ein kurzer halber Satz, dann direkt die Liste im obigen Format. Auch bei nur EINEM empfohlenen Spiel gilt dieses Format: erst der Name allein in einer eigenen Zeile in **Sternchen**, darunter der Fließtext. Die App erkennt das Spiel an dieser Zeile und zeigt dann Cover und anklickbaren Titel — ohne sie bleibt der Vorschlag reiner Text. Schreib den Namen dabei exakt so, wie er in der Sammlung unten steht, ohne Jahreszahl oder Zusatz in Klammern.
 
 Lies zwischen den Zeilen: wenn der Nutzer z.B. erwähnt "die Kinder sind da", "wir sind neu dabei", "nach der Arbeit noch schnell", "größere Familienrunde an Weihnachten" — zieh daraus selbst Schlüsse (Zielgruppe, Energielevel, Regelkenntnis, verfügbare Zeit), statt stur nach Spieleranzahl/Zeit zu fragen, wenn's schon impliziert ist. Merk dir außerdem alles, was im bisherigen Gespräch schon gesagt wurde, und frag das nie nochmal.
 
