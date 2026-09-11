@@ -121,6 +121,21 @@ async function main() {
     fatalErrors.push("Das #root-Element ist leer geblieben — die App hat nicht gemountet.");
   }
 
+  // Ein \uXXXX-Escape in reinem JSX-Text wird nicht ausgewertet, sondern
+  // woertlich gerendert ("14\\u00d7 ohne Sieger"). Gegen den gerenderten Text
+  // zu pruefen reicht nicht: betroffener Text steckt oft in Zweigen, die der
+  // Test gar nicht erreicht. index.html schreibt Umlaute ohnehin als echte
+  // Zeichen, also ist jedes solche Escape dort unnoetig -- und verboten.
+  const quelle = readFileSync(path.join(repoRoot, "index.html"), "utf8");
+  const escapes = [...quelle.matchAll(/\\u[0-9a-fA-F]{4}/g)];
+  if (escapes.length > 0) {
+    const stellen = escapes.slice(0, 5).map((m) => {
+      const nr = quelle.slice(0, m.index).split("\n").length;
+      return `${m[0]} (Zeile ${nr})`;
+    });
+    fatalErrors.push(`Unicode-Escapes in index.html — bitte echte Zeichen schreiben: ${stellen.join(", ")}`);
+  }
+
   // Die Fehlergrenze faengt Render-Abstuerze ab und zeigt eine Ersatzseite.
   // #root ist dann gefuellt und der Test lief frueher faelschlich gruen durch.
   const boundary = await page.evaluate(() =>
