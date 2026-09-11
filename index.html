@@ -3254,7 +3254,6 @@ function GameGridCard({ game: g, expansions = [], playCounts = {}, gridCols = 2,
             {active.rating ? (
               <span className="flex items-center gap-0.5 text-[10px] text-gold font-mono">
                 <Star size={10} fill="currentColor" /> {active.rating}
-                {playCount > 0 ? ` / ${playCount}×` : active.status === "owned" ? " / 0×" : ""}
               </span>
             ) : active.minPlayers ? (
               <span className="flex items-center gap-0.5 text-[10px] text-dim font-mono"><Users size={10} /> {active.minPlayers}-{active.maxPlayers}</span>
@@ -3265,9 +3264,9 @@ function GameGridCard({ game: g, expansions = [], playCounts = {}, gridCols = 2,
                 <Pill tone={COMPLEXITY_TONE[complexityLabel(active)] || "default"}><CIcon2 size={13} className="inline -mt-0.5 mr-1" />{COMPLEXITY_SHORT[complexityLabel(active)] || parseFloat(active.complexity).toFixed(1)}</Pill>
               );
             })() : null}
-            {!active.rating && playCount > 0 ? (
+            {playCount > 0 ? (
               <span className="text-[10px] text-dim font-mono">{playCount}×</span>
-            ) : !active.rating && active.status === "owned" ? (
+            ) : active.status === "owned" ? (
               <span className="text-[10px] text-dim font-mono">0×</span>
             ) : null}
           </div>
@@ -4963,14 +4962,14 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             <div className="border border-line rounded-2xl p-3">
               <p className="text-[10px] text-dim font-body mb-1">Lieblingsgenre</p>
               <p className="text-ink text-sm font-body font-medium truncate">{bestOf.favCat[0]}</p>
-              <p className="text-teal text-xs font-body">am häufigsten gespielt</p>
+              <p className="text-dim text-xs font-body">am häufigsten gespielt</p>
             </div>
           )}
           {bestOf.favMech && (
             <div className="border border-line rounded-2xl p-3">
               <p className="text-[10px] text-dim font-body mb-1">Lieblingsmechanismus</p>
               <p className="text-ink text-sm font-body font-medium truncate">{bestOf.favMech[0]}</p>
-              <p className="text-danger text-xs font-body">am häufigsten gespielt</p>
+              <p className="text-dim text-xs font-body">am häufigsten gespielt</p>
             </div>
           )}
           {bestOf.complexityLabel && (() => {
@@ -5184,6 +5183,19 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
       )}
       {(weeklyTip || yearlyInsight || tipLoading) && (
         <div className="space-y-3">
+          {!weeklyTip && tipLoading && (
+            <div className="border-t border-line pt-5">
+              <p className="text-[10px] font-semibold text-accent uppercase tracking-[0.16em] mb-2.5 flex items-center gap-1.5"><Sparkles size={12} /> Tipp der Woche</p>
+              <div className="flex gap-3">
+                <div className="w-24 h-24 rounded-2xl bg-surface border border-line shrink-0" />
+                <div className="flex-1 min-w-0 pt-1 space-y-2">
+                  <div className="h-5 w-2/3 rounded bg-surface" />
+                  <div className="h-3 w-full rounded bg-surface" />
+                  <div className="h-3 w-5/6 rounded bg-surface" />
+                </div>
+              </div>
+            </div>
+          )}
           {weeklyTip && (() => {
             // Live-Spiel nur für die Navigation beim Antippen — Cover/Name
             // selbst kommen direkt aus dem Tipp, damit die Karte nicht kurz
@@ -5239,10 +5251,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
           })()}
           {tasteProfile.length > 1 && (
             <>
-            <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mt-5">
-              Wie oft bei deinen 8+-Bewertungen
-            </p>
-            <div className="flex flex-wrap gap-x-5 mt-1">
+            <div className="flex flex-wrap gap-x-5 mt-5">
               {tasteProfile.slice(1).map(([tag, weight]) => {
                 const TIcon = tagIcon(tag);
                 return (
@@ -6045,7 +6054,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           </div>
         </div>
       )}
-      <div className="fixed z-30 left-0 right-0 px-5 flex items-center justify-center gap-3" style={{ bottom: "calc(100px + var(--nav-inset))" }}>
+      <div className="fixed z-50 left-0 right-0 px-5 flex items-center justify-center gap-3" style={{ bottom: "calc(100px + var(--nav-inset))" }}>
         <div className={`transition-all duration-300 ease-out ${searchOpen ? "flex-1 min-w-0" : "shrink-0"}`}>
           {searchOpen ? (
             <SearchInput value={query} onChange={setQuery} placeholder="Suchen…" autoFocus inputClassName="glass h-11 border border-accent/50 rounded-full text-base" />
@@ -6274,6 +6283,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
   const [h2hA, setH2hA] = useState(() => loadKey("spielregal:h2hA", ""));
   const [h2hB, setH2hB] = useState(() => loadKey("spielregal:h2hB", ""));
   const [bestListInfoOpen, setBestListInfoOpen] = useState(false);
+  const [h2hPick, setH2hPick] = useState(null);
   useEffect(() => { saveKey("spielregal:h2hA", h2hA); }, [h2hA]);
   useEffect(() => { saveKey("spielregal:h2hB", h2hB); }, [h2hB]);
   const pickForH2h = (name) => {
@@ -6299,7 +6309,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
       <div className="flex items-center justify-between mb-4">
         <h1 className="font-display text-3xl tracking-[-0.03em] leading-[1.05] text-ink">Partien</h1>
       </div>
-      <div className="fixed z-30 left-0 right-0 px-5 flex items-center justify-center gap-3" style={{ bottom: "calc(100px + var(--nav-inset))" }}>
+      <div className="fixed z-50 left-0 right-0 px-5 flex items-center justify-center gap-3" style={{ bottom: "calc(100px + var(--nav-inset))" }}>
         <div className={`transition-all duration-300 ease-out ${searchOpen ? "flex-1 min-w-0" : "shrink-0"}`}>
           {searchOpen ? (
             <SearchInput value={query} onChange={setQuery} placeholder="Spiel suchen…" autoFocus inputClassName="glass h-11 border border-accent/50 rounded-full text-base" />
@@ -6411,66 +6421,32 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
             )}
           </div>
           <div className="border-t border-line pt-4">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="flex-1 min-w-0 flex items-center gap-2 border border-line rounded-[14px] pl-1.5 pr-2 py-1.5">
-                <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 bg-line/50 flex items-center justify-center">
-                  {(() => {
-                    const prof = playerProfiles.find((p) => p.name === h2hA);
-                    return prof && prof.photo ? <img src={prof.photo} alt={h2hA} className="w-full h-full object-cover" /> : <Users size={13} className="text-dim" />;
-                  })()}
-                </div>
-                <select value={h2hA} onChange={(e) => setH2hA(e.target.value)} className="flex-1 min-w-0 bg-transparent text-ink text-sm focus:outline-none">
-                  <option value="">Spieler A</option>
-                  {allPlayerNames.map((n) => <option key={n} value={n}>{n}</option>)}
-                </select>
-              </div>
-              <span className="text-dim text-xs shrink-0">vs.</span>
-              <div className="flex-1 min-w-0 flex items-center gap-2 border border-line rounded-[14px] pl-1.5 pr-2 py-1.5">
-                <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 bg-line/50 flex items-center justify-center">
-                  {(() => {
-                    const prof = playerProfiles.find((p) => p.name === h2hB);
-                    return prof && prof.photo ? <img src={prof.photo} alt={h2hB} className="w-full h-full object-cover" /> : <Users size={13} className="text-dim" />;
-                  })()}
-                </div>
-                <select value={h2hB} onChange={(e) => setH2hB(e.target.value)} className="flex-1 min-w-0 bg-transparent text-ink text-sm focus:outline-none">
-                  <option value="">Spieler B</option>
-                  {allPlayerNames.map((n) => <option key={n} value={n}>{n}</option>)}
-                </select>
-              </div>
+            {/* Die beiden Auswahlfelder sind weg: Name und Foto standen darin
+                genauso wie im Ergebnis darunter. Jetzt ist das Ergebnis selbst
+                die Auswahl -- ein Tipp auf eine Seite oeffnet die Spielerliste. */}
+            <div className="flex items-stretch gap-3">
+              {[["a", h2hA, h2hStats ? h2hStats.aWins : null], ["b", h2hB, h2hStats ? h2hStats.bWins : null]].map(([slot, name, wins], i) => {
+                const prof = playerProfiles.find((p) => p.name === name);
+                return (
+                  <React.Fragment key={slot}>
+                    {i === 1 && <div className="w-px bg-line shrink-0" />}
+                    <button onClick={() => { haptic(6); setH2hPick(slot); }} className="flex-1 min-w-0 flex flex-col items-center py-1">
+                      <div className="w-12 h-12 rounded-full overflow-hidden bg-line/50 flex items-center justify-center mb-2">
+                        {prof && prof.photo ? <img src={prof.photo} alt={name} className="w-full h-full object-cover" /> : <Users size={18} className="text-dim" />}
+                      </div>
+                      <p className="font-display text-2xl tracking-[-0.025em] leading-tight text-ink">{wins === null || !name ? "—" : wins}</p>
+                      <p className="text-dim text-[11px] font-body truncate max-w-full flex items-center gap-0.5">
+                        {name || "Spieler wählen"} <ChevronDown size={11} className="shrink-0" />
+                      </p>
+                    </button>
+                  </React.Fragment>
+                );
+              })}
             </div>
-            {h2hStats && (
-              h2hStats.total === 0 ? (
-                <p className="text-dim text-xs font-body">Noch keine gemeinsame Partie gefunden.</p>
-              ) : (
-                <div>
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 flex flex-col items-center">
-                      <div className="w-11 h-11 rounded-full overflow-hidden bg-line/50 flex items-center justify-center mb-1.5">
-                        {(() => {
-                          const prof = playerProfiles.find((p) => p.name === h2hA);
-                          return prof && prof.photo ? <img src={prof.photo} alt={h2hA} className="w-full h-full object-cover" /> : <Users size={18} className="text-dim" />;
-                        })()}
-                      </div>
-                      <p className="font-display text-2xl tracking-[-0.025em] leading-tight text-ink">{h2hStats.aWins}</p>
-                      <p className="text-dim text-[11px] font-body truncate">{h2hA}</p>
-                    </div>
-                    <div className="h-8 w-px bg-line" />
-                    <div className="flex-1 flex flex-col items-center">
-                      <div className="w-11 h-11 rounded-full overflow-hidden bg-line/50 flex items-center justify-center mb-1.5">
-                        {(() => {
-                          const prof = playerProfiles.find((p) => p.name === h2hB);
-                          return prof && prof.photo ? <img src={prof.photo} alt={h2hB} className="w-full h-full object-cover" /> : <Users size={18} className="text-dim" />;
-                        })()}
-                      </div>
-                      <p className="font-display text-2xl tracking-[-0.025em] leading-tight text-ink">{h2hStats.bWins}</p>
-                      <p className="text-dim text-[11px] font-body truncate">{h2hB}</p>
-                    </div>
-                  </div>
-                </div>
-              )
+            {h2hStats && h2hStats.total === 0 && (
+              <p className="text-dim text-xs font-body mt-3 text-center">Noch keine gemeinsame Partie gefunden.</p>
             )}
-          </div>
-        </div>
+          </div>        </div>
       )}
 
       {sorted.length === 0 ? <p className="text-dim text-sm font-body mt-8 text-center">Noch keine Partien eingetragen — auch geliehene oder online gespielte Spiele zählen.</p> : (() => {
@@ -6562,6 +6538,42 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
           </>
         );
       })()}
+      {h2hPick && (
+        <div className="fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center p-0 backdrop-fade"
+          style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }}
+          onClick={() => setH2hPick(null)}>
+          <div className="glass border border-rim/10 rounded-t-[28px] w-full max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top)-1.5rem)] flex flex-col font-body rise-in"
+            onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
+            <div className="shrink-0 px-5 py-3 flex items-center justify-between">
+              <h2 className="font-display text-lg tracking-[-0.015em] text-ink">
+                {h2hPick === "a" ? "Linke Seite" : "Rechte Seite"}
+              </h2>
+              <button onClick={() => setH2hPick(null)} aria-label="Schließen"
+                className="w-9 h-9 flex items-center justify-center rounded-full border border-line bg-bg text-dim"><X size={18} /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-5" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
+              {allPlayerNames.map((n) => {
+                const prof = playerProfiles.find((p) => p.name === n);
+                const aktiv = (h2hPick === "a" ? h2hA : h2hB) === n;
+                const belegt = (h2hPick === "a" ? h2hB : h2hA) === n;
+                return (
+                  <button key={n} disabled={belegt}
+                    onClick={() => { haptic(6); (h2hPick === "a" ? setH2hA : setH2hB)(n); setH2hPick(null); }}
+                    className={`w-full flex items-center gap-3 py-3 border-b border-line text-left ${belegt ? "opacity-35" : ""}`}>
+                    <div className="w-9 h-9 rounded-full overflow-hidden bg-line/50 flex items-center justify-center shrink-0">
+                      {prof && prof.photo ? <img src={prof.photo} alt={n} className="w-full h-full object-cover" /> : <Users size={15} className="text-dim" />}
+                    </div>
+                    <span className={`flex-1 min-w-0 truncate text-sm ${aktiv ? "text-ink font-medium" : "text-ink"}`}>{n}</span>
+                    {aktiv && <Check size={16} className="text-accent shrink-0" />}
+                    {belegt && <span className="text-[10px] text-dim shrink-0">andere Seite</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
       <div className="pb-16 mt-auto"><BggBadge /></div>
       {detailGroupKey && (() => {
         const liveGroup = grouped.find((g) => (rootGameId(g[0].gameId) || g[0].gameName) === detailGroupKey);
@@ -7831,8 +7843,11 @@ function App() {
         className="shrink-0 glass-strong border-b border-rim/10 flex items-center justify-center overflow-hidden"
         style={{
           paddingTop: "max(0.75rem, env(safe-area-inset-top))",
-          height: titleCollapsed && tab !== "dashboard" && tab !== "collection" && tab !== "playlog" ? "calc(2.75rem + max(0.75rem, env(safe-area-inset-top)))" : "max(0.75rem, env(safe-area-inset-top))",
-          opacity: titleCollapsed && tab !== "dashboard" && tab !== "collection" && tab !== "playlog" ? 1 : 0,
+          // Der Balken erscheint nur noch auf der Ideen-Seite. Auf allen
+          // anderen Tabs traegt die Seite ihren Titel selbst, ein zweiter
+          // beim Scrollen war doppelt.
+          height: titleCollapsed && tab === "recommendations" ? "calc(2.75rem + max(0.75rem, env(safe-area-inset-top)))" : "max(0.75rem, env(safe-area-inset-top))",
+          opacity: titleCollapsed && tab === "recommendations" ? 1 : 0,
           transition: "height 0.25s ease, opacity 0.2s ease",
         }}
       >
