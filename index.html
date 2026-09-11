@@ -323,10 +323,10 @@ function Icon({ children, size = 18, className = "", strokeWidth = 1.7 }) {
   );
 }
 const Home = (p) => <Icon {...p}><path d="M2.5 11.5 12 3l9.5 8.5" /><path d="M5.5 8.8V20.5h13V8.8" /></Icon>;
-const NavDie = (p) => <Icon {...p}><rect x="3.5" y="3.5" width="17" height="17" rx="5.2" /><rect x="7.7" y="7.7" width="2.2" height="2.2" rx="0.7" fill="currentColor" stroke="none" /><rect x="10.9" y="10.9" width="2.2" height="2.2" rx="0.7" fill="currentColor" stroke="none" /><rect x="14.1" y="14.1" width="2.2" height="2.2" rx="0.7" fill="currentColor" stroke="none" /></Icon>;
-const NavMore = (p) => <Icon {...p}><circle cx="5.5" cy="12" r="1.4" fill="currentColor" stroke="none" /><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" /><circle cx="18.5" cy="12" r="1.4" fill="currentColor" stroke="none" /></Icon>;
-const GridSquares = (p) => <Icon {...p}><rect x="3.5" y="3.5" width="7.2" height="7.2" rx="2" /><rect x="13.3" y="3.5" width="7.2" height="7.2" rx="2" /><rect x="3.5" y="13.3" width="7.2" height="7.2" rx="2" /><rect x="13.3" y="13.3" width="7.2" height="7.2" rx="2" /></Icon>;
-const ChatBubble = (p) => <Icon {...p}><path d="M20.2 11.6a7.3 7.3 0 1 0-12.4 5.2L4.6 21l5.6-1.7a7.3 7.3 0 0 0 10-7.7z" /></Icon>;
+const NavDie = (p) => <Icon {...p}><path d="M9 6.5h11M9 12h11M9 17.5h11" /><circle cx="4.6" cy="6.5" r="1.25" fill="currentColor" stroke="none" /><circle cx="4.6" cy="12" r="1.25" fill="currentColor" stroke="none" /><circle cx="4.6" cy="17.5" r="1.25" fill="currentColor" stroke="none" /></Icon>;
+const NavMore = (p) => <Icon {...p}><circle cx="12" cy="12" r="3.4" /><path d="M12 3.2v2.4M12 18.4v2.4M3.2 12h2.4M18.4 12h2.4M5.8 5.8 7.5 7.5M16.5 16.5l1.7 1.7M18.2 5.8 16.5 7.5M7.5 16.5 5.8 18.2" /></Icon>;
+const GridSquares = (p) => <Icon {...p}><rect x="3" y="4" width="4.6" height="16" rx="1.2" /><rect x="8.8" y="4" width="4.6" height="16" rx="1.2" /><rect x="15.2" y="5.4" width="4.6" height="15" rx="1.2" transform="rotate(13 17.5 12.9)" /></Icon>;
+const ChatBubble = (p) => <Icon {...p}><path d="M10 2.6c.9 3.3 1.8 4.2 5.1 5.1-3.3.9-4.2 1.8-5.1 5.1-.9-3.3-1.8-4.2-5.1-5.1 3.3-.9 4.2-1.8 5.1-5.1z" /><path d="M17.2 13.4c.5 1.9 1 2.4 2.9 2.9-1.9.5-2.4 1-2.9 2.9-.5-1.9-1-2.4-2.9-2.9 1.9-.5 2.4-1 2.9-2.9z" fill="currentColor" /></Icon>;
 const Library = (p) => <Icon {...p}><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16M15 4v16" /></Icon>;
 const Heart = (p) => <Icon {...p}><path d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3 5 6.5 5c2 0 3.5 1.2 4.5 2.8C12 5.2 13.5 4 15.5 4 19 4 21.5 8.5 21.5 12.5 19 16.65 12 21 12 21Z" /></Icon>;
 const ListChecks = (p) => <Icon {...p}><path d="M4 6h2M4 12h2M4 18h2" /><path d="M9 6h11M9 12h11M9 18h11" /></Icon>;
@@ -5194,14 +5194,14 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             // eigene Spielen) fehl am Platz wirkt.
             const coverGame = tipGame ? { ...tipGame, saleStatus: null } : { name: weeklyTip.gameName, image: weeklyTip.image };
             const cardBody = (
-              <div>
-                <div className="flex items-center gap-2.5 mb-2">
-                  <div className="w-7 shrink-0">
-                    <Cover game={coverGame} size="lg" className="!rounded-md" />
-                  </div>
-                  <p className="font-display text-lg tracking-[-0.015em] text-ink min-w-0 truncate">{weeklyTip.gameName}</p>
+              <div className="flex gap-3">
+                <div className="w-24 shrink-0">
+                  <Cover game={coverGame} size="lg" className="!rounded-2xl" />
                 </div>
-                <p className="text-ink text-[13px] font-body leading-relaxed">{weeklyTip.reason}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="font-display text-xl leading-tight tracking-[-0.02em] text-ink">{weeklyTip.gameName}</p>
+                  <p className="text-dim text-[13px] font-body leading-relaxed mt-1.5">{weeklyTip.reason}</p>
+                </div>
               </div>
             );
             return (
