@@ -2124,7 +2124,8 @@ function SettingsRow({ icon: Icon, label, sub, onClick, subTone }) {
 function SettingsSubPage({ title, onBack, children }) {
   const swipe = useEdgeSwipeBack(onBack);
   return (
-    <div className="p-5 pb-10 space-y-6 font-body min-h-full flex flex-col" {...swipe}>
+    <div className="p-5 space-y-6 font-body min-h-full flex flex-col" {...swipe}
+      style={{ paddingBottom: "calc(8.5rem + env(safe-area-inset-bottom))" }}>
       <div className="flex items-center gap-3">
         <button onClick={onBack} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg text-dim" aria-label="Zurück"><ChevronLeft size={22} /></button>
         <h1 className="font-display text-2xl tracking-[-0.025em] leading-tight text-ink">{title}</h1>
@@ -2543,7 +2544,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
   }
 
   return (
-    <div className="p-5 font-body min-h-full flex flex-col" style={{ paddingBottom: "calc(11.5rem + env(safe-area-inset-bottom))" }}>
+    <div className="p-5 font-body min-h-full flex flex-col" style={{ paddingBottom: "calc(8.5rem + env(safe-area-inset-bottom))" }}>
       <h1 className="font-display text-3xl tracking-[-0.03em] leading-[1.05] text-ink mb-2">Einstellungen</h1>
       <ThemeSetting />
       <SettingsRow icon={Globe} label="Synchronisation" sub={syncUrl ? "Eingerichtet" : "Nicht eingerichtet"} onClick={() => setView("sync")} />
@@ -5100,7 +5101,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
   ];
 
   return (
-    <div className="p-5 space-y-8 min-h-full flex flex-col" style={{ paddingBottom: "calc(11.5rem + env(safe-area-inset-bottom))" }}>
+    <div className="p-5 space-y-8 min-h-full flex flex-col" style={{ paddingBottom: "calc(8.5rem + env(safe-area-inset-bottom))" }}>
       {justUnlocked && (
         <div className="fixed left-1/2 z-40 rise-in" style={{ top: "max(1rem, env(safe-area-inset-top))", transform: "translateX(-50%)" }}>
           <div className="flex items-center gap-2.5 bg-bg border border-accent/50 rounded-full pl-2 pr-4 py-2 shadow-xl" style={{ boxShadow: "var(--elev-gold)" }}>
@@ -5950,7 +5951,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
   });
 
   return (
-    <div className="p-5 overflow-x-hidden min-h-full flex flex-col" style={{ paddingBottom: "calc(11.5rem + env(safe-area-inset-bottom))" }}>
+    <div className="p-5 overflow-x-hidden min-h-full flex flex-col" style={{ paddingBottom: "calc(8.5rem + env(safe-area-inset-bottom))" }}>
       <div className="flex items-center justify-between mb-5">
         <h1 className="font-display text-3xl tracking-[-0.03em] leading-[1.05] text-ink">Sammlung</h1>
         <div className="w-[84px] h-10" />
@@ -7930,7 +7931,7 @@ function App() {
       <div className="absolute bottom-0 left-0 right-0 px-4 z-40 pointer-events-none"
         style={{
           paddingBottom: "var(--nav-inset)",
-          paddingTop: "6.5rem",
+          paddingTop: "3.5rem",
           backgroundImage: "linear-gradient(to bottom, transparent, rgb(var(--bg)) 55%)",
         }}>
         <div className="relative rounded-full px-1.5 py-1.5 overflow-hidden pointer-events-auto" style={{
