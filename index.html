@@ -322,11 +322,11 @@ function Icon({ children, size = 18, className = "", strokeWidth = 1.7 }) {
     </svg>
   );
 }
-const Home = (p) => <Icon {...p}><path d="M3 10.5 12 3l9 7.5" /><path d="M5 9.5V21h14V9.5" /></Icon>;
-const NavDie = (p) => <Icon {...p}><rect x="3" y="3" width="18" height="18" rx="4" /><circle cx="8.5" cy="8.5" r="1.3" fill="currentColor" stroke="none" /><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none" /><circle cx="15.5" cy="15.5" r="1.3" fill="currentColor" stroke="none" /></Icon>;
+const Home = (p) => <Icon {...p}><path d="M2.5 11.5 12 3l9.5 8.5" /><path d="M5.5 8.8V20.5h13V8.8" /></Icon>;
+const NavDie = (p) => <Icon {...p}><rect x="3.5" y="3.5" width="17" height="17" rx="5.2" /><rect x="7.7" y="7.7" width="2.2" height="2.2" rx="0.7" fill="currentColor" stroke="none" /><rect x="10.9" y="10.9" width="2.2" height="2.2" rx="0.7" fill="currentColor" stroke="none" /><rect x="14.1" y="14.1" width="2.2" height="2.2" rx="0.7" fill="currentColor" stroke="none" /></Icon>;
 const NavMore = (p) => <Icon {...p}><circle cx="5.5" cy="12" r="1.4" fill="currentColor" stroke="none" /><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" /><circle cx="18.5" cy="12" r="1.4" fill="currentColor" stroke="none" /></Icon>;
-const GridSquares = (p) => <Icon {...p}><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></Icon>;
-const ChatBubble = (p) => <Icon {...p}><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z" /></Icon>;
+const GridSquares = (p) => <Icon {...p}><rect x="3.5" y="3.5" width="7.2" height="7.2" rx="2" /><rect x="13.3" y="3.5" width="7.2" height="7.2" rx="2" /><rect x="3.5" y="13.3" width="7.2" height="7.2" rx="2" /><rect x="13.3" y="13.3" width="7.2" height="7.2" rx="2" /></Icon>;
+const ChatBubble = (p) => <Icon {...p}><path d="M20.2 11.6a7.3 7.3 0 1 0-12.4 5.2L4.6 21l5.6-1.7a7.3 7.3 0 0 0 10-7.7z" /></Icon>;
 const Library = (p) => <Icon {...p}><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16M15 4v16" /></Icon>;
 const Heart = (p) => <Icon {...p}><path d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3 5 6.5 5c2 0 3.5 1.2 4.5 2.8C12 5.2 13.5 4 15.5 4 19 4 21.5 8.5 21.5 12.5 19 16.65 12 21 12 21Z" /></Icon>;
 const ListChecks = (p) => <Icon {...p}><path d="M4 6h2M4 12h2M4 18h2" /><path d="M9 6h11M9 12h11M9 18h11" /></Icon>;
@@ -1195,6 +1195,8 @@ const TilePlace = (p) => <Icon {...p}><rect x="3" y="12" width="9" height="9" rx
 const HexIcon = (p) => <Icon {...p}><path d="M12 2.5 20 7v10l-8 4.5L4 17V7z" /></Icon>;
 const ModularBoard = (p) => <Icon {...p}><rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="5" width="8" height="8" rx="1" /><rect x="5" y="13" width="8" height="8" rx="1" /></Icon>;
 const TargetIcon = (p) => <Icon {...p}><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="4" /><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" /></Icon>;
+const Cols2 = (p) => <Icon {...p}><rect x="3.5" y="4" width="7" height="16" rx="1.6" /><rect x="13.5" y="4" width="7" height="16" rx="1.6" /></Icon>;
+const Cols4 = (p) => <Icon {...p}><rect x="2.5" y="4" width="3.8" height="16" rx="1.2" /><rect x="7.9" y="4" width="3.8" height="16" rx="1.2" /><rect x="13.3" y="4" width="3.8" height="16" rx="1.2" /><rect x="18.7" y="4" width="3.8" height="16" rx="1.2" /></Icon>;
 const PushLuck = (p) => <Icon {...p}><path d="M3 17 9 11l4 4 8-8" /><path d="M15 7h6v6" /></Icon>;
 const Battery = (p) => <Icon {...p}><rect x="2" y="7" width="17" height="10" rx="3" /><path d="M22 10v4" /><path d="M6 10v4" /><path d="M10 10v4" /></Icon>;
 const Anchor = (p) => <Icon {...p}><circle cx="12" cy="5" r="2" /><path d="M12 7v14" /><path d="M5 13a7 7 0 0 0 14 0" /><path d="M8 11H4" /><path d="M20 11h-4" /></Icon>;
@@ -1441,20 +1443,21 @@ function SearchInput({ value, onChange, placeholder, autoFocus, className = "", 
   );
 }
 
+// Gleiche Formensprache wie die Navigationsleiste: runde Pille auf --surface,
+// aktiver Zustand als weiche Fuellung statt Glas mit Rahmen. Das alte glass +
+// backdrop-filter + rounded-[14px] stammte noch aus dem Stil davor.
 function Segmented({ options, value, onChange }) {
   const idx = Math.max(0, options.findIndex((o) => o.v === value));
   return (
-    <div className="glass relative flex border border-rim/10 rounded-[14px] p-1 gap-1 min-h-[48px]">
+    <div className="relative flex rounded-full p-1 bg-surface border border-line">
       <div
-        className="glass absolute rounded-[10px] border border-rim/25"
+        className="absolute rounded-full"
         style={{
           top: 4, bottom: 4,
           left: `calc(${idx} * (100% / ${options.length}) + 4px)`,
           width: `calc(100% / ${options.length} - 8px)`,
           transition: "left 0.35s cubic-bezier(0.34, 1.2, 0.64, 1)",
-          background: "rgb(var(--rim) / 0.14)",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
+          background: "rgb(var(--rim) / 0.12)",
         }}
       />
       {options.map((opt) => (
@@ -1462,11 +1465,11 @@ function Segmented({ options, value, onChange }) {
           key={opt.v}
           type="button"
           onClick={() => { haptic(6); onChange(opt.v); }}
-          className={`relative flex-1 min-w-0 px-1 py-2 rounded-[10px] text-xs font-body flex flex-col items-center justify-center gap-1 transition-colors duration-300 ${
-            value === opt.v ? "text-ink font-medium" : "text-dim"
+          className={`relative flex-1 min-w-0 px-1 py-2.5 rounded-full text-xs font-body flex flex-col items-center justify-center gap-1 transition-colors duration-300 ${
+            value === opt.v ? "text-ink font-semibold" : "text-ink/55"
           }`}
         >
-          {opt.icon && <opt.icon size={16} />}
+          {opt.icon && <opt.icon size={16} strokeWidth={1.5} />}
           <span className="truncate max-w-full">{opt.label}</span>
         </button>
       ))}
@@ -2099,15 +2102,19 @@ function ThemeSetting() {
   );
 }
 
-function SettingsRow({ icon: Icon, label, sub, onClick, tone }) {
+// Alle Zeilen tragen dasselbe neutrale Icon. Farbe ist hier ein Signal und
+// keine Dekoration: nur die Unterzeile wird coral, wenn etwas aktiv ist oder
+// Aufmerksamkeit braucht. Vorher hatte jede Zeile eine eigene Farbe -- unter
+// anderem ein tuerkises Icon ohne Bedeutung.
+function SettingsRow({ icon: Icon, label, sub, onClick, subTone }) {
   return (
     <button onClick={onClick} className="w-full flex items-center gap-3.5 py-4 text-left border-b border-line">
-      <span className="shrink-0" style={{ color: tone || "rgb(var(--dim))" }}>
+      <span className="shrink-0 text-dim">
         <Icon size={18} />
       </span>
       <div className="flex-1 min-w-0">
         <p className="text-ink font-body text-sm font-medium">{label}</p>
-        {sub && <p className="text-dim text-xs font-body mt-0.5 truncate">{sub}</p>}
+        {sub && <p className={`text-xs font-body mt-0.5 truncate ${subTone ? "text-accent" : "text-dim"}`}>{sub}</p>}
       </div>
       <ChevronRight size={16} className="text-dim shrink-0" />
     </button>
@@ -2217,78 +2224,6 @@ function MultiGamePickerSheet({ games, excludeId, filter, initialSelected = [], 
           })}
         </div>
       </div>
-    </div>
-  );
-}
-
-// Zeigt die echten Layout-Werte des Geraets. Headless lassen sich env()-Insets
-// nicht nachstellen, deshalb muss die App selbst messen, wenn eine Position auf
-// dem Geraet anders sitzt als in der Simulation.
-function LayoutDiagnose() {
-  const [d, setD] = useState(null);
-  const messen = () => {
-    const probe = document.createElement("div");
-    probe.style.cssText = "position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;" +
-      "padding-top:env(safe-area-inset-top);padding-right:env(safe-area-inset-right);" +
-      "padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left);";
-    document.body.appendChild(probe);
-    const cs = getComputedStyle(probe);
-    const insets = cs.paddingTop + " / " + cs.paddingRight + " / " + cs.paddingBottom + " / " + cs.paddingLeft;
-    probe.remove();
-    // Ein frisch eingehaengtes fixes Vollbild-Element: reicht es nicht bis
-    // innerHeight, ist nicht das Padding schuld, sondern der Wurzelcontainer.
-    const ref = document.createElement("div");
-    ref.style.cssText = "position:fixed;inset:0;visibility:hidden;pointer-events:none;";
-    document.body.appendChild(ref);
-    const r = ref.getBoundingClientRect();
-    ref.remove();
-    const navPill = document.querySelector('[class*="rounded-full"][class*="px-1.5"]');
-    const navR = navPill ? navPill.getBoundingClientRect() : null;
-    const appRoot = document.querySelector(".fixed.inset-0.font-body");
-    const appR = appRoot ? appRoot.getBoundingClientRect() : null;
-    const vv = window.visualViewport;
-    const meta = document.querySelector('meta[name="app-build"]');
-    setD({
-      build: meta ? meta.content : "-",
-      inner: window.innerWidth + " x " + window.innerHeight,
-      screen: window.screen.width + " x " + window.screen.height,
-      fehlt: Math.round(window.screen.height - window.innerHeight) + "px",
-      clientH: document.documentElement.clientHeight,
-      dvh: getComputedStyle(document.documentElement).getPropertyValue("--app-height").trim() || "-",
-      vv: vv ? Math.round(vv.height) + " @ off " + Math.round(vv.offsetTop) : "-",
-      insets,
-      fixedBox: Math.round(r.top) + " .. " + Math.round(r.bottom),
-      appBox: appR ? Math.round(appR.top) + " .. " + Math.round(appR.bottom) : "-",
-      navUnten: navR ? Math.round(navR.bottom) : "-",
-      luecke: navR ? Math.round(window.innerHeight - navR.bottom) : "-",
-      standalone: (window.navigator.standalone === true) ? "ja" : (matchMedia("(display-mode: standalone)").matches ? "ja (dm)" : "nein"),
-    });
-  };
-  // Misst von selbst, damit die Werte ohne Zusatzschritt im Screenshot stehen.
-  useEffect(() => { const t = setTimeout(messen, 250); return () => clearTimeout(t); }, []);
-  return (
-    <div className="mt-6 rounded-[14px] border border-line p-3">
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-dim">Layout-Werte</p>
-        <button onClick={messen} className="text-[10px] text-accent underline">neu messen</button>
-      </div>
-      {d ? (
-        <div className="font-mono text-[10px] text-ink leading-relaxed select-all">
-          <div>build: {d.build}</div>
-          <div>innerW x innerH: {d.inner}</div>
-          <div>screen: {d.screen}</div>
-          <div>fehlt zur Kante: {d.fehlt}</div>
-          <div>clientHeight: {d.clientH}</div>
-          <div>--app-height: {d.dvh}</div>
-          <div>visualViewport: {d.vv}</div>
-          <div>insets t/r/b/l: {d.insets}</div>
-          <div>fixed inset-0: {d.fixedBox}</div>
-          <div>App-Container: {d.appBox}</div>
-          <div>Nav-Unterkante: {d.navUnten}</div>
-          <div>Luecke unten: {d.luecke}</div>
-          <div>standalone: {d.standalone}</div>
-        </div>
-      ) : <p className="text-[10px] text-dim">misst…</p>}
     </div>
   );
 }
@@ -2573,72 +2508,6 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     );
   }
 
-  if (view === "customize") {
-    return (
-      <SettingsSubPage title="Sammlung anpassen" onBack={() => setView("menu")}>
-        <div>
-          <h3 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-2">Eigene Kategorien</h3>
-          <p className="text-xs text-dim mb-2">BGG-Standardkategorien sind immer verfügbar.</p>
-          <div className="flex gap-2 mb-3">
-            <input value={catInput} onChange={(e) => setCatInput(e.target.value)} placeholder="Neue Kategorie"
-              className="flex-1 min-w-0 bg-surface border border-line rounded-[14px] px-3 py-2 text-ink text-sm focus:outline-none focus:border-accent" />
-            <button onClick={() => { if (catInput.trim()) { onAddCategory(catInput.trim()); setCatInput(""); } }}
-              className="glass shrink-0 border border-rim/15 text-ink px-4 rounded-[14px] text-sm">Hinzufügen</button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {customCategories.length === 0 && <p className="text-xs text-dim">Noch keine eigenen Kategorien.</p>}
-            {customCategories.map((c) => (
-              <span key={c} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-surface border-line text-dim">
-                {c}
-                <button onClick={() => onRemoveCategory(c)} className="text-dim"><X size={12} /></button>
-              </span>
-            ))}
-          </div>
-        </div>
-        <div>
-          <h3 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-2">Eigene Mechanismen</h3>
-          <p className="text-xs text-dim mb-2">BGG-Standardmechanismen sind immer verfügbar.</p>
-          <div className="flex gap-2 mb-3">
-            <input value={mechInput} onChange={(e) => setMechInput(e.target.value)} placeholder="Neuer Mechanismus"
-              className="flex-1 min-w-0 bg-surface border border-line rounded-[14px] px-3 py-2 text-ink text-sm focus:outline-none focus:border-accent" />
-            <button onClick={() => { if (mechInput.trim()) { onAddMechanism(mechInput.trim()); setMechInput(""); } }}
-              className="glass shrink-0 border border-rim/15 text-ink px-4 rounded-[14px] text-sm">Hinzufügen</button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {customMechanisms.length === 0 && <p className="text-xs text-dim">Noch keine eigenen Mechanismen.</p>}
-            {customMechanisms.map((m) => (
-              <span key={m} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-surface border-line text-dim">
-                {m}
-                <button onClick={() => onRemoveMechanism(m)} className="text-dim"><X size={12} /></button>
-              </span>
-            ))}
-          </div>
-        </div>
-        <div>
-          <h3 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-2">Eigene Spielertypen</h3>
-          <p className="text-xs text-dim mb-2">Zielgruppen wie Optimierer oder Taktiker sind vorgegeben.</p>
-          <div className="space-y-2 mb-3">
-            <input value={typeInput} onChange={(e) => setTypeInput(e.target.value)} placeholder="Neuer Spielertyp"
-              className="w-full bg-surface border border-line rounded-[14px] px-3 py-2 text-ink text-sm focus:outline-none focus:border-accent" />
-            <input value={typeDescInput} onChange={(e) => setTypeDescInput(e.target.value)} placeholder="Beschreibung (optional)"
-              className="w-full bg-surface border border-line rounded-[14px] px-3 py-2 text-ink text-sm focus:outline-none focus:border-accent" />
-            <button onClick={() => { if (typeInput.trim()) { onAddPlayerType(typeInput.trim(), typeDescInput); setTypeInput(""); setTypeDescInput(""); } }}
-              className="glass w-full border border-rim/15 text-ink py-2 rounded-[14px] text-sm">Hinzufügen</button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {customPlayerTypes.length === 0 && <p className="text-xs text-dim">Noch keine eigenen Spielertypen.</p>}
-            {customPlayerTypes.map((t) => (
-              <span key={t} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border bg-surface border-line text-dim">
-                {t}
-                <button onClick={() => onRemovePlayerType(t)} className="text-dim"><X size={12} /></button>
-              </span>
-            ))}
-          </div>
-        </div>
-      </SettingsSubPage>
-    );
-  }
-
   if (view === "demo") {
     return (
       <SettingsSubPage title="Vorschau-Modus" onBack={() => setView("menu")}>
@@ -2674,20 +2543,18 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
   }
 
   return (
-    <div className="p-5 font-body min-h-full flex flex-col" style={{ paddingBottom: "calc(8.5rem + env(safe-area-inset-bottom))" }}>
+    <div className="p-5 font-body min-h-full flex flex-col" style={{ paddingBottom: "calc(11.5rem + env(safe-area-inset-bottom))" }}>
       <h1 className="font-display text-3xl tracking-[-0.03em] leading-[1.05] text-ink mb-2">Einstellungen</h1>
       <ThemeSetting />
-      <SettingsRow icon={Globe} label="Synchronisation" sub={syncUrl ? "Eingerichtet" : "Nicht eingerichtet"} tone="rgb(var(--accent))" onClick={() => setView("sync")} />
-      <SettingsRow icon={Sparkles} label="KI-Assistent" sub={aiWorkerUrl ? "Eingerichtet" : "Nicht eingerichtet"} tone="rgb(var(--accent))" onClick={() => setView("ai")} />
-      <SettingsRow icon={ListChecks} label="BGG-Partien importieren" tone="rgb(var(--teal))" onClick={() => setView("bggImport")} />
-      <SettingsRow icon={Puzzle} label="Sammlung anpassen" sub="Kategorien, Mechanismen, Spielertypen" onClick={() => setView("customize")} />
-      <SettingsRow icon={Layers} label="Spiele zusammenführen" sub={duplicateGroups.length > 0 ? `${duplicateGroups.length} mögliche Duplikate gefunden` : "Manuell oder automatisch erkannt"} tone={duplicateGroups.length > 0 ? "rgb(var(--danger))" : undefined} onClick={() => setView("duplicates")} />
-      <SettingsRow icon={ListChecks} label="Statistik-Abgleich" sub="Dashboard-Zahlen live nachrechnen" onClick={() => setView("statCheck")} />
+      <SettingsRow icon={Globe} label="Synchronisation" sub={syncUrl ? "Eingerichtet" : "Nicht eingerichtet"} onClick={() => setView("sync")} />
+      <SettingsRow icon={Sparkles} label="KI-Assistent" sub={aiWorkerUrl ? "Eingerichtet" : "Nicht eingerichtet"} onClick={() => setView("ai")} />
+      <SettingsRow icon={ListChecks} label="BGG-Partien importieren" onClick={() => setView("bggImport")} />
+      <SettingsRow icon={Layers} label="Spiele zusammenführen" sub={duplicateGroups.length > 0 ? `${duplicateGroups.length} mögliche Duplikate gefunden` : "Manuell oder automatisch erkannt"} subTone={duplicateGroups.length > 0} onClick={() => setView("duplicates")} />
       <SettingsRow icon={FileText} label="Für KI exportieren" sub="Für Gemini, ChatGPT & Co." onClick={() => setView("export")} />
-      <SettingsRow icon={Eye} label="Vorschau-Modus" sub={demoMode ? "Aktiv" : "Aus"} onClick={() => setView("demo")} />
-      <SettingsRow icon={Users} label="Gästemodus" sub={guestMode ? "Aktiv" : "Aus"} tone={guestMode ? "rgb(var(--accent))" : undefined} onClick={() => setView("guest")} />
+      <SettingsRow icon={Users} label="Gästemodus" sub={guestMode ? "Aktiv" : "Aus"} subTone={guestMode} onClick={() => setView("guest")} />
+      <SettingsRow icon={Eye} label="Vorschau-Modus" sub={demoMode ? "Aktiv" : "Aus"} subTone={demoMode} onClick={() => setView("demo")} />
+      <SettingsRow icon={Brain} label="Statistik-Abgleich" sub="Dashboard-Zahlen gegen die Rohdaten nachrechnen" onClick={() => setView("statCheck")} />
       <BggBadge className="mt-auto" />
-      <LayoutDiagnose />
     </div>
   );
 }
@@ -3356,7 +3223,7 @@ function GameGridCard({ game: g, expansions = [], playCounts = {}, gridCols = 2,
           </span>
         )}
         {gridCols === 2 && active.format === "digital" && (
-          <span className="absolute flex items-center leading-none gap-0.5 bg-black/70 border border-rim/15 text-info text-[10px] font-body px-1.5 py-0.5 rounded-full" style={{ bottom: 4, left: 4 }}>
+          <span className="absolute flex items-center leading-none gap-0.5 bg-black/70 border border-rim/15 text-white text-[10px] font-body px-1.5 py-0.5 rounded-full" style={{ bottom: 4, left: 4 }}>
             <Globe size={9} /> Digital
           </span>
         )}
@@ -5234,7 +5101,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
   ];
 
   return (
-    <div className="p-5 space-y-8 min-h-full flex flex-col" style={{ paddingBottom: "calc(8.5rem + env(safe-area-inset-bottom))" }}>
+    <div className="p-5 space-y-8 min-h-full flex flex-col" style={{ paddingBottom: "calc(11.5rem + env(safe-area-inset-bottom))" }}>
       {justUnlocked && (
         <div className="fixed left-1/2 z-40 rise-in" style={{ top: "max(1rem, env(safe-area-inset-top))", transform: "translateX(-50%)" }}>
           <div className="flex items-center gap-2.5 bg-bg border border-accent/50 rounded-full pl-2 pr-4 py-2 shadow-xl" style={{ boxShadow: "var(--elev-gold)" }}>
@@ -6074,7 +5941,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
   });
 
   return (
-    <div className="p-5 overflow-x-hidden min-h-full flex flex-col" style={{ paddingBottom: "calc(8.5rem + env(safe-area-inset-bottom))" }}>
+    <div className="p-5 overflow-x-hidden min-h-full flex flex-col" style={{ paddingBottom: "calc(11.5rem + env(safe-area-inset-bottom))" }}>
       <div className="flex items-center justify-between mb-5">
         <h1 className="font-display text-3xl tracking-[-0.03em] leading-[1.05] text-ink">Sammlung</h1>
         <div className="w-[84px] h-10" />
@@ -6090,18 +5957,10 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
             }}
           />
           <button onClick={() => { haptic(6); setGridCols(2); }} aria-label="2 Spalten" className={`relative w-10 h-10 flex items-center justify-center rounded-full transition-colors duration-200 ${gridCols === 2 ? "text-ink" : "text-dim"}`}>
-            <div className="flex gap-0.5">
-              <div className="w-2 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
-              <div className="w-2 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
-            </div>
+            <Cols2 size={18} strokeWidth={1.5} />
           </button>
           <button onClick={() => { haptic(6); setGridCols(4); }} aria-label="4 Spalten" className={`relative w-10 h-10 flex items-center justify-center rounded-full transition-colors duration-200 ${gridCols === 4 ? "text-ink" : "text-dim"}`}>
-            <div className="flex gap-0.5">
-              <div className="w-1 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
-              <div className="w-1 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
-              <div className="w-1 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
-              <div className="w-1 h-3.5 rounded-[1px]" style={{ background: "currentColor" }} />
-            </div>
+            <Cols4 size={18} strokeWidth={1.5} />
           </button>
         </div>
       </div>
@@ -6312,6 +6171,7 @@ function SwipeableRow({ onDelete, children, disabled }) {
 
 function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfiles = [] }) {
   const [detailGroupKey, setDetailGroupKey] = useState(null);
+  const [fullListOpen, setFullListOpen] = useState(false);
   const [viewMode, setViewMode] = useState(() => loadKey("spielregal:playlogViewMode", "game")); // "game" | "evening"
   useEffect(() => { saveKey("spielregal:playlogViewMode", viewMode); }, [viewMode]);
   const [detailEveningDate, setDetailEveningDate] = useState(null);
@@ -6493,7 +6353,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
       )}
 
       {yearPlays.length > 0 && (
-        <div className="border-t border-line pt-5 mb-6">
+        <div className="border-t border-line pt-5 mb-9">
           <p className="text-[10px] font-semibold text-accent uppercase tracking-[0.16em] mb-2">{currentYear} bisher</p>
           <div className="flex">
             <div className="flex-1 pr-4"><p className="font-display text-[2.1rem] leading-none tracking-[-0.04em] text-ink">{yearPlays.length}</p><p className="text-dim text-[11px] font-body mt-1.5">Partien</p></div>
@@ -6504,7 +6364,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
       )}
 
       {winCounts.length > 0 && (
-        <div className="mb-5">
+        <div className="mb-9">
           <div className="flex items-center gap-1.5 mb-2">
             <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em]">Bestenliste</h2>
             <button onClick={() => setBestListInfoOpen(true)} aria-label="Wie wird das berechnet?" className="text-dim"><Info size={13} /></button>
@@ -6543,8 +6403,13 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
       )}
 
       {allPlayerNames.length >= 2 && (
-        <div className="mb-5">
-          <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-2">Kopf-an-Kopf</h2>
+        <div className="mb-9">
+          <div className="flex items-baseline justify-between mb-2">
+            <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em]">Kopf-an-Kopf</h2>
+            {h2hStats && h2hStats.total > 0 && (
+              <span className="font-body text-[11px] text-dim">{h2hStats.total} gemeinsame Partie{h2hStats.total === 1 ? "" : "n"}</span>
+            )}
+          </div>
           <div className="border-t border-line pt-4">
             <div className="flex items-center gap-2 mb-3">
               <div className="flex-1 min-w-0 flex items-center gap-2 border border-line rounded-[14px] pl-1.5 pr-2 py-1.5">
@@ -6578,7 +6443,6 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                 <p className="text-dim text-xs font-body">Noch keine gemeinsame Partie gefunden.</p>
               ) : (
                 <div>
-                  <p className="text-dim text-xs font-body mb-2">{h2hStats.total} gemeinsame Partie{h2hStats.total === 1 ? "" : "n"}</p>
                   <div className="flex items-center gap-3">
                     <div className="flex-1 flex flex-col items-center">
                       <div className="w-11 h-11 rounded-full overflow-hidden bg-line/50 flex items-center justify-center mb-1.5">
@@ -6609,58 +6473,95 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
         </div>
       )}
 
-      {sorted.length === 0 ? <p className="text-dim text-sm font-body mt-8 text-center">Noch keine Partien eingetragen — auch geliehene oder online gespielte Spiele zählen.</p> : viewMode === "evening" ? (
-        <div className="pb-32">
-          {eveningGroups.map(([date, group]) => {
-            const distinctGames = [...new Map(group.map((p) => [p.gameId || p.gameName, p])).values()];
-            const estMinutes = group.reduce((sum, p) => {
-              const g = games.find((x) => x.id === p.gameId);
-              if (!g || !g.minTime) return sum;
-              return sum + (parseInt(g.minTime) + parseInt(g.maxTime || g.minTime)) / 2;
-            }, 0);
-            return (
-              <button key={date} onClick={() => setDetailEveningDate(date)} className="w-full text-left border-b border-line py-3 flex items-center gap-3">
-                <div className="flex -space-x-3 shrink-0">
-                  {distinctGames.slice(0, 3).map((p, i) => {
-                    const g = games.find((x) => x.id === p.gameId);
-                    return g ? <Cover key={i} game={g} size="sm" className="!border-2 !border-surface" /> : <div key={i} className="w-12 h-12 rounded-lg bg-line/50 border-2 border-surface flex items-center justify-center text-dim"><Dices size={16} /></div>;
-                  })}
+      {sorted.length === 0 ? <p className="text-dim text-sm font-body mt-8 text-center">Noch keine Partien eingetragen — auch geliehene oder online gespielte Spiele zählen.</p> : (() => {
+        // Die Liste stand vorher komplett auf der Seite und war bei vielen
+        // Spielen laenger als alles andere zusammen. Jetzt ist sie eine
+        // Sektion wie die uebrigen: die ersten fuenf Eintraege als Vorschau,
+        // der Rest hinter einer eigenen Vollansicht.
+        const VORSCHAU = 5;
+        const abendZeile = ([date, group]) => {
+          const distinctGames = [...new Map(group.map((p) => [p.gameId || p.gameName, p])).values()];
+          const estMinutes = group.reduce((sum, p) => {
+            const g = games.find((x) => x.id === p.gameId);
+            if (!g || !g.minTime) return sum;
+            return sum + (parseInt(g.minTime) + parseInt(g.maxTime || g.minTime)) / 2;
+          }, 0);
+          return (
+            <button key={date} onClick={() => setDetailEveningDate(date)} className="w-full text-left border-b border-line py-3 flex items-center gap-3">
+              <div className="flex -space-x-3 shrink-0">
+                {distinctGames.slice(0, 3).map((p, i) => {
+                  const g = games.find((x) => x.id === p.gameId);
+                  return g ? <Cover key={i} game={g} size="sm" className="!border-2 !border-surface" /> : <div key={i} className="w-12 h-12 rounded-lg bg-line/50 border-2 border-surface flex items-center justify-center text-dim"><Dices size={16} /></div>;
+                })}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-ink font-body">{formatDate(date)}</p>
+                <p className="text-dim text-xs font-body">
+                  {group.length} Partie{group.length === 1 ? "" : "n"} · {distinctGames.length} Spiel{distinctGames.length === 1 ? "" : "e"}
+                  {estMinutes > 0 ? ` · ~${Math.round((estMinutes / 60) * 10) / 10} Std.` : ""}
+                </p>
+              </div>
+              <ChevronRight size={16} className="text-dim shrink-0" />
+            </button>
+          );
+        };
+        const spielZeile = (group) => {
+          const first = group[0];
+          const rootId = rootGameId(first.gameId) || first.gameId;
+          const groupKey = rootId || first.gameName;
+          const game = games.find((g) => g.id === rootId);
+          return (
+            <button key={groupKey} onClick={() => setDetailGroupKey(groupKey)} className="w-full text-left border-b border-line py-3 flex items-center gap-3">
+              {game ? <Cover game={game} size="sm" /> : <div className="w-12 h-12 rounded-lg bg-line/50 flex items-center justify-center text-dim shrink-0"><Dices size={18} /></div>}
+              <div className="flex-1 min-w-0">
+                <p className="text-ink font-body truncate">{game ? game.name : first.gameName}</p>
+                <p className="text-dim text-xs font-body">
+                  {group.length}× gespielt · zuletzt {first.date || "?"}
+                </p>
+              </div>
+              <ChevronRight size={16} className="text-dim shrink-0" />
+            </button>
+          );
+        };
+        const istAbend = viewMode === "evening";
+        const eintraege = istAbend ? eveningGroups : grouped;
+        const zeile = istAbend ? abendZeile : spielZeile;
+        const titel = istAbend ? "Spieleabende" : "Gespielte Spiele";
+        return (
+          <>
+            <div className="mb-9">
+              <div className="flex items-baseline justify-between mb-2">
+                <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em]">{titel}</h2>
+                <span className="font-body text-[11px] text-dim">{eintraege.length}</span>
+              </div>
+              <div className="border-t border-line">
+                {eintraege.slice(0, VORSCHAU).map(zeile)}
+              </div>
+              {eintraege.length > VORSCHAU && (
+                <button onClick={() => setFullListOpen(true)}
+                  className="w-full py-3.5 flex items-center justify-center gap-1.5 text-sm text-accent font-medium">
+                  Alle {eintraege.length} anzeigen <ChevronRight size={15} />
+                </button>
+              )}
+            </div>
+            {fullListOpen && (
+              <div className="fixed inset-0 z-50 bg-bg flex flex-col">
+                <div className="shrink-0 px-5 flex items-center gap-3" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
+                  <button onClick={() => setFullListOpen(false)} aria-label="Zurück"
+                    className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full border border-line text-dim">
+                    <ChevronLeft size={20} />
+                  </button>
+                  <h1 className="font-display text-2xl tracking-[-0.02em] text-ink">{titel}</h1>
+                  <span className="ml-auto font-body text-xs text-dim">{eintraege.length}</span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-ink font-body">{formatDate(date)}</p>
-                  <p className="text-dim text-xs font-body">
-                    {group.length} Partie{group.length === 1 ? "" : "n"} · {distinctGames.length} Spiel{distinctGames.length === 1 ? "" : "e"}
-                    {estMinutes > 0 ? ` · ~${Math.round((estMinutes / 60) * 10) / 10} Std.` : ""}
-                  </p>
+                <div className="flex-1 overflow-y-auto px-5" style={{ paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}>
+                  <div className="border-t border-line">{eintraege.map(zeile)}</div>
                 </div>
-                <ChevronRight size={16} className="text-dim shrink-0" />
-              </button>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="pb-32">
-          {grouped.map((group) => {
-            const first = group[0];
-            const rootId = rootGameId(first.gameId) || first.gameId;
-            const groupKey = rootId || first.gameName;
-            const game = games.find((g) => g.id === rootId);
-            const lastPlayerCount = first.players ? first.players.split(",").map((s) => s.trim()).filter(Boolean).length : 0;
-            return (
-              <button key={groupKey} onClick={() => setDetailGroupKey(groupKey)} className="w-full text-left border-b border-line py-3 flex items-center gap-3">
-                {game ? <Cover game={game} size="sm" /> : <div className="w-12 h-12 rounded-lg bg-line/50 flex items-center justify-center text-dim shrink-0"><Dices size={18} /></div>}
-                <div className="flex-1 min-w-0">
-                  <p className="text-ink font-body truncate">{game ? game.name : first.gameName}</p>
-                  <p className="text-dim text-xs font-body">
-                    {group.length}× gespielt · zuletzt {first.date || "?"}
-                  </p>
-                </div>
-                <ChevronRight size={16} className="text-dim shrink-0" />
-              </button>
-            );
-          })}
-        </div>
-      )}
+              </div>
+            )}
+          </>
+        );
+      })()}
       <div className="pb-16 mt-auto"><BggBadge /></div>
       {detailGroupKey && (() => {
         const liveGroup = grouped.find((g) => (rootGameId(g[0].gameId) || g[0].gameName) === detailGroupKey);
@@ -6974,7 +6875,7 @@ ${buildCollectionContextForAI(games, plays)}`;
           <div className="flex flex-col items-center">
             <div className="relative">
               <PipAvatar size={104} sleeping />
-              <span className="absolute -top-1 -right-2 text-2xl" style={{ animation: "float 2.5s ease-in-out infinite" }}>💤</span>
+              <span className="absolute -top-2 -right-3 font-display text-dim select-none" style={{ animation: "float 2.5s ease-in-out infinite" }}><span className="text-xs align-super">z</span><span className="text-base">z</span><span className="text-xl">Z</span></span>
             </div>
             <p className="text-ink font-display text-xl tracking-[-0.02em] mt-4">Pip schläft noch</p>
             <p className="text-dim text-sm font-body mt-1.5 max-w-xs">Richte in den Einstellungen den KI-Assistenten ein, damit Pip aufwacht und dir beim Spielefinden helfen kann.</p>
@@ -6985,7 +6886,7 @@ ${buildCollectionContextForAI(games, plays)}`;
           <div className="flex flex-col items-center">
             <div className="relative">
               <PipAvatar size={104} sleeping />
-              <span className="absolute -top-1 -right-2 text-2xl" style={{ animation: "float 2.5s ease-in-out infinite" }}>💤</span>
+              <span className="absolute -top-2 -right-3 font-display text-dim select-none" style={{ animation: "float 2.5s ease-in-out infinite" }}><span className="text-xs align-super">z</span><span className="text-base">z</span><span className="text-xl">Z</span></span>
             </div>
             <p className="text-ink font-display text-xl tracking-[-0.02em] mt-4">Pip ist für heute müde</p>
             <p className="text-dim text-sm font-body mt-1.5 max-w-xs">Sein tägliches KI-Kontingent ist aufgebraucht. Ab ca. {quotaResetAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} Uhr ist er wieder wach.</p>
@@ -7016,7 +6917,7 @@ ${buildCollectionContextForAI(games, plays)}`;
                             { label: "Neues Spiel entdecken", msg: "Ich will ein neues Spiel entdecken, das noch nicht in meiner Sammlung ist — schlag mir dafür was von BoardGameGeek vor, nicht aus meiner Sammlung." },
                           ].map((f) => (
                             <button key={f.label} onClick={() => sendChat(f.msg, f.label)}
-                              className="w-full text-left px-3.5 py-2.5 rounded-[14px] text-sm bg-bg border border-line text-info font-medium flex items-center justify-between">
+                              className="w-full text-left px-3.5 py-2.5 rounded-[14px] text-sm bg-bg border border-line text-ink font-medium flex items-center justify-between">
                               {f.label} <ChevronRight size={15} className="text-dim shrink-0" />
                             </button>
                           ))}
@@ -7054,7 +6955,7 @@ ${buildCollectionContextForAI(games, plays)}`;
                     {m.role === "assistant" && isLast && m.options && m.options.length > 0 && !m.showFlowButtons && !chatLoading && (
                       <div className="flex gap-1.5 flex-wrap mt-0.5">
                         {m.options.map((opt) => (
-                          <button key={opt} onClick={() => sendChat(opt)} className="px-3.5 py-2 rounded-full text-sm bg-accent/15 border border-accent/40 text-info font-medium">
+                          <button key={opt} onClick={() => sendChat(opt)} className="px-3.5 py-2 rounded-full text-sm bg-accent/15 border border-accent/40 text-ink font-medium">
                             {opt}
                           </button>
                         ))}
@@ -8014,7 +7915,7 @@ function App() {
       <div className="absolute bottom-0 left-0 right-0 px-4 z-40 pointer-events-none"
         style={{
           paddingBottom: "var(--nav-inset)",
-          paddingTop: "3.5rem",
+          paddingTop: "6.5rem",
           backgroundImage: "linear-gradient(to bottom, transparent, rgb(var(--bg)) 55%)",
         }}>
         <div className="relative rounded-full px-1.5 py-1.5 overflow-hidden pointer-events-auto" style={{

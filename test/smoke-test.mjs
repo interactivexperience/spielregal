@@ -121,6 +121,28 @@ async function main() {
     fatalErrors.push("Das #root-Element ist leer geblieben — die App hat nicht gemountet.");
   }
 
+  // Die Fehlergrenze faengt Render-Abstuerze ab und zeigt eine Ersatzseite.
+  // #root ist dann gefuellt und der Test lief frueher faelschlich gruen durch.
+  const boundary = await page.evaluate(() =>
+    document.getElementById("root")?.textContent.includes("Kurz gestolpert") ?? false);
+  if (boundary) {
+    fatalErrors.push("Die Fehlergrenze hat gegriffen — eine Komponente ist beim Rendern abgestuerzt.");
+  }
+
+  // Jeden Tab einmal oeffnen: ein Absturz steckt meist in einer Unterseite,
+  // die der reine Startbildschirm nie rendert.
+  for (const tab of ["Sammlung", "Partien", "Ideen", "Mehr", "Übersicht"]) {
+    const btn = page.locator(`button:has-text("${tab}")`).last();
+    if (await btn.count()) {
+      const ok = await btn.click({ timeout: 5000 }).then(() => true).catch(() => false);
+      if (!ok) fatalErrors.push(`Tab "${tab}" liess sich nicht oeffnen — vermutlich verdeckt ihn eine Ersatzseite.`);
+      await page.waitForTimeout(700);
+      const crashed = await page.evaluate(() =>
+        document.getElementById("root")?.textContent.includes("Kurz gestolpert") ?? false);
+      if (crashed) { fatalErrors.push(`Fehlergrenze nach Wechsel auf "${tab}".`); break; }
+    }
+  }
+
   await browser.close();
   server.close();
 
