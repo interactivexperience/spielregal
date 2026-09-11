@@ -6363,7 +6363,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
 
       {yearPlays.length > 0 && (
         <div className="border-t border-line pt-5 mb-9">
-          <p className="text-[10px] font-semibold text-accent uppercase tracking-[0.16em] mb-2">{currentYear} bisher</p>
+          <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-2">{currentYear} bisher</p>
           <div className="flex">
             <div className="flex-1 pr-4"><p className="font-display text-[2.1rem] leading-none tracking-[-0.04em] text-ink">{yearPlays.length}</p><p className="text-dim text-[11px] font-body mt-1.5">Partien</p></div>
             <div className="flex-1 px-4 border-l border-line"><p className="font-display text-[2.1rem] leading-none tracking-[-0.04em] text-ink">{yearGameCount}</p><p className="text-dim text-[11px] font-body mt-1.5">Spiele</p></div>
@@ -6373,7 +6373,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
       )}
 
       {winCounts.length > 0 && (
-        <div className="mb-9">
+        <div className="mb-9 border-t border-line pt-5">
           <div className="flex items-center gap-1.5 mb-2">
             <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em]">Bestenliste</h2>
             <button onClick={() => setBestListInfoOpen(true)} aria-label="Wie wird das berechnet?" className="text-dim"><Info size={13} /></button>
@@ -7217,6 +7217,14 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
             </button>
             {detailsOpen && (
               <div className="space-y-7 pt-7">
+                <div>
+                  <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1">Partien</p>
+                  {gamePlays.length === 0 ? (
+                    <p className="text-sm text-dim">Noch nie gespielt.</p>
+                  ) : (
+                    <p className="text-sm text-ink">{gamePlays.length}× gespielt{lastPlay ? `, zuletzt am ${formatDate(lastPlay.date)}` : ""}</p>
+                  )}
+                </div>
                 {tags.length > 0 && (
                   <div>
                     <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1.5">Kategorien & Mechanismen</p>
@@ -7270,15 +7278,6 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                   </div>
                 )}
               </div>
-            )}
-          </div>
-
-          <div>
-            <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1">Partien</p>
-            {gamePlays.length === 0 ? (
-              <p className="text-sm text-dim">Noch nie gespielt.</p>
-            ) : (
-              <p className="text-sm text-ink">{gamePlays.length}× gespielt{lastPlay ? `, zuletzt am ${formatDate(lastPlay.date)}` : ""}</p>
             )}
           </div>
 
