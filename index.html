@@ -7201,6 +7201,14 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
             </div>
           )}
 
+          {game.playerTypes && game.playerTypes.length > 0 && (
+            <div>
+              <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1.5">Spielertypen</p>
+              <div className="flex flex-wrap gap-1.5">
+                {game.playerTypes.map((t) => <Pill key={t} tone="teal">{t}</Pill>)}
+              </div>
+            </div>
+          )}
 
           <div>
             {detailsOpen && (
@@ -7222,14 +7230,6 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                     )}
                   </div>
                 )}
-          {game.playerTypes && game.playerTypes.length > 0 && (
-            <div>
-              <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1.5">Spielertypen</p>
-              <div className="flex flex-wrap gap-1.5">
-                {game.playerTypes.map((t) => <Pill key={t} tone="teal">{t}</Pill>)}
-              </div>
-            </div>
-          )}
                 {tags.length > 0 && (
                   <div>
                     <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1.5">Kategorien & Mechanismen</p>
