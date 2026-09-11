@@ -7292,6 +7292,14 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                     )}
                   </div>
                 )}
+                <div>
+                  <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1">Partien</p>
+                  {gamePlays.length === 0 ? (
+                    <p className="text-sm text-dim">Noch nie gespielt.</p>
+                  ) : (
+                    <p className="text-sm text-ink">{gamePlays.length}× gespielt{lastPlay ? `, zuletzt am ${formatDate(lastPlay.date)}` : ""}</p>
+                  )}
+                </div>
                 {tags.length > 0 && (
                   <div>
                     <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1.5">Kategorien & Mechanismen</p>
@@ -7303,14 +7311,6 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                     </div>
                   </div>
                 )}
-                <div>
-                  <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1">Partien</p>
-                  {gamePlays.length === 0 ? (
-                    <p className="text-sm text-dim">Noch nie gespielt.</p>
-                  ) : (
-                    <p className="text-sm text-ink">{gamePlays.length}× gespielt{lastPlay ? `, zuletzt am ${formatDate(lastPlay.date)}` : ""}</p>
-                  )}
-                </div>
                 {game.notes && (
                   <div>
                     <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1">Notizen</p>
