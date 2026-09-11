@@ -185,6 +185,14 @@
      Positionsklasse, haben beide Regeln gleiche Spezifitaet -- dann entscheidet,
      ob das CDN seine Styles vor oder nach diesem Block einhaengt. Diese Regeln
      sind spezifischer und machen das Ergebnis unabhaengig von der Reihenfolge. */
+  /* Abstand der Navigationsleiste zur unteren Kante. Nach oben gedeckelt, weil
+     manche Geraete/iOS-Versionen eine deutlich groessere untere Safe Area
+     melden als die 34px eines iPhone 14 Pro -- ungebremst uebernommen schwebte
+     die Leiste dadurch rund 76px ueber der Kante statt 16px. 20px reichen, um
+     den Home-Indikator freizuhalten. Die schwebenden Knopfreihen haengen an
+     derselben Variable, damit sie sich mit der Leiste bewegen.
+     :where() haelt die Spezifitaet bei 0, damit nichts ueberschrieben wird. */
+  :where(:root) { --nav-inset: clamp(0.5rem, calc(env(safe-area-inset-bottom) - 1.1rem), 1.25rem); }
   .glass.absolute, .glass-icon-btn.absolute, button.absolute { position: absolute; }
   .glass.fixed, .glass-icon-btn.fixed, button.fixed { position: fixed; }
   .glass.sticky, .glass-icon-btn.sticky, button.sticky { position: sticky; }
@@ -4939,6 +4947,9 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
   }, [aiWorkerUrl, plays.length, playsFingerprint, refreshToken]);
   const unlockedIdsKey = achievements.filter((a) => a.unlocked).map((a) => a.id).sort().join(",");
   useEffect(() => {
+    // Solange Spiele und Partien noch laden, ist jeder Erfolg zwangslaeufig
+    // "nicht freigeschaltet" -- in dem Zustand darf nichts gemerkt werden.
+    if (games.length === 0 && plays.length === 0) return;
     const seenKey = "spielregal:seenAchievements";
     const seen = new Set(JSON.parse(localStorage.getItem(seenKey) || "[]"));
     const unlockedIds = unlockedIdsKey ? unlockedIdsKey.split(",") : [];
@@ -4951,8 +4962,16 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
         setTimeout(() => setJustUnlocked(null), 3200);
       }
     }
-    localStorage.setItem(seenKey, JSON.stringify(unlockedIds));
-  }, [unlockedIdsKey]);
+    // Erfolge sind dauerhaft, die Liste wird nur ergaenzt und nie ersetzt.
+    // Vorher wurde sie bei jedem Lauf mit dem aktuellen Stand ueberschrieben.
+    // Beim Start laufen Spiele und Partien aber gestaffelt ein: nach den
+    // Spielen stand kurz nur "collector" drin, mit den Partien galten dann alle
+    // uebrigen wieder als frisch -- und alphabetisch zuerst "campaign". Daher
+    // meldete die App nach jedem Update erneut den Kampagnen-Meister.
+    if (newlyUnlocked.length > 0) {
+      localStorage.setItem(seenKey, JSON.stringify([...seen, ...newlyUnlocked]));
+    }
+  }, [unlockedIdsKey, games.length, plays.length]);
 
   // Kontextuelle Vorschläge: das am längsten wartende Spiel mit einer kleinen freundlichen Nachricht.
 
@@ -5143,7 +5162,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             <span className="text-2xl">{justUnlocked.emoji}</span>
             <div>
               <p className="text-[10px] text-accent font-semibold uppercase tracking-[0.16em]">Neuer Erfolg!</p>
-              <p className="text-sm text-ink font-medium leading-tight">{justUnlocked.label}</p>
+              <p className="text-sm text-ink font-medium leading-tight whitespace-nowrap">{justUnlocked.label}</p>
             </div>
           </div>
         </div>
@@ -5492,7 +5511,7 @@ function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDelete
       {!demoMode && !selectMode && (
         <button onClick={() => { haptic(8); setAddOpen(true); }} aria-label="Spiele hinzufügen"
           className="fixed z-30 left-1/2 -translate-x-1/2 text-ink w-14 h-14 flex items-center justify-center rounded-full shadow-lg active:scale-95 border border-rim/25"
-          style={{ background: "rgb(var(--accent))", boxShadow: "var(--elev-fab)", bottom: "calc(100px + env(safe-area-inset-bottom))" }}>
+          style={{ background: "rgb(var(--accent))", boxShadow: "var(--elev-fab)", bottom: "calc(100px + var(--nav-inset))" }}>
           <BookmarkPlus size={22} />
         </button>
       )}
@@ -6088,7 +6107,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           </div>
         </div>
       )}
-      <div className="fixed z-30 left-0 right-0 px-5 flex items-center justify-center gap-3" style={{ bottom: "calc(100px + env(safe-area-inset-bottom))" }}>
+      <div className="fixed z-30 left-0 right-0 px-5 flex items-center justify-center gap-3" style={{ bottom: "calc(100px + var(--nav-inset))" }}>
         <div className={`transition-all duration-300 ease-out ${searchOpen ? "flex-1 min-w-0" : "shrink-0"}`}>
           {searchOpen ? (
             <SearchInput value={query} onChange={setQuery} placeholder="Suchen…" autoFocus inputClassName="glass h-11 border border-accent/50 rounded-full text-base" />
@@ -6341,7 +6360,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
       <div className="flex items-center justify-between mb-4">
         <h1 className="font-display text-3xl tracking-[-0.03em] leading-[1.05] text-ink">Partien</h1>
       </div>
-      <div className="fixed z-30 left-0 right-0 px-5 flex items-center justify-center gap-3" style={{ bottom: "calc(100px + env(safe-area-inset-bottom))" }}>
+      <div className="fixed z-30 left-0 right-0 px-5 flex items-center justify-center gap-3" style={{ bottom: "calc(100px + var(--nav-inset))" }}>
         <div className={`transition-all duration-300 ease-out ${searchOpen ? "flex-1 min-w-0" : "shrink-0"}`}>
           {searchOpen ? (
             <SearchInput value={query} onChange={setQuery} placeholder="Spiel suchen…" autoFocus inputClassName="glass h-11 border border-accent/50 rounded-full text-base" />
@@ -7915,7 +7934,7 @@ function App() {
       </div>
       <div className="absolute bottom-0 left-0 right-0 px-4 z-40 pointer-events-none"
         style={{
-          paddingBottom: "max(0.5rem, calc(env(safe-area-inset-bottom) - 1.1rem))",
+          paddingBottom: "var(--nav-inset)",
           paddingTop: "3.5rem",
           backgroundImage: "linear-gradient(to bottom, transparent, rgb(var(--bg)) 55%)",
         }}>
