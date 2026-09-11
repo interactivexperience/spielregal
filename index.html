@@ -323,7 +323,7 @@ function Icon({ children, size = 18, className = "", strokeWidth = 1.7 }) {
   );
 }
 const Home = (p) => <Icon {...p}><path d="M2.5 11.5 12 3l9.5 8.5" /><path d="M5.5 8.8V20.5h13V8.8" /></Icon>;
-const NavDie = (p) => <Icon {...p}><path d="M9 6.5h11M9 12h11M9 17.5h11" /><circle cx="4.6" cy="6.5" r="1.25" fill="currentColor" stroke="none" /><circle cx="4.6" cy="12" r="1.25" fill="currentColor" stroke="none" /><circle cx="4.6" cy="17.5" r="1.25" fill="currentColor" stroke="none" /></Icon>;
+const NavDie = (p) => <Icon {...p}><rect x="3.5" y="3.5" width="17" height="17" rx="5.2" /><rect x="7.7" y="7.7" width="2.2" height="2.2" rx="0.7" fill="currentColor" stroke="none" /><rect x="10.9" y="10.9" width="2.2" height="2.2" rx="0.7" fill="currentColor" stroke="none" /><rect x="14.1" y="14.1" width="2.2" height="2.2" rx="0.7" fill="currentColor" stroke="none" /></Icon>;
 const NavMore = (p) => <Icon {...p}><circle cx="12" cy="12" r="3.4" /><path d="M12 3.2v2.4M12 18.4v2.4M3.2 12h2.4M18.4 12h2.4M5.8 5.8 7.5 7.5M16.5 16.5l1.7 1.7M18.2 5.8 16.5 7.5M7.5 16.5 5.8 18.2" /></Icon>;
 const GridSquares = (p) => <Icon {...p}><rect x="3" y="4" width="4.6" height="16" rx="1.2" /><rect x="8.8" y="4" width="4.6" height="16" rx="1.2" /><rect x="15.2" y="5.4" width="4.6" height="15" rx="1.2" transform="rotate(13 17.5 12.9)" /></Icon>;
 const ChatBubble = (p) => <Icon {...p}><path d="M10 2.6c.9 3.3 1.8 4.2 5.1 5.1-3.3.9-4.2 1.8-5.1 5.1-.9-3.3-1.8-4.2-5.1-5.1 3.3-.9 4.2-1.8 5.1-5.1z" /><path d="M17.2 13.4c.5 1.9 1 2.4 2.9 2.9-1.9.5-2.4 1-2.9 2.9-.5-1.9-1-2.4-2.9-2.9 1.9-.5 2.4-1 2.9-2.9z" fill="currentColor" /></Icon>;
@@ -813,40 +813,30 @@ function TextWithGameLinks({ text, games, onView, color }) {
   );
 }
 
+// Pip greift die Marke der App auf: derselbe Wuerfel wie im App-Icon, hier
+// aufrecht und mit Gesicht. Vorher war es eine gefuellte Comic-Kreatur mit
+// Oehrchen, Wangen und vier Farben -- das passte nicht zu den monolinearen
+// Icons und der zurueckhaltenden Palette ringsum.
 function PipAvatar({ size = 36, sleeping = false }) {
+  const strich = sleeping ? "rgb(var(--dim))" : "#fff";
   return (
     <div
       className="rounded-full flex items-center justify-center shrink-0 overflow-hidden"
       style={{ width: size, height: size, background: sleeping ? "rgb(var(--line))" : "rgb(var(--accent))" }}
     >
-      <svg width={size * 0.72} height={size * 0.72} viewBox="0 0 40 40" fill="none">
-        {/* Rundlicher Wesen-Körper */}
-        <path d="M20 4C10 4 5 12 5 21c0 9 6 15 15 15s15-6 15-15C35 12 30 4 20 4Z" fill="rgb(var(--ink))" opacity={sleeping ? 0.55 : 1} />
-        {/* Kleine Öhrchen/Hörnchen */}
-        <circle cx="11" cy="9" r="3.2" fill="rgb(var(--ink))" opacity={sleeping ? 0.55 : 1} />
-        <circle cx="29" cy="9" r="3.2" fill="rgb(var(--ink))" opacity={sleeping ? 0.55 : 1} />
-        {!sleeping && <circle cx="11" cy="9" r="1.4" fill="rgb(var(--accent))" />}
-        {!sleeping && <circle cx="29" cy="9" r="1.4" fill="rgb(var(--gold))" />}
-        {/* Wangen */}
-        <circle cx="10.5" cy="24" r="3" fill="rgb(var(--accent))" opacity={sleeping ? 0.15 : 0.35} />
-        <circle cx="29.5" cy="24" r="3" fill="rgb(var(--accent))" opacity={sleeping ? 0.15 : 0.35} />
+      <svg width={size * 0.62} height={size * 0.62} viewBox="0 0 40 40" fill="none">
+        <rect x="4" y="4" width="32" height="32" rx="9.5" stroke={strich} strokeWidth="2.6" />
         {sleeping ? (
           <>
-            {/* Geschlossene, schlafende Augen */}
-            <path d="M12 20c1.2-1.4 3.8-1.4 5 0" stroke="rgb(var(--faint))" strokeWidth="1.8" strokeLinecap="round" fill="none" />
-            <path d="M23 20c1.2-1.4 3.8-1.4 5 0" stroke="rgb(var(--faint))" strokeWidth="1.8" strokeLinecap="round" fill="none" />
-            {/* Entspannter Mund */}
-            <path d="M17 27.5c1 .8 5 .8 6 0" stroke="rgb(var(--faint))" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+            <path d="M11.5 18.5c1.4-1.7 4.2-1.7 5.6 0" stroke={strich} strokeWidth="2.4" strokeLinecap="round" />
+            <path d="M22.9 18.5c1.4-1.7 4.2-1.7 5.6 0" stroke={strich} strokeWidth="2.4" strokeLinecap="round" />
+            <path d="M16 26.5h8" stroke={strich} strokeWidth="2.4" strokeLinecap="round" />
           </>
         ) : (
           <>
-            {/* Augen */}
-            <circle cx="14.5" cy="20" r="3.4" fill="rgb(var(--bg))" />
-            <circle cx="25.5" cy="20" r="3.4" fill="rgb(var(--bg))" />
-            <circle cx="15.6" cy="18.8" r="1.1" fill="rgb(var(--ink))" />
-            <circle cx="26.6" cy="18.8" r="1.1" fill="rgb(var(--ink))" />
-            {/* Lächeln */}
-            <path d="M15 27c1.8 2.2 8.2 2.2 10 0" stroke="rgb(var(--bg))" strokeWidth="1.8" strokeLinecap="round" fill="none" />
+            <circle cx="14.3" cy="17.5" r="2.4" fill={strich} />
+            <circle cx="25.7" cy="17.5" r="2.4" fill={strich} />
+            <path d="M14.6 25.2c1.9 2.1 8.9 2.1 10.8 0" stroke={strich} strokeWidth="2.4" strokeLinecap="round" />
           </>
         )}
       </svg>
@@ -6242,13 +6232,11 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
       byGame.get(key).push(p); // sorted already comes newest-first, so this stays newest-first per group
     });
     const groups = Array.from(byGame.values());
-    const todayStr = new Date().toISOString().slice(0, 10); // re-evaluated on every render, so "today" is always current
-    groups.sort((a, b) => {
-      const aToday = a.some((p) => p.date === todayStr);
-      const bToday = b.some((p) => p.date === todayStr);
-      if (aToday !== bToday) return aToday ? -1 : 1; // played today always floats to the top
-      return b.length - a.length; // otherwise most-played first
-    });
+    // Nach zuletzt gespielt, neueste Partie oben. Vorher stand die haeufigste
+    // oben, dadurch lag ein gerade gespieltes Spiel irgendwo in der Mitte.
+    // Jede Gruppe ist in sich schon neueste-zuerst sortiert, [0] ist also ihr
+    // juengster Eintrag.
+    groups.sort((a, b) => (b[0].date || "").localeCompare(a[0].date || ""));
     return groups;
   }, [sorted, games]);
 
@@ -6415,39 +6403,61 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
 
       {allPlayerNames.length >= 2 && (
         <div className="mb-9">
-          <div className="flex items-baseline justify-between mb-2">
-            <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em]">Kopf-an-Kopf</h2>
+          <div className="flex items-baseline justify-between mb-3">
+            <h2 className="font-body text-[10px] font-semibold text-accent uppercase tracking-[0.16em]">Kopf-an-Kopf</h2>
             {h2hStats && h2hStats.total > 0 && (
               <span className="font-body text-[11px] text-dim">{h2hStats.total} gemeinsame Partie{h2hStats.total === 1 ? "" : "n"}</span>
             )}
           </div>
-          <div className="border-t border-line pt-4">
-            {/* Die beiden Auswahlfelder sind weg: Name und Foto standen darin
-                genauso wie im Ergebnis darunter. Jetzt ist das Ergebnis selbst
-                die Auswahl -- ein Tipp auf eine Seite oeffnet die Spielerliste. */}
-            <div className="flex items-stretch gap-3">
+          {/* Die beiden Auswahlfelder sind weg: Name und Foto standen darin
+              genauso wie im Ergebnis darunter. Jetzt ist das Ergebnis selbst
+              die Auswahl -- ein Tipp auf eine Seite oeffnet die Spielerliste. */}
+          <div className="border border-line rounded-2xl px-4 pt-5 pb-4">
+            <div className="flex items-start gap-3">
               {[["a", h2hA, h2hStats ? h2hStats.aWins : null], ["b", h2hB, h2hStats ? h2hStats.bWins : null]].map(([slot, name, wins], i) => {
                 const prof = playerProfiles.find((p) => p.name === name);
                 return (
                   <React.Fragment key={slot}>
-                    {i === 1 && <div className="w-px bg-line shrink-0" />}
-                    <button onClick={() => { haptic(6); setH2hPick(slot); }} className="flex-1 min-w-0 flex flex-col items-center py-1">
-                      <div className="w-12 h-12 rounded-full overflow-hidden bg-line/50 flex items-center justify-center mb-2">
-                        {prof && prof.photo ? <img src={prof.photo} alt={name} className="w-full h-full object-cover" /> : <Users size={18} className="text-dim" />}
+                    {i === 1 && <span className="self-start font-body text-xs text-dim shrink-0 pt-7">vs.</span>}
+                    <button onClick={() => { haptic(6); setH2hPick(slot); }} className="flex-1 min-w-0 flex flex-col items-center">
+                      <div className="w-16 h-16 rounded-full overflow-hidden bg-line/50 flex items-center justify-center mb-2.5">
+                        {prof && prof.photo ? <img src={prof.photo} alt={name} className="w-full h-full object-cover" /> : <Users size={24} className="text-dim" />}
                       </div>
-                      <p className="font-display text-2xl tracking-[-0.025em] leading-tight text-ink">{wins === null || !name ? "—" : wins}</p>
-                      <p className="text-dim text-[11px] font-body truncate max-w-full flex items-center gap-0.5">
-                        {name || "Spieler wählen"} <ChevronDown size={11} className="shrink-0" />
+                      <p className="font-display text-[2.4rem] leading-none tracking-[-0.045em] text-ink">{wins === null || !name ? "\u2014" : wins}</p>
+                      <p className="text-dim text-xs font-body mt-2 truncate max-w-full flex items-center gap-0.5">
+                        {name || "Spieler w\u00e4hlen"} <ChevronDown size={12} className="shrink-0" />
                       </p>
                     </button>
                   </React.Fragment>
                 );
               })}
             </div>
+            {h2hStats && h2hStats.total > 0 && (() => {
+              // Der Balken macht das Kraefteverhaeltnis auf einen Blick lesbar.
+              // Partien ohne gewerteten Sieger bleiben als Rest in der Mitte.
+              const ges = h2hStats.total;
+              const aP = (h2hStats.aWins / ges) * 100;
+              const bP = (h2hStats.bWins / ges) * 100;
+              const rest = ges - h2hStats.aWins - h2hStats.bWins;
+              return (
+                <div className="mt-5">
+                  <div className="h-1.5 rounded-full bg-line overflow-hidden flex">
+                    <div className="h-full bg-accent" style={{ width: `${aP}%` }} />
+                    <div className="h-full bg-dim ml-auto" style={{ width: `${bP}%` }} />
+                  </div>
+                  <div className="flex items-baseline justify-between mt-1.5">
+                    <span className="font-mono text-[10px] text-accent">{Math.round(aP)}%</span>
+                    {rest > 0 && <span className="font-mono text-[10px] text-dim">{rest}\u00d7 ohne Sieger</span>}
+                    <span className="font-mono text-[10px] text-dim">{Math.round(bP)}%</span>
+                  </div>
+                </div>
+              );
+            })()}
             {h2hStats && h2hStats.total === 0 && (
-              <p className="text-dim text-xs font-body mt-3 text-center">Noch keine gemeinsame Partie gefunden.</p>
+              <p className="text-dim text-xs font-body mt-4 text-center">Noch keine gemeinsame Partie gefunden.</p>
             )}
-          </div>        </div>
+          </div>
+        </div>
       )}
 
       {sorted.length === 0 ? <p className="text-dim text-sm font-body mt-8 text-center">Noch keine Partien eingetragen — auch geliehene oder online gespielte Spiele zählen.</p> : (() => {
