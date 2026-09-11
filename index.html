@@ -713,7 +713,8 @@ function findMentionedGames(text, games) {
 // bullet/numbered lists instead of leaving the raw marker as literal text,
 // and blank lines become spaced paragraphs/segments instead of one dense
 // block of text.
-function renderPipMessage(text, games = [], onView) {
+function renderPipMessage(text, games = [], onView, schonGezeigt = null) {
+  const schon = (schonGezeigt || "").trim().toLowerCase();
   const paragraphs = text.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
   const findGame = (name) => {
     const n = name.trim().toLowerCase();
@@ -729,6 +730,9 @@ function renderPipMessage(text, games = [], onView) {
   };
   const renderInline = (line, key) => <p key={key} className="leading-snug">{renderInlineBits(line)}</p>;
   const renderHeading = (title, key) => {
+    // Steht dieses Spiel bereits als Karte ueber der Nachricht, faellt die
+    // Ueberschrift hier weg -- sonst erscheint dasselbe Cover zweimal.
+    if (schon && title.trim().toLowerCase() === schon) return null;
     const g = findGame(title);
     if (!g) return <p key={key} className="font-display text-base text-ink mb-1">{title}</p>;
     return (
@@ -7012,6 +7016,16 @@ ${buildCollectionContextForAI(games, plays)}`;
           <div className="flex-1 px-5 space-y-3" style={{ paddingBottom: "calc(72px + env(safe-area-inset-bottom) + 76px)" }}>
             {chatMessages.map((m, i) => {
               const isLast = i === chatMessages.length - 1;
+              // Einmal bestimmen, welches Spiel als Karte ueber der Nachricht
+              // steht. Denselben Namen bekommt renderPipMessage mit, sonst
+              // zeichnet die fette Namenszeile im Text eine zweite, identische
+              // Karte darunter.
+              const markerName = (m.vorschlag || "").trim();
+              const markerN = markerName.toLowerCase();
+              const karteSpiel = markerN && (games.find((x) => x.name.trim().toLowerCase() === markerN)
+                || games.find((x) => (x.germanName || "").trim().toLowerCase() === markerN));
+              const karteExtern = !karteSpiel && m.externalGame && m.externalGame.name ? m.externalGame : null;
+              const karteName = karteSpiel ? markerName : (karteExtern ? karteExtern.name : null);
               return (
                 <div key={i} className={`flex gap-2 items-end ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                   {m.role === "assistant" && <PipAvatar size={30} />}
@@ -7022,28 +7036,22 @@ ${buildCollectionContextForAI(games, plays)}`;
                         backgroundColor: "rgb(var(--accent))",
                       } : undefined}
                     >
-                      {m.role === "assistant" && (() => {
-                        // Vorschlagskarte: aus der SPIEL:-Markerzeile fuer Spiele
-                        // der Sammlung, sonst aus externalGame fuer Vorschlaege
-                        // von BGG. Beide sehen gleich aus -- nur das Ziel
-                        // unterscheidet sich, Detailseite gegen BGG-Seite.
-                        const n = (m.vorschlag || "").trim().toLowerCase();
-                        const g = n && (games.find((x) => x.name.trim().toLowerCase() === n)
-                          || games.find((x) => (x.germanName || "").trim().toLowerCase() === n));
-                        if (g) {
+                      {m.role === "assistant" && (karteSpiel || karteExtern) && (() => {
+                        // Gleiche Karte fuer beide Quellen -- nur das Ziel
+                        // unterscheidet sich: Detailseite gegen BGG-Seite.
+                        if (karteSpiel) {
                           return (
-                            <button onClick={() => onView && onView(g)} className="block text-left mb-2.5">
+                            <button onClick={() => onView && onView(karteSpiel)} className="block text-left mb-2.5">
                               <div className="w-32 mb-2">
-                                <Cover game={g} size="lg" className="!rounded-2xl" />
+                                <Cover game={karteSpiel} size="lg" className="!rounded-2xl" />
                               </div>
                               <p className="font-display text-lg leading-tight text-ink underline decoration-dim/50 underline-offset-2">
-                                {m.vorschlag.trim()}
+                                {karteName}
                               </p>
                             </button>
                           );
                         }
-                        const ex = m.externalGame;
-                        if (!ex || !ex.name) return null;
+                        const ex = karteExtern;
                         const karte = (
                           <>
                             <div className="w-32 mb-2">
@@ -7064,7 +7072,7 @@ ${buildCollectionContextForAI(games, plays)}`;
                           <div className="mb-2.5">{karte}</div>
                         );
                       })()}
-                      {m.role === "assistant" ? renderPipMessage(m.content, games, onView) : (m.display || m.content)}
+                      {m.role === "assistant" ? renderPipMessage(m.content, games, onView, karteName) : (m.display || m.content)}
                       {m.role === "assistant" && isLast && m.showFlowButtons && !chatLoading && (
                         <div className="flex flex-col gap-1.5 mt-2.5 pt-2.5 border-t border-rim/10">
                           {[
