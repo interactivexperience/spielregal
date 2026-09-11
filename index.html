@@ -813,31 +813,41 @@ function TextWithGameLinks({ text, games, onView, color }) {
   );
 }
 
-// Pip greift die Marke der App auf: derselbe Wuerfel wie im App-Icon, hier
-// aufrecht und mit Gesicht. Vorher war es eine gefuellte Comic-Kreatur mit
-// Oehrchen, Wangen und vier Farben -- das passte nicht zu den monolinearen
-// Icons und der zurueckhaltenden Palette ringsum.
+// Pip: Kopf ist der Wuerfel aus dem App-Icon, aber als Wesen. Charakter kommt
+// aus der Silhouette und aus Asymmetrie, nicht aus zusaetzlichen Farben --
+// spitze Ohren, leicht geneigter Kopf, unterschiedlich grosse Augen, ein
+// schiefes Laecheln und eine hochgezogene Braue. Die Braue erst ab 56px, sonst
+// verstopft sie das Gesicht in der kleinen Groesse.
 function PipAvatar({ size = 36, sleeping = false }) {
   const strich = sleeping ? "rgb(var(--dim))" : "#fff";
+  const breit = size >= 56;
   return (
     <div
       className="rounded-full flex items-center justify-center shrink-0 overflow-hidden"
       style={{ width: size, height: size, background: sleeping ? "rgb(var(--line))" : "rgb(var(--accent))" }}
     >
-      <svg width={size * 0.62} height={size * 0.62} viewBox="0 0 40 40" fill="none">
-        <rect x="4" y="4" width="32" height="32" rx="9.5" stroke={strich} strokeWidth="2.6" />
-        {sleeping ? (
-          <>
-            <path d="M11.5 18.5c1.4-1.7 4.2-1.7 5.6 0" stroke={strich} strokeWidth="2.4" strokeLinecap="round" />
-            <path d="M22.9 18.5c1.4-1.7 4.2-1.7 5.6 0" stroke={strich} strokeWidth="2.4" strokeLinecap="round" />
-            <path d="M16 26.5h8" stroke={strich} strokeWidth="2.4" strokeLinecap="round" />
-          </>
-        ) : (
-          <>
-            <circle cx="14.3" cy="17.5" r="2.4" fill={strich} />
-            <circle cx="25.7" cy="17.5" r="2.4" fill={strich} />
-            <path d="M14.6 25.2c1.9 2.1 8.9 2.1 10.8 0" stroke={strich} strokeWidth="2.4" strokeLinecap="round" />
-          </>
+      <svg width={size * 0.64} height={size * 0.64} viewBox="0 0 44 44" fill="none">
+        <g transform="rotate(-7 22 24)" stroke={strich} strokeWidth={breit ? 2.7 : 3.1}
+           strokeLinecap="round" strokeLinejoin="round">
+          <path d="M11 12.5 8.5 6l6.5 3.2M33 12.5 35.5 6 29 9.2" />
+          <rect x="7.5" y="10.5" width="29" height="27" rx="8.5" />
+          {sleeping ? (
+            <>
+              <path d="M13.6 23.4c1.4-1.6 4.2-1.6 5.6 0M25.2 23.4c1.4-1.6 4.2-1.6 5.6 0" strokeWidth="2.3" />
+              <path d="M18.5 30.5h7" />
+            </>
+          ) : (
+            <>
+              {breit && <path d="M26.8 19.2c1.4-1.4 3.5-1.4 4.8 0" strokeWidth="2.1" />}
+              <path d="M15.5 29.4c2.2 2.7 8.6 2.7 11.2.3" />
+            </>
+          )}
+        </g>
+        {!sleeping && (
+          <g transform="rotate(-7 22 24)" fill={strich}>
+            <circle cx="16" cy="23.2" r={breit ? 3 : 3.2} />
+            <circle cx="29.2" cy="23.8" r={breit ? 2.1 : 2.3} />
+          </g>
         )}
       </svg>
     </div>
