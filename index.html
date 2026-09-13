@@ -2060,7 +2060,12 @@ function PhotoGallerySection({ images, onAdd, onRemove, onReplace, hero = false,
       <div>
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm text-ink font-medium">{selected.length > 0 ? `${selected.length} ausgewählt` : "Fotos auswählen"}</p>
-          <button onClick={() => { setManageMode(false); setSelected([]); }} className="text-xs text-dim">Fertig</button>
+          <div className="flex items-center gap-4">
+            <button type="button" onClick={() => { haptic(6); setSelected(selected.length === images.length ? [] : images.map((_, i) => i)); }} className="text-xs text-accent font-medium">
+              {selected.length === images.length ? "Keine" : "Alle"}
+            </button>
+            <button onClick={() => { setManageMode(false); setSelected([]); }} className="text-xs text-dim">Fertig</button>
+          </div>
         </div>
         <div className={`grid gap-2 ${hero ? "grid-cols-3" : "grid-cols-4"}`}>
           {images.map((img, i) => (
@@ -4094,9 +4099,9 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
           <div className="p-5 space-y-4 font-body overflow-y-auto flex-1" onScroll={(e) => setFormTitleCollapsed(e.currentTarget.scrollTop > 24)}>
             <PhotoGallerySection
               images={form.images}
-              onAdd={(img) => update("images", [...form.images, ...(Array.isArray(img) ? img : [img])])}
-              onRemove={(i) => update("images", form.images.filter((_, idx) => idx !== i))}
-              onReplace={(i, img) => update("images", form.images.map((x, idx) => (idx === i ? img : x)))}
+              onAdd={(img) => setForm((f) => ({ ...f, images: [...f.images, ...(Array.isArray(img) ? img : [img])] }))}
+              onRemove={(i) => setForm((f) => ({ ...f, images: f.images.filter((_, idx) => idx !== i) }))}
+              onReplace={(i, img) => setForm((f) => ({ ...f, images: f.images.map((x, idx) => (idx === i ? img : x)) }))}
               hero
               bggId={form.bggId}
             />
