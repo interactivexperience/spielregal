@@ -3131,6 +3131,17 @@ ${onlyPlayed.length > 0 ? `=== NUR GESPIELT, NICHT IM BESITZ (${onlyPlayed.lengt
 }
 
 function buildCollectionContextForAI(games, plays) {
+  // Gemeinsame Eckdaten fuer Besitz- und Wunschlisten-Zeilen, damit Pip auch zu
+  // Wunschlisten-Spielen (Spieleranzahl, Dauer, Anspruch, Themen, Beschreibung)
+  // etwas Konkretes zur Hand hat statt nur den nackten Namen.
+  const gameFacts = (g) => {
+    const tags = [...(g.categories || []), ...(g.mechanisms || [])].slice(0, 4).join(", ");
+    const players = g.minPlayers ? `${g.minPlayers}-${g.maxPlayers} Spieler` : "Spieleranzahl unbekannt";
+    const time = g.minTime ? `${g.minTime}-${g.maxTime} Min.` : "Dauer unbekannt";
+    const comp = complexityLabel(g) || "Komplexität unbekannt";
+    return `${players} | ${time} | ${comp} | Themen: ${tags || "-"}`;
+  };
+  const gameDesc = (g) => g.summary ? ` | Beschreibung: ${g.summary.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 220)}` : "";
   const owned = games.filter((g) => g.status !== "wishlist");
   const playCounts = {};
   plays.forEach((p) => { playCounts[p.gameId] = (playCounts[p.gameId] || 0) + 1; });
@@ -3144,20 +3155,16 @@ function buildCollectionContextForAI(games, plays) {
   const capped = sorted.slice(0, 60);
   const lines = capped.map((g) => {
     const count = playCounts[g.id] || 0;
-    const tags = [...(g.categories || []), ...(g.mechanisms || [])].slice(0, 4).join(", ");
-    const players = g.minPlayers ? `${g.minPlayers}-${g.maxPlayers} Spieler` : "Spieleranzahl unbekannt";
-    const time = g.minTime ? `${g.minTime}-${g.maxTime} Min.` : "Dauer unbekannt";
-    const comp = complexityLabel(g) || "Komplexität unbekannt";
     const rating = g.rating ? `, deine Bewertung ${g.rating}/10` : "";
     const sale = g.saleStatus === "sold" ? " | STATUS: bereits verkauft" : g.saleStatus === "forSale" ? " | STATUS: zum Verkauf markiert" : "";
-    const desc = g.summary ? ` | Beschreibung: ${g.summary.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 220)}` : "";
-    return `- ${g.name} | ${players} | ${time} | ${comp} | Themen: ${tags || "-"} | ${count}× gespielt${count === 0 ? " (noch nie gespielt)" : ""}${rating}${sale}${desc}`;
+    return `- ${g.name} | ${gameFacts(g)} | ${count}× gespielt${count === 0 ? " (noch nie gespielt)" : ""}${rating}${sale}${gameDesc(g)}`;
   });
   const recentPlays = [...plays].sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 8)
     .map((p) => `${p.gameName} am ${formatDate(p.date)}`).join("; ");
   const omittedNote = sorted.length > capped.length ? `\n(${sorted.length - capped.length} weitere Spiele mit weniger Info nicht aufgeführt, um fokussiert zu bleiben.)` : "";
   const wishlist = games.filter((g) => g.status === "wishlist");
-  const wishlistLine = wishlist.length > 0 ? `\n\nAuf der Wunschliste: ${wishlist.map((g) => g.name).join(", ")}` : "";
+  const wishlistLines = wishlist.map((g) => `- ${g.name} | ${gameFacts(g)}${gameDesc(g)}`);
+  const wishlistLine = wishlist.length > 0 ? `\n\nAuf der Wunschliste (NICHT im Besitz, nur ein Wunsch):\n${wishlistLines.join("\n")}` : "";
   return `Sammlung des Nutzers (${owned.length} Spiele im Besitz):\n${lines.join("\n")}${omittedNote}\n\nZuletzt gespielt: ${recentPlays || "noch keine Partien eingetragen"}${wishlistLine}`;
 }
 
@@ -6879,7 +6886,9 @@ RICHTUNG "Sammlung & Wunschliste vergleichen": Der Nutzer will wissen, wie seine
 
 RICHTUNG "Neues Spiel entdecken": Der Nutzer will sein Regal ERWEITERN — er will NEUE Spiele kennenlernen, die er noch NICHT besitzt. Schlag hier NIE Spiele aus der eigenen Sammlung unten vor (die hat er ja schon) — nutze stattdessen BGGSEARCH/BGGDISCOVER, um wirklich neue, ihm unbekannte Spiele zu finden. Frag vorher kurz, in welche Richtung es gehen soll (Thema, Komplexität, für wie viele Spieler er meistens plant, oder was er von seinen Favoriten mag, um ähnliches zu finden).
 
-RICHTUNG "Passendes Spiel finden": Das ist der Flow weiter unten (Spieleranzahl/Zeit/Anspruch erfragen, dann aus der EIGENEN Sammlung empfehlen, wie im Detail unten beschrieben).`}
+RICHTUNG "Passendes Spiel finden": Das ist der Flow weiter unten (Spieleranzahl/Zeit/Anspruch erfragen, dann aus der EIGENEN Sammlung empfehlen, wie im Detail unten beschrieben).
+
+WICHTIG, sobald du EIN Spiel empfiehlst, das der Nutzer NICHT bereits besitzt (Wunschlisten-Spiel oder ein fremdes/neues Spiel via BGGSEARCH/BGGDISCOVER oder als fremder Vorschlag im "Passendes Spiel finden"-Flow): sag konkret, WARUM es zu ihm passt — nicht pauschal, sondern mit echtem Bezug auf seine Sammlung (z.B. ein Spiel, das er besitzt und gut bewertet hat und das denselben Mechanismus/dasselbe Thema/dieselbe Nische bedient; die Spielerzahl oder Spieldauer, die er erfahrungsgemäß meistens braucht; das Anspruchsniveau, das er sonst spielt). Sag im GLEICHEN Atemzug genauso ehrlich, WARUM es eventuell NICHT perfekt passt (z.B. überschneidet sich stark mit Spiel X, das schon im Regal steht — lohnt sich das Doppelte wirklich?; ist spürbar anspruchsvoller/leichter als das, was er sonst spielt; passt selten zur Runde, die er meistens hat). Beides kurz, konkret, mit echten Namen aus seiner Sammlung — keine Plattitüden wie "passt gut zu deinem Geschmack". Bei einem Spiel, das er schon BESITZT, brauchst du das nicht — das kennt er selbst am besten.`}
 
 Der folgende Ablauf (Spieleranzahl → Zeit → Anspruch, dann Empfehlung) gilt NUR für die Richtung "Passendes Spiel finden" (bzw. immer, wenn der Nutzer ein Gast ist). Bei "Sammlung verkleinern", "Sammlung & Wunschliste vergleichen" oder "Neues Spiel entdecken" gilt er NICHT — dort gehst du nach den jeweiligen Anweisungen oben vor.
 
@@ -6900,9 +6909,9 @@ Kurzer Pitch (was man macht) + Eckdaten (Spieleranzahl, Dauer, Stufe) in ein bis
 **Zweiter Spielname**
 Kurzer Pitch + Eckdaten.
 
-PFLICHT, sobald du GENAU EIN Spiel aus der Sammlung empfiehlst: häng als eigene Zeile ganz am Ende an:
-SPIEL: <exakter Name aus der Sammlung>
-Daran hängt die App das Cover und einen anklickbaren Titel über deiner Antwort. Die Zeile wird nicht mit angezeigt, sie ist nur das Signal. Den Namen exakt so schreiben, wie er in der Sammlung unten steht — ohne Jahreszahl, ohne Zusatz in Klammern. Nur EIN Spiel pro Antwort, und nur bei einer echten Empfehlung — nicht, wenn du ein Spiel bloß beiläufig erwähnst, und nicht bei einem fremden Spiel, das nicht in der Sammlung steht.
+PFLICHT, sobald du GENAU EIN Spiel aus der Sammlung ODER von der Wunschliste empfiehlst: häng als eigene Zeile ganz am Ende an:
+SPIEL: <exakter Name aus der Sammlung oder Wunschliste>
+Daran hängt die App das Cover und einen anklickbaren Titel über deiner Antwort. Die Zeile wird nicht mit angezeigt, sie ist nur das Signal. Den Namen exakt so schreiben, wie er in der Sammlung/Wunschliste unten steht — ohne Jahreszahl, ohne Zusatz in Klammern. Nur EIN Spiel pro Antwort, und nur bei einer echten Empfehlung — nicht, wenn du ein Spiel bloß beiläufig erwähnst, und nicht bei einem fremden Spiel, das WEDER in der Sammlung NOCH auf der Wunschliste steht (dafür gibt es BGGSEARCH/BGGDISCOVER, die App zeigt die Karte dafür automatisch).
 
 Kein Fließtext-Absatz davor oder danach, der die Spiele schon vorwegnimmt oder zusammenfasst — die Einleitung ist maximal ein kurzer halber Satz, dann direkt der Name im obigen Format.
 
@@ -7002,7 +7011,7 @@ ${buildCollectionContextForAI(games, plays)}`;
         const followUp = [
           ...apiMessages,
           { role: "assistant", content: raw },
-          { role: "user", content: `[BGG-Ergebnis]: ${toolResultText}\n\nBeantworte jetzt meine ursprüngliche Frage damit — normal, wie mit einem Freund, kein Datengestammel. Schreib danach zusätzlich einen kurzen eigenen Abschnitt zu den Mechanismen des Spiels (2-3 Sätze): welche der genannten Mechanismen das Spiel prägen und was das für das Spielgefühl bedeutet — nicht nur die Begriffe auflisten, sondern kurz erklären.` },
+          { role: "user", content: `[BGG-Ergebnis]: ${toolResultText}\n\nBeantworte jetzt meine ursprüngliche Frage damit — normal, wie mit einem Freund, kein Datengestammel. Schreib danach zusätzlich einen kurzen eigenen Abschnitt zu den Mechanismen des Spiels (2-3 Sätze): welche der genannten Mechanismen das Spiel prägen und was das für das Spielgefühl bedeutet — nicht nur die Begriffe auflisten, sondern kurz erklären.${guestMode ? "" : " Schreib danach noch einen kurzen Abschnitt (2-3 Sätze), warum das Spiel konkret zu meiner eigenen Sammlung/meinem Geschmack passt (mit echtem Bezug auf Spiele, die ich besitze und mag), und genauso ehrlich, warum es evtl. NICHT perfekt passt."}` },
         ];
         raw = await aiChat(aiWorkerUrl, followUp);
 
@@ -7124,6 +7133,11 @@ ${buildCollectionContextForAI(games, plays)}`;
                               <p className="font-display text-lg leading-tight text-ink underline decoration-dim/50 underline-offset-2">
                                 {karteName}
                               </p>
+                              {karteSpiel.status === "wishlist" && (
+                                <p className="text-[11px] text-dim font-body mt-1 flex items-center gap-1">
+                                  <BookmarkPlus size={11} /> Auf der Wunschliste — noch nicht im Besitz
+                                </p>
+                              )}
                             </button>
                           );
                         }
