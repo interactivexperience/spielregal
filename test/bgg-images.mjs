@@ -1,6 +1,7 @@
-// Prueft "Offizielle Bilder von BGG": Button erscheint nur mit bggId, holt
-// die Editionsbilder (versions=1, NICHT die freie Bildergalerie), Auswahl
-// landet als weitere Fotos im Formular.
+// Prueft "Bilder von BGG": Button erscheint nur mit bggId, holt sowohl die
+// offiziellen Editionsbilder (versions=1) als auch die freie Bildergalerie
+// (geekdo-images, paginiert nachladbar), Auswahl aus beiden Quellen landet
+// gemeinsam als weitere Fotos im Formular.
 import { chromium } from "playwright";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -33,6 +34,12 @@ await page.route("**/fonts.googleapis.com/**", r => r.fulfill({ body: "", conten
 // BGG-Bild-URLs sind offline nicht erreichbar).
 const PIXEL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
 const PIXEL2 = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+// Zwei weitere, von PIXEL/PIXEL2 UNTERSCHIEDLICHE Bild-URLs fuer die
+// Galerie -- sonst wuerden identische URLs im selected-Array kollidieren
+// (Auswahl toggelt per Wert, nicht per Quelle) und "2 ausgewaehlt" waere
+// in Wirklichkeit nur eins.
+const PIXEL3 = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%23f00'/%3E%3C/svg%3E";
+const PIXEL4 = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%2300f'/%3E%3C/svg%3E";
 const fakeVersionsXml = `<?xml version="1.0"?><items>
   <item type="boardgame" id="224517">
     <name type="primary" value="Brass: Birmingham" />
@@ -53,6 +60,14 @@ const fakeVersionsXml = `<?xml version="1.0"?><items>
   </item>
 </items>`;
 await page.route("**/xmlapi2/thing?id=224517&versions=1*", r => r.fulfill({ body: fakeVersionsXml, contentType: "text/xml" }));
+
+const galleryJson = JSON.stringify({
+  images: [
+    { images: { medium: { url: PIXEL3 } }, user: { username: "spielefan42" } },
+    { images: { medium: { url: PIXEL4 } }, username: "brettspielFan" },
+  ],
+});
+await page.route("**/geekdo-images*", r => r.fulfill({ body: galleryJson, contentType: "application/json" }));
 
 const games = [
   { id: "g1", name: "Brass: Birmingham", status: "owned", bggId: "224517", images: [], categories: [], mechanisms: [], publishers: [], designers: [], addedDate: "2026-01-01" },
@@ -77,7 +92,7 @@ if (await edit.count()) { await edit.click(); await page.waitForTimeout(1000); }
 const addPhotoBtn = page.locator('button[aria-label="Foto hinzufügen"]');
 await addPhotoBtn.click();
 await page.waitForTimeout(500);
-console.log("Kein BGG-Knopf ohne bggId:", await page.locator('text=Offizielle Bilder von BGG').count() === 0);
+console.log("Kein BGG-Knopf ohne bggId:", await page.locator('text=Bilder von BGG').count() === 0);
 await page.locator('button:has-text("Abbrechen")').click();
 await page.waitForTimeout(400);
 await page.locator('button[aria-label="Zurück"]').first().click();
@@ -91,27 +106,29 @@ edit = page.locator('button[aria-label="Bearbeiten"], button:has-text("Bearbeite
 if (await edit.count()) { await edit.click(); await page.waitForTimeout(1000); }
 await page.locator('button[aria-label="Foto hinzufügen"]').click();
 await page.waitForTimeout(500);
-console.log("BGG-Knopf sichtbar mit bggId:", await page.locator('text=Offizielle Bilder von BGG').count() > 0);
-await page.locator('text=Offizielle Bilder von BGG').click();
-await page.waitForTimeout(1000);
+console.log("BGG-Knopf sichtbar mit bggId:", await page.locator('text=Bilder von BGG').count() > 0);
+await page.locator('text=Bilder von BGG').click();
+await page.waitForTimeout(1200);
 await page.screenshot({ path: `${SP}/bgg_images_sheet.png` });
 console.log("Deutsche Ausgabe gelistet:", await page.locator('text=Deutsche Ausgabe').count() > 0);
 console.log("Deluxe Edition gelistet:", await page.locator('text=Deluxe Edition').count() > 0);
 console.log("Version ohne Bild NICHT gelistet:", await page.locator('text=Ohne Bild').count() === 0);
+console.log("Galerie-Bild mit Uploader gelistet:", await page.locator('text=von spielefan42').count() > 0);
+console.log("Galerie-Bild mit Uploader (username-Fallback) gelistet:", await page.locator('text=von brettspielFan').count() > 0);
 
-const tiles = page.locator('button:has(img[alt="Deutsche Ausgabe"]), button:has(img[alt="Deluxe Edition"])');
-await tiles.nth(0).click();
-await tiles.nth(1).click();
+// Eine offizielle Edition UND ein Galerie-Bild zusammen auswaehlen.
+await page.locator('img[alt^="Deutsche Ausgabe"]').first().click();
+await page.locator('text=von spielefan42').first().click();
 await page.waitForTimeout(300);
+console.log("Auswahlzaehler zeigt 2:", (await page.locator('button:has-text("Hinzufügen")').innerText()).includes("2"));
 await page.locator('button:has-text("Hinzufügen")').click();
 await page.waitForTimeout(700);
 await page.screenshot({ path: `${SP}/bgg_images_after.png` });
 
-const edit2 = page.locator('button[aria-label="Bearbeiten"], button:has-text("Bearbeiten")').first();
 console.log("Speichern-Button da:", await page.locator('button:has-text("Speichern")').count() > 0);
 await page.locator('button:has-text("Speichern")').first().click();
 await page.waitForTimeout(700);
 const gespeichert = await page.evaluate(() => (JSON.parse(localStorage.getItem("spielregal:games"))||[]).find(g => g.id === "g1"));
-console.log("2 zusaetzliche Bilder gespeichert:", (gespeichert.images || []).length === 2);
+console.log("2 zusaetzliche Bilder gespeichert (1 offiziell + 1 Galerie):", (gespeichert.images || []).length === 2);
 
 await b.close(); server.close();

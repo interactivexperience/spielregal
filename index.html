@@ -1707,12 +1707,23 @@ function ImageCropModal({ src, onConfirm, onCancel }) {
 
 // Bilder der offiziellen BGG-Editionen zum Auswaehlen -- getrennt von der
 // freien Bildergalerie, siehe Kommentar bei bggOfficialImages().
+// Zeigt beides: die offiziellen Editionsbilder UND die komplette freie
+// Galerie (paginiert nachladbar), in EINEM Mehrfachauswahl-Raster. Bewusst
+// ein Grid mit Antippen zum Auswaehlen statt einem durchwischbaren
+// Vorschau-Browser -- so eine Wisch-Geste wuerde sich mit dem Cover-
+// Karussell und dem Seiten-Swipe der Detailseite ins Gehege kommen.
 function BggImagesSheet({ bggId, onAdd, onClose }) {
   const { closing, requestClose } = useSheetClose(onClose);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [images, setImages] = useState([]);
+  const [gallery, setGallery] = useState([]);
+  const [galleryPage, setGalleryPage] = useState(1);
+  const [galleryLoading, setGalleryLoading] = useState(false);
+  const [galleryError, setGalleryError] = useState("");
+  const [galleryHasMore, setGalleryHasMore] = useState(true);
   const [selected, setSelected] = useState([]);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -1727,36 +1738,76 @@ function BggImagesSheet({ bggId, onAdd, onClose }) {
     })();
     return () => { cancelled = true; };
   }, [bggId]);
-  const toggle = (img) => setSelected((s) => (s.includes(img) ? s.filter((x) => x !== img) : [...s, img]));
+
+  const loadGalleryPage = async () => {
+    setGalleryLoading(true); setGalleryError("");
+    try {
+      const { images: found, hasMore } = await bggGalleryImages(bggId, galleryPage);
+      setGallery((g) => [...g, ...found]);
+      setGalleryHasMore(hasMore);
+      setGalleryPage((p) => p + 1);
+    } catch (e) {
+      setGalleryError(e.message || "Fehlgeschlagen");
+    } finally {
+      setGalleryLoading(false);
+    }
+  };
+  useEffect(() => { loadGalleryPage(); }, [bggId]);
+
+  const toggle = (value) => setSelected((s) => (s.includes(value) ? s.filter((x) => x !== value) : [...s, value]));
+
+  const Tile = ({ src, thumb, label, value }) => {
+    const isSel = selected.includes(value);
+    return (
+      <button type="button" onClick={() => toggle(value)} className="relative aspect-square rounded-lg overflow-hidden border border-line text-left">
+        <img src={thumb || src} alt={label || "Bild"} loading="lazy" className={`w-full h-full block object-cover ${isSel ? "opacity-50" : ""}`} />
+        <div className={`absolute top-1.5 left-1.5 w-5 h-5 rounded-full border-2 flex items-center justify-center ${isSel ? "bg-accent border-accent" : "bg-black/40 border-rim/60"}`}>
+          {isSel && <Check size={12} className="text-white" />}
+        </div>
+        {label && <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[9px] px-1 py-0.5 truncate">{label}</span>}
+      </button>
+    );
+  };
 
   return (
     <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[75] flex items-end justify-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
       <div className={`glass border border-rim/10 rounded-t-[28px] w-full font-body flex flex-col ${closing ? "sheet-out" : "rise-in"}`} style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
-          <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Offizielle Bilder</h2>
+          <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Bilder von BGG</h2>
           <button onClick={() => { onAdd(selected); requestClose(); }} disabled={selected.length === 0}
             className="text-accent text-sm font-medium px-2 py-1 disabled:opacity-40">Hinzufügen{selected.length > 0 ? ` (${selected.length})` : ""}</button>
         </div>
-        <p className="shrink-0 px-5 pb-3 text-xs text-dim">Coverbilder der auf BGG geführten Editionen — nicht die freie Bildergalerie.</p>
         <div className="flex-1 overflow-y-auto px-5" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
-          {loading && <p className="text-xs text-dim text-center mt-4 flex items-center justify-center gap-2"><Loader2 size={14} /> Lädt Editionen von BGG…</p>}
-          {!loading && error && <p className="text-xs text-danger text-center mt-4">{error}</p>}
-          {!loading && !error && images.length === 0 && <p className="text-xs text-dim text-center mt-4">Keine weiteren offiziellen Bilder gefunden.</p>}
+          {images.length > 0 && (
+            <>
+              <p className="text-[11px] text-dim font-medium uppercase tracking-wide mb-2">Offizielle Editionen</p>
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                {images.map((img) => (
+                  <Tile key={img.image} src={img.image} value={img.image} label={`${img.name}${img.year ? ` (${img.year})` : ""}`} />
+                ))}
+              </div>
+            </>
+          )}
+          {loading && <p className="text-xs text-dim text-center mt-2 mb-4 flex items-center justify-center gap-2"><Loader2 size={14} /> Lädt Editionen…</p>}
+          {!loading && error && <p className="text-xs text-danger text-center mt-2 mb-4">{error}</p>}
+
+          <p className="text-[11px] text-dim font-medium uppercase tracking-wide mb-1">Weitere Bilder (Galerie)</p>
+          <p className="text-[11px] text-dim mb-2">Von Nutzern hochgeladen — nicht offiziell geprüft, bitte selbst aussortieren.</p>
           <div className="grid grid-cols-3 gap-2 pb-2">
-            {images.map((img) => {
-              const isSel = selected.includes(img.image);
-              return (
-                <button key={img.image} type="button" onClick={() => toggle(img.image)} className="relative aspect-square rounded-lg overflow-hidden border border-line text-left">
-                  <img src={img.image} alt={img.name} className={`w-full h-full block object-cover ${isSel ? "opacity-50" : ""}`} />
-                  <div className={`absolute top-1.5 left-1.5 w-5 h-5 rounded-full border-2 flex items-center justify-center ${isSel ? "bg-accent border-accent" : "bg-black/40 border-rim/60"}`}>
-                    {isSel && <Check size={12} className="text-white" />}
-                  </div>
-                  <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[9px] px-1 py-0.5 truncate">{img.name}{img.year ? ` (${img.year})` : ""}</span>
-                </button>
-              );
-            })}
+            {gallery.map((img, i) => (
+              <Tile key={`${img.image}-${i}`} src={img.image} thumb={img.thumb} value={img.image} label={img.uploader ? `von ${img.uploader}` : ""} />
+            ))}
           </div>
+          {galleryLoading && <p className="text-xs text-dim text-center mt-2 flex items-center justify-center gap-2"><Loader2 size={14} /> Lädt Bilder…</p>}
+          {!galleryLoading && galleryError && <p className="text-xs text-danger text-center mt-2">{galleryError}</p>}
+          {!galleryLoading && !galleryError && gallery.length === 0 && <p className="text-xs text-dim text-center mt-2">Keine Galerie-Bilder gefunden.</p>}
+          {!galleryLoading && !galleryError && galleryHasMore && (
+            <button type="button" onClick={loadGalleryPage}
+              className="w-full h-10 mt-2 mb-1 border border-dashed border-line rounded-[12px] text-xs text-dim flex items-center justify-center gap-1.5">
+              <Plus size={13} /> Weitere Bilder laden
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -1834,7 +1885,7 @@ function ImagePickerSheet({ onAdd, onClose, bggId }) {
             </button>
             {bggId && (
               <button onClick={() => setBggOpen(true)} className="w-full flex items-center gap-3 bg-surface border border-line rounded-[14px] px-4 py-3 text-ink text-sm">
-                <Globe size={18} className="text-accent" /> Offizielle Bilder von BGG
+                <Globe size={18} className="text-accent" /> Bilder von BGG
               </button>
             )}
           </>
@@ -2913,6 +2964,33 @@ async function bggOfficialImages(bggId) {
     result.push({ image, name: nameEl?.getAttribute("value") || "Edition", year });
   });
   return result;
+}
+
+// Komplette Bildergalerie eines Spiels von BGG -- im Gegensatz zu den
+// Editionsbildern oben KEINE offiziell markierte Quelle, sondern alles was
+// Nutzer zum Spiel hochgeladen haben (Cover-Scans, Tischfotos, Fanart, …).
+// Laeuft ueber die undokumentierte geekdo-Bilder-API (JSON, kein XML wie die
+// uebrige BGG-Anbindung) -- braucht eine eigene Worker-Route, weil sie einen
+// anderen Host (api.geekdo.com) anspricht als xmlapi2. Das Antwortformat ist
+// nicht offiziell dokumentiert, daher parst das hier defensiv mehrere
+// bekannte Feldnamen-Varianten, statt bei einer Abweichung zu crashen.
+async function bggGalleryImages(bggId, page = 1) {
+  const url = `https://shiny-grass-80ec.contact-mdinh.workers.dev/geekdo-images?objectid=${bggId}&page=${page}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("BGG-Bildergalerie gerade nicht erreichbar");
+  const json = await res.json();
+  const raw = json.images || json.items || [];
+  const images = raw.map((it) => {
+    const sizes = it.images || it.sizes || {};
+    const pick = (key) => (typeof sizes[key] === "string" ? sizes[key] : sizes[key]?.url);
+    const full = pick("large") || pick("original") || pick("medium") || it.imageurl || it.url || pick("small");
+    const thumb = pick("thumb") || pick("small") || full;
+    if (!full) return null;
+    return { image: full, thumb, uploader: it.user?.username || it.username || "" };
+  }).filter(Boolean);
+  // "showcount=50" pro Seite (siehe Worker) -- kommt eine volle Seite zurueck,
+  // gehen wir von weiteren aus, statt uns auf ein unsicheres "total"-Feld zu verlassen.
+  return { images, hasMore: raw.length >= 50 };
 }
 
 // Fetches a handful of real user reviews/ratings from BGG for a game — gives
