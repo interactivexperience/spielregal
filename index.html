@@ -3567,6 +3567,48 @@ function SearchStepSheet({ query, setQuery, runSearch, searching, searchError, r
     </div>
   );
 }
+
+// Kompletter Erweiterungs-Vorschlag als Sheet statt als Block auf der Seite —
+// der Ausloeser ist nur ein kleiner Chip (siehe unten), damit weder die
+// Detailseite noch das Formular von einer potenziell langen Liste dominiert
+// werden.
+function ExpansionSuggestionsSheet({ vorschlaege, fehlende, onLink, onAdd, onClose }) {
+  const { closing, requestClose } = useSheetClose(onClose);
+  return (
+    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[66] flex items-end justify-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
+      <div className={`glass border border-rim/10 rounded-t-[28px] w-full font-body flex flex-col ${closing ? "sheet-out" : "rise-in"}`} style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
+        <div className="shrink-0 px-5 py-4 flex items-center justify-between">
+          <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Erweiterungen</h2>
+          <button onClick={requestClose} className="text-accent text-sm font-medium px-2 py-1">Fertig</button>
+        </div>
+        <p className="shrink-0 px-5 pb-2 text-xs text-dim">Laut BoardGameGeek gehört dazu:</p>
+        <div className="flex-1 overflow-y-auto px-5 divide-y divide-line" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
+          {vorschlaege.map((g) => (
+            <div key={g.id} className="flex items-center gap-2 py-2.5">
+              <span className="flex-1 min-w-0 truncate text-sm text-ink">{g.name}</span>
+              <span className="shrink-0 text-[10px] text-dim">in Sammlung</span>
+              <button type="button" onClick={() => onLink(g)} aria-label={`${g.name} verknüpfen`}
+                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full border border-accent/50 text-accent">
+                <LinkIcon size={14} />
+              </button>
+            </div>
+          ))}
+          {fehlende.map((info) => (
+            <div key={info.id} className="flex items-center gap-2 py-2.5">
+              <span className="flex-1 min-w-0 truncate text-sm text-dim">{info.name}</span>
+              <button type="button" onClick={() => onAdd(info)} aria-label={`${info.name} hinzufügen`}
+                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full border border-line text-dim">
+                <Plus size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions, publisherOptions, playerTypeOptions, designerOptions, customPlayerTypeDescriptions, onAddCategory, onAddMechanism, onAddPlayerType, onClose, onSave, onDelete, aiWorkerUrl, games, onSaveAndNavigate, hasPrev, hasNext, onUpdateOtherGame, onAddExpansion }) {
   const [pitchLoading, setPitchLoading] = useState(false);
   const [saveCelebrating, setSaveCelebrating] = useState(false);
@@ -3738,6 +3780,7 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
   const [searchError, setSearchError] = useState("");
   const [pickerOpen, setPickerOpen] = useState(null);
   const [expansionPickerOpen, setExpansionPickerOpen] = useState(false);
+  const [expansionSheetOpen, setExpansionSheetOpen] = useState(false);
   const FORM_DEFAULTS = {
     id: uid(), bggId: "", name: "", germanName: "", primaryTitle: "original", year: "", publishers: [], designers: [], images: [],
     minPlayers: "", maxPlayers: "", bestPlayersMin: "", bestPlayersMax: "", minTime: "", maxTime: "", age: "",
@@ -3817,6 +3860,7 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
   const childExpansions = games.filter((g) => g.expansionOf === form.id);
   const erweiterungsVorschlaege = offeneErweiterungen(form, games);
   const fehlendeErweiterungenForm = onAddExpansion ? fehlendeErweiterungen(form, games) : [];
+  const expansionVorschlagCount = erweiterungsVorschlaege.length + fehlendeErweiterungenForm.length;
   const updateSaleStatus = (v) => {
     update("saleStatus", v);
     // Ein Basisspiel gibt seinen neuen Verkaufsstatus als Startpunkt an alle
@@ -4077,7 +4121,7 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
             {initial && !form.expansionOf && (onUpdateOtherGame || onAddExpansion) && (
               <div>
                 <label className="block text-[11px] text-dim mb-1.5">Erweiterungen dieses Spiels <span className="text-[10px]">(mehrere auf einmal verknüpfbar)</span></label>
-                {childExpansions.length > 0 && (
+                {(childExpansions.length > 0 || expansionVorschlagCount > 0) && (
                   <div className="flex flex-wrap gap-1.5 mb-2">
                     {childExpansions.map((g) => (
                       <span key={g.id} className="flex items-center gap-1.5 bg-surface border border-line rounded-full pl-3 pr-1.5 py-1 text-[11px] text-ink">
@@ -4087,30 +4131,12 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
                         </button>
                       </span>
                     ))}
-                  </div>
-                )}
-                {(erweiterungsVorschlaege.length > 0 || fehlendeErweiterungenForm.length > 0) && (
-                  <div className="mb-2 rounded-[14px] border border-line bg-surface divide-y divide-line overflow-hidden">
-                    <p className="text-[11px] text-dim px-3 pt-2.5 pb-1.5">Laut BoardGameGeek gehört dazu:</p>
-                    {erweiterungsVorschlaege.map((g) => (
-                      <div key={g.id} className="flex items-center gap-2 px-3 py-2">
-                        <span className="flex-1 min-w-0 truncate text-sm text-ink">{g.name}</span>
-                        <span className="shrink-0 text-[10px] text-dim">in Sammlung</span>
-                        <button type="button" onClick={() => setExpansionLink(g.id, form.id)} aria-label={`${g.name} verknüpfen`}
-                          className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full border border-accent/50 text-accent">
-                          <LinkIcon size={13} />
-                        </button>
-                      </div>
-                    ))}
-                    {onAddExpansion && fehlendeErweiterungenForm.map((info) => (
-                      <div key={info.id} className="flex items-center gap-2 px-3 py-2">
-                        <span className="flex-1 min-w-0 truncate text-sm text-dim">{info.name}</span>
-                        <button type="button" onClick={() => onAddExpansion(form, info)} aria-label={`${info.name} hinzufügen`}
-                          className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full border border-line text-dim">
-                          <Plus size={13} />
-                        </button>
-                      </div>
-                    ))}
+                    {expansionVorschlagCount > 0 && (
+                      <button type="button" onClick={() => setExpansionSheetOpen(true)}
+                        className="flex items-center gap-1 text-[11px] text-accent border border-accent/40 rounded-full px-3 py-1">
+                        <LinkIcon size={11} /> {expansionVorschlagCount} Erweiterung{expansionVorschlagCount === 1 ? "" : "en"} gefunden
+                      </button>
+                    )}
                   </div>
                 )}
                 <button type="button" onClick={() => setExpansionPickerOpen(true)}
@@ -4130,6 +4156,15 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
                       before.filter((id) => !selectedIds.includes(id)).forEach((id) => setExpansionLink(id, ""));
                       selectedIds.filter((id) => !before.includes(id)).forEach((id) => setExpansionLink(id, form.id));
                     }}
+                  />
+                )}
+                {expansionSheetOpen && (
+                  <ExpansionSuggestionsSheet
+                    vorschlaege={erweiterungsVorschlaege}
+                    fehlende={fehlendeErweiterungenForm}
+                    onLink={(g) => setExpansionLink(g.id, form.id)}
+                    onAdd={(info) => onAddExpansion(form, info)}
+                    onClose={() => setExpansionSheetOpen(false)}
                   />
                 )}
               </div>
@@ -7282,6 +7317,7 @@ const TONE_HEX = { teal: "rgb(var(--tealdeep))", amber: "rgb(var(--accent))", re
 
 function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList, onClose, onEdit, onViewOther, readOnlyLabel, hidePrices, onQuickUpdate, onAddExpansion }) {
   const [campaignPhotoOpen, setCampaignPhotoOpen] = useState(false);
+  const [expansionSheetOpen, setExpansionSheetOpen] = useState(false);
   const ptr = usePullToRefresh();
   const gamePlays = plays.filter((p) => p.gameId === game.id);
   const lastPlay = [...gamePlays].sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0];
@@ -7303,6 +7339,14 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
     return () => { cancelled = true; };
   }, [images[0]]);
   const memberOfCount = lists ? lists.filter((l) => l.gameIds.includes(game.id)).length : 0;
+  // Vorschlaege aus den BGG-Daten: Spiele der Sammlung, die zu diesem
+  // Basisspiel gehoeren, aber noch nicht verknuepft sind — plus Erweiterungen,
+  // die BGG kennt, die aber noch gar nicht in der Sammlung stehen. Nur als
+  // kleiner Chip angeteasert (siehe unten), nie als eigener Block — sonst
+  // dominiert eine lange Liste die Detailseite.
+  const expansionVorschlaege = onQuickUpdate ? offeneErweiterungen(game, games || []) : [];
+  const expansionFehlende = onAddExpansion ? fehlendeErweiterungen(game, games || []) : [];
+  const expansionVorschlagCount = expansionVorschlaege.length + expansionFehlende.length;
 
   // Erweiterungs-Vorschlaege brauchen die BGG-Erweiterungsliste, die aber nur
   // nach einem BGG-Import/-Abgleich vorhanden ist. Spiele, die es schon vorher
@@ -7384,7 +7428,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
             {(() => {
               const baseGame = game.expansionOf ? (games || []).find((g) => g.id === game.expansionOf) : null;
               const expansions = (games || []).filter((g) => g.expansionOf === game.id);
-              if (!baseGame && expansions.length === 0) return null;
+              if (!baseGame && expansions.length === 0 && expansionVorschlagCount === 0) return null;
               return (
                 <div className="flex flex-wrap items-center gap-1.5 mt-2">
                   {baseGame && (
@@ -7397,43 +7441,25 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                       <Layers size={11} /> {exp.name}
                     </button>
                   ))}
-                </div>
-              );
-            })()}
-            {(onQuickUpdate || onAddExpansion) && (() => {
-              // Vorschlaege aus den BGG-Daten: Spiele der Sammlung, die zu diesem
-              // Basisspiel gehoeren, aber noch nicht verknuepft sind — plus
-              // Erweiterungen, die BGG kennt, die aber noch gar nicht in der
-              // Sammlung stehen.
-              const vorschlaege = onQuickUpdate ? offeneErweiterungen(game, games || []) : [];
-              const fehlende = onAddExpansion ? fehlendeErweiterungen(game, games || []) : [];
-              if (vorschlaege.length === 0 && fehlende.length === 0) return null;
-              return (
-                <div className="mt-3 rounded-[14px] border border-line bg-surface divide-y divide-line overflow-hidden text-left">
-                  <p className="text-[11px] text-dim px-3 pt-2.5 pb-1.5">Laut BoardGameGeek gehört dazu:</p>
-                  {vorschlaege.map((exp) => (
-                    <div key={exp.id} className="flex items-center gap-2 px-3 py-2">
-                      <span className="flex-1 min-w-0 truncate text-sm text-ink">{exp.name}</span>
-                      <span className="shrink-0 text-[10px] text-dim">in Sammlung</span>
-                      <button type="button" onClick={() => onQuickUpdate(exp.id, { expansionOf: game.id })} aria-label={`${exp.name} verknüpfen`}
-                        className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full border border-accent/50 text-accent">
-                        <LinkIcon size={13} />
-                      </button>
-                    </div>
-                  ))}
-                  {fehlende.map((info) => (
-                    <div key={info.id} className="flex items-center gap-2 px-3 py-2">
-                      <span className="flex-1 min-w-0 truncate text-sm text-dim">{info.name}</span>
-                      <button type="button" onClick={() => onAddExpansion(game, info)} aria-label={`${info.name} hinzufügen`}
-                        className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full border border-line text-dim">
-                        <Plus size={13} />
-                      </button>
-                    </div>
-                  ))}
+                  {expansionVorschlagCount > 0 && (
+                    <button type="button" onClick={() => setExpansionSheetOpen(true)}
+                      className="flex items-center gap-1 text-xs text-accent border border-accent/40 rounded-full px-2.5 py-1">
+                      <LinkIcon size={11} /> {expansionVorschlagCount} Erweiterung{expansionVorschlagCount === 1 ? "" : "en"} gefunden
+                    </button>
+                  )}
                 </div>
               );
             })()}
           </div>
+          {expansionSheetOpen && (
+            <ExpansionSuggestionsSheet
+              vorschlaege={expansionVorschlaege}
+              fehlende={expansionFehlende}
+              onLink={(exp) => onQuickUpdate(exp.id, { expansionOf: game.id })}
+              onAdd={(info) => onAddExpansion(game, info)}
+              onClose={() => setExpansionSheetOpen(false)}
+            />
+          )}
 
           <PhotoGallerySection images={images} editable={false} hero onAdd={() => {}} onRemove={() => {}} />
 

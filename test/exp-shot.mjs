@@ -1,4 +1,6 @@
-// Prueft, ob der Erweiterungs-Vorschlag in Detailansicht und Formular sichtbar ist.
+// Prueft den kompakten Erweiterungs-Chip (Detailansicht + Formular): der
+// Vorschlag ist NIE ein eigener Block auf der Seite, sondern nur ein kleiner
+// Chip, der ein Sheet mit der vollen Liste oeffnet.
 import { chromium } from "playwright";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -50,23 +52,37 @@ await page.locator('button:has-text("Sammlung")').last().click();
 await page.waitForTimeout(900);
 await page.locator('text=Brass: Birmingham').first().click();
 await page.waitForTimeout(1200);
-await page.screenshot({ path: `${SP}/exp_detail.png` });
-const dt = await page.locator('text=Laut BoardGameGeek gehört dazu').count();
-console.log("Detail-Block sichtbar:", dt > 0);
-console.log("  'in Sammlung' (Eisenbahn, verknuepfbar):", await page.locator('button[aria-label="Brass: Birmingham – Eisenbahn verknüpfen"]').count() > 0);
-console.log("  'Hinzufügen' (Werften, noch nicht in Sammlung):", await page.locator('button[aria-label="Brass: Birmingham – Werften hinzufügen"]').count() > 0);
+await page.screenshot({ path: `${SP}/exp_detail_chip.png` });
+
+const chip = page.locator('button:has-text("Erweiterung"):has-text("gefunden")');
+console.log("Kompakter Chip sichtbar (statt Block):", await chip.count() > 0);
+console.log("Chip nennt Anzahl (2):", (await chip.first().innerText()).includes("2"));
+console.log("Kein voller Block auf der Seite (nur der Chip-Text, nicht die Liste):",
+  await page.locator('text=in Sammlung').count() === 0 && await page.locator('button[aria-label="Brass: Birmingham – Werften hinzufügen"]').count() === 0);
+
+// Chip antippen -> Sheet oeffnet sich mit der vollen Liste
+await chip.first().click();
+await page.waitForTimeout(700);
+await page.screenshot({ path: `${SP}/exp_detail_sheet.png` });
+console.log("Sheet zeigt Eisenbahn (in Sammlung):", await page.locator('button[aria-label="Brass: Birmingham – Eisenbahn verknüpfen"]').count() > 0);
+console.log("Sheet zeigt Werften (hinzufügen):", await page.locator('button[aria-label="Brass: Birmingham – Werften hinzufügen"]').count() > 0);
 
 // Verknuepfen antippen (Eisenbahn ist bereits in der Sammlung)
 await page.locator('button[aria-label="Brass: Birmingham – Eisenbahn verknüpfen"]').click();
 await page.waitForTimeout(900);
-console.log("Eisenbahn-Zeile danach weg:", await page.locator('button[aria-label="Brass: Birmingham – Eisenbahn verknüpfen"]').count() === 0);
-console.log("Werften-Zeile weiterhin da:", await page.locator('button[aria-label="Brass: Birmingham – Werften hinzufügen"]').count() > 0);
-console.log("Chip vorhanden:", await page.locator('button:has-text("Brass: Birmingham – Eisenbahn")').count() > 0);
+console.log("Eisenbahn-Zeile im Sheet danach weg:", await page.locator('button[aria-label="Brass: Birmingham – Eisenbahn verknüpfen"]').count() === 0);
 console.log("gespeichert (Eisenbahn):", await page.evaluate(() => (JSON.parse(localStorage.getItem("spielregal:games"))||[]).map(g=>[g.name,g.expansionOf||null])));
+await page.locator('button:has-text("Fertig")').first().click();
+await page.waitForTimeout(700);
+console.log("Chip zeigt jetzt nur noch 1:", (await page.locator('button:has-text("Erweiterung"):has-text("gefunden")').first().innerText()).includes("1"));
+console.log("Chip vorhanden (verlinkt):", await page.locator('button:has-text("Brass: Birmingham – Eisenbahn")').count() > 0);
 await page.screenshot({ path: `${SP}/exp_detail_after.png` });
 
-// Hinzufuegen antippen (Werften ist noch nicht in der Sammlung) — soll das
-// Basisspiel schliessen und ein neues, vorausgefuelltes Formular oeffnen.
+// Chip erneut oeffnen, Hinzufuegen antippen (Werften ist noch nicht in der
+// Sammlung) — soll das Basisspiel schliessen und ein neues, vorausgefuelltes
+// Formular oeffnen.
+await page.locator('button:has-text("Erweiterung"):has-text("gefunden")').first().click();
+await page.waitForTimeout(700);
 await page.locator('button[aria-label="Brass: Birmingham – Werften hinzufügen"]').click();
 await page.waitForTimeout(1500);
 await page.screenshot({ path: `${SP}/exp_add_form.png` });
@@ -79,7 +95,8 @@ console.log("gespeichert (nach Hinzufügen):", nachher);
 const werften = nachher.find(([n]) => n.includes("Werften"));
 console.log("Werften korrekt mit Basisspiel verknüpft:", !!werften && werften[1] === "base1");
 
-// Formular fuer das Basisspiel oeffnen und den unteren Block pruefen
+// Formular fuer das Basisspiel oeffnen -- beide Erweiterungen sind jetzt
+// verlinkt, es sollte KEIN Vorschlags-Chip mehr da sein.
 await page.locator('text=Brass: Birmingham').first().click();
 await page.waitForTimeout(1200);
 const edit = page.locator('button[aria-label="Bearbeiten"], button:has-text("Bearbeiten")').first();
@@ -90,5 +107,7 @@ if (await lbl.count()) {
   await lbl.first().scrollIntoViewIfNeeded();
   await page.waitForTimeout(500);
   await page.screenshot({ path: `${SP}/exp_form.png` });
+  console.log("Kein Vorschlags-Chip mehr im Formular (alles verlinkt):",
+    await page.locator('button:has-text("Erweiterung"):has-text("gefunden")').count() === 0);
 }
 await b.close(); server.close();

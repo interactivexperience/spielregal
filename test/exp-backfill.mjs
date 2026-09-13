@@ -52,17 +52,25 @@ await page.locator('text=Brass: Birmingham').first().click();
 await page.waitForTimeout(2000); // Hintergrund-Nachlad + Re-Render abwarten
 
 await page.screenshot({ path: `${SP}/exp_backfill_detail.png` });
-console.log("Verknüpfen-Button erscheint von selbst (ohne 'BGG-Daten holen'):",
-  await page.locator('button[aria-label="Brass: Birmingham – Eisenbahn verknüpfen"]').count() > 0);
+const chip = page.locator('button:has-text("Erweiterung"):has-text("gefunden")');
+console.log("Kompakter Chip erscheint von selbst (ohne 'BGG-Daten holen'):", await chip.count() > 0);
 console.log("Persistiert (expansionBggList jetzt im Speicher):",
   await page.evaluate(() => Array.isArray((JSON.parse(localStorage.getItem("spielregal:games"))||[]).find(g=>g.id==="base1").expansionBggList)));
+if (await chip.count()) {
+  await chip.first().click();
+  await page.waitForTimeout(500);
+  console.log("Sheet zeigt den Verknüpfen-Button:",
+    await page.locator('button[aria-label="Brass: Birmingham – Eisenbahn verknüpfen"]').count() > 0);
+  await page.locator('button:has-text("Fertig")').first().click();
+  await page.waitForTimeout(400);
+}
 
-// Auch im Bearbeiten-Formular sollte der Vorschlag von selbst auftauchen.
+// Auch im Bearbeiten-Formular sollte der Chip von selbst auftauchen.
 const edit = page.locator('button[aria-label="Bearbeiten"], button:has-text("Bearbeiten")').first();
 if (await edit.count()) { await edit.click(); await page.waitForTimeout(1500); }
 const lbl = page.locator('text=Erweiterungen dieses Spiels');
 if (await lbl.count()) { await lbl.first().scrollIntoViewIfNeeded(); await page.waitForTimeout(400); }
-console.log("Formular: Vorschlag von selbst sichtbar:", await page.locator('text=Laut BoardGameGeek gehört dazu').count() > 0);
+console.log("Formular: Chip von selbst sichtbar:", await page.locator('button:has-text("Erweiterung"):has-text("gefunden")').count() > 0);
 await page.screenshot({ path: `${SP}/exp_backfill_form.png` });
 
 await b.close(); server.close();
