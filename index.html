@@ -3705,6 +3705,28 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
     })();
     return () => { cancelled = true; };
   }, [initial]);
+  // Gleicher Hintergrund-Nachlad wie in der Detailansicht: ohne die BGG-
+  // Erweiterungsliste bleibt "Verknuepfen" fuer bestehende Spiele unsichtbar,
+  // bis man manuell "BGG-Daten holen" antippt. Hier landet das Ergebnis nur
+  // im Formular-State -- persistiert wird es normal beim Speichern.
+  useEffect(() => {
+    if (!initial || !initial.bggId || Array.isArray(initial.expansionBggList)) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const fresh = await bggThing(initial.bggId);
+        if (cancelled) return;
+        setForm((f) => (f.bggId !== initial.bggId ? f : {
+          ...f,
+          expansionBggList: fresh.expansionBggList || [],
+          expansionBggIds: fresh.expansionBggIds || [],
+          baseGameBggId: fresh.baseGameBggId || f.baseGameBggId,
+          baseGameName: fresh.baseGameName || f.baseGameName,
+        }));
+      } catch { /* silent — best-effort, manuelles Verknuepfen bleibt trotzdem moeglich */ }
+    })();
+    return () => { cancelled = true; };
+  }, [initial]);
   const [germanLookupError, setGermanLookupError] = useState("");
   const [typesError, setTypesError] = useState("");
   const [summaryVersion, setSummaryVersion] = useState(0);
@@ -7281,6 +7303,29 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
     return () => { cancelled = true; };
   }, [images[0]]);
   const memberOfCount = lists ? lists.filter((l) => l.gameIds.includes(game.id)).length : 0;
+
+  // Erweiterungs-Vorschlaege brauchen die BGG-Erweiterungsliste, die aber nur
+  // nach einem BGG-Import/-Abgleich vorhanden ist. Spiele, die es schon vorher
+  // gab, haben das Feld nie bekommen -- ohne diesen leisen Hintergrund-Nachlad
+  // bliebe "Verknuepfen" fuer die komplette Bestandssammlung unsichtbar, bis
+  // man manuell "BGG-Daten holen" antippt.
+  useEffect(() => {
+    if (!onQuickUpdate || !game.bggId || Array.isArray(game.expansionBggList)) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const fresh = await bggThing(game.bggId);
+        if (!cancelled) {
+          onQuickUpdate(game.id, {
+            expansionBggList: fresh.expansionBggList || [],
+            expansionBggIds: fresh.expansionBggIds || [],
+            ...(fresh.baseGameBggId ? { baseGameBggId: fresh.baseGameBggId, baseGameName: fresh.baseGameName } : {}),
+          });
+        }
+      } catch { /* silent — best-effort, manuelles Verknuepfen bleibt trotzdem moeglich */ }
+    })();
+    return () => { cancelled = true; };
+  }, [game.id, game.bggId]);
 
   const StatBlock = ({ icon: Icon, value, sub, iconSize = 16 }) => (
     <div className="flex-1 p-3 text-center min-w-[70px] flex flex-col items-center">
