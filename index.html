@@ -883,6 +883,21 @@ function usePullToRefresh() {
   return { ref: elRef, handlers: { onTouchStart, onTouchMove, onTouchEnd }, anzeige };
 }
 
+// Spiele der Sammlung, die laut BGG Erweiterungen von "spiel" sind, aber noch
+// nicht damit verknuepft wurden. Zwei Quellen, weil je nach Reihenfolge des
+// Anlegens mal das eine, mal das andere Spiel die Beziehung kennt: die
+// Erweiterungsliste des Basisspiels und der Basis-Verweis der Erweiterung.
+function offeneErweiterungen(spiel, games) {
+  if (!spiel || spiel.expansionOf) return [];
+  const ids = new Set((spiel.expansionBggIds || []).map(String));
+  const eigene = spiel.bggId ? String(spiel.bggId) : null;
+  return games.filter((g) => {
+    if (g.id === spiel.id || g.expansionOf) return false;
+    if (g.bggId && ids.has(String(g.bggId))) return true;
+    return !!(eigene && g.baseGameBggId && String(g.baseGameBggId) === eigene);
+  });
+}
+
 function PipAvatar({ size = 36, sleeping = false }) {
   const strich = sleeping ? "rgb(var(--dim))" : "#fff";
   const breit = size >= 56;
@@ -3743,6 +3758,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
   const update = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const setExpansionLink = (childId, baseId) => onUpdateOtherGame && onUpdateOtherGame(childId, { expansionOf: baseId });
   const childExpansions = games.filter((g) => g.expansionOf === form.id);
+  const erweiterungsVorschlaege = offeneErweiterungen(form, games);
   const updateSaleStatus = (v) => {
     update("saleStatus", v);
     // Ein Basisspiel gibt seinen neuen Verkaufsstatus als Startpunkt an alle
@@ -3988,21 +4004,19 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               </div>
             )}
 
-            {form.status === "owned" && (
-              <div>
-                <label className="block text-[11px] text-dim mb-1.5">Erweiterung von <span className="text-[10px]">(optional — ein Basisspiel kann mehrere Erweiterungen haben)</span></label>
-                <GameSearchPicker
-                  games={games}
-                  excludeId={form.id}
-                  filter={(g) => !g.expansionOf}
-                  selectedId={form.expansionOf || ""}
-                  onSelect={(id) => update("expansionOf", id)}
-                  placeholder="Eigenständiges Spiel — Basisspiel suchen…"
-                />
-              </div>
-            )}
+            <div>
+              <label className="block text-[11px] text-dim mb-1.5">Erweiterung von <span className="text-[10px]">(optional — ein Basisspiel kann mehrere Erweiterungen haben)</span></label>
+              <GameSearchPicker
+                games={games}
+                excludeId={form.id}
+                filter={(g) => !g.expansionOf}
+                selectedId={form.expansionOf || ""}
+                onSelect={(id) => update("expansionOf", id)}
+                placeholder="Eigenständiges Spiel — Basisspiel suchen…"
+              />
+            </div>
 
-            {initial && form.status === "owned" && !form.expansionOf && onUpdateOtherGame && (
+            {initial && !form.expansionOf && onUpdateOtherGame && (
               <div>
                 <label className="block text-[11px] text-dim mb-1.5">Erweiterungen dieses Spiels <span className="text-[10px]">(mehrere auf einmal verknüpfbar)</span></label>
                 {childExpansions.length > 0 && (
@@ -4015,6 +4029,22 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
                         </button>
                       </span>
                     ))}
+                  </div>
+                )}
+                {erweiterungsVorschlaege.length > 0 && (
+                  <div className="mb-2 rounded-[14px] border border-line bg-surface p-3">
+                    <p className="text-[11px] text-dim mb-2">Laut BoardGameGeek {erweiterungsVorschlaege.length === 1 ? "gehört dieses Spiel" : "gehören diese Spiele"} dazu:</p>
+                    <div className="flex flex-col gap-2">
+                      {erweiterungsVorschlaege.map((g) => (
+                        <div key={g.id} className="flex items-center gap-2">
+                          <span className="flex-1 min-w-0 truncate text-sm text-ink">{g.name}</span>
+                          <button type="button" onClick={() => setExpansionLink(g.id, form.id)}
+                            className="shrink-0 h-7 px-2.5 rounded-full border border-accent/50 text-accent text-[11px] font-medium flex items-center gap-1">
+                            <Plus size={11} /> Verknüpfen
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
                 <button type="button" onClick={() => setExpansionPickerOpen(true)}
@@ -7274,6 +7304,28 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                 </div>
               );
             })()}
+            {onQuickUpdate && (() => {
+              // Vorschlaege aus den BGG-Daten: Spiele der Sammlung, die zu diesem
+              // Basisspiel gehoeren, aber noch nicht verknuepft sind.
+              const vorschlaege = offeneErweiterungen(game, games || []);
+              if (vorschlaege.length === 0) return null;
+              return (
+                <div className="mt-3 rounded-[14px] border border-line bg-surface p-3 text-left">
+                  <p className="text-[11px] text-dim mb-2">Laut BoardGameGeek {vorschlaege.length === 1 ? "gehört dieses Spiel deiner Sammlung" : "gehören diese Spiele deiner Sammlung"} als Erweiterung dazu:</p>
+                  <div className="flex flex-col gap-2">
+                    {vorschlaege.map((exp) => (
+                      <div key={exp.id} className="flex items-center gap-2">
+                        <span className="flex-1 min-w-0 truncate text-sm text-ink">{exp.name}</span>
+                        <button type="button" onClick={() => onQuickUpdate(exp.id, { expansionOf: game.id })}
+                          className="shrink-0 h-7 px-2.5 rounded-full border border-accent/50 text-accent text-[11px] font-medium flex items-center gap-1">
+                          <Plus size={11} /> Verknüpfen
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           <PhotoGallerySection images={images} editable={false} hero onAdd={() => {}} onRemove={() => {}} />
@@ -7793,14 +7845,19 @@ function App() {
     setGames(prev => {
       const exists = prev.find(g => g.id === game.id);
       let next = exists ? prev.map(g => g.id === game.id ? game : g) : [...prev, game];
-      // Resolve this game's own base-game link, if BGG told us it's an expansion.
-      if (game.baseGameBggId) {
+      // Verknuepfung aufloesen, wenn BGG dieses Spiel als Erweiterung kennt.
+      // Geschrieben wird expansionOf -- frueher stand hier baseGameId, ein Feld,
+      // das nirgends gelesen wird; die automatische Verknuepfung lief damit
+      // wirkungslos ins Leere. Eine bereits gesetzte Verknuepfung bleibt, damit
+      // eine Zuordnung von Hand nicht ueberschrieben wird.
+      if (game.baseGameBggId && !game.expansionOf) {
         const base = next.find(g => g.bggId && String(g.bggId) === String(game.baseGameBggId));
-        if (base) next = next.map(g => g.id === game.id ? { ...g, baseGameId: base.id } : g);
+        if (base) next = next.map(g => g.id === game.id ? { ...g, expansionOf: base.id } : g);
       }
-      // Resolve any OTHER games that turn out to be expansions of this one
-      // (handles adding the base game after its expansions were already imported).
-      next = next.map(g => (g.id !== game.id && g.baseGameBggId && String(g.baseGameBggId) === String(game.bggId)) ? { ...g, baseGameId: game.id } : g);
+      // Und andersherum: Spiele, die sich als Erweiterungen dieses Spiels
+      // entpuppen (Basisspiel wurde nach seinen Erweiterungen angelegt).
+      next = next.map(g => (g.id !== game.id && !g.expansionOf && g.baseGameBggId
+        && game.bggId && String(g.baseGameBggId) === String(game.bggId)) ? { ...g, expansionOf: game.id } : g);
       return next;
     });
   };
