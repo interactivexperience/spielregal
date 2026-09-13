@@ -1705,8 +1705,67 @@ function ImageCropModal({ src, onConfirm, onCancel }) {
   );
 }
 
-function ImagePickerSheet({ onAdd, onClose }) {
+// Bilder der offiziellen BGG-Editionen zum Auswaehlen -- getrennt von der
+// freien Bildergalerie, siehe Kommentar bei bggOfficialImages().
+function BggImagesSheet({ bggId, onAdd, onClose }) {
   const { closing, requestClose } = useSheetClose(onClose);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [images, setImages] = useState([]);
+  const [selected, setSelected] = useState([]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const result = await bggOfficialImages(bggId);
+        if (!cancelled) setImages(result);
+      } catch (e) {
+        if (!cancelled) setError(e.message || "Fehlgeschlagen");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [bggId]);
+  const toggle = (img) => setSelected((s) => (s.includes(img) ? s.filter((x) => x !== img) : [...s, img]));
+
+  return (
+    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[75] flex items-end justify-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
+      <div className={`glass border border-rim/10 rounded-t-[28px] w-full font-body flex flex-col ${closing ? "sheet-out" : "rise-in"}`} style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
+        <div className="shrink-0 px-5 py-4 flex items-center justify-between">
+          <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Offizielle Bilder</h2>
+          <button onClick={() => { onAdd(selected); requestClose(); }} disabled={selected.length === 0}
+            className="text-accent text-sm font-medium px-2 py-1 disabled:opacity-40">Hinzufügen{selected.length > 0 ? ` (${selected.length})` : ""}</button>
+        </div>
+        <p className="shrink-0 px-5 pb-3 text-xs text-dim">Coverbilder der auf BGG geführten Editionen — nicht die freie Bildergalerie.</p>
+        <div className="flex-1 overflow-y-auto px-5" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
+          {loading && <p className="text-xs text-dim text-center mt-4 flex items-center justify-center gap-2"><Loader2 size={14} /> Lädt Editionen von BGG…</p>}
+          {!loading && error && <p className="text-xs text-danger text-center mt-4">{error}</p>}
+          {!loading && !error && images.length === 0 && <p className="text-xs text-dim text-center mt-4">Keine weiteren offiziellen Bilder gefunden.</p>}
+          <div className="grid grid-cols-3 gap-2 pb-2">
+            {images.map((img) => {
+              const isSel = selected.includes(img.image);
+              return (
+                <button key={img.image} type="button" onClick={() => toggle(img.image)} className="relative aspect-square rounded-lg overflow-hidden border border-line text-left">
+                  <img src={img.image} alt={img.name} className={`w-full h-full block object-cover ${isSel ? "opacity-50" : ""}`} />
+                  <div className={`absolute top-1.5 left-1.5 w-5 h-5 rounded-full border-2 flex items-center justify-center ${isSel ? "bg-accent border-accent" : "bg-black/40 border-rim/60"}`}>
+                    {isSel && <Check size={12} className="text-white" />}
+                  </div>
+                  <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[9px] px-1 py-0.5 truncate">{img.name}{img.year ? ` (${img.year})` : ""}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ImagePickerSheet({ onAdd, onClose, bggId }) {
+  const { closing, requestClose } = useSheetClose(onClose);
+  const [bggOpen, setBggOpen] = useState(false);
   const [urlMode, setUrlMode] = useState(false);
   const [url, setUrl] = useState("");
   const [urlChecking, setUrlChecking] = useState(false);
@@ -1773,6 +1832,11 @@ function ImagePickerSheet({ onAdd, onClose }) {
             <button onClick={() => setUrlMode(true)} className="w-full flex items-center gap-3 bg-surface border border-line rounded-[14px] px-4 py-3 text-ink text-sm">
               <LinkIcon size={18} className="text-accent" /> Per URL einfügen
             </button>
+            {bggId && (
+              <button onClick={() => setBggOpen(true)} className="w-full flex items-center gap-3 bg-surface border border-line rounded-[14px] px-4 py-3 text-ink text-sm">
+                <Globe size={18} className="text-accent" /> Offizielle Bilder von BGG
+              </button>
+            )}
           </>
         ) : (
           <div className="space-y-2">
@@ -1807,6 +1871,13 @@ function ImagePickerSheet({ onAdd, onClose }) {
           src={cropSrc}
           onConfirm={(cropped) => { onAdd(cropped); setCropSrc(null); requestClose(); }}
           onCancel={() => setCropSrc(null)}
+        />
+      )}
+      {bggOpen && (
+        <BggImagesSheet
+          bggId={bggId}
+          onAdd={(imgs) => { if (imgs.length > 0) onAdd(imgs); requestClose(); }}
+          onClose={() => setBggOpen(false)}
         />
       )}
     </div>
@@ -1909,7 +1980,7 @@ function ZoomableLightboxImage({ images, index, onIndexChange, onClose, children
     </div>
   );
 }
-function PhotoGallerySection({ images, onAdd, onRemove, onReplace, hero = false, editable = true }) {
+function PhotoGallerySection({ images, onAdd, onRemove, onReplace, hero = false, editable = true, bggId }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const [cropIndex, setCropIndex] = useState(null);
@@ -2031,7 +2102,7 @@ function PhotoGallerySection({ images, onAdd, onRemove, onReplace, hero = false,
           )}
         </div>
       )}
-      {sheetOpen && <ImagePickerSheet onAdd={(img) => { onAdd(img); setCarouselIndex(images.length); setSheetOpen(false); }} onClose={() => setSheetOpen(false)} />}
+      {sheetOpen && <ImagePickerSheet bggId={bggId} onAdd={(img) => { onAdd(img); setCarouselIndex(images.length); setSheetOpen(false); }} onClose={() => setSheetOpen(false)} />}
       {lightboxIndex !== null && images[lightboxIndex] && (() => {
         return <ZoomableLightboxImage images={images} index={lightboxIndex} onIndexChange={setLightboxIndex} onClose={() => setLightboxIndex(null)}>
           {editable && (
@@ -2816,6 +2887,32 @@ async function bggThing(bggId) {
     complexity: weight ? Math.round(parseFloat(weight) * 10) / 10 : null,
     baseGameBggId, baseGameName, expansionBggIds, expansionBggList, germanName, alternateNames, allPublishers,
   };
+}
+
+// Weitere Bilder von BGG -- aber bewusst NICHT die freie Bildergalerie: die
+// ist voller Fan-Fotos, Promo-Scans etc. ohne verlaessliche "offiziell"-
+// Markierung ueber die oeffentliche API. Stattdessen die VERSIONEN (Editionen)
+// des Spiels: das sind echte, publizierte Ausgaben (z.B. "Deutsche Ausgabe",
+// "2. Edition") mit einem von BGG/Verlag gepflegten Coverbild -- die einzige
+// Bildquelle, die die API strukturiert und zweifelsfrei als offiziell liefert.
+async function bggOfficialImages(bggId) {
+  const url = `https://shiny-grass-80ec.contact-mdinh.workers.dev/xmlapi2/thing?id=${bggId}&versions=1`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("BGG würfelt gerade nicht mit — nicht erreichbar");
+  const text = await res.text();
+  const xml = new DOMParser().parseFromString(text, "text/xml");
+  const versions = Array.from(xml.getElementsByTagName("item")).filter((it) => it.getAttribute("type") === "boardgameversion");
+  const seen = new Set();
+  const result = [];
+  versions.forEach((it) => {
+    const image = (it.getElementsByTagName("image")[0]?.textContent || "").trim();
+    if (!image || seen.has(image)) return;
+    seen.add(image);
+    const nameEl = Array.from(it.getElementsByTagName("name")).find((n) => n.getAttribute("type") === "primary") || it.getElementsByTagName("name")[0];
+    const year = it.getElementsByTagName("yearpublished")[0]?.getAttribute("value") || "";
+    result.push({ image, name: nameEl?.getAttribute("value") || "Edition", year });
+  });
+  return result;
 }
 
 // Fetches a handful of real user reviews/ratings from BGG for a game — gives
@@ -3923,6 +4020,7 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
               onRemove={(i) => update("images", form.images.filter((_, idx) => idx !== i))}
               onReplace={(i, img) => update("images", form.images.map((x, idx) => (idx === i ? img : x)))}
               hero
+              bggId={form.bggId}
             />
 
             <input value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="Titel *"
