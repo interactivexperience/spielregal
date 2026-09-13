@@ -898,6 +898,16 @@ function offeneErweiterungen(spiel, games) {
   });
 }
 
+// Erweiterungen, die BGG fuer "spiel" listet, aber die noch gar nicht in der
+// Sammlung stehen — zum direkten Anlegen vorschlagen statt nur zu verknuepfen.
+function fehlendeErweiterungen(spiel, games) {
+  if (!spiel || spiel.expansionOf) return [];
+  const list = spiel.expansionBggList || [];
+  if (list.length === 0) return [];
+  const vorhanden = new Set(games.filter((g) => g.bggId).map((g) => String(g.bggId)));
+  return list.filter((e) => e.id && e.name && !vorhanden.has(String(e.id)));
+}
+
 function PipAvatar({ size = 36, sleeping = false }) {
   const strich = sleeping ? "rgb(var(--dim))" : "#fff";
   const breit = size >= 56;
@@ -2791,7 +2801,9 @@ async function bggThing(bggId) {
   const baseLink = expansionLinks.find(l => l.getAttribute("inbound") === "true");
   const baseGameBggId = baseLink ? baseLink.getAttribute("id") : null;
   const baseGameName = baseLink ? baseLink.getAttribute("value") : null;
-  const expansionBggIds = expansionLinks.filter(l => l.getAttribute("inbound") !== "true").map(l => l.getAttribute("id"));
+  const expansionBggList = expansionLinks.filter(l => l.getAttribute("inbound") !== "true")
+    .map(l => ({ id: l.getAttribute("id"), name: l.getAttribute("value") }));
+  const expansionBggIds = expansionBggList.map(e => e.id);
   const rawDescription = getTxt("description");
   const summary = rawDescription
     ? rawDescription.split(/\n\s*\n|\r\n\r\n/).map(p => `<p>${p.trim()}</p>`).join("")
@@ -2802,7 +2814,7 @@ async function bggThing(bggId) {
     minTime: getAttr("minplaytime"), maxTime: getAttr("maxplaytime"), age: getAttr("minage"),
     publishers, designers, mechanisms, categories, summary,
     complexity: weight ? Math.round(parseFloat(weight) * 10) / 10 : null,
-    baseGameBggId, baseGameName, expansionBggIds, germanName, alternateNames, allPublishers,
+    baseGameBggId, baseGameName, expansionBggIds, expansionBggList, germanName, alternateNames, allPublishers,
   };
 }
 
@@ -3548,7 +3560,7 @@ function SearchStepSheet({ query, setQuery, runSearch, searching, searchError, r
     </div>
   );
 }
-function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOptions, playerTypeOptions, designerOptions, customPlayerTypeDescriptions, onAddCategory, onAddMechanism, onAddPlayerType, onClose, onSave, onDelete, aiWorkerUrl, games, onSaveAndNavigate, hasPrev, hasNext, onUpdateOtherGame }) {
+function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions, publisherOptions, playerTypeOptions, designerOptions, customPlayerTypeDescriptions, onAddCategory, onAddMechanism, onAddPlayerType, onClose, onSave, onDelete, aiWorkerUrl, games, onSaveAndNavigate, hasPrev, hasNext, onUpdateOtherGame, onAddExpansion }) {
   const [pitchLoading, setPitchLoading] = useState(false);
   const [saveCelebrating, setSaveCelebrating] = useState(false);
   const handleSaveClick = () => {
@@ -3599,6 +3611,12 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
         else next[key] = bggMergeData[key];
       }});
       if (!next.bggId && bggMergeData.bggId) next.bggId = bggMergeData.bggId;
+      // Strukturdaten zur Basis-/Erweiterungs-Beziehung sind keine Inhalte, die man
+      // bewusst auswaehlt — die ziehen bei jedem Abgleich immer mit, sonst veraltet
+      // der Erweiterungs-Vorschlag stillschweigend.
+      if (bggMergeData.expansionBggList) next.expansionBggList = bggMergeData.expansionBggList;
+      if (bggMergeData.expansionBggIds) next.expansionBggIds = bggMergeData.expansionBggIds;
+      if (bggMergeData.baseGameBggId) { next.baseGameBggId = bggMergeData.baseGameBggId; next.baseGameName = bggMergeData.baseGameName; }
       return next;
     });
     setBggMergeData(null);
@@ -3684,7 +3702,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
   const [typesError, setTypesError] = useState("");
   const [summaryVersion, setSummaryVersion] = useState(0);
   const [pitchError, setPitchError] = useState("");
-  const [step, setStep] = useState(initial ? "manual" : "search");
+  const [step, setStep] = useState(initial || prefillBgg ? "manual" : "search");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -3755,10 +3773,21 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
     } finally { setSearching(false); }
   };
 
+  // Neues Spiel, direkt aus einem BGG-Erweiterungsvorschlag angelegt: die
+  // BGG-Daten holen wie bei einem normalen Suchtreffer, danach gleich mit
+  // dem Basisspiel verknuepfen.
+  useEffect(() => {
+    if (!prefillBgg) return;
+    pickResult({ bggId: prefillBgg.bggId, name: prefillBgg.name }).then(() => {
+      setForm((f) => ({ ...f, expansionOf: prefillBgg.expansionOf }));
+    });
+  }, []);
+
   const update = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const setExpansionLink = (childId, baseId) => onUpdateOtherGame && onUpdateOtherGame(childId, { expansionOf: baseId });
   const childExpansions = games.filter((g) => g.expansionOf === form.id);
   const erweiterungsVorschlaege = offeneErweiterungen(form, games);
+  const fehlendeErweiterungenForm = onAddExpansion ? fehlendeErweiterungen(form, games) : [];
   const updateSaleStatus = (v) => {
     update("saleStatus", v);
     // Ein Basisspiel gibt seinen neuen Verkaufsstatus als Startpunkt an alle
@@ -4016,7 +4045,7 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
               />
             </div>
 
-            {initial && !form.expansionOf && onUpdateOtherGame && (
+            {initial && !form.expansionOf && (onUpdateOtherGame || onAddExpansion) && (
               <div>
                 <label className="block text-[11px] text-dim mb-1.5">Erweiterungen dieses Spiels <span className="text-[10px]">(mehrere auf einmal verknüpfbar)</span></label>
                 {childExpansions.length > 0 && (
@@ -4031,20 +4060,28 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
                     ))}
                   </div>
                 )}
-                {erweiterungsVorschlaege.length > 0 && (
-                  <div className="mb-2 rounded-[14px] border border-line bg-surface p-3">
-                    <p className="text-[11px] text-dim mb-2">Laut BoardGameGeek {erweiterungsVorschlaege.length === 1 ? "gehört dieses Spiel" : "gehören diese Spiele"} dazu:</p>
-                    <div className="flex flex-col gap-2">
-                      {erweiterungsVorschlaege.map((g) => (
-                        <div key={g.id} className="flex items-center gap-2">
-                          <span className="flex-1 min-w-0 truncate text-sm text-ink">{g.name}</span>
-                          <button type="button" onClick={() => setExpansionLink(g.id, form.id)}
-                            className="shrink-0 h-7 px-2.5 rounded-full border border-accent/50 text-accent text-[11px] font-medium flex items-center gap-1">
-                            <Plus size={11} /> Verknüpfen
-                          </button>
-                        </div>
-                      ))}
-                    </div>
+                {(erweiterungsVorschlaege.length > 0 || fehlendeErweiterungenForm.length > 0) && (
+                  <div className="mb-2 rounded-[14px] border border-line bg-surface divide-y divide-line overflow-hidden">
+                    <p className="text-[11px] text-dim px-3 pt-2.5 pb-1.5">Laut BoardGameGeek gehört dazu:</p>
+                    {erweiterungsVorschlaege.map((g) => (
+                      <div key={g.id} className="flex items-center gap-2 px-3 py-2">
+                        <span className="flex-1 min-w-0 truncate text-sm text-ink">{g.name}</span>
+                        <span className="shrink-0 text-[10px] text-dim">in Sammlung</span>
+                        <button type="button" onClick={() => setExpansionLink(g.id, form.id)} aria-label={`${g.name} verknüpfen`}
+                          className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full border border-accent/50 text-accent">
+                          <LinkIcon size={13} />
+                        </button>
+                      </div>
+                    ))}
+                    {onAddExpansion && fehlendeErweiterungenForm.map((info) => (
+                      <div key={info.id} className="flex items-center gap-2 px-3 py-2">
+                        <span className="flex-1 min-w-0 truncate text-sm text-dim">{info.name}</span>
+                        <button type="button" onClick={() => onAddExpansion(form, info)} aria-label={`${info.name} hinzufügen`}
+                          className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full border border-line text-dim">
+                          <Plus size={13} />
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 )}
                 <button type="button" onClick={() => setExpansionPickerOpen(true)}
@@ -7207,7 +7244,7 @@ ${buildCollectionContextForAI(games, plays)}`;
 /* ---------------- GAME DETAIL VIEW ---------------- */
 const TONE_HEX = { teal: "rgb(var(--tealdeep))", amber: "rgb(var(--accent))", red: "rgb(var(--danger))", default: "rgb(var(--dim))" };
 
-function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList, onClose, onEdit, onViewOther, readOnlyLabel, hidePrices, onQuickUpdate }) {
+function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList, onClose, onEdit, onViewOther, readOnlyLabel, hidePrices, onQuickUpdate, onAddExpansion }) {
   const [campaignPhotoOpen, setCampaignPhotoOpen] = useState(false);
   const ptr = usePullToRefresh();
   const gamePlays = plays.filter((p) => p.gameId === game.id);
@@ -7304,25 +7341,36 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                 </div>
               );
             })()}
-            {onQuickUpdate && (() => {
+            {(onQuickUpdate || onAddExpansion) && (() => {
               // Vorschlaege aus den BGG-Daten: Spiele der Sammlung, die zu diesem
-              // Basisspiel gehoeren, aber noch nicht verknuepft sind.
-              const vorschlaege = offeneErweiterungen(game, games || []);
-              if (vorschlaege.length === 0) return null;
+              // Basisspiel gehoeren, aber noch nicht verknuepft sind — plus
+              // Erweiterungen, die BGG kennt, die aber noch gar nicht in der
+              // Sammlung stehen.
+              const vorschlaege = onQuickUpdate ? offeneErweiterungen(game, games || []) : [];
+              const fehlende = onAddExpansion ? fehlendeErweiterungen(game, games || []) : [];
+              if (vorschlaege.length === 0 && fehlende.length === 0) return null;
               return (
-                <div className="mt-3 rounded-[14px] border border-line bg-surface p-3 text-left">
-                  <p className="text-[11px] text-dim mb-2">Laut BoardGameGeek {vorschlaege.length === 1 ? "gehört dieses Spiel deiner Sammlung" : "gehören diese Spiele deiner Sammlung"} als Erweiterung dazu:</p>
-                  <div className="flex flex-col gap-2">
-                    {vorschlaege.map((exp) => (
-                      <div key={exp.id} className="flex items-center gap-2">
-                        <span className="flex-1 min-w-0 truncate text-sm text-ink">{exp.name}</span>
-                        <button type="button" onClick={() => onQuickUpdate(exp.id, { expansionOf: game.id })}
-                          className="shrink-0 h-7 px-2.5 rounded-full border border-accent/50 text-accent text-[11px] font-medium flex items-center gap-1">
-                          <Plus size={11} /> Verknüpfen
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                <div className="mt-3 rounded-[14px] border border-line bg-surface divide-y divide-line overflow-hidden text-left">
+                  <p className="text-[11px] text-dim px-3 pt-2.5 pb-1.5">Laut BoardGameGeek gehört dazu:</p>
+                  {vorschlaege.map((exp) => (
+                    <div key={exp.id} className="flex items-center gap-2 px-3 py-2">
+                      <span className="flex-1 min-w-0 truncate text-sm text-ink">{exp.name}</span>
+                      <span className="shrink-0 text-[10px] text-dim">in Sammlung</span>
+                      <button type="button" onClick={() => onQuickUpdate(exp.id, { expansionOf: game.id })} aria-label={`${exp.name} verknüpfen`}
+                        className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full border border-accent/50 text-accent">
+                        <LinkIcon size={13} />
+                      </button>
+                    </div>
+                  ))}
+                  {fehlende.map((info) => (
+                    <div key={info.id} className="flex items-center gap-2 px-3 py-2">
+                      <span className="flex-1 min-w-0 truncate text-sm text-dim">{info.name}</span>
+                      <button type="button" onClick={() => onAddExpansion(game, info)} aria-label={`${info.name} hinzufügen`}
+                        className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full border border-line text-dim">
+                        <Plus size={13} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               );
             })()}
@@ -7862,6 +7910,15 @@ function App() {
     });
   };
   const saveGame = (game) => { applyGameSave(game); setGameModal(null); };
+  // BGG kennt eine Erweiterung, die noch nicht in der Sammlung steht: das
+  // Basisspiel (mitsamt eventuell offener Bearbeitung) sichern, dann direkt
+  // mit den BGG-Daten der Erweiterung ins neue Formular starten, schon
+  // verknuepft.
+  const openMissingExpansion = (baseGame, info) => {
+    applyGameSave(baseGame);
+    setDetailGame(null);
+    setGameModal({ editing: null, prefillBgg: { bggId: info.id, name: info.name, expansionOf: baseGame.id } });
+  };
   const updateGameField = (id, patch) => setGames((prev) => prev.map((g) => (g.id === id ? { ...g, ...patch } : g)));
   const saveGameAndNavigate = (game, direction) => {
     applyGameSave(game);
@@ -8139,6 +8196,7 @@ function App() {
           readOnlyLabel={demoMode ? "Demo" : guestMode ? "Gast" : null}
           hidePrices={guestMode}
           onQuickUpdate={readOnly ? null : updateGameField}
+          onAddExpansion={readOnly ? null : openMissingExpansion}
         />
       )}
       {detailList && (
@@ -8158,8 +8216,9 @@ function App() {
       )}
       {gameModal && (
         <GameFormModal
-          key={gameModal.editing ? gameModal.editing.id : "new"}
+          key={gameModal.editing ? gameModal.editing.id : (gameModal.prefillBgg ? `new-${gameModal.prefillBgg.bggId}` : "new")}
           initial={gameModal.editing}
+          prefillBgg={gameModal.prefillBgg}
           categoryOptions={categoryOptions}
           mechanismOptions={mechanismOptions}
           publisherOptions={publisherOptions}
@@ -8178,6 +8237,7 @@ function App() {
           hasPrev={gameModal.editing ? displayGames.findIndex(g => g.id === gameModal.editing.id) > 0 : false}
           hasNext={gameModal.editing ? displayGames.findIndex(g => g.id === gameModal.editing.id) < displayGames.length - 1 : false}
           onUpdateOtherGame={updateGameField}
+          onAddExpansion={readOnly ? null : openMissingExpansion}
         />
       )}
       {playModal && <PlayFormModal games={games} plays={plays} playerProfiles={displayPlayers} onAddPlayer={addPlayer} onUpdatePlayerPhoto={updatePlayerPhoto} onUpdatePlayerName={updatePlayerName} onRemovePlayer={removePlayer} onReorderPlayers={reorderPlayers} initial={playModal.editing} onClose={() => setPlayModal(null)} onSave={savePlay} onDelete={deletePlay} />}
