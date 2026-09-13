@@ -6150,6 +6150,69 @@ const SORT_LABEL = {
   "complexity-desc": "nach Komplexität", "complexity-asc": "nach Komplexität, aufsteigend",
 };
 
+const COLLECTION_FILTERS_DEFAULTS = { categories: [], mechanisms: [], publishers: [], complexity: [], saleStatus: [], players: "", minRating: "" };
+// Wie viele Filter der Nutzer in der Sammlung-Ansicht gerade aktiv gesetzt
+// hat -- 0 heisst "Standardansicht" (nur Status "Besitz", ansonsten
+// ungefiltert), nicht "gar kein Status". Genau dieselbe Formel wie
+// activeFilterCount unten in Collection(), hier separat nutzbar, weil die
+// Swipe-Navigation der Detailseite sie braucht, auch wenn die Sammlung-Seite
+// gerade nicht gemountet ist.
+function collectionActiveFilterCount(statusFilter, filters) {
+  return filters.categories.length + filters.mechanisms.length + filters.publishers.length + filters.complexity.length
+    + filters.saleStatus.length + (filters.players ? 1 : 0) + (filters.minRating ? 1 : 0) + (statusFilter !== "owned" ? 1 : 0);
+}
+// Baut exakt dieselbe gefilterte + sortierte Liste wie die Sammlung-Ansicht
+// (ohne die Live-Suche, die ist nur voruebergehender UI-Zustand dort), aus
+// den dort persistierten Filtereinstellungen -- unabhaengig davon, ob die
+// Sammlung-Seite gerade gemountet ist. Damit auf der Spiel-Detailseite immer
+// genau das durchwischbar ist, was in der Sammlung gerade (gefiltert)
+// sichtbar waere.
+function buildCollectionList(games, plays, { statusFilter, filters, sortBy, guestMode }) {
+  let list = games.filter((g) => (statusFilter === "all" ? true : g.status === statusFilter));
+  // Erweiterungen erscheinen in der Sammlung nur eingebettet im Karussell
+  // ihres Basisspiels, nie als eigene Karte -- also auch hier raus.
+  list = list.filter((g) => !g.expansionOf);
+  if (filters.categories.length) list = list.filter((g) => filters.categories.every((c) => (g.categories || []).includes(c)));
+  if (filters.mechanisms.length) list = list.filter((g) => filters.mechanisms.every((m) => (g.mechanisms || []).includes(m)));
+  if (filters.publishers.length) list = list.filter((g) => filters.publishers.every((p) => (g.publishers || []).includes(p)));
+  if (filters.complexity.length) list = list.filter((g) => filters.complexity.includes(complexityLabel(g)));
+  if (filters.saleStatus.length) list = list.filter((g) => filters.saleStatus.includes(g.saleStatus));
+  else list = list.filter((g) => !g.saleStatus);
+  if (filters.players) list = list.filter((g) => g.minPlayers && g.maxPlayers && parseInt(filters.players) >= parseInt(g.minPlayers) && parseInt(filters.players) <= parseInt(g.maxPlayers));
+  if (filters.minRating) list = list.filter((g) => g.rating && parseInt(g.rating) >= parseInt(filters.minRating));
+  // Zugriffsbeschraenkung, kein gewoehnlicher Filter -- gilt immer, auch in
+  // der ungefilterten "alles"-Ansicht.
+  if (guestMode) list = list.filter((g) => g.status !== "wishlist" && g.saleStatus !== "sold");
+  const playCounts = {};
+  plays.forEach((p) => { playCounts[p.gameId] = (playCounts[p.gameId] || 0) + 1; });
+  return [...list].sort((a, b) => {
+    switch (sortBy) {
+      case "name-asc": return a.name.localeCompare(b.name, "de");
+      case "name-desc": return b.name.localeCompare(a.name, "de");
+      case "rating-desc": return (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0);
+      case "rating-asc": return (parseFloat(a.rating) || 0) - (parseFloat(b.rating) || 0);
+      case "plays-desc": return (playCounts[b.id] || 0) - (playCounts[a.id] || 0);
+      case "added-desc": return (b.addedDate || "").localeCompare(a.addedDate || "");
+      case "added-asc": return (a.addedDate || "").localeCompare(b.addedDate || "");
+      case "complexity-desc": return (parseFloat(b.complexity) || 0) - (parseFloat(a.complexity) || 0);
+      case "complexity-asc": return (parseFloat(a.complexity) || 0) - (parseFloat(b.complexity) || 0);
+      default: return 0;
+    }
+  });
+}
+// Fuer die Swipe-Navigation der Detailseite: entweder die gerade aktiv
+// gefilterte Sammlung-Liste, oder -- wenn nichts gefiltert ist -- wirklich
+// alle Spiele (nicht nur die Standardansicht "Besitz").
+function buildDetailNavList(games, plays, guestMode) {
+  const statusFilter = loadKey("spielregal:collectionStatusFilter", "owned");
+  const filters = loadKey("spielregal:collectionFilters", COLLECTION_FILTERS_DEFAULTS);
+  if (collectionActiveFilterCount(statusFilter, filters) === 0) {
+    return games.filter((g) => !g.expansionOf && (!guestMode || (g.status !== "wishlist" && g.saleStatus !== "sold")));
+  }
+  const sortBy = loadKey("spielregal:collectionSortBy", "name-asc");
+  return buildCollectionList(games, plays, { statusFilter, filters, sortBy, guestMode });
+}
+
 function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit, onDelete, categoryOptions, mechanismOptions, demoMode, guestMode, lists, onCreateList, onOpenList }) {
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -6158,7 +6221,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
   const [statusFilter, setStatusFilter] = useState(() => loadKey("spielregal:collectionStatusFilter", "owned"));
   useEffect(() => { saveKey("spielregal:collectionStatusFilter", statusFilter); }, [statusFilter]);
   const [filterModalOpen, setFilterModalOpen] = useState(false);
-  const [filters, setFilters] = useState(() => loadKey("spielregal:collectionFilters", { categories: [], mechanisms: [], publishers: [], complexity: [], saleStatus: [], players: "", minRating: "" }));
+  const [filters, setFilters] = useState(() => loadKey("spielregal:collectionFilters", COLLECTION_FILTERS_DEFAULTS));
   useEffect(() => { saveKey("spielregal:collectionFilters", filters); }, [filters]);
   // Ein Status-/Verkaufsstatus-Filter, der noch aus dem normalen Modus stammt
   // (z.B. "Wunschliste" oder "Verkauft" ausgewählt), würde im Gästemodus sonst
@@ -6187,7 +6250,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
     longPressTimer.current = setTimeout(() => { longPressFired.current = true; setContextGame(g); }, 500);
   };
   const cancelLongPress = () => { if (longPressTimer.current) clearTimeout(longPressTimer.current); };
-  const activeFilterCount = filters.categories.length + filters.mechanisms.length + filters.publishers.length + filters.complexity.length + filters.saleStatus.length + (filters.players ? 1 : 0) + (filters.minRating ? 1 : 0) + (statusFilter !== "owned" ? 1 : 0);
+  const activeFilterCount = collectionActiveFilterCount(statusFilter, filters);
   const presentCategories = useMemo(() => {
     const counts = {};
     games.forEach((g) => (g.categories || []).forEach((c) => { counts[c] = (counts[c] || 0) + 1; }));
@@ -7413,17 +7476,17 @@ ${buildCollectionContextForAI(games, plays)}`;
 /* ---------------- GAME DETAIL VIEW ---------------- */
 const TONE_HEX = { teal: "rgb(var(--tealdeep))", amber: "rgb(var(--accent))", red: "rgb(var(--danger))", default: "rgb(var(--dim))" };
 
-function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList, onClose, onEdit, onViewOther, readOnlyLabel, hidePrices, onQuickUpdate, onAddExpansion }) {
+function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList, onClose, onEdit, onViewOther, readOnlyLabel, hidePrices, onQuickUpdate, onAddExpansion, guestMode }) {
   const [campaignPhotoOpen, setCampaignPhotoOpen] = useState(false);
   const [expansionSheetOpen, setExpansionSheetOpen] = useState(false);
   const ptr = usePullToRefresh();
-  // Per Wisch nach links/rechts zum vorherigen/naechsten Spiel in der aktuell
-  // angezeigten Liste (dieselbe Reihenfolge, die auch die Pfeile im
-  // Bearbeiten-Formular nutzen). Der Griff bleibt dem Cover-Karussell
-  // vorbehalten (data-swipe-exempt in PhotoGallerySection) -- sonst wuerden
-  // sich "Foto weiterblaettern" und "Spiel wechseln" gegenseitig ins Gehege
-  // kommen.
-  const navList = games || [];
+  // Per Wisch nach links/rechts zum vorherigen/naechsten Spiel -- aber nur
+  // innerhalb dessen, was in der Sammlung-Ansicht gerade (gefiltert)
+  // sichtbar waere. Ist dort nichts aktiv gefiltert, zaehlt wirklich alles.
+  // Der Griff bleibt dem Cover-Karussell vorbehalten (data-swipe-exempt in
+  // PhotoGallerySection) -- sonst wuerden sich "Foto weiterblaettern" und
+  // "Spiel wechseln" gegenseitig ins Gehege kommen.
+  const navList = useMemo(() => buildDetailNavList(games || [], plays || [], guestMode), [games, plays, guestMode]);
   const navIdx = navList.findIndex((g) => g.id === game.id);
   const prevGame = navIdx > 0 ? navList[navIdx - 1] : null;
   const nextGame = navIdx >= 0 && navIdx < navList.length - 1 ? navList[navIdx + 1] : null;
@@ -7446,6 +7509,20 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
     if (dx < 0 && nextGame) { haptic(6); onViewOther(nextGame); }
     else if (dx > 0 && prevGame) { haptic(6); onViewOther(prevGame); }
   };
+  // Ein Gast kennt die App nicht und findet die Wisch-Geste sonst nie von
+  // selbst -- deshalb genau einmal (dauerhaft in localStorage gemerkt) ein
+  // kurzer Hinweis, wenn er die erste Detailseite oeffnet. Der Eigentuemer
+  // bekommt den Hinweis nicht, der kennt die App bereits.
+  const [swipeHint, setSwipeHint] = useState(false);
+  useEffect(() => {
+    if (!guestMode || (!prevGame && !nextGame)) return;
+    const key = "spielregal:seenSwipeHintGuest";
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, "1");
+    setSwipeHint(true);
+    const t = setTimeout(() => setSwipeHint(false), 3800);
+    return () => clearTimeout(t);
+  }, [guestMode]);
   const gamePlays = plays.filter((p) => p.gameId === game.id);
   const lastPlay = [...gamePlays].sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0];
   const label = complexityLabel(game);
@@ -7511,6 +7588,15 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
   return (
     <div className="fixed inset-0 z-[56] bg-bg">
       <div className="w-full h-full max-w-3xl mx-auto flex flex-col overflow-hidden relative font-body">
+        {swipeHint && (
+          <div className="absolute left-1/2 -translate-x-1/2 z-30 rise-in" style={{ bottom: "calc(max(1rem, env(safe-area-inset-bottom)) + 1rem)" }}>
+            <button onClick={() => setSwipeHint(false)} className="glass flex items-center gap-2 border border-rim/15 rounded-full pl-3 pr-4 py-2 shadow-xl text-xs text-ink">
+              <ChevronLeft size={13} className="text-dim shrink-0" />
+              <span className="whitespace-nowrap">Wische für das nächste/vorherige Spiel</span>
+              <ChevronRight size={13} className="text-dim shrink-0" />
+            </button>
+          </div>
+        )}
         <button onClick={onClose} className="absolute left-4 z-20 w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg text-ink" style={{ top: "max(1rem, env(safe-area-inset-top))" }} aria-label="Zurück"><ChevronLeft size={22} /></button>
         <div className="absolute right-4 z-20 flex items-center gap-2" style={{ top: "max(1rem, env(safe-area-inset-top))" }}>
           {lists && onToggleList && (
@@ -8409,6 +8495,7 @@ function App() {
           hidePrices={guestMode}
           onQuickUpdate={readOnly ? null : updateGameField}
           onAddExpansion={readOnly ? null : openMissingExpansion}
+          guestMode={guestMode}
         />
       )}
       {detailList && (
