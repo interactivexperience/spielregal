@@ -3412,7 +3412,13 @@ function BggMergeModal({ current, fresh, onApply, onClose }) {
   const relevant = FIELDS.filter((f) => !f.skip && fresh[f.key] !== undefined && fresh[f.key] !== null && fresh[f.key] !== "" && !(Array.isArray(fresh[f.key]) && fresh[f.key].length === 0));
   const [selected, setSelected] = useState(() => {
     const init = {};
-    relevant.forEach((f) => { init[f.key] = !current[f.key] || (Array.isArray(current[f.key]) && current[f.key].length === 0); });
+    relevant.forEach((f) => {
+      // Der deutsche Titel ist bewusst nie vorausgewaehlt: er soll nur ins
+      // Formular, wenn man ihn ausdruecklich nimmt. Anhaken geht weiterhin.
+      init[f.key] = f.key === "germanName"
+        ? false
+        : !current[f.key] || (Array.isArray(current[f.key]) && current[f.key].length === 0);
+    });
     return init;
   });
   const toggle = (key) => setSelected((s) => ({ ...s, [key]: !s[key] }));
@@ -3706,22 +3712,25 @@ function GameFormModal({ initial, categoryOptions, mechanismOptions, publisherOp
     setSearching(true);
     try {
       const details = await bggThing(r.bggId);
-      setForm((f) => ({ ...f, ...details, status: "owned", addedDate: f.addedDate }));
+      // Der deutsche Titel wird hier bewusst NICHT uebernommen. Er kam bisher
+      // zweimal ungefragt ins Formular -- einmal aus den BGG-Daten, einmal per
+      // KI-Rueckfrage -- obwohl es dafuer einen eigenen Knopf gibt. Nur der
+      // fuellt das Feld jetzt noch, und der Zusammenfuehren-Dialog, der
+      // ausdruecklich danach fragt.
+      const { germanName: _ignoriert, ...ohneTitel } = details;
+      setForm((f) => ({ ...f, ...ohneTitel, status: "owned", addedDate: f.addedDate }));
       setSummaryVersion((v) => v + 1);
       setStep("manual");
-      // Best-effort fallback: if neither a German title nor a German publisher
-      // could be confidently guessed, and the AI worker is set up, ask it.
-      const needsGermanName = !details.germanName && (details.alternateNames || []).length > 0;
+      // Der deutsche Verlag bleibt: er ergaenzt die Verlagsliste, ersetzt aber
+      // keinen Titel und war nie Teil der Beschwerde.
       const needsGermanPublisher = !(details.publishers || []).some(p => p !== details.publishers[0]) && (details.allPublishers || []).length > 1;
-      if (aiWorkerUrl && (needsGermanName || needsGermanPublisher)) {
+      if (aiWorkerUrl && needsGermanPublisher) {
         try {
           const guess = await aiIdentifyGermanInfo(aiWorkerUrl, details.name, details.alternateNames, details.allPublishers);
           setForm((f) => {
             if (f.bggId !== details.bggId) return f; // user already moved to a different game — don't overwrite
-            const next = { ...f };
-            if (needsGermanName && guess.germanName) next.germanName = guess.germanName;
-            if (needsGermanPublisher && (guess.germanPublishers || []).length) next.publishers = [...new Set([...next.publishers, ...guess.germanPublishers])];
-            return next;
+            if (!(guess.germanPublishers || []).length) return f;
+            return { ...f, publishers: [...new Set([...f.publishers, ...guess.germanPublishers])] };
           });
         } catch { /* silent — this is a nice-to-have fallback, not critical */ }
       }
