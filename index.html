@@ -2033,7 +2033,7 @@ function PhotoGallerySection({ images, onAdd, onRemove, onReplace, hero = false,
   return (
     <div>
       {hero && (
-        <div className="flex justify-center mb-6 pt-2 pb-1">
+        <div className="flex justify-center mb-6 pt-2 pb-1" data-swipe-exempt="true">
           <div className="relative" style={{ width: "min(clamp(200px, 51vw, 360px), 46vh)", height: "min(clamp(200px, 51vw, 360px), 46vh)" }}>
             {images.length === 0 ? (
               <div className="w-full h-full rounded-2xl overflow-hidden border border-line bg-surface2 flex items-center justify-center">
@@ -7417,6 +7417,35 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
   const [campaignPhotoOpen, setCampaignPhotoOpen] = useState(false);
   const [expansionSheetOpen, setExpansionSheetOpen] = useState(false);
   const ptr = usePullToRefresh();
+  // Per Wisch nach links/rechts zum vorherigen/naechsten Spiel in der aktuell
+  // angezeigten Liste (dieselbe Reihenfolge, die auch die Pfeile im
+  // Bearbeiten-Formular nutzen). Der Griff bleibt dem Cover-Karussell
+  // vorbehalten (data-swipe-exempt in PhotoGallerySection) -- sonst wuerden
+  // sich "Foto weiterblaettern" und "Spiel wechseln" gegenseitig ins Gehege
+  // kommen.
+  const navList = games || [];
+  const navIdx = navList.findIndex((g) => g.id === game.id);
+  const prevGame = navIdx > 0 ? navList[navIdx - 1] : null;
+  const nextGame = navIdx >= 0 && navIdx < navList.length - 1 ? navList[navIdx + 1] : null;
+  const swipeStart = React.useRef(null);
+  const onDetailTouchStart = (e) => {
+    ptr.handlers.onTouchStart(e);
+    if (e.touches.length === 1 && onViewOther && !(e.target.closest && e.target.closest("[data-swipe-exempt]"))) {
+      swipeStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    } else {
+      swipeStart.current = null;
+    }
+  };
+  const onDetailTouchEnd = (e) => {
+    ptr.handlers.onTouchEnd(e);
+    if (!swipeStart.current) return;
+    const dx = e.changedTouches[0].clientX - swipeStart.current.x;
+    const dy = e.changedTouches[0].clientY - swipeStart.current.y;
+    swipeStart.current = null;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    if (dx < 0 && nextGame) { haptic(6); onViewOther(nextGame); }
+    else if (dx > 0 && prevGame) { haptic(6); onViewOther(prevGame); }
+  };
   const gamePlays = plays.filter((p) => p.gameId === game.id);
   const lastPlay = [...gamePlays].sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0];
   const label = complexityLabel(game);
@@ -7500,7 +7529,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
             <span className="glass text-[10px] text-ink px-2 py-1 border border-rim/15 rounded-full">{readOnlyLabel}</span>
           ) : null}
         </div>
-        <div ref={ptr.ref} {...ptr.handlers} className="overflow-y-auto flex-1 p-5 space-y-7" style={{ paddingTop: "calc(max(1rem, env(safe-area-inset-top)) + 3rem)", backgroundImage: isDark ? `linear-gradient(180deg, ${accentColor}35, transparent 220px)` : "none" }}>
+        <div ref={ptr.ref} onTouchStart={onDetailTouchStart} onTouchMove={ptr.handlers.onTouchMove} onTouchEnd={onDetailTouchEnd} className="overflow-y-auto flex-1 p-5 space-y-7" style={{ paddingTop: "calc(max(1rem, env(safe-area-inset-top)) + 3rem)", backgroundImage: isDark ? `linear-gradient(180deg, ${accentColor}35, transparent 220px)` : "none" }}>
           {ptr.anzeige}
           <div>
             {(() => {
