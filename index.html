@@ -1576,6 +1576,27 @@ function Segmented({ options, value, onChange }) {
   );
 }
 
+// Ein-Knopf An/Aus-Zeile (Formular-Toggles wie "Digitale Version",
+// "Kampagnenspiel", "Verliehen"). Zentral, damit alle Vorkommen dieselbe
+// Schriftgroesse/Farbeinstellung teilen statt beim Kopieren auseinanderzudriften.
+function ToggleRow({ label, active, onClick, tone = "accent" }) {
+  const TONES = {
+    accent: { bg: "bg-accent/15 border-accent/40", knob: "bg-accent" },
+    info: { bg: "bg-info/15 border-info/40", knob: "bg-info" },
+    gold: { bg: "bg-gold/15 border-gold/40", knob: "bg-gold" },
+  };
+  const t = TONES[tone];
+  return (
+    <button type="button" onClick={onClick}
+      className={`w-full h-12 flex items-center justify-between text-left px-3.5 rounded-[14px] border ${active ? t.bg : "bg-transparent border-line"}`}>
+      <span className={`text-sm flex-1 min-w-0 text-left pr-2 ${active ? "text-ink" : "text-dim"}`}>{label}</span>
+      <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors shrink-0 ${active ? `${t.knob} justify-end` : "bg-line justify-start"}`}>
+        <div className="w-5 h-5 rounded-full bg-ink" />
+      </div>
+    </button>
+  );
+}
+
 /* ---------------- TAG PICKER (categories / mechanisms) ---------------- */
 /* ---------------- IMAGE PICKER SHEET (Foto aufnehmen / Hochladen / URL) ---------------- */
 /* ---------------- IMAGE CROP (Zuschneiden/Zoomen vor dem Speichern) ---------------- */
@@ -4456,15 +4477,12 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
             {typesError && <p className="text-[11px] text-danger -mt-2">{typesError}</p>}
 
             {(form.status === "owned" || form.status === "none" || form.status === "wishlist") && (
-              <button type="button" onClick={() => update("format", form.format === "digital" ? "analog" : "digital")}
-                className={`w-full h-12 flex items-center justify-between text-left px-3.5 rounded-[14px] border ${form.format === "digital" ? "bg-info/15 border-info/40" : "bg-transparent border-line"}`}>
-                <span className={`text-base flex-1 min-w-0 text-left pr-2 ${form.format === "digital" ? "text-ink" : "text-dim"}`}>
-                  {form.status === "owned" ? "Digitale Version" : form.status === "wishlist" ? "Nur digital merken (kein Kaufwunsch)" : "Digital gespielt"}
-                </span>
-                <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.format === "digital" ? "bg-info justify-end" : "bg-line justify-start"}`}>
-                  <div className="w-5 h-5 rounded-full bg-ink" />
-                </div>
-              </button>
+              <ToggleRow
+                tone="info"
+                active={form.format === "digital"}
+                onClick={() => update("format", form.format === "digital" ? "analog" : "digital")}
+                label={form.status === "owned" ? "Digitale Version" : form.status === "wishlist" ? "Nur digital merken (kein Kaufwunsch)" : "Digital gespielt"}
+              />
             )}
             {form.status === "wishlist" && form.format === "digital" && (
               <p className="text-[11px] text-dim -mt-2 px-1">Erinnerung, es (z.B. auf BGA) zu spielen — kein Eintrag für einen späteren Kauf.</p>
@@ -4568,22 +4586,10 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
               </div>
             )}
 
-            <button type="button" onClick={() => update("isCampaign", !form.isCampaign)}
-              className={`w-full h-12 flex items-center justify-between text-left px-3.5 rounded-[14px] border ${form.isCampaign ? "bg-accent/15 border-accent/40" : "bg-transparent border-line"}`}>
-              <span className={`text-base flex-1 min-w-0 text-left pr-2 ${form.isCampaign ? "text-ink" : "text-dim"}`}>Kampagnenspiel (Fortschritts-Historie)</span>
-              <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.isCampaign ? "bg-accent justify-end" : "bg-line justify-start"}`}>
-                <div className="w-5 h-5 rounded-full bg-ink" />
-              </div>
-            </button>
+            <ToggleRow tone="accent" active={form.isCampaign} onClick={() => update("isCampaign", !form.isCampaign)} label="Kampagnenspiel (Fortschritts-Historie)" />
 
             <div>
-              <button type="button" onClick={() => update("lentTo", form.lentTo ? "" : " ")}
-                className={`w-full h-12 flex items-center justify-between text-left px-3.5 rounded-[14px] border ${form.lentTo ? "bg-gold/15 border-gold/40" : "bg-transparent border-line"}`}>
-                <span className={`text-base flex items-center gap-2 ${form.lentTo ? "text-ink" : "text-dim"}`}>Verliehen</span>
-                <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.lentTo ? "bg-gold justify-end" : "bg-line justify-start"}`}>
-                  <div className="w-5 h-5 rounded-full bg-ink" />
-                </div>
-              </button>
+              <ToggleRow tone="gold" active={!!form.lentTo} onClick={() => update("lentTo", form.lentTo ? "" : " ")} label="Verliehen" />
               {form.lentTo && (
                 <input value={form.lentTo.trim()} onChange={(e) => update("lentTo", e.target.value)} placeholder="An wen?"
                   className="w-full h-11 bg-surface border border-line rounded-[14px] px-3.5 text-ink text-base mt-2 focus:outline-none focus:border-gold" />
