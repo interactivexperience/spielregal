@@ -3396,7 +3396,7 @@ function buildFullCollectionExport(games, options = EXPORT_OPTIONS_DEFAULTS) {
     const expansionNote = base ? ` | Erweiterung von: ${base.name}` : "";
     const expansions = games.filter((x) => x.expansionOf === g.id).map((x) => x.name);
     const expansionsNote = expansions.length ? ` | Eigene Erweiterungen: ${expansions.join(", ")}` : "";
-    const format = g.format === "digital" ? " | Digital besessen" : "";
+    const format = g.format === "digital" ? (g.status === "wishlist" ? " | Nur digital vorgemerkt (z.B. BGA-Reminder, KEIN Kaufwunsch)" : " | Digital besessen") : "";
     const desc = includeSummary && g.summary ? `\n  Beschreibung: ${g.summary.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()}` : "";
     return `- ${g.name}${g.germanName && g.germanName !== g.name ? ` (${g.germanName})` : ""} (${g.year || "?"}) | ${(g.publishers || []).join(", ") || "Verlag unbekannt"} | ${players2} | ${time} | Komplexität: ${comp} | Bewertung: ${rating} | Themen: ${tags}${format}${expansionNote}${expansionsNote}${desc}`;
   };
@@ -3475,7 +3475,8 @@ function buildCollectionContextForAI(games, plays) {
     const players = g.minPlayers ? `${g.minPlayers}-${g.maxPlayers} Spieler` : "Spieleranzahl unbekannt";
     const time = g.minTime ? `${g.minTime}-${g.maxTime} Min.` : "Dauer unbekannt";
     const comp = complexityLabel(g) || "Komplexität unbekannt";
-    return `${players} | ${time} | ${comp} | Themen: ${tags || "-"}`;
+    const format = g.format === "digital" ? (g.status === "wishlist" ? " | nur digital vorgemerkt, kein Kaufwunsch" : " | nur digital besessen") : "";
+    return `${players} | ${time} | ${comp} | Themen: ${tags || "-"}${format}`;
   };
   const gameDesc = (g) => g.summary ? ` | Beschreibung: ${g.summary.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 220)}` : "";
   const owned = games.filter((g) => g.status !== "wishlist");
@@ -4399,14 +4400,19 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
             </div>
             {typesError && <p className="text-[11px] text-danger -mt-2">{typesError}</p>}
 
-            {(form.status === "owned" || form.status === "none") && (
+            {(form.status === "owned" || form.status === "none" || form.status === "wishlist") && (
               <button type="button" onClick={() => update("format", form.format === "digital" ? "analog" : "digital")}
                 className={`w-full h-12 flex items-center justify-between text-left px-3.5 rounded-[14px] border ${form.format === "digital" ? "bg-info/15 border-info/40" : "bg-transparent border-line"}`}>
-                <span className={`text-base flex-1 min-w-0 text-left pr-2 ${form.format === "digital" ? "text-ink" : "text-dim"}`}>{form.status === "owned" ? "Digitale Version" : "Digital gespielt"}</span>
+                <span className={`text-base flex-1 min-w-0 text-left pr-2 ${form.format === "digital" ? "text-ink" : "text-dim"}`}>
+                  {form.status === "owned" ? "Digitale Version" : form.status === "wishlist" ? "Nur digital merken (kein Kaufwunsch)" : "Digital gespielt"}
+                </span>
                 <div className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${form.format === "digital" ? "bg-info justify-end" : "bg-line justify-start"}`}>
                   <div className="w-5 h-5 rounded-full bg-ink" />
                 </div>
               </button>
+            )}
+            {form.status === "wishlist" && form.format === "digital" && (
+              <p className="text-[11px] text-dim -mt-2 px-1">Erinnerung, es (z.B. auf BGA) zu spielen — kein Eintrag für einen späteren Kauf.</p>
             )}
 
             {form.status === "owned" && (
@@ -5569,7 +5575,11 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
         <div className="flex gap-3 overflow-x-auto pb-1">
           {wishlist.map(g => (
             <DashboardGameTile key={g.id} game={g} onClick={() => onView(g)}>
-              {g.year && <p className="text-dim text-[10px] font-body">{g.year}</p>}
+              {g.format === "digital" ? (
+                <p className="text-info text-[10px] font-body flex items-center gap-1"><Globe size={9} /> Nur digital</p>
+              ) : (
+                g.year && <p className="text-dim text-[10px] font-body">{g.year}</p>
+              )}
             </DashboardGameTile>
           ))}
         </div>
@@ -7961,7 +7971,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                 if (hasOnline && hasAnalog) return "Gemischt";
                 return hasOnline ? "Online" : "Analog";
               })()}
-              sub={game.status === "owned" && game.format === "digital" ? "digital" : ""}
+              sub={(game.status === "owned" || game.status === "wishlist") && game.format === "digital" ? "digital" : ""}
             />
           </div>
 
