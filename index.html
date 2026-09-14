@@ -5325,11 +5325,14 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
   const [weeklyTip, setWeeklyTip] = useState(() => { try { return JSON.parse(localStorage.getItem("spielregal:weeklyTip") || "null"); } catch { return null; } });
   const [yearlyInsight, setYearlyInsight] = useState(() => { try { return JSON.parse(localStorage.getItem("spielregal:yearlyInsight") || "null"); } catch { return null; } });
   const [tipLoading, setTipLoading] = useState(false);
+  const [tipExpanded, setTipExpanded] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
   // A cheap fingerprint of the actual play data (not just its length) — so
   // correcting a play's date, winner, etc. invalidates the cached AI insights
   // too, not just adding/removing a play outright.
   const playsFingerprint = useMemo(() => plays.map((p) => `${p.id}:${p.date}:${p.winner || ""}`).join("|"), [plays]);
+  // Neuer Tipp (naechste Woche oder anderes Spiel) startet wieder eingeklappt.
+  useEffect(() => { setTipExpanded(false); }, [weeklyTip && weeklyTip.gameId, weeklyTip && weeklyTip.generatedAt]);
 
   useEffect(() => {
     if (!aiWorkerUrl || plays.length === 0) return;
@@ -5748,6 +5751,9 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             // "zum Verkauf"/"verkauft"-Spiele, was hier (Empfehlung fürs
             // eigene Spielen) fehl am Platz wirkt.
             const coverGame = tipGame ? { ...tipGame, saleStatus: null } : { name: weeklyTip.gameName, image: weeklyTip.image };
+            // Kurzer Text bleibt immer ganz sichtbar -- nur ab einer gewissen
+            // Laenge lohnt sich das Einklappen ueberhaupt.
+            const reasonNeedsToggle = (weeklyTip.reason || "").length > 90;
             const cardBody = (
               <div className="flex gap-3">
                 <div className="w-24 shrink-0">
@@ -5755,7 +5761,15 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-display text-xl leading-tight tracking-[-0.02em] text-ink">{weeklyTip.gameName}</p>
-                  <p className="text-dim text-[13px] font-body leading-relaxed mt-1.5">{weeklyTip.reason}</p>
+                  <p className={`text-dim text-[13px] font-body leading-relaxed mt-1.5 ${!tipExpanded && reasonNeedsToggle ? "line-clamp-2" : ""}`}>{weeklyTip.reason}</p>
+                  {reasonNeedsToggle && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); haptic(6); setTipExpanded((v) => !v); }}
+                      className="text-accent text-[12px] font-medium mt-1"
+                    >
+                      {tipExpanded ? "Weniger" : "Mehr anzeigen"}
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -5763,7 +5777,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
               <div className="border-t border-line pt-5">
                 <p className="text-[10px] font-semibold text-accent uppercase tracking-[0.16em] mb-2.5 flex items-center gap-1.5"><Sparkles size={12} /> Tipp der Woche</p>
                 {tipGame ? (
-                  <button onClick={() => onView(tipGame)} className="w-full text-left">{cardBody}</button>
+                  <div onClick={() => onView(tipGame)} className="w-full text-left cursor-pointer">{cardBody}</div>
                 ) : (
                   <div className="w-full">{cardBody}</div>
                 )}
