@@ -2484,6 +2484,11 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
   const [exportOptions, setExportOptions] = useState(() => loadKey("spielregal:exportOptions", EXPORT_OPTIONS_DEFAULTS));
   useEffect(() => { saveKey("spielregal:exportOptions", exportOptions); }, [exportOptions]);
   const toggleExportOption = (key) => setExportOptions((o) => ({ ...o, [key]: !o[key] }));
+  const [exportMode, setExportMode] = useState(() => loadKey("spielregal:exportMode", "raw"));
+  useEffect(() => { saveKey("spielregal:exportMode", exportMode); }, [exportMode]);
+  const [exportCandidatesText, setExportCandidatesText] = useState(() => loadKey("spielregal:exportCandidates", ""));
+  useEffect(() => { saveKey("spielregal:exportCandidates", exportCandidatesText); }, [exportCandidatesText]);
+  const [candidatePickerOpen, setCandidatePickerOpen] = useState(false);
   const [catInput, setCatInput] = useState("");
   const [mechInput, setMechInput] = useState("");
   const [typeInput, setTypeInput] = useState("");
@@ -2507,16 +2512,44 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
   }
 
   if (view === "export") {
-    const exportText = buildFullCollectionExport(games, exportOptions);
+    const collectionExport = buildFullCollectionExport(games, exportOptions);
+    const candidateNames = exportCandidatesText.split("\n").map((s) => s.trim()).filter(Boolean);
+    const exportText = exportMode === "newGames" ? buildNewGamesPrompt(collectionExport, candidateNames)
+      : exportMode === "declutter" ? buildDeclutterPrompt(collectionExport)
+      : collectionExport;
     const EXPORT_TOGGLES = [
       { key: "includeWishlist", label: "Wunschliste" },
       { key: "includeOnlyPlayed", label: "Nur gespielt, nicht im Besitz" },
       { key: "includeSummary", label: "Beschreibungstext je Spiel" },
     ];
+    const EXPORT_MODE_INTROS = {
+      raw: "Textübersicht deiner Sammlung zum Einfügen in eine KI — etwa für „Welche meiner Spiele passen zu Fans von Terraforming Mars?“.",
+      newGames: "Fertiger Prompt: die KI bewertet für dich, ob bestimmte Spiele zu deiner Sammlung passen — mit festen Kriterien wie Community-Bewertung, Dauerbrenner-Potenzial, Spielgefühl und ob es eher ein BGA-Kandidat statt eines Kaufs ist.",
+      declutter: "Fertiger Prompt: die KI schlägt dir anhand deiner Sammlung konkrete Spiele zum Aussortieren vor, inklusive Begründung.",
+    };
     return (
       <SettingsSubPage title="Für KI exportieren" onBack={() => setView("menu")}>
         <div>
-          <p className="text-xs text-dim mb-3">Textübersicht deiner Sammlung zum Einfügen in eine KI — etwa für „Welche meiner Spiele passen zu Fans von Terraforming Mars?“.</p>
+          <div className="mb-3">
+            <Segmented
+              options={[{ v: "raw", label: "Nur Daten" }, { v: "newGames", label: "Neue Spiele" }, { v: "declutter", label: "Aussortieren" }]}
+              value={exportMode}
+              onChange={setExportMode}
+            />
+          </div>
+          <p className="text-xs text-dim mb-3">{EXPORT_MODE_INTROS[exportMode]}</p>
+          {exportMode === "newGames" && (
+            <div className="mb-3">
+              <label className="block text-[11px] text-dim mb-1.5">Kandidaten-Spiele <span className="text-[10px]">(ein Spiel pro Zeile)</span></label>
+              <textarea value={exportCandidatesText} onChange={(e) => setExportCandidatesText(e.target.value)} onFocus={handleFocusScroll}
+                placeholder={"z.B.\nCascadia\nWingspan"} rows={4}
+                className="w-full bg-surface border border-line rounded-[14px] px-3.5 py-3 text-ink text-sm focus:outline-none focus:border-accent resize-none mb-2" />
+              <button type="button" onClick={() => setCandidatePickerOpen(true)}
+                className="w-full h-11 border border-dashed border-line rounded-[14px] text-sm text-dim flex items-center justify-center gap-1.5">
+                <Plus size={14} /> Aus Wunschliste übernehmen
+              </button>
+            </div>
+          )}
           <div className="mb-3 space-y-1.5">
             <div className="w-full h-11 flex items-center justify-between text-left px-3.5 rounded-[14px] border bg-accent/15 border-accent/40">
               <span className="text-sm flex-1 min-w-0 text-left pr-2 text-ink">Im Besitz</span>
@@ -2555,6 +2588,19 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
           </div>
           <textarea readOnly value={exportText} rows={14}
             className="w-full bg-surface border border-line rounded-[14px] px-3.5 py-3 text-dim text-xs font-mono focus:outline-none resize-none" />
+          {candidatePickerOpen && (
+            <MultiGamePickerSheet
+              title="Aus Wunschliste übernehmen"
+              games={games}
+              filter={(g) => g.status === "wishlist"}
+              initialSelected={games.filter((g) => g.status === "wishlist" && candidateNames.includes(g.name)).map((g) => g.id)}
+              onClose={() => setCandidatePickerOpen(false)}
+              onConfirm={(selectedIds) => {
+                const names = games.filter((g) => selectedIds.includes(g.id)).map((g) => g.name);
+                setExportCandidatesText(names.join("\n"));
+              }}
+            />
+          )}
         </div>
       </SettingsSubPage>
     );
@@ -3345,6 +3391,54 @@ Dies ist eine Übersicht einer Brettspielsammlung, exportiert aus der App "Spiel
 
 === IM BESITZ (${owned.length}) ===
 ${owned.map(gameLine).join("\n") || "keine"}${wishlistSection}${onlyPlayedSection}`;
+}
+
+// Fertiger Ki-Prompt: bewertet konkrete Kandidaten-Spiele (z.B. von der
+// Wunschliste oder frei eingetippt) gegen die eigene Sammlung, mit fest
+// vorgegebenen Beurteilungskriterien, statt nur die rohen Sammlungsdaten
+// hinzuwerfen und zu hoffen, dass die KI von selbst das Richtige fragt.
+function buildNewGamesPrompt(collectionExport, candidateNames) {
+  const list = candidateNames.length > 0 ? candidateNames.map((n) => `- ${n}`).join("\n") : "(keine Kandidaten angegeben)";
+  return `Du bist ein erfahrener Brettspiel-Berater. Unten steht zuerst meine Sammlung, danach eine Liste von Spielen, die ich mir eventuell zulegen möchte.
+
+Bewerte JEDES der folgenden Kandidaten-Spiele einzeln, ob es zu meiner Sammlung passt, und begründe das konkret anhand meiner tatsächlichen Spiele — nicht pauschal. Geh für jedes Spiel auf diese Punkte ein:
+
+- Community-Bewertung auf BoardGameGeek (falls dir bekannt)
+- Ist es ein Dauerbrenner (kommt oft auf den Tisch) oder eher ein Strohfeuer, das schnell verstaubt?
+- Für wie viele Spieler eignet es sich am besten — passt das zu meinen üblichen Rundengrößen?
+- Welchem Spielgefühl bzw. welchem Spiel aus meiner Sammlung ähnelt es am ehesten?
+- Wie viel Zeit brauchen Auf- und Abbau (nicht nur die reine Spielzeit)?
+- Welches Spiel in meiner Sammlung könnte es sinnvoll erweitern/ergänzen, statt es nur zu duplizieren?
+- Warum hat es überhaupt eine Daseinsberechtigung neben dem, was ich schon besitze — was bietet es, das ich noch nicht habe?
+- Wiederspielwert: wie unterschiedlich fühlen sich einzelne Partien an?
+- Platzbedarf auf dem Tisch
+- Sprachabhängigkeit (Text auf Karten/Material, falls relevant)
+- Ist es eventuell eher ein Spiel, das ich mir gar nicht physisch zulegen sollte, sondern lieber gelegentlich auf Board Game Arena (BGA) spiele, statt es zu kaufen?
+
+Gib am Ende pro Spiel eine klare Empfehlung: Ja / Eher ja / Eher nein / Nein, mit einem Satz Begründung.
+
+KANDIDATEN-SPIELE:
+${list}
+
+${collectionExport}`;
+}
+
+// Fertiger KI-Prompt fuers Aussortieren -- dieselbe Logik, die Pip im Chat
+// beim Ausmisten verfolgt (siehe systemPrompt weiter unten), nur als
+// eigenstaendiger Prompt fuer eine externe KI statt eines Chatverlaufs.
+function buildDeclutterPrompt(collectionExport) {
+  return `Du bist ein erfahrener Brettspiel-Berater. Hilf mir, meine Sammlung unten auszumisten.
+
+Schlag mir konkrete Spiele vor, von denen ich mich trennen könnte (verkaufen oder verschenken), und begründe jeden Vorschlag kurz und konkret anhand der Daten. Berücksichtige dabei:
+
+- Spiele, die lange nicht oder nie gespielt wurden
+- Spiele mit niedriger eigener Bewertung
+- Spiele, die sich stark mit anderen, öfter gespielten Spielen in meiner Sammlung überschneiden (gleiche Nische, gleicher Mechanismus, gleiches Spielgefühl)
+- Spiele, die schwer auf den Tisch zu bringen sind (zu komplex oder zu lang für meine übliche Runde)
+
+Sei dabei nicht gnadenlos: wenn ein Spiel selten, aber offenbar bewusst für besondere Anlässe aufgehoben wird, weise darauf hin statt es pauschal zum Abgeben vorzuschlagen. Fass am Ende die stärksten Kandidaten in einer kurzen Liste zusammen.
+
+${collectionExport}`;
 }
 
 function buildCollectionContextForAI(games, plays) {
