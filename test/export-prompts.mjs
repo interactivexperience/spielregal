@@ -64,6 +64,7 @@ console.log("Neue-Spiele-Prompt nennt Preis/Preis-Leistung:", t.includes("Preis-
 console.log("Neue-Spiele-Prompt nennt Wiederspielwert:", t.includes("Wiederspielwert"));
 console.log("Neue-Spiele-Prompt nennt Platzbedarf:", t.includes("Platzbedarf"));
 console.log("Neue-Spiele-Prompt nennt Sprachabhängigkeit:", t.includes("Sprachabhängigkeit"));
+console.log("Neue-Spiele-Prompt nennt Endpunkteberechnung:", t.includes("Endpunkteberechnung"));
 console.log("Neue-Spiele-Prompt nennt Auf-/Abbau:", t.includes("Auf- und Abbau"));
 console.log("Ohne Kandidaten: Platzhalter-Hinweis:", t.includes("keine Kandidaten angegeben"));
 console.log("Sammlungsdaten (Ark Nova) im Prompt enthalten:", t.includes("Ark Nova"));
