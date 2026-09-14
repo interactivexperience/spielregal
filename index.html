@@ -8590,6 +8590,21 @@ function App() {
           </filter>
         </defs>
       </svg>
+      {/* Pull-to-Refresh ist eine Touch-Geste und feuert mit Maus/Trackpad nie --
+          auf Desktop sonst nur per Cmd+R (Browser-Reload) erreichbar, was
+          niemand von selbst vermutet. Deshalb hier zusaetzlich ein sichtbarer
+          Knopf, nur ab 1024px, an fester Position ausserhalb der schmalen
+          App-Spalte (echtes position:fixed, nicht auf die max-w-3xl-Spalte
+          beschraenkt). */}
+      <button
+        onClick={() => { window.location.href = window.location.pathname + "?refresh=" + Date.now() + window.location.hash; }}
+        className="hidden lg:flex fixed z-50 w-11 h-11 items-center justify-center rounded-full glass-icon-btn border border-rim/15 text-dim"
+        style={{ top: "1.25rem", right: "1.25rem" }}
+        aria-label="Neueste Version laden"
+        title="Neueste Version laden"
+      >
+        <RefreshCw size={17} />
+      </button>
       <div
         className="shrink-0 glass-strong border-b border-rim/10 flex items-center justify-center overflow-hidden"
         style={{
