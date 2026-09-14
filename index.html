@@ -262,6 +262,15 @@
   .rise-in { animation: riseIn .38s cubic-bezier(0.32, 0.72, 0, 1); }
   @keyframes sheetOut { from{opacity:1; transform:translateY(0);} to{opacity:0; transform:translateY(24px);} }
   .sheet-out { animation: sheetOut .22s cubic-bezier(0.32, 0.72, 0, 1) forwards; }
+  /* Desktop (>=1024px): Sheets sind dort zentrierte Dialoge, kein Bottom-
+     Sheet mehr -- "von unten reinschieben" sieht fuer ein Element in der
+     Bildschirmmitte seltsam aus. Gleiche Klassennamen, andere Keyframes. */
+  @keyframes riseInDesktop { from{opacity:0; transform:scale(0.96);} to{opacity:1; transform:scale(1);} }
+  @keyframes sheetOutDesktop { from{opacity:1; transform:scale(1);} to{opacity:0; transform:scale(0.96);} }
+  @media (min-width: 1024px) {
+    .rise-in { animation: riseInDesktop .22s cubic-bezier(0.32, 0.72, 0, 1); }
+    .sheet-out { animation: sheetOutDesktop .16s cubic-bezier(0.32, 0.72, 0, 1) forwards; }
+  }
   @keyframes backdropFadeIn { from { opacity: 0; } to { opacity: 1; } }
   .backdrop-fade { animation: backdropFadeIn .25s ease-out; }
   @keyframes backdropFadeOut { from { opacity: 1; } to { opacity: 0; } }
@@ -1770,8 +1779,8 @@ function BggImagesSheet({ bggId, onAdd, onClose }) {
   };
 
   return (
-    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[75] flex items-end justify-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
-      <div className={`glass border border-rim/10 rounded-t-[28px] w-full font-body flex flex-col ${closing ? "sheet-out" : "rise-in"}`} style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) => e.stopPropagation()}>
+    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[75] flex items-end justify-center lg:items-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
+      <div className={`glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] font-body flex flex-col ${closing ? "sheet-out" : "rise-in"}`} style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Bilder von BGG</h2>
@@ -1866,8 +1875,8 @@ function ImagePickerSheet({ onAdd, onClose, bggId }) {
   };
 
   return (
-    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[70] flex items-end justify-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
-      <div className={`glass border border-rim/10 rounded-t-[28px] w-full font-body p-5 space-y-2 ${closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
+    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[70] flex items-end justify-center lg:items-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
+      <div className={`glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] font-body p-5 space-y-2 ${closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <h3 className="font-display text-lg tracking-[-0.015em] text-ink mb-1">Foto hinzufügen</h3>
@@ -2200,8 +2209,8 @@ function TagPickerModal({ title, options, selected, onToggle, onAddCustom, onClo
   const exists = options.some((o) => o.toLowerCase() === query.trim().toLowerCase());
 
   return (
-    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[60] flex items-end justify-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }}>
-      <div className={`glass border border-rim/10 rounded-t-[28px] w-full max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top)-1.5rem)] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`}>
+    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[60] flex items-end justify-center lg:items-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }}>
+      <div className={`glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top)-1.5rem)] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl tracking-[-0.02em] text-ink">{title}</h2>
@@ -2416,8 +2425,8 @@ function MultiGamePickerSheet({ games, excludeId, filter, initialSelected = [], 
   const toggle = (id) => setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
 
   return (
-    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[66] flex items-end justify-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
-      <div className={`glass border border-rim/10 rounded-t-[28px] w-full font-body flex flex-col ${closing ? "sheet-out" : "rise-in"}`} style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) => e.stopPropagation()}>
+    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[66] flex items-end justify-center lg:items-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
+      <div className={`glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] font-body flex flex-col ${closing ? "sheet-out" : "rise-in"}`} style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl tracking-[-0.02em] text-ink">{title}</h2>
@@ -3640,8 +3649,8 @@ function BggMergeModal({ current, fresh, onApply, onClose }) {
   const toggle = (key) => setSelected((s) => ({ ...s, [key]: !s[key] }));
 
   return (
-    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[75] flex items-end justify-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
-      <div className={`glass border border-rim/10 rounded-t-[28px] w-full flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`} style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) =>
+    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[75] flex items-end justify-center lg:items-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
+      <div className={`glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`} style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) =>
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
@@ -3707,8 +3716,8 @@ function SearchStepSheet({ query, setQuery, runSearch, searching, searchError, r
     if (inputRef.current) inputRef.current.focus();
   }, []);
   return (
-    <div className="fixed top-0 left-0 right-0 bg-black/70 z-[59] flex items-end justify-center p-0" style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={onClose}>
-      <div className="glass border border-rim/10 rounded-t-[28px] w-full max-w-3xl mx-auto flex flex-col rise-in font-body" style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) => e.stopPropagation()}>
+    <div className="fixed top-0 left-0 right-0 bg-black/70 z-[59] flex items-end justify-center lg:items-center p-0" style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={onClose}>
+      <div className="glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] max-w-3xl mx-auto flex flex-col rise-in font-body" style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Spiel hinzufügen</h2>
@@ -3757,8 +3766,8 @@ function SearchStepSheet({ query, setQuery, runSearch, searching, searchError, r
 function ExpansionSuggestionsSheet({ vorschlaege, fehlende, onLink, onAdd, onClose }) {
   const { closing, requestClose } = useSheetClose(onClose);
   return (
-    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[66] flex items-end justify-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
-      <div className={`glass border border-rim/10 rounded-t-[28px] w-full font-body flex flex-col ${closing ? "sheet-out" : "rise-in"}`} style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) => e.stopPropagation()}>
+    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[66] flex items-end justify-center lg:items-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
+      <div className={`glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] font-body flex flex-col ${closing ? "sheet-out" : "rise-in"}`} style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Erweiterungen</h2>
@@ -4405,8 +4414,8 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
         )}
       </div>
       {aiMenuOpen && (
-        <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[70] flex items-end justify-center ${aiMenuClose.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)" }} onClick={aiMenuClose.requestClose}>
-          <div className={`bg-bg border border-line rounded-t-[28px] w-full max-w-3xl mx-auto font-body ${aiMenuClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) => e.stopPropagation()} style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
+        <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[70] flex items-end justify-center lg:items-center ${aiMenuClose.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)" }} onClick={aiMenuClose.requestClose}>
+          <div className={`bg-bg border border-line rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] max-w-3xl mx-auto font-body ${aiMenuClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) => e.stopPropagation()} style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
             <div className="px-5 py-4 flex items-center justify-between">
               <h2 className="font-display text-lg tracking-[-0.015em] text-ink">{aiWorkerUrl ? "KI-Werkzeuge" : "Spieldaten holen"}</h2>
               <button onClick={aiMenuClose.requestClose} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg text-dim"><X size={18} /></button>
@@ -4503,8 +4512,8 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
         />
       )}
       {bggFetchCandidates && (
-        <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[75] flex items-end justify-center p-0 ${bggCandClose.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)" }} onClick={bggCandClose.requestClose}>
-          <div className={`glass border border-rim/10 rounded-t-[28px] w-full max-h-[70vh] flex flex-col font-body ${bggCandClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
+        <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[75] flex items-end justify-center lg:items-center p-0 ${bggCandClose.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)" }} onClick={bggCandClose.requestClose}>
+          <div className={`glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] max-h-[70vh] flex flex-col font-body ${bggCandClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
             <div className="shrink-0 px-5 py-4 flex items-center justify-between">
@@ -4565,8 +4574,8 @@ function PlayerOrderModal({ players, onSave, onClose }) {
   const handleTouchEnd = () => { dragIndex.current = null; setDraggingId(null); };
 
   return (
-    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
-      <div className={`glass border border-rim/10 rounded-t-[28px] w-full font-body flex flex-col ${closing ? "sheet-out" : "rise-in"}`} style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) => e.stopPropagation()}>
+    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center lg:items-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
+      <div className={`glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] font-body flex flex-col ${closing ? "sheet-out" : "rise-in"}`} style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Reihenfolge</h2>
@@ -4699,8 +4708,8 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 bg-black/90 z-50 flex items-end justify-center p-0" style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }}>
-      <div onFocus={handleFocusScroll} className="glass border border-rim/10 rounded-t-[28px] w-full max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top)-1.5rem)] flex flex-col overflow-hidden rise-in font-body">
+    <div className="fixed top-0 left-0 right-0 bg-black/90 z-50 flex items-end justify-center lg:items-center p-0" style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }}>
+      <div onFocus={handleFocusScroll} className="glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top)-1.5rem)] flex flex-col overflow-hidden rise-in font-body">
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl tracking-[-0.02em] text-ink">{initial ? "Partie bearbeiten" : "Partie eintragen"}</h2>
@@ -4890,8 +4899,8 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
         )}
       </div>
       {newPlayerOpen && (
-        <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center p-0 ${newPlayerClose.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={newPlayerClose.requestClose}>
-          <div className={`glass border border-rim/10 rounded-t-[28px] w-full font-body p-5 space-y-3 ${newPlayerClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
+        <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center lg:items-center p-0 ${newPlayerClose.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={newPlayerClose.requestClose}>
+          <div className={`glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] font-body p-5 space-y-3 ${newPlayerClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
             <h3 className="font-display text-lg tracking-[-0.015em] text-ink">Neuer Mitspieler</h3>
@@ -4910,8 +4919,8 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
         <PlayerOrderModal players={playerProfiles} onSave={(ids) => onReorderPlayers && onReorderPlayers(ids)} onClose={() => setPlayerOrderOpen(false)} />
       )}
       {editingPlayer && (
-        <div className="fixed top-0 left-0 right-0 bg-black/90 z-[65] flex items-end justify-center p-0" style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={() => setEditingPlayer(null)}>
-          <div className="glass border border-rim/10 rounded-t-[28px] w-full rise-in font-body p-5 space-y-3" onClick={(e) =>
+        <div className="fixed top-0 left-0 right-0 bg-black/90 z-[65] flex items-end justify-center lg:items-center p-0" style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={() => setEditingPlayer(null)}>
+          <div className="glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] rise-in font-body p-5 space-y-3" onClick={(e) =>
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
             <h3 className="font-display text-lg tracking-[-0.015em] text-ink">Mitspieler bearbeiten</h3>
@@ -5510,8 +5519,8 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
           <MoreHorizontal size={18} />
         </button>
         {sortMenuOpen && (
-          <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[70] flex items-end justify-center p-0 ${sortMenuClose.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)" }} onClick={sortMenuClose.requestClose}>
-            <div className={`glass border border-rim/10 rounded-t-[28px] w-full font-body ${sortMenuClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) => e.stopPropagation()}>
+          <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[70] flex items-end justify-center lg:items-center p-0 ${sortMenuClose.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)" }} onClick={sortMenuClose.requestClose}>
+            <div className={`glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] font-body ${sortMenuClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) => e.stopPropagation()}>
               <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
               <div className="px-5 py-3">
                 <h2 className="font-display text-lg tracking-[-0.015em] text-ink">Dashboard sortieren</h2>
@@ -5709,8 +5718,8 @@ function AddGamesToListModal({ games, plays, list, onToggle, onClose, aiWorkerUr
   };
 
   return (
-    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
-      <div className={`glass border border-rim/10 rounded-t-[28px] w-full max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top)-1.5rem)] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
+    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center lg:items-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
+      <div className={`glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top)-1.5rem)] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
@@ -5863,8 +5872,8 @@ function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDelete
         <AddGamesToListModal games={games} plays={plays} list={list} onToggle={(gameId) => onToggleGame(list.id, gameId)} onClose={() => setAddOpen(false)} aiWorkerUrl={aiWorkerUrl} />
       )}
       {deleteMenuOpen && (
-        <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[66] flex items-end justify-center p-0 ${deleteMenuClose.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={deleteMenuClose.requestClose}>
-          <div className={`glass border border-rim/10 rounded-t-[28px] w-full font-body p-5 space-y-2 ${deleteMenuClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) => e.stopPropagation()}>
+        <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[66] flex items-end justify-center lg:items-center p-0 ${deleteMenuClose.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={deleteMenuClose.requestClose}>
+          <div className={`glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] font-body p-5 space-y-2 ${deleteMenuClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
             <button onClick={() => { setSelectMode(true); deleteMenuClose.requestClose(); }} className="w-full h-12 flex items-center gap-3 px-3.5 bg-surface border border-line rounded-[14px] text-ink text-sm">
               <Check size={16} /> Mehrere Spiele entfernen…
@@ -5877,8 +5886,8 @@ function ListDetailModal({ list, games, plays, onClose, onView, onEdit, onDelete
         </div>
       )}
       {contextGame && (
-        <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[66] flex items-end justify-center p-0 ${contextGameClose1.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={contextGameClose1.requestClose}>
-          <div className={`glass border border-rim/10 rounded-t-[28px] w-full font-body p-5 space-y-2 ${contextGameClose1.closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
+        <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[66] flex items-end justify-center lg:items-center p-0 ${contextGameClose1.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={contextGameClose1.requestClose}>
+          <div className={`glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] font-body p-5 space-y-2 ${contextGameClose1.closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
             <div className="flex items-center gap-3 pb-3 mb-1">
@@ -5971,8 +5980,8 @@ function ListPickerModal({ lists, gameId, onToggle, onCreate, onClose }) {
   const [newName, setNewName] = useState("");
   const [nameError, setNameError] = useState(false);
   return (
-    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
-      <div className={`glass border border-rim/10 rounded-t-[28px] w-full max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top)-1.5rem)] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
+    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center lg:items-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
+      <div className={`glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top)-1.5rem)] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
@@ -6009,8 +6018,8 @@ function ListPickerModal({ lists, gameId, onToggle, onCreate, onClose }) {
 function PlayLogFilterModal({ filters, onChange, onClose, onReset, allWinners, viewMode, onChangeViewMode }) {
   const { closing, requestClose } = useSheetClose(onClose);
   return (
-    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
-      <div className={`glass border border-rim/10 rounded-t-[28px] w-full flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`} style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) =>
+    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center lg:items-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={requestClose}>
+      <div className={`glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`} style={{ maxHeight: "calc(var(--app-height, 100dvh) - 2rem)" }} onClick={(e) =>
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
@@ -6080,8 +6089,8 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
   };
 
   return (
-    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[60] flex items-end justify-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }}>
-      <div className={`glass border border-rim/10 rounded-t-[28px] w-full max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top)-1.5rem)] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`}>
+    <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[60] flex items-end justify-center lg:items-center p-0 ${closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }}>
+      <div className={`glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top)-1.5rem)] flex flex-col font-body ${closing ? "sheet-out" : "rise-in"}`}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
         <div className="shrink-0 px-5 py-4 flex items-center justify-between">
           <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Filter</h2>
@@ -6488,8 +6497,8 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
         </p>
       </div>
       {contextGame && (
-        <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center p-0 ${contextGameClose2.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={contextGameClose2.requestClose}>
-          <div className={`glass border border-rim/10 rounded-t-[28px] w-full font-body p-5 space-y-2 ${contextGameClose2.closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
+        <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center lg:items-center p-0 ${contextGameClose2.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={contextGameClose2.requestClose}>
+          <div className={`glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] font-body p-5 space-y-2 ${contextGameClose2.closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
             <div className="flex items-center gap-3 pb-3 mb-1">
@@ -6564,8 +6573,8 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
         />
       )}
       {createListOpen && (
-        <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center p-0 ${createListClose.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={createListClose.requestClose}>
-          <div className={`glass border border-rim/10 rounded-t-[28px] w-full font-body p-5 space-y-3 ${createListClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
+        <div className={`fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center lg:items-center p-0 ${createListClose.closing ? "backdrop-fade-out" : "backdrop-fade"}`} style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={createListClose.requestClose}>
+          <div className={`glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] font-body p-5 space-y-3 ${createListClose.closing ? "sheet-out" : "rise-in"}`} onClick={(e) =>
         e.stopPropagation()}>
         <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
             <h3 className="font-display text-lg tracking-[-0.015em] text-ink">Neue Liste</h3>
@@ -6846,8 +6855,8 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
         </div>
       )}
       {bestListInfoOpen && (
-        <div className="fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center p-0" style={{ height: "var(--app-height, 100dvh)" }} onClick={() => setBestListInfoOpen(false)}>
-          <div className="glass border border-rim/10 rounded-t-[28px] w-full font-body" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center lg:items-center p-0" style={{ height: "var(--app-height, 100dvh)" }} onClick={() => setBestListInfoOpen(false)}>
+          <div className="glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] font-body" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
             <div className="px-5 py-4" style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}>
               <p className="text-ink font-display text-lg tracking-[-0.015em] mb-2">Wie wird die Bestenliste berechnet?</p>
@@ -7015,10 +7024,10 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
         );
       })()}
       {h2hPick && (
-        <div className="fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center p-0 backdrop-fade"
+        <div className="fixed top-0 left-0 right-0 bg-black/70 z-[65] flex items-end justify-center lg:items-center p-0 backdrop-fade"
           style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }}
           onClick={() => setH2hPick(null)}>
-          <div className="glass border border-rim/10 rounded-t-[28px] w-full max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top)-1.5rem)] flex flex-col font-body rise-in"
+          <div className="glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top)-1.5rem)] flex flex-col font-body rise-in"
             onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
             <div className="shrink-0 px-5 py-3 flex items-center justify-between">
@@ -8481,7 +8490,7 @@ function App() {
         {...ptr.handlers}
       >
         {ptr.anzeige}
-        <div key={tab} className="tab-fade">
+        <div key={tab} className="tab-fade lg:max-w-3xl lg:mx-auto">
           {tab === "dashboard" && <Dashboard games={displayGames} plays={displayPlays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} onView={(g) => setDetailGame(g)} sectionOrder={dashboardOrder} onReorder={setDashboardOrder} hiddenSections={hiddenDashboardSections} onToggleHidden={setHiddenDashboardSections} onSearch={() => setCommandBarOpen(true)} aiWorkerUrl={aiWorkerUrl} />}
           {tab === "collection" && <Collection games={displayGames} plays={displayPlays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => !readOnly && setGameModal({ editing: null })} onView={(g) => setDetailGame(g)} onEdit={(g) => setGameModal({ editing: g })} onDelete={(g) => deleteGame(g.id)} categoryOptions={categoryOptions} mechanismOptions={mechanismOptions} demoMode={readOnly} guestMode={guestMode} lists={displayLists} onCreateList={(name) => !readOnly && addList(name)} onOpenList={(l) => setDetailList(l)} />}
           {tab === "playlog" && <PlayLog plays={displayPlays} games={displayGames} onAdd={() => !readOnly && setPlayModal({ editing: null })} onEdit={(p) => !readOnly && setPlayModal({ editing: p })} onDelete={deletePlay} demoMode={readOnly} playerProfiles={displayPlayers} />}
@@ -8537,7 +8546,7 @@ function App() {
           paddingTop: "3.5rem",
           backgroundImage: "linear-gradient(to bottom, transparent, rgb(var(--bg)) 55%)",
         }}>
-        <div className="relative rounded-full px-1.5 py-1.5 overflow-hidden pointer-events-auto" style={{
+        <div className="relative rounded-full px-1.5 py-1.5 overflow-hidden pointer-events-auto mx-auto min-w-[300px] max-w-[420px]" style={{
           background: "rgb(var(--surface))",
           boxShadow: "var(--elev-nav)",
         }}>
