@@ -40,6 +40,12 @@ const PIXEL2 = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAU
 // in Wirklichkeit nur eins.
 const PIXEL3 = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%23f00'/%3E%3C/svg%3E";
 const PIXEL4 = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%2300f'/%3E%3C/svg%3E";
+// Eigene, garantiert einmalige "micro"-Platzhalter fuer die Galerie -- PIXEL/
+// PIXEL2 werden schon fuer die offiziellen Editionen verwendet, eine
+// Ueberschneidung wuerde die "nicht die kleine Variante"-Pruefung unten
+// verfaelschen.
+const PIXEL_MICRO1 = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%23ff0'/%3E%3C/svg%3E";
+const PIXEL_MICRO2 = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%23f0f'/%3E%3C/svg%3E";
 const fakeVersionsXml = `<?xml version="1.0"?><items>
   <item type="boardgame" id="224517">
     <name type="primary" value="Brass: Birmingham" />
@@ -61,10 +67,14 @@ const fakeVersionsXml = `<?xml version="1.0"?><items>
 </items>`;
 await page.route("**/xmlapi2/thing?id=224517&versions=1*", r => r.fulfill({ body: fakeVersionsXml, contentType: "text/xml" }));
 
+// Nachgebildet aus einer ECHTEN Live-Antwort der geekdo-Bilder-API (flache
+// Felder, kein verschachteltes Groessen-Objekt -- ein frueherer Parser, der
+// ein "images"/"sizes"-Unterobjekt erwartete, fiel dadurch still auf das
+// winzige 64x64-"imageurl"-Icon zurueck statt auf "imageurl_lg").
 const galleryJson = JSON.stringify({
   images: [
-    { images: { medium: { url: PIXEL3 } }, user: { username: "spielefan42" } },
-    { images: { medium: { url: PIXEL4 } }, username: "brettspielFan" },
+    { imageurl_lg: PIXEL3, imageurl: PIXEL_MICRO1, "imageurl@2x": PIXEL_MICRO1, user: { username: "spielefan42" } },
+    { imageurl_lg: PIXEL4, imageurl: PIXEL_MICRO2, "imageurl@2x": PIXEL_MICRO2, username: "brettspielFan" },
   ],
 });
 await page.route("**/geekdo-images*", r => r.fulfill({ body: galleryJson, contentType: "application/json" }));
@@ -130,5 +140,7 @@ await page.locator('button:has-text("Speichern")').first().click();
 await page.waitForTimeout(700);
 const gespeichert = await page.evaluate(() => (JSON.parse(localStorage.getItem("spielregal:games"))||[]).find(g => g.id === "g1"));
 console.log("2 zusaetzliche Bilder gespeichert (1 offiziell + 1 Galerie):", (gespeichert.images || []).length === 2);
+console.log("Galerie-Bild ist die GROSSE Variante (imageurl_lg), nicht das 64x64-Icon:",
+  gespeichert.images.includes(PIXEL3) && !gespeichert.images.includes(PIXEL_MICRO1));
 
 await b.close(); server.close();

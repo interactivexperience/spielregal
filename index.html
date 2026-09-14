@@ -2985,14 +2985,13 @@ async function bggGalleryImages(bggId, page = 1) {
   if (!res.ok) throw new Error("BGG-Bildergalerie gerade nicht erreichbar");
   const json = await res.json();
   const raw = json.images || json.items || [];
+  // Echtes Antwortformat (per Live-Test ermittelt): flache Felder, kein
+  // verschachteltes Groessen-Objekt. "imageurl" ist nur ein 64x64-Icon
+  // ("micro") -- fuer Vorschau UND gespeichertes Bild viel zu klein und
+  // sichtbar verpixelt. "imageurl_lg" ist die 1024x1024-Version, die sowohl
+  // im Grid scharf herunterskaliert als auch als gespeichertes Foto taugt.
   const images = raw.map((it) => {
-    const sizes = it.images || it.sizes || {};
-    const pick = (key) => (typeof sizes[key] === "string" ? sizes[key] : sizes[key]?.url);
-    // Bewusst NICHT die kleinste "thumb"-Variante -- die ist fuer winzige Icons
-    // gedacht und sieht in einem 3-spaltigen Grid, erst recht auf Retina-
-    // Displays, hochskaliert sichtbar verpixelt aus. "medium" (oder notfalls
-    // die volle Groesse) sehen beim Herunterskalieren dagegen immer scharf aus.
-    const image = pick("medium") || pick("large") || pick("original") || it.imageurl || it.url || pick("small") || pick("thumb");
+    const image = it.imageurl_lg || it.imageurl || it.url;
     if (!image) return null;
     return { image, uploader: it.user?.username || it.username || "" };
   }).filter(Boolean);
