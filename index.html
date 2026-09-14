@@ -2481,6 +2481,9 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
   const [manualMergeDrop, setManualMergeDrop] = useState("");
   const [mergeFeedback, setMergeFeedback] = useState(null);
   const [exportCopied, setExportCopied] = useState(false);
+  const [exportOptions, setExportOptions] = useState(() => loadKey("spielregal:exportOptions", EXPORT_OPTIONS_DEFAULTS));
+  useEffect(() => { saveKey("spielregal:exportOptions", exportOptions); }, [exportOptions]);
+  const toggleExportOption = (key) => setExportOptions((o) => ({ ...o, [key]: !o[key] }));
   const [catInput, setCatInput] = useState("");
   const [mechInput, setMechInput] = useState("");
   const [typeInput, setTypeInput] = useState("");
@@ -2504,11 +2507,31 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
   }
 
   if (view === "export") {
-    const exportText = buildFullCollectionExport(games);
+    const exportText = buildFullCollectionExport(games, exportOptions);
+    const EXPORT_TOGGLES = [
+      { key: "includeWishlist", label: "Wunschliste" },
+      { key: "includeOnlyPlayed", label: "Nur gespielt, nicht im Besitz" },
+      { key: "includeSummary", label: "Beschreibungstext je Spiel" },
+    ];
     return (
       <SettingsSubPage title="Für KI exportieren" onBack={() => setView("menu")}>
         <div>
           <p className="text-xs text-dim mb-3">Textübersicht deiner Sammlung zum Einfügen in eine KI — etwa für „Welche meiner Spiele passen zu Fans von Terraforming Mars?“.</p>
+          <div className="mb-3 space-y-1.5">
+            <div className="w-full h-11 flex items-center justify-between text-left px-3.5 rounded-[14px] border bg-accent/15 border-accent/40">
+              <span className="text-sm flex-1 min-w-0 text-left pr-2 text-ink">Im Besitz</span>
+              <span className="text-[10px] text-dim shrink-0">immer dabei</span>
+            </div>
+            {EXPORT_TOGGLES.map((t) => (
+              <button key={t.key} type="button" onClick={() => toggleExportOption(t.key)}
+                className={`w-full h-11 flex items-center justify-between text-left px-3.5 rounded-[14px] border ${exportOptions[t.key] ? "bg-accent/15 border-accent/40" : "bg-transparent border-line"}`}>
+                <span className={`text-sm flex-1 min-w-0 text-left pr-2 ${exportOptions[t.key] ? "text-ink" : "text-dim"}`}>{t.label}</span>
+                <div className={`w-9 h-5 rounded-full flex items-center px-0.5 transition-colors shrink-0 ${exportOptions[t.key] ? "bg-accent justify-end" : "bg-line justify-start"}`}>
+                  <div className="w-4 h-4 rounded-full bg-ink" />
+                </div>
+              </button>
+            ))}
+          </div>
           <div className="flex gap-2 mb-3">
             <button
               onClick={async () => {
@@ -3285,14 +3308,19 @@ SPIELERTYPEN: Begriff1, Begriff2`;
 
 // Builds a compact text summary of the collection + recent play history to
 // give the AI real context, without sending full game objects.
+const EXPORT_OPTIONS_DEFAULTS = { includeWishlist: true, includeOnlyPlayed: true, includeSummary: true };
 // Full, uncapped export for pasting into an external AI (Gemini, ChatGPT, etc.)
 // that the person wants to ask specific questions about their collection — no
 // token-budget trimming needed here since it's a one-off manual copy, not an
 // API call Anthropic/us would pay for on every message.
-function buildFullCollectionExport(games) {
+// Im Besitz befindliche Spiele stehen immer drin -- das ist der ganze Sinn des
+// Exports -- der Rest (Wunschliste, nur Gespielte, Beschreibungstext) ist
+// ueber "options" an-/abwaehlbar, um den Export kuerzer/persoenlicher zu machen.
+function buildFullCollectionExport(games, options = EXPORT_OPTIONS_DEFAULTS) {
+  const { includeWishlist = true, includeOnlyPlayed = true, includeSummary = true } = options;
   const owned = games.filter((g) => g.status === "owned");
-  const wishlist = games.filter((g) => g.status === "wishlist");
-  const onlyPlayed = games.filter((g) => g.status === "none");
+  const wishlist = includeWishlist ? games.filter((g) => g.status === "wishlist") : [];
+  const onlyPlayed = includeOnlyPlayed ? games.filter((g) => g.status === "none") : [];
 
   const gameLine = (g) => {
     const tags = [...(g.categories || []), ...(g.mechanisms || [])].join(", ") || "-";
@@ -3305,20 +3333,18 @@ function buildFullCollectionExport(games) {
     const expansions = games.filter((x) => x.expansionOf === g.id).map((x) => x.name);
     const expansionsNote = expansions.length ? ` | Eigene Erweiterungen: ${expansions.join(", ")}` : "";
     const format = g.format === "digital" ? " | Digital besessen" : "";
-    const desc = g.summary ? `\n  Beschreibung: ${g.summary.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()}` : "";
+    const desc = includeSummary && g.summary ? `\n  Beschreibung: ${g.summary.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()}` : "";
     return `- ${g.name}${g.germanName && g.germanName !== g.name ? ` (${g.germanName})` : ""} (${g.year || "?"}) | ${(g.publishers || []).join(", ") || "Verlag unbekannt"} | ${players2} | ${time} | Komplexität: ${comp} | Bewertung: ${rating} | Themen: ${tags}${format}${expansionNote}${expansionsNote}${desc}`;
   };
+
+  const wishlistSection = includeWishlist ? `\n\n=== WUNSCHLISTE (${wishlist.length}) ===\n${wishlist.map(gameLine).join("\n") || "keine"}` : "";
+  const onlyPlayedSection = includeOnlyPlayed && onlyPlayed.length > 0 ? `\n\n=== NUR GESPIELT, NICHT IM BESITZ (${onlyPlayed.length}) ===\n${onlyPlayed.map(gameLine).join("\n")}` : "";
 
   return `SPIELREGAL-SAMMLUNGSEXPORT (erzeugt am ${new Date().toLocaleDateString("de-DE")})
 Dies ist eine Übersicht einer Brettspielsammlung, exportiert aus der App "Spielregal". Nutze sie, um Fragen zur Sammlung zu beantworten. Enthält bewusst keine Partien-Historie oder sonstige persönlichen Daten — nur die Spiele selbst.
 
 === IM BESITZ (${owned.length}) ===
-${owned.map(gameLine).join("\n") || "keine"}
-
-=== WUNSCHLISTE (${wishlist.length}) ===
-${wishlist.map(gameLine).join("\n") || "keine"}
-
-${onlyPlayed.length > 0 ? `=== NUR GESPIELT, NICHT IM BESITZ (${onlyPlayed.length}) ===\n${onlyPlayed.map(gameLine).join("\n")}` : ""}`;
+${owned.map(gameLine).join("\n") || "keine"}${wishlistSection}${onlyPlayedSection}`;
 }
 
 function buildCollectionContextForAI(games, plays) {
