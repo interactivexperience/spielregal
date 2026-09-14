@@ -2959,6 +2959,14 @@ async function cloudPull(syncUrl, apiKey) {
   const res = await fetch(url);
   if (!res.ok) throw new Error("Karten ziehen fehlgeschlagen — Cloud-Abruf hat nicht geklappt");
   const json = await res.json();
+  // Firebase antwortet bei abgelehntem Zugriff (z.B. abgelaufene/fehlende
+  // Anmeldung) mit HTTP 200 und { error: "Permission denied" } im Body --
+  // KEIN Fehler-Statuscode. Ohne diese Pruefung wurde das oben als "gueltige,
+  // leere Antwort" durchgereicht und hat lokale Daten stillschweigend
+  // geloescht, obwohl in Wahrheit nur die Anmeldung fehlgeschlagen ist.
+  if (json && typeof json === "object" && typeof json.error === "string") {
+    throw new Error(`Cloud-Abruf abgelehnt: ${json.error}`);
+  }
   return json;
 }
 
@@ -8357,10 +8365,26 @@ function App() {
   // take over as the source of truth (overwriting whatever was loaded from
   // localStorage above). Without a syncUrl, the localStorage-loaded state
   // from above is simply what's used — no cloud round-trip needed.
+  //
+  // Safety net: a pull that comes back empty/invalid (auth hiccup, flaky
+  // network, Firebase returning an error body with HTTP 200 — see cloudPull)
+  // must NEVER silently overwrite an already-non-empty local collection.
+  // This used to happen unconditionally here and wiped real collections on
+  // nothing more than a transient sync failure. If the remote genuinely has
+  // no data AND local is already empty too, there's nothing to lose by
+  // taking it over (e.g. a real first run on a new device).
   useEffect(() => {
     if (!syncUrl) return;
     setSyncStatus("syncing");
+    const localHadData = games.length > 0 || plays.length > 0;
     cloudPull(syncUrl, apiKey).then((remote) => {
+      const remoteHasData = remote && ((remote.games && remote.games.length) || (remote.plays && remote.plays.length));
+      if (!remoteHasData && localHadData) {
+        // Cloud kam leer zurueck, aber wir haben lokal echte Daten -- lieber
+        // gar nichts tun und einen Fehler zeigen, als sie zu loeschen.
+        setSyncStatus("error");
+        return;
+      }
       setGames((remote && remote.games) || []);
       setPlays((remote && remote.plays) || []);
       setCustomCategories((remote && remote.customCategories) || []);
