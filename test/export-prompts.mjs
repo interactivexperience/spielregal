@@ -65,6 +65,11 @@ console.log("Neue-Spiele-Prompt nennt Wiederspielwert:", t.includes("Wiederspiel
 console.log("Neue-Spiele-Prompt nennt Platzbedarf:", t.includes("Platzbedarf"));
 console.log("Neue-Spiele-Prompt nennt Sprachabhängigkeit:", t.includes("Sprachabhängigkeit"));
 console.log("Neue-Spiele-Prompt nennt Endpunkteberechnung:", t.includes("Endpunkteberechnung"));
+console.log("Neue-Spiele-Prompt nennt Eleganz:", t.includes("Eleganz des Gameplays"));
+console.log("Neue-Spiele-Prompt nennt Fiddligkeit:", t.includes("Fiddligkeit"));
+console.log("Neue-Spiele-Prompt nennt Erklärzeit:", t.includes("Erklärzeit"));
+console.log("Neue-Spiele-Prompt nennt Regellernen:", t.includes("Regellernen"));
+console.log("Neue-Spiele-Prompt nennt Wiedereinstieg:", t.includes("Wiedereinstieg nach Pause"));
 console.log("Neue-Spiele-Prompt nennt Auf-/Abbau:", t.includes("Auf- und Abbau"));
 console.log("Ohne Kandidaten: Platzhalter-Hinweis:", t.includes("keine Kandidaten angegeben"));
 console.log("Sammlungsdaten (Ark Nova) im Prompt enthalten:", t.includes("Ark Nova"));
