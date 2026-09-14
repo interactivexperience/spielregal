@@ -61,6 +61,8 @@ console.log("Neue-Spiele-Prompt nennt Brettspiel-Community ueber alle Kanaele (n
 console.log("Neue-Spiele-Prompt nennt Dauerbrenner:", t.includes("Dauerbrenner"));
 console.log("Neue-Spiele-Prompt fragt kritisch nach Vielspieler-Einschaetzung (nicht alles ist automatisch Dauerbrenner):", t.includes("Sei hier kritisch") && t.includes("Vielspieler"));
 console.log("Neue-Spiele-Prompt verlangt klare Kaufempfehlung (Kaufen/Nicht kaufen, keine Zwischenstufen):", t.includes("Kaufen oder Nicht kaufen") && t.includes("keine Zwischenstufen"));
+console.log("Neue-Spiele-Prompt fragt nach zu ersetzendem Spiel aus der Sammlung:", t.includes("sollte im Gegenzug ersetzt werden") && t.includes("Nenne das Spiel beim Namen"));
+console.log("Neue-Spiele-Prompt verlangt Pro/Contra-Liste im Antwortformat:", t.includes("Pro/Contra-Liste") && t.includes("Pro: ...") && t.includes("Contra: ...") && t.includes("Ersetzt:"));
 console.log("Neue-Spiele-Prompt nennt BGA:", t.includes("Board Game Arena (BGA)"));
 console.log("Neue-Spiele-Prompt nennt Preis/Preis-Leistung:", t.includes("Preis-Leistung"));
 console.log("Neue-Spiele-Prompt nennt Wiederspielwert:", t.includes("Wiederspielwert"));
