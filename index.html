@@ -2538,7 +2538,19 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     const EXPORT_TOGGLES = [
       { key: "includeWishlist", label: "Wunschliste" },
       { key: "includeOnlyPlayed", label: "Nur gespielt, nicht im Besitz" },
-      { key: "includeSummary", label: "Beschreibungstext je Spiel" },
+    ];
+    // Einzeln abwaehlbare Datenfelder pro Spiel -- der eigentliche Grund fuer
+    // diese Feature-Erweiterung: bei einer grossen Sammlung wird der Export
+    // sonst zu lang, um ihn noch sinnvoll in eine externe KI einzufuegen.
+    const EXPORT_FIELD_TOGGLES = [
+      { key: "includeYear", label: "Jahr" },
+      { key: "includePublisher", label: "Verlag" },
+      { key: "includePlayerCount", label: "Spieleranzahl" },
+      { key: "includeDuration", label: "Spieldauer" },
+      { key: "includeComplexity", label: "Komplexität" },
+      { key: "includeRating", label: "Deine Bewertung" },
+      { key: "includeThemes", label: "Themen" },
+      { key: "includeSummary", label: "Beschreibungstext" },
     ];
     const EXPORT_MODE_INTROS = {
       raw: "Textübersicht deiner Sammlung zum Einfügen in eine KI — etwa für „Welche meiner Spiele passen zu Fans von Terraforming Mars?“.",
@@ -2582,6 +2594,17 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
                 </div>
               </button>
             ))}
+          </div>
+          <div className="mb-3">
+            <p className="text-[11px] text-dim mb-1.5">Felder pro Spiel <span className="text-[10px]">(abwählen, um den Export kürzer zu machen)</span></p>
+            <div className="flex flex-wrap gap-2">
+              {EXPORT_FIELD_TOGGLES.map((t) => (
+                <button key={t.key} type="button" onClick={() => toggleExportOption(t.key)}
+                  className={`px-3 py-1.5 rounded-full text-xs border ${exportOptions[t.key] ? "border-accent/50 bg-accent/10 text-ink font-medium" : "bg-surface border-line text-dim"}`}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="flex gap-2 mb-3">
             <button
@@ -3380,7 +3403,11 @@ SPIELERTYPEN: Begriff1, Begriff2`;
 
 // Builds a compact text summary of the collection + recent play history to
 // give the AI real context, without sending full game objects.
-const EXPORT_OPTIONS_DEFAULTS = { includeWishlist: true, includeOnlyPlayed: true, includeSummary: true };
+const EXPORT_OPTIONS_DEFAULTS = {
+  includeWishlist: true, includeOnlyPlayed: true, includeSummary: true,
+  includeYear: true, includePublisher: true, includePlayerCount: true,
+  includeDuration: true, includeComplexity: true, includeRating: true, includeThemes: true,
+};
 // Full, uncapped export for pasting into an external AI (Gemini, ChatGPT, etc.)
 // that the person wants to ask specific questions about their collection — no
 // token-budget trimming needed here since it's a one-off manual copy, not an
@@ -3389,24 +3416,37 @@ const EXPORT_OPTIONS_DEFAULTS = { includeWishlist: true, includeOnlyPlayed: true
 // Exports -- der Rest (Wunschliste, nur Gespielte, Beschreibungstext) ist
 // ueber "options" an-/abwaehlbar, um den Export kuerzer/persoenlicher zu machen.
 function buildFullCollectionExport(games, options = EXPORT_OPTIONS_DEFAULTS) {
-  const { includeWishlist = true, includeOnlyPlayed = true, includeSummary = true } = options;
+  const {
+    includeWishlist = true, includeOnlyPlayed = true, includeSummary = true,
+    includeYear = true, includePublisher = true, includePlayerCount = true,
+    includeDuration = true, includeComplexity = true, includeRating = true, includeThemes = true,
+  } = options;
   const owned = games.filter((g) => g.status === "owned");
   const wishlist = includeWishlist ? games.filter((g) => g.status === "wishlist") : [];
   const onlyPlayed = includeOnlyPlayed ? games.filter((g) => g.status === "none") : [];
 
+  // Jede Datenfeld-Zeile ist einzeln an-/abwaehlbar (siehe EXPORT_FIELD_TOGGLES
+  // in der SettingsPage) -- sonst wird der Export bei grossen Sammlungen zu
+  // lang, um ihn noch sinnvoll in eine externe KI einzufuegen. Erweiterungs-/
+  // Digital-Hinweise bleiben bewusst immer dabei: die sind kurz und nur
+  // vorhanden, wenn sie tatsaechlich zutreffen.
   const gameLine = (g) => {
-    const tags = [...(g.categories || []), ...(g.mechanisms || [])].join(", ") || "-";
-    const players2 = g.minPlayers ? `${g.minPlayers}-${g.maxPlayers} Spieler${formatBestPlayers(g) ? ` (am besten zu ${formatBestPlayers(g)})` : ""}` : "unbekannt";
-    const time = g.minTime ? `${g.minTime}-${g.maxTime} Min.` : "unbekannt";
-    const comp = complexityLabel(g) ? `${complexityLabel(g)} (${g.complexity}/5)` : "unbekannt";
-    const rating = g.rating ? `${g.rating}/10` : "keine";
+    const parts = [];
+    if (includeYear) parts.push(`Jahr: ${g.year || "?"}`);
+    if (includePublisher) parts.push((g.publishers || []).join(", ") || "Verlag unbekannt");
+    if (includePlayerCount) parts.push(g.minPlayers ? `${g.minPlayers}-${g.maxPlayers} Spieler${formatBestPlayers(g) ? ` (am besten zu ${formatBestPlayers(g)})` : ""}` : "Spieleranzahl unbekannt");
+    if (includeDuration) parts.push(g.minTime ? `${g.minTime}-${g.maxTime} Min.` : "Dauer unbekannt");
+    if (includeComplexity) parts.push(`Komplexität: ${complexityLabel(g) ? `${complexityLabel(g)} (${g.complexity}/5)` : "unbekannt"}`);
+    if (includeRating) parts.push(`Bewertung: ${g.rating ? `${g.rating}/10` : "keine"}`);
+    if (includeThemes) parts.push(`Themen: ${[...(g.categories || []), ...(g.mechanisms || [])].join(", ") || "-"}`);
     const base = g.expansionOf ? games.find((x) => x.id === g.expansionOf) : null;
-    const expansionNote = base ? ` | Erweiterung von: ${base.name}` : "";
+    if (base) parts.push(`Erweiterung von: ${base.name}`);
     const expansions = games.filter((x) => x.expansionOf === g.id).map((x) => x.name);
-    const expansionsNote = expansions.length ? ` | Eigene Erweiterungen: ${expansions.join(", ")}` : "";
-    const format = g.format === "digital" ? (g.status === "wishlist" ? " | Nur digital vorgemerkt (z.B. BGA-Reminder, KEIN Kaufwunsch)" : " | Digital besessen") : "";
+    if (expansions.length) parts.push(`Eigene Erweiterungen: ${expansions.join(", ")}`);
+    if (g.format === "digital") parts.push(g.status === "wishlist" ? "Nur digital vorgemerkt (z.B. BGA-Reminder, KEIN Kaufwunsch)" : "Digital besessen");
     const desc = includeSummary && g.summary ? `\n  Beschreibung: ${g.summary.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()}` : "";
-    return `- ${g.name}${g.germanName && g.germanName !== g.name ? ` (${g.germanName})` : ""} (${g.year || "?"}) | ${(g.publishers || []).join(", ") || "Verlag unbekannt"} | ${players2} | ${time} | Komplexität: ${comp} | Bewertung: ${rating} | Themen: ${tags}${format}${expansionNote}${expansionsNote}${desc}`;
+    const name = `${g.name}${g.germanName && g.germanName !== g.name ? ` (${g.germanName})` : ""}`;
+    return `- ${name}${parts.length ? " | " + parts.join(" | ") : ""}${desc}`;
   };
 
   const wishlistSection = includeWishlist ? `\n\n=== WUNSCHLISTE (${wishlist.length}) ===\n${wishlist.map(gameLine).join("\n") || "keine"}` : "";

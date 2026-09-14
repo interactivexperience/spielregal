@@ -66,7 +66,7 @@ console.log("Nach Abwaehlen: Wingspan raus:", !textNoWishlist.includes("Wingspan
 console.log("Nach Abwaehlen: Ark Nova bleibt (Besitz immer drin):", textNoWishlist.includes("Ark Nova"));
 
 // Beschreibung abwaehlen.
-await page.locator('button:has-text("Beschreibungstext je Spiel")').click();
+await page.locator('button:has-text("Beschreibungstext")').click();
 await page.waitForTimeout(300);
 const textNoSummary = await exportTextarea.inputValue();
 console.log("Nach Abwaehlen: Beschreibung raus:", !textNoSummary.includes("Baue den besten Zoo"));
