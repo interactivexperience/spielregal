@@ -2405,7 +2405,12 @@ function GameSearchPicker({ games, excludeId, filter, selectedId, onSelect, plac
         onFocus={(e) => { handleFocusScroll(e); setFocused(true); }}
         onBlur={() => setTimeout(() => setFocused(false), 150)}
         placeholder={placeholder}
-        className={`w-full h-12 border border-line rounded-[14px] px-3.5 text-base focus:outline-none focus:border-accent ${selectedId ? "bg-surface text-ink" : "bg-transparent text-ink placeholder-dim"}`}
+        // Bewusst h-11 (nicht h-12 wie echte Dateneingabe-Felder) und text-sm
+        // im Markup, obwohl `input, textarea, select { font-size: 16px !important; }`
+        // (iOS-Zoom-Schutz) die Schrift trotzdem auf 16px zwingt -- die Hoehe
+        // ist der einzige Hebel, der dieses Feld optisch an den benachbarten
+        // "Erweiterungen verknuepfen…"-Knopf (ebenfalls h-11) angleicht.
+        className={`w-full h-11 border border-line rounded-[14px] px-3.5 text-sm focus:outline-none focus:border-accent ${selectedId ? "bg-surface text-ink" : "bg-transparent text-ink placeholder-dim"}`}
       />
       {focused && results.length > 0 && (
         <div className="absolute z-10 left-0 right-0 mt-1.5 max-h-56 overflow-y-auto bg-surface border border-line rounded-[14px] py-1.5 shadow-lg">
@@ -4530,7 +4535,7 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
                 filter={(g) => !g.expansionOf}
                 selectedId={form.expansionOf || ""}
                 onSelect={(id) => update("expansionOf", id)}
-                placeholder="Eigenständiges Spiel — Basisspiel suchen…"
+                placeholder="Basisspiel suchen…"
               />
             </div>
 

@@ -61,6 +61,21 @@ console.log("Kampagnenspiel-Toggle-Label ist 14px (text-sm):", campaignSize === 
 console.log("Verliehen-Toggle-Label ist 14px (text-sm):", lentSize === "14px");
 console.log("Alle drei stimmen mit 'Erweiterungen verknüpfen' (14px) ueberein:", digitalSize === linkExpansionsSize && campaignSize === linkExpansionsSize && lentSize === linkExpansionsSize);
 
+// "Erweiterung von"-Suchfeld: Platzhalter war doppelt/zu lang ("Eigenstaendiges
+// Spiel — Basisspiel suchen…", wiederholte quasi den Feld-Label). Die Schrift
+// selbst bleibt bewusst bei 16px -- eine globale Regel
+// (input,textarea,select{font-size:16px!important}) verhindert iOS-Autozoom
+// beim Fokussieren und darf hier nicht unterlaufen werden. Optisch angeglichen
+// wird stattdessen ueber die Feldhoehe (h-11 wie der Nachbar-Knopf statt h-12
+// wie echte Dateneingabe-Felder).
+const baseGameInput = page.locator('input[placeholder="Basisspiel suchen…"]');
+console.log("'Erweiterung von'-Feld hat kurzen, nicht-doppelten Platzhalter:", await baseGameInput.count() === 1);
+const baseGameInputSize = await baseGameInput.evaluate((el) => getComputedStyle(el).fontSize);
+console.log("'Erweiterung von'-Feld bleibt bei 16px (iOS-Zoom-Schutz nicht unterlaufen):", baseGameInputSize === "16px");
+const baseGameInputBox = await baseGameInput.boundingBox();
+const linkExpansionsBox = await page.locator('button:has-text("Erweiterungen verknüpfen")').boundingBox();
+console.log("'Erweiterung von'-Feld hat dieselbe Hoehe wie 'Erweiterungen verknüpfen' (h-11):", Math.abs(baseGameInputBox.height - linkExpansionsBox.height) < 1);
+
 const campaignBox = await page.locator('span', { hasText: "Kampagnenspiel" }).first().boundingBox();
 console.log("'Kampagnenspiel (Fortschritts-Historie)' bricht nicht mehr um (Hoehe < 22px):", campaignBox.height < 22);
 await page.locator('button', { hasText: "Kampagnenspiel" }).scrollIntoViewIfNeeded();
