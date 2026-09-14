@@ -1796,7 +1796,7 @@ function BggImagesSheet({ bggId, onAdd, onClose }) {
           <p className="text-[11px] text-dim mb-2">Von Nutzern hochgeladen — nicht offiziell geprüft, bitte selbst aussortieren.</p>
           <div className="grid grid-cols-3 gap-2 pb-2">
             {gallery.map((img, i) => (
-              <Tile key={`${img.image}-${i}`} src={img.image} thumb={img.thumb} value={img.image} label={img.uploader ? `von ${img.uploader}` : ""} />
+              <Tile key={`${img.image}-${i}`} src={img.image} value={img.image} label={img.uploader ? `von ${img.uploader}` : ""} />
             ))}
           </div>
           {galleryLoading && <p className="text-xs text-dim text-center mt-2 flex items-center justify-center gap-2"><Loader2 size={14} /> Lädt Bilder…</p>}
@@ -2988,10 +2988,13 @@ async function bggGalleryImages(bggId, page = 1) {
   const images = raw.map((it) => {
     const sizes = it.images || it.sizes || {};
     const pick = (key) => (typeof sizes[key] === "string" ? sizes[key] : sizes[key]?.url);
-    const full = pick("large") || pick("original") || pick("medium") || it.imageurl || it.url || pick("small");
-    const thumb = pick("thumb") || pick("small") || full;
-    if (!full) return null;
-    return { image: full, thumb, uploader: it.user?.username || it.username || "" };
+    // Bewusst NICHT die kleinste "thumb"-Variante -- die ist fuer winzige Icons
+    // gedacht und sieht in einem 3-spaltigen Grid, erst recht auf Retina-
+    // Displays, hochskaliert sichtbar verpixelt aus. "medium" (oder notfalls
+    // die volle Groesse) sehen beim Herunterskalieren dagegen immer scharf aus.
+    const image = pick("medium") || pick("large") || pick("original") || it.imageurl || it.url || pick("small") || pick("thumb");
+    if (!image) return null;
+    return { image, uploader: it.user?.username || it.username || "" };
   }).filter(Boolean);
   // "showcount=50" pro Seite (siehe Worker) -- kommt eine volle Seite zurueck,
   // gehen wir von weiteren aus, statt uns auf ein unsicheres "total"-Feld zu verlassen.
