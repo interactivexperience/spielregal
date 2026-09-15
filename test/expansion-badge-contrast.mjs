@@ -1,10 +1,12 @@
-// Prueft einen echten Kontrast-Bug: das kleine "Erweiterung"-Rundbadge
-// (unten rechts auf einer Erweiterungs-Kachel im 4-Spalten-Grid) nutzte
-// text-ink auf einem festen bg-black/70-Hintergrund. text-ink ist im
-// Hellmodus dunkel/fast schwarz -- auf dem ebenfalls dunklen Badge-
-// Hintergrund war das Icon dadurch praktisch unsichtbar ("leeres Badge").
-// Die Nachbar-Badges (Digital, Sprachenzahl) nutzen bereits text-white und
-// sind davon nicht betroffen -- das Erweiterungs-Badge jetzt auch.
+// Prueft zwei echte Kontrast-Bugs im 4-Spalten-Grid, beide derselben Ursache:
+// eine theme-abhaengige Textfarbe (text-ink bzw. text-gold) auf einem festen
+// bg-black/70-Hintergrund. Im Hellmodus faerbt sich text-ink fast schwarz
+// (Erweiterungs-Badge wirkte "leer") und text-gold wird ein dunkleres,
+// matteres Braun-Gold (Bewertungs-Badge "immer noch nicht gut sichtbar").
+// Beide Badges nutzen jetzt festes text-white (der Stern im Bewertungs-
+// Badge bleibt als Akzent gold-gefaerbt, nur die eigentliche Zahl ist weiss).
+// Die Nachbar-Badges (Digital, Sprachenzahl) nutzten schon immer text-white
+// und waren nie betroffen.
 import { chromium } from "playwright";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -34,7 +36,7 @@ await page.route("**/cdn.tailwindcss.com/**", r => r.fulfill({ contentType: "app
 await page.route("**/fonts.googleapis.com/**", r => r.fulfill({ body: "", contentType: "text/css" }));
 
 const games = [
-  { id: "base1", name: "The Isle of Cats", status: "owned", categories: [], mechanisms: [], publishers: [], designers: [], addedDate: "2026-01-01" },
+  { id: "base1", name: "The Isle of Cats", status: "owned", rating: "8", categories: [], mechanisms: [], publishers: [], designers: [], addedDate: "2026-01-01" },
   { id: "exp1", name: "The Isle of Cats: Furry Allies", status: "owned", expansionOf: "base1", categories: [], mechanisms: [], publishers: [], designers: [], addedDate: "2026-01-02" },
 ];
 await page.addInitScript((g) => {
@@ -49,6 +51,13 @@ await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
 await page.waitForTimeout(2500);
 await page.locator('button:has-text("Sammlung")').last().click();
 await page.waitForTimeout(900);
+
+// --- Bewertungs-Badge (oben links, Basisspiel-Kachel, Slide 0) ---
+const ratingBadge = page.locator('span', { hasText: "8" }).filter({ has: page.locator("svg") }).first();
+console.log("Bewertungs-Badge sichtbar:", await ratingBadge.count() > 0);
+const ratingColor = await ratingBadge.evaluate((el) => getComputedStyle(el).color);
+console.log("DEBUG Bewertungs-Badge-Textfarbe:", ratingColor);
+console.log("Bewertungs-Zahl ist WEISS (nicht das matte Hellmodus-Gold):", ratingColor === "rgb(255, 255, 255)");
 
 // Erweiterungen stehen nicht als eigene Kachel in der Liste (list.filter(g
 // => !g.expansionOf)) -- sie werden ueber das Karussell der Basisspiel-Kachel
