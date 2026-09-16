@@ -2564,6 +2564,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     const EXPORT_TOGGLES = [
       { key: "includeWishlist", label: "Wunschliste" },
       { key: "includeOnlyPlayed", label: "Nur gespielt, nicht im Besitz" },
+      { key: "includeSold", label: "Bereits verkaufte Spiele" },
     ];
     // Einzeln abwaehlbare Datenfelder pro Spiel -- der eigentliche Grund fuer
     // diese Feature-Erweiterung: bei einer grossen Sammlung wird der Export
@@ -3430,7 +3431,7 @@ SPIELERTYPEN: Begriff1, Begriff2`;
 // Builds a compact text summary of the collection + recent play history to
 // give the AI real context, without sending full game objects.
 const EXPORT_OPTIONS_DEFAULTS = {
-  includeWishlist: true, includeOnlyPlayed: true, includeSummary: true,
+  includeWishlist: true, includeOnlyPlayed: true, includeSummary: true, includeSold: false,
   includeYear: true, includePublisher: true, includePlayerCount: true,
   includeDuration: true, includeComplexity: true, includeRating: true, includeThemes: true,
 };
@@ -3438,16 +3439,20 @@ const EXPORT_OPTIONS_DEFAULTS = {
 // that the person wants to ask specific questions about their collection — no
 // token-budget trimming needed here since it's a one-off manual copy, not an
 // API call Anthropic/us would pay for on every message.
-// Im Besitz befindliche Spiele stehen immer drin -- das ist der ganze Sinn des
-// Exports -- der Rest (Wunschliste, nur Gespielte, Beschreibungstext) ist
-// ueber "options" an-/abwaehlbar, um den Export kuerzer/persoenlicher zu machen.
+// Im Besitz befindliche Spiele stehen drin -- das ist der ganze Sinn des
+// Exports -- der Rest (Wunschliste, nur Gespielte, Beschreibungstext,
+// bereits verkaufte) ist ueber "options" an-/abwaehlbar, um den Export
+// kuerzer/persoenlicher zu machen. Bereits verkaufte Spiele (saleStatus
+// "sold") sind standardmaessig ausgeblendet, analog zum Sammlung-Filter --
+// erst aktives Einschalten zeigt sie mit; "zum Verkauf markiert" bleibt
+// immer drin, das sind noch aktuell besessene Spiele.
 function buildFullCollectionExport(games, options = EXPORT_OPTIONS_DEFAULTS) {
   const {
-    includeWishlist = true, includeOnlyPlayed = true, includeSummary = true,
+    includeWishlist = true, includeOnlyPlayed = true, includeSummary = true, includeSold = false,
     includeYear = true, includePublisher = true, includePlayerCount = true,
     includeDuration = true, includeComplexity = true, includeRating = true, includeThemes = true,
   } = options;
-  const owned = games.filter((g) => g.status === "owned");
+  const owned = games.filter((g) => g.status === "owned" && (includeSold || g.saleStatus !== "sold"));
   const wishlist = includeWishlist ? games.filter((g) => g.status === "wishlist") : [];
   const onlyPlayed = includeOnlyPlayed ? games.filter((g) => g.status === "none") : [];
 
