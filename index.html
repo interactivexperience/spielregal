@@ -258,6 +258,12 @@
   ::-webkit-scrollbar { width:8px; height:8px; }
   ::-webkit-scrollbar-track { background:transparent; }
   ::-webkit-scrollbar-thumb { background:rgb(var(--line)); border-radius:4px; }
+  /* Long-Press auf ein Cover (z.B. in der Sammlung fuer das Bearbeiten-/
+     Loeschen-Menue) loeste sonst zusaetzlich iOS' eigene Bild-Vorschau/
+     Drag-Ghost aus -- das Cover "vergroesserte" sich sichtbar kurz, bevor
+     das eigene Menue erschien. Unterdrueckt beides, ohne das Antippen
+     selbst zu beeintraechtigen. */
+  .no-callout { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; -webkit-user-select: none; }
   @keyframes riseIn { from{opacity:0; transform:translateY(24px);} to{opacity:1; transform:translateY(0);} }
   .rise-in { animation: riseIn .38s cubic-bezier(0.32, 0.72, 0, 1); }
   @keyframes sheetOut { from{opacity:1; transform:translateY(0);} to{opacity:0; transform:translateY(24px);} }
@@ -3832,7 +3838,7 @@ const Cover = ({ game, size = "md", className: extraClass = "", compact = false 
   );
   return img ? (
     <span className={`relative inline-block ${dims} ${extraClass} ${isLent ? "opacity-75" : ""}`}>
-      <img src={img} alt={game.name} className={`w-full h-full max-w-full block object-cover rounded-lg border border-line ${game.saleStatus ? "grayscale" : ""} ${extraClass}`} />
+      <img src={img} alt={game.name} draggable={false} className={`no-callout w-full h-full max-w-full block object-cover rounded-lg border border-line ${game.saleStatus ? "grayscale" : ""} ${extraClass}`} />
       {lentTint}
       {lentBadge}
     </span>
