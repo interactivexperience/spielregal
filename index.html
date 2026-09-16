@@ -5292,7 +5292,11 @@ function DashboardReorderScreen({ order, sections, labels, hiddenSections = [], 
 }
 
 function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorder, hiddenSections = [], onToggleHidden, onSearch, aiWorkerUrl }) {
-  const owned = games.filter(g => g.status === "owned");
+  // Bereits verkaufte Spiele stehen zwar noch mit status "owned" da (der
+  // Verkauf loescht den Eintrag nicht), gehoeren aber nicht mehr zur
+  // tatsaechlichen Sammlung -- "Spiele im Regal" & Co. duerfen sie nicht
+  // mitzaehlen. "Zum Verkauf markiert" ist noch aktueller Besitz und bleibt drin.
+  const owned = games.filter(g => g.status === "owned" && g.saleStatus !== "sold");
   const [statInfo, setStatInfo] = useState(null);
   const statInfoClose = useSheetClose(() => setStatInfo(null));
   const playCounts = useMemo(() => {
@@ -5805,7 +5809,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             <p className="text-ink font-display text-lg tracking-[-0.015em] mb-1.5">{statInfo === "collection" ? "Sammlung" : statInfo === "playedComplexity" ? "Deine Komplexität" : "Ø Komplexität"}</p>
             <p className="text-dim text-sm">
               {statInfo === "collection"
-                ? "Zählt alle Spiele mit dem Status \"Besitz\". Spiele auf der Wunschliste oder Spiele, die du nur gespielt hast, ohne sie zu besitzen, zählen hier nicht mit."
+                ? "Zählt alle Spiele mit dem Status \"Besitz\", die nicht bereits verkauft sind. Spiele auf der Wunschliste, bereits verkaufte Spiele oder Spiele, die du nur gespielt hast, ohne sie zu besitzen, zählen hier nicht mit."
                 : statInfo === "playedComplexity"
                 ? "Durchschnitt der BGG-Komplexitätsbewertung (1 = ganz einfach, 5 = sehr anspruchsvoll) über alle Spiele, die du tatsächlich gespielt hast — unabhängig davon, ob du sie besitzt. Partien mit Spielen ohne Komplexitätsangabe fließen nicht mit ein."
                 : "Durchschnitt der BGG-Komplexitätsbewertung (1 = ganz einfach, 5 = sehr anspruchsvoll) über alle deine besessenen Spiele, bei denen ein Wert hinterlegt ist. Spiele ohne Komplexitätsangabe fließen nicht mit ein."}
