@@ -6357,6 +6357,17 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
               />
             </div>
           </div>
+          {statusFilter === "wishlist" && (
+            <div>
+              <p className="text-[11px] text-dim mb-1.5">Nur digital vorgemerkte <span className="text-[10px]">(standardmäßig ausgeblendet)</span></p>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => onChange({ ...filters, showDigitalWishlist: !filters.showDigitalWishlist })}
+                  className={`px-3 py-1.5 rounded-full text-xs border ${filters.showDigitalWishlist ? "border-accent/50 bg-accent/10 text-ink font-medium" : "bg-surface border-line text-dim"}`}>
+                  Mit anzeigen
+                </button>
+              </div>
+            </div>
+          )}
           <div>
             <label className="block text-[11px] text-dim">Spielbar mit … Personen</label>
             <input value={filters.players} onChange={(e) => onChange({ ...filters, players: e.target.value })} placeholder="z.B. 4" inputMode="numeric"
@@ -6479,7 +6490,7 @@ const SORT_LABEL = {
   "complexity-desc": "nach Komplexität", "complexity-asc": "nach Komplexität, aufsteigend",
 };
 
-const COLLECTION_FILTERS_DEFAULTS = { categories: [], mechanisms: [], publishers: [], complexity: [], saleStatus: [], players: "", minRating: "" };
+const COLLECTION_FILTERS_DEFAULTS = { categories: [], mechanisms: [], publishers: [], complexity: [], saleStatus: [], players: "", minRating: "", showDigitalWishlist: false };
 // Wie viele Filter der Nutzer in der Sammlung-Ansicht gerade aktiv gesetzt
 // hat -- 0 heisst "Standardansicht" (nur Status "Besitz", ansonsten
 // ungefiltert), nicht "gar kein Status". Genau dieselbe Formel wie
@@ -6488,7 +6499,8 @@ const COLLECTION_FILTERS_DEFAULTS = { categories: [], mechanisms: [], publishers
 // gerade nicht gemountet ist.
 function collectionActiveFilterCount(statusFilter, filters) {
   return filters.categories.length + filters.mechanisms.length + filters.publishers.length + filters.complexity.length
-    + filters.saleStatus.length + (filters.players ? 1 : 0) + (filters.minRating ? 1 : 0) + (statusFilter !== "owned" ? 1 : 0);
+    + filters.saleStatus.length + (filters.players ? 1 : 0) + (filters.minRating ? 1 : 0) + (statusFilter !== "owned" ? 1 : 0)
+    + (statusFilter === "wishlist" && filters.showDigitalWishlist ? 1 : 0);
 }
 // Baut exakt dieselbe gefilterte + sortierte Liste wie die Sammlung-Ansicht
 // (ohne die Live-Suche, die ist nur voruebergehender UI-Zustand dort), aus
@@ -6509,6 +6521,10 @@ function buildCollectionList(games, plays, { statusFilter, filters, sortBy, gues
   else list = list.filter((g) => !g.saleStatus);
   if (filters.players) list = list.filter((g) => g.minPlayers && g.maxPlayers && parseInt(filters.players) >= parseInt(g.minPlayers) && parseInt(filters.players) <= parseInt(g.maxPlayers));
   if (filters.minRating) list = list.filter((g) => g.rating && parseInt(g.rating) >= parseInt(filters.minRating));
+  // Nur-digital-vorgemerkte Wunschlisten-Spiele (Reminder, kein Kaufwunsch)
+  // sind in der Wunschliste-Ansicht standardmaessig ausgeblendet -- erst
+  // aktives Einschalten des Filters zeigt sie mit dazu.
+  if (statusFilter === "wishlist" && !filters.showDigitalWishlist) list = list.filter((g) => g.format !== "digital");
   // Zugriffsbeschraenkung, kein gewoehnlicher Filter -- gilt immer, auch in
   // der ungefilterten "alles"-Ansicht.
   if (guestMode) list = list.filter((g) => g.status !== "wishlist" && g.saleStatus !== "sold");
@@ -6624,6 +6640,9 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
     else list = list.filter(g => !g.saleStatus);
     if (filters.players) list = list.filter(g => g.minPlayers && g.maxPlayers && parseInt(filters.players) >= parseInt(g.minPlayers) && parseInt(filters.players) <= parseInt(g.maxPlayers));
     if (filters.minRating) list = list.filter(g => g.rating && parseInt(g.rating) >= parseInt(filters.minRating));
+    // Nur-digital-vorgemerkte Wunschlisten-Spiele (Reminder, kein Kaufwunsch)
+    // sind standardmaessig ausgeblendet -- erst aktives Einschalten zeigt sie.
+    if (statusFilter === "wishlist" && !filters.showDigitalWishlist) list = list.filter(g => g.format !== "digital");
   }
   // Gästemodus: Wunschliste und verkaufte Spiele nie zeigen — egal welcher
   // Filter/welche Suche aktiv ist. Das ist eine Zugriffsbeschränkung, keine
@@ -6803,7 +6822,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           onChangeStatus={setStatusFilter}
           onChange={setFilters}
           onClose={() => setFilterModalOpen(false)}
-          onReset={() => { setFilters({ categories: [], mechanisms: [], publishers: [], complexity: [], saleStatus: [], players: "", minRating: "" }); setStatusFilter("owned"); }}
+          onReset={() => { setFilters(COLLECTION_FILTERS_DEFAULTS); setStatusFilter("owned"); }}
           guestMode={guestMode}
         />
       )}

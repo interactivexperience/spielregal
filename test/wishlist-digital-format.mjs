@@ -94,6 +94,12 @@ await filterBtn.first().click();
 await page.waitForTimeout(500);
 await page.locator('button:has-text("Wunschliste")').last().click();
 await page.waitForTimeout(300);
+// Nur-digital-vorgemerkte Wunschlisten-Spiele sind im Wunschliste-Filter
+// jetzt standardmaessig ausgeblendet (siehe wishlist-digital-filter.mjs) --
+// fuer diesen Check (Digital-Badge auf der Grid-Karte) muss das Spiel erst
+// aktiv mit eingeblendet werden.
+await page.locator('button:has-text("Mit anzeigen")').click();
+await page.waitForTimeout(300);
 await page.locator('button:has-text("Anwenden")').click();
 await page.waitForTimeout(500);
 await page.screenshot({ path: `${SP}/wishlist_digital_grid.png` });
