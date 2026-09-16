@@ -5199,7 +5199,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
 }
 
 /* ---------------- DASHBOARD ---------------- */
-const DEFAULT_DASHBOARD_ORDER = ["month", "records", "bestof", "wishlist", "topRated", "dust", "digital"];
+const DEFAULT_DASHBOARD_ORDER = ["month", "records", "bestof", "wishlist", "lent", "topRated", "dust", "digital"];
 
 function DashboardReorderScreen({ order, sections, labels, hiddenSections = [], onToggleHidden, onSave, onClose }) {
   const [items, setItems] = useState(order.filter((key) => sections[key]));
@@ -5305,6 +5305,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
   const lastPlays = [...plays].sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 6);
   const dustCollectors = owned.filter(g => !playCounts[g.id]).sort((a, b) => (a.addedDate || "").localeCompare(b.addedDate || "")).slice(0, 6);
   const topRated = [...owned].filter(g => g.rating).sort((a, b) => parseInt(b.rating) - parseInt(a.rating)).slice(0, 10);
+  const lentGames = owned.filter(g => g.lentTo && g.lentTo.trim());
   const complexGames = owned.filter(g => g.complexity);
   const avgComplexity = complexGames.length ? (complexGames.reduce((s, g) => s + parseFloat(g.complexity), 0) / complexGames.length).toFixed(1) : "—";
   const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -5666,6 +5667,18 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
         </div>
       </div>
     ),
+    lent: lentGames.length > 0 && (
+      <div key="lent" className="border-t border-line pt-5">
+        <div className="flex items-center gap-2 mb-3"><Handshake size={15} className="text-dim" /><h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em]">Verliehene Spiele</h2></div>
+        <div className="flex gap-3 overflow-x-auto pb-1">
+          {lentGames.map(g => (
+            <DashboardGameTile key={g.id} game={g} onClick={() => onView(g)}>
+              <p className="text-lent text-[10px] font-body truncate">an {g.lentTo.trim()}</p>
+            </DashboardGameTile>
+          ))}
+        </div>
+      </div>
+    ),
     topRated: topRated.length > 0 && (
       <div key="topRated" className="border-t border-line pt-5">
         <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-3">Top 10 Spiele</h2>
@@ -5729,7 +5742,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const sortMenuClose = useSheetClose(() => setSortMenuOpen(false));
   const [reorderScreenOpen, setReorderScreenOpen] = useState(false);
-  const SECTION_LABELS = { month: "Spiel des Monats", records: "Rekorde", wishlist: "Wunschliste", topRated: "Top 10 Spiele", dust: "Staubfänger", digital: "Digital vs. Physisch", bestof: "Best of" };
+  const SECTION_LABELS = { month: "Spiel des Monats", records: "Rekorde", wishlist: "Wunschliste", lent: "Verliehene Spiele", topRated: "Top 10 Spiele", dust: "Staubfänger", digital: "Digital vs. Physisch", bestof: "Best of" };
   const PRESETS = [
     { key: "default", label: "Standard", icon: ListChecks, order: DEFAULT_DASHBOARD_ORDER },
     { key: "activity", label: "Nach Aktivität", icon: Sparkles, order: ["month", "dust", "topRated", "records", "bestof", "wishlist", "digital"] },
@@ -5875,12 +5888,36 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
               </div>
             );
           })()}
-          {yearlyInsight && (
-            <div className="border-t border-line pt-5">
-              <p className="text-[10px] font-semibold text-accent uppercase tracking-[0.16em] mb-1.5 flex items-center gap-1.5"><Sparkles size={12} /> Dein Spieljahr {yearlyInsight.year}</p>
-              <TextWithGameLinks text={yearlyInsight.text} games={games} onView={onView} color="rgb(var(--accent))" />
-            </div>
-          )}
+          {yearlyInsight && (() => {
+            // Dieselbe Jahres-Filterung wie beim Generieren des Textes (siehe
+            // oben) -- hier nur fuers Anzeigen, nicht erneut gespeichert.
+            const yearPlays = plays.filter((p) => p.date && new Date(p.date).getFullYear() === yearlyInsight.year);
+            const yearPlayCounts = {};
+            yearPlays.forEach((p) => { yearPlayCounts[p.gameId] = (yearPlayCounts[p.gameId] || 0) + 1; });
+            const topEntry = Object.entries(yearPlayCounts).sort((a, b) => b[1] - a[1])[0];
+            const topGame = topEntry ? findGame(topEntry[0]) : null;
+            return (
+              <div className="border-t border-line pt-5">
+                <p className="text-[10px] font-semibold text-accent uppercase tracking-[0.16em] mb-2.5 flex items-center gap-1.5"><Sparkles size={12} /> Dein Spieljahr {yearlyInsight.year}</p>
+                <div className="rounded-2xl border border-accent/25 bg-accent/[0.06] p-4">
+                  {(yearPlays.length > 0 || topGame) && (
+                    <div className="flex items-center gap-3 mb-3">
+                      {topGame && (
+                        <button onClick={() => onView(topGame)} className="shrink-0">
+                          <Cover game={topGame} size="md" className="!rounded-xl" />
+                        </button>
+                      )}
+                      <div className="min-w-0">
+                        <p className="font-display text-3xl tracking-[-0.03em] text-ink leading-none">{yearPlays.length}</p>
+                        <p className="text-dim text-xs font-body mt-1">{yearPlays.length === 1 ? "Partie" : "Partien"} in {yearlyInsight.year}</p>
+                      </div>
+                    </div>
+                  )}
+                  <TextWithGameLinks text={yearlyInsight.text} games={games} onView={onView} color="rgb(var(--accent))" />
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
       {tasteProfile.length > 0 && (
