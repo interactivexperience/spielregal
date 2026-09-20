@@ -4827,6 +4827,7 @@ function PlayerOrderModal({ players, onSave, onClose }) {
               <span className="text-sm text-ink flex-1 truncate">{p.name}</span>
               <div
                 className="text-dim p-2 -mr-2"
+                style={{ touchAction: "none" }}
                 onTouchStart={() => handleTouchStart(idx, p.id)}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
@@ -4875,6 +4876,11 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
   };
   // Touch-based drag-reorder for the "Ergebnis" list (same pattern as the
   // Dashboard section reorder screen — native HTML5 drag doesn't work on touch).
+  // Der Griff braucht style={touchAction: "none"} (nicht nur das
+  // preventDefault() unten) -- React haengt onTouchMove standardmaessig als
+  // passiven Listener an, da schlaegt preventDefault() lautlos fehl und das
+  // Ziehen wird vom nativen Scrollen ueberstimmt, bevor JS ueberhaupt
+  // reagieren kann.
   const dragIndex = React.useRef(null);
   const [draggingPlayerId, setDraggingPlayerId] = useState(null);
   const resultRowRefs = React.useRef({});
@@ -5052,6 +5058,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                           }}>
                           <div
                             className="text-dim p-1 -ml-1 shrink-0"
+                            style={{ touchAction: "none" }}
                             onTouchStart={() => handleResultTouchStart(idx, id)}
                             onTouchMove={handleResultTouchMove}
                             onTouchEnd={handleResultTouchEnd}
@@ -5277,6 +5284,7 @@ function DashboardReorderScreen({ order, sections, labels, hiddenSections = [], 
             <span className={`text-sm flex-1 ${isHidden ? "text-dim" : "text-ink"}`}>{labels[key] || key}</span>
             <div
               className="text-dim p-2 -mr-2"
+              style={{ touchAction: "none" }}
               onTouchStart={() => handleTouchStart(idx)}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
