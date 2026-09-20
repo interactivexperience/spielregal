@@ -83,5 +83,44 @@ await page.waitForTimeout(300);
 names = await resultNames();
 console.log("Nach Anna=100: Reihenfolge Anna, Clara, Ben:", JSON.stringify(names) === JSON.stringify(["Anna", "Clara", "Ben"]));
 await page.screenshot({ path: `${SP}/play_result_autosort_2.png` });
+await b.close();
 
-await b.close(); server.close();
+// --- Bestehende Partie bearbeiten: die gespeicherte playerIds-Reihenfolge
+// entspricht NICHT den gespeicherten Punktzahlen (z.B. weil sie beim
+// urspruenglichen Eintragen in Auswahlreihenfolge gespeichert wurde, bevor
+// es die automatische Sortierung gab). Direkt beim Oeffnen zum Bearbeiten
+// muss die Liste trotzdem schon richtig sortiert dastehen -- nicht erst
+// nachdem man eine Punktzahl anfasst.
+const b2 = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+const page2 = await b2.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+page2.on("pageerror", (e) => console.log("PAGEERROR", e.message));
+await page2.route("**/cdnjs.cloudflare.com/**/react.production.min.js", r => r.fulfill({ path: vendor("react","umd","react.production.min.js"), contentType: "application/javascript" }));
+await page2.route("**/cdnjs.cloudflare.com/**/react-dom.production.min.js", r => r.fulfill({ path: vendor("react-dom","umd","react-dom.production.min.js"), contentType: "application/javascript" }));
+await page2.route("**/cdnjs.cloudflare.com/**/babel.min.js", r => r.fulfill({ path: vendor("@babel","standalone","babel.min.js"), contentType: "application/javascript" }));
+await page2.route("**/cdn.tailwindcss.com/**", r => r.fulfill({ contentType: "application/javascript",
+  body: `window.tailwind={config:{}};(function(){var s=document.createElement("style");s.textContent=${JSON.stringify(twCss)};document.head.appendChild(s);})();` }));
+await page2.route("**/fonts.googleapis.com/**", r => r.fulfill({ body: "", contentType: "text/css" }));
+const existingPlay = {
+  id: "play1", gameId: "g1", gameName: "Ark Nova", date: "2026-09-01", mode: "physical-owned",
+  playerIds: ["p1", "p2", "p3"], // unsortierte Auswahlreihenfolge
+  scores: { p1: "103", p2: "211", p3: "173" }, // p2 (Ben) hat die hoechste Punktzahl
+};
+await page2.addInitScript((data) => {
+  localStorage.setItem("spielregal:games", JSON.stringify(data.games));
+  localStorage.setItem("spielregal:plays", JSON.stringify([data.existingPlay]));
+  localStorage.setItem("spielregal:players", JSON.stringify(data.players));
+  localStorage.setItem("spielregal:theme", "dark");
+}, { games, players, existingPlay });
+await page2.goto(url, { waitUntil: "networkidle", timeout: 30000 });
+await page2.waitForTimeout(2000);
+await page2.locator('button:has-text("Partien")').last().click();
+await page2.waitForTimeout(800);
+await page2.locator('text=Ark Nova').first().click();
+await page2.waitForTimeout(700);
+await page2.locator('text=01.09.2026').first().click();
+await page2.waitForTimeout(700);
+const namesOnOpen = await page2.locator('label:has-text("Ergebnis")').locator('xpath=following-sibling::div[1]').locator('span.text-ink').allInnerTexts();
+console.log("Bestehende Partie beim Oeffnen bereits nach Punktzahl sortiert (Ben, Clara, Anna):", JSON.stringify(namesOnOpen) === JSON.stringify(["Ben", "Clara", "Anna"]));
+await page2.screenshot({ path: `${SP}/play_result_autosort_on_open.png` });
+
+await b2.close(); server.close();

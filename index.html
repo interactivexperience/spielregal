@@ -4841,6 +4841,15 @@ function PlayerOrderModal({ players, onSave, onClose }) {
     </div>
   );
 }
+// Punktzahl -> -Infinity fuer leere/ungueltige Eingaben, damit noch nicht
+// bewertete Mitspieler ans Ende sortieren statt zufaellig mitten in die
+// Rangliste zu springen. Array.sort ist stabil (ES2019+), Gleichstand
+// behaelt also die bisherige Reihenfolge (z.B. eine bewusst per Hand
+// gesetzte Tie-Break-Reihenfolge aus einer frueheren Bearbeitung).
+const sortIdsByScore = (ids, scoresObj) => {
+  const val = (id) => { const v = parseFloat(scoresObj[id]); return Number.isFinite(v) ? v : -Infinity; };
+  return [...ids].sort((a, b) => val(b) - val(a));
+};
 function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlayerPhoto, onUpdatePlayerName, onRemovePlayer, onReorderPlayers, initial, onClose, onSave, onDelete }) {
   const [editingPlayer, setEditingPlayer] = useState(null); // { id, name }
   const [playerOrderOpen, setPlayerOrderOpen] = useState(false);
@@ -4860,7 +4869,9 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
     initial ? (games.find(g => g.id === initial.gameId) || { id: initial.gameId, name: initial.gameName }) : null
   );
   const [mode, setMode] = useState(initial ? initial.mode : "physical-owned");
-  const [playerIds, setPlayerIds] = useState(initial ? initial.playerIds || [] : []);
+  const [playerIds, setPlayerIds] = useState(() =>
+    initial ? sortIdsByScore(initial.playerIds || [], initial.scores || {}) : []
+  );
   const [newPlayerOpen, setNewPlayerOpen] = useState(false);
   const newPlayerClose = useSheetClose(() => setNewPlayerOpen(false));
   const [newPlayerName, setNewPlayerName] = useState("");
@@ -4910,15 +4921,10 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
   });
   const [scores, setScores] = useState(initial && initial.scores ? initial.scores : {});
   const toggleWinner = (id) => { haptic(6); setWinnerIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])); };
-  // Punktzahl -> -Infinity fuer noch leere/ungueltige Eingaben, damit die
-  // noch nicht bewerteten Mitspieler ans Ende sortieren statt zufaellig
-  // mitten in die Rangliste zu springen. Array.sort ist stabil (ES2019+),
-  // Gleichstand behaelt also die bisherige Reihenfolge.
-  const scoreValue = (id, scoresObj) => { const v = parseFloat(scoresObj[id]); return Number.isFinite(v) ? v : -Infinity; };
   const setScore = (id, val) => {
     const next = { ...scores, [id]: val };
     setScores(next);
-    setPlayerIds((ids) => [...ids].sort((a, b) => scoreValue(b, next) - scoreValue(a, next)));
+    setPlayerIds((ids) => sortIdsByScore(ids, next));
   };
   const [notes, setNotes] = useState(initial ? initial.notes || "" : "");
   const notesRef = React.useRef(null);
