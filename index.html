@@ -4910,7 +4910,16 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
   });
   const [scores, setScores] = useState(initial && initial.scores ? initial.scores : {});
   const toggleWinner = (id) => { haptic(6); setWinnerIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])); };
-  const setScore = (id, val) => setScores((prev) => ({ ...prev, [id]: val }));
+  // Punktzahl -> -Infinity fuer noch leere/ungueltige Eingaben, damit die
+  // noch nicht bewerteten Mitspieler ans Ende sortieren statt zufaellig
+  // mitten in die Rangliste zu springen. Array.sort ist stabil (ES2019+),
+  // Gleichstand behaelt also die bisherige Reihenfolge.
+  const scoreValue = (id, scoresObj) => { const v = parseFloat(scoresObj[id]); return Number.isFinite(v) ? v : -Infinity; };
+  const setScore = (id, val) => {
+    const next = { ...scores, [id]: val };
+    setScores(next);
+    setPlayerIds((ids) => [...ids].sort((a, b) => scoreValue(b, next) - scoreValue(a, next)));
+  };
   const [notes, setNotes] = useState(initial ? initial.notes || "" : "");
   const notesRef = React.useRef(null);
   useEffect(() => {
