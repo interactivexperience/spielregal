@@ -20,7 +20,8 @@ def format_message(l: Listing, v: Verdict) -> dict:
     head = {"treffer": "🏠", "knapp": "🟡", "unklar": "❔"}.get(v.status, "")
     kind = "Miete" if l.kind == "miete" else "Kauf"
     cost = _eur(v.cost) + (" warm (NK geschätzt)" if v.cost_estimated else " warm" if l.kind == "miete" else "")
-    facts = [f"{l.rooms:g} Zi." if l.rooms else "? Zi.", f"{l.area:g} m²" if l.area else None, cost]
+    de = lambda x: f"{x:g}".replace(".", ",")
+    facts = [f"{de(l.rooms)} Zi." if l.rooms else "? Zi.", f"{de(l.area)} m²" if l.area else None, cost]
     if l.kind == "kauf" and l.floor is not None:
         facts.append("DG" if l.floor == 99 else f"{l.floor}. OG" if l.floor else "EG")
     lines = [" · ".join(x for x in facts if x)]
@@ -52,4 +53,7 @@ def send(topic: str, payload: dict, dry_run: bool = False) -> None:
 
 
 def system(topic: str, title: str, message: str, dry_run: bool = False, priority: int = 3) -> None:
-    send(topic, {"title": title, "message": message, "priority": priority, "tags": ["warning"]}, dry_run)
+    try:
+        send(topic, {"title": title, "message": message, "priority": priority, "tags": ["warning"]}, dry_run)
+    except Exception as e:  # Systemmeldungen dürfen den Lauf nie abbrechen
+        print(f"Systemmeldung fehlgeschlagen: {e}", flush=True)

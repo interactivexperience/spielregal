@@ -60,7 +60,11 @@ class Run:
     def push(self, l, v) -> bool:
         if self.pushes >= MAX_PUSHES_PER_RUN:
             return False
-        notify.send(self.topic, notify.format_message(l, v), self.dry)
+        try:
+            notify.send(self.topic, notify.format_message(l, v), self.dry)
+        except Exception as e:  # ntfy nicht erreichbar -> Anzeige nicht speichern, nächster Lauf versucht es erneut
+            log(f"    Push fehlgeschlagen: {e}")
+            return False
         self.pushes += 1
         return True
 
@@ -169,15 +173,18 @@ class Run:
             return
         if prev["hash"] == h:
             return
-        self.st.watch[w.name] = {"hash": h, "text": sec[:1500], "since": iso(now())}
         if w.is_relevant(sec):
-            notify.send(self.topic, {
-                "title": f"🏢 Neues bei {w.name}",
-                "message": f"Der Angebotsbereich hat sich geändert:\n{sec[:600]}",
-                "click": w.url, "priority": 4, "tags": ["office"],
-                "actions": [{"action": "view", "label": "Seite öffnen", "url": w.url}]}, self.dry)
+            try:
+                notify.send(self.topic, {
+                    "title": f"🏢 Neues bei {w.name}",
+                    "message": f"Der Angebotsbereich hat sich geändert:\n{sec[:600]}",
+                    "click": w.url, "priority": 4, "tags": ["office"],
+                    "actions": [{"action": "view", "label": "Seite öffnen", "url": w.url}]}, self.dry)
+            except Exception as e:
+                return log(f"    Push fehlgeschlagen ({e}) – nächster Lauf versucht es erneut")
             self.pushes += 1
-        else:
+        self.st.watch[w.name] = {"hash": h, "text": sec[:1500], "since": iso(now())}
+        if not w.is_relevant(sec):
             log("    geändert, aber nichts Wohnungs-Relevantes")
 
     # ------------------------------------------------------------------ Wochenbericht
