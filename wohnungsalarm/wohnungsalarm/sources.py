@@ -194,6 +194,8 @@ class OhneMakler(ListSource):
         out = []
         for a in s.select("a[data-om-id]"):
             t = text(a)
+            if not re.search(r"\b481\d\d Münster\b", t):
+                continue  # ohne-makler mischt Umlandangebote (Hamm, Dülmen, …) in die Münster-Liste
             l = Listing(self.name, a["data-om-id"], urljoin(self.BASE, a["href"]), self.kind,
                         title=text(a.select_one("h4")) or t[:80], text=t + " | provisionsfrei")
             for el in a.select("[title]"):

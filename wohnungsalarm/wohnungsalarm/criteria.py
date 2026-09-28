@@ -90,7 +90,7 @@ def evaluate(l: Listing) -> Verdict:
     if f["versteigerung"]:
         return Verdict("raus", ["Versteigerung"])
     plz = parse.postcodes(t)
-    if plz and not any(p.startswith(MUENSTER_PLZ) for p in plz):
+    if plz and not plz[0].startswith(MUENSTER_PLZ):  # erste PLZ = Objektlage (Karte/Kopf der Anzeige)
         return Verdict("raus", [f"PLZ {plz[0]} nicht Münster"])
 
     # Zimmer

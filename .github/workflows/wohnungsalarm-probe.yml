@@ -20,5 +20,5 @@ jobs:
       - name: Lauf 1 (Erstlauf / Seed)
         run: python -m wohnungsalarm.run --dry-run --state /tmp/state.json
       - name: Lauf 2 (muss ohne neue Pushes durchlaufen)
-        run: python -m wohnungsalarm.run --dry-run --state /tmp/state.json
+        run: python -m wohnungsalarm.run --dry-run --state /tmp/state.json | tee /tmp/run2.log && grep -q ", 0 Pushes" /tmp/run2.log
       - run: python -c "import json;d=json.load(open('/tmp/state.json'));print(len(d['seen']),'seen');print(json.dumps(d['health'],indent=1,ensure_ascii=False));print(json.dumps(d['watch'],indent=1,ensure_ascii=False)[:3000])"

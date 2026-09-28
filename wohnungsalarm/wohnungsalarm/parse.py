@@ -104,7 +104,8 @@ NEGATIVE = {
     "provision": r"(?:Käufer|Makler)[- ]?(?:provision|courtage)\s*:?\s*\d",
     "wbs": r"\bWBS\b|Wohnberechtigungsschein|öffentlich gefördert",
     "tausch": r"Tauschwohnung|Tauschangebot|Wohnungstausch|\bTausch\b|zu\s+tauschen",
-    "gesuch": r"^\s*(?:Suche|Gesucht|Wir suchen|Ich suche)\b",   # nur auf den Titel anwenden
+    # nur auf den Titel anwenden; "Nachmieter gesucht" ist ein Angebot
+    "gesuch": r"^\s*(?:Suche|Gesucht|Wir suchen|Ich suche)\b|(?<!mieter )(?<!Käufer )\bgesucht\b",
     "zwischenmiete": r"Zwischenmiete|Untermiete|\bWG[- ]?Zimmer|Zimmer\s+(?:zum\s+Unter|frei\b)|möbliert\s+auf\s+Zeit",
     "befristet": r"(?<!un)befristet|Zeitmiete",
     "versteigerung": r"Zwangsversteigerung|Versteigerung",
