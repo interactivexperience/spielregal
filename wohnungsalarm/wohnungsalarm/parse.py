@@ -24,6 +24,12 @@ def _money_after(label: str, text: str) -> float | None:
     return None
 
 
+def _money_before(label: str, text: str) -> float | None:
+    """Betrag direkt VOR einem Label, z.B. '1.050 € Kaltmiete' (Immowelt-Karten)."""
+    m = re.search(NUM + r"\s*(?:€|EUR)\s*" + label, text, re.I)
+    return to_float(m.group(1), m.group(2)) if m else None
+
+
 def rooms(text: str) -> float | None:
     m = re.search(r"(\d(?:[.,]5)?)\s*(?:-\s*)?(?:Zimmer|Zi\.|Zi\b|Raum|ZKB|Zimmerwohnung)", text, re.I)
     if not m:
@@ -46,8 +52,8 @@ def area(text: str) -> float | None:
 
 def rent(text: str) -> dict:
     """{'warm': float|None, 'kalt': float|None, 'nk': float|None}"""
-    warm = _money_after(r"(?:Warmmiete|Gesamtmiete|Miete\s+(?:inkl\.?|inklusive)\s+(?:NK|Nebenkosten)|Bruttomiete|\bwarm\b)", text)
-    kalt = _money_after(r"(?:Kaltmiete|Nettokaltmiete|Grundmiete|Miete\s*\(kalt\)|\bkalt\b)", text)
+    warm = _money_before(r"(?:Warmmiete|Gesamtmiete)", text) or _money_after(r"(?:Warmmiete|Gesamtmiete|Miete\s+(?:inkl\.?|inklusive)\s+(?:NK|Nebenkosten)|Bruttomiete|\bwarm\b)", text)
+    kalt = _money_before(r"Kaltmiete", text) or _money_after(r"(?:Kaltmiete|Nettokaltmiete|Grundmiete|Miete\s*\(kalt\)|\bkalt\b)", text)
     nk = _money_after(r"(?:Nebenkosten|Betriebskosten|\bNK\b)(?:\s*\(?(?:inkl\.|zzgl\.)?\s*Heizkosten\)?)?", text)
     hk = _money_after(r"Heizkosten", text)
     if nk is not None and hk is not None and not re.search(r"(?:Nebenkosten|NK)[^.]{0,30}inkl\.?\s*Heiz", text, re.I):
@@ -74,10 +80,10 @@ FLOOR_WORDS = [
 
 def floor(text: str) -> int | None:
     """Etage als Zahl (EG=0, DG=99 als 'oben, genaue Etage unbekannt'), None wenn unklar."""
-    m = re.search(r"(\d{1,2})\s*\.\s*(?:OG|Obergeschoss|Obergeschoß|Etage|Stock)", text, re.I)
+    m = re.search(r"(\d{1,2})\s*\.\s*(?:OG|Obergeschoss|Obergeschoß|Etage|Stock|Geschoss)\b", text, re.I)
     if m:
         return int(m.group(1))
-    m = re.search(r"(?:Etage|Geschoss|Stockwerk)\s*:?\s*(\d{1,2})\b", text, re.I)
+    m = re.search(r"\b(?:Etage|Geschoss|Stockwerk)\s*:?\s*(\d{1,2})\b", text, re.I)
     if m:
         return int(m.group(1))
     for pat, val in FLOOR_WORDS:
@@ -97,9 +103,10 @@ NEGATIVE = {
     "renovierungsbeduerftig": r"renovierungsbedürftig|sanierungsbedürftig|modernisierungsbedürftig|Handwerkerobjekt|Renovierungsstau",
     "provision": r"(?:Käufer|Makler)[- ]?(?:provision|courtage)\s*:?\s*\d",
     "wbs": r"\bWBS\b|Wohnberechtigungsschein|öffentlich gefördert",
-    "tausch": r"Wohnungstausch|\bTausch\b|zum\s+Tausch",
-    "gesuch": r"^\s*(?:Suche|Gesucht|Wir suchen|Ich suche)\b",
-    "befristet": r"befristet|Zwischenmiete|Untermiete|möbliert\s+auf\s+Zeit",
+    "tausch": r"Tauschwohnung|Tauschangebot|Wohnungstausch|\bTausch\b|zu\s+tauschen",
+    "gesuch": r"^\s*(?:Suche|Gesucht|Wir suchen|Ich suche)\b",   # nur auf den Titel anwenden
+    "zwischenmiete": r"Zwischenmiete|Untermiete|\bWG[- ]?Zimmer|Zimmer\s+(?:zum\s+Unter|frei\b)|möbliert\s+auf\s+Zeit",
+    "befristet": r"(?<!un)befristet|Zeitmiete",
     "versteigerung": r"Zwangsversteigerung|Versteigerung",
 }
 

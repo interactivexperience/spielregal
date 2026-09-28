@@ -3,16 +3,22 @@ name: wohnungsalarm-probe
 on:
   push:
     branches: ["claude/wohnungssuche-benachrichtigung-muenster-phpajg"]
-    paths: ["wohnungsalarm/probe*", ".github/workflows/wohnungsalarm-probe.yml"]
+    paths: ["wohnungsalarm/**", ".github/workflows/wohnungsalarm-probe.yml"]
 permissions:
   contents: read
 jobs:
   probe:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    defaults: { run: { working-directory: wohnungsalarm } }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - run: pip install requests beautifulsoup4
-      - run: python wohnungsalarm/probe3.py
+      - run: pip install -r requirements.txt
+      - run: python -m unittest discover -s tests -t .
+      - name: Lauf 1 (Erstlauf / Seed)
+        run: python -m wohnungsalarm.run --dry-run --state /tmp/state.json
+      - name: Lauf 2 (muss ohne neue Pushes durchlaufen)
+        run: python -m wohnungsalarm.run --dry-run --state /tmp/state.json
+      - run: python -c "import json;d=json.load(open('/tmp/state.json'));print(len(d['seen']),'seen');print(json.dumps(d['health'],indent=1,ensure_ascii=False));print(json.dumps(d['watch'],indent=1,ensure_ascii=False)[:3000])"

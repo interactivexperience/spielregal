@@ -83,8 +83,10 @@ def evaluate(l: Listing) -> Verdict:
     v = Verdict(status="treffer")
 
     # Ausschlüsse unabhängig vom Preis
-    if f["gesuch"] or f["tausch"]:
+    if parse.features(l.title)["gesuch"] or f["tausch"]:
         return Verdict("raus", ["Gesuch/Tausch"])
+    if l.kind == "miete" and f["zwischenmiete"]:
+        return Verdict("raus", ["Zwischen-/Untermiete, WG-Zimmer"])
     if f["versteigerung"]:
         return Verdict("raus", ["Versteigerung"])
     plz = parse.postcodes(t)
@@ -96,6 +98,8 @@ def evaluate(l: Listing) -> Verdict:
         v.status = "unklar"; v.reasons.append("Zimmerzahl unbekannt")
     elif l.rooms < ZIMMER_MIN:
         return Verdict("raus", [f"{l.rooms:g} Zi."])
+    elif l.area and l.area / l.rooms < 8:
+        return Verdict("raus", [f"{l.rooms:g} Zi. auf {l.area:g} m² (WG-Zimmer?)"])
 
     # Preis
     if l.kind == "miete":
@@ -139,5 +143,5 @@ def evaluate(l: Listing) -> Verdict:
     if f["wbs"]:
         v.warnings.append("WBS nötig?")
     if f["befristet"]:
-        v.warnings.append("befristet/Zwischenmiete?")
+        v.warnings.append("befristet?")
     return v
