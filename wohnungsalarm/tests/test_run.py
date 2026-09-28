@@ -58,6 +58,12 @@ class RunTest(unittest.TestCase):
         self.assertEqual(len(self.cycle(src)), 1)        # neue Anzeige -> 1 Push
         self.assertEqual(self.cycle(src), [])
 
+    def test_seed_beyond_detail_budget(self):
+        src = Fake([item(i, 250_000) for i in range(5)])
+        with mock.patch.object(run, "MAX_DETAILS_PER_SOURCE", 2):
+            self.assertEqual(len(self.cycle(src)), 1)    # nur die Start-Zusammenfassung
+            self.assertEqual(self.cycle(src), [])        # Bestand ist komplett erfasst
+
     def test_price_drop(self):
         src = Fake([item(1, 250_000)])
         self.cycle(src)

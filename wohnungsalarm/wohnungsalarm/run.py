@@ -121,8 +121,10 @@ class Run:
                                            l.kalt <= criteria.MIETE_WARM_MAX * (1 + criteria.TOLERANZ))
             if maybe and src.has_detail:
                 if details >= MAX_DETAILS_PER_SOURCE:
-                    continue  # Budget erschöpft -> nächster Lauf
-                if self.load_detail(src, l):
+                    if not first_run:
+                        continue  # Budget erschöpft -> nächster Lauf
+                    # Erstlauf: Bestand nur anhand der Karte einsortieren, nichts zurückstellen
+                elif self.load_detail(src, l):
                     details += 1
                     v = criteria.evaluate(l)
             notifiable = v.status in ("treffer", "knapp") or (v.status == "unklar" and src.notify_unclear)
