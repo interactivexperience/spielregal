@@ -1,0 +1,18 @@
+# TEMPORÄR: Diagnose-Lauf für wohnungsalarm, nur auf dem Feature-Branch. Wird vor Merge entfernt.
+name: wohnungsalarm-probe
+on:
+  push:
+    branches: ["claude/wohnungssuche-benachrichtigung-muenster-phpajg"]
+    paths: ["wohnungsalarm/**", ".github/workflows/wohnungsalarm-probe.yml"]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install requests beautifulsoup4
+      - run: python wohnungsalarm/probe.py $(cat wohnungsalarm/probe_urls.txt)
