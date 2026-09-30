@@ -3437,7 +3437,7 @@ SPIELERTYPEN: Begriff1, Begriff2`;
 // Builds a compact text summary of the collection + recent play history to
 // give the AI real context, without sending full game objects.
 const EXPORT_OPTIONS_DEFAULTS = {
-  includeWishlist: true, includeOnlyPlayed: true, includeSummary: true, includeSold: false,
+  includeWishlist: true, includeOnlyPlayed: true, includeSummary: false, includeSold: false,
   includeYear: true, includePublisher: true, includePlayerCount: true,
   includeDuration: true, includeComplexity: true, includeRating: true, includeThemes: true,
 };
@@ -3454,7 +3454,7 @@ const EXPORT_OPTIONS_DEFAULTS = {
 // immer drin, das sind noch aktuell besessene Spiele.
 function buildFullCollectionExport(games, options = EXPORT_OPTIONS_DEFAULTS) {
   const {
-    includeWishlist = true, includeOnlyPlayed = true, includeSummary = true, includeSold = false,
+    includeWishlist = true, includeOnlyPlayed = true, includeSummary = false, includeSold = false,
     includeYear = true, includePublisher = true, includePlayerCount = true,
     includeDuration = true, includeComplexity = true, includeRating = true, includeThemes = true,
   } = options;
@@ -3481,6 +3481,12 @@ function buildFullCollectionExport(games, options = EXPORT_OPTIONS_DEFAULTS) {
     const expansions = games.filter((x) => x.expansionOf === g.id).map((x) => x.name);
     if (expansions.length) parts.push(`Eigene Erweiterungen: ${expansions.join(", ")}`);
     if (g.format === "digital") parts.push(g.status === "wishlist" ? "Nur digital vorgemerkt (z.B. BGA-Reminder, KEIN Kaufwunsch)" : "Digital besessen");
+    // Verkaufsstatus immer sichtbar machen, kein eigener Ein-/Ausschalter --
+    // sonst taucht ein zum-Verkauf-markiertes Spiel unmarkiert zwischen den
+    // ganz normal behaltenen Spielen auf (genau wie bei den regulaeren
+    // KI-Aufrufen im Hintergrund, siehe buildCollectionContextForAI oben).
+    if (g.saleStatus === "sold") parts.push("STATUS: bereits verkauft");
+    else if (g.saleStatus === "forSale") parts.push("STATUS: zum Verkauf markiert");
     const desc = includeSummary && g.summary ? `\n  Beschreibung: ${g.summary.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()}` : "";
     const name = `${g.name}${g.germanName && g.germanName !== g.name ? ` (${g.germanName})` : ""}`;
     return `- ${name}${parts.length ? " | " + parts.join(" | ") : ""}${desc}`;

@@ -57,7 +57,7 @@ console.log("Standard: Dauer drin:", t0.includes("90-150 Min."));
 console.log("Standard: Komplexität drin:", t0.includes("Komplexität:"));
 console.log("Standard: Bewertung drin:", t0.includes("Bewertung: 9/10"));
 console.log("Standard: Themen drin:", t0.includes("Themen:"));
-console.log("Standard: Beschreibung drin:", t0.includes("Baue den besten Zoo"));
+console.log("Standard: Beschreibung NICHT drin (Default jetzt aus):", !t0.includes("Baue den besten Zoo"));
 
 // Einzelne Felder abwaehlen und pruefen, dass NUR das jeweilige Feld
 // verschwindet, der Rest (insbesondere der Spielname) bleibt.
@@ -96,7 +96,7 @@ await page.waitForTimeout(200);
 t = await exportTextarea.inputValue();
 console.log("Nach Abwählen 'Themen': weg:", !t.includes("Themen:"));
 console.log("Nach Abwählen aller Felder: Spielname (Ark Nova) bleibt weiterhin:", t.includes("Ark Nova"));
-console.log("Nach Abwählen aller Felder: Beschreibung ist weiterhin da (eigener Schalter, nicht betroffen):", t.includes("Baue den besten Zoo"));
+console.log("Nach Abwählen aller Felder: Beschreibung bleibt aus (eigener Schalter, von anderen Feldern unbeeinflusst):", !t.includes("Baue den besten Zoo"));
 await page.screenshot({ path: `${SP}/export_fields_all_off.png` });
 
 // Reload: Wahl bleibt gemerkt.

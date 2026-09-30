@@ -1,6 +1,14 @@
-// Prueft die Personalisierung des KI-Exports: Besitz steht immer drin,
-// Wunschliste/Nur-Gespielt/Beschreibung sind an-/abwaehlbar und die Wahl
-// wird gemerkt (localStorage).
+// Prueft zwei Aenderungen am KI-Export ("Fuer KI exportieren"):
+// 1. Zum-Verkauf-markierte (und bei aktivem Schalter auch bereits
+//    verkaufte) Spiele waren zwar schon immer in der Liste enthalten, aber
+//    OHNE jede sichtbare Kennzeichnung -- man konnte im Text nicht
+//    unterscheiden, ob ein Spiel noch ganz normal in der Sammlung ist oder
+//    gerade zum Verkauf steht/schon weg ist. Jetzt bekommt jede Zeile einen
+//    "STATUS: ..."-Hinweis, analog zur bereits bestehenden Konvention in
+//    buildCollectionContextForAI und im Chat-Assistenten-Prompt.
+// 2. Beschreibungstext ist jetzt standardmaessig AUS (kuerzerer Export),
+//    der Schalter "Beschreibungstext" existiert weiterhin zum manuellen
+//    Einschalten.
 import { chromium } from "playwright";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -30,9 +38,9 @@ await page.route("**/cdn.tailwindcss.com/**", r => r.fulfill({ contentType: "app
 await page.route("**/fonts.googleapis.com/**", r => r.fulfill({ body: "", contentType: "text/css" }));
 
 const games = [
-  { id: "g1", name: "Ark Nova", status: "owned", summary: "Baue den besten Zoo.", categories: [], mechanisms: [], publishers: [], designers: [], addedDate: "2026-01-01" },
-  { id: "g2", name: "Wingspan", status: "wishlist", summary: "Sammle Voegel.", categories: [], mechanisms: [], publishers: [], designers: [], addedDate: "2026-01-02" },
-  { id: "g3", name: "Catan", status: "none", summary: "Handel und baue.", categories: [], mechanisms: [], publishers: [], designers: [], addedDate: "2026-01-03" },
+  { id: "g1", name: "Ark Nova", status: "owned", summary: "<p>Eine Aufbau-Erfahrung im Zoo.</p>", categories: [], mechanisms: [], publishers: [], designers: [], addedDate: "2026-01-01" },
+  { id: "g2", name: "Trubel im Turm", status: "owned", saleStatus: "sold", categories: [], mechanisms: [], publishers: [], designers: [], addedDate: "2026-01-02" },
+  { id: "g3", name: "Sternenreich", status: "owned", saleStatus: "forSale", categories: [], mechanisms: [], publishers: [], designers: [], addedDate: "2026-01-03" },
 ];
 await page.addInitScript((g) => {
   localStorage.setItem("spielregal:games", JSON.stringify(g));
@@ -46,42 +54,27 @@ await page.locator('button:has-text("Mehr")').last().click();
 await page.waitForTimeout(700);
 await page.locator('text=Für KI exportieren').click();
 await page.waitForTimeout(700);
-await page.screenshot({ path: `${SP}/export_default.png` });
 
 const exportTextarea = page.locator("textarea");
-const textDefault = await exportTextarea.inputValue();
-console.log("Standard: Ark Nova (Besitz) drin:", textDefault.includes("Ark Nova"));
-console.log("Standard: Wingspan (Wunschliste) drin:", textDefault.includes("Wingspan"));
-console.log("Standard: Catan (nur gespielt) drin:", textDefault.includes("Catan"));
-console.log("Standard: Beschreibung NICHT drin (Default jetzt aus):", !textDefault.includes("Baue den besten Zoo"));
+const t0 = await exportTextarea.inputValue();
+console.log("Standard: Sternenreich (zum Verkauf) im Export enthalten:", t0.includes("Sternenreich"));
+console.log("Standard: Sternenreich zeigt STATUS-Hinweis 'zum Verkauf markiert':", /Sternenreich[^\n]*STATUS: zum Verkauf markiert/.test(t0));
+console.log("Standard: Ark Nova (normal, kein Verkaufsstatus) OHNE STATUS-Hinweis:", !/Ark Nova[^\n]*STATUS:/.test(t0));
+console.log("Standard: Beschreibungstext NICHT enthalten (neuer Default aus):", !t0.includes("Beschreibung:"));
+await page.screenshot({ path: `${SP}/export_sale_status_default.png` });
 
-// "Im Besitz" ist NICHT als Umschalter anfassbar (kein toggle-Button, nur ein Hinweis).
-console.log("'Im Besitz' zeigt 'immer dabei', kein Umschalter:", await page.locator('text=immer dabei').count() > 0);
-
-// Wunschliste abwaehlen.
-await page.locator('button:has-text("Wunschliste")').click();
+// Bereits verkaufte Spiele einschalten -> Trubel im Turm erscheint MIT
+// STATUS-Hinweis "bereits verkauft".
+await page.locator('button:has-text("Bereits verkaufte Spiele")').click();
 await page.waitForTimeout(300);
-const textNoWishlist = await exportTextarea.inputValue();
-console.log("Nach Abwaehlen: Wingspan raus:", !textNoWishlist.includes("Wingspan"));
-console.log("Nach Abwaehlen: Ark Nova bleibt (Besitz immer drin):", textNoWishlist.includes("Ark Nova"));
+const t1 = await exportTextarea.inputValue();
+console.log("Nach Einschalten 'Bereits verkaufte Spiele': Trubel im Turm zeigt STATUS 'bereits verkauft':", /Trubel im Turm[^\n]*STATUS: bereits verkauft/.test(t1));
 
-// Beschreibung einschalten (Default ist jetzt aus).
+// Beschreibungstext manuell einschalten -> Beschreibung erscheint wieder.
 await page.locator('button:has-text("Beschreibungstext")').click();
 await page.waitForTimeout(300);
-const textWithSummary = await exportTextarea.inputValue();
-console.log("Nach Einschalten: Beschreibung drin:", textWithSummary.includes("Baue den besten Zoo"));
-console.log("Nach Einschalten: Spielname bleibt:", textWithSummary.includes("Ark Nova"));
-await page.screenshot({ path: `${SP}/export_customized.png` });
-
-// Wahl wird gemerkt (Reload).
-await page.reload({ waitUntil: "networkidle" });
-await page.waitForTimeout(2000);
-await page.locator('button:has-text("Mehr")').last().click();
-await page.waitForTimeout(700);
-await page.locator('text=Für KI exportieren').click();
-await page.waitForTimeout(700);
-const textAfterReload = await page.locator("textarea").inputValue();
-console.log("Wahl bleibt nach Reload gemerkt (Wingspan weiterhin raus):", !textAfterReload.includes("Wingspan"));
-console.log("Wahl bleibt nach Reload gemerkt (Beschreibung weiterhin drin):", textAfterReload.includes("Baue den besten Zoo"));
+const t2 = await exportTextarea.inputValue();
+console.log("Nach Einschalten 'Beschreibungstext': Beschreibung wieder da:", t2.includes("Aufbau-Erfahrung im Zoo"));
+await page.screenshot({ path: `${SP}/export_sale_status_toggled.png` });
 
 await b.close(); server.close();
