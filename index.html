@@ -2538,6 +2538,24 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
   useEffect(() => { saveKey("spielregal:exportMode", exportMode); }, [exportMode]);
   const [exportCandidatesText, setExportCandidatesText] = useState(() => loadKey("spielregal:exportCandidates", ""));
   useEffect(() => { saveKey("spielregal:exportCandidates", exportCandidatesText); }, [exportCandidatesText]);
+  // Merkt sich, welche Zeilen im Kandidaten-Text per "Aus Wunschliste
+  // übernehmen" (nicht frei getippt) hinzugefügt wurden, mit der Spiel-ID.
+  // Frei getippte Kandidaten (z.B. ein Spiel, das man noch gar nicht besitzt)
+  // haben keinen Eintrag hier und bleiben deshalb für immer unangetastet --
+  // nur wirklich aus der Wunschliste übernommene Namen werden automatisch
+  // entfernt, sobald das zugehörige Spiel gelöscht wird oder nicht mehr auf
+  // der Wunschliste steht (sonst bleiben längst entfernte Spiele für immer
+  // als Kandidat stehen, ohne dass man das im reinen Text noch erkennen kann).
+  const [exportWishlistPicks, setExportWishlistPicks] = useState(() => loadKey("spielregal:exportWishlistPicks", []));
+  useEffect(() => { saveKey("spielregal:exportWishlistPicks", exportWishlistPicks); }, [exportWishlistPicks]);
+  useEffect(() => {
+    if (exportWishlistPicks.length === 0) return;
+    const stillValid = exportWishlistPicks.filter((p) => games.some((g) => g.id === p.id && g.status === "wishlist"));
+    if (stillValid.length === exportWishlistPicks.length) return;
+    const staleNames = new Set(exportWishlistPicks.filter((p) => !stillValid.includes(p)).map((p) => p.name));
+    setExportWishlistPicks(stillValid);
+    setExportCandidatesText((text) => text.split("\n").filter((line) => !staleNames.has(line.trim())).join("\n"));
+  }, [games, exportWishlistPicks]);
   const [candidatePickerOpen, setCandidatePickerOpen] = useState(false);
   const [catInput, setCatInput] = useState("");
   const [mechInput, setMechInput] = useState("");
@@ -2670,8 +2688,9 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
               initialSelected={games.filter((g) => g.status === "wishlist" && candidateNames.includes(g.name)).map((g) => g.id)}
               onClose={() => setCandidatePickerOpen(false)}
               onConfirm={(selectedIds) => {
-                const names = games.filter((g) => selectedIds.includes(g.id)).map((g) => g.name);
-                setExportCandidatesText(names.join("\n"));
+                const picked = games.filter((g) => selectedIds.includes(g.id));
+                setExportCandidatesText(picked.map((g) => g.name).join("\n"));
+                setExportWishlistPicks(picked.map((g) => ({ id: g.id, name: g.name })));
               }}
             />
           )}
