@@ -3,9 +3,9 @@
 //    verkaufte) Spiele waren zwar schon immer in der Liste enthalten, aber
 //    OHNE jede sichtbare Kennzeichnung -- man konnte im Text nicht
 //    unterscheiden, ob ein Spiel noch ganz normal in der Sammlung ist oder
-//    gerade zum Verkauf steht/schon weg ist. Jetzt bekommt jede Zeile einen
-//    "STATUS: ..."-Hinweis, analog zur bereits bestehenden Konvention in
-//    buildCollectionContextForAI und im Chat-Assistenten-Prompt.
+//    gerade zum Verkauf steht/schon weg ist. Zum-Verkauf-Spiele bekommen einen
+//    "STATUS: ..."-Hinweis, bereits verkaufte stehen in einem eigenen
+//    Abschnitt "BEREITS VERKAUFT" statt unter "IM BESITZ".
 // 2. Beschreibungstext ist jetzt standardmaessig AUS (kuerzerer Export),
 //    der Schalter "Beschreibungstext" existiert weiterhin zum manuellen
 //    Einschalten.
@@ -68,7 +68,10 @@ await page.screenshot({ path: `${SP}/export_sale_status_default.png` });
 await page.locator('button:has-text("Bereits verkaufte Spiele")').click();
 await page.waitForTimeout(300);
 const t1 = await exportTextarea.inputValue();
-console.log("Nach Einschalten 'Bereits verkaufte Spiele': Trubel im Turm zeigt STATUS 'bereits verkauft':", /Trubel im Turm[^\n]*STATUS: bereits verkauft/.test(t1));
+const soldSection = t1.split("=== BEREITS VERKAUFT")[1] || "";
+const ownedSection = (t1.split("=== IM BESITZ")[1] || "").split("===")[0];
+console.log("Nach Einschalten 'Bereits verkaufte Spiele': Trubel im Turm steht im eigenen Abschnitt BEREITS VERKAUFT:", soldSection.includes("Trubel im Turm"));
+console.log("Nach Einschalten: Trubel im Turm steht NICHT unter IM BESITZ:", !ownedSection.includes("Trubel im Turm"));
 
 // Beschreibungstext manuell einschalten -> Beschreibung erscheint wieder.
 await page.locator('button:has-text("Beschreibungstext")').click();

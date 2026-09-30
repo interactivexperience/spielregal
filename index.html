@@ -2531,7 +2531,16 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
   const [manualMergeDrop, setManualMergeDrop] = useState("");
   const [mergeFeedback, setMergeFeedback] = useState(null);
   const [exportCopied, setExportCopied] = useState(false);
-  const [exportOptions, setExportOptions] = useState(() => loadKey("spielregal:exportOptions", EXPORT_OPTIONS_DEFAULTS));
+  // Einmalig: der Default fuer "Beschreibungstext" wurde auf aus geaendert,
+  // aber ein bereits gespeichertes Objekt ueberschreibt den Code-Default
+  // komplett -- bestehende Nutzer haetten die Aenderung sonst nie bekommen.
+  // Danach bleibt eine manuelle Wahl wieder dauerhaft erhalten.
+  const [exportOptions, setExportOptions] = useState(() => {
+    const saved = loadKey("spielregal:exportOptions", EXPORT_OPTIONS_DEFAULTS);
+    if (loadKey("spielregal:exportSummaryOffMigrated", false)) return saved;
+    saveKey("spielregal:exportSummaryOffMigrated", true);
+    return { ...saved, includeSummary: false };
+  });
   useEffect(() => { saveKey("spielregal:exportOptions", exportOptions); }, [exportOptions]);
   const toggleExportOption = (key) => setExportOptions((o) => ({ ...o, [key]: !o[key] }));
   const [exportMode, setExportMode] = useState(() => loadKey("spielregal:exportMode", "raw"));
@@ -3346,6 +3355,12 @@ Antworte NUR mit einer kommagetrennten Liste der gewählten Typen, sonst nichts.
 // the AI to identify the original publisher, German title, and German publisher(s)
 // from its own knowledge. Less reliable than the BGG-based lookup, since it's
 // not grounded in actual BGG data — the AI may be wrong or unsure.
+// Die KI soll "keiner" schreiben, antwortet aber teils grammatisch abweichend
+// ("keinem", "keine", "Kein deutscher Titel", mit Anfuehrungszeichen) -- das
+// landete dann als deutscher Titel in der Sammlung. Nur als KOMPLETTE Antwort
+// erkannt, damit echte Titel wie "Keine Panik" nicht wegfallen.
+const AI_NONE_ANSWER = /^["'„“”]*\s*(kein|keine|keiner|keinem|keinen|keines|none|n\/a|unbekannt|-+|—)(\s+(deutscher|deutsche|deutschen)?\s*(titel|verlag|verlage)?\s*(vorhanden|bekannt)?)?\s*[.!]?\s*["'„“”]*$/i;
+const cleanAiAnswer = (v) => { const t = (v || "").trim(); return (!t || AI_NONE_ANSWER.test(t)) ? null : t; };
 async function aiIdentifyGameInfoFromName(workerUrl, gameName, existingPublishers) {
   const prompt = `Brettspiel: "${gameName}"
 Bereits eingetragene Verlage: ${(existingPublishers || []).join(", ") || "(keine)"}
@@ -3370,7 +3385,7 @@ VERLAGE: <deutsche(r) Verlag(e), kommagetrennt, oder "keiner">`;
   const json = await res.json();
   if (json.error) throw new Error(json.error);
   const raw = (json.text || "").trim();
-  const clean = (v) => { const t = (v || "").trim(); return (!t || /^keiner\.?$/i.test(t)) ? null : t; };
+  const clean = cleanAiAnswer;
   const origMatch = raw.match(/ORIGINALVERLAG:\s*(.+)/i);
   const titleMatch = raw.match(/TITEL:\s*(.+)/i);
   const publisherMatch = raw.match(/VERLAGE?:\s*(.+)/i);
@@ -3402,7 +3417,7 @@ VERLAGE: <deutsche(r) Verlag(e), kommagetrennt, oder "keiner">`;
   const raw = (json.text || "").trim();
   const titleMatch = raw.match(/TITEL:\s*(.+)/i);
   const publisherMatch = raw.match(/VERLAGE?:\s*(.+)/i);
-  const clean = (v) => { const t = (v || "").trim(); return (!t || /^keiner\.?$/i.test(t)) ? null : t; };
+  const clean = cleanAiAnswer;
   const germanName = clean(titleMatch && titleMatch[1]);
   const publisherRaw = clean(publisherMatch && publisherMatch[1]);
   const germanPublishers = publisherRaw ? publisherRaw.split(",").map((s) => s.trim()).filter(Boolean) : [];
@@ -3477,16 +3492,24 @@ function buildFullCollectionExport(games, options = EXPORT_OPTIONS_DEFAULTS) {
     includeYear = true, includePublisher = true, includePlayerCount = true,
     includeDuration = true, includeComplexity = true, includeRating = true, includeThemes = true,
   } = options;
-  const owned = games.filter((g) => g.status === "owned" && (includeSold || g.saleStatus !== "sold"));
+  // Bereits verkaufte Spiele bekommen einen eigenen Abschnitt statt unter
+  // "IM BESITZ" zu stehen -- sonst stimmt der Zaehler nicht und die KI
+  // schlaegt sie z.B. zum Ersetzen/Aussortieren vor, obwohl sie schon weg sind.
+  const owned = games.filter((g) => g.status === "owned" && g.saleStatus !== "sold");
+  const sold = includeSold ? games.filter((g) => g.status === "owned" && g.saleStatus === "sold") : [];
   const wishlist = includeWishlist ? games.filter((g) => g.status === "wishlist") : [];
   const onlyPlayed = includeOnlyPlayed ? games.filter((g) => g.status === "none") : [];
+  // Erweiterungen stehen nur als Name beim Basisspiel, wenn das Basisspiel im
+  // selben Abschnitt steht -- sonst (z.B. Erweiterung besessen, Basisspiel
+  // nicht) weiterhin als eigene Zeile mit "Erweiterung von".
+  const topLevel = (list) => list.filter((g) => !(g.expansionOf && list.some((b) => b.id === g.expansionOf)));
 
   // Jede Datenfeld-Zeile ist einzeln an-/abwaehlbar (siehe EXPORT_FIELD_TOGGLES
   // in der SettingsPage) -- sonst wird der Export bei grossen Sammlungen zu
   // lang, um ihn noch sinnvoll in eine externe KI einzufuegen. Erweiterungs-/
   // Digital-Hinweise bleiben bewusst immer dabei: die sind kurz und nur
   // vorhanden, wenn sie tatsaechlich zutreffen.
-  const gameLine = (g) => {
+  const gameLine = (g, list) => {
     const parts = [];
     if (includeYear) parts.push(`Jahr: ${g.year || "?"}`);
     if (includePublisher) parts.push((g.publishers || []).join(", ") || "Verlag unbekannt");
@@ -3497,28 +3520,35 @@ function buildFullCollectionExport(games, options = EXPORT_OPTIONS_DEFAULTS) {
     if (includeThemes) parts.push(`Themen: ${[...(g.categories || []), ...(g.mechanisms || [])].join(", ") || "-"}`);
     const base = g.expansionOf ? games.find((x) => x.id === g.expansionOf) : null;
     if (base) parts.push(`Erweiterung von: ${base.name}`);
-    const expansions = games.filter((x) => x.expansionOf === g.id).map((x) => x.name);
+    // Eigener Verkaufsstatus einer Erweiterung darf beim Zusammenfassen
+    // nicht verloren gehen (Basisspiel behalten, Erweiterung zum Verkauf).
+    const expansions = list.filter((x) => x.expansionOf === g.id)
+      .map((x) => (x.saleStatus === "forSale" && g.saleStatus !== "forSale" ? `${x.name} (zum Verkauf markiert)` : x.name));
     if (expansions.length) parts.push(`Eigene Erweiterungen: ${expansions.join(", ")}`);
     if (g.format === "digital") parts.push(g.status === "wishlist" ? "Nur digital vorgemerkt (z.B. BGA-Reminder, KEIN Kaufwunsch)" : "Digital besessen");
-    // Verkaufsstatus immer sichtbar machen, kein eigener Ein-/Ausschalter --
-    // sonst taucht ein zum-Verkauf-markiertes Spiel unmarkiert zwischen den
-    // ganz normal behaltenen Spielen auf (genau wie bei den regulaeren
-    // KI-Aufrufen im Hintergrund, siehe buildCollectionContextForAI oben).
-    if (g.saleStatus === "sold") parts.push("STATUS: bereits verkauft");
-    else if (g.saleStatus === "forSale") parts.push("STATUS: zum Verkauf markiert");
+    // "Zum Verkauf" immer sichtbar, sonst steht so ein Spiel unmarkiert
+    // zwischen den behaltenen. "Bereits verkauft" braucht keinen Vermerk,
+    // das sagt schon der eigene Abschnitt.
+    if (g.saleStatus === "forSale") parts.push("STATUS: zum Verkauf markiert");
     const desc = includeSummary && g.summary ? `\n  Beschreibung: ${g.summary.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()}` : "";
     const name = `${g.name}${g.germanName && g.germanName !== g.name ? ` (${g.germanName})` : ""}`;
     return `- ${name}${parts.length ? " | " + parts.join(" | ") : ""}${desc}`;
   };
 
-  const wishlistSection = includeWishlist ? `\n\n=== WUNSCHLISTE (${wishlist.length}) ===\n${wishlist.map(gameLine).join("\n") || "keine"}` : "";
-  const onlyPlayedSection = includeOnlyPlayed && onlyPlayed.length > 0 ? `\n\n=== NUR GESPIELT, NICHT IM BESITZ (${onlyPlayed.length}) ===\n${onlyPlayed.map(gameLine).join("\n")}` : "";
+  const lines = (list) => topLevel(list).map((g) => gameLine(g, list)).join("\n");
+  const ownedTop = topLevel(owned);
+  const soldTop = topLevel(sold);
+  const wishlistTop = topLevel(wishlist);
+  const onlyPlayedTop = topLevel(onlyPlayed);
+  const soldSection = includeSold && soldTop.length > 0 ? `\n\n=== BEREITS VERKAUFT, NICHT MEHR IM BESITZ (${soldTop.length}) ===\n${lines(sold)}` : "";
+  const wishlistSection = includeWishlist ? `\n\n=== WUNSCHLISTE (${wishlistTop.length}) ===\n${lines(wishlist) || "keine"}` : "";
+  const onlyPlayedSection = includeOnlyPlayed && onlyPlayedTop.length > 0 ? `\n\n=== NUR GESPIELT, NICHT IM BESITZ (${onlyPlayedTop.length}) ===\n${lines(onlyPlayed)}` : "";
 
   return `SPIELREGAL-SAMMLUNGSEXPORT (erzeugt am ${new Date().toLocaleDateString("de-DE")})
 Dies ist eine Übersicht einer Brettspielsammlung, exportiert aus der App "Spielregal". Nutze sie, um Fragen zur Sammlung zu beantworten. Enthält bewusst keine Partien-Historie oder sonstige persönlichen Daten — nur die Spiele selbst.
 
-=== IM BESITZ (${owned.length}) ===
-${owned.map(gameLine).join("\n") || "keine"}${wishlistSection}${onlyPlayedSection}`;
+=== IM BESITZ (${ownedTop.length}) ===
+${lines(owned) || "keine"}${soldSection}${wishlistSection}${onlyPlayedSection}`;
 }
 
 // Fertiger Ki-Prompt: bewertet konkrete Kandidaten-Spiele (z.B. von der
