@@ -1093,7 +1093,16 @@ function botTurn() {
 
 // ---------- Speicher ----------
 const KEY = 'grand-hotel-wien-v1';
-function save() { try { if (S && !S.tut) localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* privat/voll – egal */ } }
+// Speichern & Verlassen: Der Spielstand wird ohnehin nach jeder Aktion
+// gespeichert; „verlassen“ führt zurück zum Startbildschirm, von dem aus die
+// Partie mit „Fortsetzen“ weiterläuft.
+function savedLabel(sv) {
+  if (!sv || !sv.savedAt) return '';
+  const d = new Date(sv.savedAt), now = new Date();
+  const hm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return d.toDateString() === now.toDateString() ? `heute ${hm}` : `${d.getDate()}.${d.getMonth() + 1}. ${hm}`;
+}
+function save() { try { if (S && !S.tut) { S.savedAt = Date.now(); localStorage.setItem(KEY, JSON.stringify(S)); } } catch (e) { /* privat/voll – egal */ } }
 function load() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && s.v === 1 ? s : null; } catch (e) { return null; } }
 function clearSave() { try { localStorage.removeItem(KEY); } catch (e) { } }
 
@@ -1185,7 +1194,7 @@ function viewStart() {
     <div class="hero">${heroSvg()}</div>
     <h1 class="hand">Grand Hotel Wien</h1>
     <p class="sub">Würfel, Strudel &amp; Kaiserschmarrn – ein Hotelspiel nach dem Prinzip von <i>Grand Austria Hotel</i>.</p>
-    ${saved && saved.screen === 'game' ? `<button class="btn blue wide" data-a="resume">Partie fortsetzen · Runde ${saved.round}/${ROUNDS}</button>` : ''}
+    ${saved && saved.screen === 'game' ? `<button class="btn blue wide" data-a="resume">Partie fortsetzen · Runde ${saved.round}/${ROUNDS}</button><p style="margin:6px 0 0;font-size:12.5px;opacity:.75">${saved.savedAt ? `Gespeichert ${savedLabel(saved)} · ` : ''}<button class="link" data-a="discard" style="font-size:12.5px">verwerfen</button></p>` : ''}
     <div class="panel">
       <p class="label">Dein Name</p>
       <input class="input" id="nm" maxlength="30" placeholder="z. B. Frau Direktorin" value="${esc(st.name)}">
@@ -1243,6 +1252,7 @@ function viewGame() {
   <div class="top"><div class="row">
     <div class="round hand">Runde ${S.round}/${ROUNDS}<small>${S.seqIdx + 1}/${S.seq.length} Züge</small></div>
     <div class="players">${S.players.map(playerChip).join('')}</div>
+    ${U.tut ? '' : `<button class="icobtn" data-a="leave" aria-label="Speichern und verlassen" title="Speichern &amp; verlassen"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><rect x="4" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/><rect x="11.8" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/></svg></button>`}
     <button class="icobtn" data-a="menu" aria-label="Menü und Regeln">?</button>
   </div></div>
   <div class="wrap">
@@ -1304,7 +1314,7 @@ function viewSheet() {
   const me = S && human();
   switch (sh.type) {
     case 'rules': return sheetWrap(rulesHtml(), 'rules');
-    case 'menu': return sheetWrap(`<h3>Menü</h3><div class="btnrow" style="flex-direction:column"><button class="btn white wide" data-a="rules">Spielregeln</button><button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
+    case 'menu': return sheetWrap(`<h3>Menü</h3><div class="btnrow" style="flex-direction:column">${S && S.screen === 'game' && !S.tut ? '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}<button class="btn white wide" data-a="rules">Spielregeln</button><button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
     case 'opp': {
       const p = S.players[sh.p];
       return sheetWrap(`<h3>${esc(p.name)}</h3><p style="font-size:13px">★ ${p.vp} SP · ${p.k} Kronen · Kaiser ${p.emp} · ${p.staff.length} Personal</p>
@@ -1539,13 +1549,15 @@ function pump() {
   }, U.fast ? 120 : 950);
 }
 const H = {
+  leave: () => { if (!S || S.tut) return; save(); S = null; U.sheet = null; window.scrollTo(0, 0); toast('Partie gespeichert. Mit „Partie fortsetzen“ geht es weiter.'); },
+  discard: () => { if (confirm('Gespeicherte Partie wirklich verwerfen?')) clearSave(); },
   tutorial: () => { const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : U.setup.name; U.sheet = null; tutSetup(); U.tut = { i: 0 }; window.scrollTo(0, 0); },
   tutnext: () => { if (U.tut) U.tut.i = Math.min(U.tut.i + 1, TUT_STEPS.length - 1); },
   tutend: () => { U.tut = null; U.sheet = null; U.fast = false; S = null; window.scrollTo(0, 0); },
   tutquit: () => { U.tut = null; U.sheet = null; U.fast = false; S = null; window.scrollTo(0, 0); },
   bots: d => { U.setup.bots = +d.n; },
   pickname: d => { U.setup.name = d.n; const nm = document.getElementById('nm'); if (nm) nm.value = d.n; },
-  start: () => { const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : ''; U.fast = false; newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0); S.screen = 'game'; window.scrollTo(0, 0); },
+  start: () => { const sv = load(); if (sv && sv.screen === 'game' && !confirm(`Es gibt eine gespeicherte Partie (Runde ${sv.round || 1}). Neue Partie starten und die gespeicherte verwerfen?`)) return; const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : ''; U.fast = false; newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0); S.screen = 'game'; window.scrollTo(0, 0); },
   resume: () => { S = load(); U.sheet = null; },
   rules: () => { U.sheet = { type: 'rules' }; },
   menu: () => { U.sheet = { type: 'menu' }; },

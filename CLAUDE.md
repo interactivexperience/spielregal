@@ -87,5 +87,6 @@ wird komplett auf GitHub Pages veröffentlicht).
 
 Jedes Spiel hat einen eigenen Smoke-Test in `test/` (`gah-smoke.mjs`,
 `rebel-princess-smoke.mjs`, `three-sisters-smoke.mjs`); nach Änderungen an einem Spiel
-dessen Test laufen lassen, dazu `tutorials.mjs` (spielt die Lernspiele aller drei Spiele durch), nach Änderungen an `index.html` zusätzlich
+dessen Test laufen lassen, dazu `tutorials.mjs` (spielt die Lernspiele aller drei Spiele durch) und
+`save-leave.mjs` (Speichern & verlassen, Fortsetzen, Rückfrage vor dem Überschreiben), nach Änderungen an `index.html` zusätzlich
 `digital-play-link.mjs` und `digital-play-tracking.mjs`.
