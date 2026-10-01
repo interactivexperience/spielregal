@@ -66,3 +66,26 @@ Jeder andere Exit-Code: Fehler beheben, Test wiederholen, erst dann committen/pu
 Falls sich CDN-Versionen in `index.html` ändern (z.B. React-Update), die Versionen in
 `test/package.json` entsprechend nachziehen, damit der Stub exakt der echten CDN-Datei
 entspricht.
+
+## Browser-Spiele: Stil-Referenzen pro Spiel
+
+Die Spiele unter `grand-austria-hotel/`, `rebel-princess/` und `three-sisters/` haben
+jeweils **eigene Bildreferenzen** des Owners. Stile nicht zwischen den Spielen
+übertragen oder vereinheitlichen. Jede Datei ist eigenständig: gemeinsamer Code (z.B. die
+Figuren-Funktion) wurde kopiert, nicht verlinkt, sodass eine Stiländerung in einem Spiel
+die anderen nicht berührt. Bei neuen Illustrationen oder UI-Änderungen immer den Stil
+des jeweiligen Spiels treffen:
+
+| Spiel (Ordner) | Referenzen des Owners | Stilregeln |
+|---|---|---|
+| Grand Hotel Wien (`grand-austria-hotel/`) | Schwarz-weiße „Café People“-Strichfiguren; bunte Sticker-Figuren mit Mustern; kreidig gemalte Figur mit Kobaltblau/Pink/Gelb | **Mix:** schwarze Tuschekonturen mit leichtem Zittern (`#wob`), gefüllt mit Kreidefarben (Rot, Kobaltblau, Senfgelb, Pink, Grün), Muster auf Kleidung, Körnung; harte Kanten mit Versatzschatten; Schriften Caveat Brush + Space Mono |
+| Prinzessinnenball (`rebel-princess/`) | Gemalte Kreideskizze: Profil mit langer, nach oben zeigender Nase, geschlossene Augen, schwarze Haarfläche | **Schwarz-weiß gemalt:** lockere Profilskizzen, satt schwarze Flächen mit Papiersprenkeln (`#crayon`), offene Körperlinien, handgezogene Kartenrahmen (`#rough`), warmer Papierton `#F4F0E9`; keine Farben außer Tusche/Papier |
+| Drei Schwestern (`three-sisters/`) | Frau mit Blumenstrauß statt Kopf und gestreifter Hose; „Garden Party“-Pack mit flachen Pflanzen und Tieren; Risograph-Gartenlandschaft | **Flach ohne Konturen:** keine schwarzen Umrisse, Details im dunkleren Ton derselben Farbe, Risograph-Körnung mit weichen Kanten (`#riso`), Pfirsich-Creme-Grund `#F8ECE1`, frische Garten-Palette; Figuren mit Pflanzenstrauß statt Kopf; runde, rahmenlose UI; Schrift Fredoka |
+
+Die Referenzbilder selbst liegen bewusst nicht im Repo (fremde Illustrationen, das Repo
+wird komplett auf GitHub Pages veröffentlicht).
+
+Jedes Spiel hat einen eigenen Smoke-Test in `test/` (`gah-smoke.mjs`,
+`rebel-princess-smoke.mjs`, `three-sisters-smoke.mjs`); nach Änderungen an einem Spiel
+dessen Test laufen lassen, nach Änderungen an `index.html` zusätzlich
+`digital-play-link.mjs` und `digital-play-tracking.mjs`.
