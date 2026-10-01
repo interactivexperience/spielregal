@@ -22,6 +22,7 @@ const GAMES = [
   { dir: "grand-austria-hotel", hook: "__ghw", start: "Hotel eröffnen", ready: ".board" },
   { dir: "three-sisters", hook: "__ts", start: "Garten anlegen", ready: ".rondel" },
   { dir: "rebel-princess", hook: "__rp", start: "Zum Ball", ready: "[data-a=pick]" },
+  { dir: "countryside", hook: "__lg", start: "Landgut übernehmen", ready: ".sheet" },
 ];
 const errors = [];
 const check = (ok, m) => { if (!ok) errors.push(m); };
@@ -36,6 +37,7 @@ for (const g of GAMES) {
   await page.click(`text=${g.start}`);
   await page.waitForSelector(g.ready);
   if (g.dir === "rebel-princess") { await page.locator("[data-a=pick]").first().click(); await page.click("[data-a=pickok]"); }
+  if (g.dir === "countryside") await page.click(".sheet [data-a=close]");
   await page.waitForTimeout(400);
   const before = await page.evaluate((h) => { const S = window[h].state(); return JSON.stringify({ id: S.id, round: S.round }); }, g.hook);
   // Pause in der Kopfzeile
@@ -49,7 +51,8 @@ for (const g of GAMES) {
   await page.waitForTimeout(200);
   const after = await page.evaluate((h) => { const S = window[h].state(); return S ? JSON.stringify({ id: S.id, round: S.round }) : null; }, g.hook);
   check(after === before, `${g.dir}: Stand nach Fortsetzen anders (${before} → ${after})`);
-  // Über das Menü verlassen
+  // Über das Menü verlassen (Landgut: offenen Startdialog vorher wegklicken)
+  if (g.dir === "countryside") await page.click(".sheet [data-a=close]");
   await page.click(".top [data-a=menu]");
   check(await page.locator(".sheet [data-a=leave]").count() === 1, `${g.dir}: „Speichern & verlassen“ fehlt im Menü`);
   check(await page.locator(".sheet a[href='../']").count() === 1, `${g.dir}: „Speichern & zum Spielregal“ fehlt im Menü`);
@@ -72,4 +75,4 @@ for (const g of GAMES) {
 }
 await browser.close(); server.close();
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
-console.log("OK — Speichern & verlassen funktioniert in allen drei Spielen.");
+console.log("OK — Speichern & verlassen funktioniert in allen vier Spielen.");

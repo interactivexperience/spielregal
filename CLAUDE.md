@@ -69,7 +69,7 @@ entspricht.
 
 ## Browser-Spiele: Stil-Referenzen pro Spiel
 
-Die Spiele unter `grand-austria-hotel/`, `rebel-princess/` und `three-sisters/` haben
+Die Spiele unter `grand-austria-hotel/`, `rebel-princess/`, `three-sisters/` und `countryside/` haben
 jeweils **eigene Bildreferenzen** des Owners. Stile nicht zwischen den Spielen
 übertragen oder vereinheitlichen. Jede Datei ist eigenständig: gemeinsamer Code (z.B. die
 Figuren-Funktion) wurde kopiert, nicht verlinkt, sodass eine Stiländerung in einem Spiel
@@ -81,14 +81,25 @@ des jeweiligen Spiels treffen:
 | Grand Hotel Wien (`grand-austria-hotel/`) | Schwarz-weiße „Café People“-Strichfiguren (gilt laut Owner weiterhin auch hier, nur anders umgesetzt); bunte Sticker-Figuren mit Mustern; kreidig gemalte Figur mit Kobaltblau/Pink/Gelb | **Mix:** schwarze Tuschekonturen mit leichtem Zittern (`#wob`), gefüllt mit Kreidefarben (Rot, Kobaltblau, Senfgelb, Pink, Grün), Muster auf Kleidung, Körnung; harte Kanten mit Versatzschatten; Schriften Caveat Brush + Space Mono |
 | Prinzessinnenball (`rebel-princess/`) | (1) Gemalte Kreideskizze: Profil mit spitzer Nase, geschlossene Augen, schwarze Haarfläche; (2) „Café People“-Strichfiguren (vom Owner ausdrücklich kombiniert gewünscht) | **Kombination, schwarz-weiß:** Figuren wie Café People (ganze Körper, kleiner Profilkopf, breite schwarze Pullover/Röcke, Fausthände, Posen wie umarmen/tragen/knien/lümmeln, übergroße Gegenstände: Riesenapfel, Riesenfrosch, Riesenring …), gezeichnet im Kreidestrich mit Papiersprenkeln (`#crayon`); handgezogene Kartenrahmen (`#rough`), Prinzen als weiße Kreide auf Schwarz, warmer Papierton `#F4F0E9`; Figuren schwarz-weiß, aber **Kartenfarben farbcodiert** (Owner-Wunsch für lesbare Stiche): Feen blau `#DCE7F7`/`#2F5BB0`, Haustiere grün `#DCEDD2`/`#3B8546`, Königinnen rot `#F8DCD3`/`#C4452E`, Prinzen schwarz mit Rosa `#F4A6B8` |
 | Drei Schwestern (`three-sisters/`) | Frau mit Blumenstrauß statt Kopf und gestreifter Hose; „Garden Party“-Pack mit flachen Pflanzen und Tieren; Risograph-Gartenlandschaft | **Flach ohne Konturen:** keine schwarzen Umrisse, Details im dunkleren Ton derselben Farbe, Risograph-Körnung mit weichen Kanten (`#riso`), Pfirsich-Creme-Grund `#F8ECE1`, frische Garten-Palette; Figuren mit Pflanzenstrauß statt Kopf; runde, rahmenlose UI; Schrift Fredoka |
+| Landgut (`countryside/`, Original „Countryside“) | Owner-Wunsch: „ähnliche Optik wie das Original bzw. Ghibli-Stil“ (Original: zarte Aquarell-Landschaften von Alizée Favier) | **Weiches Aquarell, Ghibli-Anmutung:** pastellige Himmelsverläufe, große Sommerwolken, sanfte Hügel, Flächen mit ausfransenden Kanten (`#wc`) und Papierstruktur (`#paper`), keine harten schwarzen Konturen; runde Gesichter mit roten Wangen; weiß gerahmte Karten mit Sonnen-Kosten; Gebietsfarben wie im Original: Wiese Grün `#7FAF5B`, Haus Rosa `#D9707A`, Stall Graublau `#7D93B5`, Acker Gold `#D3A43C`, Garten Altrosa `#B5546A`; Akzent Weinrot `#A23A5A`; Schriften Kalam + Nunito |
 
 Die Referenzbilder selbst liegen bewusst nicht im Repo (fremde Illustrationen, das Repo
 wird komplett auf GitHub Pages veröffentlicht).
 
 Jedes Spiel hat einen eigenen Smoke-Test in `test/` (`gah-smoke.mjs`,
-`rebel-princess-smoke.mjs`, `three-sisters-smoke.mjs`); nach Änderungen an einem Spiel
-dessen Test laufen lassen, dazu `tutorials.mjs` (spielt die Lernspiele aller drei Spiele durch) und
+`rebel-princess-smoke.mjs`, `three-sisters-smoke.mjs`, `countryside-smoke.mjs`); nach Änderungen an einem Spiel
+dessen Test laufen lassen, dazu `tutorials.mjs` (spielt die Lernspiele aller vier Spiele durch) und
 `save-leave.mjs` (Speichern & verlassen, Fortsetzen, Rückfrage vor dem Überschreiben), nach Änderungen an `index.html` zusätzlich
 `digital-play-link.mjs`, `digital-play-tracking.mjs` und `dashboard-browser-games.mjs`
 (Dashboard-Abschnitt „Im Browser spielen“; Three Sisters wird über den Titel erkannt,
 weil der Owner die **Harvest Edition** besitzt).
+
+## Regelgrundlage der Browser-Spiele
+
+Die Spiele folgen den Regelheften, die der Owner hochgeladen hat (nicht im Repo):
+Grand Austria Hotel (Grundspiel + „Alles Walzer“ inkl. Solo-Automa Leopold), Three Sisters
+Harvest Edition (inkl. Solo gegen Farmerin Edith), Rebel Princess Deluxe Edition +
+„Doppelt Rebellisch“ + Wonderbow-FAQ, Countryside/Landgut. Was die Regelhefte nicht
+abdrucken (Karteninhalte, Aufdruck der Bögen/Leisten), ist jeweils im Abschnitt
+„Unterschiede zum Original“ der Spielregeln im Spiel offen benannt; bei Änderungen dort
+mitpflegen.

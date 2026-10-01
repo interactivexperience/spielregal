@@ -1021,7 +1021,7 @@ function recordPlay() {
   // Solo gegen Edith gibt es keine Gegenpunkte – dann kein Sieger, nur die Punkte
   const entry = { id: S.id, source: 'drei-schwestern', app: 'Drei Schwestern', bggId: '291845', gameName: 'Three Sisters', date: localDate(), human: me.name,
     results: S.final.map((r, i) => ({ name: r.name, bot: S.players[i].bot, total: r.total })),
-    winners: S.solo ? [] : tops.filter(r => r.garden === bestG).map(r => r.name), ...(S.solo ? { solo: true } : {}) };
+    winners: S.solo ? [] : tops.filter(r => r.garden === bestG).map(r => r.name), ...(S.solo ? { solo: true, soloGegen: 'Farmerin Edith' } : {}) };
   try {
     const inbox = JSON.parse(localStorage.getItem(INBOX_KEY) || '[]');
     if (!inbox.some(e => e.id === entry.id)) inbox.push(entry);

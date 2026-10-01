@@ -26,6 +26,7 @@ const GAMES = [
   { dir: "grand-austria-hotel", key: "grand-hotel-wien-v1", start: "Hotel eröffnen" },
   { dir: "three-sisters", key: "drei-schwestern-v1", start: "Garten anlegen" },
   { dir: "rebel-princess", key: "prinzessinnenball-v1", start: "Zum Ball" },
+  { dir: "countryside", key: "landgut-v1", start: "Landgut übernehmen" },
 ];
 const errors = [];
 for (const g of GAMES) {
@@ -74,4 +75,4 @@ for (const g of GAMES) {
 }
 await browser.close(); server.close();
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
-console.log("OK — alle drei Lernspiele laufen vollständig durch.");
+console.log("OK — alle vier Lernspiele laufen vollständig durch.");

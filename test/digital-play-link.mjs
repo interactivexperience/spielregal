@@ -40,6 +40,7 @@ const games = [
   { id: "g2", name: "Anderes Spiel", status: "owned", categories: [], mechanisms: [], publishers: [], designers: [], images: [], addedDate: "2026-01-02" },
   { id: "g3", name: "Three Sisters", bggId: "291845", status: "owned", categories: [], mechanisms: [], publishers: [], designers: [], images: [], addedDate: "2026-01-03" },
   { id: "g4", name: "Rebel Princess", bggId: "381249", status: "owned", categories: [], mechanisms: [], publishers: [], designers: [], images: [], addedDate: "2026-01-04" },
+  { id: "g5", name: "Landgut", bggId: "424242", status: "owned", categories: [], mechanisms: [], publishers: [], designers: [], images: [], addedDate: "2026-01-05" },
 ];
 await page.addInitScript((g) => {
   if (location.pathname.endsWith("/index.html") && !location.pathname.includes("grand-austria")) {
@@ -57,7 +58,7 @@ await page.waitForTimeout(800);
 if (await page.locator("text=Im Browser spielen").count()) { console.log("FEHLER: Link bei falschem Spiel"); fehler++; }
 await page.locator('[aria-label="Zurück"]').first().click();
 await page.waitForTimeout(500);
-for (const [name, href] of [["Three Sisters", "three-sisters/"], ["Rebel Princess", "rebel-princess/"]]) {
+for (const [name, href] of [["Three Sisters", "three-sisters/"], ["Rebel Princess", "rebel-princess/"], ["Landgut", "countryside/"]]) {
   await page.locator(`text=${name}`).first().click();
   await page.waitForTimeout(800);
   const l = page.locator("a:has-text('Im Browser spielen')");

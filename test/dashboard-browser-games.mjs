@@ -54,7 +54,7 @@ try {
   await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
   await page.waitForTimeout(2500);
   check(await page.locator("text=Im Browser spielen").count() >= 1, "Abschnitt „Im Browser spielen“ fehlt im Dashboard");
-  for (const href of ["grand-austria-hotel/", "three-sisters/", "rebel-princess/"])
+  for (const href of ["grand-austria-hotel/", "three-sisters/", "rebel-princess/", "countryside/"])
     check(await page.locator(`a[href="${href}"]`).count() === 1, `Dashboard-Link ${href} fehlt`);
   check(await page.locator("text=Partie läuft · Runde 3/7").count() === 1, "laufende Grand-Hotel-Partie nicht angezeigt");
   check(await page.locator("text=1× gespielt").count() === 1, "Zahl der Drei-Schwestern-Partien fehlt");

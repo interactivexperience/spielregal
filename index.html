@@ -459,6 +459,7 @@ const StickyNote = (p) => <Icon {...p}><path d="M4 4h16v11l-5 5H4Z" /><path d="M
 const ChevronLeft = (p) => <Icon {...p}><path d="m15 6-6 6 6 6" /></Icon>;
 const ImageIcon = (p) => <Icon {...p}><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" /></Icon>;
 const CardIcon = (p) => <Icon {...p}><rect x="4" y="2" width="12" height="17" rx="2" transform="rotate(8 10 10.5)" /></Icon>;
+const Barn = (p) => <Icon {...p}><path d="M3 21V10l9-6 9 6v11z" /><path d="M9 21v-6h6v6M9 15l6 6M15 15l-6 6" /></Icon>;
 const Building = (p) => <Icon {...p}><rect x="4" y="3" width="16" height="18" rx="1" /><path d="M9 8h1M14 8h1M9 12h1M14 12h1M9 16h1M14 16h1" /></Icon>;
 const Sword = (p) => <Icon {...p}><path d="m14.5 4.5 5 5-9 9-3 1 1-3Z" /><path d="M13 6l5 5M5 19l2 2" /></Icon>;
 const Puzzle = (p) => <Icon {...p}><path d="M9 3v2.2a1.8 1.8 0 0 1-3 1.4A1.8 1.8 0 0 0 3 8v3h2.2a1.8 1.8 0 0 1 0 3.6H3V18a2 2 0 0 0 2 2h3v-2.2a1.8 1.8 0 0 1 3.6 0V20H15a2 2 0 0 0 2-2v-3.2a1.8 1.8 0 0 1 0-3.6H21V8a2 2 0 0 0-2-2h-3V3.8a1.8 1.8 0 0 0-3.6 0V6H9Z" /></Icon>;
@@ -5643,7 +5644,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             const gespielt = plays.filter((p) => p.source === u.source).length;
             let laufend = null;
             try { const sv = JSON.parse(localStorage.getItem(u.saveKey) || "null"); if (sv && sv.screen === "game") laufend = sv; } catch {}
-            const GIcon = u.icon === "hotel" ? Building : u.icon === "garden" ? Sun : Crown;
+            const GIcon = u.icon === "hotel" ? Building : u.icon === "garden" ? Sun : u.icon === "farm" ? Barn : Crown;
             const inSammlung = games.find((g) => digitaleUmsetzung(g) === u);
             return (
               <a key={u.href} href={u.href} className="flex items-center gap-3 p-3 rounded-[14px] border border-line active:bg-rim/5">
@@ -5652,7 +5653,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
                   <span className="block text-base text-ink font-medium leading-tight truncate">{u.name}</span>
                   <span className="block text-xs text-dim truncate">nach {inSammlung ? inSammlung.name : u.original} · {u.art}</span>
                   <span className="block text-[11px] text-dim mt-0.5">
-                    {laufend ? <span className="text-accent font-medium">Partie läuft · {u.unit} {laufend.round || 1}/{u.rounds}</span> : "Solo gegen Bots · mit Lernspiel"}
+                    {laufend ? <span className="text-accent font-medium">Partie läuft{u.rounds ? ` · ${u.unit} ${laufend.round || 1}/${u.rounds}` : ""}</span> : "Solo gegen Bots · mit Lernspiel"}
                     {gespielt > 0 ? ` · ${gespielt}× gespielt` : ""}
                   </span>
                 </span>
@@ -7995,12 +7996,14 @@ const DIGITALE_UMSETZUNGEN = [
   // Three Sisters liegt beim Owner als „Harvest Edition“ in der Sammlung → Titel statt fester ID
   { bggId: "291845", titel: /three sisters|drei schwestern/i, href: "three-sisters/", name: "Drei Schwestern", original: "Three Sisters", art: "Roll & Write im Garten", source: "drei-schwestern", saveKey: "drei-schwestern-v1", rounds: 8, unit: "Runde", icon: "garden", color: "#5BA35A" },
   { bggId: "381249", titel: /rebel princess/i, href: "rebel-princess/", name: "Prinzessinnenball", original: "Rebel Princess", art: "Stichspiel", source: "prinzessinnenball", saveKey: "prinzessinnenball-v1", rounds: 5, unit: "Ballnacht", icon: "crown", color: "#1A1A1A" },
+  // Countryside heißt auf Deutsch „Landgut“ → Erkennung über den Titel
+  { bggId: "", titel: /countryside|landgut/i, href: "countryside/", name: "Landgut", original: "Countryside", art: "Arbeiter & Bauernhof", source: "landgut", saveKey: "landgut-v1", rounds: 0, unit: "", icon: "farm", color: "#A23A5A" },
 ];
 function digitaleUmsetzung(game) {
   // Erweiterungen (z.B. „Three Sisters: Rock Garden“) bekommen keinen Spiel-Link
   if (!game || game.expansionOf) return null;
   return DIGITALE_UMSETZUNGEN.find((u) =>
-    (game.bggId && String(game.bggId) === u.bggId) || u.titel.test(game.name || "") || u.titel.test(game.germanName || "")) || null;
+    (game.bggId && u.bggId && String(game.bggId) === u.bggId) || u.titel.test(game.name || "") || u.titel.test(game.germanName || "")) || null;
 }
 
 const DIGITAL_INBOX_KEY = "spielregal:inbox:plays";
@@ -8046,7 +8049,7 @@ function digitalePartienUebernehmen(inbox, games, plays, players) {
       playerIds: profil ? [profil.id] : [],
       winner: ichGewinne ? (profil ? profil.name : ich.name) : "",
       ...(profil && ich ? { scores: { [profil.id]: String(ich.total) } } : {}),
-      notes: `Im Browser gespielt (${e.app || "Grand Hotel Wien"}) ${e.solo ? "solo gegen Farmerin Edith" : `gegen ${bots.length} Bot${bots.length === 1 ? "" : "s"}`}.${botSieger.length ? ` Gewonnen hat ${botSieger.join(" und ")} (Bot).` : ""} Ergebnis${e.unit ? ` (${e.unit})` : ""}: ${tabelle}`,
+      notes: `Im Browser gespielt (${e.app || "Grand Hotel Wien"}) ${e.solo ? (e.soloGegen ? `solo gegen ${e.soloGegen}` : "solo") : `gegen ${bots.length} Bot${bots.length === 1 ? "" : "s"}`}.${botSieger.length ? ` Gewonnen hat ${botSieger.join(" und ")} (Bot).` : ""} Ergebnis${e.unit ? ` (${e.unit})` : ""}: ${tabelle}`,
       images: [], source: e.source || "digital",
     });
   }

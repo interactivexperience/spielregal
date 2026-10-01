@@ -1,0 +1,1463 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#EEF4F1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Landgut">
+<title>Landgut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky:#DCEBF0; --sky2:#F4EFE3; --paper:#FBF8F1; --card:#FFFDF8; --ink:#4A4038; --muted:#8A7E72; --line:#E6DDCF;
+  --wiese:#7FAF5B; --haus:#D9707A; --stall:#7D93B5; --acker:#D3A43C; --garten:#B5546A;
+  --rose:#A23A5A; --gold:#E9C46A; --leaf:#6E9E54; --wood:#C98B57;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:linear-gradient(180deg,#E3EEF0 0,#F6F1E6 340px,#F6F1E6 100%);color:var(--ink);font:15px/1.45 "Nunito",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior-y:contain;overflow-x:hidden}
+#app{position:relative}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+.hand{font-family:"Kalam","Comic Sans MS",cursive;font-weight:700;letter-spacing:-.2px}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px 150px;overflow-x:clip}
+.ill{display:block;width:100%;height:100%;overflow:visible}
+.start{padding-top:8px;text-align:center}
+.start h1{font-size:clamp(46px,14vw,66px);line-height:.9;margin:6px 0 4px;color:var(--rose)}
+.sub{font-size:13.5px;color:var(--muted);margin:0 0 14px}
+.hero{width:100%;max-width:460px;margin:0 auto;aspect-ratio:360/240;border-radius:26px;overflow:hidden;box-shadow:0 10px 24px rgba(74,64,56,.12)}
+.panel{background:rgba(255,253,248,.9);border-radius:22px;padding:16px;text-align:left;margin:14px 0;box-shadow:0 4px 14px rgba(74,64,56,.08)}
+.label{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:1.1px;color:var(--muted);margin:0 0 6px}
+.input{width:100%;font:inherit;font-size:16px;padding:11px 14px;border:0;border-radius:14px;background:#F1EBDF;color:var(--ink)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border-radius:999px;padding:8px 14px;background:#F1EBDF;font-weight:800;color:var(--ink)}
+.chip.on{background:var(--rose);color:#fff}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 20px;border-radius:999px;background:var(--rose);color:#fff;font-weight:800;font-size:16px;box-shadow:0 4px 0 #7C2A44}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 #7C2A44}
+.btn.white{background:var(--card);color:var(--ink);box-shadow:0 4px 0 var(--line)}
+.btn.green{background:var(--leaf);box-shadow:0 4px 0 #4C7739}
+.btn:disabled{opacity:.4;box-shadow:none}
+.btn.wide{width:100%}
+.btn.sm{min-height:36px;padding:6px 14px;font-size:14px}
+.link{text-decoration:underline;text-decoration-color:var(--rose);text-decoration-thickness:2px;text-underline-offset:4px;font-weight:800}
+.note{font-size:12.5px;color:var(--muted);background:#F1EBDF;border-radius:12px;padding:7px 10px;margin-top:8px}
+.top{position:sticky;top:0;z-index:30;background:rgba(238,244,241,.92);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:calc(6px + env(safe-area-inset-top)) 0 6px;box-shadow:0 2px 10px rgba(74,64,56,.08)}
+.top .row{max-width:560px;margin:0 auto;padding:0 16px;display:flex;align-items:center;gap:10px}
+.round{font-size:22px;line-height:1;white-space:nowrap;color:var(--rose)}
+.round small{font-family:"Nunito";font-weight:700;font-size:11px;color:var(--muted);display:block;margin-top:2px}
+.icobtn{width:40px;height:40px;border-radius:50%;background:var(--card);font-weight:800;font-size:17px;flex:none;display:grid;place-items:center;box-shadow:0 2px 6px rgba(74,64,56,.12)}
+.players{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;padding:2px}
+.players::-webkit-scrollbar{display:none}
+.pchip{flex:none;display:flex;align-items:center;gap:6px;border-radius:999px;background:var(--card);padding:3px 10px 3px 3px;text-align:left;box-shadow:0 2px 6px rgba(74,64,56,.1)}
+.pchip.cur{background:#FBE6B5}
+.pchip .av{width:32px;height:32px;border-radius:50%;overflow:hidden;flex:none}
+.pchip .nm{font-size:12px;font-weight:800;max-width:84px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.pchip .st{font-size:11px;font-weight:700;color:var(--muted)}
+.sec{margin:20px 0 0}
+.sech{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 8px}
+.sech h2{font-size:26px;margin:0;line-height:1;color:var(--rose)}
+.sech .hint{font-size:12px;color:var(--muted);text-align:right}
+.banner{margin:14px 0 0;border-radius:20px;padding:10px 12px;background:var(--card);display:flex;gap:10px;align-items:center;box-shadow:0 3px 10px rgba(74,64,56,.08)}
+.banner.mine{background:#FFF3D6}
+.banner .face{width:44px;height:44px;flex:none;border-radius:50%;overflow:hidden;background:#E4EFE8}
+.banner b{display:block}
+.banner .small{font-size:12.5px;color:var(--muted)}
+/* Siegpunktleiste */
+.vptrack{position:relative;height:40px;border-radius:14px;overflow:hidden;background:linear-gradient(90deg,#F3E4EA,#EAD3DC);box-shadow:inset 0 0 0 1px #E2CCD5}
+.vptrack .tick{position:absolute;top:0;bottom:0;border-left:1px solid rgba(162,58,90,.18);font-size:9px;color:var(--rose);padding-left:2px}
+.vptrack .pm{position:absolute;top:13px;width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transform:translateX(-50%)}
+/* Karten */
+.pc{display:flex;flex-direction:column;justify-content:flex-start;position:relative;width:104px;flex:none;border-radius:12px;background:#fff;padding:4px;box-shadow:0 3px 8px rgba(74,64,56,.16);text-align:left}
+.pc .art{height:76px;border-radius:9px;overflow:hidden;background:#EEF4F1}
+.pc .sun{position:absolute;left:2px;top:2px;width:24px;height:24px}
+.pc .ty{position:absolute;left:6px;top:28px;width:18px;height:18px;border-radius:5px;display:grid;place-items:center}
+.pc .nm{font-size:11.5px;font-weight:800;margin:3px 2px 0;line-height:1.1}
+.pc .fx{font-size:9.6px;line-height:1.15;color:var(--muted);margin:1px 2px 0;min-height:22px}
+.pc .gr{position:absolute;right:6px;top:6px;width:18px;height:18px}
+.pc .bk{position:absolute;right:6px;bottom:30px;display:flex;gap:1px}
+.pc.sel{outline:3px solid var(--rose);outline-offset:2px}
+.pc.dim{opacity:.4}
+.pc.ok{box-shadow:0 0 0 2.5px var(--leaf),0 3px 8px rgba(74,64,56,.16)}
+.pc.sm{width:78px}.pc.sm .art{height:52px}.pc.sm .fx{display:none}.pc.sm .nm{font-size:10.5px}
+.row-scroll{display:flex;gap:8px;overflow-x:auto;padding:6px 2px 10px;scrollbar-width:none}
+.row-scroll::-webkit-scrollbar{display:none}
+.gridc{display:flex;flex-wrap:wrap;gap:8px;padding:6px 2px 10px}
+.ring{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.ring .pc{width:auto}
+/* Gebiete */
+.terrs{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
+.terr{min-width:0;border-radius:18px;padding:8px;background:var(--card);box-shadow:0 3px 10px rgba(74,64,56,.08)}
+.terr .th{display:flex;align-items:center;gap:8px}
+.terr .th .tart{width:66px;height:44px;border-radius:10px;overflow:hidden;flex:none}
+.terr .th b{font-size:14px}
+.terr .th small{display:block;font-size:11.5px;color:var(--muted);line-height:1.2}
+.terr .slots{display:flex;gap:6px;overflow-x:auto;padding:8px 2px 2px;scrollbar-width:none}
+.terr .slot{width:78px;height:96px;border-radius:12px;border:2px dashed var(--line);flex:none}
+.terr.can{box-shadow:0 0 0 3px var(--leaf)}
+.terr .ord{font-size:12px;border-radius:10px;padding:5px 8px;margin-top:6px;background:#F7F1E6}
+.terr .ord.done{background:#E4EFD9;text-decoration:line-through;color:var(--muted)}
+.tybadge{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;color:#fff;font-size:11px;font-weight:800;vertical-align:middle}
+/* Vorrat */
+.stock{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.gd{display:inline-flex;align-items:center;gap:3px;background:var(--card);border-radius:999px;padding:2px 8px 2px 3px;font-weight:800;font-size:13px;box-shadow:0 1px 4px rgba(74,64,56,.1)}
+.gd svg{width:22px;height:22px}
+/* Arbeitsplan */
+.board{border-radius:18px;padding:10px;background:linear-gradient(180deg,#E7B98A,#D9A06C);box-shadow:inset 0 0 0 2px rgba(255,255,255,.25),0 4px 12px rgba(74,64,56,.15)}
+.board .bank{display:flex;gap:6px;align-items:center;margin-bottom:8px;font-size:12px;font-weight:800;color:#5B3B22}
+.board .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.fld{position:relative;border-radius:12px;background:#F7E3C8;padding:7px 8px 7px 34px;text-align:left;font-size:11.5px;line-height:1.2;min-height:52px;box-shadow:0 2px 0 rgba(91,59,34,.25)}
+.fld b{display:block;font-size:12.5px}
+.fld .wk{position:absolute;left:6px;top:50%;transform:translateY(-50%);width:22px;height:26px}
+.fld.live{background:#FFF6E6;box-shadow:0 0 0 2.5px var(--leaf),0 2px 0 rgba(91,59,34,.25)}
+.fld.used{opacity:.7}
+.fld.locked{background:#D9B48C;color:#6B4A2E}
+.fld .mk{position:absolute;right:6px;top:6px;display:flex;gap:3px}
+.fld .mk i{width:12px;height:12px;border-radius:50%;display:block;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.fld.mkt{padding-left:10px}
+/* Aufträge */
+.orders{display:grid;gap:8px;grid-template-columns:minmax(0,1fr)}
+.otile{border-radius:16px;background:linear-gradient(180deg,#F2F7EC,#E3EED7);padding:8px 10px;box-shadow:0 2px 8px rgba(74,64,56,.08)}
+.otile .oh{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.otile .oh b{color:#4C6B3A}
+.octs{display:flex;gap:6px;margin-top:6px}
+.oct{flex:1;border-radius:10px;background:#fff;padding:4px 2px;text-align:center;font-size:11px;line-height:1.15;position:relative}
+.oct b{display:block;font-size:15px;color:var(--rose)}
+.oct .by{position:absolute;inset:0;border-radius:10px;display:grid;place-items:center;font-size:10px;font-weight:800;color:#fff}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(246,241,230,.97);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 -2px 10px rgba(74,64,56,.1);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+.bar .in{max-width:560px;margin:0 auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.bar .msg{flex:1 1 160px;font-size:12.5px;line-height:1.25}
+.ov{position:fixed;inset:0;z-index:60;background:rgba(60,52,44,.35);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--paper);width:100%;max-width:560px;max-height:90vh;overflow:auto;border-radius:26px 26px 0 0;padding:14px 16px calc(18px + env(safe-area-inset-bottom));position:relative}
+.sheet h3{font-family:"Kalam",cursive;font-weight:700;font-size:28px;margin:0 0 4px;line-height:1.05;padding-right:48px;color:var(--rose)}
+.sheet .x{position:absolute;right:12px;top:12px}
+.grab{width:44px;height:5px;border-radius:9px;background:var(--ink);opacity:.15;margin:0 auto 10px}
+.opts{display:grid;gap:8px;margin-top:10px}
+.opt{border-radius:16px;background:var(--card);padding:10px 12px;text-align:left;display:flex;gap:10px;align-items:center;box-shadow:0 2px 8px rgba(74,64,56,.08)}
+.opt:disabled{opacity:.35}
+.opt b{display:block}
+.opt small{font-size:12px;color:var(--muted)}
+.stepper{display:flex;align-items:center;justify-content:space-between;gap:8px;border-radius:16px;background:var(--card);padding:6px 10px;margin-top:8px}
+.stepper button{width:38px;height:38px;border-radius:50%;background:var(--gold);font-size:20px;font-weight:800}
+.stepper button:disabled{opacity:.3}
+.btnrow{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.btnrow .btn{flex:1}
+.skip{display:block;margin:14px auto 0;font-size:13px;color:var(--muted);text-decoration:underline}
+.toast{position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top));transform:translateX(-50%);z-index:70;background:var(--rose);color:#fff;padding:9px 16px;border-radius:999px;font-size:13px;max-width:min(92vw,520px)}
+.log{font-size:12.5px;border-radius:18px;background:var(--card);padding:8px 12px;max-height:220px;overflow:auto}
+.log div{padding:4px 0;border-bottom:1px dashed var(--line)}
+.log div:last-child{border:0}
+.rules h4{font-family:"Kalam",cursive;font-size:21px;margin:16px 0 2px;color:var(--rose)}
+.rules p,.rules li{font-size:14px}
+.rules ul{padding-left:18px;margin:4px 0}
+.score{width:100%;border-collapse:collapse;font-size:13px}
+.score th,.score td{padding:6px 4px;border-bottom:1px dashed var(--line);text-align:right}
+.score th:first-child,.score td:first-child{text-align:left}
+.score tr.tot td{font-weight:800;font-size:15px;border-bottom:0}
+/* Lernspiel */
+.coach{position:fixed;left:12px;right:12px;bottom:84px;z-index:75;max-width:536px;margin:0 auto;display:flex;gap:10px;align-items:flex-start;background:var(--card);border-radius:22px;box-shadow:0 10px 30px rgba(74,64,56,.22);padding:10px 12px}
+.coach.top{top:calc(10px + env(safe-area-inset-top));bottom:auto!important}
+.coach .cface{width:54px;height:54px;flex:none;border-radius:50%;background:#E4EFE8;overflow:hidden}
+.coach .ctext{flex:1;min-width:0}
+.coach .cstep{font-size:10.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1.1px}
+.coach p{margin:2px 0 8px;font-size:14px;line-height:1.38}
+.coach .cbtns{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.coach .btn{min-height:38px;padding:6px 16px;font-size:15px}
+.coach .cquit{font-size:12px;color:var(--muted);text-decoration:underline;margin-left:auto}
+.coach .cwait{font-weight:800;letter-spacing:3px;color:var(--leaf)}
+.tut-hl{outline:4px solid var(--rose)!important;outline-offset:3px;animation:tutp 1.1s ease-in-out infinite;position:relative;z-index:6;border-radius:14px}
+@keyframes tutp{50%{outline-color:var(--gold)}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Aquarell: weich verlaufende, leicht ausfransende Kanten -->
+    <filter id="wc" x="-8%" y="-8%" width="116%" height="116%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="3.2" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feGaussianBlur in="d" stdDeviation="0.35"/>
+    </filter>
+    <!-- Papierstruktur über Flächen -->
+    <filter id="paper" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="g"/>
+      <feColorMatrix in="g" type="matrix" values="0 0 0 0 1  0 0 0 0 0.98  0 0 0 0 0.94  0 0 0 -0.9 0.62" result="gm"/>
+      <feComposite in="gm" in2="SourceGraphic" operator="in"/>
+    </filter>
+    <linearGradient id="skyg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BBD8E6"/><stop offset=".65" stop-color="#EAF2EE"/><stop offset="1" stop-color="#FBF3E2"/></linearGradient>
+    <linearGradient id="dusk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F6D7C8"/><stop offset="1" stop-color="#FBF3E2"/></linearGradient>
+  </defs>
+</svg>
+<div id="app"></div>
+<script>
+'use strict';
+/* =====================================================================
+   Landgut – ein Kartenspiel nach den Regeln von „Countryside / Landgut“
+   (Peter Prinz, Nanox Games). Arbeitskräfte einsetzen, mit Sonnenstunden
+   Karten in Gebiete spielen, Waren in Körben sammeln, Aufträge erfüllen
+   und so neue Felder am Arbeitsplan freischalten. Illustrationen im
+   weichen Aquarell-Stil (an die Originaloptik bzw. Ghibli angelehnt).
+   ===================================================================== */
+// ---------- Daten ----------
+const TT = ['wiese', 'haus', 'stall', 'acker', 'garten'];
+const TT_N = { wiese: 'Wiese', haus: 'Haus', stall: 'Stall', acker: 'Acker', garten: 'Garten' };
+const TT_C = { wiese: '#7FAF5B', haus: '#D9707A', stall: '#7D93B5', acker: '#D3A43C', garten: '#B5546A' };
+const GOODS = ['kirsche', 'apfel', 'traube', 'wein', 'ei', 'milch', 'wolle', 'brot'];
+const GOOD_N = { kirsche: 'Kirsche', apfel: 'Apfel', traube: 'Traube', wein: 'Wein', ei: 'Ei', milch: 'Milch', wolle: 'Wolle', brot: 'Brot' };
+const GROUP_N = { baum: 'Bäume', blume: 'Blumen', tier: 'Tiere', getreide: 'Getreide', rebe: 'Reben', person: 'Personen', haus: 'Stuben' };
+const TOKENS = 15;      // Münzen + gefüllte Körbe zusammen
+const HAND_MAX = 12;
+const DISPLAY = 7;
+const VP_END = 30;
+// Projektkarten: Sonnenstunden, Gebiet, Gruppe, Anzahl im Spiel, Soforteffekt
+const CARDS = {
+  kirschbaum: { n: 'Kirschbaum', sun: 5, t: 'wiese', g: 'baum', c: 6, fx: 'Erhalte eine Kirsche je Kirschbaum.' },
+  apfelbaum: { n: 'Apfelbaum', sun: 5, t: 'wiese', g: 'baum', c: 6, fx: 'Jeder Apfelbaum erhält einen Apfel.' },
+  eiche: { n: 'Eiche', sun: 4, t: 'wiese', g: 'baum', c: 4, fx: 'Erhalte 1 Münze je unterschiedlichem Baum.' },
+  mohn: { n: 'Mohn', sun: 1, t: 'wiese', g: 'blume', c: 5, fx: 'Erhalte 1 Münze.' },
+  schaf: { n: 'Schaf', sun: 3, t: 'wiese', g: 'tier', c: 5, fx: 'Erhalte eine Wolle.' },
+  esel: { n: 'Esel', sun: 2, t: 'wiese', g: 'tier', c: 3, fx: 'Nimm eine Karte aus dem Ablagestapel.' },
+  rebe: { n: 'Rebe', sun: 3, t: 'garten', g: 'rebe', c: 8, fx: 'Erhalte eine Traube je Rebe in diesem Gebiet.' },
+  sonnenblume: { n: 'Sonnenblume', sun: 2, t: 'garten', g: 'blume', c: 4, fx: 'Erhalte 2 Münzen.' },
+  weinbauer: { n: 'Weinbauer', sun: 4, t: 'garten', g: 'person', c: 4, fx: '1 Traube → 3 Wein, beliebig oft.' },
+  gaertnerin: { n: 'Gärtnerin', sun: 2, t: 'garten', g: 'person', c: 4, fx: 'Wähle ein Gebiet: jeder Obstbaum und jede Rebe dort erhält einen Korb.' },
+  kelterei: { n: 'Kelterei', sun: 7, t: 'garten', g: 'haus', c: 3, fx: '2 Wein → 1 Siegpunkt, beliebig oft.' },
+  weizen: { n: 'Weizen', sun: 2, t: 'acker', g: 'getreide', c: 7, fx: 'Erhalte 1 Münze.' },
+  roggen: { n: 'Roggen', sun: 3, t: 'acker', g: 'getreide', c: 5, fx: 'Zähle deine Roggen: so viele benachbarte Karten aus der Auslage oder Münzen.' },
+  mais: { n: 'Mais', sun: 1, t: 'acker', g: 'getreide', c: 6, fx: 'Nimm eine Karte aus der Auslage.' },
+  hafer: { n: 'Hafer', sun: 2, t: 'acker', g: 'getreide', c: 5, fx: 'Jedes Schaf erhält eine Wolle.' },
+  bauer: { n: 'Bauer', sun: 4, t: 'acker', g: 'person', c: 4, fx: 'Erhalte 1 Siegpunkt je Acker auf deinem Landgut.' },
+  kuh: { n: 'Kuh', sun: 4, t: 'stall', g: 'tier', c: 6, fx: 'Jede Kuh erhält eine Milch.' },
+  huhn: { n: 'Huhn', sun: 2, t: 'stall', g: 'tier', c: 6, fx: 'Erhalte ein Ei.' },
+  hahn: { n: 'Hahn', sun: 3, t: 'stall', g: 'tier', c: 4, fx: 'Jedes Huhn erhält ein Ei.' },
+  pferd: { n: 'Pferd', sun: 7, t: 'stall', g: 'tier', c: 3, fx: 'Erhalte 2 Siegpunkte.' },
+  stallbursche: { n: 'Stallbursche', sun: 3, t: 'stall', g: 'person', c: 3, fx: 'Stelle eine eingesetzte Arbeitskraft zurück auf die Bank.' },
+  hund: { n: 'Hund', sun: 3, t: 'haus', g: 'tier', c: 4, fx: 'Erfülle einen Auftrag.' },
+  katze: { n: 'Katze', sun: 2, t: 'haus', g: 'tier', c: 4, fx: 'Nimm eine Karte aus dem Ablagestapel.' },
+  baeckerin: { n: 'Bäckerin', sun: 4, t: 'haus', g: 'person', c: 4, fx: 'Erhalte ein Brot je Weizen und Roggen.' },
+  kaeserin: { n: 'Käserin', sun: 4, t: 'haus', g: 'person', c: 3, fx: '1 Milch → 2 Münzen, beliebig oft.' },
+  weberin: { n: 'Weberin', sun: 3, t: 'haus', g: 'person', c: 3, fx: '1 Wolle → 2 Münzen, beliebig oft.' },
+  kaminstube: { n: 'Kaminstube', sun: 7, t: 'haus', g: 'haus', c: 3, fx: 'Erhalte 3 Münzen.' },
+};
+// Aufträge: Bedingungen (Gebietsaufträge gelten für „dieses Gebiet“)
+const COND_TX = {
+  give: c => `Gib ${Object.entries(c.goods).map(([g, n]) => `${n} ${GOOD_N[g]}`).join(' + ')} ab`,
+  full: () => 'Dieses Gebiet ist voll',
+  pair: c => `Zwei gleiche ${GROUP_N[c.g]} in diesem Gebiet`,
+  grp: c => `${c.n} ${GROUP_N[c.g]} in diesem Gebiet`,
+  same3: () => 'Drei gleiche Karten in diesem Gebiet',
+  sun7: () => 'Zwei Karten mit 7 Sonnenstunden in diesem Gebiet',
+  discard: c => `Wirf ${c.n} Handkarten ab`,
+  persons3: () => 'Drei unterschiedliche Personen in diesem Gebiet',
+  noPerson: () => 'Mindestens 3 Karten und keine Person in diesem Gebiet',
+  animals4: () => 'Vier unterschiedliche Tiere in diesem Gebiet',
+  esel: () => 'Ein Esel und ein Hund oder eine Katze in diesem Gebiet',
+  huhn3: () => 'Drei Hühner oder Hähne in diesem Gebiet',
+  hafer: () => 'Mehr Hafer als Schafe, mindestens ein Schaf in diesem Gebiet',
+  coins: c => `Besitze ${c.n} Münzen`,
+  fullTerr: c => `Besitze ${c.n} volle Gebiete`,
+  animalTerr: c => `Besitze ${c.n} Gebiete mit je mindestens einem Tier`,
+  diff3: () => 'Gib 3 Körbe mit unterschiedlichen Waren ab',
+  giveAny: c => `Gib ${c.n} Waren ab (${c.set.map(g => GOOD_N[g]).join('/')})`,
+  have: c => `Besitze ${Object.keys(c.goods).map(g => GOOD_N[g]).join(', ')}`,
+  pay: c => `Zahle ${c.n} Münzen`,
+  terrs: c => `Besitze ${c.n} Gebiete`,
+  cards: c => `${c.n} Karten auf deinem Landgut`,
+  persons: c => `${c.n} Personen auf deinem Landgut`,
+};
+// Gebietskarten: je Art 6, mit Platz für Karten und eigenem Auftrag (nur für dich)
+const TERRS = [
+  ['wiese', 3, { k: 'give', goods: { kirsche: 2, traube: 2 } }, 4], ['wiese', 4, { k: 'pair', g: 'baum' }, 3], ['wiese', 5, { k: 'full' }, 5],
+  ['wiese', 4, { k: 'esel' }, 4], ['wiese', 3, { k: 'hafer' }, 4], ['wiese', 4, { k: 'grp', g: 'tier', n: 2 }, 3],
+  ['haus', 3, { k: 'persons3' }, 6], ['haus', 4, { k: 'discard', n: 6 }, 4], ['haus', 3, { k: 'full' }, 4],
+  ['haus', 4, { k: 'esel' }, 4], ['haus', 4, { k: 'give', goods: { brot: 2, milch: 1 } }, 4], ['haus', 5, { k: 'sun7' }, 6],
+  ['stall', 4, { k: 'animals4' }, 6], ['stall', 3, { k: 'huhn3' }, 4], ['stall', 4, { k: 'noPerson' }, 3],
+  ['stall', 5, { k: 'full' }, 5], ['stall', 3, { k: 'give', goods: { ei: 2, milch: 2 } }, 4], ['stall', 4, { k: 'same3' }, 4],
+  ['acker', 4, { k: 'grp', g: 'getreide', n: 4 }, 5], ['acker', 3, { k: 'same3' }, 4], ['acker', 5, { k: 'full' }, 5],
+  ['acker', 4, { k: 'hafer' }, 4], ['acker', 3, { k: 'give', goods: { brot: 3 } }, 4], ['acker', 4, { k: 'pair', g: 'getreide' }, 3],
+  ['garten', 4, { k: 'grp', g: 'rebe', n: 3 }, 5], ['garten', 3, { k: 'give', goods: { wein: 3 } }, 4], ['garten', 5, { k: 'full' }, 5],
+  ['garten', 4, { k: 'pair', g: 'blume' }, 3], ['garten', 3, { k: 'noPerson' }, 3], ['garten', 4, { k: 'give', goods: { traube: 2, apfel: 2 } }, 4],
+].map(([t, cap, cond, vp], i) => ({ id: i, t, cap, cond, vp }));
+// Auftragsplättchen (Position *, **, ***), jeweils Seite A (gestaffelte Bedingung) oder B (gleiche Bedingung)
+const OTILES = [
+  { pos: 1, A: { tx: 'Gib Obst ab (Kirsche/Traube/Apfel)', f: [[8, 5], [6, 4], [4, 3], [3, 2]].map(([n, vp]) => ({ cond: { k: 'giveAny', set: ['kirsche', 'traube', 'apfel'], n }, vp })) },
+    B: { tx: 'Besitze Kirsche, Traube und Apfel', f: [5, 4, 3, 2].map((vp, i) => ({ cond: { k: 'have', goods: { kirsche: 1, traube: 1, apfel: 1 } }, vp, card: i === 0 })) } },
+  { pos: 1, A: { tx: 'Zahle Münzen', f: [[6, 5], [4, 4], [3, 3], [2, 2]].map(([n, vp]) => ({ cond: { k: 'pay', n }, vp })) },
+    B: { tx: 'Gib 2 Eier und 1 Apfel ab', f: [5, 4, 3, 2].map((vp, i) => ({ cond: { k: 'give', goods: { ei: 2, apfel: 1 } }, vp, card: i === 0 })) } },
+  { pos: 2, A: { tx: 'Besitze Gebiete', f: [[7, 6], [6, 5], [5, 4], [4, 3]].map(([n, vp]) => ({ cond: { k: 'terrs', n }, vp })) },
+    B: { tx: '4 Gebiete mit je einem Tier', f: [6, 5, 4, 3].map((vp, i) => ({ cond: { k: 'animalTerr', n: 4 }, vp, card: i === 0 })) } },
+  { pos: 2, A: { tx: 'Gib Tierprodukte ab (Ei/Milch/Wolle)', f: [[9, 6], [7, 5], [5, 4], [3, 3]].map(([n, vp]) => ({ cond: { k: 'giveAny', set: ['ei', 'milch', 'wolle'], n }, vp })) },
+    B: { tx: '3 unterschiedliche Waren abgeben', f: [6, 5, 4, 3].map((vp, i) => ({ cond: { k: 'diff3' }, vp, card: i === 0 })) } },
+  { pos: 3, A: { tx: 'Karten auf deinem Landgut', f: [[14, 8], [12, 7], [10, 6], [8, 5]].map(([n, vp]) => ({ cond: { k: 'cards', n }, vp })) },
+    B: { tx: 'Besitze 4 volle Gebiete', f: [8, 7, 6, 5].map((vp, i) => ({ cond: { k: 'fullTerr', n: 4 }, vp, card: i === 0 })) } },
+  { pos: 3, A: { tx: 'Personen auf deinem Landgut', f: [[6, 8], [5, 7], [4, 6], [3, 5]].map(([n, vp]) => ({ cond: { k: 'persons', n }, vp })) },
+    B: { tx: 'Besitze 14 Münzen', f: [8, 7, 6, 5].map((vp, i) => ({ cond: { k: 'coins', n: 14 }, vp, card: i === 0 })) } },
+];
+// Arbeitsplan: 6 Startfelder, 8 freischaltbare Bereiche (12 Marker), Marktaktionen
+const FIELDS = [
+  { k: 'take4', n: '4 Karten', tx: 'Nimm 4 benachbarte Karten aus der Auslage.' },
+  { k: 'sun2', n: '2 Sonnen + 2 Karten', tx: 'Spiele eine Karte mit 2 Sonnenstunden, nimm danach 2 benachbarte Karten.' },
+  { k: 'sun5', n: '5 Sonnen', tx: 'Spiele eine Karte mit 5 Sonnenstunden.' },
+  { k: 'sun3', n: '3 Sonnen + Abwurf', tx: 'Spiele eine Karte mit 3 Sonnenstunden, +1 je abgeworfener Handkarte.' },
+  { k: 'terr', n: 'Gebiet', tx: 'Ziehe 2 Gebiete, lege eines aus, das andere zurück.' },
+  { k: 'order2', n: '2 Aufträge', tx: 'Erfülle bis zu zwei Aufträge.' },
+  { k: 'sun32', n: '3 + 2 Sonnen', tx: 'Spiele eine Karte mit 3, dann eine mit 2 Sonnenstunden.', lock: 'u1' },
+  { k: 'coin3', n: '3 Münzen + 3 Sonnen', tx: 'Erhalte 3 Münzen und spiele eine Karte mit 3 Sonnenstunden.', lock: 'u2' },
+];
+const UNLOCKS = [
+  { k: 'u1', m: 2, tx: 'Arbeitsfeld: 3, dann 2 Sonnenstunden' },
+  { k: 'u2', m: 2, tx: 'Arbeitsfeld: 3 Münzen + 3 Sonnenstunden' },
+  { k: 'u3', m: 2, tx: 'Dauerhaft: Brauchst du weniger Sonnenstunden als vorhanden, +1 Münze' },
+  { k: 'u4', m: 1, tx: 'Sofort: +1 SP, 2 Gebiete ziehen, eines behalten' },
+  { k: 'u5', m: 1, tx: 'Sofort: +1 SP, 2 beliebige Karten aus dem Ablagestapel' },
+  { k: 'u6', m: 1, tx: 'Sofort: +1 SP, 4 benachbarte Karten aus der Auslage' },
+  { k: 'm5', m: 2, tx: 'Marktaktion: Soforteffekt einer gespielten Karte wiederholen' },
+  { k: 'm6', m: 1, tx: 'Marktaktion: einen Auftrag erfüllen' },
+];
+const MARKET = [
+  { k: 'm1', n: 'Karte nehmen', tx: 'Nimm eine Karte aus der Auslage.' },
+  { k: 'm2', n: 'Karten verkaufen', tx: 'Wirf 3 Handkarten ab, erhalte 3 Münzen.' },
+  { k: 'm3', n: 'Waren verkaufen', tx: 'Verkaufe beliebig viele Körbe, je 1 Münze.' },
+  { k: 'm4', n: 'Auslage tauschen', tx: 'Wirf 1 Handkarte ab und die ganze Auslage, fülle neu auf, nimm 1 Karte.' },
+  { k: 'm5', n: 'Effekt wiederholen', tx: 'Führe den Soforteffekt einer gespielten Karte nochmals aus.', lock: 'm5' },
+  { k: 'm6', n: 'Auftrag erfüllen', tx: 'Erfülle einen Auftrag.', lock: 'm6' },
+];
+const START_VP = { 1: 0, 2: 0, 3: 2, 4: 3 };
+const SOLO_CHART = [[38, 'Prinz-Level!'], [37, 'Prima gemacht!'], [36, 'Sehr gut gemacht!'], [34, 'Kann sich sehen lassen!'], [32, 'Du hast den Dreh raus!'], [30, 'Das ist der Weg!'], [25, 'Ordentlich!'], [0, 'Du benötigst mehr Übung!']];
+const BOT_NAMES = [['Frau Holunder', { hair: '#6B4A3A', dress: '#7D93B5', hat: 'straw' }], ['Herr Moosgrund', { hair: '#3E3A36', dress: '#7FAF5B', hat: 'cap' }], ['Oma Quitte', { hair: '#D8D2C8', dress: '#D9707A', hat: 'scarf' }]];
+const MARKS = ['#A23A5A', '#5C86B8', '#E2A33A', '#6E9E54'];
+
+// ---------- Aquarell-Illustrationen ----------
+const W = s => `<g filter="url(#wc)">${s}</g>`;
+function hills(t) {
+  const g = { wiese: ['#B9D69A', '#8DBB6C'], haus: ['#C8DDAE', '#9FC283'], stall: ['#BBD3A8', '#93B97C'], acker: ['#E9D394', '#D5B565'], garten: ['#C7DDB0', '#9DC082'] }[t] || ['#B9D69A', '#8DBB6C'];
+  return W(`<path d="M-5,48 C18,36 34,40 52,44 C70,48 86,34 105,40 V75 H-5 Z" fill="${g[0]}"/><path d="M-5,58 C24,50 46,56 64,54 C80,52 92,50 105,54 V75 H-5 Z" fill="${g[1]}"/>`);
+}
+const cloud = (x, y, s, o = 0.95) => `<g opacity="${o}" filter="url(#wc)"><ellipse cx="${x}" cy="${y}" rx="${10 * s}" ry="${5 * s}" fill="#fff"/><ellipse cx="${x - 7 * s}" cy="${y + 1.5 * s}" rx="${6 * s}" ry="${4 * s}" fill="#fff"/><ellipse cx="${x + 6 * s}" cy="${y - 2 * s}" rx="${6 * s}" ry="${5 * s}" fill="#fff"/></g>`;
+function sky(t) { return `<rect width="100" height="75" fill="url(#skyg)"/>${cloud(24, 14, 1)}${cloud(78, 10, 0.8, 0.85)}${hills(t)}`; }
+function tree(fruit, oak) {
+  const canopy = oak ? ['#5E8F4A', '#78A85A', '#93BE70'] : ['#6E9E54', '#89B866', '#A8CF82'];
+  let s = `<path d="M48,66 C49,56 47,48 46,42 L54,42 C53,48 51,56 52,66 Z" fill="#8A6142"/>`;
+  s += `<ellipse cx="50" cy="32" rx="${oak ? 26 : 22}" ry="18" fill="${canopy[0]}"/><ellipse cx="42" cy="28" rx="14" ry="11" fill="${canopy[1]}"/><ellipse cx="58" cy="25" rx="12" ry="10" fill="${canopy[2]}"/>`;
+  let f = '';
+  if (fruit) [[38, 32], [46, 24], [55, 34], [62, 27], [50, 40], [42, 38], [60, 38]].forEach(([x, y]) => { f += `<circle cx="${x}" cy="${y}" r="${fruit === 'kirsche' ? 2.1 : 2.8}" fill="${fruit === 'kirsche' ? '#C8384F' : '#E06A4A'}"/>${fruit === 'kirsche' ? `<circle cx="${x + 2.4}" cy="${y + .8}" r="2" fill="#B02D45"/>` : ''}`; });
+  return W(s) + f;
+}
+function vine() {
+  let s = `<path d="M28,66 V30 M72,66 V30 M24,32 H76" stroke="#9A7352" stroke-width="2.2" fill="none"/>`;
+  [[34, 36], [48, 34], [62, 37]].forEach(([x, y]) => { s += `<ellipse cx="${x}" cy="${y}" rx="7" ry="5" fill="#7DAE5E"/>`; });
+  let g = '';
+  [[36, 44], [52, 46], [64, 44]].forEach(([x, y]) => { for (let i = 0; i < 6; i++) g += `<circle cx="${x + (i % 3 - 1) * 2.6}" cy="${y + Math.floor(i / 3) * 2.8 + (i > 4 ? 2.6 : 0)}" r="1.7" fill="#7A4E8C"/>`; });
+  return W(s) + g;
+}
+function flowers(col, big) {
+  let s = '';
+  [[22, 60], [34, 54], [47, 62], [60, 55], [74, 61], [84, 54]].forEach(([x, y], i) => {
+    s += `<path d="M${x},${y} V${y + 12}" stroke="#5E8F4A" stroke-width="1.4"/>`;
+    s += big ? `<circle cx="${x}" cy="${y}" r="5.5" fill="#F2C84B"/><circle cx="${x}" cy="${y}" r="2.4" fill="#8A5A2E"/>` : `<circle cx="${x}" cy="${y}" r="3.6" fill="${col}"/><circle cx="${x}" cy="${y}" r="1.2" fill="#3A2A2A"/>`;
+  });
+  return W(s);
+}
+function grain(kind) {
+  const col = { weizen: '#E3B94F', roggen: '#C79A45', mais: '#7FAE58', hafer: '#E7D49A' }[kind];
+  let s = '';
+  for (let i = 0; i < 9; i++) {
+    const x = 12 + i * 9.5, y = 40 + (i % 3) * 3;
+    s += `<path d="M${x},70 C${x + 1},60 ${x - 1},52 ${x},${y}" stroke="${kind === 'mais' ? '#5E8F4A' : '#B48C3E'}" stroke-width="1.3" fill="none"/>`;
+    if (kind === 'mais') s += `<ellipse cx="${x + 2.5}" cy="${y + 10}" rx="2.2" ry="5" fill="#F2CB55"/><path d="M${x},${y + 4} q6,4 9,1" stroke="#7FAE58" stroke-width="1.6" fill="none"/>`;
+    else if (kind === 'hafer') s += `<path d="M${x},${y} q3,4 1,8 M${x},${y + 3} q-3,4 -1,8" stroke="${col}" stroke-width="2" fill="none"/>`;
+    else s += `<ellipse cx="${x}" cy="${y}" rx="2.2" ry="6" fill="${col}"/>`;
+  }
+  return W(s);
+}
+function animal(kind) {
+  switch (kind) {
+    case 'schaf': return W(`<ellipse cx="50" cy="52" rx="18" ry="11" fill="#FBF8F1"/><circle cx="38" cy="47" r="7" fill="#FBF8F1"/><circle cx="58" cy="45" r="7" fill="#FBF8F1"/><ellipse cx="31" cy="52" rx="5" ry="6" fill="#4A4038"/><path d="M42,62 v7 M56,62 v7" stroke="#4A4038" stroke-width="2"/>`) + `<circle cx="30" cy="51" r=".9" fill="#fff"/>`;
+    case 'kuh': return W(`<ellipse cx="52" cy="50" rx="21" ry="12" fill="#FBF8F1"/><ellipse cx="46" cy="47" rx="6" ry="4" fill="#8A6142"/><ellipse cx="62" cy="53" rx="5" ry="4" fill="#8A6142"/><ellipse cx="29" cy="47" rx="7" ry="8" fill="#FBF8F1"/><ellipse cx="27" cy="53" rx="5" ry="3.5" fill="#F0B9AE"/><path d="M38,60 v9 M62,60 v9" stroke="#6B5444" stroke-width="2.4"/>`) + `<circle cx="28" cy="45" r="1" fill="#4A4038"/>`;
+    case 'huhn': return W(`<ellipse cx="50" cy="54" rx="13" ry="11" fill="#FBF8F1"/><circle cx="40" cy="44" r="6" fill="#FBF8F1"/><path d="M38,38 q2,-4 4,0 q2,-4 3,1" fill="#D94A4A"/><path d="M34,45 l-4,1.5 l4,1" fill="#E9B44C"/><path d="M47,65 v5 M53,65 v5" stroke="#E9B44C" stroke-width="1.6"/>`) + `<circle cx="39" cy="43" r=".9" fill="#4A4038"/>`;
+    case 'hahn': return W(`<path d="M58,48 C70,30 78,42 72,56 C68,50 64,50 60,54 Z" fill="#3E6A8A"/><path d="M60,50 C72,38 80,48 74,60" fill="#C2563C"/><ellipse cx="50" cy="54" rx="12" ry="11" fill="#C9763E"/><circle cx="41" cy="42" r="6" fill="#D88A4A"/><path d="M38,36 q2,-5 4,0 q2,-5 4,1" fill="#D94A4A"/><path d="M35,43 l-4,1.5 l4,1" fill="#E9B44C"/><path d="M47,65 v5 M53,65 v5" stroke="#E9B44C" stroke-width="1.6"/>`) + `<circle cx="40" cy="41" r=".9" fill="#2A2A2A"/>`;
+    case 'pferd': return W(`<ellipse cx="54" cy="48" rx="20" ry="10" fill="#9A6A48"/><path d="M36,46 L28,28 L34,26 L42,42 Z" fill="#9A6A48"/><ellipse cx="29" cy="27" rx="5" ry="4" fill="#9A6A48"/><path d="M33,26 C38,30 40,36 41,42" stroke="#4A3428" stroke-width="3" fill="none"/><path d="M40,56 v13 M48,56 v13 M62,56 v13 M70,56 v13" stroke="#7A5238" stroke-width="2.6"/><path d="M74,46 q8,4 6,14" stroke="#4A3428" stroke-width="3" fill="none"/>`);
+    case 'esel': return W(`<ellipse cx="54" cy="50" rx="17" ry="10" fill="#A9A39A"/><ellipse cx="34" cy="42" rx="7" ry="6" fill="#A9A39A"/><path d="M30,36 l-3,-12 l4,1 z M36,36 l1,-12 l3,2 z" fill="#8F8980"/><ellipse cx="29" cy="45" rx="4" ry="3" fill="#E6E0D6"/><path d="M42,58 v11 M64,58 v11" stroke="#7E786F" stroke-width="2.4"/>`) + `<circle cx="34" cy="40" r=".9" fill="#2A2A2A"/>`;
+    case 'hund': return W(`<ellipse cx="54" cy="54" rx="16" ry="9" fill="#D6A56E"/><circle cx="36" cy="46" r="8" fill="#D6A56E"/><ellipse cx="31" cy="44" rx="3" ry="6" fill="#9A6A48" transform="rotate(20 31 44)"/><ellipse cx="30" cy="49" rx="3" ry="2" fill="#4A4038"/><path d="M42,61 v8 M64,61 v8" stroke="#B88A55" stroke-width="2.4"/><path d="M70,50 q8,-6 6,-12" stroke="#D6A56E" stroke-width="3" fill="none"/>`) + `<circle cx="35" cy="44" r="1" fill="#2A2A2A"/>`;
+    case 'katze': return W(`<path d="M30,64 C28,46 44,40 56,44 C70,48 74,62 66,66 Z" fill="#E59A52"/><circle cx="36" cy="46" r="8" fill="#E59A52"/><path d="M30,41 l1,-8 l5,5 z M38,38 l4,-6 l2,7 z" fill="#E59A52"/><path d="M66,64 C80,62 82,52 74,50" stroke="#E59A52" stroke-width="3.5" fill="none"/><path d="M44,52 l6,2 M46,58 l6,1" stroke="#C8783A" stroke-width="1.4"/>`) + `<path d="M33,46 q1.5,1 3,0 M38,46 q1.5,1 3,0" stroke="#4A4038" stroke-width=".9" fill="none"/>`;
+  }
+  return '';
+}
+// Personen: runde Gesichter, rote Wangen, einfache Kleidung – mit Gegenstand
+function personArt(kind) {
+  const P = {
+    weinbauer: { dress: '#7A4E8C', hat: 'straw', hair: '#5A3E2E', prop: 'grapes' },
+    gaertnerin: { dress: '#7FAF5B', hat: 'scarf', hair: '#8A5A3A', prop: 'can' },
+    bauer: { dress: '#5C86B8', hat: 'straw', hair: '#3E3A36', prop: 'fork' },
+    stallbursche: { dress: '#8A6142', hat: 'cap', hair: '#C98B57', prop: 'bucket' },
+    baeckerin: { dress: '#E8D7BE', hat: 'scarf', hair: '#6B4A3A', prop: 'bread' },
+    kaeserin: { dress: '#D9707A', hat: 'none', hair: '#3E3A36', prop: 'cheese' },
+    weberin: { dress: '#B5546A', hat: 'none', hair: '#D8D2C8', prop: 'yarn' },
+  }[kind];
+  return figureArt(P);
+}
+function figureArt(P, x = 50, s = 1) {
+  const skin = '#F6D3BA';
+  const tf = `translate(${x - 50 * s},${75 - 75 * s}) scale(${s})`;
+  let b = `<path d="M38,70 C38,56 42,48 50,48 C58,48 62,56 62,70 Z" fill="${P.dress}"/>`;
+  b += `<circle cx="50" cy="38" r="10" fill="${skin}"/>`;
+  b += `<path d="M40,36 C40,26 60,26 60,36 C56,32 44,32 40,36 Z" fill="${P.hair}"/>`;
+  if (P.hat === 'straw') b += `<ellipse cx="50" cy="29" rx="16" ry="4" fill="#E8C878"/><path d="M42,29 C42,20 58,20 58,29 Z" fill="#E8C878"/><path d="M42,27 H58" stroke="#B5546A" stroke-width="1.6"/>`;
+  if (P.hat === 'cap') b += `<path d="M40,31 C40,22 60,22 60,31 Z" fill="#5C6E7E"/><path d="M58,30 h7" stroke="#5C6E7E" stroke-width="2.4"/>`;
+  if (P.hat === 'scarf') b += `<path d="M39,34 C39,22 61,22 61,34 C58,28 42,28 39,34 Z" fill="#E9C46A"/>`;
+  const props = {
+    grapes: `<g transform="translate(64,52)">${[0, 1, 2, 3, 4, 5].map(i => `<circle cx="${(i % 3) * 3}" cy="${Math.floor(i / 3) * 3 + (i > 4 ? 3 : 0)}" r="1.8" fill="#7A4E8C"/>`).join('')}</g>`,
+    can: `<path d="M64,56 h9 v8 h-9 z M73,58 l5,-4" fill="#7FB0B5" stroke="#5E8F94" stroke-width="1"/>`,
+    fork: `<path d="M66,70 V40 M62,40 h8 M62,40 v-6 M66,40 v-6 M70,40 v-6" stroke="#8A6142" stroke-width="1.6" fill="none"/>`,
+    bucket: `<path d="M63,58 h10 l-1.5,10 h-7 z" fill="#9AA6B0"/><path d="M63,58 q5,-6 10,0" stroke="#6E7A84" fill="none"/>`,
+    bread: `<ellipse cx="68" cy="60" rx="8" ry="4" fill="#C98B57"/><path d="M63,59 l2,-2 M67,59 l2,-2 M71,59 l2,-2" stroke="#8A5A2E" stroke-width="1"/>`,
+    cheese: `<path d="M61,64 l14,-8 v8 z" fill="#F2CB55"/><circle cx="69" cy="62" r="1.2" fill="#D9A93C"/>`,
+    yarn: `<circle cx="68" cy="60" r="6" fill="#E59A9F"/><path d="M63,58 q5,3 10,-1 M63,62 q5,3 10,-1" stroke="#C26D74" stroke-width="1" fill="none"/>`,
+  };
+  const face = `<circle cx="46.5" cy="39" r="1.1" fill="#3A2E28"/><circle cx="53.5" cy="39" r="1.1" fill="#3A2E28"/><ellipse cx="44.5" cy="42" rx="2" ry="1.2" fill="#EFA59A" opacity=".8"/><ellipse cx="55.5" cy="42" rx="2" ry="1.2" fill="#EFA59A" opacity=".8"/><path d="M48.5,44 q1.5,1 3,0" stroke="#8A4A3A" stroke-width=".8" fill="none"/>`;
+  return `<g transform="${tf}">${W(b + (props[P.prop] || ''))}${face}</g>`;
+}
+function buildingArt(kind) {
+  if (kind === 'kaminstube') return W(`<rect x="22" y="34" width="56" height="36" fill="#E9D8C0"/><path d="M18,36 L50,16 L82,36 Z" fill="#C9605E"/><rect x="40" y="46" width="20" height="24" rx="2" fill="#8A6142"/><path d="M44,66 q6,-12 12,0 Z" fill="#F2A33C"/><path d="M47,66 q3,-7 6,0 Z" fill="#F7D35A"/><rect x="64" y="18" width="7" height="12" fill="#9A7352"/>`) + `<path d="M67,16 q4,-6 0,-10 q-3,-4 2,-8" stroke="#fff" stroke-width="2" fill="none" opacity=".8"/>`;
+  if (kind === 'kelterei') return W(`<ellipse cx="38" cy="54" rx="13" ry="16" fill="#A36A42"/><path d="M26,46 h24 M26,62 h24" stroke="#6B4228" stroke-width="2"/><ellipse cx="66" cy="58" rx="10" ry="12" fill="#A36A42"/><path d="M57,52 h18 M57,64 h18" stroke="#6B4228" stroke-width="2"/>`) + `<path d="M36,54 h4" stroke="#6B4228" stroke-width="2"/>`;
+  return '';
+}
+const ARTC = {};
+function cardArt(k) {
+  if (ARTC[k]) return ARTC[k];
+  const t = CARDS[k].t;
+  let inner = sky(t);
+  if (k === 'kirschbaum') inner += tree('kirsche');
+  else if (k === 'apfelbaum') inner += tree('apfel');
+  else if (k === 'eiche') inner += tree(null, true);
+  else if (k === 'mohn') inner += flowers('#D9443C');
+  else if (k === 'sonnenblume') inner += flowers('#F2C84B', true);
+  else if (k === 'rebe') inner += vine();
+  else if (['weizen', 'roggen', 'mais', 'hafer'].includes(k)) inner += grain(k);
+  else if (['schaf', 'kuh', 'huhn', 'hahn', 'pferd', 'esel', 'hund', 'katze'].includes(k)) inner += animal(k);
+  else if (['kaminstube', 'kelterei'].includes(k)) inner += buildingArt(k);
+  else inner += personArt(k);
+  return (ARTC[k] = `<svg viewBox="0 0 100 75" class="ill" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${inner}<rect width="100" height="75" filter="url(#paper)" opacity=".35"/></svg>`);
+}
+function terrArt(t) {
+  let s = sky(t);
+  if (t === 'wiese') s += flowers('#E9A0B6') + W(`<circle cx="80" cy="44" r="7" fill="#89B866"/>`);
+  if (t === 'haus') s += W(`<rect x="34" y="34" width="34" height="28" fill="#F4E6D2"/><path d="M30,36 L51,20 L72,36 Z" fill="#C9605E"/><rect x="46" y="46" width="10" height="16" fill="#8A6142"/><rect x="38" y="40" width="6" height="6" fill="#BCD6E8"/><rect x="58" y="40" width="6" height="6" fill="#BCD6E8"/>`);
+  if (t === 'stall') s += W(`<rect x="30" y="34" width="40" height="28" fill="#7D93B5"/><path d="M26,36 L50,20 L74,36 Z" fill="#5E7396"/><path d="M44,62 V46 H56 V62 M44,46 L56,62 M56,46 L44,62" stroke="#F4EFE3" stroke-width="1.6" fill="none"/><path d="M14,62 H30 M14,56 H30 M16,52 V64 M24,52 V64" stroke="#C9A27A" stroke-width="1.5"/>`);
+  if (t === 'acker') s += grain('weizen');
+  if (t === 'garten') s += W(`<path d="M30,66 V40 C30,24 70,24 70,40 V66" stroke="#9A7352" stroke-width="2.4" fill="none"/>`) + W([[32, 40], [40, 30], [50, 27], [60, 30], [68, 40], [33, 52], [67, 52]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.6" fill="#E57A90"/><circle cx="${x + 2}" cy="${y + 2}" r="2.4" fill="#7DAE5E"/>`).join(''));
+  return `<svg viewBox="0 0 100 75" class="ill" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${s}<rect width="100" height="75" filter="url(#paper)" opacity=".35"/></svg>`;
+}
+function goodSvg(g) {
+  const fill = { kirsche: '#C8384F', apfel: '#E06A4A', traube: '#7A4E8C', wein: '#8E2F4A', ei: '#FBF3E2', milch: '#FFFFFF', wolle: '#F1EBDF', brot: '#C98B57' }[g];
+  const basket = `<path d="M3,12 H21 L18,21 H6 Z" fill="#B88A64"/><path d="M5,15 H19 M6,18 H18" stroke="#8A6142" stroke-width=".8"/>`;
+  const top = {
+    kirsche: `<circle cx="9" cy="10" r="3" fill="${fill}"/><circle cx="14" cy="10" r="3" fill="${fill}"/><path d="M9,8 q2,-6 5,-6 M14,8 q-1,-4 0,-6" stroke="#5E8F4A" fill="none"/>`,
+    apfel: `<circle cx="12" cy="9" r="4.5" fill="${fill}"/><path d="M12,5 v-2" stroke="#6B4A3A"/>`,
+    traube: [0, 1, 2, 3, 4].map(i => `<circle cx="${9 + (i % 3) * 3}" cy="${7 + Math.floor(i / 3) * 3}" r="1.9" fill="${fill}"/>`).join(''),
+    wein: `<rect x="9" y="1" width="6" height="11" rx="2" fill="${fill}"/><rect x="10.5" y="-1" width="3" height="3" fill="#6B4A3A"/>`,
+    ei: `<ellipse cx="10" cy="9" rx="3" ry="4" fill="#F7E9CF"/><ellipse cx="14.5" cy="9.5" rx="3" ry="4" fill="#fff"/>`,
+    milch: `<path d="M9,2 h6 v3 l2,3 v5 h-10 v-5 l2,-3 z" fill="#fff" stroke="#BCD6E8"/>`,
+    wolle: `<circle cx="12" cy="9" r="5" fill="#F7F1E6" stroke="#D8CFC0"/><path d="M8,8 q4,3 8,-1" stroke="#D8CFC0" fill="none"/>`,
+    brot: `<ellipse cx="12" cy="9" rx="7" ry="4" fill="${fill}"/><path d="M8,8 l2,-2 M12,8 l2,-2" stroke="#8A5A2E" stroke-width=".8"/>`,
+  }[g];
+  return `<svg viewBox="0 0 24 24" aria-hidden="true">${basket}${top}</svg>`;
+}
+const coinSvg = () => `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#E9C46A"/><circle cx="12" cy="12" r="6" fill="none" stroke="#C99A3A" stroke-width="1.4"/></svg>`;
+const sunSvg = n => `<svg viewBox="0 0 24 24" aria-hidden="true"><g stroke="#E9A53A" stroke-width="1.5">${range(8).map(i => { const a = i * Math.PI / 4; return `<path d="M${12 + Math.cos(a) * 8.5},${12 + Math.sin(a) * 8.5} L${12 + Math.cos(a) * 11},${12 + Math.sin(a) * 11}"/>`; }).join('')}</g><circle cx="12" cy="12" r="7.5" fill="#F7C35A"/><text x="12" y="15.6" text-anchor="middle" font-size="10" font-weight="800" fill="#7A4A1A" font-family="Nunito,sans-serif">${n}</text></svg>`;
+const workerSvg = col => `<svg viewBox="0 0 22 26" aria-hidden="true"><path d="M11,2 a4.5,4.5 0 1 1 0,9 a4.5,4.5 0 1 1 0,-9 Z M3,24 C3,15 7,12 11,12 C15,12 19,15 19,24 Z" fill="${col}"/></svg>`;
+function heroSvg() {
+  return `<svg viewBox="0 0 360 240" class="ill" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration: ein Bauernhof zwischen sanften Hügeln unter großen Sommerwolken">
+    <rect width="360" height="240" fill="url(#skyg)"/>
+    ${cloud(80, 50, 3.2)}${cloud(250, 36, 2.6, 0.9)}${cloud(320, 80, 1.6, 0.8)}
+    ${W(`<path d="M-10,150 C60,120 120,128 180,140 C240,152 300,118 370,128 V240 H-10 Z" fill="#BCD69C"/>`)}
+    ${W(`<path d="M-10,176 C70,160 140,170 200,166 C260,162 310,156 370,162 V240 H-10 Z" fill="#94BE70"/>`)}
+    ${W(`<path d="M-10,204 C80,192 160,206 240,198 C290,194 330,190 370,196 V240 H-10 Z" fill="#E3C46E"/>`)}
+    ${W(`<rect x="196" y="120" width="56" height="40" fill="#F4E6D2"/><path d="M190,122 L224,96 L258,122 Z" fill="#C9605E"/><rect x="216" y="136" width="14" height="24" fill="#8A6142"/><rect x="200" y="128" width="10" height="9" fill="#BCD6E8"/><rect x="236" y="128" width="10" height="9" fill="#BCD6E8"/>`)}
+    ${W(`<rect x="262" y="132" width="44" height="30" fill="#7D93B5"/><path d="M258,134 L284,114 L310,134 Z" fill="#5E7396"/>`)}
+    <g transform="translate(70,104) scale(1.3)">${tree('kirsche')}</g>
+    <g transform="translate(14,150) scale(.9)">${animal('schaf')}</g>
+    <g transform="translate(120,150) scale(1)">${figureArt({ dress: '#A23A5A', hat: 'straw', hair: '#5A3E2E', prop: 'grapes' })}</g>
+    <rect width="360" height="240" filter="url(#paper)" opacity=".3"/>
+  </svg>`;
+}
+// ---------- Helfer ----------
+let S = null;
+const U = { sheet: null, toast: null, busy: false, setup: { name: '', bots: 1 }, fast: false, sel: [], tmp: {} };
+function rnd() { S.rng = (S.rng + 0x6D2B79F5) | 0; let t = Math.imul(S.rng ^ (S.rng >>> 15), 1 | S.rng); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function range(n) { return Array.from({ length: n }, (_, i) => i); }
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
+function log(m) { S.log.unshift(m); if (S.log.length > 90) S.log.length = 90; }
+const human = () => S.players.find(p => !p.bot);
+const cur = () => S.players[S.cur];
+const P = i => S.players[i];
+
+// ---------- Aufbau ----------
+function newGame(name, nBots, seed) {
+  S = { v: 1, id: 'lg-' + Date.now().toString(36) + '-' + ((seed >>> 0) % 1679616).toString(36), rng: seed | 0, players: [], log: [], screen: 'game', q: [], ask: null, discard: [], recorded: false, turns: 0 };
+  const solo = nBots === 0 && name !== null;
+  const bots = shuffle(BOT_NAMES.slice()).slice(0, nBots);
+  const mk = (n, bot, look, mark) => ({ name: n, bot, look, mark, vp: 0, coins: 1, goods: Object.fromEntries(GOODS.map(g => [g, 0])), hand: [], terrs: [], placed: [], markers: Object.fromEntries(UNLOCKS.map(u => [u.k, u.m])), done: [] });
+  if (name !== null) S.players.push(mk(name || 'Du', false, { hair: '#5A3E2E', dress: '#A23A5A', hat: 'straw' }, MARKS[0]));
+  bots.forEach((b, i) => S.players.push(mk(b[0], true, b[1], MARKS[i + 1])));
+  if (name === null) S.players.push(mk('Herr Kornblum', true, { hair: '#3E3A36', dress: '#D3A43C', hat: 'cap' }, MARKS[3]));
+  const n = S.players.length;
+  S.solo = solo;
+  S.players.forEach(p => { p.vp = START_VP[n]; });
+  // Projektkarten-Stapel
+  S.deck = shuffle(Object.entries(CARDS).flatMap(([k, c]) => range(c.c).map(() => k)));
+  // Gebietsstapel je Art
+  S.tstacks = Object.fromEntries(TT.map(t => [t, shuffle(TERRS.filter(x => x.t === t).map(x => x.id))]));
+  // Auftragsplättchen: je Position eines, mindestens ein A und ein B
+  let sides;
+  do { sides = [1, 2, 3].map(() => rnd() < 0.5 ? 'A' : 'B'); } while (!sides.includes('A') || !sides.includes('B'));
+  S.otiles = [1, 2, 3].map((pos, i) => { const cands = OTILES.map((t, j) => j).filter(j => OTILES[j].pos === pos); const ti = cands[Math.floor(rnd() * cands.length)]; return { ti, side: sides[i], by: [null, null, null, null] }; });
+  S.start = Math.floor(rnd() * n);
+  S.cur = S.start;
+  // Handkarten: Startperson 5, danach je eine mehr (2 Personen: 5 und 7)
+  S.players.forEach((p, i) => {
+    const k = (i - S.start + n) % n;
+    const cnt = solo ? 7 : n === 2 ? [5, 7][k] : 5 + k;
+    p.hand = S.deck.splice(0, cnt);
+    const ids = TT.map(t => S.tstacks[t].shift());
+    S.q.push({ t: 'setupTerr', pi: i, ids }, { t: 'discardN', pi: i, n: solo ? 3 : 1, why: 'Startaufstellung: Karten abwerfen' });
+  });
+  S.display = S.deck.splice(0, DISPLAY);
+  if (solo) S.soloStacks = range(5).map(() => S.deck.splice(0, 7));
+  S.q.push({ t: 'startTurn' });
+  log(solo ? 'Solo-Landgut: 5 Stapel à 7 Karten.' : `Das Landgut ruft: ${n} Personen. Es beginnt ${S.players[S.start].name}.`);
+  run();
+}
+function draw(n) {
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    if (!S.deck.length) { if (!S.discard.length) break; S.deck = shuffle(S.discard); S.discard = []; log('Der Ablagestapel wird neu gemischt.'); }
+    out.push(S.deck.shift());
+  }
+  return out;
+}
+
+// ---------- Landgut-Abfragen ----------
+const estate = p => p.terrs.flatMap(t => t.cards);
+const count = (p, k) => estate(p).filter(x => x === k).length;
+const countG = (p, g) => estate(p).filter(x => CARDS[x].g === g).length;
+const terrOf = id => TERRS[id];
+const space = tr => terrOf(tr.id).cap - tr.cards.length;
+const goodsTotal = p => GOODS.reduce((s, g) => s + p.goods[g], 0);
+const freeBaskets = p => TOKENS - p.coins - goodsTotal(p);
+const unlocked = (p, k) => p.markers[k] === 0;
+const workersFree = p => 4 - p.placed.length;
+function gainGood(p, g, n) {
+  const k = Math.max(0, Math.min(n, freeBaskets(p)));
+  p.goods[g] += k;
+  return k;
+}
+function gainCoins(p, n) {
+  let got = 0;
+  for (let i = 0; i < n; i++) {
+    if (freeBaskets(p) > 0) { p.coins++; got++; continue; }
+    const g = GOODS.slice().sort((a, b) => p.goods[b] - p.goods[a])[0];
+    if (p.goods[g] > 0) { p.goods[g]--; p.coins++; got++; }
+  }
+  return got;
+}
+function addVP(p, n) { p.vp += n; }
+function canPlace(p, k) { const c = CARDS[k]; return p.terrs.some(t => terrOf(t.id).t === c.t && space(t) > 0); }
+function playable(p, sun) { return p.hand.filter((k, i) => p.hand.indexOf(k) === i && canPlace(p, k) && CARDS[k].sun <= sun + p.coins); }
+
+// ---------- Aufträge ----------
+function condOk(p, cond, tr) {
+  const cs = tr ? tr.cards : [];
+  const g = p.goods;
+  switch (cond.k) {
+    case 'give': case 'have': return Object.entries(cond.goods).every(([x, n]) => g[x] >= n);
+    case 'giveAny': return cond.set.reduce((s, x) => s + g[x], 0) >= cond.n;
+    case 'diff3': return GOODS.filter(x => g[x] > 0).length >= 3;
+    case 'pay': return p.coins >= cond.n;
+    case 'coins': return p.coins >= cond.n;
+    case 'terrs': return p.terrs.length >= cond.n;
+    case 'cards': return estate(p).length >= cond.n;
+    case 'persons': return countG(p, 'person') >= cond.n;
+    case 'fullTerr': return p.terrs.filter(t => space(t) === 0).length >= cond.n;
+    case 'animalTerr': return p.terrs.filter(t => t.cards.some(x => CARDS[x].g === 'tier')).length >= cond.n;
+    case 'discard': return p.hand.length >= cond.n;
+    case 'full': return space(tr) === 0;
+    case 'pair': return Object.values(cs.filter(x => CARDS[x].g === cond.g).reduce((m, x) => (m[x] = (m[x] || 0) + 1, m), {})).some(v => v >= 2);
+    case 'grp': return cs.filter(x => CARDS[x].g === cond.g).length >= cond.n;
+    case 'same3': return Object.values(cs.reduce((m, x) => (m[x] = (m[x] || 0) + 1, m), {})).some(v => v >= 3);
+    case 'sun7': return cs.filter(x => CARDS[x].sun >= 7).length >= 2;
+    case 'persons3': return new Set(cs.filter(x => CARDS[x].g === 'person')).size >= 3;
+    case 'noPerson': return cs.length >= 3 && !cs.some(x => CARDS[x].g === 'person');
+    case 'animals4': return new Set(cs.filter(x => CARDS[x].g === 'tier')).size >= 4;
+    case 'esel': return cs.includes('esel') && (cs.includes('hund') || cs.includes('katze'));
+    case 'huhn3': return cs.filter(x => x === 'huhn' || x === 'hahn').length >= 3;
+    case 'hafer': return cs.includes('schaf') && count(p, 'hafer') > count(p, 'schaf');
+  }
+  return false;
+}
+// Bezahlen (Waren abgeben, Münzen zahlen); Handkarten-Abwurf läuft als eigener Schritt
+function payCond(p, cond) {
+  if (cond.k === 'give') Object.entries(cond.goods).forEach(([x, n]) => { p.goods[x] -= n; });
+  if (cond.k === 'giveAny') { let n = cond.n; while (n > 0) { const x = cond.set.slice().sort((a, b) => p.goods[b] - p.goods[a])[0]; p.goods[x]--; n--; } }
+  if (cond.k === 'diff3') GOODS.filter(x => p.goods[x] > 0).sort((a, b) => p.goods[b] - p.goods[a]).slice(0, 3).forEach(x => { p.goods[x]--; });
+  if (cond.k === 'pay') p.coins -= cond.n;
+}
+// Alle Aufträge, die p jetzt erfüllen kann: {kind:'tile', i, f} oder {kind:'terr', ti}
+function openOrders(p) {
+  const out = [];
+  if (!UNLOCKS.some(u => p.markers[u.k] > 0)) return out;
+  const pi = S.players.indexOf(p);
+  S.otiles.forEach((ot, i) => {
+    if (ot.by.includes(pi)) return;
+    const side = OTILES[ot.ti][ot.side];
+    side.f.forEach((f, fi) => { if (ot.by[fi] === null && condOk(p, f.cond)) out.push({ kind: 'tile', i, f: fi, vp: f.vp, card: !!f.card, cond: f.cond, tx: `${side.tx}: ${COND_TX[f.cond.k](f.cond)}` }); });
+  });
+  p.terrs.forEach((tr, ti) => { const T = terrOf(tr.id); if (!tr.ordDone && condOk(p, T.cond, tr)) out.push({ kind: 'terr', ti, vp: T.vp, cond: T.cond, tx: `${TT_N[T.t]}: ${COND_TX[T.cond.k](T.cond)}` }); });
+  return out;
+}
+function fulfill(p, o) {
+  const pi = S.players.indexOf(p);
+  payCond(p, o.cond);
+  if (o.kind === 'tile') S.otiles[o.i].by[o.f] = pi; else p.terrs[o.ti].ordDone = true;
+  addVP(p, o.vp);
+  log(`${p.name} erfüllt „${o.tx}“: +${o.vp} SP.`);
+  const steps = [];
+  if (o.cond.k === 'discard') steps.push({ t: 'discardN', pi, n: o.cond.n, why: 'Auftrag: Handkarten abwerfen' });
+  if (o.card) steps.push({ t: 'take', pi, n: 1, why: 'Belohnung: eine Karte aus der Auslage' });
+  steps.push({ t: 'marker', pi });
+  return steps;
+}
+
+// ---------- Ablaufsteuerung ----------
+// S.q ist eine Liste von Schritten. Jeder Schritt läuft automatisch (Bots,
+// Effekte) oder fragt den Menschen (S.ask) und setzt nach der Antwort fort.
+const sub = (...steps) => S.q.splice(1, 0, ...steps);
+function run() {
+  let guard = 0;
+  while (S && S.q.length && !S.ask && guard++ < 500) {
+    const st = S.q[0];
+    const r = STEP[st.t](st);
+    if (r === 'wait') return;
+    S.q.shift();
+  }
+}
+function decide(st, opts, botPick) {
+  const p = P(st.pi);
+  if (p.bot) { APPLY[st.t](st, botPick(opts)); return 'done'; }
+  st.opts = opts; S.ask = st; return 'wait';
+}
+function answer(ans) { const st = S.ask; S.ask = null; APPLY[st.t](st, ans); S.q.shift(); run(); }
+const STEP = {
+  setupTerr: st => decide(st, st.ids, ids => botKeepTerrs(P(st.pi), ids)),
+  discardN: st => { const p = P(st.pi); if (!p.hand.length || st.n <= 0) return 'done'; return decide(st, p.hand, () => botDiscard(p, Math.min(st.n, p.hand.length))); },
+  startTurn: () => { S.turnStart = true; return 'done'; },
+  take: st => { if (!S.display.length) return 'done'; return decide(st, S.display, () => botTake(P(st.pi), st.n)); },
+  play: st => { const p = P(st.pi); const opts = playable(p, st.sun); if (!opts.length) { log(`${p.name} kann mit ${st.sun} Sonnenstunden nichts spielen.`); return 'done'; } return decide(st, opts, () => botPlay(p, st.sun)); },
+  discardSun: st => { const p = P(st.pi); return decide(st, p.hand, () => botDiscardSun(p)); },
+  terrDraw: st => { const opts = TT.filter(t => S.tstacks[t].length); if (!opts.length) return 'done'; return decide(st, opts, () => botTerrStacks(P(st.pi))); },
+  terrKeep: st => decide(st, st.ids, ids => botKeepTerr(P(st.pi), ids)),
+  orders: st => { const p = P(st.pi); const opts = openOrders(p); if (!opts.length || st.n <= 0) return 'done'; return decide(st, opts, os => botOrder(p, os)); },
+  marker: st => { const p = P(st.pi); const opts = UNLOCKS.filter(u => p.markers[u.k] > 0).map(u => u.k); if (!opts.length) return 'done'; return decide(st, opts, os => botMarker(p, os)); },
+  effect: st => doEffect(st),
+  count: st => { if (st.max <= 0) return 'done'; return decide(st, st.max, () => st.max); },
+  terrSel: st => decide(st, P(st.pi).terrs.map((t, i) => i), () => botGaertnerin(P(st.pi))),
+  choice: st => decide(st, st.opts, () => st.bot),
+  fromDiscard: st => { if (!S.discard.length) return 'done'; return decide(st, S.discard, () => botFromDiscard(P(st.pi))); },
+  worker: st => { const p = P(st.pi); if (!p.placed.length) return 'done'; return decide(st, p.placed, os => os[os.length - 1]); },
+  market: st => { const p = P(st.pi); const opts = marketOpts(p, st.exclude || []); if (!opts.length) return 'done'; return decide(st, opts, os => botMarket(p, os)); },
+  sell: st => { const p = P(st.pi); if (!goodsTotal(p)) return 'done'; return decide(st, null, () => botSell(p)); },
+  repeat: st => { const p = P(st.pi); const ks = [...new Set(estate(p))]; if (!ks.length) return 'done'; return decide(st, ks, os => botRepeat(p, os)); },
+  endTurn: st => { endTurn(st.pi); return 'done'; },
+};
+const APPLY = {
+  setupTerr: (st, keep) => { const p = P(st.pi); keep.slice(0, 3).forEach(id => p.terrs.push({ id, cards: [], ordDone: false })); st.ids.filter(id => !keep.includes(id)).forEach(id => S.tstacks[terrOf(id).t].push(id)); },
+  discardN: (st, cards) => { const p = P(st.pi); cards.forEach(k => { const i = p.hand.indexOf(k); if (i >= 0) { p.hand.splice(i, 1); S.discard.push(k); } }); },
+  take: (st, idxs) => { const p = P(st.pi); const ks = idxs.map(i => S.display[i]); S.display = S.display.filter((_, i) => !idxs.includes(i)); p.hand.push(...ks); if (ks.length) log(`${p.name} nimmt ${ks.length === 1 ? CARDS[ks[0]].n : ks.length + ' Karten'}.`); },
+  play: (st, a) => {
+    if (!a) return;
+    const p = P(st.pi), c = CARDS[a.k], tr = p.terrs[a.ti];
+    const pay = Math.max(0, c.sun - st.sun);
+    if (pay > p.coins || terrOf(tr.id).t !== c.t || space(tr) <= 0) return;
+    p.coins -= pay;
+    p.hand.splice(p.hand.indexOf(a.k), 1);
+    tr.cards.push(a.k);
+    log(`${p.name} spielt ${c.n} (${c.sun} ☀) auf ${TT_N[c.t]}${pay ? ` und zahlt ${pay} Münze${pay > 1 ? 'n' : ''}` : ''}.`);
+    if (unlocked(p, 'u3') && c.sun < st.sun) gainCoins(p, 1);
+    sub({ t: 'effect', pi: st.pi, k: a.k, ti: a.ti });
+  },
+  discardSun: (st, cards) => { APPLY.discardN(st, cards); const n = cards.length; if (n) log(`${P(st.pi).name} wirft ${n} Karte${n > 1 ? 'n' : ''} für Sonnenstunden ab.`); sub({ t: 'play', pi: st.pi, sun: 3 + n }); },
+  terrDraw: (st, two) => { const ids = (two || []).filter(t => S.tstacks[t]).map(t => S.tstacks[t].shift()).filter(x => x != null); if (ids.length === 1) APPLY.terrKeep({ pi: st.pi, ids }, ids[0]); else if (ids.length) sub({ t: 'terrKeep', pi: st.pi, ids, discard: st.discard }); },
+  terrKeep: (st, id) => { const p = P(st.pi); p.terrs.push({ id, cards: [], ordDone: false }); st.ids.filter(x => x !== id).forEach(x => { if (st.discard) return; S.tstacks[terrOf(x).t].push(x); }); log(`${p.name} legt ein neues Gebiet aus: ${TT_N[terrOf(id).t]}.`); },
+  orders: (st, o) => { if (!o) return; const p = P(st.pi); sub(...fulfill(p, o), ...(st.n > 1 ? [{ t: 'orders', pi: st.pi, n: st.n - 1 }] : [])); },
+  marker: (st, k) => {
+    const p = P(st.pi); p.markers[k]--;
+    if (p.markers[k] === 0) {
+      const u = UNLOCKS.find(x => x.k === k);
+      log(`${p.name} schaltet frei: ${u.tx}.`);
+      if (k === 'u4') { addVP(p, 1); sub({ t: 'terrDraw', pi: st.pi, discard: true }); }
+      if (k === 'u5') { addVP(p, 1); sub({ t: 'fromDiscard', pi: st.pi }, { t: 'fromDiscard', pi: st.pi }); }
+      if (k === 'u6') { addVP(p, 1); sub({ t: 'take', pi: st.pi, n: 4, why: 'Freigeschaltet: 4 benachbarte Karten' }); }
+    }
+  },
+  count: (st, n) => { const p = P(st.pi); n = clamp(n | 0, 0, st.max); if (n) CONV[st.fn].apply(p, n); },
+  terrSel: (st, ti) => { const p = P(st.pi), tr = p.terrs[ti]; let got = 0; tr.cards.forEach(x => { const g = { kirschbaum: 'kirsche', apfelbaum: 'apfel', rebe: 'traube' }[x]; if (g) got += gainGood(p, g, 1); }); log(`${p.name}: Die Gärtnerin erntet ${got} Körbe.`); },
+  choice: (st, v) => { CHOICE[st.fn](P(st.pi), v, st); },
+  fromDiscard: (st, k) => { const p = P(st.pi), i = S.discard.lastIndexOf(k); if (i >= 0) { S.discard.splice(i, 1); p.hand.push(k); log(`${p.name} nimmt ${CARDS[k].n} aus dem Ablagestapel.`); } },
+  worker: (st, f) => { const p = P(st.pi); p.placed = p.placed.filter(x => x !== f); log(`${p.name} holt eine Arbeitskraft zurück auf die Bank.`); },
+  market: (st, k) => { const p = P(st.pi); doMarket(p, st.pi, k); if (st.left > 1) sub({ t: 'market', pi: st.pi, left: st.left - 1, exclude: (st.exclude || []).concat([k]) }); },
+  sell: (st, amounts) => { const p = P(st.pi); let n = 0; GOODS.forEach(g => { const a = clamp((amounts || {})[g] | 0, 0, p.goods[g]); p.goods[g] -= a; p.coins += a; n += a; }); if (n) log(`${p.name} verkauft ${n} Waren für ${n} Münzen.`); },
+  repeat: (st, k) => { const p = P(st.pi); const ti = p.terrs.findIndex(t => t.cards.includes(k)); log(`${p.name} wiederholt den Effekt von ${CARDS[k].n}.`); sub({ t: 'effect', pi: st.pi, k, ti }); },
+};
+
+// ---------- Soforteffekte der Karten ----------
+function doEffect(st) {
+  const p = P(st.pi), k = st.k, tr = p.terrs[st.ti];
+  const goods = (g, n) => { const got = gainGood(p, g, n); log(`${p.name} erhält ${got} ${GOOD_N[g]}${got !== n ? ` (Körbe voll, ${n} möglich)` : ''}.`); };
+  const coins = n => { const got = gainCoins(p, n); log(`${p.name} erhält ${got} Münze${got === 1 ? '' : 'n'}.`); };
+  switch (k) {
+    case 'kirschbaum': goods('kirsche', count(p, 'kirschbaum')); break;
+    case 'apfelbaum': goods('apfel', count(p, 'apfelbaum')); break;
+    case 'eiche': coins(['kirschbaum', 'apfelbaum', 'eiche'].filter(x => count(p, x)).length); break;
+    case 'mohn': case 'weizen': coins(1); break;
+    case 'sonnenblume': coins(2); break;
+    case 'kaminstube': coins(3); break;
+    case 'schaf': goods('wolle', 1); break;
+    case 'rebe': goods('traube', tr ? tr.cards.filter(x => x === 'rebe').length : 1); break;
+    case 'hafer': goods('wolle', count(p, 'schaf')); break;
+    case 'kuh': goods('milch', count(p, 'kuh')); break;
+    case 'huhn': goods('ei', 1); break;
+    case 'hahn': goods('ei', count(p, 'huhn')); break;
+    case 'baeckerin': goods('brot', count(p, 'weizen') + count(p, 'roggen')); break;
+    case 'bauer': { const n = p.terrs.filter(t => terrOf(t.id).t === 'acker').length; addVP(p, n); log(`${p.name} erhält ${n} SP für Äcker.`); break; }
+    case 'pferd': addVP(p, 2); log(`${p.name} erhält 2 SP.`); break;
+    case 'esel': case 'katze': sub({ t: 'fromDiscard', pi: st.pi }); break;
+    case 'mais': sub({ t: 'take', pi: st.pi, n: 1, single: true, why: 'Mais: eine Karte aus der Auslage' }); break;
+    case 'hund': sub({ t: 'orders', pi: st.pi, n: 1 }); break;
+    case 'stallbursche': sub({ t: 'worker', pi: st.pi }); break;
+    case 'gaertnerin': sub({ t: 'terrSel', pi: st.pi }); break;
+    case 'roggen': {
+      const r = count(p, 'roggen');
+      sub({ t: 'choice', pi: st.pi, fn: 'roggen', r, title: 'Roggen', text: `Du hast ${r} Roggen: nimm ${r} benachbarte Karten aus der Auslage oder ${r} Münzen.`, opts: [['cards', `${r} Karten`], ['coins', `${r} Münzen`]], bot: p.hand.length < 4 ? 'cards' : 'coins' });
+      break;
+    }
+    case 'weinbauer': case 'kelterei': case 'kaeserin': case 'weberin': sub(conv(st.pi, k)); break;
+  }
+  // Münzen dürfen die 15 Marker nicht übersteigen (Käserin/Weberin)
+  while (p.coins + goodsTotal(p) > TOKENS) p.coins--;
+  return 'done';
+}
+// Umwandlungen „beliebig oft“: Mensch wählt die Anzahl, Bots nehmen das Maximum
+const CONV = {
+  weinbauer: { g: 'traube', title: 'Weinbauer: 1 Traube → 3 Wein', max: q => Math.min(q.goods.traube, Math.floor((freeBaskets(q) + q.goods.traube) / 3)), apply: (q, n) => { q.goods.traube -= n; gainGood(q, 'wein', 3 * n); log(`${q.name} keltert ${n} Traube${n === 1 ? '' : 'n'} zu ${3 * n} Wein.`); } },
+  kelterei: { g: 'wein', title: 'Kelterei: 2 Wein → 1 Siegpunkt', max: q => Math.floor(q.goods.wein / 2), apply: (q, n) => { q.goods.wein -= 2 * n; addVP(q, n); log(`${q.name} erhält ${n} SP aus der Kelterei.`); } },
+  kaeserin: { g: 'milch', title: 'Käserin: 1 Milch → 2 Münzen', max: q => q.goods.milch, apply: (q, n) => { q.goods.milch -= n; q.coins += 2 * n; log(`${q.name} verkauft ${n} Milch als Käse für ${2 * n} Münzen.`); } },
+  weberin: { g: 'wolle', title: 'Weberin: 1 Wolle → 2 Münzen', max: q => q.goods.wolle, apply: (q, n) => { q.goods.wolle -= n; q.coins += 2 * n; log(`${q.name} verwebt ${n} Wolle für ${2 * n} Münzen.`); } },
+};
+function conv(pi, fn) { const p = P(pi), C = CONV[fn]; return { t: 'count', pi, fn, title: C.title, text: `Wie oft? (${GOOD_N[C.g]}: ${p.goods[C.g]})`, max: Math.max(0, C.max(p)) }; }
+const CHOICE = {
+  roggen: (q, v, st) => { if (v === 'cards') sub({ t: 'take', pi: st.pi, n: Math.min(st.r, S.display.length), why: 'Roggen: benachbarte Karten' }); else { const got = gainCoins(q, st.r); log(`${q.name} erhält ${got} Münzen.`); } },
+  end4: (q, v, st) => { if (v === 'two') sub({ t: 'market', pi: st.pi, left: 2 }); else sub({ t: 'market', pi: st.pi, left: 1 }, { t: 'take', pi: st.pi, n: 1, single: true, why: 'Tag beendet: eine Karte nehmen' }); },
+  soloSwap: () => soloSwap(),
+};
+// ---------- Züge ----------
+const fieldFree = (p, k) => !p.placed.includes(k);
+function fieldOpen(p, f) { return (!f.lock || unlocked(p, f.lock)) && fieldFree(p, f.k); }
+function canUseField(p, f) {
+  if (!fieldOpen(p, f) || workersFree(p) <= 0) return false;
+  if (f.k === 'order2') return openOrders(p).length > 0;
+  if (f.k === 'terr') return TT.some(t => S.tstacks[t].length);
+  if (f.k === 'take4') return S.display.length > 0;
+  return true;
+}
+function placeWorker(pi, k) {
+  const p = P(pi);
+  p.placed.push(k);
+  const f = FIELDS.find(x => x.k === k);
+  log(`${p.name} setzt eine Arbeitskraft ein: ${f.n}.`);
+  const st = [];
+  if (k === 'take4') st.push({ t: 'take', pi, n: Math.min(4, S.display.length), why: '4 benachbarte Karten' });
+  if (k === 'sun2') st.push({ t: 'play', pi, sun: 2 }, { t: 'take', pi, n: 2, why: '2 benachbarte Karten' });
+  if (k === 'sun5') st.push({ t: 'play', pi, sun: 5 });
+  if (k === 'sun3') st.push({ t: 'discardSun', pi });
+  if (k === 'terr') st.push({ t: 'terrDraw', pi });
+  if (k === 'order2') st.push({ t: 'orders', pi, n: 2 });
+  if (k === 'sun32') st.push({ t: 'play', pi, sun: 3 }, { t: 'play', pi, sun: 2 });
+  if (k === 'coin3') { gainCoins(p, 3); st.push({ t: 'play', pi, sun: 3 }); }
+  S.q.push(...st, { t: 'endTurn', pi });
+  run();
+}
+function marketOpts(p, exclude) {
+  return MARKET.filter(m => (!m.lock || unlocked(p, m.lock)) && !exclude.includes(m.k)).filter(m => {
+    if (m.k === 'm1') return S.display.length > 0;
+    if (m.k === 'm2') return p.hand.length >= 3;
+    if (m.k === 'm3') return goodsTotal(p) > 0;
+    if (m.k === 'm4') return p.hand.length >= 1;
+    if (m.k === 'm5') return estate(p).length > 0;
+    if (m.k === 'm6') return openOrders(p).length > 0;
+    return true;
+  }).map(m => m.k);
+}
+function doMarket(p, pi, k) {
+  const m = MARKET.find(x => x.k === k);
+  log(`${p.name} wählt die Marktaktion „${m.n}“.`);
+  if (k === 'm1') sub({ t: 'take', pi, n: 1, single: true, why: 'Markt: eine Karte nehmen' });
+  if (k === 'm2') sub({ t: 'discardN', pi, n: 3, why: 'Markt: 3 Karten verkaufen', then: 'coins3' });
+  if (k === 'm3') sub({ t: 'sell', pi });
+  if (k === 'm4') sub({ t: 'discardN', pi, n: 1, why: 'Markt: 1 Handkarte abwerfen', then: 'swap' });
+  if (k === 'm5') sub({ t: 'repeat', pi });
+  if (k === 'm6') sub({ t: 'orders', pi, n: 1 });
+}
+// Nach dem Abwerfen beim Markt: Münzen bzw. Auslage tauschen
+const _discardApply = APPLY.discardN;
+APPLY.discardN = (st, cards) => {
+  _discardApply(st, cards);
+  const p = P(st.pi);
+  if (st.then === 'coins3') { gainCoins(p, 3); log(`${p.name} verkauft 3 Karten für 3 Münzen.`); }
+  if (st.then === 'swap') { S.discard.push(...S.display); S.display = draw(DISPLAY); sub({ t: 'take', pi: st.pi, n: 1, single: true, why: 'Neue Auslage: eine Karte nehmen' }); }
+};
+function endDay(pi) {
+  const p = P(pi), w = p.placed.length;
+  p.placed = [];
+  log(`${p.name} beendet den Tag (${w} ${w === 1 ? 'Arbeitskraft' : 'Arbeitskräfte'}).`);
+  const st = [];
+  if (w === 2) st.push({ t: 'market', pi, left: 1 });
+  if (w === 3) st.push({ t: 'market', pi, left: 1 }, { t: 'take', pi, n: 1, single: true, why: 'Tag beendet: eine Karte nehmen' });
+  if (w >= 4) st.push({ t: 'choice', pi, fn: 'end4', title: 'Tag beenden mit 4 Arbeitskräften', text: 'Zwei unterschiedliche Marktaktionen oder eine Marktaktion und eine Karte?', opts: [['two', '2 Marktaktionen'], ['one', '1 Marktaktion + 1 Karte']], bot: 'two' });
+  if (S.solo) st.push({ t: 'choice', pi, fn: 'soloSwap', auto: true, opts: [] });
+  S.q.push(...st, { t: 'endTurn', pi, endDay: true });
+  run();
+}
+// Solo: beim Tag beenden die gesamte Auslage gegen einen der 5 Stapel tauschen
+function soloSwap() {
+  S.discard.push(...S.display);
+  if (S.soloStacks.length) { S.display = S.soloStacks.shift(); log(`Neue Auslage aus dem Solostapel (${S.soloStacks.length} übrig).`); }
+  else { S.display = []; S.soloOver = true; }
+}
+STEP.choice = st => { if (st.auto) { CHOICE[st.fn](P(st.pi), null, st); return 'done'; } return decide(st, st.opts, () => st.bot); };
+function endTurn(pi) {
+  const p = P(pi);
+  if (!S.soloOver) while (S.display.length < DISPLAY) { const c = draw(1); if (!c.length) break; S.display.push(c[0]); }
+  if (p.hand.length > HAND_MAX) { S.q.splice(1, 0, { t: 'discardN', pi, n: p.hand.length - HAND_MAX, why: 'Handkartenlimit 12' }, { t: 'nextTurn', pi }); return; }
+  nextTurn(pi);
+}
+STEP.nextTurn = st => { nextTurn(st.pi); return 'done'; };
+function nextTurn(pi) {
+  const p = P(pi);
+  S.turns++;
+  if (S.solo) {
+    if (S.soloOver) return finish();
+    S.q.push({ t: 'startTurn' });
+    return;
+  }
+  // Sicherung (nicht im Original): gehen die Karten aus oder zieht sich die Partie endlos, endet die Saison genauso
+  const dry = !S.deck.length && !S.discard.length && S.display.length < 2;
+  if (!S.endTrig && (p.vp >= VP_END || dry || S.turns > 150 * S.players.length)) { S.endTrig = S.players.map(() => 2); log(p.vp >= VP_END ? `${p.name} hat das Ende der Siegpunktleiste erreicht! Jede Person hat noch genau zwei Züge.` : 'Die Saison neigt sich dem Ende zu: Jede Person hat noch genau zwei Züge.'); }
+  else if (S.endTrig) S.endTrig[pi] = Math.max(0, S.endTrig[pi] - 1);
+  if (S.endTrig && S.endTrig.every(x => x === 0)) return finish();
+  S.cur = (pi + 1) % S.players.length;
+  S.q.push({ t: 'startTurn' });
+}
+function finish() {
+  S.final = S.players.map(p => ({ name: p.name, total: p.vp, coins: p.coins }));
+  S.screen = 'end'; S.q = []; S.ask = null;
+  log('Das Spiel ist zu Ende!');
+  recordPlay();
+}
+// Schutz: kein Zug möglich, der nicht weiterführt
+function forcedEndDay(p) { return workersFree(p) === 0 || !FIELDS.some(f => canUseField(p, f)); }
+
+// ---------- Bots ----------
+const GOOD_V = { kirsche: 0.9, apfel: 0.9, traube: 0.8, wein: 0.8, ei: 0.8, milch: 0.9, wolle: 0.8, brot: 0.9 };
+// Wie gut passt eine Karte in p's Landgut (Effekt + Gebietsaufträge)?
+function cardValue(p, k) {
+  const c = CARDS[k];
+  let v = 1 + c.sun * 0.35;
+  const n = x => count(p, x) + (x === k ? 1 : 0);
+  const fx = {
+    kirschbaum: n('kirschbaum') * 0.9, apfelbaum: n('apfelbaum') * 0.9, eiche: 1.5, mohn: 1, weizen: 1, sonnenblume: 2, kaminstube: 3,
+    schaf: 0.8, rebe: 1.2, hafer: count(p, 'schaf') * 0.8, kuh: n('kuh') * 0.9, huhn: 0.8, hahn: count(p, 'huhn') * 0.8,
+    baeckerin: (count(p, 'weizen') + count(p, 'roggen')) * 0.9, bauer: p.terrs.filter(t => terrOf(t.id).t === 'acker').length * 3, pferd: 6,
+    esel: 0.8, katze: 0.8, mais: 0.8, hund: openOrders(p).length ? 4 : 1, stallbursche: 1.5, gaertnerin: 1.5, roggen: n('roggen'),
+    weinbauer: p.goods.traube * 2, kelterei: Math.floor(p.goods.wein / 2) * 3 + 1, kaeserin: p.goods.milch * 1.5, weberin: p.goods.wolle * 1.5,
+  }[k] || 0;
+  v += fx;
+  // Gebietsaufträge, die die Karte voranbringt
+  p.terrs.forEach(tr => {
+    const T = terrOf(tr.id);
+    if (T.t !== c.t || space(tr) <= 0 || tr.ordDone) return;
+    const ck = T.cond.k;
+    if (ck === 'full') v += 1.2;
+    if ((ck === 'grp' || ck === 'pair') && T.cond.g === c.g) v += 1.5;
+    if (ck === 'same3' && tr.cards.includes(k)) v += 1.5;
+    if (ck === 'persons3' && c.g === 'person' && !tr.cards.includes(k)) v += 1.8;
+    if (ck === 'animals4' && c.g === 'tier' && !tr.cards.includes(k)) v += 1.8;
+    if (ck === 'esel' && ['esel', 'hund', 'katze'].includes(k)) v += 2;
+    if (ck === 'huhn3' && (k === 'huhn' || k === 'hahn')) v += 1.5;
+    if (ck === 'sun7' && c.sun >= 7) v += 2;
+    if (ck === 'noPerson' && c.g === 'person') v -= 3;
+  });
+  return v;
+}
+function bestPlay(p, sun) {
+  let best = null, bv = 0;
+  for (const k of playable(p, sun)) {
+    const c = CARDS[k];
+    const pay = Math.max(0, c.sun - sun);
+    const coinCost = p.coins >= 10 ? 0.3 : p.coins >= 6 ? 0.7 : 1.1; // volle Kasse: Münzen ruhig ausgeben, sonst fehlen Körbe
+    const v = cardValue(p, k) - pay * coinCost - (c.sun < sun && !unlocked(p, 'u3') ? (sun - c.sun) * 0.15 : 0);
+    if (v > bv) { bv = v; best = { k, v }; }
+  }
+  if (!best) return null;
+  const c = CARDS[best.k];
+  const tis = p.terrs.map((t, i) => i).filter(i => terrOf(p.terrs[i].id).t === c.t && space(p.terrs[i]) > 0);
+  // bevorzugt das Gebiet, dessen Auftrag die Karte voranbringt, sonst das vollste
+  tis.sort((a, b) => space(p.terrs[a]) - space(p.terrs[b]));
+  return { k: best.k, ti: tis[0], v: best.v };
+}
+function botPlay(p, sun) { return bestPlay(p, sun); }
+function botKeepTerrs(p, ids) { return ids.slice().sort((a, b) => terrOf(b).cap + terrOf(b).vp - terrOf(a).cap - terrOf(a).vp).slice(0, 3); }
+function botKeepTerr(p, ids) { return ids.slice().sort((a, b) => (terrOf(b).cap + terrOf(b).vp + (p.hand.some(k => CARDS[k].t === terrOf(b).t) ? 3 : 0)) - (terrOf(a).cap + terrOf(a).vp + (p.hand.some(k => CARDS[k].t === terrOf(a).t) ? 3 : 0)))[0]; }
+function botTerrStacks(p) {
+  const want = TT.filter(t => S.tstacks[t].length).sort((a, b) => p.hand.filter(k => CARDS[k].t === b).length - p.hand.filter(k => CARDS[k].t === a).length);
+  return [want[0], want[1] || want[0]];
+}
+function botDiscard(p, n) { return p.hand.slice().sort((a, b) => cardValue(p, a) - cardValue(p, b) + (canPlace(p, a) ? 0 : -3) - (canPlace(p, b) ? 0 : -3)).slice(0, n); }
+function botDiscardSun(p) {
+  // so viele schwache Karten abwerfen, dass eine gute Karte spielbar wird
+  const base = bestPlay(p, 3);
+  const big = p.hand.filter(k => canPlace(p, k) && CARDS[k].sun > 3).sort((a, b) => cardValue(p, b) - cardValue(p, a))[0];
+  if (big && (!base || cardValue(p, big) > base.v + 2)) {
+    const need = CARDS[big].sun - 3;
+    const junk = p.hand.filter(k => k !== big && !canPlace(p, k)).concat(p.hand.filter(k => k !== big && canPlace(p, k)).sort((a, b) => cardValue(p, a) - cardValue(p, b)));
+    if (junk.length >= need) return junk.slice(0, need);
+  }
+  return [];
+}
+function ring(i, n) { return range(n).map(k => (i + k) % S.display.length); }
+function botTake(p, n) {
+  const L = S.display.length;
+  if (n >= L) return range(L);
+  let best = 0, bv = -1;
+  for (let i = 0; i < L; i++) { const v = ring(i, n).reduce((s, j) => s + cardValue(p, S.display[j]) + (canPlace(p, S.display[j]) ? 1 : 0), 0); if (v > bv) { bv = v; best = i; } }
+  return ring(best, n);
+}
+function botOrder(p, os) { return os.slice().sort((a, b) => b.vp - a.vp)[0]; }
+function botMarker(p, os) { const pref = ['u3', 'u6', 'u5', 'u4', 'm6', 'u2', 'u1', 'm5']; return os.slice().sort((a, b) => (p.markers[a] - p.markers[b]) * 4 + pref.indexOf(a) - pref.indexOf(b))[0]; }
+function botGaertnerin(p) { let b = 0, bv = -1; p.terrs.forEach((t, i) => { const v = t.cards.filter(x => ['kirschbaum', 'apfelbaum', 'rebe'].includes(x)).length; if (v > bv) { bv = v; b = i; } }); return b; }
+function botFromDiscard(p) { return S.discard.slice().sort((a, b) => cardValue(p, b) - cardValue(p, a))[0]; }
+function botRepeat(p, os) { return os.slice().sort((a, b) => cardValue(p, b) - cardValue(p, a))[0]; }
+function botSell(p) {
+  // Waren behalten, die ein offener Auftrag braucht; Rest verkaufen, wenn Münzen knapp sind
+  const keep = {};
+  p.terrs.forEach(tr => { const c = terrOf(tr.id).cond; if (!tr.ordDone && c.k === 'give') Object.entries(c.goods).forEach(([g, n]) => { keep[g] = (keep[g] || 0) + n; }); });
+  const out = {}; GOODS.forEach(g => { out[g] = Math.max(0, p.goods[g] - (keep[g] || 0)); });
+  return out;
+}
+function botMarket(p, os) {
+  if (os.includes('m6')) return 'm6';
+  if (os.includes('m3') && goodsTotal(p) >= 4 && p.coins < 5) return 'm3';
+  if (p.coins >= 10 && os.includes('m1')) return 'm1';
+  if (os.includes('m5') && estate(p).some(k => ['pferd', 'kaminstube', 'bauer'].includes(k))) return 'm5';
+  if (os.includes('m2') && p.hand.length >= 8 && p.coins < 3) return 'm2';
+  if (os.includes('m1')) return 'm1';
+  return os[0];
+}
+// Ein Bot-Zug: Auftrag > beste Karte spielen > Karten holen > Gebiet > Tag beenden
+function botTurn() {
+  const pi = S.cur, p = P(pi);
+  const use = k => canUseField(p, FIELDS.find(f => f.k === k));
+  if (workersFree(p) > 0) {
+    if (use('order2')) return placeWorker(pi, 'order2');
+    const opts = [];
+    const add = (k, sun, bonus = 0) => { if (!use(k)) return; const b = bestPlay(p, sun); if (b) opts.push({ k, v: b.v + bonus }); };
+    add('sun5', 5); add('sun3', 3, 0.3); add('sun2', 2, 1.2); if (p.coins <= 11) add('coin3', 3, 3); else add('coin3', 3, 0.5);
+    if (use('sun32')) { const a = bestPlay(p, 3); if (a) opts.push({ k: 'sun32', v: a.v + 2.5 }); }
+    opts.sort((a, b) => b.v - a.v);
+    if (opts.length && opts[0].v > 2.2) return placeWorker(pi, opts[0].k);
+    const roomy = p.terrs.reduce((s, t) => s + space(t), 0);
+    if (use('terr') && (roomy < 3 || p.hand.filter(k => canPlace(p, k)).length < 2) && p.terrs.length < 8) return placeWorker(pi, 'terr');
+    if (use('take4') && p.hand.length <= 6) return placeWorker(pi, 'take4');
+    if (opts.length) return placeWorker(pi, opts[0].k);
+  }
+  endDay(pi);
+}
+
+// ---------- Tracking & Speicher ----------
+const INBOX_KEY = 'spielregal:inbox:plays';
+function localDate() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+function recordPlay() {
+  if (S.tut) return;
+  const me = human();
+  if (!me || S.recorded || !S.final) return;
+  const best = Math.max(...S.final.map(r => r.total));
+  const tops = S.final.filter(r => r.total === best);
+  const bc = Math.max(...tops.map(r => r.coins));
+  const entry = { id: S.id, source: 'landgut', app: 'Landgut', bggId: '', gameName: 'Countryside', date: localDate(), human: me.name,
+    results: S.final.map((r, i) => ({ name: r.name, bot: S.players[i].bot, total: r.total })),
+    winners: S.solo ? [] : tops.filter(r => r.coins === bc).map(r => r.name), ...(S.solo ? { solo: true } : {}) };
+  try {
+    const inbox = JSON.parse(localStorage.getItem(INBOX_KEY) || '[]');
+    if (!inbox.some(e => e.id === entry.id)) inbox.push(entry);
+    localStorage.setItem(INBOX_KEY, JSON.stringify(inbox));
+    S.recorded = true;
+  } catch (e) { S.recorded = false; }
+}
+function spielregalProfiles() { try { return (JSON.parse(localStorage.getItem('spielregal:players') || '[]') || []).filter(p => p && p.name).map(p => p.name); } catch (e) { return []; } }
+const KEY = 'landgut-v1';
+// Speichern & Verlassen: Der Spielstand wird ohnehin nach jeder Aktion
+// gespeichert; „verlassen“ führt zurück zum Startbildschirm, von dem aus die
+// Partie mit „Fortsetzen“ weiterläuft.
+function savedLabel(sv) {
+  if (!sv || !sv.savedAt) return '';
+  const d = new Date(sv.savedAt), now = new Date();
+  const hm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return d.toDateString() === now.toDateString() ? `heute ${hm}` : `${d.getDate()}.${d.getMonth() + 1}. ${hm}`;
+}
+function save() { try { if (S && !S.tut) { S.savedAt = Date.now(); localStorage.setItem(KEY, JSON.stringify(S)); } } catch (e) { } }
+function load() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && s.v === 1 && Array.isArray(s.players) ? s : null; } catch (e) { return null; } }
+function clearSave() { try { localStorage.removeItem(KEY); } catch (e) { } }
+
+// ---------- Ansichten ----------
+let toastTimer = null;
+function toast(m) { U.toast = m; clearTimeout(toastTimer); toastTimer = setTimeout(() => { U.toast = null; render(); }, 2400); }
+const myAsk = () => S && S.ask && !P(S.ask.pi).bot ? S.ask : null;
+const idle = () => S && S.screen === 'game' && !S.ask && !S.q.length;
+const isMyTurn = () => idle() && !cur().bot;
+function face(p) { return `<svg viewBox="30 18 40 40" class="ill">${figureArt(p.look)}</svg>`; }
+function cardHtml(k, o = {}) {
+  const c = CARDS[k];
+  return `<${o.btn ? 'button' : 'div'} class="pc ${o.cls || ''} ${o.sm ? 'sm' : ''}" ${o.btn ? `data-a="${o.btn}" data-i="${o.i}" data-k="${k}"` : ''}>
+    <div class="art">${cardArt(k)}</div><span class="sun">${sunSvg(c.sun)}</span><span class="ty" style="background:${TT_C[c.t]}" title="${TT_N[c.t]}">${typeIcon(c.t)}</span>
+    <div class="nm">${esc(c.n)}</div><div class="fx">${esc(c.fx)}</div></${o.btn ? 'button' : 'div'}>`;
+}
+function typeIcon(t) {
+  const s = { wiese: '<path d="M3,13 C5,9 6,9 7,13 M7,13 C9,7 11,7 12,13 M12,13 C13,9 15,9 16,13" stroke="#fff" stroke-width="1.6" fill="none"/>', haus: '<path d="M4,10 L10,4 L16,10 V16 H4 Z" fill="#fff"/>', stall: '<path d="M4,16 V8 L10,4 L16,8 V16 Z M7,16 V10 H13 V16" fill="none" stroke="#fff" stroke-width="1.6"/>', acker: '<path d="M5,16 L9,4 M10,16 L12,4 M15,16 L14,4" stroke="#fff" stroke-width="1.6"/>', garten: '<path d="M5,16 V6 M10,16 V4 M15,16 V6" stroke="#fff" stroke-width="2"/>' }[t];
+  return `<svg viewBox="0 0 20 20" width="14" height="14">${s}</svg>`;
+}
+function goodsHtml(p) {
+  const items = GOODS.filter(g => p.goods[g] > 0).map(g => `<span class="gd">${goodSvg(g)}${p.goods[g]}</span>`).join('');
+  return `<div class="stock"><span class="gd">${coinSvg()}${p.coins}</span>${items}<span class="gd" style="opacity:.7" title="leere Körbe">🧺 ${freeBaskets(p)} frei</span></div>`;
+}
+function vpTrack() {
+  const max = Math.max(VP_END + 4, ...S.players.map(p => p.vp + 1));
+  const ticks = range(Math.floor(max / 5) + 1).map(i => `<span class="tick" style="left:${(i * 5 / max * 100).toFixed(1)}%">${i * 5}</span>`).join('');
+  const end = S.solo ? '' : `<span class="tick" style="left:${(VP_END / max * 100).toFixed(1)}%;border-left:2px solid var(--rose);font-weight:800">Ende</span>`;
+  return `<div class="vptrack">${ticks}${end}${S.players.map((p, i) => `<span class="pm" style="left:${(Math.min(p.vp, max) / max * 100).toFixed(1)}%;background:${p.mark};top:${10 + i * 4}px" title="${esc(p.name)}: ${p.vp}"></span>`).join('')}</div>`;
+}
+function orderTile(ot, ti) {
+  const side = OTILES[ot.ti][ot.side];
+  return `<div class="otile"><div class="oh"><b>${'★'.repeat(OTILES[ot.ti].pos)} · Seite ${ot.side}</b><span>${esc(side.tx)}</span></div>
+    <div class="octs">${side.f.map((f, fi) => { const by = ot.by[fi]; return `<div class="oct"><b>${f.vp}</b>${ot.side === 'A' ? esc(f.cond.n + (f.cond.k === 'pay' ? ' Mz.' : '×')) : (f.card ? '+ Karte' : '&nbsp;')}${by !== null ? `<span class="by" style="background:${P(by).mark}">${esc(P(by).name.split(' ')[0])}</span>` : ''}</div>`; }).join('')}</div></div>`;
+}
+function terrHtml(p, tr, ti, o = {}) {
+  const T = terrOf(tr.id);
+  const can = o.can && o.can(ti);
+  return `<${can ? 'button' : 'div'} class="terr ${can ? 'can' : ''}" ${can ? `data-a="${o.act}" data-i="${ti}"` : ''} style="border-top:5px solid ${TT_C[T.t]};text-align:left;width:100%">
+    <div class="th"><span class="tart">${terrArt(T.t)}</span><span><b>${TT_N[T.t]}</b><small>${tr.cards.length}/${T.cap} Karten</small></span></div>
+    <div class="slots">${tr.cards.map(k => cardHtml(k, { sm: 1 })).join('')}${range(space(tr)).map(() => '<span class="slot"></span>').join('')}</div>
+    <div class="ord ${tr.ordDone ? 'done' : ''}">Eigener Auftrag: ${esc(COND_TX[T.cond.k](T.cond))} → <b>${T.vp} SP</b>${!tr.ordDone && condOk(p, T.cond, tr) ? ' ✓ erfüllbar' : ''}</div></${can ? 'button' : 'div'}>`;
+}
+function boardHtml(p, live) {
+  const placed = f => p.placed.includes(f.k);
+  const fld = f => {
+    const open = !f.lock || unlocked(p, f.lock);
+    const ok = live && canUseField(p, f);
+    return `<button class="fld ${open ? '' : 'locked'} ${ok ? 'live' : ''} ${placed(f) ? 'used' : ''}" data-a="field" data-k="${f.k}" ${ok ? '' : 'disabled'}><span class="wk">${placed(f) ? workerSvg(p.mark) : workerSvg('rgba(91,59,34,.25)')}</span><b>${esc(f.n)}</b>${esc(f.tx)}${!open ? `<span class="mk">${range(p.markers[f.lock]).map(() => `<i style="background:${p.mark}"></i>`).join('')}</span>` : ''}</button>`;
+  };
+  const other = UNLOCKS.filter(u => !FIELDS.some(f => f.lock === u.k)).map(u => `<div class="fld mkt ${unlocked(p, u.k) ? '' : 'locked'}"><b>${unlocked(p, u.k) ? '✓ ' : ''}${esc(u.tx)}</b>${!unlocked(p, u.k) ? `<span class="mk">${range(p.markers[u.k]).map(() => `<i style="background:${p.mark}"></i>`).join('')}</span>` : ''}</div>`).join('');
+  return `<div class="board"><div class="bank">Bank: ${range(workersFree(p)).map(() => `<span style="width:18px;height:22px;display:inline-block">${workerSvg(p.mark)}</span>`).join('') || '–'} · eingesetzt: ${p.placed.length}</div>
+    <div class="fields">${FIELDS.map(fld).join('')}</div>
+    <p class="label" style="margin:10px 0 4px;color:#5B3B22">Freischalten (Marker auf Aufträge legen)</p><div class="fields">${other}</div>
+    <p class="label" style="margin:10px 0 4px;color:#5B3B22">Tag beenden: 2 Kräfte = 1 Marktaktion · 3 = Marktaktion + Karte · 4 = 2 verschiedene Marktaktionen</p>
+    <div class="fields">${MARKET.map(m => `<div class="fld mkt ${!m.lock || unlocked(p, m.lock) ? '' : 'locked'}"><b>${esc(m.n)}</b>${esc(m.tx)}</div>`).join('')}</div></div>`;
+}
+function viewStart() {
+  const saved = load(), st = U.setup, prof = spielregalProfiles();
+  return `<div class="wrap start">
+    <div class="hero">${heroSvg()}</div>
+    <h1 class="hand">Landgut</h1>
+    <p class="sub">Dein Traum vom idyllischen Bauernhof: das Kartenspiel nach den Regeln von <i>Countryside / Landgut</i>.</p>
+    ${saved && saved.screen === 'game' ? `<button class="btn wide" data-a="resume">Partie fortsetzen · ${saved.players.map(p => `${p.vp}`).join(' : ')} SP</button><p style="margin:6px 0 0;font-size:12.5px;opacity:.75">${saved.savedAt ? `Gespeichert ${savedLabel(saved)} · ` : ''}<button class="link" data-a="discard" style="font-size:12.5px">verwerfen</button></p>` : ''}
+    <div class="panel">
+      <p class="label">Dein Name</p>
+      <input class="input" id="nm" maxlength="30" placeholder="z. B. Bäuerin Mi" value="${esc(st.name)}">
+      ${prof.length ? `<div class="chips" style="margin-top:8px">${prof.slice(0, 8).map(n => `<button class="chip ${st.name === n ? 'on' : ''}" data-a="pickname" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div><p class="note">Wähle dein Spielregal-Profil, dann landet die Partie mit deinen Punkten in deiner Partien-Liste.</p>` : ''}
+      <p class="label" style="margin-top:14px">Gegner</p>
+      <div class="chips"><button class="chip ${st.bots === 0 ? 'on' : ''}" data-a="bots" data-n="0">Solo</button>${[1, 2, 3].map(n => `<button class="chip ${st.bots === n ? 'on' : ''}" data-a="bots" data-n="${n}">${n} Bot${n > 1 ? 's' : ''}</button>`).join('')}</div>
+      <p class="note">${st.bots === 0 ? 'Solo: 5 Stapel à 7 Karten. Jedes Mal, wenn du den Tag beendest, kommt ein neuer Stapel als Auslage. Sind alle verbraucht, endet das Spiel mit dem nächsten Tagesende.' : `Spielende, sobald jemand ${VP_END} Siegpunkte erreicht. Danach hat jede Person noch genau zwei Züge.`}</p>
+    </div>
+    <button class="btn wide" data-a="start">Landgut übernehmen</button>
+    <button class="btn white wide" data-a="tutorial" style="margin-top:12px">Lernspiel: Regeln spielend lernen</button>
+    <p style="margin-top:14px"><button class="link" data-a="rules">Spielregeln lesen</button></p>
+  </div>`;
+}
+function viewGame() {
+  const me = human(), p = cur();
+  const mine = isMyTurn();
+  let banner;
+  if (myAsk()) banner = `<div class="banner mine"><span class="face">${face(me)}</span><div style="flex:1"><b>${esc(askTitle(S.ask))}</b><span class="small">Wähle im Fenster.</span></div><button class="btn sm" data-a="askopen">Öffnen</button></div>`;
+  else if (mine) banner = `<div class="banner mine"><span class="face">${face(me)}</span><div><b>Du bist dran</b><span class="small">Setze eine Arbeitskraft auf ein grün umrandetes Feld oder beende den Tag.</span></div></div>`;
+  else banner = `<div class="banner"><span class="face">${face(p)}</span><div><b>${esc(p.name)} ist dran …</b><span class="small">${esc(S.log[0] || '')}</span></div></div>`;
+  const chips = S.players.map((pl, i) => `<button class="pchip ${S.cur === i ? 'cur' : ''}" data-a="opp" data-p="${i}"><span class="av" style="background:${pl.mark}">${face(pl)}</span><span><span class="nm">${esc(pl.name)}</span><span class="st">★${pl.vp} · ${pl.coins} Mz.</span></span></button>`).join('');
+  return `
+  <div class="top"><div class="row">
+    <div class="round hand">${S.solo ? `Stapel ${5 - S.soloStacks.length}/5` : S.endTrig ? 'Letzte Züge' : 'Landgut'}<small>${S.solo ? 'Solo' : `Ziel: ${VP_END} SP`}</small></div>
+    <div class="players">${chips}</div>
+    ${U.tut ? '' : `<button class="icobtn" data-a="leave" aria-label="Speichern und verlassen" title="Speichern &amp; verlassen"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><rect x="4" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/><rect x="11.8" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/></svg></button>`}
+    <button class="icobtn" data-a="menu" aria-label="Menü">?</button>
+  </div></div>
+  <div class="wrap">
+    ${banner}
+    <section class="sec">${vpTrack()}</section>
+    <section class="sec"><div class="sech"><h2 class="hand">Auslage</h2><span class="hint">${S.deck.length} im Stapel · ${S.discard.length} abgelegt</span></div>
+      <div class="ring">${S.display.map((k, i) => cardHtml(k)).join('')}</div></section>
+    <section class="sec"><div class="sech"><h2 class="hand">Aufträge</h2><span class="hint">Jeden Auftrag nur einmal</span></div><div class="orders">${S.otiles.map(orderTile).join('')}</div></section>
+    <section class="sec"><div class="sech"><h2 class="hand">Dein Landgut</h2><span class="hint">★ ${me.vp} SP</span></div>
+      ${goodsHtml(me)}
+      <div class="terrs" style="margin-top:10px">${me.terrs.map((tr, ti) => terrHtml(me, tr, ti)).join('')}</div></section>
+    <section class="sec"><div class="sech"><h2 class="hand">Arbeitsplan</h2></div>${boardHtml(me, mine)}</section>
+    <section class="sec"><div class="sech"><h2 class="hand">Hand</h2><span class="hint">${me.hand.length}/${HAND_MAX} Karten</span></div>
+      <div class="row-scroll">${me.hand.map(k => cardHtml(k, { cls: canPlace(me, k) ? '' : 'dim' })).join('') || '<p class="note">Keine Handkarten.</p>'}</div></section>
+    <section class="sec"><div class="sech"><h2 class="hand">Chronik</h2><button class="link" data-a="logtoggle" style="font-size:12px">${U.logOpen ? 'weniger' : 'alles'}</button></div>
+      <div class="log">${S.log.slice(0, U.logOpen ? 90 : 6).map(l => `<div>${esc(l)}</div>`).join('')}</div></section>
+  </div>
+  <div class="bar"><div class="in">${myAsk() ? `<div class="msg">${esc(askTitle(S.ask))}</div><button class="btn" data-a="askopen">Auswählen</button>`
+    : mine ? `<div class="msg">${workersFree(me)} ${workersFree(me) === 1 ? 'Arbeitskraft' : 'Arbeitskräfte'} auf der Bank.</div><button class="btn ${forcedEndDay(me) ? '' : 'white'}" data-a="endday">Tag beenden</button>`
+    : `<div class="msg"><b>${esc(p.name)}</b> ist dran …</div><button class="btn white" data-a="fast">${U.fast ? 'Normal' : 'Schneller'}</button>`}</div></div>`;
+}
+function viewEnd() {
+  const rows = S.final.map((r, i) => Object.assign({ i }, r)).sort((a, b) => b.total - a.total || b.coins - a.coins);
+  const me = human();
+  const win = rows[0];
+  const title = S.solo ? `${me.vp} Siegpunkte` : !S.players[win.i].bot ? 'Du gewinnst!' : esc(win.name) + ' gewinnt!';
+  const sub = S.solo ? SOLO_CHART.find(([g]) => me.vp >= g)[1] : 'Was für ein Landgut.';
+  return `<div class="wrap" style="padding-top:18px;text-align:center">
+    <div class="hero" style="aspect-ratio:360/180">${heroSvg()}</div>
+    <h1 class="hand" style="font-size:46px;margin:10px 0 0;color:var(--rose)">${title}</h1>
+    <p class="sub">${esc(sub)}</p>
+    <div class="panel"><table class="score"><tr><th></th><th>SP</th><th>Münzen</th><th>Karten</th><th>Gebiete</th></tr>
+      ${rows.map(r => `<tr><td>${esc(r.name)}</td><td>${r.total}</td><td>${r.coins}</td><td>${estate(S.players[r.i]).length}</td><td>${S.players[r.i].terrs.length}</td></tr>`).join('')}</table>
+      ${S.solo ? `<p class="note">Solo-Tabelle: ${SOLO_CHART.slice().reverse().map(([g, t]) => `${g}+ ${t}`).join(' · ')}</p>` : ''}</div>
+    ${S.recorded ? `<p class="note" style="text-align:left">✓ Als digitale Partie für <b>Countryside</b> vorgemerkt. Sie erscheint in Spielregal, sobald du die App öffnest.</p><p><a class="btn white wide" href="../">Zum Spielregal</a></p>` : ''}
+    <button class="btn wide" data-a="newgame">Neue Partie</button>
+    <p><button class="link" data-a="opp" data-p="${S.players.indexOf(me)}">Mein Landgut ansehen</button></p>
+  </div>`;
+}
+function sheetWrap(inner, closable = true) { return `<div class="ov" ${closable ? 'data-a="ovclose"' : ''}><div class="sheet" data-stop="1"><div class="grab"></div>${closable ? '<button class="icobtn x" data-a="close" aria-label="Schließen">✕</button>' : ''}${inner}</div></div>`; }
+function askTitle(a) {
+  return {
+    setupTerr: 'Wähle 3 Startgebiete', discardN: a.why || 'Karten abwerfen', take: a.why || 'Karten nehmen', play: `Karte spielen (${a.sun} Sonnenstunden)`, discardSun: 'Karten für Sonnenstunden abwerfen',
+    terrDraw: 'Gebietsstapel wählen', terrKeep: 'Welches Gebiet legst du aus?', orders: 'Auftrag erfüllen', marker: 'Welchen Marker nimmst du vom Arbeitsplan?', count: a.title, terrSel: 'Gärtnerin: Gebiet wählen',
+    choice: a.title, fromDiscard: 'Karte aus dem Ablagestapel', worker: 'Welche Arbeitskraft kehrt zurück?', market: 'Marktaktion wählen', sell: 'Waren verkaufen', repeat: 'Welchen Effekt wiederholen?',
+  }[a.t] || '';
+}
+function askSheet() {
+  const a = myAsk(); if (!a) return '';
+  const me = P(a.pi);
+  let h = `<h3>${esc(askTitle(a))}</h3>`;
+  const sel = U.sel;
+  switch (a.t) {
+    case 'setupTerr':
+      h += `<p style="font-size:13px">Von jedem Gebietsstapel eines: Behalte 3, die anderen gehen zurück.</p><div class="terrs">${a.opts.map(id => { const T = terrOf(id); return `<button class="terr ${sel.includes(id) ? 'can' : ''}" data-a="tsel" data-i="${id}" style="border-top:5px solid ${TT_C[T.t]};text-align:left;width:100%"><div class="th"><span class="tart">${terrArt(T.t)}</span><span><b>${TT_N[T.t]} · ${T.cap} Plätze</b><small>Auftrag: ${esc(COND_TX[T.cond.k](T.cond))} → ${T.vp} SP</small></span></div></button>`; }).join('')}</div>
+        <div class="btnrow"><button class="btn" data-a="askok" ${sel.length === 3 ? '' : 'disabled'}>${sel.length}/3 behalten</button></div>`;
+      return sheetWrap(h);
+    case 'discardN': case 'discardSun': {
+      const n = a.t === 'discardN' ? Math.min(a.n, me.hand.length) : null;
+      h += `<p style="font-size:13px">${a.t === 'discardSun' ? 'Jede abgeworfene Karte gibt dir eine zusätzliche Sonnenstunde (Basis 3).' : `Wähle ${n} Karte${n === 1 ? '' : 'n'}.`}</p><div class="gridc">${me.hand.map((k, i) => cardHtml(k, { btn: 'hsel', i, cls: sel.includes(i) ? 'sel' : '' })).join('')}</div>
+        <div class="btnrow"><button class="btn" data-a="askok" ${a.t === 'discardSun' || sel.length === n ? '' : 'disabled'}>${a.t === 'discardSun' ? `Mit ${3 + sel.length} Sonnenstunden spielen` : `${sel.length}/${n} abwerfen`}</button></div>`;
+      return sheetWrap(h);
+    }
+    case 'take': {
+      const L = S.display.length, n = a.n;
+      const start = U.tmp.start;
+      const seg = start != null ? ring(start, Math.min(n, L)) : [];
+      h += `<p style="font-size:13px">${n > 1 ? `Tippe die erste von ${n} benachbarten Karten. Die Auslage ist ein Kreis: Die letzte und die erste Karte sind benachbart.` : 'Tippe eine Karte.'}</p>
+        <div class="ring">${S.display.map((k, i) => cardHtml(k, { btn: 'dsel', i, cls: seg.includes(i) ? 'sel' : '' })).join('')}</div>
+        <div class="btnrow"><button class="btn" data-a="askok" ${seg.length ? '' : 'disabled'}>Nehmen</button></div>`;
+      return sheetWrap(h);
+    }
+    case 'play': {
+      const pick = U.tmp.card;
+      h += `<p style="font-size:13px">Du hast <b>${a.sun} Sonnenstunden</b>. Fehlende Stunden zahlst du mit Münzen (1 Münze = 1 Stunde, du hast ${me.coins}). Aufteilen auf zwei Karten geht nicht.</p>
+        <div class="gridc">${a.opts.map((k, i) => { const pay = Math.max(0, CARDS[k].sun - a.sun); return `<div style="text-align:center">${cardHtml(k, { btn: 'csel', i, cls: pick === k ? 'sel' : 'ok' })}<small style="font-weight:800;color:${pay ? 'var(--rose)' : 'var(--leaf)'}">${pay ? `+${pay} Münze${pay > 1 ? 'n' : ''}` : 'passt'}</small></div>`; }).join('')}</div>`;
+      if (pick) {
+        const tis = me.terrs.map((t, i) => i).filter(i => terrOf(me.terrs[i].id).t === CARDS[pick].t && space(me.terrs[i]) > 0);
+        h += `<p class="label" style="margin-top:10px">In welches Gebiet?</p><div class="terrs">${tis.map(ti => terrHtml(me, me.terrs[ti], ti, { can: () => true, act: 'tplay' })).join('')}</div>`;
+      }
+      h += `<button class="skip" data-a="askskip">Keine Karte spielen</button>`;
+      return sheetWrap(h);
+    }
+    case 'terrDraw':
+      h += `<p style="font-size:13px">Ziehe 2 Gebiete: zweimal vom selben Stapel oder je eines von zwei Stapeln.</p><div class="chips">${a.opts.map(t => `<button class="chip ${sel.filter(x => x === t).length ? 'on' : ''}" data-a="ssel" data-t="${t}" style="${sel.includes(t) ? `background:${TT_C[t]}` : ''}">${TT_N[t]}${sel.filter(x => x === t).length === 2 ? ' ×2' : ''} (${S.tstacks[t].length})</button>`).join('')}</div>
+        <div class="btnrow"><button class="btn white" data-a="sclear">Zurücksetzen</button><button class="btn" data-a="askok" ${sel.length === 2 ? '' : 'disabled'}>Ziehen</button></div>`;
+      return sheetWrap(h);
+    case 'terrKeep':
+      h += `<div class="terrs">${a.opts.map(id => { const T = terrOf(id); return `<button class="terr" data-a="askval" data-v="${id}" style="border-top:5px solid ${TT_C[T.t]};text-align:left;width:100%"><div class="th"><span class="tart">${terrArt(T.t)}</span><span><b>${TT_N[T.t]} · ${T.cap} Plätze</b><small>Auftrag: ${esc(COND_TX[T.cond.k](T.cond))} → ${T.vp} SP</small></span></div></button>`; }).join('')}</div>`;
+      return sheetWrap(h);
+    case 'orders':
+      h += `<div class="opts">${a.opts.map((o, i) => `<button class="opt" data-a="askval" data-v="${i}"><span style="font-size:22px;font-weight:800;color:var(--rose);min-width:34px">${o.vp}</span><span><b>${esc(o.tx)}</b><small>${o.kind === 'terr' ? 'Gebietsauftrag' : `Auftragsplättchen, Feld ${o.f + 1}${o.card ? ' · + 1 Karte' : ''}`}</small></span></button>`).join('')}</div><button class="skip" data-a="askskip">Keinen Auftrag erfüllen</button>`;
+      return sheetWrap(h);
+    case 'marker':
+      h += `<p style="font-size:13px">Lege einen Marker von deinem Arbeitsplan auf den Auftrag. Ist ein Bereich leer, ist er freigeschaltet.</p><div class="opts">${a.opts.map(k => { const u = UNLOCKS.find(x => x.k === k); return `<button class="opt" data-a="askval" data-v="${k}"><span style="min-width:34px;font-weight:800">${me.markers[k]}×</span><span><b>${esc(u.tx)}</b><small>${me.markers[k] === 1 ? 'wird jetzt frei!' : `noch ${me.markers[k] - 1} danach`}</small></span></button>`; }).join('')}</div>`;
+      return sheetWrap(h);
+    case 'count': {
+      const n = clamp(U.tmp.n ?? a.max, 0, a.max);
+      h += `<p style="font-size:13px">${esc(a.text)}</p><div class="stepper"><span><b>${n}×</b></span><span style="display:flex;gap:8px"><button data-a="cnt" data-d="-1" ${n <= 0 ? 'disabled' : ''}>−</button><button data-a="cnt" data-d="1" ${n >= a.max ? 'disabled' : ''}>+</button></span></div>
+        <div class="btnrow"><button class="btn" data-a="askval" data-v="${n}">Umwandeln</button></div>`;
+      return sheetWrap(h);
+    }
+    case 'terrSel':
+      h += `<div class="terrs">${me.terrs.map((tr, ti) => terrHtml(me, tr, ti, { can: () => true, act: 'askval' }).replace(`data-i="${ti}"`, `data-v="${ti}"`)).join('')}</div>`;
+      return sheetWrap(h);
+    case 'choice':
+      h += `<p style="font-size:13px">${esc(a.text || '')}</p><div class="btnrow" style="flex-direction:column">${a.opts.map(([v, l]) => `<button class="btn white wide" data-a="askval" data-v="${v}">${esc(l)}</button>`).join('')}</div>`;
+      return sheetWrap(h);
+    case 'fromDiscard':
+      h += `<div class="gridc">${[...new Set(a.opts)].map((k, i) => `<button data-a="askval" data-v="${k}" style="padding:0">${cardHtml(k)}</button>`).join('')}</div>`;
+      return sheetWrap(h);
+    case 'worker':
+      h += `<div class="opts">${a.opts.map(k => `<button class="opt" data-a="askval" data-v="${k}"><b>${esc(FIELDS.find(f => f.k === k).n)}</b></button>`).join('')}</div>`;
+      return sheetWrap(h);
+    case 'market':
+      h += `<div class="opts">${a.opts.map(k => { const m = MARKET.find(x => x.k === k); return `<button class="opt" data-a="askval" data-v="${k}"><span><b>${esc(m.n)}</b><small>${esc(m.tx)}</small></span></button>`; }).join('')}</div>`;
+      return sheetWrap(h);
+    case 'sell': {
+      const am = U.tmp.sell || {};
+      h += `<p style="font-size:13px">Jeder Korb wird zu einer Münze.</p>${GOODS.filter(g => me.goods[g] > 0).map(g => `<div class="stepper"><span class="gd">${goodSvg(g)}${GOOD_N[g]} (${me.goods[g]})</span><span style="display:flex;gap:8px;align-items:center"><button data-a="sellc" data-g="${g}" data-d="-1" ${(am[g] | 0) <= 0 ? 'disabled' : ''}>−</button><b>${am[g] | 0}</b><button data-a="sellc" data-g="${g}" data-d="1" ${(am[g] | 0) >= me.goods[g] ? 'disabled' : ''}>+</button></span></div>`).join('')}
+        <div class="btnrow"><button class="btn" data-a="askok">Verkaufen</button></div>`;
+      return sheetWrap(h);
+    }
+    case 'repeat':
+      h += `<div class="gridc">${a.opts.map(k => `<button data-a="askval" data-v="${k}" style="padding:0">${cardHtml(k)}</button>`).join('')}</div>`;
+      return sheetWrap(h);
+  }
+  return '';
+}
+function rulesHtml() {
+  return `<div class="rules"><h3>So spielt man</h3>
+  <p>Du baust deinen Bauernhof aus: Du spielst Karten mit <b>Sonnenstunden</b> in deine <b>Gebiete</b>, sammelst Waren in <b>Körben</b> und erfüllst <b>Aufträge</b>. Jeder erfüllte Auftrag bringt Siegpunkte und schaltet ein neues Feld auf deinem Arbeitsplan frei.</p>
+  <h4>Dein Zug</h4>
+  <p>Entweder du <b>setzt eine Arbeitskraft</b> auf ein freies Feld deines Arbeitsplans und führst es aus, oder du <b>beendest den Tag</b>. Danach füllt sich die Auslage wieder auf 7 Karten auf (Handlimit 12), und die nächste Person ist dran.</p>
+  <ul><li><b>4 Karten:</b> 4 benachbarte Karten aus der Auslage (sie ist ein Kreis).</li>
+  <li><b>2 Sonnen + 2 Karten</b>, <b>5 Sonnen</b>, <b>3 Sonnen + Abwurf</b> (+1 je abgeworfener Handkarte): eine Karte in ein passendes Gebiet mit freiem Platz spielen. Fehlende Sonnenstunden zahlst du mit Münzen. Aufteilen geht nicht.</li>
+  <li><b>Gebiet:</b> 2 Gebiete ziehen, eines auslegen, das andere zurück unter den Stapel.</li>
+  <li><b>2 Aufträge:</b> bis zu zwei Aufträge erfüllen.</li></ul>
+  <h4>Tag beenden</h4>
+  <p>Alle Arbeitskräfte kehren zurück. 2 eingesetzte Kräfte: 1 Marktaktion. 3: 1 Marktaktion und 1 Karte aus der Auslage. 4: zwei verschiedene Marktaktionen (oder wie bei 3). Bei 1 Kraft gibt es nichts. Marktaktionen: Karte nehmen, 3 Karten für 3 Münzen verkaufen, Waren verkaufen (Korb = Münze), Auslage tauschen. Zwei weitere kannst du freischalten.</p>
+  <h4>Münzen &amp; Körbe</h4>
+  <p>Du hast 15 Münzen/Körbe: Münzen und gefüllte Körbe zusammen sind nie mehr als 15. Ohne leeren Korb bekommst du keine Waren mehr. Für eine Münze wird notfalls ein gefüllter Korb umgedreht.</p>
+  <h4>Aufträge</h4>
+  <p>Auftragsplättchen „A“ staffeln die Bedingung (mehr = mehr Punkte), „B“ haben überall dieselbe Bedingung, das erste Feld bringt zusätzlich eine Karte. Jedes Gebiet hat einen eigenen Auftrag nur für dich. Jeden Auftrag erfüllst du nur einmal. Dafür legst du einen Marker von deinem Arbeitsplan darauf und ziehst auf der Siegpunktleiste vor.</p>
+  <h4>Spielende</h4>
+  <p>Erreicht jemand ${VP_END} Siegpunkte, hat jede Person noch genau zwei Züge. Die meisten Siegpunkte gewinnen, bei Gleichstand die meisten Münzen. <b>Solo:</b> 5 Stapel à 7 Karten. Bei jedem Tagesende wird die Auslage gegen den nächsten Stapel getauscht. Sind alle verbraucht, endet das Spiel mit dem nächsten Tagesende. Werte dein Ergebnis mit der Solo-Tabelle.</p>
+  <h4>Unterschiede zum Original</h4>
+  <p style="font-size:13px">Ablauf, Arbeitsfelder, Tag beenden, Marktaktionen, Münzen/Körbe, Sonnenstunden, Aufträge, Freischalten, Spielende und Solomodus folgen der Anleitung von <i>Countryside / Landgut</i>. Die 126 Projekt- und 50 Gebietskarten sind dort nur als Beispiele abgebildet. Deshalb ist der Karteninhalt ein eigener Entwurf nach diesen Beispielen: 27 Kartenarten in 5 Gebieten, 30 Gebiete und 6 Auftragsplättchen. Ebenfalls eigene Annahmen sind das Leistenende bei ${VP_END} Punkten und die Aufteilung der Marker auf dem Arbeitsplan. Die Illustrationen sind eigene Aquarell-Entwürfe.</p></div>`;
+}
+function viewSheet() {
+  const sh = U.sheet;
+  if (myAsk() && (!sh || sh.type === 'ask')) return askSheet();
+  if (!sh) return '';
+  if (sh.type === 'rules') return sheetWrap(rulesHtml());
+  if (sh.type === 'menu') return sheetWrap(`<h3>Menü</h3><div class="btnrow" style="flex-direction:column">${S && S.screen === 'game' && !S.tut ? '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}<button class="btn white wide" data-a="rules">Spielregeln</button><button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
+  if (sh.type === 'opp') { const p = P(sh.p); return sheetWrap(`<h3>${esc(p.name)}</h3><p style="font-size:13px">★ ${p.vp} SP · ${p.hand.length} Handkarten</p>${goodsHtml(p)}<div class="terrs" style="margin-top:10px">${p.terrs.map((tr, ti) => terrHtml(p, tr, ti)).join('')}</div>`); }
+  return '';
+}
+
+// ---------- Lernspiel (Tutorial) ----------
+// Geführte Mini-Partie mit vorbereitetem Spielstand. Jeder Schritt hat einen
+// Text, optional ein markiertes Element (sel), erlaubte Aktionen (allow) und
+// eine Bedingung (done), bei der es automatisch weitergeht; ohne done gibt es
+// einen Weiter-Knopf. Das Lernspiel wird weder gespeichert noch getrackt, eine
+// laufende echte Partie bleibt also erhalten.
+function tutStep() { return U.tut ? TUT_STEPS[U.tut.i] : null; }
+function tutCheck() {
+  let guard = 0;
+  while (U.tut && guard++ < 20) {
+    const st = TUT_STEPS[U.tut.i];
+    if (!st.done || !st.done()) break;
+    U.tut.i++;
+  }
+}
+function tutAllowed(a, d) {
+  if (a === 'tutnext' || a === 'tutend' || a === 'tutquit') return true;
+  const st = tutStep(), al = st && st.allow;
+  if (!al || !(a in al)) return false;
+  return al[a] === true || !!al[a](d);
+}
+function tutHtml() {
+  const st = tutStep(); if (!st) return '';
+  const last = U.tut.i === TUT_STEPS.length - 1;
+  const txt = typeof st.text === 'function' ? st.text() : st.text;
+  const btn = last ? '<button class="btn" data-a="tutend">Echtes Spiel starten</button>'
+    : !st.done ? '<button class="btn" data-a="tutnext">Weiter</button>'
+    : st.wait ? '<span class="cwait">· · ·</span>' : '';
+  return `<div class="coach" id="coach" role="dialog" aria-live="polite"><div class="cface">${face({ look: { hair: '#D8D2C8', dress: '#7FAF5B', hat: 'straw' } })}</div><div class="ctext"><span class="cstep">Lernspiel · ${U.tut.i + 1}/${TUT_STEPS.length}</span><p>${txt}</p><div class="cbtns">${btn}${last ? '' : '<button class="cquit" data-a="tutquit">Lernspiel beenden</button>'}</div></div></div>`;
+}
+function tutDecorate() {
+  const st = tutStep(), coach = document.getElementById('coach');
+  if (!st || !coach) return;
+  const el = st.sel ? document.querySelector(st.sel) : null;
+  if (el) el.classList.add('tut-hl');
+  const bottomBox = document.querySelector('.bar');
+  const inBottom = el && el.closest('.bar');
+  const top = st.pos ? st.pos === 'top' : (!!myAsk() || !!U.sheet || !!inBottom);
+  coach.classList.toggle('top', top);
+  if (!top) coach.style.bottom = ((bottomBox ? bottomBox.getBoundingClientRect().height : 0) + 10) + 'px';
+  const key = U.tut.i + (myAsk() ? 's' : '');
+  if (el && U.tut.scrolled !== key) {
+    U.tut.scrolled = key;
+    if (!el.closest('.top')) el.scrollIntoView({ block: 'center', behavior: 'auto' });
+  }
+}
+const TUT_ME = () => S.players[0];
+const TUT_STEPS = [
+  { pos: 'top', text: 'Willkommen auf deinem <b>Landgut</b>! Ich bin Oma Holler. Du spielst Karten in deine Gebiete, sammelst Waren und erfüllst Aufträge. Wir machen ein paar Züge zusammen.' },
+  { sel: '.terrs', text: 'Das sind deine drei <b>Gebiete</b>: Wiese, Garten und Stall. Jedes hat Platz für einige Karten und einen <b>eigenen Auftrag</b>, nur für dich.' },
+  { sel: '.board', text: 'Dein <b>Arbeitsplan</b>. In deinem Zug setzt du eine Arbeitskraft auf ein freies Feld oder beendest den Tag. Gesperrte Felder schaltest du mit erfüllten Aufträgen frei.' },
+  { sel: '[data-a=field][data-k=sun5]', allow: { field: d => d.k === 'sun5' }, done: () => myAsk() && S.ask.t === 'play',
+    text: 'Spielen wir einen <b>Kirschbaum</b>. Er braucht 5 Sonnenstunden. Tippe auf das Feld „5 Sonnen“.' },
+  { sel: '[data-a=csel][data-k=kirschbaum]', allow: { csel: d => d.k === 'kirschbaum' }, done: () => U.tmp.card === 'kirschbaum', text: 'Wähle den Kirschbaum aus deiner Hand.' },
+  { sel: '[data-a=tplay]', allow: { tplay: true }, done: () => estate(TUT_ME()).includes('kirschbaum'), text: 'Er gehört auf eine <b>Wiese</b>. Tippe auf dein Wiesen-Gebiet.' },
+  { sel: '.stock', wait: false, done: null, text: 'Der Kirschbaum hat sofort eine <b>Kirsche</b> in einen Korb gelegt. Münzen und gefüllte Körbe teilen sich 15 Plätze.' },
+  { wait: true, done: () => isMyTurn(), text: () => `${esc(S.players[1].name)} ist dran …` },
+  { sel: '[data-a=field][data-k=sun2]', allow: { field: d => d.k === 'sun2' }, done: () => myAsk() && S.ask.t === 'play',
+    text: 'Jetzt eine <b>Rebe</b> für 3 Sonnenstunden. Das Feld „2 Sonnen + 2 Karten“ gibt nur 2, die dritte zahlst du mit einer <b>Münze</b>. Danach nimmst du 2 Karten. Tippe auf das Feld.' },
+  { sel: '[data-a=csel][data-k=rebe]', allow: { csel: d => d.k === 'rebe' }, done: () => U.tmp.card === 'rebe', text: 'Wähle die Rebe. Unter der Karte steht: +1 Münze.' },
+  { sel: '[data-a=tplay]', allow: { tplay: true }, done: () => myAsk() && S.ask.t === 'take', text: 'Ab in den Garten!' },
+  { sel: '.sheet [data-a=dsel][data-i="6"]', allow: { dsel: true }, done: () => U.tmp.start != null, text: 'Die Auslage ist ein <b>Kreis</b>: Die letzte und die erste Karte sind benachbart. Tippe die letzte Karte an, du bekommst sie und die erste.' },
+  { sel: '.sheet [data-a=askok]', allow: { askok: true, dsel: true }, done: () => !myAsk(), text: 'Tippe auf „Nehmen“.' },
+  { wait: true, done: () => isMyTurn(), text: () => `${esc(S.players[1].name)} ist dran …` },
+  { sel: '.orders', text: 'Unten auf dem Tisch liegen <b>Aufträge</b>. Wer zuerst erfüllt, bekommt die meisten Punkte. Dafür legst du einen <b>Marker</b> von deinem Arbeitsplan darauf. So schaltest du neue Felder frei.' },
+  { sel: '[data-a=endday]', allow: { endday: true }, done: () => myAsk() && S.ask.t === 'market', text: 'Du hast 2 Arbeitskräfte eingesetzt. Beende den <b>Tag</b>: Sie kommen zurück und du bekommst eine <b>Marktaktion</b>.' },
+  { sel: '.sheet [data-a=askval][data-v=m3]', allow: { askval: d => d.v === 'm3' }, done: () => myAsk() && S.ask.t === 'sell', text: 'Wähle „<b>Waren verkaufen</b>“: Jeder Korb wird zu einer Münze.' },
+  { sel: '.sheet [data-a=sellc][data-g=kirsche][data-d="1"]', allow: { sellc: true }, done: () => U.tmp.sell && U.tmp.sell.kirsche > 0, text: 'Tippe auf <b>+</b> bei der Kirsche.' },
+  { sel: '.sheet [data-a=askok]', allow: { askok: true, sellc: true }, done: () => !myAsk(), text: 'Und jetzt „Verkaufen“.' },
+  { pos: 'top', text: 'Du hast den Ablauf gelernt! Sammle Waren für die Aufträge, fülle deine Gebiete und schalte Felder frei. Erreicht jemand 30 Siegpunkte, hat jede Person noch zwei Züge. Viel Freude auf dem Landgut!' },
+];
+function tutSetup() {
+  U.fast = true;
+  S = null;
+  newGame(U.setup.name || 'Du', 1, 4711);
+  S.tut = true;
+  S.q = []; S.ask = null;
+  const [me, b] = S.players;
+  const wiese = TERRS.find(t => t.t === 'wiese' && t.cond.k === 'full').id, garten = TERRS.find(t => t.t === 'garten' && t.cond.k === 'grp').id, stall = TERRS.find(t => t.t === 'stall' && t.cond.k === 'huhn3').id;
+  me.terrs = [wiese, garten, stall].map(id => ({ id, cards: [], ordDone: false }));
+  b.terrs = TERRS.filter(t => ['acker', 'haus', 'wiese'].includes(t.t)).slice(0, 3).map(t => ({ id: t.id, cards: [], ordDone: false }));
+  me.hand = ['kirschbaum', 'rebe', 'huhn', 'mohn', 'weinbauer'];
+  b.hand = ['weizen', 'mais', 'hund', 'katze', 'bauer', 'roggen'];
+  me.coins = 2; me.vp = 0; b.vp = 0;
+  S.display = ['schaf', 'apfelbaum', 'hahn', 'kuh', 'sonnenblume', 'eiche', 'huhn'];
+  S.cur = 0;
+  S.log = ['Lernspiel: ein vorbereiteter Hof.'];
+}
+// Im Lernspiel spielt die Gegnerin einfache, vorhersehbare Züge
+function tutBot() {
+  const p = cur(), pi = S.cur;
+  const use = k => canUseField(p, FIELDS.find(f => f.k === k));
+  if (use('sun2') && bestPlay(p, 2)) return placeWorker(pi, 'sun2');
+  if (use('take4')) return placeWorker(pi, 'take4');
+  endDay(pi);
+}
+
+const $app = document.getElementById('app');
+function render() {
+  if (U.tut) tutCheck();
+  // neue Frage: ein zuvor weggeklicktes Fenster wieder öffnen
+  if (S && S.ask !== U.lastAsk) { U.lastAsk = S.ask; if (U.sheet && U.sheet.type === 'hidden') U.sheet = null; }
+  const nmi = document.getElementById('nm'); if (nmi) U.setup.name = nmi.value;
+  let h = !S || S.screen !== 'game' && S.screen !== 'end' ? viewStart() : S.screen === 'end' ? viewEnd() : viewGame();
+  h += viewSheet();
+  if (U.toast) h += `<div class="toast">${esc(U.toast)}</div>`;
+  if (U.tut) h += tutHtml();
+  $app.innerHTML = h;
+  if (U.tut) tutDecorate();
+  save();
+  pump();
+}
+function pump() {
+  if (!S || S.screen !== 'game' || U.busy || S.ask || S.q.length || !cur().bot) return;
+  U.busy = true;
+  setTimeout(() => {
+    U.busy = false;
+    if (!S || S.screen !== 'game' || S.ask || S.q.length || !cur().bot) return;
+    if (S.tut) tutBot(); else botTurn();
+    render();
+  }, U.fast ? 250 : 1000);
+}
+function resetTmp() { U.sel = []; U.tmp = {}; }
+function reply(v) { resetTmp(); U.sheet = null; answer(v); }
+
+const H = {
+  leave: () => { if (!S || S.tut) return; save(); S = null; U.sheet = null; window.scrollTo(0, 0); toast('Partie gespeichert. Mit „Partie fortsetzen“ geht es weiter.'); },
+  discard: () => { if (confirm('Gespeicherte Partie wirklich verwerfen?')) clearSave(); },
+  tutorial: () => { const nmi = document.getElementById('nm'); U.setup.name = nmi ? nmi.value.trim() : U.setup.name; U.sheet = null; resetTmp(); tutSetup(); U.tut = { i: 0 }; window.scrollTo(0, 0); },
+  tutnext: () => { if (U.tut) U.tut.i = Math.min(U.tut.i + 1, TUT_STEPS.length - 1); },
+  tutend: () => { U.tut = null; U.sheet = null; U.fast = false; S = null; window.scrollTo(0, 0); },
+  tutquit: () => { U.tut = null; U.sheet = null; U.fast = false; S = null; window.scrollTo(0, 0); },
+  bots: d => { U.setup.bots = +d.n; },
+  pickname: d => { U.setup.name = d.n; const nmi = document.getElementById('nm'); if (nmi) nmi.value = d.n; },
+  start: () => { const sv = load(); if (sv && sv.screen === 'game' && !confirm('Es gibt eine gespeicherte Partie. Neue Partie starten und die gespeicherte verwerfen?')) return; const nmi = document.getElementById('nm'); U.setup.name = nmi ? nmi.value.trim() : ''; resetTmp(); newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0); window.scrollTo(0, 0); },
+  resume: () => { S = load(); U.sheet = null; resetTmp(); },
+  rules: () => { U.sheet = { type: 'rules' }; },
+  menu: () => { U.sheet = { type: 'menu' }; },
+  restart: () => { if (confirm('Laufende Partie wirklich abbrechen?')) { clearSave(); S = null; U.sheet = null; } },
+  newgame: () => { clearSave(); S = null; U.sheet = null; },
+  close: () => { U.sheet = myAsk() ? { type: 'hidden' } : null; }, ovclose: () => { U.sheet = myAsk() ? { type: 'hidden' } : null; },
+  opp: d => { U.sheet = { type: 'opp', p: +d.p }; },
+  logtoggle: () => { U.logOpen = !U.logOpen; },
+  fast: () => { U.fast = !U.fast; },
+  askopen: () => { U.sheet = { type: 'ask' }; },
+  field: d => { if (!isMyTurn()) return; const me = human(); const f = FIELDS.find(x => x.k === d.k); if (!canUseField(me, f)) return; resetTmp(); placeWorker(S.cur, d.k); },
+  endday: () => { if (!isMyTurn()) return; resetTmp(); endDay(S.cur); },
+  tsel: d => { const id = +d.i, k = U.sel.indexOf(id); if (k >= 0) U.sel.splice(k, 1); else if (U.sel.length < 3) U.sel.push(id); },
+  hsel: d => { const i = +d.i, k = U.sel.indexOf(i); const a = S.ask; const max = a.t === 'discardN' ? a.n : 99; if (k >= 0) U.sel.splice(k, 1); else if (U.sel.length < max) U.sel.push(i); },
+  dsel: d => { U.tmp.start = +d.i; },
+  csel: d => { U.tmp.card = d.k; },
+  tplay: d => { reply({ k: U.tmp.card, ti: +d.i }); },
+  ssel: d => { if (U.sel.length < 2) U.sel.push(d.t); },
+  sclear: () => { U.sel = []; },
+  cnt: d => { const a = S.ask; U.tmp.n = clamp((U.tmp.n ?? a.max) + +d.d, 0, a.max); },
+  sellc: d => { const me = human(); U.tmp.sell = U.tmp.sell || {}; U.tmp.sell[d.g] = clamp((U.tmp.sell[d.g] | 0) + +d.d, 0, me.goods[d.g]); },
+  askval: d => { const a = S.ask; let v = d.v; if (a.t === 'orders') v = a.opts[+v]; else if (['terrKeep', 'terrSel', 'count'].includes(a.t)) v = +v; reply(v); },
+  askskip: () => { reply(null); },
+  askok: () => {
+    const a = S.ask, me = P(a.pi);
+    if (a.t === 'setupTerr') return reply(U.sel.slice());
+    if (a.t === 'discardN' || a.t === 'discardSun') return reply(U.sel.map(i => me.hand[i]));
+    if (a.t === 'take') { const n = Math.min(a.n, S.display.length); return reply(ring(U.tmp.start, n)); }
+    if (a.t === 'terrDraw') return reply(U.sel.slice());
+    if (a.t === 'sell') return reply(U.tmp.sell || {});
+  },
+};
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-a]');
+  if (!el || !$app.contains(el)) return;
+  if (el.dataset.a === 'ovclose' && e.target.closest('[data-stop]')) return;
+  if (el.disabled) return;
+  if (U.tut && S && !tutAllowed(el.dataset.a, el.dataset)) { toast('Folge dem markierten Hinweis im Lernspiel.'); render(); return; }
+  const fn = H[el.dataset.a]; if (!fn) return;
+  fn(el.dataset); render();
+});
+window.__lg = {
+  simulate(n, seed, solo) {
+    if (solo) {
+      newGame('Solo-Test', 0, seed);
+      S.players[0].bot = true; // Mensch wird vom Bot gesteuert
+      S.ask = null; run();
+    } else newGame(null, n - 1, seed);
+    let guard = 0;
+    while (S.screen === 'game' && guard++ < 3000) { run(); if (S.screen !== 'game') break; if (!S.q.length && !S.ask) botTurn(); }
+    return { final: S.final, guard };
+  },
+  state: () => S,
+  cap: id => TERRS[id].cap,
+  reset: () => { S = null; U.sheet = null; clearSave(); render(); },
+};
+render();
+</script>
+</body>
+</html>
