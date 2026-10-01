@@ -157,6 +157,57 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .podium .pp{text-align:center;width:96px}
 .podium .pp .ill{height:130px}
 .podium .pl{border-radius:18px 18px 0 0;font-family:"Fredoka",sans-serif;font-weight:700;font-size:24px;color:#fff;display:grid;place-items:center}
+/* Harvest-Edition-Bogen */
+.rondel{grid-template-columns:repeat(4,1fr);gap:8px}
+.space{min-height:112px;padding:8px 4px;border-radius:20px}
+.space .sic{width:36px;height:34px}
+.space .sn{font-size:10.5px;min-height:24px}
+.space .pin{position:absolute;right:4px;top:2px;font-size:12px}
+.evt .track{display:flex;gap:3px;flex-wrap:wrap;align-items:center;justify-content:center}
+.evt .track span{width:24px;height:24px;border-radius:50%;background:var(--bg);padding:2px;opacity:.55}
+.evt .track span svg{width:20px;height:20px}
+.evt .track span.now{background:var(--yellow);opacity:1}
+.evt .track span.done{opacity:.25}
+.zone{padding:8px 7px 7px}
+.zone .zn{width:22px;height:22px;right:6px;top:5px}
+.plants{display:flex;gap:5px;align-items:flex-end;flex-wrap:wrap;padding-right:22px;min-height:66px}
+.pair{display:flex;gap:1px;align-items:flex-end}
+.stk{display:flex;flex-direction:column-reverse;gap:2px;align-items:center;padding:1px;border-radius:8px;position:relative}
+.stk .cell{width:12px;height:12px}
+.zone.big .stk .cell{width:20px;height:20px}
+.zone.big .plants{gap:9px;min-height:110px}
+.stk.can{background:rgba(255,255,255,.55);box-shadow:0 0 0 2px var(--leaf)}
+.stk.can.on{background:var(--mint)}
+.pumps{display:flex;gap:4px;align-items:flex-end;margin-top:6px;flex-wrap:wrap}
+.stk.s{flex-direction:row;align-items:center}
+.stk .pg{font-size:9px;font-weight:800;color:#B35A1F;margin-left:2px}
+.zone.big .stk .pg{font-size:12px}
+.bt{width:20px;height:20px;flex:none;display:inline-block}
+.zone.big .bt{width:28px;height:28px}
+.cell.cut{background:repeating-linear-gradient(45deg,rgba(142,124,195,.85) 0 3px,transparent 3px 6px)}
+.box.cut{background:repeating-linear-gradient(45deg,rgba(142,124,195,.55) 0 3px,transparent 3px 6px);color:transparent}
+.box.vp{background:#F6D2C4;color:var(--ink)}
+.box.x.vp{background:var(--tomato);color:#fff}
+.label .lv{float:right;letter-spacing:0;text-transform:none;color:var(--forest)}
+.gbar{position:relative;height:16px;border-radius:99px;background:var(--bg);margin-top:8px}
+.gbar span{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--orange)}
+.gbar i{position:absolute;top:-2px;transform:translateX(-50%);font-style:normal;font-size:13px;color:#D9A92B}
+.gbar i.got{color:var(--forest)}
+.gbar i.cut{color:#8E7CC3;text-decoration:line-through}
+.pers{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.per{border-radius:18px;background:var(--card);padding:8px 10px;font-size:12.5px}
+.per .pi{width:26px;height:26px;display:inline-block;vertical-align:middle;margin-right:4px}
+.per .box{min-width:20px;font-size:8.5px}
+.apis{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+.apis .rh{font-size:12px}
+.apis .rh svg{width:20px;height:20px}
+.fruits .tx{font-size:11px;line-height:1.25;margin-top:4px;color:var(--muted)}
+.tool.gone{opacity:.45}
+.zpick{display:block;text-align:left;width:100%}
+.stk.c .cell{background:#FFF0C4}.stk.b .cell{background:#E2F0D2}.stk.s .cell{background:#FBDCC4}
+.stk .cell.x.c{background:#F2B33D}.stk .cell.x.b{background:#5BA35A}.stk .cell.x.s{background:#F07A2A}
+.stk .cell.cut{background:repeating-linear-gradient(45deg,rgba(142,124,195,.85) 0 3px,transparent 3px 6px)}
+.stk .cell.n{background:var(--leaf);opacity:.6}
 /* Lernspiel */
 .coach{position:fixed;left:12px;right:12px;bottom:84px;z-index:75;max-width:536px;margin:0 auto;display:flex;gap:10px;align-items:flex-start;background:var(--card);border-radius:24px;box-shadow:0 6px 0 var(--line),0 12px 32px rgba(38,56,43,.18);padding:10px 12px}
 .coach.top{top:calc(10px + env(safe-area-inset-top));bottom:auto!important}
@@ -300,53 +351,113 @@ function gardener(seed, o = {}, vb = '0 0 100 130') {
 }
 const gHead = (seed, o) => gardener(seed, o, '6 -4 88 70');
 
-// ---------- Daten ----------
+// ---------- Daten (nach der Anleitung der Harvest Edition) ----------
+// Ablauf, Aktionen, Ereignisse, Markttabelle, Stauden, Bienenstock, Hof,
+// Schuppen und Wertung folgen dem Regelheft. Nicht im Regelheft steht der
+// genaue Aufdruck des Wertungsblocks (Anzahl Pflanzen pro Zone, Kürbishöhen,
+// Kästchen pro Schuppen-Gegenstand, Sterne auf der Warenleiste); diese Werte
+// sind innerhalb der Angaben der Anleitung (3–5 Mais, 3–5 Bohnen, 1–3 Kürbisse
+// je Zone usw.) geschätzt.
 const ROUNDS = 8;
-const CROPS = ['c', 'b', 's']; // Mais, Bohne, Kürbis
-const CROP_N = { c: 'Mais', b: 'Bohnen', s: 'Kürbis' };
-const TRACK_LEN = { c: 5, b: 5, s: 4 };
-const HARVEST = { c: [3, 5], b: [2, 4, 5], s: [2, 4] };
-const SPACES = ['kompost', 'bienen', 'obst', 'schuppen', 'markt', 'nochmal'];
-const SPACE_N = { kompost: 'Kompost +1', bienen: 'Biene +1', obst: 'Obstbaum', schuppen: 'Schuppen', markt: 'Markt: +2 Waren', nochmal: 'Nochmal in der Zone' };
-const SPACE_BG = { kompost: '#EBD3BE', bienen: '#FFEFB0', obst: '#F9CFC4', schuppen: '#D6E6F5', markt: '#F8D3DE', nochmal: '#DDEBC4' };
-const EVENTS = ['regen', 'schuppen', 'markt'];
-const EVENT_N = { regen: 'Regen: eine Zone gießen', schuppen: 'Schuppen: 1 Werkzeug', markt: 'Bauernmarkt: +3 Waren' };
-const WAREN_MAX = 20, WAREN_BONUS = [5, 10, 15, 20];
-const BEE_MAX = 8, BEE_SP = [0, 1, 2, 4, 6, 9, 12, 16, 20], BEE_STAUDE = [4, 8];
-const STAUDE_MAX = 10, STAUDE_SP = [0, 1, 3, 5, 8, 11, 14, 18, 22, 26, 30];
-const KOMPOST_MAX = 6;
+const EVENTS = ['shed', 'rain', 'market', 'rain', 'market', 'shed', 'market', 'rain'];
+const EVENT_N = { shed: 'Schuppen: 1 Schuppenaktion', rain: 'Regen: Zonen 1–6 gießen', market: 'Bauernmarkt: Markttabelle' };
+// Aktionsrondell im Uhrzeigersinn; Feld 0 trägt die goldene Nadel (Start von Farmerin Edith)
+const RONDEL = [
+  { k: 'ay', pin: 1, blue: 'apiary' },
+  { k: 'pw' },
+  { k: 'shed', tool: 'A' },
+  { k: 'cg' },
+  { k: 'ay', blue: 'yard' },
+  { k: 'market' },
+  { k: 'shed', tool: 'B' },
+  { k: 'pw' },
+];
+const RONDEL_N = { ay: 'Bienenstock oder Hof', pw: 'Pflanzen oder Gießen', shed: 'Schuppenzeit', cg: '1 Kompost & 4 Waren', market: 'Bauernmarkt' };
+const RONDEL_BG = { ay: '#FFEFB0', pw: '#DDEBC4', shed: '#D6E6F5', cg: '#EBD3BE', market: '#F8D3DE' };
+const RING = [0, 1, 2, 3, 7, 6, 5, 4]; // Anzeige als Ring in zwei Reihen
+const DICE_BY_N = { 1: 4, 2: 4, 3: 5, 4: 6 };
+// Gartenzonen: Mais (4 Kästchen), Bohnen (2 Kästchen, rankt am Mais mit diesem Index),
+// Kürbisse [Höhe, Waren] und die Staude zwischen zwei benachbarten Kürbissen
+const ZONES = [
+  { corn: 3, beans: [0, 1, 2], pump: [[1, 1], [2, 2]], between: ['crocus'] },
+  { corn: 3, beans: [0, 1, 1, 2], pump: [[2, 1], [1, 1], [3, 3]], between: ['tulip', 'hydrangea'] },
+  { corn: 4, beans: [0, 1, 3], pump: [[2, 2], [2, 2]], between: ['iris'] },
+  { corn: 4, beans: [0, 1, 2, 3, 3], pump: [[3, 2]], between: [] },
+  { corn: 5, beans: [0, 1, 2, 4], pump: [[1, 1], [4, 3], [2, 2]], between: ['hyacinth', 'daffodil'] },
+  { corn: 5, beans: [0, 1, 2, 3, 4], pump: [[3, 3], [2, 1]], between: ['crocus'] },
+];
+const CORN_H = 4, BEAN_H = 2;
+const CROP_N = { c: 'Mais', b: 'Bohne', s: 'Kürbis' };
+// Stauden: 6 Kästchen von unten nach oben, das oberste zählt bei Vollendung
+const FLOWERS = ['tulip', 'hydrangea', 'iris', 'hyacinth', 'crocus', 'daffodil'];
+const FLOWER_N = { tulip: 'Tulpe', hydrangea: 'Hortensie', iris: 'Iris', hyacinth: 'Hyazinthe', crocus: 'Krokus', daffodil: 'Narzisse' };
+const PER = {
+  tulip: { box: ['yard', 'peach2', '', 'plantAny', '', ''], vp: 'yard' },
+  hydrangea: { box: ['fruit:apple', '', 'fruit:blackberry', 'fruit:raspberry', 'fruit:peach', ''], vp: 7 },
+  iris: { box: ['compost1', 'irisAdj', '', 'apiary2', '', ''], vp: 12 },
+  hyacinth: { box: ['goods2', 'goods2', '', 'goods2', '', ''], vp: 10 },
+  crocus: { box: ['compost2', 'compost1', 'compost1', 'compost2', '', ''], vp: 6 },
+  daffodil: { box: ['shed', '', 'shed', 'shed', 'shed', ''], vp: 4 },
+};
+const PER_LEN = 6;
+const EFFECT_N = {
+  yard: '1 Hofaktion', peach2: 'ab jetzt: Pfirsich-Ernte +2 Waren', plantAny: 'Pflanzaktion, Zone frei', 'fruit:apple': 'Apfel-Aktion', 'fruit:blackberry': 'Brombeer-Aktion',
+  'fruit:raspberry': 'Himbeer-Aktion', 'fruit:peach': 'Pfirsich-Aktion', compost1: '+1 Kompost', compost2: '+2 Kompost', irisAdj: 'ab jetzt: Würfel beim Pflanzen/Gießen ±1 gratis',
+  apiary2: '2 Bienenstock-Aktionen', goods2: '+2 Waren', shed: '1 Schuppenaktion', yard1: '1 Hofaktion', yard2: '2 Hofaktionen', vp3: '3 SP am Ende', yard3: '3 Hofaktionen', pw2: '2× pflanzen/gießen, Zonen frei',
+};
+const EFFECT_S = { yard: 'Hof', peach2: 'Pf+2', plantAny: '🌱', 'fruit:apple': 'Apf', 'fruit:blackberry': 'Bro', 'fruit:raspberry': 'Him', 'fruit:peach': 'Pfi', compost1: '+1K', compost2: '+2K', irisAdj: '±1', apiary2: '2🐝', goods2: '+2W', shed: 'Sch', yard1: 'Hof', yard2: '2Hof', vp3: '3', yard3: '3Hof', pw2: '2🌱' };
+// Bienenstock: erst der Hauptstock, danach drei Abschnitte in beliebiger Reihenfolge
+const HIVE = ['', 'yard1', '', 'yard1', 'yard2'];
+const WAX_GOODS = [2, 4, 4], WAX_VP = [2, 2, 5], HONEY_VP = [5, 5, 8];
+const SPLIT = ['vp3', 'plantAny', 'yard3', 'pw2'];
+const API_N = { wax: 'Wachs', honey: 'Honig', split: 'Ableger' };
+// Hof: Reihen von links nach rechts, jedes Kästchen ist eine Ernte
 const FRUITS = [
-  { k: 'apfel', n: 'Apfel', sp: 5, col: '#E4472E' },
-  { k: 'birne', n: 'Birne', sp: 6, col: '#B7C83A' },
-  { k: 'kirsche', n: 'Kirsche', sp: 7, col: '#B3202E' },
-  { k: 'pflaume', n: 'Pflaume', sp: 8, col: '#6A3A8C' },
+  { k: 'apple', n: 'Äpfel', one: 'Apfel', len: 6, tx: '3 SP je Apfel' },
+  { k: 'blackberry', n: 'Brombeeren', one: 'Brombeere', len: 7, tx: '2 SP je Brombeere' },
+  { k: 'peach', n: 'Pfirsiche', one: 'Pfirsich', len: 4, tx: 'Ernte: 1 Gießaktion, Zone frei' },
+  { k: 'raspberry', n: 'Himbeeren', one: 'Himbeere', len: 9, tx: 'Ernte: +3 Waren · 1/2/3 SP' },
 ];
-const FRUIT_LEN = 4;
-const TOOLS = [
-  { k: 'karre', n: 'Schubkarre', tx: 'Pflanzen setzt 3 statt 2 Markierungen.' },
-  { k: 'kanne', n: 'Gießkanne', tx: 'Gießen wirkt zusätzlich in einer Nachbarzone.' },
-  { k: 'hacke', n: 'Hacke', tx: 'Bohnen brauchen keinen Mais mehr.' },
-  { k: 'korb', n: 'Erntekorb', tx: 'Jede Ernte bringt +1 Ware.' },
-  { k: 'kiste', n: 'Komposter', tx: 'Am Rundenende +1 Kompost.' },
-  { k: 'imker', n: 'Imkerhut', tx: 'Jede Obst-Markierung bringt +1 Biene.' },
+const RASP_VP = { 3: 1, 6: 2, 9: 3 };
+// Schuppen: Satz A (Schere) und B (Mäher) entsprechen den Listen von Farmerin Edith
+const SHED = [
+  { k: 'jars', n: 'Einmachgläser', len: 2, vp: 1, set: 'A', tx: 'Brombeer-Ernte: +1 Ware.' },
+  { k: 'piesafe', n: 'Kuchenschrank', len: 3, vp: 3, set: 'A', tx: 'Apfel- oder Pfirsich-Ernte: +1 Ware.' },
+  { k: 'shovel', n: 'Spaten', len: 2, vp: 1, set: 'A', tx: 'Jederzeit: 3 Kompost für 1 Bonusaktion.' },
+  { k: 'bowl', n: 'Obstschale', len: 3, vp: 0, set: 'A', tx: '1/4/7/10 SP für 1/2/3/4 Obstsorten.' },
+  { k: 'barrel', n: 'Regentonne', len: 3, vp: 2, set: 'A', tx: 'Nach jedem Regen: 1 Gießaktion, Zone frei.' },
+  { k: 'dish', n: 'Auflaufform', len: 2, vp: 0, set: 'A', tx: '1 SP je 2 geerntete Bohnen.' },
+  { k: 'labels', n: 'Schicke Etiketten', len: 3, vp: 2, set: 'B', tx: 'Bauernmarkt: +1 Staudenaktion.' },
+  { k: 'hivetool', n: 'Stockmeißel', len: 3, vp: 2, set: 'B', tx: 'Krokus-Aktion: +1 Bienenstock-Aktion.' },
+  { k: 'pitchfork', n: 'Heugabel', len: 2, vp: 1, set: 'B', tx: 'Hortensien-Aktion: +1 Kompost.' },
+  { k: 'trimmer', n: 'Rasentrimmer', len: 4, vp: 6, set: 'B', tx: '6 SP.' },
+  { k: 'wheelbarrow', n: 'Schubkarre', len: 3, vp: 3, set: 'B', tx: 'Jede Schuppenaktion: +1 Ware.' },
+  { k: 'mulch', n: 'Mulch', len: 2, vp: 1, set: 'B', tx: 'Rondellaktion gegen 1 Staudenaktion tauschen.' },
 ];
-const TOOL_LEN = 3, TOOL_SP = 2;
+const SHED_BY = k => SHED.find(s => s.k === k);
+// Warenleiste: Sterne bringen eine Bonusaktion; Markttabelle nach Warenstand
+const GOODS_MAX = 80;
+const STARS = [6, 12, 18, 25, 32, 40, 48, 56, 64, 72];
+const MARKET = [[70, ['per', 'per', 'bonus']], [50, ['per', 'per', 'yard']], [35, ['per', 'per', 'compost']], [20, ['per', 'yard']], [4, ['per', 'compost']], [0, ['compost']]];
+const MARKET_N = { per: 'Staude', yard: 'Hof', compost: 'Kompost', bonus: 'Bonus' };
+const COMPOST_MAX = 20;
+const SOLO_CHART = [[150, 'Du bekommst deine eigene TV-Show!'], [125, 'Dein Gartenbuch ist ein Bestseller!'], [100, 'Du bist eine Internet-berühmte Garten-Bloggerin!'], [80, 'Landesmeisterin im Gärtnern!'], [60, 'Deine Künste bringen dir ein blaues Band!'], [40, 'Du bist bereit für die Kreismesse!'], [0, 'Nächstes Mal klappt es besser!']];
 const BOT_NAMES = [
   ['Tante Rübe', { plant: 'tulpe', pants: '#F07A2A', pat: 'dots' }],
   ['Onkel Kohl', { plant: 'glocke', pants: '#3E64B8', pat: 'stripes' }],
   ['Frau Pastinak', { plant: 'sonne', pants: '#E8553A', pat: 'stripes', pose: 1 }],
 ];
+const EDITH = { name: 'Farmerin Edith', look: { plant: 'sonne', pants: '#2E6B3E', pat: 'stripes', pose: 1 }, mark: '#8E7CC3' };
 const MARKS = ['#F2B33D', '#9CC3EC', '#F09A86', '#F4A6B8'];
 
 // ---------- Zufall & Helfer ----------
 let S = null;
-const U = { sheet: null, toast: null, busy: false, setup: { name: '', bots: 2 }, fast: false, plan: null, logOpen: false };
+const U = { sheet: null, toast: null, busy: false, setup: { name: '', bots: 2 }, fast: false, sel: null, zone: null, adj: 0, logOpen: false };
 function rnd() { S.rng = (S.rng + 0x6D2B79F5) | 0; let t = Math.imul(S.rng ^ (S.rng >>> 15), 1 | S.rng); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 const range = n => Array.from({ length: n }, (_, i) => i);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const clone = o => JSON.parse(JSON.stringify(o));
-function log(m) { S.log.unshift(m); if (S.log.length > 80) S.log.length = 80; }
 
 // ---------- Icons ----------
 function icon(k) {
@@ -374,6 +485,39 @@ function icon(k) {
     case 'korb': return w(`<path d="M8,14 C8,4 24,4 24,14" fill="none" stroke="${shade('#D9A066', 0.8)}" stroke-width="2.6"/>` + P.cob(13, 11, 0.55, -20) + `<circle cx="20" cy="12" r="4" fill="${C.orange}"/><path d="M3,14 H29 L26,29 H6 Z" fill="#D9A066"/><path d="M4.5,20 H27.5 M5.6,25 H26.4" stroke="${shade('#D9A066', 0.8)}" stroke-width="1.3"/>`);
     case 'kiste': return w(`<rect x="5" y="9" width="22" height="20" rx="2" fill="${C.leaf}"/><path d="M5,15.5 H27 M5,22 H27" stroke="${shade(C.leaf, 0.75)}" stroke-width="1.4"/><path d="M4,9 L7,4 H25 L28,9 Z" fill="${C.forest}"/><path d="M11,25 c2,-2 4,2 6,0 s3,1 4,0" stroke="${C.pink}" stroke-width="2" fill="none" stroke-linecap="round"/>`);
     case 'imker': return w(`<path d="M6,16 L8,28 H24 L26,16 Z" fill="#E9EEF2"/><path d="M9,18 V27 M13,18 V28 M17,18 V28 M21,18 V28" stroke="#CBD5DD" stroke-width="1"/><path d="M5,17 C5,6 27,6 27,17 Z" fill="${C.cream}"/><path d="M1,17 H31" stroke="${shade(C.cream, 0.85)}" stroke-width="3" stroke-linecap="round"/><ellipse cx="24" cy="7" rx="3" ry="2.4" fill="${C.yellow}"/><path d="M23,5 v4 M25,5 v4" stroke="#3B2A1E" stroke-width="1"/>`);
+    case 'tulip': return w(`<path d="M16,30 V16" stroke="${C.forest}" stroke-width="2.2" stroke-linecap="round"/>` + P.leaf(16, 27, 10, -55, C.leaf) + P.tulip(16, 17, 1.25, C.tomato));
+    case 'hydrangea': return w(P.leaf(16, 26, 11, -150, C.forest) + P.leaf(16, 26, 11, -30, C.leaf) + [[11, 11], [17, 8], [22, 12], [9, 17], [15, 15], [21, 18], [14, 21]].map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="4.3" fill="${i % 2 ? C.lilac : C.sky}"/>`).join(''));
+    case 'iris': return w(`<path d="M16,30 V18" stroke="${C.forest}" stroke-width="2.2"/><path d="M16,4 C20,8 20,13 16,17 C12,13 12,8 16,4 Z" fill="${C.plum}"/><path d="M16,16 C10,12 4,14 5,19 C9,20 13,19 16,16 Z M16,16 C22,12 28,14 27,19 C23,20 19,19 16,16 Z" fill="${C.lilac}"/><path d="M14,18 C15,15 17,15 18,18" fill="${C.yellow}"/>`);
+    case 'hyacinth': return w(`<path d="M16,30 V8" stroke="${C.forest}" stroke-width="2.2"/>` + P.blade(12, 30, 12, -4, C.leaf) + [[16, 5], [13, 9], [19, 9], [12, 14], [16, 13], [20, 14], [13, 19], [19, 19], [16, 18]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3" fill="${C.pink}"/>`).join(''));
+    case 'crocus': return w(P.blade(13, 30, 12, -3, C.leaf) + P.blade(19, 30, 12, 3, C.leaf) + `<path d="M10,8 C10,18 12,22 16,22 C20,22 22,18 22,8 C20,11 18,11 16,6 C14,11 12,11 10,8 Z" fill="${C.lilac}"/><path d="M16,8 V20" stroke="${shade(C.lilac, 0.8)}" stroke-width="1.4"/>`);
+    case 'daffodil': return w(`<path d="M16,30 V18" stroke="${C.forest}" stroke-width="2.2"/>` + P.five(16, 12, 10, C.yellow, C.orange));
+    case 'apple': return icon('apfel');
+    case 'blackberry': return w(P.leaf(16, 8, 9, -40, C.leaf) + [[12, 13], [17, 12], [21, 15], [11, 18], [16, 17], [21, 20], [13, 23], [18, 22], [16, 27]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.3" fill="${C.plum}"/>`).join(''));
+    case 'peach': return w(`<circle cx="16" cy="18" r="11" fill="${C.coral}"/><path d="M16,8 C13,13 13,23 16,29" stroke="${shade(C.coral, 0.85)}" stroke-width="1.6" fill="none"/>` + P.leaf(16, 8, 10, -30, C.leaf));
+    case 'raspberry': return w(P.leaf(16, 6, 9, -150, C.leaf) + P.leaf(16, 6, 9, -30, C.forest) + [[11, 11], [16, 10], [21, 11], [12, 16], [17, 15], [21, 16], [14, 21], [18, 21], [16, 26]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.2" fill="${C.rose}"/>`).join(''));
+    case 'wax': return w(`<path d="M16,4 L26,10 V22 L16,28 L6,22 V10 Z" fill="${C.yellow}"/><path d="M16,10 L21,13 V19 L16,22 L11,19 V13 Z" fill="${shade(C.yellow, 0.88)}"/>`);
+    case 'honey': return w(`<path d="M9,10 H23 V27 C23,29 21,30 19,30 H13 C11,30 9,29 9,27 Z" fill="${C.mustard}"/><rect x="8" y="6" width="16" height="5" rx="2" fill="${C.brown}"/><path d="M12,17 H20" stroke="${C.cream}" stroke-width="2.4" stroke-linecap="round"/>`);
+    case 'split': return w(`<path d="M2,26 C2,14 14,14 14,26 Z" fill="${C.yellow}"/><path d="M18,26 C18,12 30,12 30,26 Z" fill="${C.mustard}"/><path d="M4,22 H12 M20,21 H28 M20,17 H28" stroke="${shade(C.mustard, 0.8)}" stroke-width="1.4"/>`);
+    case 'star': return icon('sp');
+    case 'jars': return w(`<rect x="5" y="10" width="10" height="17" rx="3" fill="${C.teal}"/><rect x="17" y="13" width="10" height="14" rx="3" fill="${C.plum}"/><rect x="5" y="7" width="10" height="4" rx="1" fill="${C.mustard}"/><rect x="17" y="10" width="10" height="4" rx="1" fill="${C.mustard}"/>`);
+    case 'piesafe': return w(`<rect x="6" y="4" width="20" height="25" rx="2" fill="${C.brown}"/><rect x="9" y="7" width="14" height="9" fill="${C.cream}"/><rect x="9" y="18" width="14" height="8" fill="${C.cream}"/><path d="M11,14 C11,10 21,10 21,14 Z" fill="${C.orange}"/>`);
+    case 'shovel': return w(`<path d="M16,3 V19" stroke="${C.brown}" stroke-width="3" stroke-linecap="round"/><path d="M10,3 H22" stroke="${C.brown}" stroke-width="3" stroke-linecap="round"/><path d="M10,18 H22 V23 C22,27 19,30 16,30 C13,30 10,27 10,23 Z" fill="#8FA3B8"/>`);
+    case 'bowl': return w(`<circle cx="11" cy="13" r="5" fill="${C.tomato}"/><circle cx="20" cy="12" r="5" fill="${C.coral}"/><circle cx="16" cy="9" r="4" fill="${C.plum}"/><path d="M3,15 H29 C29,23 23,28 16,28 C9,28 3,23 3,15 Z" fill="${C.sky}"/>`);
+    case 'barrel': return w(`<path d="M7,5 H25 C28,12 28,22 25,29 H7 C4,22 4,12 7,5 Z" fill="${C.brown}"/><path d="M5,12 H27 M5,22 H27" stroke="${shade(C.brown, 0.75)}" stroke-width="2"/><path d="M12,2 C12,0 13,0 13,2" stroke="${C.blue}" stroke-width="2"/>`);
+    case 'dish': return w(`<path d="M3,14 H29 V22 C29,25 27,27 24,27 H8 C5,27 3,25 3,22 Z" fill="${C.tomato}"/><path d="M1,14 H31" stroke="${shade(C.tomato, 0.8)}" stroke-width="3" stroke-linecap="round"/>` + P.pod(12, 11, 0.5, 80) + P.pod(20, 11, 0.5, 100));
+    case 'labels': return w(`<path d="M4,10 L14,4 H28 V18 H14 Z" fill="${C.pink}"/><circle cx="10" cy="11" r="2" fill="${C.cream}"/><path d="M6,22 L14,16 H26 V28 H14 Z" fill="${C.mustard}"/>`);
+    case 'hivetool': return w(`<path d="M6,26 L24,6 L28,10 L10,30 Z" fill="${C.tomato}"/><path d="M24,6 L28,2 L30,4 L28,10 Z" fill="#8FA3B8"/>`);
+    case 'pitchfork': return w(`<path d="M16,30 V14" stroke="${C.brown}" stroke-width="3" stroke-linecap="round"/><path d="M8,14 H24 M8,14 V3 M16,14 V3 M24,14 V3" stroke="#8FA3B8" stroke-width="2.6" stroke-linecap="round" fill="none"/>`);
+    case 'trimmer': return w(`<path d="M6,4 L22,24" stroke="${C.teal}" stroke-width="3" stroke-linecap="round"/><rect x="2" y="3" width="10" height="6" rx="2" fill="${C.orange}"/><circle cx="24" cy="26" r="5" fill="#8FA3B8"/>` + P.blade(10, 31, 7, -2, C.leaf) + P.blade(16, 31, 6, 2, C.leaf));
+    case 'wheelbarrow': return icon('karre');
+    case 'mulch': return w(`<path d="M2,28 C4,18 10,14 16,14 C22,14 28,18 30,28 Z" fill="${C.brown}"/><path d="M6,22 L12,19 M14,25 L21,21 M20,18 L26,22 M9,26 L15,27" stroke="${C.mustard}" stroke-width="2" stroke-linecap="round"/>`);
+    case 'pw': return w(P.leaf(10, 26, 11, -70, C.leaf) + P.leaf(10, 26, 10, -120, C.forest) + `<path d="M16,10 H27 V22 C27,23 26,24 25,24 H18 C17,24 16,23 16,22 Z" fill="${C.teal}"/><path d="M27,13 L31,9" stroke="${C.teal}" stroke-width="2.4" stroke-linecap="round"/><circle cx="7" cy="6" r="1.4" fill="${C.blue}"/><circle cx="11" cy="9" r="1.4" fill="${C.blue}"/>`);
+    case 'cg': return w(`<path d="M1,29 C2,22 7,19 11,19 C15,19 20,22 21,29 Z" fill="${C.brown}"/><circle cx="20" cy="9" r="4" fill="${C.orange}"/><circle cx="27" cy="11" r="3.4" fill="${C.tomato}"/><path d="M14,13 H31 L29,24 H16 Z" fill="#D9A066"/>`);
+    case 'ay': return w(`<ellipse cx="11" cy="9" rx="4" ry="3" fill="#DCEBF6"/><ellipse cx="17" cy="8" rx="4" ry="3" fill="#DCEBF6"/><ellipse cx="14" cy="15" rx="8" ry="6" fill="${C.yellow}"/><path d="M11,10 C9.5,13 9.5,17 11,20 M15.5,9.5 C14,13 14,17 15.5,20.5" stroke="#3B2A1E" stroke-width="2" fill="none"/><circle cx="24" cy="24" r="6" fill="${C.tomato}"/>` + P.leaf(24, 18, 6, -30, C.leaf));
+    case 'shedtime': return icon('schuppen');
+    case 'rain': return icon('regen');
+    case 'shears': return w(`<circle cx="8" cy="24" r="4.5" fill="${C.tomato}"/><circle cx="20" cy="26" r="4.5" fill="${C.tomato}"/><path d="M10,20 L26,4 M18,22 L13,6" stroke="#8FA3B8" stroke-width="3" stroke-linecap="round"/>`);
+    case 'mower': return w(`<rect x="4" y="14" width="18" height="10" rx="3" fill="${C.tomato}"/><path d="M20,15 L30,4" stroke="${C.dark}" stroke-width="2.4" stroke-linecap="round"/><circle cx="8" cy="26" r="3.5" fill="${C.dark}"/><circle cx="19" cy="26" r="3.5" fill="${C.dark}"/>`);
   }
   return '';
 }
@@ -409,264 +553,450 @@ function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<'
 
 // ---------- Spielzustand ----------
 function newSheet() {
-  return { zones: range(6).map(() => ({ c: 0, b: 0, s: 0 })), kompost: 1, waren: 0, bienen: 0, stauden: 0, fruit: [0, 0, 0, 0], tools: [0, 0, 0, 0, 0, 0], sp: 0, harvests: 0 };
+  return {
+    g: ZONES.map(Z => ({ c: new Array(Z.corn).fill(0), b: new Array(Z.beans.length).fill(0), s: new Array(Z.pump.length).fill(0) })),
+    per: Object.fromEntries(FLOWERS.map(f => [f, { n: 0, cap: PER_LEN }])),
+    hive: 0, api: { wax: { n: 0, cap: 3 }, honey: { n: 0, cap: 3 }, split: { n: 0, cap: 4 } },
+    yard: Object.fromEntries(FRUITS.map(f => [f.k, { n: 0, cap: f.len }])),
+    shed: Object.fromEntries(SHED.map(s => [s.k, { n: 0, x: false }])),
+    goods: 0, starX: [], compost: 1, tasks: [],
+  };
 }
-const hasTool = (p, k) => p.tools[TOOLS.findIndex(t => t.k === k)] >= TOOL_LEN;
-function newGame(name, nBots, seed) {
-  S = { v: 1, id: 'ts-' + Date.now().toString(36) + '-' + ((seed >>> 0) % 1679616).toString(36), rng: seed | 0, round: 1, players: [], log: [], final: null, recorded: false, screen: 'game' };
-  const bots = shuffle(BOT_NAMES.slice()).slice(0, nBots);
-  const mk = (nm, bot, look, mark) => Object.assign({ name: nm, bot, look, mark, tasks: [] }, newSheet());
+const shedDone = (p, k) => p.shed[k].n >= SHED_BY(k).len;
+const cropMax = (z, k, i) => k === 'c' ? CORN_H : k === 'b' ? BEAN_H : ZONES[z].pump[i][0];
+const cropName = (k, i, z) => k === 's' ? `Kürbis (${ZONES[z].pump[i][1]} Waren)` : CROP_N[k];
+const isSolo = () => S && S.solo;
+function newGame(name, nBots, seed, solo) {
+  S = { v: 2, id: 'ts-' + Date.now().toString(36) + '-' + ((seed >>> 0) % 1679616).toString(36), rng: seed | 0, round: 1, players: [], log: [], final: null, recorded: false, screen: 'game', pawn: 0, solo: !!solo };
+  const mk = (nm, bot, look, mark) => Object.assign({ name: nm, bot, look, mark }, newSheet());
   if (name !== null) S.players.push(mk(name || 'Du', false, { plant: 'blumen', pants: '#5BA35A', pat: 'stripes', moth: 1 }, MARKS[0]));
-  bots.forEach((b, i) => S.players.push(mk(b[0], true, b[1], MARKS[i + 1])));
-  if (name === null) S.players.push(mk('Herr Mangold', true, { plant: 'blumen', pants: '#2E6B3E' }, MARKS[0]));
-  S.players.forEach((p, i) => { p.waren = i; });
-  log(`Die Gartensaison beginnt: ${S.players.length} Gärtner·innen, ${ROUNDS} Runden.`);
+  if (!solo) {
+    shuffle(BOT_NAMES.slice()).slice(0, nBots).forEach((b, i) => S.players.push(mk(b[0], true, b[1], MARKS[i + 1])));
+    if (name === null) S.players.push(mk('Herr Mangold', true, { plant: 'blumen', pants: '#2E6B3E' }, MARKS[0]));
+  }
+  log(solo ? `Solo gegen ${EDITH.name}: ${ROUNDS} Runden.` : `Die Gartensaison beginnt: ${S.players.length} Gärtner·innen, ${ROUNDS} Runden.`);
   startRound();
 }
+// 1. Planungsphase: würfeln, Gruppen aufsteigend ab Edith im Uhrzeigersinn legen, Edith weiterziehen
 function startRound() {
-  const n = S.players.length;
-  const nd = 2 * n + 1;
-  S.marker = (S.round - 1) % 6;
+  const nd = S.solo ? 4 : DICE_BY_N[S.players.length];
   const vals = range(nd).map(() => 1 + Math.floor(rnd() * 6)).sort((a, b) => a - b);
-  const distinct = [...new Set(vals)];
-  // Würfelgruppen im Uhrzeigersinn ab der Gärtnerin-Figur
-  S.dice = vals.map((v, i) => ({ i, v, space: (S.marker + distinct.indexOf(v)) % 6, by: -1 }));
-  const sp = (S.round - 1) % n;
-  const fwd = range(n).map(i => (sp + i) % n);
-  S.seq = fwd.concat(fwd.slice().reverse());
-  S.idx = 0;
-  S.phase = 'draft';
-  S.event = EVENTS[(S.round - 1) % EVENTS.length];
+  placeDice(vals);
+  const n = S.players.length;
+  if (S.solo) { const f = S.round % 2 === 1 ? 0 : -1, o = f === 0 ? -1 : 0; S.seq = [f, o, f, o]; }
+  else { const fp = (S.round - 1) % n; S.seq = range(n).map(i => (fp + i) % n); }
+  S.idx = 0; S.phase = 'draft'; S.shared = null;
+  S.event = EVENTS[S.round - 1];
   log(`— Runde ${S.round}: ${nd} Würfel (${vals.join(' ')}).`);
 }
-const cur = () => S.players[S.seq[S.idx]];
+function placeDice(vals) {
+  const distinct = [...new Set(vals)];
+  S.dice = vals.map((v, i) => ({ i, v, space: (S.pawn + distinct.indexOf(v)) % RONDEL.length, by: null }));
+  S.pawn = (S.pawn + distinct.length) % RONDEL.length;
+}
+const curIdx = () => S.seq[S.idx];
+const cur = () => curIdx() === -1 ? null : S.players[curIdx()];
 const human = () => S.players.find(p => !p.bot);
+function wrapV(v) { while (v > 6) v -= 6; while (v < 1) v += 6; return v; }
+let SIM = 0;
+function log(m) { if (SIM) return; S.log.unshift(m); if (S.log.length > 80) S.log.length = 80; }
+const front = (p, ...ts) => p.tasks.splice(0, 0, ...ts);
 
-// ---------- Markieren & Belohnungen ----------
-function canPlant(p, z, crop, extra = {}) {
-  const zo = p.zones[z];
-  const n = zo[crop] + (extra[crop] || 0);
-  if (n >= TRACK_LEN[crop]) return false;
-  if (crop === 'b' && !hasTool(p, 'hacke') && zo.c + (extra.c || 0) < 2) return false;
-  return true;
-}
-function mark(p, z, crop) {
-  const zo = p.zones[z];
-  if (zo[crop] >= TRACK_LEN[crop]) return false;
-  zo[crop]++;
-  if (HARVEST[crop].includes(zo[crop])) harvest(p, z, crop);
-  return true;
-}
-function harvest(p, z, crop) {
-  p.harvests++;
-  if (crop === 'c') p.sp += 3;
-  if (crop === 'b') { p.sp += 1; addKompost(p, 1); }
-  if (crop === 's') { addWaren(p, 2); addStaude(p, 1); }
-  if (hasTool(p, 'korb')) addWaren(p, 1);
-}
-function addKompost(p, n) { p.kompost = clamp(p.kompost + n, 0, KOMPOST_MAX); }
-function addWaren(p, n) {
-  for (let i = 0; i < n; i++) {
-    if (p.waren >= WAREN_MAX) return;
-    p.waren++;
-    if (WAREN_BONUS.includes(p.waren)) p.tasks.push({ t: 'plant1', src: 'Waren-Bonus' });
+// ---------- Leisten & Effekte ----------
+function gainGoods(p, n) {
+  for (let i = 0; i < n && p.goods < GOODS_MAX; i++) {
+    p.goods++;
+    const si = STARS.indexOf(p.goods);
+    if (si >= 0 && !p.starX.includes(si)) front(p, { t: 'bonus', src: 'Stern auf der Warenleiste' });
   }
 }
-function addStaude(p, n) { p.stauden = clamp(p.stauden + n, 0, STAUDE_MAX); }
-function addBiene(p, n) {
-  for (let i = 0; i < n; i++) {
-    if (p.bienen >= BEE_MAX) return;
-    p.bienen++;
-    if (BEE_STAUDE.includes(p.bienen)) addStaude(p, 1);
+function gainCompost(p, n) { p.compost = clamp(p.compost + n, 0, COMPOST_MAX); }
+function effect(p, e, src) {
+  switch (e) {
+    case 'yard': case 'yard1': front(p, { t: 'yard', src }); break;
+    case 'yard2': front(p, { t: 'yard', src }, { t: 'yard', src }); break;
+    case 'yard3': front(p, { t: 'yard', src }, { t: 'yard', src }, { t: 'yard', src }); break;
+    case 'plantAny': front(p, { t: 'plantAny', src }); break;
+    case 'pw2': front(p, { t: 'pwAny', src }, { t: 'pwAny', src }); break;
+    case 'compost1': gainCompost(p, 1); break;
+    case 'compost2': gainCompost(p, 2); break;
+    case 'apiary2': front(p, { t: 'apiary', src }, { t: 'apiary', src }); break;
+    case 'goods2': gainGoods(p, 2); break;
+    case 'shed': front(p, { t: 'shed', src }); break;
+    default: if (e && e.startsWith('fruit:')) front(p, { t: 'yard', f: e.slice(6), src });
   }
 }
-function markFruit(p, fi) {
-  if (p.fruit[fi] >= FRUIT_LEN) return false;
-  p.fruit[fi]++;
-  if (p.fruit[fi] === 2) addWaren(p, 1);
-  if (p.fruit[fi] === FRUIT_LEN) p.sp += FRUITS[fi].sp;
-  if (hasTool(p, 'imker')) addBiene(p, 1);
+function perAction(p, f) {
+  const st = p.per[f];
+  if (st.n >= st.cap) return false;
+  const e = PER[f].box[st.n];
+  st.n++;
+  effect(p, e, FLOWER_N[f]);
+  if (f === 'crocus' && shedDone(p, 'hivetool')) front(p, { t: 'apiary', src: 'Stockmeißel' });
+  if (f === 'hydrangea' && shedDone(p, 'pitchfork')) gainCompost(p, 1);
   return true;
 }
-function markTool(p, ti) {
-  if (p.tools[ti] >= TOOL_LEN) return false;
-  p.tools[ti]++;
-  if (p.tools[ti] === TOOL_LEN) p.sp += TOOL_SP;
-  return true;
-}
-function plantMax(p) { return hasTool(p, 'karre') ? 3 : 2; }
-// Pflanzen: plan = {c,b,s}; Mais zuerst, damit Bohnen in derselben Aktion folgen dürfen
-function doPlant(p, z, plan) {
-  let left = plantMax(p), done = 0;
-  for (const crop of CROPS) for (let i = 0; i < (plan[crop] || 0) && left > 0; i++) {
-    if (!canPlant(p, z, crop)) break;
-    mark(p, z, crop); left--; done++;
+function yardAction(p, k) {
+  const st = p.yard[k];
+  if (st.n >= st.cap) return false;
+  st.n++;
+  if (k === 'apple' && shedDone(p, 'piesafe')) gainGoods(p, 1);
+  if (k === 'blackberry' && shedDone(p, 'jars')) gainGoods(p, 1);
+  if (k === 'raspberry') gainGoods(p, 3);
+  if (k === 'peach') {
+    if (p.per.tulip.n >= 2) gainGoods(p, 2);
+    if (shedDone(p, 'piesafe')) gainGoods(p, 1);
+    front(p, { t: 'waterAny', src: 'Pfirsich-Ernte' });
   }
-  return done;
+  return true;
 }
-function doWater(p, z, neighbor = true) {
+function apiaryAction(p, sec) {
+  if (p.hive < HIVE.length) { const e = HIVE[p.hive]; p.hive++; effect(p, e, 'Bienenstock'); return true; }
+  const st = p.api[sec];
+  if (!st || st.n >= st.cap) return false;
+  st.n++;
+  if (sec === 'wax') gainGoods(p, WAX_GOODS[st.n - 1]);
+  if (sec === 'split') effect(p, SPLIT[st.n - 1], 'Ableger');
+  return true;
+}
+function shedAction(p, k) {
+  const st = p.shed[k], it = SHED_BY(k);
+  const wb = shedDone(p, 'wheelbarrow');
+  if (st.x || st.n >= it.len) return false;
+  st.n++;
+  if (wb) gainGoods(p, 1);
+  return true;
+}
+function market(p) {
+  const row = MARKET.find(([g]) => p.goods >= g)[1];
+  const ts = [];
+  for (const a of row) {
+    if (a === 'compost') gainCompost(p, 1);
+    else ts.push({ t: a === 'per' ? 'per' : a, src: 'Bauernmarkt' });
+  }
+  if (shedDone(p, 'labels')) ts.push({ t: 'per', src: 'Schicke Etiketten' });
+  front(p, ...ts);
+}
+// Garten: Pflanzen (unterstes Kästchen von bis zu 2 Pflanzen) und Gießen (alle gepflanzten +1)
+function canPlant(p, z, k, i) {
+  const zo = p.g[z];
+  if (zo[k][i] !== 0) return false;
+  if (k === 'b' && zo.c[ZONES[z].beans[i]] < 2) return false;
+  return true;
+}
+function plantables(p, z) {
+  const out = [];
+  for (const k of ['c', 'b', 's']) p.g[z][k].forEach((h, i) => { if (canPlant(p, z, k, i)) out.push([k, i]); });
+  return out;
+}
+function growCrop(p, z, k, i) {
+  const zo = p.g[z];
+  zo[k][i]++;
+  if (zo[k][i] === cropMax(z, k, i) && k === 's') {
+    gainGoods(p, ZONES[z].pump[i][1]);
+    for (const j of [i - 1, i]) {
+      const a = j, b = j + 1;
+      if (a < 0 || b >= zo.s.length) continue;
+      if (zo.s[a] === cropMax(z, 's', a) && zo.s[b] === cropMax(z, 's', b)) front(p, { t: 'per', f: ZONES[z].between[a], src: 'Kürbis-Paar' });
+    }
+  }
+}
+function doPlant(p, z, list) {
   let n = 0;
-  for (const crop of CROPS) if (p.zones[z][crop] > 0 && p.zones[z][crop] < TRACK_LEN[crop]) { mark(p, z, crop); n++; }
-  if (neighbor && hasTool(p, 'kanne')) {
-    const zs = [z - 1, z + 1].filter(x => x >= 0 && x < 6);
-    p.tasks.unshift({ t: 'waterOne', zones: zs, src: 'Gießkanne' });
-  }
+  for (const [k, i] of list.slice(0, 2)) if (canPlant(p, z, k, i)) { growCrop(p, z, k, i); n++; }
   return n;
 }
+function waterCount(p, z) { let n = 0; for (const k of ['c', 'b', 's']) p.g[z][k].forEach((h, i) => { if (h > 0 && h < cropMax(z, k, i)) n++; }); return n; }
+function doWater(p, z) {
+  let n = 0;
+  for (const k of ['c', 'b', 's']) p.g[z][k].forEach((h, i) => { if (h > 0 && h < cropMax(z, k, i)) { growCrop(p, z, k, i); n++; } });
+  return n;
+}
+function irisFree(p) { return p.per.iris.n >= 2 ? 1 : 0; }
+function adjustCost(p, adj) { return Math.max(0, Math.abs(adj) - irisFree(p)); }
+// Würfel nutzen: Gartenaktion in der Zone + Rondellaktion des Feldes
+function useDie(p, v, space, adj) {
+  if (adjustCost(p, adj) > p.compost) return false;
+  p.compost -= adjustCost(p, adj);
+  const z = wrapV(v + adj) - 1;
+  const kind = RONDEL[space].k;
+  const rt = kind === 'pw' ? { t: 'pw', z, r: 1 } : { t: kind, r: 1, space };
+  front(p, { t: 'garden', z, src: `Würfel ${v}${adj ? ` → ${z + 1}` : ''}` }, rt);
+  return true;
+}
 function endScore(p) {
-  const row = { name: p.name, ernte: p.sp, bienen: BEE_SP[p.bienen], stauden: STAUDE_SP[p.stauden], waren: Math.floor(p.waren / 3) };
-  row.total = row.ernte + row.bienen + row.stauden + row.waren;
+  const row = { name: p.name, garden: 0, per: 0, api: 0, yard: 0, shed: 0 };
+  let beans = 0;
+  p.g.forEach((zo, z) => {
+    zo.c.forEach(h => { if (h === CORN_H) row.garden += 3; });
+    zo.b.forEach(h => { if (h === BEAN_H) { row.garden += 1; beans++; } });
+  });
+  const yardItems = FRUITS.reduce((s, f) => s + p.yard[f.k].n, 0);
+  for (const f of FLOWERS) if (p.per[f].n >= PER_LEN) row.per += PER[f].vp === 'yard' ? yardItems : PER[f].vp;
+  row.api = WAX_VP.slice(0, p.api.wax.n).reduce((a, b) => a + b, 0) + HONEY_VP.slice(0, p.api.honey.n).reduce((a, b) => a + b, 0) + (p.api.split.n >= 1 ? 3 : 0);
+  row.yard = p.yard.apple.n * 3 + p.yard.blackberry.n * 2 + Object.entries(RASP_VP).reduce((s, [k, v]) => s + (p.yard.raspberry.n >= +k ? v : 0), 0);
+  for (const it of SHED) if (shedDone(p, it.k)) {
+    if (it.k === 'bowl') row.shed += [0, 1, 4, 7, 10][FRUITS.filter(f => p.yard[f.k].n > 0).length];
+    else if (it.k === 'dish') row.shed += Math.floor(beans / 2);
+    else row.shed += it.vp;
+  }
+  row.total = row.garden + row.per + row.api + row.yard + row.shed;
   return row;
 }
 
 // ---------- Aufgaben ----------
-// Jede Aktion erzeugt Aufgaben, die nacheinander erledigt werden.
-// zone: Pflanzen oder Gießen in Zone z · plant1: 1 Pflanze in beliebiger Zone
-// waterAny: Gieße eine beliebige Zone · waterOne: Gieße eine der zones
-// fruit: Obstbaum markieren · tool: Werkzeug markieren
+// Jede Aktion wird zur Aufgabe in p.tasks; Folgeaktionen (Ernten, Sterne,
+// Stauden-Boni) schieben sich vorne an und werden sofort erledigt.
 function taskTitle(t) {
   switch (t.t) {
-    case 'zone': return `Zone ${t.z + 1}: pflanzen oder gießen`;
-    case 'plant1': return `${t.src}: 1 Pflanze setzen`;
-    case 'waterAny': return 'Regen: eine Zone gießen';
-    case 'waterOne': return `${t.src}: Nachbarzone gießen`;
-    case 'fruit': return 'Obstbaum markieren';
-    case 'tool': return 'Werkzeug im Schuppen markieren';
+    case 'garden': return `Zone ${t.z + 1}: pflanzen oder gießen`;
+    case 'pw': return `Rondell: Zone ${t.z + 1} pflanzen oder gießen`;
+    case 'plantAny': return `${t.src}: pflanzen, Zone frei`;
+    case 'waterAny': return `${t.src}: gießen, Zone frei`;
+    case 'pwAny': return `${t.src}: pflanzen oder gießen, Zone frei`;
+    case 'per': return t.f ? `${FLOWER_N[t.f]}-Aktion (${t.src})` : `Staudenaktion (${t.src})`;
+    case 'yard': return t.f ? `${FRUITS.find(f => f.k === t.f).one}-Aktion (${t.src})` : `Hofaktion (${t.src})`;
+    case 'apiary': return `Bienenstock-Aktion (${t.src})`;
+    case 'ay': return 'Rondell: Bienenstock oder Hof';
+    case 'shed': return t.r ? 'Rondell: Schuppenzeit' : `Schuppenaktion (${t.src})`;
+    case 'cg': return 'Rondell: 1 Kompost & 4 Waren';
+    case 'market': return t.r ? 'Rondell: Bauernmarkt' : 'Ereignis: Bauernmarkt';
+    case 'bonus': return `Bonusaktion (${t.src})`;
+    case 'rain': return 'Ereignis: Regen';
+    case 'die': return `Gemeinsamer Würfel: ${t.v}`;
   }
+  return '';
 }
-// Alle Optionen einer Aufgabe als {label, apply(p)}
-function taskOptions(p, t) {
+function perOpts(p, only) {
+  return FLOWERS.filter(f => (!only || f === only) && p.per[f].n < p.per[f].cap).map(f => {
+    const e = PER[f].box[p.per[f].n];
+    return { o: 'per:' + f, ic: f, label: `${FLOWER_N[f]} ${p.per[f].n + 1}/${PER_LEN}`, sub: p.per[f].n + 1 === PER_LEN ? `vollendet: ${PER[f].vp === 'yard' ? '1 SP je Hof-Ernte' : PER[f].vp + ' SP'}` : e ? EFFECT_N[e] : 'kein Bonus', apply: q => perAction(q, f) };
+  });
+}
+function yardOpts(p, only) {
+  return FRUITS.filter(f => (!only || f.k === only) && p.yard[f.k].n < p.yard[f.k].cap).map(f => ({ o: 'yard:' + f.k, ic: f.k, label: `${f.n} ${p.yard[f.k].n + 1}/${f.len}`, sub: f.tx, apply: q => yardAction(q, f.k) }));
+}
+function apiaryOpts(p) {
+  if (p.hive < HIVE.length) return [{ o: 'api:hive', ic: 'bienen', label: `Hauptstock ${p.hive + 1}/${HIVE.length}`, sub: HIVE[p.hive] ? EFFECT_N[HIVE[p.hive]] : 'kein Bonus', apply: q => apiaryAction(q, 'hive') }];
+  return ['wax', 'honey', 'split'].filter(s => p.api[s].n < p.api[s].cap).map(s => {
+    const n = p.api[s].n;
+    const sub = s === 'wax' ? `+${WAX_GOODS[n]} Waren, ${WAX_VP[n]} SP` : s === 'honey' ? `${HONEY_VP[n]} SP` : EFFECT_N[SPLIT[n]];
+    return { o: 'api:' + s, ic: s, label: `${API_N[s]} ${n + 1}/${p.api[s].cap}`, sub, apply: q => apiaryAction(q, s) };
+  });
+}
+function shedOpts(p) {
+  return SHED.filter(it => !p.shed[it.k].x && p.shed[it.k].n < it.len).map(it => ({ o: 'shed:' + it.k, ic: it.k, label: `${it.n} ${p.shed[it.k].n + 1}/${it.len}`, sub: it.tx, apply: q => shedAction(q, it.k) }));
+}
+function zoneOpts(p, z, mode) {
   const out = [];
-  if (t.t === 'zone') {
-    out.push({ k: 'water', label: 'Gießen', apply: q => doWater(q, t.z) });
-    const m = plantMax(p);
-    for (let c = 0; c <= m; c++) for (let b = 0; b <= m - c; b++) for (let s = 0; s <= m - c - b; s++) {
-      if (c + b + s === 0) continue;
-      const plan = { c, b, s };
-      const q = clone(p); q.tasks = [];
-      if (doPlant(q, t.z, plan) !== c + b + s) continue;
-      out.push({ k: 'plant', plan, label: 'Pflanzen', apply: r => doPlant(r, t.z, plan) });
+  if (mode !== 'plant') { const n = waterCount(p, z); out.push({ o: 'water:' + z, z, water: 1, label: `Zone ${z + 1} gießen`, sub: `+1 bei ${n} Pflanze${n === 1 ? '' : 'n'}`, apply: q => doWater(q, z) }); }
+  if (mode !== 'water') {
+    const pl = plantables(p, z);
+    for (let a = 0; a < pl.length; a++) {
+      out.push({ o: `plant:${z}:${a}`, z, plant: [pl[a]], apply: q => doPlant(q, z, [pl[a]]) });
+      for (let b = a + 1; b < pl.length; b++) out.push({ o: `plant:${z}:${a}:${b}`, z, plant: [pl[a], pl[b]], apply: q => doPlant(q, z, [pl[a], pl[b]]) });
     }
-  } else if (t.t === 'plant1') {
-    for (let z = 0; z < 6; z++) for (const crop of CROPS) if (canPlant(p, z, crop)) out.push({ z, crop, apply: q => mark(q, z, crop) });
-  } else if (t.t === 'waterAny' || t.t === 'waterOne') {
-    for (const z of (t.zones || range(6))) out.push({ z, apply: q => doWater(q, z, t.t === 'waterAny') });
-  } else if (t.t === 'fruit') {
-    FRUITS.forEach((f, fi) => { if (p.fruit[fi] < FRUIT_LEN) out.push({ fi, apply: q => markFruit(q, fi) }); });
-  } else if (t.t === 'tool') {
-    TOOLS.forEach((f, ti) => { if (p.tools[ti] < TOOL_LEN) out.push({ ti, apply: q => markTool(q, ti) }); });
   }
   return out;
 }
-function resolveTask(p, opt) {
-  const t = p.tasks.shift();
-  if (opt) opt.apply(p);
-  return t;
+// Alle Optionen einer Aufgabe; o ist ein stabiler Schlüssel für die Oberfläche
+function taskOptions(p, t) {
+  let out = [];
+  switch (t.t) {
+    case 'garden': case 'pw': out = zoneOpts(p, t.z, 'both'); break;
+    case 'plantAny': for (let z = 0; z < 6; z++) out.push(...zoneOpts(p, z, 'plant')); break;
+    case 'waterAny': for (let z = 0; z < 6; z++) out.push(...zoneOpts(p, z, 'water')); break;
+    case 'pwAny': for (let z = 0; z < 6; z++) out.push(...zoneOpts(p, z, 'both')); break;
+    case 'per': out = perOpts(p, t.f); break;
+    case 'yard': out = yardOpts(p, t.f); break;
+    case 'apiary': out = apiaryOpts(p); break;
+    case 'ay': out = apiaryOpts(p).concat(yardOpts(p)); break;
+    case 'shed': out = shedOpts(p); break;
+    case 'cg': out = [{ o: 'cg', ic: 'cg', label: '1 Kompost und 4 Waren nehmen', sub: `Waren ${p.goods} → ${Math.min(GOODS_MAX, p.goods + 4)}`, apply: q => { gainCompost(q, 1); gainGoods(q, 4); } }]; break;
+    case 'market': { const row = MARKET.find(([g]) => p.goods >= g); out = [{ o: 'market', ic: 'markt', label: `Markt mit ${p.goods} Waren (Stufe ${row[0]}+)`, sub: row[1].map(a => MARKET_N[a]).join(' + ') + (shedDone(p, 'labels') ? ' + Staude (Etiketten)' : ''), apply: q => market(q) }]; break; }
+    case 'bonus': out = perOpts(p).concat(apiaryOpts(p), yardOpts(p), shedOpts(p)); break;
+    case 'rain': out = [{ o: 'rain', ic: 'regen', label: 'Alle Zonen 1–6 gießen', sub: shedDone(p, 'barrel') ? 'danach Regentonne: 1 Gießaktion' : 'Zone für Zone, von 1 bis 6', apply: q => { for (let z = 0; z < 6; z++) doWater(q, z); if (shedDone(q, 'barrel')) front(q, { t: 'waterAny', src: 'Regentonne' }); } }]; break;
+  }
+  if (t.r && shedDone(p, 'mulch') && FLOWERS.some(f => p.per[f].n < p.per[f].cap)) out.push({ o: 'mulch', ic: 'mulch', label: 'Mulch: stattdessen 1 Staudenaktion', sub: 'Rondellaktion verfällt', apply: q => front(q, { t: 'per', src: 'Mulch' }) });
+  return out;
 }
-function skipTask(p) { p.tasks.shift(); }
+function resolveTask(p, opt) { const t = p.tasks.shift(); if (opt) opt.apply(p); return t; }
 
-// ---------- Bewertung für Bots ----------
+// ---------- Bots ----------
+// Bewertung: aktuelle Punkte plus geschätzter Wert von angefangenen Leisten
 function potential(p) {
-  let v = endScore(p).total;
-  const left = ROUNDS - S.round + (S.phase === 'draft' ? 1 : 0.5);
-  const time = clamp(left / ROUNDS, 0.15, 1);
-  p.zones.forEach(z => {
-    for (const crop of CROPS) {
-      const n = z[crop];
-      const next = HARVEST[crop].find(h => h > n);
-      if (next) v += (crop === 'c' ? 3 : crop === 'b' ? 1.6 : 2.6) * (n / next) * time * 0.9;
-    }
-    if (z.c >= 2 && z.b === 0) v += 0.4 * time;
+  const sc = endScore(p);
+  let v = sc.total;
+  const left = clamp((ROUNDS - S.round + (S.phase === 'draft' ? 1 : 0.5)) / ROUNDS, 0.1, 1);
+  p.g.forEach((zo, z) => {
+    zo.c.forEach((h, i) => { if (h > 0 && h < CORN_H) v += 3 * (0.25 + 0.75 * h / CORN_H) * (0.4 + 0.6 * left) * 0.8; });
+    zo.b.forEach((h, i) => { if (h > 0 && h < BEAN_H) v += 0.7; });
+    zo.s.forEach((h, i) => { const H = cropMax(z, 's', i); if (h > 0 && h < H) v += (ZONES[z].pump[i][1] * 0.6 + 1) * (h / H) * left; });
   });
-  v += p.kompost * 0.5 * time;
-  v += (p.waren % 5) * 0.3 * time;
-  p.fruit.forEach((n, fi) => { if (n < FRUIT_LEN) v += FRUITS[fi].sp * (n / FRUIT_LEN) * 0.6 * time; });
-  p.tools.forEach(n => { if (n < TOOL_LEN) v += (TOOL_SP + 3 * time) * (n / TOOL_LEN) * 0.7; });
-  v += p.tools.filter(n => n >= TOOL_LEN).length * 2.5 * time;
-  v += (BEE_SP[Math.min(BEE_MAX, p.bienen + 1)] - BEE_SP[p.bienen]) * 0.2;
-  return v;
+  v += Math.min(p.compost, 6) * 0.45 * left;
+  v += p.goods * 0.12 + (p.goods >= 20 ? 1 : 0) + (p.goods >= 35 ? 1 : 0);
+  for (const f of FLOWERS) { const st = p.per[f]; if (st.cap === PER_LEN && st.n < PER_LEN) v += (PER[f].vp === 'yard' ? 8 : PER[f].vp) * Math.pow(st.n / PER_LEN, 1.5) * 0.8; }
+  v += p.hive * 0.9;
+  for (const it of SHED) { const st = p.shed[it.k]; if (!st.x && st.n < it.len) v += (it.vp + 2.5 * left) * (st.n / it.len) * 0.8; else if (!st.x) v += 2.2 * left; }
+  return v + p.tasks.reduce((s, t) => s + (t.t === 'bonus' ? 2 : t.t === 'plantAny' || t.t === 'pwAny' ? 1.6 : 1.1), 0);
 }
 function bestOption(p, t) {
   let best = null, bv = -Infinity;
+  SIM++;
   for (const o of taskOptions(p, t)) {
-    const q = clone(p); q.tasks = [];
+    const q = clone(p); q.tasks.shift();
     o.apply(q);
-    // Folgeaufgaben (z.B. Gießkanne) grob mitbewerten
-    let v = potential(q) + q.tasks.length * 0.8;
+    const v = potential(q);
     if (v > bv) { bv = v; best = o; }
   }
+  SIM--;
   return best;
 }
 function botTasks(p) {
   let guard = 0;
-  while (p.tasks.length && guard++ < 40) {
+  while (p.tasks.length && guard++ < 60) {
     const t = p.tasks[0];
-    const o = bestOption(p, t);
-    resolveTask(p, o);
+    if (t.t === 'die') { p.tasks.shift(); const adj = botAdjust(p, t.v, t.space); useDie(p, t.v, t.space, adj); continue; }
+    resolveTask(p, bestOption(p, t));
   }
 }
-
-// ---------- Würfel nehmen ----------
-function availableDice() { return S.dice.filter(d => d.by < 0); }
-function takeDie(p, di, adjust = 0) {
-  const d = S.dice[di];
-  if (!d || d.by >= 0 || Math.abs(adjust) > p.kompost) return false;
-  const pi = S.players.indexOf(p);
-  d.by = pi;
-  p.kompost -= Math.abs(adjust);
-  let v = d.v + adjust;
-  while (v > 6) v -= 6;
-  while (v < 1) v += 6;
-  const space = SPACES[d.space];
-  p.tasks.push({ t: 'zone', z: v - 1, src: 'Würfel' });
-  if (space === 'kompost') addKompost(p, 1);
-  if (space === 'bienen') addBiene(p, 1);
-  if (space === 'markt') addWaren(p, 2);
-  if (space === 'obst') p.tasks.push({ t: 'fruit' });
-  if (space === 'schuppen') p.tasks.push({ t: 'tool' });
-  if (space === 'nochmal') p.tasks.push({ t: 'zone', z: v - 1, src: 'Nochmal' });
-  log(`${p.name} nimmt eine ${d.v}${adjust ? ` (mit Kompost → ${v})` : ''}: Zone ${v}, ${SPACE_N[space]}.`);
-  return true;
-}
-function botPick(p) {
-  let best = null, bv = -Infinity;
-  for (const d of availableDice()) {
-    for (const adj of [0, -1, 1, -2, 2]) {
-      if (Math.abs(adj) > p.kompost) continue;
-      const q = clone(p); q.tasks = [];
-      const save = clone(S.dice); const savedRng = S.rng;
-      takeDie(q, d.i, adj);
-      S.dice = save; S.rng = savedRng; S.log.shift();
-      botTasks(q);
-      const v = potential(q) + (p.kompost - q.kompost) * -0.1;
-      if (v > bv) { bv = v; best = { di: d.i, adj }; }
-    }
+function botAdjust(p, v, space) {
+  let best = 0, bv = -Infinity;
+  for (const adj of [0, -1, 1, -2, 2]) {
+    if (adjustCost(p, adj) > p.compost) continue;
+    SIM++;
+    const q = clone(p); q.tasks = [];
+    useDie(q, v, space, adj); botTasks(q);
+    SIM--;
+    const val = potential(q);
+    if (val > bv + 0.05) { bv = val; best = adj; }
   }
   return best;
 }
-function afterPick() {
-  // nächste Person im Draft – oder gemeinsame Phase
-  S.idx++;
-  if (S.idx >= S.seq.length) startShared();
-}
-function startShared() {
-  S.phase = 'shared';
-  const left = availableDice();
-  S.sharedDie = left.length ? left[0].v : null;
-  for (const p of S.players) {
-    if (S.sharedDie) p.tasks.push({ t: 'zone', z: S.sharedDie - 1, src: 'Gemeinschaftswürfel' });
-    if (S.event === 'regen') p.tasks.push({ t: 'waterAny' });
-    if (S.event === 'schuppen') p.tasks.push({ t: 'tool' });
-    if (S.event === 'markt') addWaren(p, 3);
-    if (hasTool(p, 'kiste')) addKompost(p, 1);
+function availableDice() { return S.dice.filter(d => d.by === null); }
+function lowestDice() { const av = availableDice(); if (!av.length) return []; const m = Math.min(...av.map(d => d.v)); return av.filter(d => d.v === m); }
+// Muss die aktuelle Person den niedrigsten Würfel nehmen? (Solo: zweiter Würfel der Startperson)
+const forcedLowest = () => S.solo && S.idx === 2;
+function pickable() { return forcedLowest() ? lowestDice() : availableDice(); }
+function botPick(p) {
+  let best = null, bv = -Infinity;
+  for (const d of pickable()) {
+    SIM++;
+    const q = clone(p); q.tasks = [];
+    const adj = botAdjust(q, d.v, d.space);
+    useDie(q, d.v, d.space, adj); botTasks(q);
+    SIM--;
+    const v = potential(q);
+    if (v > bv) { bv = v; best = { d, adj }; }
   }
-  log(`Gemeinschaftswürfel ${S.sharedDie || '–'} · ${EVENT_N[S.event]}.`);
+  return best;
+}
+function takeDie(p, di, adj) {
+  const d = S.dice[di];
+  if (!d || d.by !== null || !pickable().includes(d)) return false;
+  if (!useDie(p, d.v, d.space, adj)) return false;
+  d.by = S.players.indexOf(p);
+  const z = wrapV(d.v + adj);
+  log(`${p.name} nimmt eine ${d.v}${adj ? ` (angepasst auf ${z})` : ''}: Zone ${z} und „${RONDEL_N[RONDEL[d.space].k]}“.`);
+  return true;
+}
+function botStep() {
+  const p = cur();
+  const pick = botPick(p);
+  if (pick) { takeDie(p, pick.d.i, pick.adj); botTasks(p); }
+  afterPick();
+}
+
+// ---------- Farmerin Edith (Solo) ----------
+function edithPick() {
+  const av = availableDice();
+  const first = S.seq.indexOf(-1) === S.idx; // ihr erster Würfel dieser Runde
+  if (first) {
+    for (let k = 0; k < RONDEL.length; k++) { const ds = av.filter(d => d.space === k); if (ds.length) return ds[0]; }
+  }
+  return lowestDice()[0];
+}
+function edithCrossCrop(p, z) {
+  const zo = p.g[z], Z = ZONES[z];
+  const pumps = zo.s.map((h, i) => [h, i]).filter(([h]) => h === 0).sort((a, b) => Z.pump[b[1]][0] - Z.pump[a[1]][0]);
+  if (pumps.length) { zo.s[pumps[0][1]] = -1; return `streicht einen Kürbis in Zone ${z + 1}`; }
+  // Mais: bevorzugt einen, an dem noch keine Bohne wächst; sonst den letzten
+  const corn = zo.c.map((h, i) => [h, i]).filter(([h]) => h === 0);
+  if (corn.length) {
+    const free = corn.filter(([, i]) => !zo.b.some((bh, j) => Z.beans[j] === i && bh > 0));
+    const pick = (free.length ? free : corn).slice(-1)[0][1];
+    zo.c[pick] = -1;
+    zo.b.forEach((bh, j) => { if (Z.beans[j] === pick && bh === 0) zo.b[j] = -1; });
+    return `streicht einen Mais in Zone ${z + 1}`;
+  }
+  const beans = zo.b.map((h, i) => [h, i]).filter(([h]) => h === 0);
+  if (beans.length) { zo.b[beans.slice(-1)[0][1]] = -1; return `streicht eine Bohne in Zone ${z + 1}`; }
+  return `findet in Zone ${z + 1} nichts zu streichen`;
+}
+const SHED_A = ['jars', 'piesafe', 'shovel', 'bowl', 'barrel', 'dish'], SHED_B = ['labels', 'hivetool', 'pitchfork', 'trimmer', 'wheelbarrow', 'mulch'];
+function shrink(st, what) { if (st.cap > st.n) { st.cap--; return what; } return null; }
+function edithRondel(p, d) {
+  const sp = RONDEL[d.space], v = d.v;
+  switch (sp.k) {
+    case 'pw': return edithCrossCrop(p, v - 1);
+    case 'shed': {
+      const k = (sp.tool === 'A' ? SHED_A : SHED_B)[v - 1];
+      if (shedDone(p, k) || p.shed[k].x) return `lässt den Schuppen aus (${SHED_BY(k).n})`;
+      p.shed[k].x = true; return `streicht ${SHED_BY(k).n} im Schuppen`;
+    }
+    case 'cg': {
+      const si = STARS.findIndex((s, i) => s > p.goods && !p.starX.includes(i));
+      if (si < 0) return 'findet keinen Stern mehr';
+      p.starX.push(si); return `streicht den Stern bei ${STARS[si]} Waren`;
+    }
+    case 'ay': {
+      if (sp.blue === 'apiary') {
+        const sec = v <= 2 ? 'wax' : v <= 4 ? 'honey' : 'split';
+        return shrink(p.api[sec], `streicht das oberste ${API_N[sec]}-Feld`) || `lässt den Bienenstock aus (${API_N[sec]} ist voll)`;
+      }
+      const k = v <= 2 ? 'apple' : v === 3 ? 'peach' : v <= 5 ? 'blackberry' : 'raspberry';
+      return shrink(p.yard[k], `streicht ${FRUITS.find(f => f.k === k).n.replace(/n$/, '')} ganz rechts`) || 'lässt den Hof aus';
+    }
+    case 'market': {
+      const f = FLOWERS[v - 1];
+      return shrink(p.per[f], `streicht das oberste ${FLOWER_N[f]}-Feld`) || `lässt die ${FLOWER_N[f]} aus`;
+    }
+  }
+  return '';
+}
+function edithStep() {
+  const p = human();
+  const d = edithPick();
+  if (d) {
+    d.by = -1;
+    const a = edithCrossCrop(p, d.v - 1);
+    const b = edithRondel(p, d);
+    log(`${EDITH.name} nimmt eine ${d.v} („${RONDEL_N[RONDEL[d.space].k]}“): ${a}, dann ${b}.`);
+  }
+  afterPick();
+}
+
+// ---------- Ablauf ----------
+function afterPick() {
+  S.idx++;
+  if (S.idx < S.seq.length) return;
+  // 2. Gartenphase, gemeinsamer Teil: alle nutzen den niedrigsten übrigen Würfel
+  S.phase = 'shared';
+  const low = S.solo ? null : lowestDice()[0];
+  S.shared = low ? { v: low.v, space: low.space } : null;
+  for (const p of S.players) {
+    if (low) p.tasks.push({ t: 'die', v: low.v, space: low.space });
+    // 3. Ereignisphase
+    if (S.event === 'rain') p.tasks.push({ t: 'rain' });
+    if (S.event === 'shed') p.tasks.push({ t: 'shed', src: 'Ereignis' });
+    if (S.event === 'market') p.tasks.push({ t: 'market' });
+  }
+  log(low ? `Alle nutzen die ${low.v} („${RONDEL_N[RONDEL[low.space].k]}“). Danach: ${EVENT_N[S.event]}.` : `Ereignis: ${EVENT_N[S.event]}.`);
   for (const p of S.players) if (p.bot) botTasks(p);
   maybeEndRound();
 }
 function maybeEndRound() {
-  if (S.phase !== 'shared') return;
-  if (S.players.some(p => p.tasks.length)) return;
+  if (S.phase !== 'shared' || S.players.some(p => p.tasks.length)) return;
   if (S.round >= ROUNDS) return finish();
   S.round++;
   startRound();
@@ -677,14 +1007,6 @@ function finish() {
   log('Saisonende! Die Ernte wird gezählt.');
   recordPlay();
 }
-function botStep() {
-  const p = cur();
-  botTasks(p);
-  const pick = botPick(p);
-  if (pick) takeDie(p, pick.di, pick.adj);
-  botTasks(p);
-  afterPick();
-}
 
 // ---------- Tracking für Spielregal ----------
 const INBOX_KEY = 'spielregal:inbox:plays';
@@ -694,8 +1016,12 @@ function recordPlay() {
   const me = human();
   if (!me || S.recorded || !S.final) return;
   const best = Math.max(...S.final.map(r => r.total));
+  const tops = S.final.filter(r => r.total === best);
+  const bestG = Math.max(...tops.map(r => r.garden));
+  // Solo gegen Edith gibt es keine Gegenpunkte – dann kein Sieger, nur die Punkte
   const entry = { id: S.id, source: 'drei-schwestern', app: 'Drei Schwestern', bggId: '291845', gameName: 'Three Sisters', date: localDate(), human: me.name,
-    results: S.final.map((r, i) => ({ name: r.name, bot: S.players[i].bot, total: r.total })), winners: S.final.filter(r => r.total === best).map(r => r.name) };
+    results: S.final.map((r, i) => ({ name: r.name, bot: S.players[i].bot, total: r.total })),
+    winners: S.solo ? [] : tops.filter(r => r.garden === bestG).map(r => r.name), ...(S.solo ? { solo: true } : {}) };
   try {
     const inbox = JSON.parse(localStorage.getItem(INBOX_KEY) || '[]');
     if (!inbox.some(e => e.id === entry.id)) inbox.push(entry);
@@ -705,6 +1031,7 @@ function recordPlay() {
 }
 function spielregalProfiles() { try { return (JSON.parse(localStorage.getItem('spielregal:players') || '[]') || []).filter(p => p && p.name).map(p => p.name); } catch (e) { return []; } }
 const KEY = 'drei-schwestern-v1';
+const SAVE_V = 2; // v2: Regeln der Harvest Edition, ältere Stände sind nicht kompatibel
 // Speichern & Verlassen: Der Spielstand wird ohnehin nach jeder Aktion
 // gespeichert; „verlassen“ führt zurück zum Startbildschirm, von dem aus die
 // Partie mit „Fortsetzen“ weiterläuft.
@@ -715,191 +1042,225 @@ function savedLabel(sv) {
   return d.toDateString() === now.toDateString() ? `heute ${hm}` : `${d.getDate()}.${d.getMonth() + 1}. ${hm}`;
 }
 function save() { try { if (S && !S.tut) { S.savedAt = Date.now(); localStorage.setItem(KEY, JSON.stringify(S)); } } catch (e) { } }
-function load() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && s.v === 1 ? s : null; } catch (e) { return null; } }
+function load() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && s.v === SAVE_V ? s : null; } catch (e) { return null; } }
 function clearSave() { try { localStorage.removeItem(KEY); } catch (e) { } }
 
 // ---------- Ansichten ----------
-const isMyPick = () => S && S.phase === 'draft' && !cur().bot && !human().tasks.length;
 const myTasks = () => S && S.screen === 'game' && human() && human().tasks.length > 0;
+const isMyPick = () => S && S.screen === 'game' && S.phase === 'draft' && cur() === human() && !human().tasks.length;
+const othersTurn = () => S && S.phase === 'draft' && cur() !== human();
 let toastTimer = null;
 function toast(m) { U.toast = m; clearTimeout(toastTimer); toastTimer = setTimeout(() => { U.toast = null; render(); }, 2400); }
 function avatar(p) { const i = S.players.indexOf(p); return gHead('pl' + i + p.name, p.look); }
-function cells(n, len, harvest, cls, preview = 0) {
-  return range(len).map(i => `<span class="cell ${harvest.includes(i + 1) ? 'h' : ''} ${i < n ? 'x ' + cls : i < n + preview ? 'n' : ''}"></span>`).join('');
+const edithHead = () => gHead('edith', EDITH.look);
+// Eine Pflanze als Kästchen-Säule, unten beginnend; das oberste ist die Ernte
+function stalk(p, z, k, i, o = {}) {
+  const h = p.g[z][k][i], H = cropMax(z, k, i);
+  const sel = o.sel && o.sel.some(([a, b]) => a === k && b === i);
+  const cells = range(H).map(j => `<span class="cell ${j === H - 1 ? 'h' : ''} ${h === -1 ? 'cut' : j < h ? 'x ' + k : sel && j === 0 ? 'n' : ''}"></span>`).join('');
+  const can = o.pick && canPlant(p, z, k, i);
+  const lab = k === 's' ? `<span class="pg">${ZONES[z].pump[i][1]}</span>` : '';
+  return can ? `<button class="stk ${k} can ${sel ? 'on' : ''}" data-a="pk" data-k="${k}" data-i="${i}" aria-label="${cropName(k, i, z)} pflanzen">${cells}${lab}</button>` : `<span class="stk ${k}">${cells}${lab}</span>`;
 }
-function zoneHtml(p, z, opts = {}) {
-  const zo = p.zones[z];
-  const pv = opts.preview || {};
-  return `<div class="zone grainy ${opts.hl ? 'hl' : ''}"><span class="zn">${zoneNum(z)}</span>
-    ${CROPS.map(c => `<div class="trk"><span class="ti">${icon(c)}</span>${cells(zo[c], TRACK_LEN[c], HARVEST[c], c, pv[c] || 0)}</div>`).join('')}</div>`;
+function zoneHtml(p, z, o = {}) {
+  const Z = ZONES[z];
+  const plants = range(Z.corn).map(ci => `<span class="pair">${stalk(p, z, 'c', ci, o)}${Z.beans.map((c, bi) => c === ci ? stalk(p, z, 'b', bi, o) : '').join('')}</span>`).join('');
+  const pumps = Z.pump.map((pp, i) => stalk(p, z, 's', i, o) + (i < Z.between.length ? `<span class="bt" title="${FLOWER_N[Z.between[i]]}">${icon(Z.between[i])}</span>` : '')).join('');
+  return `<div class="zone grainy ${o.hl ? 'hl' : ''} ${o.big ? 'big' : ''}" data-z="${z}"><span class="zn">${zoneNum(z)}</span><div class="plants">${plants}</div><div class="pumps">${pumps}</div></div>`;
 }
+const boxRow = (n, cap, len, lab = () => '', cls = () => '') => `<div class="boxes">${range(len).map(i => `<span class="box ${i < n ? 'x' : i >= cap ? 'cut' : ''} ${cls(i)}">${lab(i)}</span>`).join('')}</div>`;
 function sheetHtml(p, hlZone = -1) {
   const sc = endScore(p);
-  const boxes = (n, max, special, label) => `<div class="boxes">${range(max).map(i => `<span class="box ${i < n ? 'x' : ''} ${special(i + 1) ? 't' : ''}">${label ? label(i + 1) : ''}</span>`).join('')}</div>`;
+  const market = MARKET.find(([g]) => p.goods >= g);
+  const nextStar = STARS.findIndex((s, i) => s > p.goods && !p.starX.includes(i));
   return `
    <div class="garden">${range(6).map(z => zoneHtml(p, z, { hl: z === hlZone })).join('')}</div>
-   <p class="note" style="margin-top:8px">Gestrichelte Kreise sind Ernten: Mais +3 SP · Bohnen +1 SP und +1 Kompost · Kürbis +2 Waren und +1 Staude. Bohnen brauchen 2 Mais in derselben Zone.</p>
+   <p class="note" style="margin-top:8px">Mais (4 hoch) 3 SP · Bohne (2 hoch) 1 SP, erst pflanzbar, wenn ihr Mais 2 hoch ist · Kürbis bringt bei Ernte Waren; zwei geerntete Nachbar-Kürbisse lösen die Staude dazwischen aus.</p>
    <div class="res" style="margin-top:10px">
-    <div class="rrow"><div class="rh">${icon('kompost')}Kompost<span class="v">${p.kompost}/${KOMPOST_MAX}</span></div>${boxes(p.kompost, KOMPOST_MAX, () => false)}<div style="font-size:11.5px;margin-top:3px">1 Kompost = Würfelwert ±1</div></div>
-    <div class="rrow"><div class="rh">${icon('waren')}Waren<span class="v">${p.waren} · ${sc.waren} SP</span></div>${boxes(p.waren, WAREN_MAX, i => WAREN_BONUS.includes(i), i => WAREN_BONUS.includes(i) ? '+🌱' : '')}<div style="font-size:11.5px;margin-top:3px">Bei 5/10/15/20: eine Gratis-Pflanze · je 3 Waren = 1 SP</div></div>
-    <div class="rrow"><div class="rh">${icon('bienen')}Bienen<span class="v">${sc.bienen} SP</span></div>${boxes(p.bienen, BEE_MAX, i => BEE_STAUDE.includes(i), i => BEE_SP[i])}</div>
-    <div class="rrow"><div class="rh">${icon('staude')}Stauden<span class="v">${sc.stauden} SP</span></div>${boxes(p.stauden, STAUDE_MAX, () => false, i => STAUDE_SP[i])}</div>
+    <div class="rrow"><div class="rh">${icon('kompost')}Kompost<span class="v">${p.compost}</span></div><div style="font-size:11.5px;margin-top:3px">Beim Pflanzen/Gießen: je Kompost Würfelwert ±1 (6 und 1 sind Nachbarn)${irisFree(p) ? ' · Iris: ±1 gratis' : ''}.${shedDone(p, 'shovel') ? ' Spaten: 3 Kompost = 1 Bonusaktion.' : ''}</div>${shedDone(p, 'shovel') && p.compost >= 3 && p === human() && S.screen === 'game' ? '<button class="chip on" style="margin-top:6px" data-a="shovel">Spaten nutzen (−3 Kompost)</button>' : ''}</div>
+    <div class="rrow goods"><div class="rh">${icon('waren')}Waren<span class="v">${p.goods}</span></div>
+      <div class="gbar"><span style="width:${(p.goods / GOODS_MAX * 100).toFixed(1)}%"></span>${STARS.map((s, i) => `<i class="${p.starX.includes(i) ? 'cut' : s <= p.goods ? 'got' : ''}" style="left:${(s / GOODS_MAX * 100).toFixed(1)}%">★</i>`).join('')}</div>
+      <div style="font-size:11.5px;margin-top:3px">Sterne = Bonusaktion${nextStar >= 0 ? ` (nächster bei ${STARS[nextStar]})` : ''} · Markt jetzt: ${market[1].map(a => MARKET_N[a]).join(' + ')}</div></div>
    </div>
-   <p class="label" style="margin-top:14px">Obstgarten</p>
-   <div class="fruits">${FRUITS.map((f, fi) => `<div class="rrow"><div class="rh">${icon(f.k)}${f.n}<span class="v">${p.fruit[fi] >= FRUIT_LEN ? '✓ ' : ''}${f.sp} SP</span></div>${boxes(p.fruit[fi], FRUIT_LEN, i => i === 2 || i === FRUIT_LEN, i => i === 2 ? '+W' : i === FRUIT_LEN ? f.sp : '')}</div>`).join('')}</div>
-   <p class="label" style="margin-top:14px">Schuppen</p>
-   <div class="tools">${TOOLS.map((t, ti) => `<div class="rrow tool ${p.tools[ti] >= TOOL_LEN ? 'done' : ''}"><div class="rh">${icon(t.k)}${t.n}</div>${boxes(p.tools[ti], TOOL_LEN, i => i === TOOL_LEN, i => i === TOOL_LEN ? '+2' : '')}<div class="tx">${esc(t.tx)}</div></div>`).join('')}</div>`;
+   <p class="label" style="margin-top:14px">Stauden <span class="lv">${sc.per} SP</span></p>
+   <div class="pers">${FLOWERS.map(f => { const st = p.per[f]; return `<div class="per"><span class="pi">${icon(f)}</span><b>${FLOWER_N[f]}</b>${boxRow(st.n, st.cap, PER_LEN, i => i === PER_LEN - 1 ? (PER[f].vp === 'yard' ? 'H' : PER[f].vp) : EFFECT_S[PER[f].box[i]] || '', i => i === PER_LEN - 1 ? 'vp' : PER[f].box[i] ? 't' : '')}</div>`; }).join('')}</div>
+   <p class="label" style="margin-top:14px">Bienenstock <span class="lv">${sc.api} SP</span></p>
+   <div class="rrow"><div class="rh">${icon('bienen')}Hauptstock</div>${boxRow(p.hive, HIVE.length, HIVE.length, i => EFFECT_S[HIVE[i]] || '', i => HIVE[i] ? 't' : '')}
+     <div class="apis">${['wax', 'honey', 'split'].map(s => `<div><div class="rh">${icon(s)}${API_N[s]}</div>${boxRow(p.api[s].n, p.api[s].cap, s === 'split' ? 4 : 3, i => s === 'wax' ? `${WAX_GOODS[i]}W` : s === 'honey' ? HONEY_VP[i] : EFFECT_S[SPLIT[i]], () => 't')}</div>`).join('')}</div>
+     <div style="font-size:11.5px;margin-top:4px">Erst den Hauptstock füllen, dann Wachs (Waren, 2/2/5 SP), Honig (5/5/8 SP) oder Ableger (3 SP + Aktionen).</div></div>
+   <p class="label" style="margin-top:14px">Hof <span class="lv">${sc.yard} SP</span></p>
+   <div class="fruits">${FRUITS.map(f => `<div class="rrow"><div class="rh">${icon(f.k)}${f.n}</div>${boxRow(p.yard[f.k].n, p.yard[f.k].cap, f.len, i => f.k === 'raspberry' && RASP_VP[i + 1] ? RASP_VP[i + 1] : '', i => f.k === 'raspberry' && RASP_VP[i + 1] ? 't' : '')}<div class="tx">${f.tx}</div></div>`).join('')}</div>
+   <p class="label" style="margin-top:14px">Schuppen <span class="lv">${sc.shed} SP</span></p>
+   <div class="tools">${SHED.map(it => { const st = p.shed[it.k]; return `<div class="rrow tool ${shedDone(p, it.k) ? 'done' : ''} ${st.x ? 'gone' : ''}"><div class="rh">${icon(it.k)}${it.n}</div>${boxRow(st.n, st.x ? st.n : it.len, it.len, i => i === it.len - 1 && it.vp ? it.vp : '', i => i === it.len - 1 ? 't' : '')}<div class="tx">${esc(it.tx)}${it.vp ? ` ${it.vp} SP.` : ''}</div></div>`; }).join('')}</div>`;
 }
 function viewStart() {
   const saved = load(); const st = U.setup; const prof = spielregalProfiles();
   return `<div class="wrap start">
     <div class="hero">${heroSvg()}</div>
     <h1 class="hand">Drei Schwestern</h1>
-    <p class="sub">Mais, Bohnen &amp; Kürbis: ein Würfel-Gartenspiel nach dem Prinzip von <i>Three Sisters</i>.</p>
+    <p class="sub">Mais, Bohnen &amp; Kürbis: das Roll &amp; Write nach den Regeln von <i>Three Sisters</i> (Harvest Edition).</p>
     ${saved && saved.screen === 'game' ? `<button class="btn blue wide" data-a="resume">Partie fortsetzen · Runde ${saved.round}/${ROUNDS}</button><p style="margin:6px 0 0;font-size:12.5px;opacity:.75">${saved.savedAt ? `Gespeichert ${savedLabel(saved)} · ` : ''}<button class="link" data-a="discard" style="font-size:12.5px">verwerfen</button></p>` : ''}
     <div class="panel">
       <p class="label">Dein Name</p>
       <input class="input" id="nm" maxlength="30" placeholder="z. B. Gärtnerin Mi" value="${esc(st.name)}">
       ${prof.length ? `<div class="chips" style="margin-top:8px">${prof.slice(0, 8).map(n => `<button class="chip ${st.name === n ? 'on' : ''}" data-a="pickname" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div><p class="note">Wähle dein Spielregal-Profil, dann landet die Partie mit deinen Punkten in deiner Partien-Liste.</p>` : ''}
-      <p class="label" style="margin-top:14px">Gegner (Bots)</p>
-      <div class="chips">${[1, 2, 3].map(n => `<button class="chip ${st.bots === n ? 'on' : ''}" data-a="bots" data-n="${n}">${n} Bot${n > 1 ? 's' : ''}</button>`).join('')}</div>
-      <p class="note">${ROUNDS} Runden · ${2 * (st.bots + 1) + 1} Würfel pro Runde · jede Person nimmt 2 Würfel pro Runde (hin und zurück).</p>
+      <p class="label" style="margin-top:14px">Gegner</p>
+      <div class="chips"><button class="chip ${st.bots === 0 ? 'on' : ''}" data-a="bots" data-n="0">Solo gegen Edith</button>${[1, 2, 3].map(n => `<button class="chip ${st.bots === n ? 'on' : ''}" data-a="bots" data-n="${n}">${n} Bot${n > 1 ? 's' : ''}</button>`).join('')}</div>
+      <p class="note">${st.bots === 0 ? 'Solomodus des Originals: Du und Farmerin Edith nehmt abwechselnd je 2 Würfel. Edith streicht dabei Felder auf deinem Bogen.' : `${ROUNDS} Runden · ${DICE_BY_N[st.bots + 1]} Würfel · jede Person wählt einen Würfel, den niedrigsten übrigen nutzen alle.`}</p>
     </div>
     <button class="btn wide" data-a="start">Garten anlegen</button>
     <button class="btn white wide" data-a="tutorial" style="margin-top:12px">Lernspiel: Regeln spielend lernen</button>
     <p style="margin-top:14px"><button class="link" data-a="rules">Spielregeln lesen</button></p>
   </div>`;
 }
+function dieFill(d) { return d.by === null ? '#FFFBF0' : d.by === -1 ? EDITH.mark : S.players[d.by].mark; }
 function viewGame() {
   const me = human(); const p = cur();
   let banner;
   if (myTasks()) {
     banner = `<div class="banner mine"><span class="face">${avatar(me)}</span><div style="flex:1"><b>${esc(taskTitle(me.tasks[0]))}</b><span class="small">${me.tasks.length > 1 ? `danach noch ${me.tasks.length - 1} Aktion${me.tasks.length > 2 ? 'en' : ''}` : 'letzte Aktion'}</span></div><button class="btn green" data-a="task">Los</button></div>`;
   } else if (isMyPick()) {
-    banner = `<div class="banner mine"><span class="face">${avatar(me)}</span><div><b>Du bist dran: nimm einen Würfel</b><span class="small">Die Augenzahl wählt die Gartenzone, das Marktfeld bringt einen Bonus.</span></div></div>`;
-  } else if (S.phase === 'draft') {
-    banner = `<div class="banner"><span class="face">${avatar(p)}</span><div><b>${esc(p.name)} wählt …</b><span class="small">${esc(S.log[0] || '')}</span></div></div>`;
+    banner = `<div class="banner mine"><span class="face">${avatar(me)}</span><div><b>Du bist dran: nimm einen Würfel</b><span class="small">${forcedLowest() ? 'Als Startspielerin musst du jetzt den niedrigsten übrigen Würfel nehmen.' : 'Augenzahl = Gartenzone, Feld = Rondellaktion.'}</span></div></div>`;
+  } else if (othersTurn()) {
+    banner = `<div class="banner"><span class="face">${p ? avatar(p) : edithHead()}</span><div><b>${esc(p ? p.name : EDITH.name)} wählt …</b><span class="small">${esc(S.log[0] || '')}</span></div></div>`;
   } else {
     banner = `<div class="banner"><div><b>Rundenende</b><span class="small">${esc(S.log[0] || '')}</span></div></div>`;
   }
-  const rondel = range(6).map(si => {
-    const ds = S.dice.filter(d => d.space === si);
-    const live = isMyPick();
-    return `<div class="space grainy ${si === S.marker ? 'edith' : ''}" style="background:${SPACE_BG[SPACES[si]]}">${si === S.marker ? `<span class="edm">${gardener('edith', { plant: 'sonne', pants: '#2E6B3E', pat: 'stripes', pose: 1 })}</span>` : ''}<div class="sic">${icon(SPACES[si])}</div><div class="sn">${SPACE_N[SPACES[si]]}</div>
-      <div class="dice">${ds.map(d => `<button class="die ${d.by >= 0 ? 'taken' : live ? 'live' : ''}" data-a="die" data-i="${d.i}" ${d.by < 0 && live ? '' : 'disabled'} aria-label="Würfel ${d.v}">${dieSvg(d.v, d.by >= 0 ? S.players[d.by].mark : '#FFFBF0')}</button>`).join('') || '<span style="font-size:11px;color:#6d655a">–</span>'}</div></div>`;
-  }).join('');
-  const order = S.seq.map((pi, k) => `<span class="${k === S.idx && S.phase === 'draft' ? 'now' : k < S.idx || S.phase !== 'draft' ? 'done' : ''}">${esc(S.players[pi].name.split(' ').slice(-1)[0])}</span>`).join('');
+  const live = isMyPick(), ok = live ? pickable() : [];
+  const space = si => {
+    const ds = S.dice.filter(d => d.space === si), R = RONDEL[si];
+    return `<div class="space grainy ${si === S.pawn ? 'edith' : ''}" style="background:${RONDEL_BG[R.k]}">${si === S.pawn ? `<span class="edm">${gardener('edith', EDITH.look)}</span>` : ''}${R.pin ? '<span class="pin" title="goldene Nadel">📌</span>' : ''}<div class="sic">${icon(R.k === 'shed' ? (R.tool === 'A' ? 'shears' : 'mower') : R.k === 'market' ? 'markt' : R.k)}</div><div class="sn">${RONDEL_N[R.k]}</div>
+      <div class="dice">${ds.map(d => `<button class="die ${d.by !== null ? 'taken' : live && ok.includes(d) ? 'live' : ''}" data-a="die" data-i="${d.i}" ${live && ok.includes(d) ? '' : 'disabled'} aria-label="Würfel ${d.v}">${dieSvg(d.v, dieFill(d))}</button>`).join('') || '<span style="font-size:11px;color:#7A6D61">–</span>'}</div></div>`;
+  };
+  const who = i => i === -1 ? 'Edith' : esc(S.players[i].name.split(' ').slice(-1)[0]);
+  const order = S.seq.map((pi, k) => `<span class="${k === S.idx && S.phase === 'draft' ? 'now' : k < S.idx || S.phase !== 'draft' ? 'done' : ''}">${who(pi)}</span>`).join('') + (S.solo ? '' : `<span class="${S.phase === 'shared' ? 'now' : ''}">alle: niedrigster Würfel</span>`);
+  const chips = S.players.map((pl, i) => `<button class="pchip ${S.phase === 'draft' && cur() === pl ? 'cur' : ''}" data-a="opp" data-p="${i}"><span class="av" style="background:${pl.mark}">${avatar(pl)}</span><span><span class="nm">${esc(pl.name)}</span><span class="st">★${endScore(pl).total}</span></span></button>`).join('')
+    + (S.solo ? `<span class="pchip ${othersTurn() ? 'cur' : ''}"><span class="av" style="background:${EDITH.mark}">${edithHead()}</span><span><span class="nm">Edith</span><span class="st">streicht</span></span></span>` : '');
   return `
   <div class="top"><div class="row">
-    <div class="round hand">Runde ${S.round}/${ROUNDS}<small>${S.phase === 'draft' ? `Zug ${S.idx + 1}/${S.seq.length}` : 'Rundenende'}</small></div>
-    <div class="players">${S.players.map((pl, i) => `<button class="pchip ${S.phase === 'draft' && cur() === pl ? 'cur' : ''}" data-a="opp" data-p="${i}"><span class="av" style="background:${pl.mark}">${avatar(pl)}</span><span><span class="nm">${esc(pl.name)}</span><span class="st">★${endScore(pl).total}</span></span></button>`).join('')}</div>
+    <div class="round hand">Runde ${S.round}/${ROUNDS}<small>${S.phase === 'draft' ? `Wahl ${S.idx + 1}/${S.seq.length}` : 'Rundenende'}</small></div>
+    <div class="players">${chips}</div>
     ${U.tut ? '' : `<button class="icobtn" data-a="leave" aria-label="Speichern und verlassen" title="Speichern &amp; verlassen"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><rect x="4" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/><rect x="11.8" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/></svg></button>`}
     <button class="icobtn" data-a="menu" aria-label="Menü">?</button>
   </div></div>
   <div class="wrap">
     ${banner}
-    <section class="sec"><div class="sech"><h2 class="hand">Gartenmarkt</h2><span class="hint">Würfel liegen nach Augenzahl im Kreis, Start bei der Gärtnerin</span></div>
-      <div class="rondel">${rondel}</div>
+    <section class="sec"><div class="sech"><h2 class="hand">Aktionsrondell</h2><span class="hint">Würfelgruppen aufsteigend ab Edith im Uhrzeigersinn</span></div>
+      <div class="rondel">${RING.map(space).join('')}</div>
       <div class="order">Reihenfolge: ${order}</div>
-      <div class="evt"><div>${S.phase === 'shared' && S.sharedDie ? dieSvg(S.sharedDie, '#DDEBC4') : icon('nochmal').replace('2×', '?')}<span><b>Gemeinschaftswürfel</b><br>Der übrige Würfel gilt am Rundenende für alle.</span></div><div>${icon(S.event === 'regen' ? 'regen' : S.event)}<span><b>Rundenende</b><br>${EVENT_N[S.event]}</span></div></div>
+      <div class="evt"><div>${icon(S.event === 'rain' ? 'regen' : S.event === 'shed' ? 'schuppen' : 'markt')}<span><b>Ereignis Runde ${S.round}</b><br>${EVENT_N[S.event]}</span></div><div class="track">${EVENTS.map((e, i) => `<span class="${i + 1 === S.round ? 'now' : i + 1 < S.round ? 'done' : ''}" title="${EVENT_N[e]}">${icon(e === 'rain' ? 'regen' : e === 'shed' ? 'schuppen' : 'markt')}</span>`).join('')}</div></div>
     </section>
     <section class="sec"><div class="sech"><h2 class="hand">Dein Garten</h2><span class="hint">★ ${endScore(me).total} Punkte</span></div>${sheetHtml(me)}</section>
     <section class="sec"><div class="sech"><h2 class="hand">Chronik</h2><button class="link" data-a="logtoggle" style="font-size:12px">${U.logOpen ? 'weniger' : 'alles'}</button></div>
       <div class="log">${S.log.slice(0, U.logOpen ? 80 : 6).map(l => `<div>${esc(l)}</div>`).join('')}</div></section>
   </div>
-  <div class="bar"><div class="in">${myTasks() ? `<div class="msg">${esc(taskTitle(me.tasks[0]))}</div><button class="btn green" data-a="task">Ausführen</button>` : isMyPick() ? `<div class="msg">Tippe einen Würfel im Gartenmarkt an.</div>` : `<div class="msg"><b>${esc(S.phase === 'draft' ? p.name : 'Alle')}</b> ${S.phase === 'draft' ? 'wählt …' : 'sind fertig.'}</div><button class="btn white" data-a="fast">${U.fast ? 'Normal' : 'Schneller'}</button>`}</div></div>`;
+  <div class="bar"><div class="in">${myTasks() ? `<div class="msg">${esc(taskTitle(me.tasks[0]))}</div><button class="btn green" data-a="task">Ausführen</button>` : isMyPick() ? `<div class="msg">Tippe einen leuchtenden Würfel im Rondell an.</div>` : `<div class="msg"><b>${esc(othersTurn() ? (p ? p.name : EDITH.name) : 'Alle')}</b> ${othersTurn() ? 'wählt …' : 'sind fertig.'}</div><button class="btn white" data-a="fast">${U.fast ? 'Normal' : 'Schneller'}</button>`}</div></div>`;
 }
 function viewEnd() {
-  const rows = S.final.map((r, i) => Object.assign({ i }, r)).sort((a, b) => b.total - a.total);
+  const rows = S.final.map((r, i) => Object.assign({ i }, r)).sort((a, b) => b.total - a.total || b.garden - a.garden);
   const pod = rows.slice(0, 3); const ord = pod.length === 3 ? [pod[1], pod[0], pod[2]] : pod.length === 2 ? [pod[1], pod[0]] : pod;
   const me = human(); const win = rows[0];
+  const title = S.solo ? `${endScore(me).total} Punkte` : !S.players[win.i].bot ? 'Du gewinnst!' : esc(win.name) + ' gewinnt!';
+  const sub = S.solo ? SOLO_CHART.find(([g]) => endScore(me).total >= g)[1] : 'Was für eine Ernte.';
+  const line = (lab, k) => `<tr><td>${lab}</td>${rows.map(r => `<td>${r[k]}</td>`).join('')}</tr>`;
   return `<div class="wrap" style="padding-top:18px;text-align:center">
-    <h1 class="hand" style="font-size:44px;margin:0">${!S.players[win.i].bot ? 'Du gewinnst!' : esc(win.name) + ' gewinnt!'}</h1>
-    <p class="sub">Was für eine Ernte.</p>
+    <h1 class="hand" style="font-size:44px;margin:0">${title}</h1>
+    <p class="sub">${esc(sub)}</p>
     <div class="podium">${ord.map(r => `<div class="pp"><div class="ill">${gardener('pl' + r.i + r.name, S.players[r.i].look)}</div><div class="pl grainy" style="height:${r === rows[0] ? 70 : r === rows[1] ? 48 : 32}px;background:${S.players[r.i].mark}">${rows.indexOf(r) + 1}</div></div>`).join('')}</div>
     <div class="panel"><table class="score"><tr><th></th>${rows.map(r => `<th>${esc(r.name)}</th>`).join('')}</tr>
-      <tr><td>Ernte, Obst, Schuppen</td>${rows.map(r => `<td>${r.ernte}</td>`).join('')}</tr>
-      <tr><td>Bienen</td>${rows.map(r => `<td>${r.bienen}</td>`).join('')}</tr>
-      <tr><td>Stauden</td>${rows.map(r => `<td>${r.stauden}</td>`).join('')}</tr>
-      <tr><td>Waren (je 3 = 1)</td>${rows.map(r => `<td>${r.waren}</td>`).join('')}</tr>
-      <tr class="tot"><td>Gesamt</td>${rows.map(r => `<td>${r.total}</td>`).join('')}</tr></table></div>
+      ${line('Garten', 'garden')}${line('Stauden', 'per')}${line('Bienenstock', 'api')}${line('Hof', 'yard')}${line('Schuppen', 'shed')}
+      <tr class="tot"><td>Gesamt</td>${rows.map(r => `<td>${r.total}</td>`).join('')}</tr></table>${S.solo ? `<p class="note">Wertungstabelle des Solomodus: ${SOLO_CHART.slice().reverse().map(([g]) => g).join(' · ')}+</p>` : ''}</div>
     ${S.recorded ? `<p class="note" style="text-align:left">✓ Als digitale Partie für <b>Three Sisters</b> vorgemerkt. Sie erscheint in Spielregal, sobald du die App öffnest.</p><p><a class="btn white wide" href="../">Zum Spielregal</a></p>` : ''}
     <button class="btn wide" data-a="newgame">Neue Partie</button>
     <p><button class="link" data-a="opp" data-p="${S.players.indexOf(me)}">Meinen Garten ansehen</button></p>
   </div>`;
 }
 function sheetWrap(inner) { return `<div class="ov" data-a="ovclose"><div class="sheet" data-stop="1"><div class="grab"></div><button class="icobtn x" data-a="close" aria-label="Schließen">✕</button>${inner}</div></div>`; }
+const GARDEN_T = ['garden', 'pw', 'plantAny', 'waterAny', 'pwAny'];
+function adjustUi(me, v, adj, act) {
+  const z = wrapV(v + adj);
+  const cost = adjustCost(me, adj), can = d => adjustCost(me, adj + d) <= me.compost && Math.abs(adj + d) <= 5;
+  return `<div class="stepper"><span class="lbl">${icon('kompost')}Zone ändern</span><span style="display:flex;gap:8px;align-items:center"><button data-a="${act}" data-d="-1" ${can(-1) ? '' : 'disabled'}>−</button><span class="num">${adj > 0 ? '+' + adj : adj}</span><button data-a="${act}" data-d="1" ${can(1) ? '' : 'disabled'}>+</button></span></div>
+    <p class="note">Würfel ${v}${adj ? ` → Zone <b>${z}</b> · kostet ${cost} Kompost${irisFree(me) ? ' (Iris: 1 Schritt gratis)' : ''}` : ''} · du hast ${me.compost} Kompost.</p>`;
+}
 function taskSheet() {
   const me = human(); const t = me.tasks[0];
   if (!t) return '';
   let h = `<h3>${esc(taskTitle(t))}</h3>`;
-  const opts = taskOptions(me, t);
-  if (t.t === 'zone') {
-    const plan = U.plan || { c: 0, b: 0, s: 0 };
-    const total = plan.c + plan.b + plan.s, m = plantMax(me);
-    h += `<p style="font-size:13px">Pflanzen: bis zu ${m} Markierungen in Zone ${t.z + 1} verteilen. Gießen: +1 in jeder angefangenen Reihe dieser Zone.</p>
-      ${zoneHtml(me, t.z, { preview: plan })}
-      ${CROPS.map(c => { const ok = total < m && canPlant(me, t.z, c, plan); return `<div class="stepper"><span class="lbl">${icon(c)}${CROP_N[c]}</span><span style="display:flex;gap:8px;align-items:center"><button data-a="pminus" data-c="${c}" ${plan[c] ? '' : 'disabled'}>−</button><span class="num">${plan[c]}</span><button data-a="pplus" data-c="${c}" ${ok ? '' : 'disabled'}>+</button></span></div>`; }).join('')}
-      ${!hasTool(me, 'hacke') && me.zones[t.z].c + plan.c < 2 ? '<p class="note">Bohnen erst ab 2 Mais in dieser Zone.</p>' : ''}
-      <div class="btnrow"><button class="btn white" data-a="water">Gießen${(() => { const n = CROPS.filter(c => me.zones[t.z][c] > 0 && me.zones[t.z][c] < TRACK_LEN[c]).length; return ` (+${n})`; })()}</button><button class="btn green" data-a="plant" ${total ? '' : 'disabled'}>Pflanzen (${total})</button></div>`;
-  } else if (t.t === 'plant1') {
-    const sel = U.pick1;
-    h += `<p style="font-size:13px">Wähle Zone und Pflanze für eine Markierung.</p><div class="garden">${range(6).map(z => `<div><div style="display:flex;gap:4px;justify-content:center;margin-bottom:4px">${CROPS.map(c => `<button class="chip ${sel && sel.z === z && sel.c === c ? 'on' : ''}" style="padding:2px 8px" data-a="p1" data-z="${z}" data-c="${c}" ${canPlant(me, z, c) ? '' : 'disabled'}>${CROP_N[c].slice(0, 4)}</button>`).join('')}</div>${zoneHtml(me, z, { preview: sel && sel.z === z ? { [sel.c]: 1 } : {} })}</div>`).join('')}</div>
-      <div class="btnrow"><button class="btn green" data-a="p1ok" ${sel ? '' : 'disabled'}>Setzen</button></div>`;
-  } else if (t.t === 'waterAny' || t.t === 'waterOne') {
-    h += `<p style="font-size:13px">Tippe die Zone, die gegossen werden soll.</p><div class="opts">${opts.map(o => { const n = CROPS.filter(c => me.zones[o.z][c] > 0 && me.zones[o.z][c] < TRACK_LEN[c]).length; return `<button class="opt" data-a="wz" data-z="${o.z}">${zoneNum(o.z).replace('class="ill"', '')}<span><b>Zone ${o.z + 1}</b><small>+${n} Markierung${n === 1 ? '' : 'en'}</small></span></button>`; }).join('')}</div>`;
-  } else if (t.t === 'fruit') {
-    h += `<div class="opts">${FRUITS.map((f, fi) => `<button class="opt" data-a="fr" data-i="${fi}" ${me.fruit[fi] < FRUIT_LEN ? '' : 'disabled'}>${icon(f.k)}<span><b>${f.n} (${me.fruit[fi]}/${FRUIT_LEN})</b><small>Vollständig: ${f.sp} SP · bei 2: +1 Ware</small></span></button>`).join('')}</div>`;
-  } else if (t.t === 'tool') {
-    h += `<div class="opts">${TOOLS.map((tl, ti) => `<button class="opt" data-a="tl" data-i="${ti}" ${me.tools[ti] < TOOL_LEN ? '' : 'disabled'}>${icon(tl.k)}<span><b>${tl.n} (${me.tools[ti]}/${TOOL_LEN})</b><small>${esc(tl.tx)}</small></span></button>`).join('')}</div>`;
+  if (t.t === 'die') {
+    const adj = U.adj || 0, z = wrapV(t.v + adj) - 1;
+    h += `<p style="font-size:13px">Der niedrigste übrige Würfel gilt für alle: Gartenaktion in Zone <b>${z + 1}</b> und „<b>${RONDEL_N[RONDEL[t.space].k]}</b>“.</p>${adjustUi(me, t.v, adj, 'adj')}${zoneHtml(me, z)}
+      <div class="btnrow"><button class="btn green" data-a="takedie">Nutzen${adjustCost(me, adj) ? ` (−${adjustCost(me, adj)} Kompost)` : ''}</button></div>`;
+    return sheetWrap(h);
   }
-  if (!opts.length || t.t !== 'zone') h += `<button class="skip" data-a="tskip">${opts.length ? 'Aktion verfallen lassen' : 'Nichts möglich – weiter'}</button>`;
-  else h += `<button class="skip" data-a="tskip">Aktion verfallen lassen</button>`;
+  const opts = taskOptions(me, t);
+  if (GARDEN_T.includes(t.t)) {
+    const fixed = t.t === 'garden' || t.t === 'pw';
+    const z = fixed ? t.z : U.zone;
+    const mode = t.t === 'plantAny' ? 'plant' : t.t === 'waterAny' ? 'water' : 'both';
+    if (z == null) {
+      h += `<p style="font-size:13px">Wähle eine Zone.</p><div class="garden">${range(6).map(zz => `<button class="zpick" data-a="zsel" data-z="${zz}">${zoneHtml(me, zz)}</button>`).join('')}</div>`;
+    } else {
+      const sel = U.sel || [];
+      const nW = waterCount(me, z), canP = mode !== 'water' && plantables(me, z).length > 0;
+      h += `<p style="font-size:13px">${mode !== 'water' ? 'Pflanzen: tippe bis zu 2 leere Pflanzen an (unterstes Kästchen). ' : ''}${mode !== 'plant' ? 'Gießen: jede gepflanzte Pflanze der Zone wächst um 1.' : ''}</p>
+        ${zoneHtml(me, z, { big: 1, pick: mode !== 'water' && sel.length < 2 ? 1 : 0, sel })}
+        ${sel.length ? `<p class="note">Ausgewählt: ${sel.map(([k, i]) => cropName(k, i, z)).join(', ')} <button class="link" data-a="unsel">zurücksetzen</button></p>` : ''}
+        <div class="btnrow">${mode !== 'plant' ? `<button class="btn white" data-a="water" ${nW ? '' : 'disabled'}>Gießen (+${nW})</button>` : ''}${mode !== 'water' ? `<button class="btn green" data-a="plant" ${sel.length ? '' : 'disabled'}>Pflanzen (${sel.length})</button>` : ''}</div>
+        ${!fixed ? '<button class="skip" data-a="zback">andere Zone wählen</button>' : ''}${!canP && mode === 'plant' ? '<p class="note">Hier ist nichts mehr pflanzbar.</p>' : ''}`;
+    }
+    const mul = opts.find(o => o.o === 'mulch');
+    if (mul) h += `<div class="opts"><button class="opt" data-a="opt" data-o="mulch">${icon('mulch')}<span><b>${mul.label}</b><small>${mul.sub}</small></span></button></div>`;
+  } else {
+    h += `<div class="opts">${opts.map(o => `<button class="opt" data-a="opt" data-o="${o.o}">${icon(o.ic)}<span><b>${esc(o.label)}</b><small>${esc(o.sub || '')}</small></span></button>`).join('')}</div>`;
+  }
+  h += `<button class="skip" data-a="tskip">${opts.length ? 'Aktion verfallen lassen' : 'Nichts möglich – weiter'}</button>`;
   return sheetWrap(h);
 }
 function dieSheet() {
   const me = human(); const d = S.dice[U.sheet.i];
-  const adj = U.sheet.adj || 0;
-  let v = d.v + adj; while (v > 6) v -= 6; while (v < 1) v += 6;
+  const adj = U.adj || 0, z = wrapV(d.v + adj) - 1;
   return sheetWrap(`<h3>Würfel ${d.v}</h3>
-    <p style="font-size:13px">Zone <b>${v}</b> pflanzen oder gießen, danach: <b>${SPACE_N[SPACES[d.space]]}</b>.</p>
-    <div class="stepper"><span class="lbl">${icon('kompost')}Kompost: Wert ändern</span><span style="display:flex;gap:8px;align-items:center"><button data-a="adj" data-d="-1" ${Math.abs(adj - 1) <= me.kompost ? '' : 'disabled'}>−</button><span class="num">${adj > 0 ? '+' + adj : adj}</span><button data-a="adj" data-d="1" ${Math.abs(adj + 1) <= me.kompost ? '' : 'disabled'}>+</button></span></div>
-    ${zoneHtml(me, v - 1)}
-    <div class="btnrow"><button class="btn green" data-a="takedie">Nehmen${adj ? ` (−${Math.abs(adj)} Kompost)` : ''}</button></div>`);
+    <p style="font-size:13px">Gartenaktion in Zone <b>${z + 1}</b> (pflanzen oder gießen), dazu „<b>${RONDEL_N[RONDEL[d.space].k]}</b>“.</p>
+    ${adjustUi(me, d.v, adj, 'adj')}
+    ${zoneHtml(me, z)}
+    <div class="btnrow"><button class="btn green" data-a="takedie">Nehmen${adjustCost(me, adj) ? ` (−${adjustCost(me, adj)} Kompost)` : ''}</button></div>`);
 }
 function rulesHtml() {
   return `<h3>So spielt man</h3>
-  <p>Ihr legt in <b>8 Runden</b> eure Gärten an. Mais, Bohnen und Kürbis, die „drei Schwestern“, wachsen in sechs Zonen. Wer am Ende die meisten <b>Siegpunkte</b> hat, gewinnt.</p>
-  <h4>Eine Runde</h4>
-  <ul><li>Es werden 2 Würfel pro Person plus einer geworfen. Sie werden nach Augenzahl sortiert und im Uhrzeigersinn auf den Gartenmarkt gelegt, die niedrigste Gruppe auf das Feld mit der Gärtnerin. Die Gärtnerin wandert jede Runde ein Feld weiter.</li>
-  <li>Reihum und dann rückwärts nimmt jede Person 2 Würfel. Die Augenzahl bestimmt die <b>Zone</b>, das Marktfeld bringt einen <b>Bonus</b>.</li>
-  <li>Mit <b>Kompost</b> änderst du den Würfelwert um ±1 pro Kompost (6 und 1 sind benachbart).</li>
-  <li>Der übrige Würfel ist der <b>Gemeinschaftswürfel</b>: Alle dürfen ihn am Rundenende nutzen. Dazu kommt das Rundenereignis: Regen, Schuppen oder Bauernmarkt.</li></ul>
-  <h4>Pflanzen &amp; Gießen</h4>
-  <ul><li><b>Pflanzen:</b> 2 Markierungen in der Zone, beliebig auf Mais, Bohnen und Kürbis verteilt. <b>Bohnen</b> brauchen 2 Mais in derselben Zone.</li>
-  <li><b>Gießen:</b> +1 in jeder angefangenen Reihe der Zone.</li>
-  <li>Gestrichelte Kreise sind <b>Ernten</b>: Mais bringt 3 SP, Bohnen 1 SP und 1 Kompost, Kürbis 2 Waren und 1 Staude.</li></ul>
-  <h4>Rund um den Garten</h4>
-  <ul><li><b>Waren:</b> Bei 5, 10, 15 und 20 bekommst du eine Gratis-Pflanze. Am Ende ist jede 3. Ware 1 SP wert.</li>
-  <li><b>Bienen</b> und <b>Stauden</b> zählen am Ende nach Tabelle. Jede 4. Biene bringt eine Staude.</li>
-  <li><b>Obstbäume</b> bringen bei Vollendung 5–8 SP.</li>
-  <li><b>Werkzeuge</b> im Schuppen bringen bei Vollendung 2 SP und eine Dauerfähigkeit.</li></ul>
+  <p>In <b>8 Runden</b> bestellst du deinen Garten. Mais, Bohnen und Kürbis wachsen in sechs Zonen, dazu kommen Stauden, ein Bienenstock, Obst im Hof und Werkzeuge im Schuppen. Die meisten <b>Siegpunkte</b> gewinnen, bei Gleichstand die meisten Gartenpunkte.</p>
+  <h4>1. Planungsphase</h4>
+  <p>Alle Würfel werden geworfen (2 Personen: 4, 3: 5, 4: 6) und nach Augenzahl gruppiert. Die niedrigste Gruppe kommt auf das Rondellfeld mit Farmerin Edith, die nächste auf das folgende Feld im Uhrzeigersinn und so weiter. Danach zieht Edith hinter die höchste Gruppe.</p>
+  <h4>2. Gartenphase</h4>
+  <ul><li>Reihum wählt jede Person <b>einen Würfel</b>: Die Augenzahl ist die <b>Gartenzone</b> (pflanzen oder gießen), das Feld die <b>Rondellaktion</b>.</li>
+  <li>Danach nutzen <b>alle gleichzeitig den niedrigsten übrigen Würfel</b>.</li>
+  <li><b>Pflanzen:</b> unterstes Kästchen von bis zu 2 Pflanzen der Zone. Bohnen erst, wenn ihr Mais 2 Kästchen hoch ist. <b>Gießen:</b> jede gepflanzte Pflanze der Zone wächst um 1.</li>
+  <li><b>Kompost:</b> pro Kompost Würfelwert ±1 (6 und 1 sind Nachbarn). Bei „Pflanzen oder Gießen“ gilt der neue Wert für beide Aktionen.</li></ul>
+  <h4>Rondellaktionen</h4>
+  <ul><li><b>Pflanzen oder Gießen</b> in derselben Zone, zusätzlich zur Gartenaktion.</li><li><b>Schuppenzeit:</b> nächstes Kästchen eines Gegenstands.</li><li><b>1 Kompost &amp; 4 Waren.</b></li><li><b>Bienenstock oder Hof.</b></li><li><b>Bauernmarkt:</b> Aktionen laut Markttabelle nach deinem Warenstand (0+: Kompost · 4+: Staude + Kompost · 20+: Staude + Hof · 35+: 2 Stauden + Kompost · 50+: 2 Stauden + Hof · 70+: 2 Stauden + Bonus).</li></ul>
+  <h4>3. Ereignisphase</h4>
+  <p>Je Runde: Schuppen, Regen, Markt, Regen, Markt, Schuppen, Markt, Regen. Regen gießt alle Zonen von 1 bis 6.</p>
+  <h4>Ernten &amp; Wertung</h4>
+  <ul><li>Mais 3 SP, Bohne 1 SP, Kürbis bringt sofort Waren. Zwei geerntete Nachbar-Kürbisse lösen die Staude dazwischen aus.</li>
+  <li><b>Stauden</b> geben Boni beim Ausfüllen und Punkte, wenn vollendet. <b>Sterne</b> auf der Warenleiste bringen eine Bonusaktion (Staude, Bienenstock, Hof oder Schuppen).</li>
+  <li><b>Bienenstock:</b> Wachs 2/2/5, Honig 5/5/8, Ableger 3 SP. <b>Hof:</b> Apfel 3, Brombeere 2, Himbeeren 1/2/3 SP. <b>Schuppen:</b> Punkte fertiger Gegenstände.</li></ul>
+  <h4>Solo gegen Farmerin Edith</h4>
+  <p>Du und Edith nehmt abwechselnd je zwei Würfel (ungerade Runden beginnst du). Die Startperson muss als zweiten Würfel den niedrigsten übrigen nehmen. Edith streicht zuerst eine ungepflanzte Pflanze in der Zone ihres Würfels (Kürbisse, dann Mais, dann Bohnen), dann je nach Feld: noch eine Pflanze, einen Schuppen-Gegenstand, einen Stern der Warenleiste, ein Feld im Bienenstock oder Hof oder das oberste Feld einer Staude. Ereignisse betreffen nur dich.</p>
   <h4>Unterschiede zum Original</h4>
-  <p style="font-size:13px">Das Prinzip folgt <i>Three Sisters</i>: Würfel-Draft über ein Marktrondell, Zonen nach Augenzahl, pflanzen oder gießen, Bohnen nach Mais, Ernten, Kompost als Würfelmanipulation, Nebenleisten. Bogen, Leistenlängen, Punktwerte, Werkzeuge und das Gemeinschaftswürfel-Detail sind eigene Entwürfe.</p>`;
+  <p style="font-size:13px">Ablauf, Aktionen, Ereignisse, Markttabelle, Stauden-Boni, Bienenstock, Hof, Schuppen-Gegenstände, Wertung und der Solomodus mit Edith folgen der Anleitung der Harvest Edition. Den genauen Aufdruck des Wertungsblocks nennt die Anleitung nicht. Geschätzt sind daher: die Zahl der Pflanzen pro Zone (im Rahmen 3–5 Mais, 3–5 Bohnen, 1–3 Kürbisse), Kürbishöhen und -waren, die Lage der Stauden zwischen den Kürbissen, die Kästchen pro Schuppen-Gegenstand, die Sterne der Warenleiste, die Boni im Hauptstock und die Lage der Rondellfelder. Im Solomodus wählt Edith den Mais automatisch. Illustrationen sind eigene Entwürfe.</p>`;
 }
 function viewSheet() {
   const sh = U.sheet; if (!sh) return '';
   switch (sh.type) {
     case 'rules': return sheetWrap(`<div class="rules">${rulesHtml()}</div>`);
     case 'menu': return sheetWrap(`<h3>Menü</h3><div class="opts">${S && S.screen === 'game' && !S.tut ? '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}<button class="btn white wide" data-a="rules">Spielregeln</button><button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
-    case 'opp': { const p = S.players[sh.p]; return sheetWrap(`<h3>${esc(p.name)}</h3><p style="font-size:13px">★ ${endScore(p).total} Punkte · ${p.harvests} Ernten</p>${sheetHtml(p)}`); }
+    case 'opp': { const p = S.players[sh.p]; return sheetWrap(`<h3>${esc(p.name)}</h3><p style="font-size:13px">★ ${endScore(p).total} Punkte</p>${sheetHtml(p)}`); }
     case 'die': return dieSheet();
     case 'task': return taskSheet();
   }
   return '';
 }
 
-// ---------- Render & Events ----------
 // ---------- Lernspiel (Tutorial) ----------
 // Geführte Mini-Partie mit vorbereitetem Spielstand. Jeder Schritt hat einen
 // Text, optional ein markiertes Element (sel), erlaubte Aktionen (allow) und
@@ -947,51 +1308,48 @@ function tutDecorate() {
     else if (!el.closest('.top')) el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
   }
 }
-const tutFace = () => gHead('edith', { plant: 'sonne', pants: '#2E6B3E', pat: 'stripes' });
+const tutFace = () => edithHead();
 const TUT_ME = () => S.players[0];
+const isTask = k => () => U.sheet && U.sheet.type === 'task' && TUT_ME().tasks[0] && TUT_ME().tasks[0].t === k;
 const TUT_STEPS = [
-  { text: 'Hallo, ich bin Gärtnerin Edith! In <b>8 Runden</b> legst du einen Garten an. Mais, Bohnen und Kürbis, die drei Schwestern, bringen bei der Ernte Punkte. Wir spielen deine erste Runde zusammen.' },
-  { sel: '.garden', text: 'Das ist dein <b>Garten</b> mit sechs Zonen. Jede hat eine Reihe Mais, Bohnen und Kürbis. Die umrandeten Kreise sind <b>Ernten</b>, dort gibt es Punkte und Boni.' },
-  { sel: '.rondel', text: 'Der <b>Gartenmarkt</b>: Die Würfel liegen nach Augenzahl im Kreis, die kleinste Zahl bei mir. Die Augenzahl wählt die Zone, das Feld bringt einen Bonus. Du nimmst pro Runde zwei Würfel.' },
+  { text: 'Hallo, ich bin Farmerin Edith! In <b>8 Runden</b> bestellst du deinen Garten. Wir spielen deine erste Runde gegen eine Nachbarin zusammen.' },
+  { sel: '.garden', text: 'Das ist dein <b>Garten</b> mit sechs Zonen. Mais wächst 4 Kästchen hoch, die Bohne daneben 2, Kürbisse unten 1 bis 4. Das oberste Kästchen ist die <b>Ernte</b>.' },
+  { sel: '.rondel', text: 'Das <b>Aktionsrondell</b>: Die Würfel liegen nach Augenzahl aufsteigend ab meiner Figur. Die Augenzahl wählt die <b>Gartenzone</b>, das Feld eine zusätzliche <b>Rondellaktion</b>.' },
   { sel: '.die.live[data-i="1"]', allow: { die: d => d.i === '1' }, done: () => U.sheet && U.sheet.type === 'die',
-    text: 'Nimm eine <b>2</b>: Du arbeitest in Zone 2 und bekommst den Bonus „Biene +1“. Tippe auf den Würfel.' },
-  { sel: '[data-a=takedie]', allow: { takedie: true }, done: () => TUT_ME().tasks.length > 0 || (U.sheet && U.sheet.type === 'task'),
-    text: 'Mit <b>Kompost</b> könntest du den Würfelwert um 1 ändern, du hast 1 Stück. Heute nicht, tippe auf „Nehmen“.' },
-  { sel: '[data-a=pplus][data-c="c"]', allow: { pplus: d => d.c === 'c' }, done: () => U.plan && U.plan.c >= 2,
-    text: 'Pflanzen heißt 2 Markierungen setzen. Bohnen wachsen erst, wenn 2 Mais stehen. Tippe <b>zweimal auf + bei Mais</b>.' },
-  { sel: '[data-a=plant]', allow: { plant: true }, done: () => TUT_ME().zones[1].c >= 2,
-    text: 'Tippe auf „Pflanzen“.' },
-  { wait: true, done: () => isMyPick(), text: () => `${esc(S.players[1].name)} nimmt jetzt zwei Würfel, erst reihum, dann zurück …` },
-  { sel: '.res', text: 'Schau mal: Deine <b>Bienen</b> sind um 1 gestiegen, das war der Bonus des Marktfelds. Bienen, Stauden und Waren bringen am Ende Punkte.' },
-  { sel: '.die.live[data-i="2"]', allow: { die: d => d.i === '2' }, done: () => U.sheet && U.sheet.type === 'die',
-    text: 'Du bist wieder dran. Nimm die <b>andere 2</b>, wir machen in Zone 2 weiter.' },
-  { sel: '[data-a=takedie]', allow: { takedie: true }, done: () => TUT_ME().tasks.length > 0 || (U.sheet && U.sheet.type === 'task'), text: 'Tippe auf „Nehmen“.' },
-  { sel: '[data-a=pplus][data-c="b"]', allow: { pplus: d => d.c === 'b' }, done: () => U.plan && U.plan.b >= 1,
-    text: 'Jetzt stehen 2 Mais, also dürfen <b>Bohnen</b> ranken! Setze eine Bohne.' },
-  { sel: '[data-a=pplus][data-c="c"]', allow: { pplus: d => d.c === 'c' }, done: () => U.plan && U.plan.c >= 1,
-    text: 'Und noch ein <b>Mais</b>. Der dritte Mais-Kreis ist eine Ernte!' },
-  { sel: '[data-a=plant]', allow: { plant: true }, done: () => TUT_ME().zones[1].c >= 3, text: 'Tippe auf „Pflanzen“.' },
-  { sel: '.garden .zone:nth-child(2)', text: '<b>Ernte!</b> Der Mais im umrandeten Kreis bringt 3 Punkte. Bohnen-Ernten bringen 1 Punkt und Kompost, Kürbis-Ernten Waren und eine Staude.' },
+    text: 'Nimm eine <b>3</b> von „Pflanzen oder Gießen“: Du arbeitest gleich zweimal in Zone 3. Tippe auf den Würfel.' },
+  { sel: '[data-a=takedie]', allow: { takedie: true }, done: isTask('garden'),
+    text: 'Mit <b>Kompost</b> könntest du die Zone um 1 verschieben. Heute nicht: Tippe auf „Nehmen“.' },
+  { sel: '[data-a=pk][data-k="c"][data-i="0"]', allow: { pk: d => d.k === 'c' && d.i === '0' }, done: () => (U.sel || []).length >= 1,
+    text: 'Pflanzen heißt: das unterste Kästchen von bis zu <b>2 Pflanzen</b> ausfüllen. Tippe auf den ersten Mais.' },
+  { sel: '[data-a=pk][data-k="c"][data-i="1"]', allow: { pk: d => d.k === 'c' && d.i === '1' }, done: () => (U.sel || []).length >= 2, text: 'Und den zweiten Mais.' },
+  { sel: '[data-a=plant]', allow: { plant: true }, done: isTask('pw'), text: 'Tippe auf „Pflanzen“.' },
+  { sel: '[data-a=water]', allow: { water: true }, done: () => !TUT_ME().tasks.length,
+    text: 'Jetzt die <b>Rondellaktion</b>: noch einmal Zone 3. Gieße diesmal: Beide Maispflanzen wachsen ein Kästchen.' },
+  { wait: true, done: () => S.phase === 'shared' && isTaskReady(), text: () => `${esc(S.players[1].name)} wählt jetzt einen Würfel …` },
   { sel: '.bar [data-a=task]', allow: { task: true }, done: () => U.sheet && U.sheet.type === 'task',
-    text: 'Rundenende! Der übrige Würfel, eine <b>1</b>, gilt für alle: Jede Person darf in Zone 1 pflanzen oder gießen. Tippe auf „Ausführen“.' },
-  { sel: '[data-a=pplus][data-c="s"]', allow: { pplus: d => d.c === 's' }, done: () => U.plan && U.plan.s >= 2,
-    text: 'Pflanze <b>2 Kürbisse</b> in Zone 1.' },
-  { sel: '[data-a=plant]', allow: { plant: true }, done: () => TUT_ME().zones[0].s >= 2, text: 'Tippe auf „Pflanzen“.' },
-  { text: 'Kürbis-Ernte: <b>2 Waren und 1 Staude</b>! Jetzt kommt noch das Rundenereignis <b>Regen</b>: Du darfst eine Zone gießen.' },
-  { sel: '.opt[data-z="1"]', allow: { wz: d => d.z === '1' }, done: () => !TUT_ME().tasks.length,
-    text: 'Gießen heißt: +1 in <b>jeder angefangenen</b> Reihe der Zone. Gieße Zone 2, dort wachsen Mais und Bohne.' },
-  { sel: '.res', text: '<b>Waren</b> bringen bei 5, 10, 15 und 20 eine Gratis-Pflanze. <b>Kompost</b> verändert Würfelwerte. Bienen und Stauden zählen am Ende nach Tabelle.' },
-  { sel: '.fruits', text: '<b>Obstbäume</b> und <b>Werkzeuge</b> im Schuppen bekommst du über die Marktfelder. Fertige Werkzeuge bringen Punkte und eine Dauerfähigkeit, zum Beispiel die Schubkarre mit 3 statt 2 Pflanzen.' },
-  { text: 'Super, du kannst gärtnern! Plane Zonen, in denen Mais und Bohnen zusammen wachsen, sammle Ernten und nutze die Marktboni. Viel Freude im Garten!' },
+    text: 'Zwei Würfel sind übrig. Den <b>niedrigsten</b>, eine 1 auf „Bienenstock oder Hof“, nutzen jetzt <b>alle</b>. Tippe auf „Ausführen“.' },
+  { sel: '[data-a=takedie]', allow: { takedie: true }, done: isTask('garden'), text: 'Tippe auf „Nutzen“: Zone 1 und Bienenstock oder Hof.' },
+  { sel: '[data-a=pk][data-k="s"][data-i="0"]', allow: { pk: d => d.k === 's' && d.i === '0' }, done: () => (U.sel || []).length >= 1,
+    text: 'Pflanze die beiden <b>Kürbisse</b>. Der linke ist nur 1 Kästchen hoch, er wird sofort geerntet.' },
+  { sel: '[data-a=pk][data-k="s"][data-i="1"]', allow: { pk: d => d.k === 's' && d.i === '1' }, done: () => (U.sel || []).length >= 2, text: 'Und den zweiten Kürbis.' },
+  { sel: '[data-a=plant]', allow: { plant: true }, done: isTask('ay'), text: 'Tippe auf „Pflanzen“.' },
+  { sel: '.opt[data-o="yard:raspberry"]', allow: { opt: d => d.o === 'yard:raspberry' }, done: isTask('shed'),
+    text: 'Der Kürbis brachte <b>1 Ware</b>. Jetzt Bienenstock oder Hof: Nimm eine <b>Himbeere</b>, sie bringt sofort 3 Waren.' },
+  { sel: '.opt[data-o="shed:barrel"]', allow: { opt: d => d.o === 'shed:barrel' }, done: () => !TUT_ME().tasks.length,
+    text: 'Zum Rundenende das <b>Ereignis</b>: In Runde 1 gibt es eine Schuppenaktion. Beginne die <b>Regentonne</b>. Fertig gießt sie nach jedem Regen extra.' },
+  { sel: '.goods', text: '<b>Waren</b> füllen die Warenleiste. Erreichst du einen <b>Stern</b>, gibt es eine Bonusaktion. Und dein Warenstand bestimmt, was du auf dem <b>Bauernmarkt</b> bekommst.' },
+  { sel: '.pers', text: '<b>Stauden</b> füllst du über den Markt, Sterne und Kürbis-Paare. Jedes Feld kann einen Bonus geben, die vollendete Staude bringt Punkte.' },
+  { text: 'Super, du kannst gärtnern! Lass Mais früh wachsen, damit die Bohnen ranken können, und plane Kürbis-Paare für Stauden. Viel Freude im Garten!' },
 ];
+const isTaskReady = () => TUT_ME().tasks.length > 0;
 function tutSetup() {
   U.fast = true;
+  S = null;
   newGame(U.setup.name || 'Du', 1, 777);
   S.tut = true;
-  const vals = [1, 2, 2, 4, 6];
-  S.marker = 0;
-  const distinct = [...new Set(vals)];
-  S.dice = vals.map((v, i) => ({ i, v, space: (S.marker + distinct.indexOf(v)) % 6, by: -1 }));
+  S.pawn = 0; S.round = 1; S.event = EVENTS[0];
+  placeDice([1, 3, 3, 5]);
+  S.seq = [0, 1]; S.idx = 0; S.phase = 'draft';
   S.log = ['Lernspiel: eine vorbereitete erste Runde.'];
 }
 function tutBot() {
@@ -1016,23 +1374,24 @@ function render() {
 }
 function pump() {
   if (!S || S.screen !== 'game' || U.busy) return;
-  if (S.phase !== 'draft' || !cur().bot) return;
+  if (!othersTurn() || human().tasks.length) return;
   U.busy = true;
   setTimeout(() => {
     U.busy = false;
-    if (!S || S.screen !== 'game' || S.phase !== 'draft' || !cur().bot) return;
-    if (S.tut) tutBot(); else botStep();
+    if (!S || S.screen !== 'game' || !othersTurn() || human().tasks.length) return;
+    if (S.tut) tutBot(); else if (curIdx() === -1) edithStep(); else botStep();
     render();
   }, U.fast ? 150 : 900);
 }
 function afterHumanTask() {
   const me = human();
-  U.plan = null; U.pick1 = null;
+  U.sel = null; U.zone = null; U.adj = 0;
   if (me.tasks.length) { U.sheet = { type: 'task' }; return; }
   U.sheet = null;
   if (S.phase === 'draft' && cur() === me) afterPick();
   else if (S.phase === 'shared') maybeEndRound();
 }
+function gardenZone() { const t = human().tasks[0]; return t.t === 'garden' || t.t === 'pw' ? t.z : U.zone; }
 const H = {
   leave: () => { if (!S || S.tut) return; save(); S = null; U.sheet = null; window.scrollTo(0, 0); toast('Partie gespeichert. Mit „Partie fortsetzen“ geht es weiter.'); },
   discard: () => { if (confirm('Gespeicherte Partie wirklich verwerfen?')) clearSave(); },
@@ -1042,7 +1401,7 @@ const H = {
   tutquit: () => { U.tut = null; U.sheet = null; U.fast = false; S = null; window.scrollTo(0, 0); },
   bots: d => { U.setup.bots = +d.n; },
   pickname: d => { U.setup.name = d.n; const nm = document.getElementById('nm'); if (nm) nm.value = d.n; },
-  start: () => { const sv = load(); if (sv && sv.screen === 'game' && !confirm(`Es gibt eine gespeicherte Partie (Runde ${sv.round || 1}). Neue Partie starten und die gespeicherte verwerfen?`)) return; const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : ''; newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0); window.scrollTo(0, 0); },
+  start: () => { const sv = load(); if (sv && sv.screen === 'game' && !confirm(`Es gibt eine gespeicherte Partie (Runde ${sv.round || 1}). Neue Partie starten und die gespeicherte verwerfen?`)) return; const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : ''; newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0, U.setup.bots === 0); window.scrollTo(0, 0); },
   resume: () => { S = load(); U.sheet = null; },
   rules: () => { U.sheet = { type: 'rules' }; },
   menu: () => { U.sheet = { type: 'menu' }; },
@@ -1053,20 +1412,24 @@ const H = {
   opp: d => { U.sheet = { type: 'opp', p: +d.p }; },
   logtoggle: () => { U.logOpen = !U.logOpen; },
   fast: () => { U.fast = !U.fast; },
-  die: d => { if (isMyPick()) U.sheet = { type: 'die', i: +d.i, adj: 0 }; },
-  adj: d => { U.sheet.adj += +d.d; },
-  takedie: () => { const me = human(); if (takeDie(me, U.sheet.i, U.sheet.adj)) { U.plan = null; U.sheet = { type: 'task' }; } },
+  die: d => { if (isMyPick()) { U.adj = 0; U.sheet = { type: 'die', i: +d.i }; } },
+  adj: d => { U.adj = (U.adj || 0) + +d.d; },
+  takedie: () => {
+    const me = human();
+    if (U.sheet.type === 'die') { if (takeDie(me, U.sheet.i, U.adj || 0)) { U.adj = 0; U.sheet = { type: 'task' }; } return; }
+    const t = me.tasks[0];
+    if (t && t.t === 'die' && adjustCost(me, U.adj || 0) <= me.compost) { me.tasks.shift(); useDie(me, t.v, t.space, U.adj || 0); log(`${me.name} nutzt die ${t.v}${U.adj ? ` (angepasst auf ${wrapV(t.v + U.adj)})` : ''}.`); afterHumanTask(); }
+  },
   task: () => { if (myTasks()) U.sheet = { type: 'task' }; },
-  pplus: d => { U.plan = U.plan || { c: 0, b: 0, s: 0 }; U.plan[d.c]++; },
-  pminus: d => { U.plan = U.plan || { c: 0, b: 0, s: 0 }; U.plan[d.c]--; if (d.c === 'c' && !hasTool(human(), 'hacke')) { const t = human().tasks[0]; while (U.plan.b > 0 && human().zones[t.z].c + U.plan.c < 2) U.plan.b--; } },
-  plant: () => { const me = human(), t = me.tasks[0]; const plan = U.plan || {}; resolveTask(me, { apply: q => doPlant(q, t.z, plan) }); log(`${me.name} pflanzt in Zone ${t.z + 1}.`); afterHumanTask(); },
-  water: () => { const me = human(), t = me.tasks[0]; resolveTask(me, { apply: q => doWater(q, t.z) }); log(`${me.name} gießt Zone ${t.z + 1}.`); afterHumanTask(); },
-  p1: d => { U.pick1 = { z: +d.z, c: d.c }; },
-  p1ok: () => { const me = human(), s = U.pick1; resolveTask(me, { apply: q => mark(q, s.z, s.c) }); afterHumanTask(); },
-  wz: d => { const me = human(), t = me.tasks[0], z = +d.z; resolveTask(me, { apply: q => doWater(q, z, t.t === 'waterAny') }); afterHumanTask(); },
-  fr: d => { const me = human(); resolveTask(me, { apply: q => markFruit(q, +d.i) }); afterHumanTask(); },
-  tl: d => { const me = human(); resolveTask(me, { apply: q => markTool(q, +d.i) }); afterHumanTask(); },
-  tskip: () => { skipTask(human()); afterHumanTask(); },
+  zsel: d => { U.zone = +d.z; U.sel = []; },
+  zback: () => { U.zone = null; U.sel = []; },
+  pk: d => { U.sel = U.sel || []; if (U.sel.length < 2) U.sel.push([d.k, +d.i]); },
+  unsel: () => { U.sel = []; },
+  plant: () => { const me = human(), z = gardenZone(), sel = U.sel || []; resolveTask(me, { apply: q => doPlant(q, z, sel) }); log(`${me.name} pflanzt in Zone ${z + 1}: ${sel.map(([k, i]) => cropName(k, i, z)).join(', ')}.`); afterHumanTask(); },
+  water: () => { const me = human(), z = gardenZone(); resolveTask(me, { apply: q => doWater(q, z) }); log(`${me.name} gießt Zone ${z + 1}.`); afterHumanTask(); },
+  opt: d => { const me = human(), o = taskOptions(me, me.tasks[0]).find(x => x.o === d.o); if (!o) return; resolveTask(me, o); if (o.label) log(`${me.name}: ${o.label}.`); afterHumanTask(); },
+  shovel: () => { const me = human(); if (!shedDone(me, 'shovel') || me.compost < 3) return; me.compost -= 3; front(me, { t: 'bonus', src: 'Spaten' }); U.sheet = { type: 'task' }; },
+  tskip: () => { human().tasks.shift(); afterHumanTask(); },
 };
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-a]');
@@ -1078,7 +1441,18 @@ document.addEventListener('click', e => {
   fn(el.dataset); render();
 });
 window.__ts = {
-  simulate(n, seed) {
+  simulate(n, seed, solo) {
+    if (solo) {
+      // Solo: Mensch wird vom Bot-Hirn gesteuert, Edith spielt nach ihren Regeln
+      newGame('Solo-Test', 0, seed, true);
+      const me = human();
+      let guard = 0;
+      while (S.screen === 'game' && guard++ < 400) {
+        if (S.phase === 'draft') { if (curIdx() === -1) edithStep(); else { const pk = botPick(me); if (pk) takeDie(me, pk.d.i, pk.adj); botTasks(me); afterPick(); } }
+        else { botTasks(me); maybeEndRound(); }
+      }
+      return { final: S.final, guard };
+    }
     newGame(null, n - 1, seed);
     let guard = 0;
     while (S.screen === 'game' && guard++ < 400) { if (S.phase === 'draft') botStep(); else maybeEndRound(); }

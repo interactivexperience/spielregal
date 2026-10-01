@@ -37,16 +37,22 @@ if (shots) await page.screenshot({ path: `${shots}/ts-1-start.png`, fullPage: tr
 
 const sim = await page.evaluate(() => {
   const out = [];
-  for (const n of [2, 3, 4]) for (let seed = 1; seed <= 15; seed++) {
-    const r = window.__ts.simulate(n, seed * 104729 + n);
+  const runs = [];
+  for (const n of [2, 3, 4]) for (let seed = 1; seed <= 12; seed++) runs.push([n, seed * 104729 + n, false]);
+  for (let seed = 1; seed <= 12; seed++) runs.push([1, seed * 7919, true]);
+  for (const [n, seed, solo] of runs) {
+    const r = window.__ts.simulate(n, seed, solo);
     const S = window.__ts.state(); const bad = [];
     if (!r.final) bad.push("keine Endabrechnung");
     if (S.round !== 8) bad.push("Runde " + S.round);
     for (const p of S.players) {
-      p.zones.forEach((z) => { if (z.c > 5 || z.b > 5 || z.s > 4 || z.c < 0) bad.push("Zone"); });
-      if (p.kompost < 0 || p.kompost > 6 || p.waren > 20 || p.bienen > 8 || p.stauden > 10 || p.tasks.length) bad.push(p.name + " Leisten");
+      p.g.forEach((zo, z) => ["c", "b", "s"].forEach((k) => zo[k].forEach((h) => { if (h < -1 || h > 4) bad.push("Pflanze " + z + k + h); })));
+      if (p.compost < 0 || p.compost > 20 || p.goods < 0 || p.goods > 80 || p.tasks.length) bad.push(p.name + " Leisten");
+      for (const f of Object.values(p.per)) if (f.n > f.cap) bad.push("Staude");
+      for (const f of Object.values(p.yard)) if (f.n > f.cap) bad.push("Hof");
     }
-    out.push({ n, totals: (r.final || []).map((x) => x.total), bad });
+    for (const row of r.final || []) if (!Number.isFinite(row.total)) bad.push("NaN");
+    out.push({ n: solo ? "solo" : n, totals: (r.final || []).map((x) => x.total), bad });
   }
   window.__ts.reset();
   return out;
@@ -54,43 +60,59 @@ const sim = await page.evaluate(() => {
 const bad = sim.filter((s) => s.bad.length);
 if (bad.length) fail("Simulationen: " + JSON.stringify(bad.slice(0, 3)));
 const avg = (a) => (a.reduce((x, y) => x + y, 0) / a.length).toFixed(1);
-for (const n of [2, 3, 4]) { const s = sim.filter((x) => x.n === n); console.log(`Bots ${n}P: Ø Sieger ${avg(s.map((x) => Math.max(...x.totals)))}, Ø Punkte ${avg(s.flatMap((x) => x.totals))}`); }
+for (const n of [2, 3, 4, "solo"]) { const s = sim.filter((x) => x.n === n); console.log(`Bots ${n}: Ø Sieger ${avg(s.map((x) => Math.max(...x.totals)))}, Ø Punkte ${avg(s.flatMap((x) => x.totals))}`); }
+
+async function playUi(label, expectPicks) {
+  let picks = 0, tasks = 0, guard = 0, shot = false;
+  while (guard++ < 2500) {
+    if (await page.locator("text=Neue Partie").count()) break;
+    if (await page.locator(".sheet").count() === 0) {
+      if (await page.locator(".bar [data-a=task]").count()) { await page.click(".bar [data-a=task]"); continue; }
+      const live = page.locator(".die.live");
+      if (await live.count()) { await live.nth(picks % (await live.count())).click({ force: true }); continue; }
+      await page.waitForTimeout(100); continue;
+    }
+    if (await page.locator("[data-a=takedie]").count()) {
+      if (picks % 3 === 1 && (await page.locator("[data-a=adj][data-d='1']:not([disabled])").count())) await page.click("[data-a=adj][data-d='1']");
+      await page.click("[data-a=takedie]"); picks++; continue;
+    }
+    tasks++;
+    if (await page.locator("[data-a=zsel]").count()) { await page.locator("[data-a=zsel]").nth(tasks % 6).click(); continue; }
+    if (!shot && shots && (await page.locator("[data-a=pk]").count())) { await page.screenshot({ path: `${shots}/ts-3-task-${label}.png` }); shot = true; }
+    if ((await page.locator("[data-a=pk]").count()) && tasks % 3) {
+      for (let i = 0; i < 2; i++) { const b = page.locator("[data-a=pk]"); if (await b.count()) await b.nth(tasks % (await b.count())).click(); }
+      await page.click("[data-a=plant]"); continue;
+    }
+    if (await page.locator("[data-a=water]:not([disabled])").count()) { await page.click("[data-a=water]"); continue; }
+    const o = page.locator(".sheet .opt");
+    if (await o.count()) { await o.nth(tasks % (await o.count())).click(); continue; }
+    await page.click("[data-a=tskip]");
+  }
+  if (!(await page.locator("text=Neue Partie").count())) fail(`UI-Partie ${label} nicht beendet (guard ${guard})`);
+  if (picks !== expectPicks) fail(`${label}: erwartet ${expectPicks} Würfel, waren ${picks}`);
+  console.log(`UI-Partie ${label}: ${picks} Würfel, ${tasks} Aktionen.`);
+}
 
 await page.click("text=2 Bots");
 await page.click("text=Garten anlegen");
 await page.waitForSelector(".rondel");
 await page.click("[data-a=fast]").catch(() => {});
-let picks = 0, tasks = 0, guard = 0, shot = false;
-while (guard++ < 1500) {
-  if (await page.locator("text=Neue Partie").count()) break;
-  if (await page.locator(".sheet").count() === 0) {
-    if (await page.locator(".bar [data-a=task]").count()) { await page.click(".bar [data-a=task]"); continue; }
-    const live = page.locator(".die.live");
-    if (await live.count()) { await live.nth(picks % (await live.count())).click({ force: true }); continue; }
-    await page.waitForTimeout(120); continue;
-  }
-  if (await page.locator("[data-a=takedie]").count()) {
-    if (picks % 3 === 1 && (await page.locator("[data-a=adj][data-d='1']:not([disabled])").count())) await page.click("[data-a=adj][data-d='1']");
-    await page.click("[data-a=takedie]"); picks++; continue;
-  }
-  tasks++;
-  if (!shot && shots && (await page.locator("[data-a=pplus]").count())) { await page.screenshot({ path: `${shots}/ts-3-task.png` }); }
-  if (await page.locator("[data-a=pplus]").count()) {
-    for (let i = 0; i < 3; i++) { const b = page.locator("[data-a=pplus]:not([disabled])"); if (await b.count()) await b.nth(tasks % (await b.count())).click(); }
-    if (await page.locator("[data-a=plant]:not([disabled])").count() && tasks % 4) await page.click("[data-a=plant]"); else await page.click("[data-a=water]");
-  } else if (await page.locator("[data-a=p1]:not([disabled])").count()) { await page.locator("[data-a=p1]:not([disabled])").first().click(); await page.click("[data-a=p1ok]"); }
-  else {
-    const o = page.locator(".sheet .opt:not([disabled])");
-    if (await o.count()) await o.first().click(); else await page.click("[data-a=tskip]");
-  }
-  if (!shot && shots && picks > 3) { await page.screenshot({ path: `${shots}/ts-2-game.png`, fullPage: true }); shot = true; }
-}
-if (!(await page.locator("text=Neue Partie").count())) fail(`UI-Partie nicht beendet (guard ${guard})`);
-if (picks !== 16) fail(`Erwartet 16 Würfel, waren ${picks}`);
-console.log(`UI-Partie: ${picks} Würfel, ${tasks} Aktionen.`);
+if (shots) await page.screenshot({ path: `${shots}/ts-2-game.png`, fullPage: true });
+await playUi("2 Bots", 16);
 const inbox = await page.evaluate(() => JSON.parse(localStorage.getItem("spielregal:inbox:plays") || "[]"));
 if (!inbox.some((e) => e.gameName === "Three Sisters" && e.bggId === "291845")) fail("Partie nicht im Eingangskorb");
 if (shots) await page.screenshot({ path: `${shots}/ts-4-end.png`, fullPage: true });
+// Solo gegen Farmerin Edith
+await page.click("[data-a=newgame]");
+await page.click("text=Solo gegen Edith");
+await page.click("text=Garten anlegen");
+await page.waitForSelector(".rondel");
+await page.click("[data-a=fast]").catch(() => {});
+await playUi("Solo", 16);
+const inbox2 = await page.evaluate(() => JSON.parse(localStorage.getItem("spielregal:inbox:plays") || "[]"));
+const solo = inbox2.find((e) => e.solo);
+if (!solo || solo.results.length !== 1 || solo.winners.length) fail("Solo-Partie falsch im Eingangskorb: " + JSON.stringify(solo));
+if (shots) await page.screenshot({ path: `${shots}/ts-5-solo-end.png`, fullPage: true });
 await browser.close(); server.close();
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
 console.log("OK — Drei Schwestern: keine JS-Fehler, Bot- und UI-Partien vollständig.");

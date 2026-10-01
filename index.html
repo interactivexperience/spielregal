@@ -8046,7 +8046,7 @@ function digitalePartienUebernehmen(inbox, games, plays, players) {
       playerIds: profil ? [profil.id] : [],
       winner: ichGewinne ? (profil ? profil.name : ich.name) : "",
       ...(profil && ich ? { scores: { [profil.id]: String(ich.total) } } : {}),
-      notes: `Im Browser gespielt (${e.app || "Grand Hotel Wien"}) gegen ${bots.length} Bot${bots.length === 1 ? "" : "s"}.${botSieger.length ? ` Gewonnen hat ${botSieger.join(" und ")} (Bot).` : ""} Ergebnis${e.unit ? ` (${e.unit})` : ""}: ${tabelle}`,
+      notes: `Im Browser gespielt (${e.app || "Grand Hotel Wien"}) ${e.solo ? "solo gegen Farmerin Edith" : `gegen ${bots.length} Bot${bots.length === 1 ? "" : "s"}`}.${botSieger.length ? ` Gewonnen hat ${botSieger.join(" und ")} (Bot).` : ""} Ergebnis${e.unit ? ` (${e.unit})` : ""}: ${tabelle}`,
       images: [], source: e.source || "digital",
     });
   }
