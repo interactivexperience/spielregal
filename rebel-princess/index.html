@@ -63,6 +63,15 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .table .lbl{position:absolute;left:10px;top:6px;font-family:"Space Mono",monospace;font-size:10.5px;background:var(--white);padding:0 4px;border-radius:4px}
 .table .pen{position:absolute;right:10px;top:6px;font-family:"Space Mono",monospace;font-size:10.5px;background:var(--white);padding:0 4px;border-radius:4px}
 .trick{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.card.back .bk{position:absolute;inset:0;display:grid;place-items:center;color:#F3EEE4;font-family:"Caveat Brush",cursive;font-size:30px}
+.card.open{box-shadow:0 0 0 2px #F4A6B8}
+.cards.wrapc{flex-wrap:wrap;overflow:visible;justify-content:center;gap:6px}
+.valrow{display:flex;gap:5px;flex-wrap:wrap}
+.vb{min-width:34px;height:34px;border:2px solid var(--ink);border-radius:8px;background:#fff;font-weight:800}
+.vb.on{background:var(--ink);color:#fff}
+.tp.selc .card{outline:3px solid #F4A6B8;outline-offset:2px}
+.si{display:inline-block;width:18px;height:18px;vertical-align:middle;margin-right:4px}
+.pbox .nm{white-space:normal;overflow:visible}
 .tp{text-align:center;width:66px}
 .tp .who{font-size:10.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:var(--white);border-radius:4px}
 .tp.win .card{transform:rotate(-4deg) scale(1.06)}
@@ -81,9 +90,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .card .badge{position:absolute;left:5px;bottom:5px;font-family:"Space Mono",monospace;font-size:8.5px;font-weight:700;background:var(--white);color:#161616;border:1.5px solid #161616;border-radius:5px;padding:0 3px}
 .handsec{position:sticky;bottom:0;z-index:20;background:var(--paper);border-top:2.5px solid var(--ink);padding:8px 0 calc(10px + env(safe-area-inset-bottom));margin-top:14px}
 .handsec .in{max-width:560px;margin:0 auto;padding:0 12px}
-.handbar{display:flex;align-items:center;gap:8px;margin-bottom:6px;min-height:38px}
-.handbar .msg{flex:1;font-size:12.5px;line-height:1.2}
-.cards{display:flex;gap:6px;overflow-x:auto;overflow-y:visible;padding:16px 6px 6px;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.handbar{display:flex;align-items:center;gap:8px;margin-bottom:6px;min-height:38px;flex-wrap:wrap}
+.handbar .btn,.handbar .toggle{flex:none}
+.handbar .msg{flex:1 1 160px;font-size:12.5px;line-height:1.2}
+.cards{position:relative;z-index:2;display:flex;gap:6px;overflow-x:auto;overflow-y:visible;padding:16px 6px 6px;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .cards::-webkit-scrollbar{display:none}
 .cards .card{width:74px;height:107px;transition:transform .12s;scroll-snap-align:center}
 .cards .card .v{font-size:23px}
@@ -334,36 +344,73 @@ const bw = (seed, o, vb) => person(seed, Object.assign({ pose: 'stand' }, lookTo
 // Avatar: Kopf und Schultern groß
 const bwHead = (seed, o) => person(seed, Object.assign({ pose: 'stand' }, lookToFig(o)), '33 9 34 34');
 
-// ---------- Daten ----------
+// ---------- Daten (nach den Regeln der Deluxe Edition + „Doppelt Rebellisch“) ----------
 const ROUNDS = 5;
 const SUITS = ['F', 'H', 'K', 'P'];
 const SUIT_N = { F: 'Feen', H: 'Haustiere', K: 'Königinnen', P: 'Prinzen' };
 const SUIT_1 = { F: 'Fee', H: 'Haustier', K: 'Königin', P: 'Prinz' };
 const FROG = 'H8';
-const REMOVE = { 5: ['F1', 'H1', 'K1'] };
+// Kartenzahl je Personenzahl: zu dritt ohne 1, 11, 12; zu viert/fünft ohne 11, 12; zu sechst alle
+const REMOVE_V = { 3: [1, 11, 12], 4: [11, 12], 5: [11, 12], 6: [] };
+// Prinzessinnen: when = pre (vor einem Stich), turn (in deinem Zug), play (mit der Karte),
+// after (direkt nach deiner Karte), end (wenn alle gespielt haben), won (nach gewonnenem Stich)
 const PRINCESSES = [
-  { k: 'schnee', n: 'Schneewittchen', tx: 'Einmal pro Runde: Spiele eine Karte, ohne Farbe bedienen zu müssen.', when: 'play', look: { prop: 'apple', pose: 0, hair: 'bob', hat: 'flower', body: '#161616', pat: 'none' } },
-  { k: 'dorn', n: 'Dornröschen', tx: 'Einmal pro Runde: Deine Karte zählt als 0 und kann den Stich nicht gewinnen.', when: 'play', look: { prop: 'flower', pose: 0, hair: 'long', hat: 'tiara', body: '#FFFFFF', pat: 'dash' } },
-  { k: 'meer', n: 'Kleine Meerjungfrau', tx: 'Einmal pro Runde: In diesem Stich gewinnt die niedrigste Karte.', when: 'play', look: { prop: 'mirror', pose: 0, hair: 'curls', body: '#FFFFFF', pat: 'dots' } },
-  { k: 'rapunzel', n: 'Rapunzel', tx: 'Einmal pro Runde: Deine Karte zählt 6 Punkte mehr.', when: 'play', look: { prop: 'none', pose: 0, hair: 'long', hairC: '#FFFFFF', hat: 'tiara', body: '#161616', pat: 'stripes' } },
-  { k: 'rosen', n: 'Rosenrot', tx: 'Einmal pro Runde: Königinnen sind in diesem Stich Trumpf.', when: 'play', look: { prop: 'flower', pose: 0, hair: 'bun', hat: 'flower', body: '#FFFFFF', pat: 'checks' } },
-  { k: 'asche', n: 'Aschenputtel', tx: 'Einmal pro Runde: Gewinnst du einen Stich, gibst du alle Prinzen daraus an die nächste Person weiter.', when: 'won', look: { prop: 'shoe', pose: 0, hair: 'bun', hat: 'tiara', body: '#FFFFFF', pat: 'none' } },
-  { k: 'erbse', n: 'Prinzessin auf der Erbse', tx: 'Dauerhaft: Am Ende jeder Runde 2 Anträge weniger.', when: 'passive', look: { prop: 'pea', pose: 1, hair: 'side', hat: 'crown', body: '#161616', pat: 'dots' } },
-  { k: 'frosch', n: 'Froschkönigstochter', tx: 'Dauerhaft: Der Frosch zählt für dich nur 1 Antrag.', when: 'passive', look: { prop: 'frog', pose: 1, hair: 'bob', hat: 'crown', glasses: 1, body: '#FFFFFF', pat: 'stripes' } },
+  { k: 'alice', n: 'Alice', t: 'Grinsekatzen-Trick', tx: 'Mische einen gerade gewonnenen Stich ohne Frosch und verteile die Karten zufällig zurück: jede Person bekommt eine Karte auf die Hand.', when: 'won' },
+  { k: 'asche', n: 'Aschenputtel', t: 'Um Mitternacht ändert sich alles', tx: 'Vor einem Stich: Kehre die Rangfolge um, in der ausgespielten Farbe gewinnt die niedrigste Karte.', when: 'pre' },
+  { k: 'eis', n: 'Die Eisprinzessin', t: 'Eiszeit', tx: 'Vor einem Stich: Nimm 2 zufällige Karten einer Person. Eine gibst du zurück, die andere muss sie in diesem Stich spielen.', when: 'pre' },
+  { k: 'meer', n: 'Die kleine Meerjungfrau', t: 'Betörender Gesang', tx: 'Vor einem Stich: Bestimme die Farbe, mit der die ausspielende Person beginnen muss.', when: 'pre' },
+  { k: 'mulan', n: 'Mulan', t: 'Tarnung', tx: 'Wenn alle gespielt haben: Tausche deine gespielte Karte gegen eine andere derselben Farbe von deiner Hand (nicht den Frosch).', when: 'end' },
+  { k: 'erbse', n: 'Die Prinzessin auf der Erbse', t: 'Noch fünf Minuten!', tx: 'Vor einem Stich: Alle anderen müssen eine Karte über 5 spielen, wenn sie können (Farbe bedienen geht vor).', when: 'pre' },
+  { k: 'poca', n: 'Pocahontas', t: 'Wegweiserin', tx: 'Vor einem Stich: Bestimme, wer den Stich beginnt.', when: 'pre' },
+  { k: 'rapunzel', n: 'Rapunzel', t: 'Lass dein Haar herunter', tx: 'Vor einem Stich: Wer ausspielt, muss einen Prinzen spielen, auch wenn noch keiner gefallen ist.', when: 'pre' },
+  { k: 'schehe', n: 'Scheherazade', t: 'Feilschen im Basar', tx: 'Vor einem Stich: Ziehe eine zufällige Karte einer Person und tausche sie gegen eine deiner Karten (oder gib sie zurück).', when: 'pre' },
+  { k: 'dorn', n: 'Dornröschen', t: 'Spindel des Schicksals', tx: 'Vor einem Stich: Alle geben dir eine Karte. Du behältst eine und verteilst die anderen, wie du willst.', when: 'pre' },
+  { k: 'schnee', n: 'Schneewittchen', t: 'Sieben Zwerge', tx: 'Spiele eine 7 oder niedriger als 0.', when: 'play' },
+  { k: 'daum', n: 'Däumelinchen', t: 'Ich will frei sein', tx: 'Wenn du nicht ausspielst: Spiele eine beliebige Karte außer Frosch und Prinz, ohne Farbe zu bedienen.', when: 'play' },
+  { k: 'rot', n: 'Rotkäppchen', t: 'Demaskierung', exp: 1, tx: 'In deinem Zug: Verlange eine bestimmte Karte (nicht den Frosch). Wer sie hat, gibt sie dir; du gibst eine Karte derselben Farbe zurück.', when: 'turn' },
+  { k: 'schwan', n: 'Schwanenmädchen', t: 'Abgetaucht', exp: 1, tx: 'In deinem Zug: Du spielst in diesem Stich als Letzte. Hättest du begonnen, beginnt die Person links von dir.', when: 'turn' },
+  { k: 'belle', n: 'Belle', t: 'Verzauberte Karten', exp: 1, tx: 'Direkt nach deiner Karte: Vertausche zwei Karten im Stich (nicht den Frosch). Nicht, wenn du ausgespielt hast.', when: 'after' },
 ];
+// Rundenkarten: pass = [Anzahl, Richtung L/R/B], end = schwarze Sanduhr (für die letzte Runde empfohlen)
 const RULES = [
-  { k: 'links2', n: 'Höfischer Gruß', tx: 'Vor der Runde gebt ihr 2 Karten nach links.', pass: [2, 1] },
-  { k: 'rechts3', n: 'Maskenball', tx: 'Vor der Runde gebt ihr 3 Karten nach rechts.', pass: [3, -1] },
-  { k: 'frosch10', n: 'Froschkonzert', tx: 'Der Frosch bringt diese Runde 10 Anträge.' },
-  { k: 'frei', n: 'Offene Tore', tx: 'Prinzen dürfen jederzeit ausgespielt werden.' },
-  { k: 'letzter', n: 'Letzter Walzer', tx: 'Anträge im letzten Stich zählen doppelt.' },
-  { k: 'feen', n: 'Feenzauber', tx: 'Feen sind Trumpf.' },
-  { k: 'umgekehrt', n: 'Spiegelsaal', tx: 'Die niedrigste Karte gewinnt jeden Stich.' },
-  { k: 'tee', n: 'Teestunde', tx: 'Wer die Königin 12 gewinnt, bekommt 3 Anträge abgezogen.' },
+  { k: 'a', n: 'Es war einmal', tx: 'Keine Sonderregeln.', pass: [3, 'R'] },
+  { k: 'b', n: 'Späte Gäste', tx: 'Nach dem Weitergeben legt jede Person eine Karte verdeckt beiseite. Sie wird im letzten Stich gespielt.', pass: [1, 'R'] },
+  { k: 'c', n: 'Magische Bohnen', tx: 'Alle, auch wer ausspielt, dürfen nur die höchste oder niedrigste Karte einer Farbe spielen (der ausgespielten, sonst einer anderen).', pass: [2, 'L'] },
+  { k: 'd', n: 'Drei mal drei ist Nein', tx: 'Jede 3 ist −3 Anträge wert, der Prinz 3 ist −2. Negative Werte sind möglich.', pass: [1, 'L'] },
+  { k: 'e', n: 'Arrangierte Ehe', tx: 'Wer am Rundenende keinen Stich hat, bekommt 5 Anträge zusätzlich.', pass: [1, 'B'], end: 1 },
+  { k: 'f', n: 'Königlicher Erlass', tx: 'Königinnen sind Trumpf: Die höchste Königin gewinnt immer.', pass: [2, 'R'] },
+  { k: 'g', n: 'Die Nächste in der Reihe', tx: 'Die zweithöchste Karte der ausgespielten Farbe gewinnt. Bedient niemand, gewinnt, wer ausgespielt hat.', pass: [1, 'L'] },
+  { k: 'h', n: 'Gläserner Schuh', tx: 'Nach dem Weitergeben legt jede Person alle Karten einer Farbe offen aus. Sie bleiben Handkarten.', pass: [2, 'L'] },
+  { k: 'i', n: 'Maskenball', tx: 'Alle außer der ausspielenden Person spielen verdeckt; aufgedeckt wird, wenn alle gespielt haben.', pass: [1, 'R'] },
+  { k: 'j', n: 'Rache der Haustiere', tx: 'Haustiere zählen je 1 Antrag, der Frosch zählt 6.', pass: [2, 'R'] },
+  { k: 'k', n: 'Stuhltanz', tx: 'Nach jedem Stich geben alle gleichzeitig eine Karte nach rechts.', pass: [1, 'L'] },
+  { k: 'l', n: 'Schwesternschaft', tx: 'Die Karte der ausgespielten Farbe, die am weitesten von der ersten Karte entfernt ist, gewinnt. Gleichstand: zuerst gespielte höhere Zahl.', pass: [2, 'L'] },
+  { k: 'm', n: 'Reste-Party', tx: 'Jede Person legt die Hälfte ihrer Hand verdeckt beiseite. Erst die andere Hälfte spielen, dann die beiseitegelegte.', pass: [2, 'R'] },
+  { k: 'n', n: 'Schon so spät?', tx: 'Die letzten 3 Karten auf der Hand werden wie ein gewonnener Stich gewertet.', pass: [2, 'R'] },
+  { k: 'o', n: 'Hochzeitsgeschenk', tx: 'Vor jedem Stich legt jede Person eine Karte verdeckt auf einen Geschenkstapel, den gewinnt, wer den Stich gewinnt. Kein „Rebel of the Ball“ möglich.', pass: [1, 'L'] },
+  { k: 'p', n: 'Tauschhandel', tx: 'Wer einen Stich gewinnt, darf eine gezeigte Handkarte gegen eine Karte aus dem Stich tauschen (nicht die selbst gespielte).', pass: [2, 'L'] },
+  { k: 'q', n: 'Blindes Huhn', tx: 'Jede Person legt die Hälfte ihrer Hand beiseite. Erst die Hand spielen, dann die beiseitegelegte Hälfte an die rechte Nachbarin geben.', pass: [1, 'R'] },
+  { k: 'r', n: 'Vergifteter Apfel', tx: 'Wer nicht bedienen kann, gewinnt mit der gespielten Karte. Mehrere: höchste Zahl, bei Gleichstand die zuerst gespielte.', pass: [1, 'L'] },
+  { k: 's', n: 'Gerade und Ungerade', tx: 'Zusätzlich zur Farbe gerade bzw. ungerade wie die erste Karte spielen, wenn möglich.', pass: [2, 'R'] },
+  { k: 't', n: 'Einzelne Fee', tx: 'Jede gewonnene Fee ist −1 Antrag wert. Negative Werte sind möglich.', pass: [1, 'L'], end: 1 },
+  { k: 'u', n: 'Wenn der Prinz zweimal klingelt', tx: 'Alle spielen nach der ersten Karte eine zweite. Die Summe der Karten der ausgespielten Farbe gewinnt.', pass: [1, 'B'] },
+  { k: 'v', n: 'Mitternachts-Verwandlung', tx: 'Feen sind Joker: Sie dürfen immer gespielt werden und zählen zur ausgespielten Farbe. Die höchste Zahl gewinnt, bei Gleichstand die zuerst gespielte.', pass: [2, 'L'] },
+  { k: 'w', n: 'Brautstrauß', tx: 'Jede Karte einer neuen Farbe übernimmt die Führung. Die höchste Karte der zuletzt angeführten Farbe gewinnt.', pass: [1, 'R'] },
+  { k: 'x', n: 'Verkehrte Welt', tx: 'Jede gespielte 6 kehrt die Rangfolge in diesem Stich um.', pass: [2, 'R'], end: 1 },
+  { k: 'y', n: 'Frischmachen', tx: 'Prinzen zählen doppelt, außer für die Person(en) mit den bisher meisten Anträgen.', pass: [1, 'L'], end: 1 },
+  { k: 'z', n: 'Tanzende Königinnen', tx: 'Prinz und Königin gleicher Zahl = 3 Anträge, ungleiche Paare = 2, Prinz allein = 1, Königin allein = 0.', pass: [2, 'R'], end: 1 },
+  { k: 'eg', n: 'Die alte Leier', tx: 'Jeder Prinz zählt −1 Antrag, der Frosch weiterhin 5.', pass: [2, 'L'], exp: 1 },
+  { k: 'eh', n: 'Vererbt', tx: 'Wer den letzten Stich gewinnt, gibt alle gewonnenen Stiche an die linke Nachbarin.', pass: [1, 'R'], exp: 1, end: 1 },
+  { k: 'ei', n: 'Hochzeitsüberraschung', tx: 'Wer ausspielt, spielt verdeckt und sagt nur die Farbe an.', pass: [1, 'L'], exp: 1 },
+  { k: 'ej', n: 'Durchzug', tx: 'Vor dem ersten Stich: je 2 Karten behalten, den Rest nach links geben, bis alle Karten verteilt sind.', pass: [0, 'L'], exp: 1 },
+  { k: 'ek', n: 'Vergiftetes Geschenk', tx: 'Alle legen eine Karte auf einen Stapel, der zur ausspielenden Person geht. Wer ihn hat und einen Stich gewinnt, gibt ihn weiter. Am Ende zählt er wie ein Stich.', pass: [1, 'R'], exp: 1 },
+  { k: 'el', n: 'Geheimes Gebot', tx: 'Legt eine Karte verdeckt unter eure Prinzessin. Entspricht ihre Zahl euren gewonnenen Stichen, zählt statt der Anträge −1 je Stich.', pass: [2, 'L'], exp: 1 },
+  { k: 'em', n: 'Ein verzauberter Abend', tx: 'Alle legen eine Karte unter 8 ab, die Summe ist das Ziel. Wer im Stich die laufende Summe über das Ziel bringt, gewinnt ihn.', pass: [1, 'R'], exp: 1 },
 ];
+const RULE = k => RULES.find(r => r.k === k);
 const BOT_NAMES = [
   ['Gräfin Holle', { hair: 'bun', hat: 'feather', body: '#161616', pat: 'dots' }],
-  ['Fürstin Rotkäppchen', { hair: 'long', hat: 'beret', body: '#FFFFFF', pat: 'checks' }],
+  ['Fürstin Rosenrot', { hair: 'long', hat: 'beret', body: '#FFFFFF', pat: 'checks' }],
   ['Baronin Gretel', { hair: 'curls', body: '#161616', pat: 'stripes' }],
   ['Lady Allerleirauh', { hair: 'bob', glasses: 1, body: '#FFFFFF', pat: 'dash' }],
   ['Herzogin Goldmarie', { hair: 'side', hat: 'tiara', body: '#161616', pat: 'none' }],
@@ -371,7 +418,7 @@ const BOT_NAMES = [
 
 // ---------- Zufall & Helfer ----------
 let S = null;
-const U = { sheet: null, toast: null, busy: false, setup: { name: '', bots: 3 }, sel: null, power: false, fast: false, passSel: [] };
+const U = { sheet: null, toast: null, busy: false, setup: { name: '', bots: 3, mode: 'random', exp: true }, sel: [], power: null, fast: false };
 function rnd() { S.rng = (S.rng + 0x6D2B79F5) | 0; let t = Math.imul(S.rng ^ (S.rng >>> 15), 1 | S.rng); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 const range = n => Array.from({ length: n }, (_, i) => i);
@@ -379,10 +426,740 @@ const suit = c => c[0];
 const val = c => +c.slice(1);
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
 function sortHand(h) { return h.sort((a, b) => SUITS.indexOf(suit(a)) - SUITS.indexOf(suit(b)) || val(a) - val(b)); }
-function log(m) { S.log.unshift(m); if (S.log.length > 60) S.log.length = 60; }
+function log(m) { S.log.unshift(m); if (S.log.length > 80) S.log.length = 80; }
 const human = () => S.players.find(p => !p.bot);
-const rule = () => RULES.find(r => r.k === S.rule);
+const rule = () => RULE(S.rule);
 const princess = p => PRINCESSES.find(x => x.k === p.princess);
+const N = () => S.players.length;
+const left = i => (i + 1) % N();
+const right = i => (i - 1 + N()) % N();
+const cardName = c => `${SUIT_1[suit(c)]} ${val(c)}${c === FROG ? ' (Frosch)' : ''}`;
+const nm = i => S.players[i].name;
+
+// ---------- Partie ----------
+function newGame(name, nBots, seed, opts = {}) {
+  S = { v: 2, id: 'rp-' + Date.now().toString(36) + '-' + ((seed >>> 0) % 1679616).toString(36), rng: seed | 0, round: 0, players: [], log: [], recorded: false, screen: 'game', history: [], ask: null };
+  const bots = shuffle(BOT_NAMES.slice()).slice(0, nBots);
+  const mk = (n, bot, look) => ({ name: n, bot, look, hand: [], won: [], tricks: 0, total: 0, zeroRounds: 0, princess: null, used: false, aside: [], late: null, open: [], bid: null });
+  if (name !== null) S.players.push(mk(name || 'Du', false, { hair: 'bob', hat: 'tiara', body: '#161616', pat: 'dots' }));
+  bots.forEach(b => S.players.push(mk(b[0], true, b[1])));
+  if (name === null) S.players.push(mk('Prinzessin Test', true, { hair: 'bun', hat: 'crown' }));
+  // Rundenkarten: erste Partie a–e, sonst 4 zufällige + eine mit schwarzer Sanduhr zum Schluss
+  const pool = RULES.filter(r => opts.exp !== false || !r.exp);
+  if (opts.rules) S.rules = opts.rules.slice();
+  else if (opts.mode === 'first') S.rules = ['a', 'b', 'c', 'd', 'e'];
+  else {
+    const normal = shuffle(pool.filter(r => !r.end).map(r => r.k)).slice(0, ROUNDS - 1);
+    S.rules = normal.concat([shuffle(pool.filter(r => r.end).map(r => r.k))[0]]);
+  }
+  // Prinzessinnen: je 2 austeilen, eine wählen
+  const prs = shuffle(PRINCESSES.filter(p => opts.exp !== false || !p.exp).map(p => p.k));
+  S.players.forEach(p => { const two = [prs.pop(), prs.pop()]; if (p.bot) p.princess = two[Math.floor(rnd() * 2)]; else S.princessChoice = two; });
+  S.leader = Math.floor(rnd() * N());
+  log(`Der Ball beginnt: ${N()} Prinzessinnen, ${ROUNDS} Ballnächte.`);
+  if (S.princessChoice) S.phase = 'princess'; else startRound();
+}
+function deckFor(n) {
+  const d = [];
+  for (const s of SUITS) for (let v = 1; v <= 12; v++) if (!REMOVE_V[n].includes(v)) d.push(s + v);
+  return d;
+}
+function startRound(again) {
+  if (!again) S.round++;
+  S.rule = S.rules[S.round - 1];
+  const deck = shuffle(deckFor(N()));
+  const per = deck.length / N();
+  S.players.forEach((p, i) => Object.assign(p, { hand: sortHand(deck.slice(i * per, (i + 1) * per)), won: [], tricks: 0, used: false, aside: [], late: null, open: [], bid: null, low: null, roundPts: 0 }));
+  if (S.round > 1 && !again) {
+    const min = Math.min(...S.players.map(p => p.total));
+    for (let k = 1; k <= N(); k++) { const i = (S.startLeader + k) % N(); if (S.players[i].total === min) { S.leader = i; break; } }
+  }
+  S.startLeader = S.leader;
+  Object.assign(S, { trickNo: 0, broken: false, gift: null, poison: null, target: null, last: null, trick: [], fx: {}, part: 1 });
+  if (!again) log(`— Ballnacht ${S.round}: „${rule().n}“ – ${rule().tx}`);
+  const [k, dir] = rule().pass;
+  if (k > 0 && !S.noPass) {
+    S.phase = 'pass';
+    const need = dir === 'B' ? 2 : k;
+    S.passSel = S.players.map(p => p.bot ? botPass(p, need) : null);
+    const me = S.players.findIndex(p => !p.bot);
+    if (me >= 0) return ask(me, { kind: 'cards', n: need, title: `${need} Karte${need > 1 ? 'n' : ''} weitergeben`, text: dir === 'B' ? 'Die erste gewählte Karte geht nach links, die zweite nach rechts.' : `Die Karten gehen an die Person ${dir === 'L' ? 'links' : 'rechts'} von dir.`, next: 'pass' });
+    doPass();
+  } else setupRound();
+}
+function doPass() {
+  const [, dir] = rule().pass;
+  const give = S.passSel;
+  S.players.forEach((p, i) => { p.hand = p.hand.filter(c => !give[i].includes(c)); });
+  const got = S.players.map(() => []);
+  S.players.forEach((p, i) => {
+    if (dir === 'B') { got[left(i)].push(give[i][0]); got[right(i)].push(give[i][1]); }
+    else got[dir === 'L' ? left(i) : right(i)].push(...give[i]);
+  });
+  S.players.forEach((p, i) => { p.hand = sortHand(p.hand.concat(got[i])); });
+  S.gotPass = got;
+  log(`Kartentausch: ${dir === 'B' ? 'je eine nach links und rechts' : `${give[0].length} nach ${dir === 'L' ? 'links' : 'rechts'}`}.`);
+  setupRound();
+}
+
+// ---------- Fragen an die menschliche Person ----------
+// Bots antworten sofort; für den Menschen hält das Spiel an (S.ask) und setzt
+// nach der Antwort über CONT[next] fort.
+function ask(pi, a) { S.ask = Object.assign({ pi }, a); S.phase = S.phase === 'princess' ? 'princess' : S.phase; }
+function answer(sel) { const a = S.ask; S.ask = null; CONT[a.next](a.pi, sel, a.data || {}); }
+const CONT = {
+  pass: (pi, sel) => { S.passSel[pi] = sel; doPass(); },
+  setup: (pi, sel, d) => { applySetup(d.step, pi, sel); runSetup(); },
+  draft: (pi, sel) => { draftKeep(pi, sel); runDraft(); },
+  pre: (pi, sel) => { if (sel === 'use') return startPower(pi); preWindow(pi + 1); },
+  power: (pi, sel, d) => powerStep(pi, sel, d),
+  gift: (pi, sel) => { S.gift.push(...sel); S.players[pi].hand = S.players[pi].hand.filter(c => !sel.includes(c)); giftRound(pi + 1); },
+  belle: (pi, sel) => { if (sel && sel.length === 2) belleSwap(pi, sel); afterCard(pi); },
+  mulan: (pi, sel) => { if (sel && sel.length) mulanSwap(pi, sel[0]); endWindow(pi + 1); },
+  alice: (pi, sel) => { if (sel === 'use') aliceDeal(pi); else takeTrick(); },
+  poison: (pi, sel) => { S.poison.holder = +sel; log(`${nm(pi)} gibt das vergiftete Geschenk an ${nm(+sel)}.`); afterTrick(1); },
+  haggle: (pi, sel, d) => {
+    if (sel && sel.hand && sel.trick) { const p = S.players[pi]; p.hand = sortHand(p.hand.filter(c => c !== sel.hand).concat([sel.trick])); d.cards.splice(d.cards.indexOf(sel.trick), 1, sel.hand); S.pendingCards = d.cards; log(`${p.name} tauscht ${cardName(sel.hand)} gegen ${cardName(sel.trick)}.`); }
+    afterTrick(2);
+  },
+  chairs: (pi, sel) => { S.chairs[pi] = sel[0]; finishChairs(); },
+};
+
+// ---------- Rundenvorbereitung nach Rundenkarte ----------
+function setupRound() {
+  S.setupDone = null;
+  const k = S.rule;
+  S.setupQ = { b: ['late'], h: ['open'], m: ['half'], q: ['half'], el: ['bid'], em: ['low'], ek: ['poison'], ej: ['draft'] }[k] || [];
+  runSetup();
+}
+function setupNeed(step, p) {
+  const n = Math.floor(p.hand.length / 2);
+  return {
+    late: { kind: 'cards', n: 1, title: 'Späte Gäste', text: 'Lege eine Karte beiseite. Sie wird im letzten Stich gespielt.' },
+    open: { kind: 'suit', title: 'Gläserner Schuh', text: 'Wähle eine Farbe aus deiner Hand. Alle Karten dieser Farbe liegen offen aus.', opts: SUITS.filter(s => p.hand.some(c => suit(c) === s)) },
+    half: { kind: 'cards', n, title: S.rule === 'm' ? 'Reste-Party' : 'Blindes Huhn', text: S.rule === 'm' ? `Lege ${n} Karten beiseite. Du spielst sie, wenn deine Hand leer ist.` : `Lege ${n} Karten beiseite. Sie gehen später an die Person rechts von dir.` },
+    bid: { kind: 'cards', n: 1, title: 'Geheimes Gebot', text: 'Lege eine Karte unter deine Prinzessin (möglichst kein Prinz/Frosch). Gewinnst du genau so viele Stiche wie ihre Zahl, zählt −1 je Stich statt der Anträge.', filter: 'noPF' },
+    low: { kind: 'cards', n: 1, title: 'Ein verzauberter Abend', text: 'Lege eine Karte unter 8 ab. Alle abgelegten Werte ergeben die Zielsumme.', filter: 'under8' },
+    poison: { kind: 'cards', n: 1, title: 'Vergiftetes Geschenk', text: 'Lege eine Karte verdeckt auf den Geschenkstapel.' },
+  }[step];
+}
+function runSetup() {
+  while (S.setupQ.length) {
+    const step = S.setupQ[0];
+    if (step === 'draft') { S.setupQ.shift(); return startDraft(); }
+    if (step === 'low' && S.players.some(p => !p.hand.some(c => val(c) < 8))) { log('Jemand hat keine Karte unter 8 – die Runde wird neu gegeben.'); return startRound(true); }
+    if (!S.setupDone) { S.setupDone = {}; S.players.forEach((p, i) => { if (p.bot) applySetup(step, i, botSetup(step, p)); }); }
+    const me = S.players.findIndex(p => !p.bot);
+    if (me >= 0 && !S.setupDone[me]) return ask(me, Object.assign({ next: 'setup', data: { step } }, setupNeed(step, S.players[me])));
+    finishSetup(step);
+    S.setupQ.shift(); S.setupDone = null;
+  }
+  startTrick();
+}
+function applySetup(step, pi, sel) {
+  const p = S.players[pi];
+  S.setupDone[pi] = true;
+  const take = cs => { p.hand = p.hand.filter(c => !cs.includes(c)); };
+  if (step === 'late') { take(sel); p.late = sel[0]; }
+  if (step === 'open') p.open = p.hand.filter(c => suit(c) === sel);
+  if (step === 'half') { take(sel); p.aside = sel.slice(); }
+  if (step === 'bid') { take(sel); p.bid = sel[0]; }
+  if (step === 'low') { take(sel); p.low = sel[0]; }
+  if (step === 'poison') { take(sel); (S.poisonPile = S.poisonPile || []).push(sel[0]); }
+}
+function finishSetup(step) {
+  if (step === 'low') { S.target = S.players.reduce((s, p) => s + val(p.low), 0); log(`Zielsumme für den verzauberten Abend: ${S.target}.`); }
+  if (step === 'poison') { S.poison = { cards: S.poisonPile, holder: S.leader }; S.poisonPile = null; log(`Das vergiftete Geschenk geht an ${nm(S.leader)}.`); }
+  if (step === 'open') log('Alle legen eine Farbe offen aus.');
+}
+// Durchzug: je 2 behalten, Rest nach links, bis alles verteilt ist
+function startDraft() { S.draft = { packets: S.players.map(p => p.hand), kept: S.players.map(() => []) }; S.players.forEach(p => { p.hand = []; }); runDraft(); }
+function runDraft() {
+  const D = S.draft;
+  while (D.packets.some(pk => pk.length)) {
+    if (!D.done) { D.done = {}; S.players.forEach((p, i) => { if (p.bot) draftKeep(i, botKeep(p, D.packets[i])); }); }
+    const me = S.players.findIndex(p => !p.bot);
+    if (me >= 0 && !D.done[me]) { const pk = D.packets[me]; return ask(me, { kind: 'cards', n: Math.min(2, pk.length), list: sortHand(pk.slice()), title: 'Durchzug', text: 'Behalte 2 Karten aus diesem Päckchen, den Rest bekommt die Person links von dir.', next: 'draft' }); }
+    const rest = D.packets.map((pk, i) => pk.filter(c => !D.taken[i].includes(c)));
+    D.packets = S.players.map((_, i) => rest[right(i)]);
+    D.done = null; D.taken = null;
+  }
+  S.players.forEach((p, i) => { p.hand = sortHand(D.kept[i]); });
+  S.draft = null;
+  runSetup();
+}
+function draftKeep(pi, sel) { const D = S.draft; D.done[pi] = true; D.taken = D.taken || S.players.map(() => []); D.taken[pi] = sel; D.kept[pi].push(...sel); }
+
+// ---------- Stich ----------
+function activeHand(p) { return p.hand.length ? p.hand : p.late ? [p.late] : []; }
+function startTrick() {
+  // Reste-Party / Blindes Huhn: beiseitegelegte Hälfte nachziehen
+  S.players.forEach((p, i) => {
+    if (!p.hand.length && p.aside.length && (S.rule === 'm' || S.rule === 'q')) {
+      if (S.rule === 'm') { p.hand = sortHand(p.aside); p.aside = []; }
+    }
+  });
+  if (S.rule === 'q' && S.players.every(p => !p.hand.length) && S.players.some(p => p.aside.length)) {
+    const asides = S.players.map(p => p.aside);
+    S.players.forEach((p, i) => { p.hand = sortHand(asides[left(i)]); p.aside = []; });
+    log('Blindes Huhn: Die beiseitegelegten Karten gehen an die rechte Nachbarin.');
+  }
+  const cardsLeft = S.players.map(p => p.hand.length + (p.late ? 1 : 0));
+  if (S.rule === 'n' && cardsLeft.every(n => n === 3)) return endRound();
+  if (cardsLeft.every(n => n === 0) || (S.rule === 'o' && cardsLeft.some(n => n < 2))) return endRound();
+  S.trick = []; S.fx = {}; S.part = 1;
+  S.order = range(N()).map(k => (S.leader + k) % N());
+  S.oi = 0;
+  if (S.rule === 'o') { S.gift = []; return giftRound(0); }
+  preWindow(0);
+}
+// Hochzeitsgeschenk: vor jedem Stich legt jede Person eine Karte auf den Geschenkstapel
+function giftRound(from) {
+  for (let i = from; i < N(); i++) {
+    const p = S.players[i];
+    if (p.bot) { const c = botDump(p, 1)[0]; S.gift.push(c); p.hand = p.hand.filter(x => x !== c); }
+    else return ask(i, { kind: 'cards', n: 1, title: 'Hochzeitsgeschenk', text: 'Lege eine Karte verdeckt auf den Geschenkstapel. Ihn bekommt, wer diesen Stich gewinnt.', next: 'gift' });
+  }
+  preWindow(0);
+}
+// Vor dem Stich: Fähigkeiten mit „vor einem Stich“ (reihum ab links der ausspielenden Person)
+function preWindow(fromK) {
+  S.phase = 'pre';
+  for (let k = fromK; k < N(); k++) {
+    const pi = (S.leader + 1 + k) % N(), p = S.players[pi];
+    if (!canPower(p, 'pre')) continue;
+    if (p.bot) { if (botWantsPre(p, pi)) { S.preK = k; startPower(pi); } continue; }
+    if (S.tut || p.skipPre === S.round) continue;
+    S.preK = k;
+    return ask(pi, { kind: 'pre', title: `${princess(p).n}: ${princess(p).t}`, text: princess(p).tx, opts: [['use', 'Nutzen'], ['skip', 'Weiter'], ['round', 'Diese Nacht nicht mehr fragen']], next: 'pre' });
+  }
+  S.phase = 'play';
+}
+CONT.pre = (pi, sel) => { if (sel === 'use') return startPower(pi); if (sel === 'round') S.players[pi].skipPre = S.round; preWindow(S.preK + 1); };
+const LEAD_CTRL = ['meer', 'rapunzel', 'eis', 'poca'];
+function canPower(p, when) {
+  const pr = princess(p);
+  if (!pr || p.used || pr.when !== when || !activeHand(p).length) return false;
+  if (when === 'pre') {
+    if (LEAD_CTRL.includes(pr.k) && S.fx.lead) return false; // widersprechende Fähigkeit schon aktiv
+    if (pr.k === 'dorn' && S.fx.lead && S.fx.lead !== 'poca') return false;
+    if (pr.k === 'schehe' && S.fx.lead && S.fx.lead !== 'poca') return false;
+  }
+  return true;
+}
+const curPi = () => S.order[S.oi];
+const cur = () => S.players[curPi()];
+function leadSuit(tr = S.trick) {
+  if (!tr.length) return null;
+  if (S.fx.ledSuit) return S.fx.ledSuit; // Hochzeitsüberraschung: angesagte Farbe
+  if (S.rule === 'w') { let L = suit(tr[0].c); for (const t of tr) if (suit(t.c) !== L) L = suit(t.c); return L; }
+  return suit(tr[0].c);
+}
+function extremes(cards) { const out = []; for (const s of SUITS) { const cs = cards.filter(c => suit(c) === s); if (cs.length) { out.push(cs[0]); if (cs.length > 1) out.push(cs[cs.length - 1]); } } return out; }
+// Erlaubte Karten
+function legal(p, mode) {
+  const pi = S.players.indexOf(p);
+  if (S.fx.ice && S.fx.ice.pi === pi && p.hand.includes(S.fx.ice.c)) return [S.fx.ice.c];
+  const hand = activeHand(p).slice();
+  if (!hand.length) return [];
+  const leading = !S.trick.length;
+  const erbse = S.fx.erbse != null && S.fx.erbse !== pi;
+  let opts;
+  if (leading) {
+    opts = hand;
+    if (S.fx.meer && hand.some(c => suit(c) === S.fx.meer)) opts = hand.filter(c => suit(c) === S.fx.meer);
+    else if (S.fx.rapunzel && hand.some(c => suit(c) === 'P')) opts = hand.filter(c => suit(c) === 'P');
+    else if (!S.broken && hand.some(c => suit(c) !== 'P')) opts = hand.filter(c => suit(c) !== 'P');
+    if (S.rule === 'c') opts = extremes(opts);
+    if (erbse) { const hi = opts.filter(c => val(c) > 5); if (hi.length && !(opts.every(c => suit(c) === 'P') && !S.broken)) opts = hi; }
+    return opts;
+  }
+  if (mode === 'daum') {
+    opts = hand.filter(c => suit(c) !== 'P' && c !== FROG);
+    if (opts.length) return opts;
+  }
+  const L = suit(S.trick[0].c);
+  const Lnow = S.rule === 'w' ? leadSuit() : S.fx.ledSuit || L;
+  let follow = hand.filter(c => suit(c) === Lnow || (S.rule === 'v' && suit(c) === 'F'));
+  opts = follow.length ? follow : hand;
+  if (S.rule === 's') { const par = val(S.trick[0].c) % 2; const m = opts.filter(c => val(c) % 2 === par); if (m.length) opts = m; }
+  if (S.rule === 'c') opts = extremes(opts);
+  if (erbse) { const hi = opts.filter(c => val(c) > 5); if (hi.length) opts = hi; }
+  return opts;
+}
+function playCard(p, c, mode) {
+  const pi = S.players.indexOf(p);
+  if (S.phase !== 'play' || pi !== curPi()) return false;
+  if (mode && !['schnee', 'daum'].includes(mode)) mode = null;
+  if (mode && (!canPower(p, 'play') || princess(p).k !== mode)) mode = null;
+  if (mode === 'schnee' && val(c) > 7) mode = null;
+  if (!legal(p, mode).includes(c)) return false;
+  const leading = !S.trick.length;
+  const L = leading ? null : (S.fx.ledSuit || suit(S.trick[0].c));
+  const voidPlay = !leading && suit(c) !== L && !activeHand(p).some(x => suit(x) === L);
+  if (p.hand.includes(c)) p.hand.splice(p.hand.indexOf(c), 1); else if (p.late === c) p.late = null;
+  p.open = p.open.filter(x => x !== c);
+  if (mode) { p.used = true; log(`${p.name} nutzt ${princess(p).n}${mode === 'schnee' ? `: ${cardName(c)} zählt als 0` : ''}.`); }
+  if (suit(c) === 'P' && (voidPlay || (S.fx.ice && S.fx.ice.pi === pi))) S.broken = true;
+  const down = (S.rule === 'i' && !leading) || (S.rule === 'ei' && leading);
+  S.trick.push({ pi, c, zero: mode === 'schnee', down, part: S.part });
+  if (S.rule === 'ei' && leading) S.fx.ledSuit = suit(c);
+  // Belle: direkt nach der eigenen Karte zwei Karten im Stich tauschen
+  if (!leading && canPower(p, 'after') && S.trick.filter(t => t.c !== FROG).length >= 2) {
+    if (p.bot) { const sw = botBelle(p, pi); if (sw) belleSwap(pi, sw); }
+    else if (!S.tut) return ask(pi, { kind: 'trick2', title: 'Belle: Verzauberte Karten', text: 'Du darfst zwei Karten im Stich vertauschen (nicht den Frosch). Wähle zwei oder überspringe.', next: 'belle', optional: true }), true;
+  }
+  afterCard(pi);
+  return true;
+}
+function afterCard() {
+  S.oi++;
+  if (S.oi < S.order.length) return;
+  if (S.rule === 'u' && S.part === 1 && S.players.every(p => activeHand(p).length)) { S.part = 2; S.oi = 0; return; }
+  endWindow(0);
+}
+// Mulan: wenn alle gespielt haben, die eigene Karte tauschen
+function endWindow(fromK) {
+  for (let k = fromK; k < N(); k++) {
+    const pi = S.order[k], p = S.players[pi];
+    if (!canPower(p, 'end')) continue;
+    const mine = S.trick.find(t => t.pi === pi);
+    if (!mine || mine.c === FROG) continue;
+    const alts = activeHand(p).filter(c => suit(c) === suit(mine.c) && c !== FROG);
+    if (!alts.length) continue;
+    if (p.bot) { const c = botMulan(p, pi, alts); if (c) mulanSwap(pi, c); continue; }
+    if (S.tut) continue;
+    S.endK = k;
+    return ask(pi, { kind: 'cards', n: 1, optional: true, list: alts, title: 'Mulan: Tarnung', text: `Tausche deine ${cardName(mine.c)} gegen eine andere Karte derselben Farbe – oder überspringe.`, next: 'mulan' });
+  }
+  S.trick.forEach(t => { t.down = false; });
+  S.phase = 'collect';
+}
+CONT.mulan = (pi, sel) => { if (sel && sel.length) mulanSwap(pi, sel[0]); endWindow(S.endK + 1); };
+function mulanSwap(pi, c) {
+  const p = S.players[pi], t = S.trick.find(x => x.pi === pi);
+  p.hand = sortHand(p.hand.filter(x => x !== c).concat([t.c]));
+  log(`${p.name} nutzt Mulan: ${cardName(t.c)} → ${cardName(c)}.`);
+  t.c = c; t.zero = false; p.used = true;
+}
+function belleSwap(pi, [a, b]) {
+  const ta = S.trick[a], tb = S.trick[b];
+  if (!ta || !tb || ta.c === FROG || tb.c === FROG) return;
+  [ta.c, tb.c] = [tb.c, ta.c]; [ta.zero, tb.zero] = [tb.zero, ta.zero];
+  S.players[pi].used = true;
+  log(`${nm(pi)} nutzt Belle und vertauscht ${cardName(tb.c)} und ${cardName(ta.c)}.`);
+}
+// Wer gewinnt den Stich?
+function trickWinner(tr = S.trick) {
+  if (!tr.length) return -1;
+  const ev = t => t.zero ? 0 : val(t.c);
+  const L0 = S.fx.ledSuit || suit(tr[0].c);
+  let rev = !!S.fx.asche;
+  if (S.rule === 'x') rev = rev !== (tr.filter(t => val(t.c) === 6).length % 2 === 1);
+  const better = (a, b) => rev ? a < b : a > b;
+  const pick = cands => { let b = cands[0]; for (const t of cands.slice(1)) if (better(ev(t), ev(b))) b = t; return b.pi; };
+  if (S.rule === 'em' && S.target != null) { let sum = 0; for (const t of tr) { sum += ev(t); if (sum > S.target) return t.pi; } }
+  if (S.rule === 'u') {
+    const sums = {}; const best = {};
+    tr.forEach(t => { if (suit(t.c) === L0) { sums[t.pi] = (sums[t.pi] || 0) + ev(t); best[t.pi] = Math.max(best[t.pi] ?? -1, ev(t)); } });
+    const ps = Object.keys(sums).map(Number);
+    ps.sort((a, b) => (rev ? sums[a] - sums[b] : sums[b] - sums[a]) || (rev ? best[a] - best[b] : best[b] - best[a]));
+    return ps.length ? ps[0] : tr[0].pi;
+  }
+  if (S.rule === 'r') {
+    const voids = tr.slice(1).filter(t => suit(t.c) !== L0);
+    if (voids.length) { let b = voids[0]; for (const t of voids) if (val(t.c) > val(b.c)) b = t; return b.pi; }
+  }
+  if (S.rule === 'f') { const q = tr.filter(t => suit(t.c) === 'K'); if (q.length) return pick(q); }
+  if (S.rule === 'v') return pick(tr.filter(t => suit(t.c) === L0 || suit(t.c) === 'F'));
+  if (S.rule === 'w') { const L = leadSuit(tr); return pick(tr.filter(t => suit(t.c) === L)); }
+  const cands = tr.filter(t => suit(t.c) === L0);
+  if (S.rule === 'g') {
+    if (cands.length < 2) return tr[0].pi;
+    const sorted = cands.slice().sort((a, b) => rev ? ev(a) - ev(b) : ev(b) - ev(a));
+    return sorted[1].pi;
+  }
+  if (S.rule === 'l') {
+    const start = ev(tr[0]);
+    const pool = cands.length > 1 ? cands : tr;
+    let b = pool[0];
+    for (const t of pool.slice(1)) { const d = Math.abs(ev(t) - start), db = Math.abs(ev(b) - start); if (d > db || (d === db && ev(t) > ev(b))) b = t; }
+    return b.pi;
+  }
+  return pick(cands.length ? cands : [tr[0]]);
+}
+// Anträge einer Kartenmenge für die Vorschau (ohne Rundenende-Sonderwertungen)
+function cardPts(c) {
+  const r = S.rule;
+  if (c === FROG) return r === 'j' ? 6 : 5;
+  if (suit(c) === 'P') return r === 'eg' ? -1 : r === 'd' && val(c) === 3 ? -2 : 1;
+  if (r === 'd' && val(c) === 3) return -3;
+  if (r === 'j' && suit(c) === 'H') return 1;
+  if (r === 't' && suit(c) === 'F') return -1;
+  return 0;
+}
+const trickPts = cards => cards.reduce((s, c) => s + cardPts(c), 0);
+function collect() {
+  const w = trickWinner();
+  S.win = w;
+  S.pendingCards = S.trick.map(t => t.c).concat(S.gift || []);
+  S.gift = null;
+  const wp = S.players[w];
+  if (canPower(wp, 'won')) {
+    if (!S.pendingCards.includes(FROG)) {
+      if (wp.bot) { if (trickPts(S.pendingCards) >= 1) return aliceDeal(w); }
+      else if (!S.tut) return ask(w, { kind: 'opts', title: 'Alice: Grinsekatzen-Trick', text: 'Du hast den Stich gewonnen. Mische ihn und verteile die Karten zufällig zurück auf alle Hände?', opts: [['use', 'Ja, verteilen'], ['skip', 'Nein, Stich behalten']], next: 'alice' });
+    }
+  }
+  takeTrick();
+}
+function aliceDeal(w) {
+  const cards = shuffle(S.pendingCards.slice());
+  S.players[w].used = true;
+  cards.forEach((c, i) => { const p = S.players[(w + i) % N()]; p.hand = sortHand(p.hand.concat([c])); });
+  if (cards.some(c => suit(c) === 'P')) S.broken = true;
+  log(`${nm(w)} nutzt Alice: Der Stich wird zufällig zurück verteilt.`);
+  S.pendingCards = [];
+  S.last = { trick: S.trick, w, alice: true };
+  afterTrick(3);
+}
+function takeTrick() {
+  const w = S.win, wp = S.players[w];
+  const pts = trickPts(S.pendingCards);
+  log(`${wp.name} gewinnt den Stich${pts ? ` (${pts > 0 ? '+' : ''}${pts} Antr${Math.abs(pts) === 1 ? 'ag' : 'äge'})` : ''}.`);
+  S.last = { trick: S.trick, w };
+  afterTrick(0);
+}
+// Nach dem Stich: vergiftetes Geschenk, Tauschhandel, Stuhltanz – dann Karten zum Sieger
+function afterTrick(step) {
+  const w = S.win, wp = S.players[w];
+  if (step <= 0 && S.rule === 'ek' && S.poison && S.poison.holder === w && !S.last.alice) {
+    if (wp.bot) { S.poison.holder = botPoisonTarget(w); log(`${wp.name} gibt das vergiftete Geschenk an ${nm(S.poison.holder)}.`); }
+    else return ask(w, { kind: 'player', title: 'Vergiftetes Geschenk', text: 'Du hast einen Stich gewonnen: Gib den Geschenkstapel an eine andere Person.', opts: range(N()).filter(i => i !== w), next: 'poison' });
+  }
+  if (step <= 1 && S.rule === 'p' && !S.last.alice && wp.hand.length) {
+    const mine = S.trick.find(t => t.pi === w);
+    const cards = S.pendingCards.filter(c => c !== (mine && mine.c));
+    if (cards.length) {
+      if (wp.bot) { const sw = botHaggle(wp, cards); if (sw) CONT.haggle(w, sw, { cards: S.pendingCards }); else afterTrick(2); return; }
+      return ask(w, { kind: 'haggle', title: 'Tauschhandel', text: 'Du darfst eine Handkarte gegen eine Karte aus dem Stich tauschen (nicht deine eigene).', list: cards, optional: true, next: 'haggle', data: { cards: S.pendingCards } });
+    }
+  }
+  if (step <= 2 && !S.last.alice) { wp.won.push(...S.pendingCards); wp.tricks++; }
+  S.pendingCards = [];
+  S.leader = w;
+  S.trickNo++;
+  if (S.rule === 'k' && step < 4 && S.players.some(p => p.hand.length)) {
+    S.chairs = S.players.map(p => p.bot ? (p.hand.length ? botDump(p, 1)[0] : null) : null);
+    const me = S.players.findIndex(p => !p.bot);
+    if (me >= 0 && S.players[me].hand.length) return ask(me, { kind: 'cards', n: 1, title: 'Stuhltanz', text: 'Gib eine Karte an die Person rechts von dir.', next: 'chairs' });
+    return finishChairs();
+  }
+  startTrick();
+}
+function finishChairs() {
+  const give = S.chairs;
+  S.players.forEach((p, i) => { if (give[i]) p.hand = p.hand.filter(c => c !== give[i]); });
+  S.players.forEach((p, i) => { const g = give[left(i)]; if (g) p.hand = sortHand(p.hand.concat([g])); });
+  S.chairs = null;
+  startTrick();
+}
+
+// ---------- Fähigkeiten vor dem Stich ----------
+function startPower(pi) {
+  const p = S.players[pi], k = princess(p).k;
+  if (p.bot) return botPower(pi, k);
+  const others = range(N()).filter(i => i !== pi && activeHand(S.players[i]).length);
+  switch (k) {
+    case 'asche': return powerStep(pi, null, { k });
+    case 'erbse': return powerStep(pi, null, { k });
+    case 'meer': return ask(pi, { kind: 'suit', title: 'Kleine Meerjungfrau', text: `Mit welcher Farbe muss ${nm(S.leader)} ausspielen?`, opts: SUITS.slice(), next: 'power', data: { k } });
+    case 'rapunzel': return powerStep(pi, null, { k });
+    case 'poca': return ask(pi, { kind: 'player', title: 'Pocahontas', text: 'Wer beginnt diesen Stich?', opts: range(N()), next: 'power', data: { k } });
+    case 'eis': return ask(pi, { kind: 'player', title: 'Eisprinzessin', text: 'Von wem nimmst du 2 zufällige Karten?', opts: others.filter(i => S.players[i].hand.length >= 2), next: 'power', data: { k, step: 1 } });
+    case 'schehe': return ask(pi, { kind: 'player', title: 'Scheherazade', text: 'Von wem ziehst du eine zufällige Karte?', opts: others.filter(i => S.players[i].hand.length && !(S.fx.lead && i === S.leader)), next: 'power', data: { k, step: 1 } });
+    case 'dorn': return powerStep(pi, null, { k, step: 1 });
+  }
+  preWindow(S.preK + 1);
+}
+function powerStep(pi, sel, d) {
+  const p = S.players[pi];
+  const done = () => { p.used = true; if (!p.bot) preWindow(S.preK + 1); };
+  switch (d.k) {
+    case 'asche': S.fx.asche = true; log(`${p.name} nutzt Aschenputtel: In diesem Stich gewinnt die niedrigste Karte.`); return done();
+    case 'erbse': S.fx.erbse = pi; log(`${p.name} nutzt die Prinzessin auf der Erbse: Alle anderen spielen über 5, wenn sie können.`); return done();
+    case 'rapunzel': S.fx.rapunzel = true; S.fx.lead = 'rapunzel'; log(`${p.name} nutzt Rapunzel: ${nm(S.leader)} muss einen Prinzen ausspielen.`); return done();
+    case 'meer': {
+      const lh = activeHand(S.players[S.leader]);
+      let s = sel;
+      const ok = x => lh.some(c => suit(c) === x) && (x !== 'P' || S.broken || lh.every(c => suit(c) === 'P'));
+      if (!ok(s)) { const order = SUITS.slice(SUITS.indexOf(sel)).concat(SUITS); s = order.find(ok) || suit(lh[0]); }
+      S.fx.meer = s; S.fx.lead = 'meer';
+      log(`${p.name} nutzt die Meerjungfrau: ${nm(S.leader)} spielt ${SUIT_N[s]} aus.`); return done();
+    }
+    case 'poca': {
+      S.leader = +sel; S.order = range(N()).map(k => (S.leader + k) % N()); S.fx.lead = 'poca';
+      log(`${p.name} nutzt Pocahontas: ${nm(S.leader)} beginnt den Stich.`); return done();
+    }
+    case 'eis': {
+      if (d.step === 1) {
+        const t = S.players[+sel], two = shuffle(t.hand.slice()).slice(0, 2);
+        return ask(pi, { kind: 'cards', n: 1, list: two, title: 'Eisprinzessin', text: `Du hast ${two.map(cardName).join(' und ')} von ${t.name}. Welche Karte bekommt ${t.name} zurück auf die Hand? Die andere muss ${t.name} in diesem Stich spielen.`, next: 'power', data: { k: 'eis', step: 2, t: +sel, two } });
+      }
+      const forced = d.two.find(c => c !== sel[0]);
+      S.fx.ice = { pi: d.t, c: forced }; if (d.t === S.leader) S.fx.lead = 'eis';
+      if (suit(forced) === 'P') S.broken = true;
+      log(`${p.name} nutzt die Eisprinzessin: ${nm(d.t)} muss ${cardName(forced)} spielen.`); return done();
+    }
+    case 'schehe': {
+      if (d.step === 1) {
+        const t = S.players[+sel], c = t.hand[Math.floor(rnd() * t.hand.length)];
+        t.hand = t.hand.filter(x => x !== c); p.hand = sortHand(p.hand.concat([c]));
+        return ask(pi, { kind: 'cards', n: 1, title: 'Scheherazade', text: `Du hast ${cardName(c)} von ${t.name} gezogen. Welche Karte gibst du ${t.name}? (Auch dieselbe zurück möglich.)`, next: 'power', data: { k: 'schehe', step: 2, t: +sel, got: c } });
+      }
+      const t = S.players[d.t]; p.hand = p.hand.filter(x => x !== sel[0]); t.hand = sortHand(t.hand.concat([sel[0]]));
+      log(`${p.name} nutzt Scheherazade und tauscht mit ${t.name}.`); return done();
+    }
+    case 'dorn': {
+      if (d.step === 1) { // alle geben eine Karte
+        d.pool = []; d.from = [];
+        S.players.forEach((q, i) => { if (q.bot || i === pi) { if (i !== pi && q.hand.length) { const c = botDump(q, 1)[0]; q.hand = q.hand.filter(x => x !== c); d.pool.push(c); d.from.push(i); } } });
+        // eigene Karte (Mensch ist Dornröschen) auswählen lassen
+        return ask(pi, { kind: 'cards', n: 1, title: 'Dornröschen', text: 'Gib auch eine eigene Karte in die Runde.', next: 'power', data: Object.assign(d, { step: 2 }) });
+      }
+      if (d.step === 2) { p.hand = p.hand.filter(x => x !== sel[0]); d.pool.push(sel[0]); d.from.push(pi); return ask(pi, { kind: 'cards', n: 1, list: d.pool.slice(), title: 'Dornröschen', text: `Beigetragen: ${d.pool.map((c, i) => `${cardName(c)} (${nm(d.from[i])})`).join(', ')}. Welche Karte behältst du?`, next: 'power', data: Object.assign(d, { step: 3 }) }); }
+      if (d.step === 3) { p.hand = sortHand(p.hand.concat(sel)); d.pool = d.pool.filter(c => c !== sel[0]); d.targets = d.from.filter(i => i !== pi); d.step = 4; }
+      if (d.step === 4 && sel !== null && d.cur) { const t = S.players[+sel]; t.hand = sortHand(t.hand.concat([d.cur])); d.targets.splice(d.targets.indexOf(+sel), 1); d.pool = d.pool.filter(c => c !== d.cur); d.cur = null; }
+      if (d.pool.length) { d.cur = d.pool[0]; return ask(pi, { kind: 'player', title: 'Dornröschen', text: `Wer bekommt ${cardName(d.cur)}?`, opts: d.targets.slice(), next: 'power', data: d }); }
+      log(`${p.name} nutzt Dornröschen und verteilt die Karten neu.`); return done();
+    }
+  }
+  done();
+}
+
+// ---------- Fähigkeiten im eigenen Zug ----------
+function useTurnPower(pi, sel) {
+  const p = S.players[pi], k = princess(p).k;
+  if (k === 'schwan') {
+    const pos = S.oi;
+    if (pos === S.order.length - 1) return false;
+    const was = S.order.splice(pos, 1)[0]; S.order.push(was);
+    p.used = true;
+    log(`${p.name} nutzt das Schwanenmädchen und spielt in diesem Stich zuletzt.`);
+    if (!S.trick.length) { S.leader = S.order[0]; }
+    return true;
+  }
+  if (k === 'rot') {
+    const want = sel.c, give = sel.give;
+    p.used = true;
+    const holder = S.players.findIndex((q, i) => i !== pi && q.hand.includes(want));
+    if (holder < 0) { log(`${p.name} verlangt ${cardName(want)} (Rotkäppchen) – niemand hat sie.`); return true; }
+    const q = S.players[holder];
+    q.hand = q.hand.filter(c => c !== want); p.hand = sortHand(p.hand.concat([want]));
+    const back = give && p.hand.includes(give) && suit(give) === suit(want) ? give : p.hand.filter(c => suit(c) === suit(want) && c !== want).sort((a, b) => val(b) - val(a))[0];
+    if (back) { p.hand = p.hand.filter(c => c !== back); q.hand = sortHand(q.hand.concat([back])); }
+    log(`${p.name} nutzt Rotkäppchen: ${q.name} gibt ${cardName(want)}${back ? ` und bekommt ${cardName(back)}` : ''}.`);
+    return true;
+  }
+  return false;
+}
+
+// ---------- Rundenende ----------
+function roundScore(p, i, before) {
+  const r = S.rule, cards = p.won;
+  const princes = cards.filter(c => suit(c) === 'P');
+  const allPrinces = deckFor(N()).filter(c => suit(c) === 'P').length;
+  if (r !== 'o' && princes.length === allPrinces && cards.includes(FROG)) return { pts: -10, why: 'Rebel of the Ball!' };
+  if (r === 'el' && p.bid && val(p.bid) === p.tricks) return { pts: -p.tricks, why: `Gebot ${val(p.bid)} getroffen` };
+  let pts = 0;
+  if (r === 'z') {
+    const ps = princes.map(val), qs = cards.filter(c => suit(c) === 'K').map(val);
+    for (const v of ps.slice()) { const j = qs.indexOf(v); if (j >= 0) { pts += 3; qs.splice(j, 1); ps.splice(ps.indexOf(v), 1); } }
+    while (ps.length && qs.length) { pts += 2; ps.pop(); qs.pop(); }
+    pts += ps.length;
+  } else {
+    const max = Math.max(...before);
+    for (const c of princes) { let v = cardPts(c); if (r === 'y' && before[i] < max) v *= 2; pts += v; }
+  }
+  for (const c of cards) if (suit(c) !== 'P') pts += cardPts(c);
+  if (r === 'e' && p.tricks === 0) pts += 5;
+  return { pts };
+}
+function endRound() {
+  const r = S.rule;
+  if (r === 'n') S.players.forEach(p => { p.won.push(...p.hand); p.hand = []; p.tricks++; log(`${p.name} wertet die letzten 3 Karten.`); });
+  if (r === 'ek' && S.poison) S.players[S.poison.holder].won.push(...S.poison.cards);
+  if (r === 'eh' && S.last) { const w = S.last.w, to = left(w); S.players[to].won.push(...S.players[w].won); S.players[to].tricks += S.players[w].tricks; S.players[w].won = []; S.players[w].tricks = 0; log(`Vererbt: ${nm(w)} gibt alle Stiche an ${nm(to)}.`); }
+  const before = S.players.map(p => p.total);
+  const res = S.players.map((p, i) => roundScore(p, i, before));
+  res.forEach((x, i) => { const p = S.players[i]; p.total += x.pts; p.roundPts = x.pts; if (x.pts <= 0) p.zeroRounds++; if (x.why) log(`${p.name}: ${x.why}`); });
+  S.history.push({ rule: r, pts: res.map(x => x.pts), why: res.map(x => x.why || '') });
+  log(`Ballnacht ${S.round} vorbei: ${S.players.map((p, i) => `${p.name} ${res[i].pts}`).join(', ')}.`);
+  S.trick = [];
+  if (S.round >= ROUNDS) return finish();
+  S.phase = 'roundEnd';
+  if (!S.players.some(p => !p.bot)) startRound();
+}
+function finish() {
+  const best = Math.min(...S.players.map(p => p.total));
+  const tied = S.players.filter(p => p.total === best);
+  const zb = Math.max(...tied.map(p => p.zeroRounds));
+  S.final = S.players.map(p => ({ name: p.name, total: p.total, win: p.total === best && p.zeroRounds === zb }));
+  S.screen = 'end'; S.phase = 'end';
+  log('Der Ball ist vorbei!');
+  recordPlay();
+}
+
+// ---------- Bots ----------
+const danger = c => (c === FROG ? 40 : 0) + (suit(c) === 'P' ? 10 + val(c) : 0) + val(c) * 0.6;
+function botPass(p, k) { return p.hand.slice().sort((a, b) => danger(b) - danger(a) + (p.hand.filter(x => suit(x) === suit(a)).length - p.hand.filter(x => suit(x) === suit(b)).length) * 0.8).slice(0, k); }
+function botDump(p, k) { return p.hand.slice().sort((a, b) => danger(b) - danger(a)).slice(0, k); }
+function botKeep(p, packet) { return packet.slice().sort((a, b) => danger(a) - danger(b)).slice(0, Math.min(2, packet.length)); }
+function botSetup(step, p) {
+  if (step === 'late') return [p.hand.slice().sort((a, b) => val(a) - val(b))[0]];
+  if (step === 'open') { const s = SUITS.filter(x => p.hand.some(c => suit(c) === x)); return s.sort((a, b) => p.hand.filter(c => suit(c) === a).length - p.hand.filter(c => suit(c) === b).length)[0]; }
+  if (step === 'half') return p.hand.slice().sort((a, b) => danger(a) - danger(b)).slice(0, Math.floor(p.hand.length / 2));
+  if (step === 'bid') { const ok = p.hand.filter(c => suit(c) !== 'P' && c !== FROG); const pool = ok.length ? ok : p.hand; const want = Math.max(1, Math.round(p.hand.length / N())); return [pool.slice().sort((a, b) => Math.abs(val(a) - want) - Math.abs(val(b) - want))[0]]; }
+  if (step === 'low') return [p.hand.filter(c => val(c) < 8).sort((a, b) => danger(b) - danger(a))[0]];
+  if (step === 'poison') return botDump(p, 1);
+}
+function botWantsPre(p, pi) {
+  const k = princess(p).k, h = activeHand(p), lead = pi === S.leader;
+  const left2 = h.length;
+  switch (k) {
+    case 'asche': return h.filter(c => val(c) >= 8).length >= Math.ceil(left2 * 0.6) && S.trickNo >= 1;
+    case 'erbse': return h.filter(c => val(c) <= 5).length >= Math.ceil(left2 * 0.6) && S.trickNo >= 1;
+    case 'meer': return !lead && SUITS.some(s => s !== 'P' && !h.some(c => suit(c) === s));
+    case 'rapunzel': return !lead && !h.some(c => suit(c) === 'P') && S.trickNo >= 1;
+    case 'poca': return lead && Math.min(...h.map(val)) >= 6;
+    case 'eis': return S.trickNo >= 1 && h.includes(FROG) === false && S.trickNo % 3 === 1;
+    case 'schehe': return h.includes(FROG) || h.some(c => suit(c) === 'P' && val(c) >= 10);
+    case 'dorn': return h.includes(FROG) || h.filter(c => suit(c) === 'P').length >= 3;
+  }
+  return false;
+}
+function botPower(pi, k) {
+  const p = S.players[pi], h = activeHand(p);
+  const others = range(N()).filter(i => i !== pi && activeHand(S.players[i]).length);
+  const byTotal = others.slice().sort((a, b) => S.players[a].total - S.players[b].total);
+  switch (k) {
+    case 'asche': case 'erbse': case 'rapunzel': return powerStep(pi, null, { k });
+    case 'meer': return powerStep(pi, SUITS.find(s => s !== 'P' && !h.some(c => suit(c) === s)) || 'F', { k });
+    case 'poca': return powerStep(pi, left(pi), { k });
+    case 'eis': {
+      const t = others.filter(i => S.players[i].hand.length >= 2).sort((a, b) => S.players[b].hand.length - S.players[a].hand.length)[0];
+      if (t == null) { p.used = true; return; }
+      const two = shuffle(S.players[t].hand.slice()).slice(0, 2);
+      // die gefährlichere Karte muss gespielt werden – vielleicht landet sie bei jemand anderem
+      const keep = two.slice().sort((a, b) => danger(a) - danger(b))[0];
+      return powerStep(pi, [keep], { k, step: 2, t, two });
+    }
+    case 'schehe': {
+      const t = byTotal.find(i => S.players[i].hand.length);
+      if (t == null) { p.used = true; return; }
+      const q = S.players[t], c = q.hand[Math.floor(rnd() * q.hand.length)];
+      q.hand = q.hand.filter(x => x !== c); p.hand = sortHand(p.hand.concat([c]));
+      return powerStep(pi, [botDump(p, 1)[0]], { k, step: 2, t, got: c });
+    }
+    case 'dorn': {
+      const pool = [], from = [];
+      S.players.forEach((q, i) => { if (q.hand.length) { const c = q.bot || i === pi ? botDump(q, 1)[0] : q.hand.slice().sort((a, b) => val(a) - val(b))[0]; q.hand = q.hand.filter(x => x !== c); pool.push(c); from.push(i); } });
+      const keep = pool.slice().sort((a, b) => danger(a) - danger(b))[0];
+      p.hand = sortHand(p.hand.concat([keep]));
+      const rest = pool.filter(c => c !== keep).sort((a, b) => danger(b) - danger(a));
+      const targets = from.filter(i => i !== pi).sort((a, b) => S.players[a].total - S.players[b].total);
+      rest.forEach((c, j) => { const t = S.players[targets[j]]; t.hand = sortHand(t.hand.concat([c])); });
+      log(`${p.name} nutzt Dornröschen und verteilt die Karten neu.`);
+      p.used = true; return;
+    }
+  }
+  p.used = true;
+}
+// Bewertung einer Karte im aktuellen Stich
+function botEval(p, pi, c, mode) {
+  const last = S.oi === S.order.length - 1 && !(S.rule === 'u' && S.part === 1);
+  const zero = mode === 'schnee';
+  if (!S.trick.length) {
+    let v = -val(c) * 1.1 - danger(c) * 1.4;
+    if (S.fx.asche) v = val(c) * 1.1 - danger(c);
+    if (S.rule === 'g' || S.rule === 'l') v = -danger(c);
+    if (zero) v += 4;
+    return v;
+  }
+  const tr = S.trick.concat([{ pi, c, zero, part: S.part }]);
+  const wins = trickWinner(tr) === pi;
+  const pts = trickPts(tr.map(t => t.c).concat(S.gift || []));
+  const extra = last ? 0 : (S.order.length - S.oi - 1) * 0.8;
+  let v;
+  if (wins) v = -(Math.max(pts, 0) + extra) * 3 - (last ? 0 : val(c) * 0.3) + (pts < 0 ? -pts * 2 : 0) + (pts <= 0 && last ? val(c) * 0.5 : 0);
+  else v = danger(c) * 1.2 + val(c) * 0.3 - (pts < 0 ? -pts : 0);
+  if (mode) v -= 2;
+  return v;
+}
+function botPlay(p) {
+  const pi = S.players.indexOf(p);
+  const modes = [null];
+  if (canPower(p, 'play')) modes.push(princess(p).k);
+  let best = null, bv = -Infinity;
+  for (const mode of modes) for (const c of legal(p, mode)) {
+    if (mode === 'schnee' && val(c) > 7) continue;
+    const v = botEval(p, pi, c, mode);
+    if (v > bv) { bv = v; best = { c, mode }; }
+  }
+  return best;
+}
+function botBelle(p, pi) {
+  const pts = trickPts(S.trick.map(t => t.c));
+  if (pts <= 0 || trickWinner() !== pi) return null;
+  for (let a = 0; a < S.trick.length; a++) for (let b = a + 1; b < S.trick.length; b++) {
+    const ta = S.trick[a], tb = S.trick[b];
+    if (ta.c === FROG || tb.c === FROG) continue;
+    const tr = S.trick.map(t => Object.assign({}, t));
+    [tr[a].c, tr[b].c] = [tr[b].c, tr[a].c];
+    if (trickWinner(tr) !== pi) return [a, b];
+  }
+  return null;
+}
+function botMulan(p, pi, alts) {
+  const t = S.trick.find(x => x.pi === pi);
+  const pts = trickPts(S.trick.map(x => x.c).concat(S.gift || []));
+  const winsNow = trickWinner() === pi;
+  let best = null, bv = winsNow ? -pts * 3 : 0;
+  for (const c of alts) {
+    const tr = S.trick.map(x => x.pi === pi ? Object.assign({}, x, { c, zero: false }) : x);
+    const ptsN = trickPts(tr.map(x => x.c).concat(S.gift || []));
+    const v = trickWinner(tr) === pi ? -ptsN * 3 : danger(c) * 0.2;
+    if (v > bv + 0.5) { bv = v; best = c; }
+  }
+  return best;
+}
+function botPoisonTarget(w) { return range(N()).filter(i => i !== w).sort((a, b) => S.players[a].total - S.players[b].total)[0]; }
+function botHaggle(p, cards) {
+  const give = botDump(p, 1)[0], take = cards.slice().sort((a, b) => danger(a) - danger(b))[0];
+  if (!give || !take || danger(give) <= danger(take) + 2) return null;
+  return { hand: give, trick: take };
+}
+function botTurnPower(p, pi) {
+  const k = princess(p).k;
+  if (!canPower(p, 'turn')) return;
+  if (k === 'schwan' && S.oi < S.order.length - 1 && (S.trick.length ? trickPts(S.trick.map(t => t.c)) > 0 : Math.min(...activeHand(p).map(val)) >= 7)) useTurnPower(pi);
+  if (k === 'rot' && S.trick.length) {
+    const L = suit(S.trick[0].c), mine = p.hand.filter(c => suit(c) === L);
+    if (mine.length && trickPts(S.trick.map(t => t.c)) > 0 && Math.min(...mine.map(val)) >= 8) {
+      const want = deckFor(N()).filter(c => suit(c) === L && !p.hand.includes(c) && c !== FROG && !S.trick.some(t => t.c === c) && val(c) <= 4)[0];
+      if (want) useTurnPower(pi, { c: want });
+    }
+  }
+}
+function botStep() {
+  if (S.phase === 'collect') return collect();
+  if (S.phase === 'roundEnd') return startRound();
+  const p = cur(), pi = curPi();
+  botTurnPower(p, pi);
+  if (curPi() !== pi) return; // Schwanenmädchen: jetzt ist jemand anderes dran
+  const m = botPlay(p);
+  if (m) playCard(p, m.c, m.mode);
+}
 
 // ---------- Illustrationen ----------
 const INK = 'stroke="#1A1A1A" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"';
@@ -467,21 +1244,29 @@ function cardHtml(c, cls = '', attrs = '') {
   const s = suit(c), v = val(c);
   if (!artCache[c]) artCache[c] = cardArt(c);
   const isP = s === 'P';
-  const badge = c === FROG ? `<span class="badge">${S && S.rule === 'frosch10' ? 10 : 5}×</span>` : isP ? '<span class="badge">1×</span>' : (s === 'K' && v === 12 && S && S.rule === 'tee') ? '<span class="badge">−3</span>' : '';
+  const pts = S && S.rule ? cardPts(c) : c === FROG ? 5 : s === 'P' ? 1 : 0;
+  const badge = pts ? `<span class="badge">${pts > 0 ? pts + '×' : pts}</span>` : '';
   const hatch = c === FROG ? range(8).map(i => `<path d="M${6 + i * 6.4},85 L${12 + i * 6.4},63" stroke="#1A1A1A" stroke-width="1.2" opacity=".35"/>`).join('') : '';
   const frame = `<svg class="frame" viewBox="0 0 62 90" preserveAspectRatio="none" aria-hidden="true"><path d="${roughRect(c)}" fill="${SUIT_COL[s].bg}"/>${hatch}<path d="${roughRect(c)}" fill="none" stroke="#1A1A1A" stroke-width="2.4" stroke-linejoin="round" filter="url(#rough)"/></svg>`;
   return `<button class="card ${s} ${c === FROG ? 'frog' : ''} ${cls}" ${attrs} aria-label="${SUIT_1[s]} ${v}${c === FROG ? ' (Frosch)' : ''}">${frame}<span class="v" style="color:${isP ? '#F3EEE4' : SUIT_COL[s].fg}">${v}</span><span class="s">${suitIcon(s, isP)}</span><span class="art">${artCache[c]}</span>${badge}</button>`;
 }
 // Prinzessinnen: jede mit ihrem übergroßen Gegenstand (wie die Café-Referenz)
 const PRINCESS_SCENE = {
-  schnee: () => figure('prs-schnee', { pose: 'hug', hair: 'bob', hat: 'tiara', top: 'black', dress: 'white', big: bigProp('apple', 66, 72, 0.85) }),
-  dorn: () => `<g filter="url(#crayon)">${bigProp('chair', 44, 92, 1)}${bigProp('rose', 80, 40, 0.75)}</g>${figure('prs-dorn', { pose: 'sit', sleep: 1, hair: 'long', hat: 'tiara', top: 'white', dress: 'stripes' })}`,
-  meer: () => `${figure('prs-meer', { pose: 'sit', hair: 'long', top: 'white', dress: 'white', sleep: 1 })}<g filter="url(#crayon)">${bigProp('cup', 48, 96, 1.15)}</g>`,
-  rapunzel: () => figure('prs-rapunzel', { pose: 'stand', hair: 'braid', hat: 'crown', top: 'white', dress: 'dots', prop: 'flower' }),
-  rosen: () => figure('prs-rosen', { pose: 'carry', hair: 'bun', top: 'black', dress: 'black', big: bigProp('rose', 50, -4, 0.62) }),
+  alice: () => `<g filter="url(#crayon)">${bigProp('table', 50, 104, 0.9)}${bigProp('cup', 70, 86, 0.6)}</g>${figure('prs-alice', { pose: 'stand', hair: 'long', top: 'white', dress: 'stripes', prop: 'cup' })}`,
   asche: () => figure('prs-asche', { pose: 'run', hair: 'bun', hat: 'tiara', top: 'white', dress: 'white', big: bigProp('shoe', 82, 34, 0.5) }),
+  eis: () => figure('prs-eis', { pose: 'carry', hair: 'long', hat: 'crown', top: 'white', dress: 'white', big: bigProp('mirror', 50, 0, 0.6) }),
+  meer: () => `${figure('prs-meer', { pose: 'sit', hair: 'long', top: 'white', dress: 'white', sleep: 1 })}<g filter="url(#crayon)">${bigProp('cup', 48, 96, 1.15)}</g>`,
+  mulan: () => figure('prs-mulan', { pose: 'walk', hair: 'bun', top: 'black', dress: 'none', pants: 'black', prop: 'fan' }),
   erbse: () => `<g filter="url(#crayon)">${bigProp('pea', 52, 106, 0.95)}</g>${figure('prs-erbse', { pose: 'lounge', sleep: 1, hair: 'bob', hat: 'crown', top: 'black', dress: 'black' })}`,
-  frosch: () => figure('prs-frosch', { pose: 'hug', hair: 'curly', hat: 'crown', top: 'white', dress: 'dots', big: bigProp('frog', 64, 76, 0.78) }),
+  poca: () => figure('prs-poca', { pose: 'walk', hair: 'long', top: 'black', dress: 'dots', big: bigProp('bouquet', 70, 64, 0.7) }),
+  rapunzel: () => figure('prs-rapunzel', { pose: 'stand', hair: 'braid', hat: 'crown', top: 'white', dress: 'dots', prop: 'flower' }),
+  schehe: () => `<g filter="url(#crayon)">${bigProp('chair', 44, 92, 1)}</g>${figure('prs-schehe', { pose: 'sit', hair: 'long', top: 'black', dress: 'black', big: bigProp('ring', 70, 60, 0.5) })}`,
+  dorn: () => `<g filter="url(#crayon)">${bigProp('chair', 44, 92, 1)}${bigProp('rose', 80, 40, 0.75)}</g>${figure('prs-dorn', { pose: 'sit', sleep: 1, hair: 'long', hat: 'tiara', top: 'white', dress: 'stripes' })}`,
+  schnee: () => figure('prs-schnee', { pose: 'hug', hair: 'bob', hat: 'tiara', top: 'black', dress: 'white', big: bigProp('apple', 66, 72, 0.85) }),
+  daum: () => `<g filter="url(#crayon)">${bigProp('mushroom', 48, 100, 1.1)}</g>${figure('prs-daum', { pose: 'sit', hair: 'bun', top: 'white', dress: 'dots', prop: 'flower' })}`,
+  rot: () => figure('prs-rot', { pose: 'walk', hair: 'bob', hat: 'beret', top: 'black', dress: 'black', big: bigProp('cake', 72, 70, 0.45) }),
+  schwan: () => figure('prs-schwan', { pose: 'kneel', hair: 'long', hat: 'tiara', top: 'white', dress: 'white', prop: 'wand' }),
+  belle: () => figure('prs-belle', { pose: 'hug', hair: 'curly', hat: 'crown', top: 'white', dress: 'stripes', big: bigProp('rose', 66, 50, 0.7) }),
 };
 function princessArt(k) { return `<svg viewBox="0 -8 100 138" class="ill" aria-hidden="true">${(PRINCESS_SCENE[k] || PRINCESS_SCENE.schnee)()}</svg>`; }
 function heroSvg() {
@@ -499,231 +1284,6 @@ function heroSvg() {
    ${fig(figure('heroPrinz', { pose: 'carry', hat: 'top', must: 1, hair: 'short', top: 'stripes', pants: 'black', big: bigProp('ring', 50, 6, 0.62) }), 252, 100, 110, true)}
    <text x="226" y="96" font-family="Caveat Brush,cursive" font-size="30" fill="#1A1A1A">?!</text>
   </svg>`;
-}
-
-// ---------- Spiel ----------
-function newGame(name, nBots, seed) {
-  S = { v: 1, id: 'rp-' + Date.now().toString(36) + '-' + ((seed >>> 0) % 1679616).toString(36), rng: seed | 0, round: 0, players: [], log: [], recorded: false, screen: 'game', history: [] };
-  const n = nBots + 1;
-  const bots = shuffle(BOT_NAMES.slice()).slice(0, nBots);
-  const mk = (nm, bot, look) => ({ name: nm, bot, look, hand: [], won: [], roundPts: 0, total: 0, princess: null, used: false });
-  if (name !== null) S.players.push(mk(name || 'Du', false, { hair: 'bob', hat: 'tiara', body: '#161616', pat: 'dots' }));
-  bots.forEach(b => S.players.push(mk(b[0], true, b[1])));
-  if (name === null) S.players.push(mk('Prinzessin Test', true, { hair: 'bun', hat: 'crown' }));
-  const prs = shuffle(PRINCESSES.map(p => p.k));
-  S.rules = shuffle(RULES.map(r => r.k)).slice(0, ROUNDS);
-  S.players.forEach(p => { if (p.bot) p.princess = prs.pop(); });
-  const me = S.players.find(p => !p.bot);
-  if (me) { S.princessChoice = [prs.pop(), prs.pop()]; S.phase = 'princess'; }
-  log(`Der Ball beginnt: ${n} Prinzessinnen, ${ROUNDS} Ballnächte.`);
-  if (!me) startRound();
-}
-function startRound() {
-  S.round++;
-  S.rule = S.rules[S.round - 1];
-  const n = S.players.length;
-  let deck = [];
-  for (const s of SUITS) for (let v = 1; v <= 12; v++) deck.push(s + v);
-  deck = deck.filter(c => !(REMOVE[n] || []).includes(c));
-  shuffle(deck);
-  const per = deck.length / n;
-  S.players.forEach((p, i) => { p.hand = sortHand(deck.slice(i * per, (i + 1) * per)); p.won = []; p.roundPts = 0; p.used = false; });
-  S.tricksLeft = per;
-  S.trickNo = 0;
-  S.leader = (S.round - 1) % n;
-  S.broken = false;
-  S.trick = [];
-  S.lastTrick = null;
-  log(`— Ballnacht ${S.round}: „${rule().n}“ – ${rule().tx}`);
-  if (rule().pass) {
-    S.phase = 'pass';
-    S.passSel = S.players.map(p => p.bot ? botPass(p, rule().pass[0]) : null);
-    if (!S.players.some(p => !p.bot)) doPass();
-  } else S.phase = 'play';
-}
-function doPass() {
-  const [k, dir] = rule().pass, n = S.players.length;
-  const give = S.passSel.map(x => x.slice(0, k));
-  S.players.forEach((p, i) => { p.hand = p.hand.filter(c => !give[i].includes(c)); });
-  S.players.forEach((p, i) => { const to = S.players[(i + dir + n) % n]; to.hand = sortHand(to.hand.concat(give[i])); });
-  S.passed = give;
-  log(`Alle geben ${k} Karten nach ${dir > 0 ? 'links' : 'rechts'}.`);
-  S.phase = 'play';
-}
-const curPi = () => (S.leader + S.trick.length) % S.players.length;
-const cur = () => S.players[curPi()];
-function legal(p, useSchnee) {
-  if (!S.trick.length) {
-    const nonP = p.hand.filter(c => suit(c) !== 'P');
-    if (S.rule === 'frei' || !nonP.length) return p.hand.slice();
-    if (S.trickNo === 0 || !S.broken) return nonP;
-    return p.hand.slice();
-  }
-  if (useSchnee) return p.hand.slice();
-  const lead = suit(S.trick[0].c);
-  const f = p.hand.filter(c => suit(c) === lead);
-  return f.length ? f : p.hand.slice();
-}
-function canUsePower(p, when) { const pr = princess(p); return pr && !p.used && pr.when === when; }
-// Effektive Wertung eines Stichs
-function trickWinner(trick) {
-  const lead = suit(trick[0].c);
-  const queenTrump = trick.some(t => t.pw === 'rosen');
-  const trump = queenTrump ? 'K' : S.rule === 'feen' ? 'F' : null;
-  let low = S.rule === 'umgekehrt';
-  if (trick.some(t => t.pw === 'meer')) low = !low;
-  const eff = t => t.pw === 'dorn' ? null : val(t.c) + (t.pw === 'rapunzel' ? 6 : 0);
-  let cands = trump ? trick.filter(t => suit(t.c) === trump && eff(t) !== null) : [];
-  if (!cands.length) cands = trick.filter(t => suit(t.c) === lead && eff(t) !== null);
-  if (!cands.length) return trick[0].pi;
-  let best = cands[0];
-  for (const t of cands.slice(1)) if (low ? eff(t) < eff(best) : eff(t) > eff(best)) best = t;
-  return best.pi;
-}
-function cardPts(c, pi) {
-  if (c === FROG) { if (S.players[pi].princess === 'frosch') return 1; return S.rule === 'frosch10' ? 10 : 5; }
-  if (suit(c) === 'P') return 1;
-  if (c === 'K12' && S.rule === 'tee') return -3;
-  return 0;
-}
-function trickPts(cards, pi) { const last = S.tricksLeft === 1 && S.rule === 'letzter' ? 2 : 1; return cards.reduce((s, c) => s + cardPts(c, pi), 0) * last; }
-function playCard(p, c, pw) {
-  const pi = S.players.indexOf(p);
-  if (pi !== curPi() || S.phase !== 'play') return false;
-  if (pw && !canUsePower(p, 'play')) pw = null;
-  if (!legal(p, pw === 'schnee').includes(c)) return false;
-  p.hand.splice(p.hand.indexOf(c), 1);
-  if (pw) p.used = true;
-  if (suit(c) === 'P') S.broken = true;
-  S.trick.push({ pi, c, pw: pw || null });
-  if (S.trick.length === S.players.length) S.phase = 'collect';
-  return true;
-}
-// Erklärt in einer Zeile, wer den Stich gewinnt und warum
-function trickWhy(trick, w, done, passed) {
-  if (!trick.length) return '';
-  const nm = pi => esc(S.players[pi].name.split(' ').slice(-1)[0]);
-  const cd = c => `<b style="color:${suit(c) === 'P' ? '#1A1A1A' : SUIT_COL[suit(c)].fg}">${SUIT_1[suit(c)]} ${val(c)}</b>`;
-  const lead = suit(trick[0].c);
-  const rosen = trick.find(t => t.pw === 'rosen');
-  const trump = rosen ? 'K' : S.rule === 'feen' ? 'F' : null;
-  const meer = trick.find(t => t.pw === 'meer');
-  const low = (S.rule === 'umgekehrt') !== !!meer;
-  const out = [`Ausgespielt: <b style="color:${lead === 'P' ? '#1A1A1A' : SUIT_COL[lead].fg}">${SUIT_N[lead]}</b>`];
-  if (trump) out.push(`${SUIT_N[trump]} sind Trumpf${rosen ? ` (${nm(rosen.pi)} nutzt Rosenrot)` : ' (Feenzauber)'}`);
-  if (meer) out.push(`${nm(meer.pi)} nutzt die Meerjungfrau: <b>${low ? 'niedrigste' : 'höchste'} Karte gewinnt</b>`);
-  else if (low) out.push('Spiegelsaal: <b>niedrigste Karte gewinnt</b>');
-  trick.filter(t => t.pw === 'dorn').forEach(t => out.push(`${nm(t.pi)} (Dornröschen) zählt als 0`));
-  trick.filter(t => t.pw === 'rapunzel').forEach(t => out.push(`${nm(t.pi)} (Rapunzel) zählt +6`));
-  trick.filter(t => t.pw === 'schnee').forEach(t => out.push(`${nm(t.pi)} (Schneewittchen) bedient nicht`));
-  const off = trick.filter(t => suit(t.c) !== lead && suit(t.c) !== trump);
-  if (off.length) out.push(`${off.map(t => cd(t.c)).join(', ')} ${off.length > 1 ? 'zählen' : 'zählt'} nicht (andere Farbe)`);
-  const wc = trick.find(t => t.pi === w);
-  out.push(`→ <b>${nm(w)}</b> ${done ? 'gewinnt' : 'führt gerade'} mit ${cd(wc.c)}`);
-  if (passed && passed.cards.length) out.push(`${nm(passed.from)} (Aschenputtel) gibt ${passed.cards.map(cd).join(', ')} an <b>${nm(passed.to)}</b> weiter`);
-  return out.join(' · ');
-}
-function collectTrick() {
-  const w = trickWinner(S.trick);
-  const cards = S.trick.map(t => t.c);
-  const wp = S.players[w];
-  S.lastTrick = { trick: S.trick, w };
-  S.trick = [];
-  S.trickNo++;
-  const hasPrince = cards.some(c => suit(c) === 'P' || c === FROG);
-  // Aschenputtel: Prinzen an die nächste Person
-  if (hasPrince && canUsePower(wp, 'won')) {
-    if (wp.bot) { if (trickPts(cards, w) >= 2) return passPrinces(w, cards); }
-    else { S.phase = 'asche'; S.pending = { w, cards }; return; }
-  }
-  finishTrick(w, cards);
-}
-function passPrinces(w, cards) {
-  const wp = S.players[w];
-  wp.used = true;
-  const to = (w + 1) % S.players.length;
-  const pr = cards.filter(c => suit(c) === 'P' || c === FROG);
-  const rest = cards.filter(c => !pr.includes(c));
-  S.players[to].won.push(...pr);
-  S.players[to].roundPts += trickPts(pr, to);
-  if (S.lastTrick) S.lastTrick.passed = { from: w, to, cards: pr };
-  log(`${wp.name} (Aschenputtel) schiebt ${pr.length} Prinz${pr.length > 1 ? 'en' : ''} zu ${S.players[to].name}.`);
-  finishTrick(w, rest);
-}
-function finishTrick(w, cards) {
-  const wp = S.players[w];
-  const pts = trickPts(cards, w);
-  wp.won.push(...cards); wp.roundPts += pts;
-  log(`${wp.name} gewinnt den Stich${pts ? ` (${pts > 0 ? '+' : ''}${pts} Antr${Math.abs(pts) === 1 ? 'ag' : 'äge'})` : ''}.`);
-  S.leader = w;
-  S.tricksLeft--;
-  S.phase = 'play';
-  if (S.tricksLeft === 0) endRound();
-}
-function endRound() {
-  const row = S.players.map(p => {
-    let pts = p.roundPts;
-    if (p.princess === 'erbse') pts = Math.max(0, pts - 2);
-    p.total += pts;
-    return pts;
-  });
-  S.history.push({ rule: S.rule, pts: row });
-  log(`Ballnacht ${S.round} vorbei: ${S.players.map((p, i) => `${p.name} ${row[i]}`).join(', ')}.`);
-  if (S.round >= ROUNDS) return finish();
-  S.phase = 'roundEnd';
-  if (!S.players.some(p => !p.bot)) startRound();
-}
-function finish() {
-  const best = Math.min(...S.players.map(p => p.total));
-  S.final = S.players.map(p => ({ name: p.name, total: p.total, win: p.total === best }));
-  S.screen = 'end'; S.phase = 'end';
-  log('Der Ball ist vorbei!');
-  recordPlay();
-}
-
-// ---------- Bots ----------
-function botPass(p, k) {
-  const score = c => (c === FROG ? 100 : 0) + (suit(c) === 'P' ? 20 + val(c) : 0) + val(c) + (p.hand.filter(x => suit(x) === suit(c)).length <= 2 ? 6 : 0);
-  return p.hand.slice().sort((a, b) => score(b) - score(a)).slice(0, k);
-}
-function botPlay(p) {
-  const pi = S.players.indexOf(p);
-  const powerOpts = canUsePower(p, 'play') ? [null, princess(p).k] : [null];
-  const last = S.trick.length === S.players.length - 1;
-  const danger = c => (c === FROG ? 30 : 0) + (suit(c) === 'P' ? 8 + val(c) / 3 : 0) + (c === 'K12' && S.rule === 'tee' ? -5 : 0);
-  const low = S.rule === 'umgekehrt';
-  const rank = c => low ? 13 - val(c) : val(c);
-  let best = null, bv = -Infinity;
-  for (const pw of powerOpts) {
-    for (const c of legal(p, pw === 'schnee')) {
-      let v = 0;
-      if (!S.trick.length) {
-        // Ausspielen: niedrig und ungefährlich, Prinzen meiden
-        v = -rank(c) * 1.2 - danger(c) * 2 - (suit(c) === 'H' && p.hand.includes(FROG) && c !== FROG ? 2 : 0);
-        if (pw === 'meer' || pw === 'rapunzel' || pw === 'rosen') v -= 3; // beim Ausspielen selten sinnvoll
-        if (pw === 'dorn') v += -1 + (rank(c) > 8 ? 2 : 0);
-      } else {
-        const trick = S.trick.concat([{ pi, c, pw }]);
-        const wins = trickWinner(trick) === pi;
-        const cards = trick.map(t => t.c);
-        const pts = trickPts(cards, pi);
-        const expectExtra = last ? 0 : (S.players.length - trick.length) * 0.6;
-        if (wins) v = -(pts + expectExtra) * 3 - (last ? 0 : rank(c) * 0.3) + (pts <= 0 && last ? rank(c) * 0.4 : 0);
-        else v = rank(c) * 0.5 + danger(c) * 1.5; // gefährliche/hohe Karten loswerden
-        if (pw) v -= 2.5; // Fähigkeit nur, wenn es sich lohnt
-      }
-      if (v > bv) { bv = v; best = { c, pw }; }
-    }
-  }
-  return best;
-}
-function botStep() {
-  if (S.phase === 'collect') { collectTrick(); return; }
-  if (S.phase === 'roundEnd') { startRound(); return; }
-  const p = cur();
-  const m = botPlay(p);
-  playCard(p, m.c, m.pw);
-  if (m.pw) log(`${p.name} nutzt ${princess(p).n}.`);
 }
 
 // ---------- Tracking ----------
@@ -744,6 +1304,7 @@ function recordPlay() {
 }
 function spielregalProfiles() { try { return (JSON.parse(localStorage.getItem('spielregal:players') || '[]') || []).filter(p => p && p.name).map(p => p.name); } catch (e) { return []; } }
 const KEY = 'prinzessinnenball-v1';
+const SAVE_V = 2; // v2: Regeln der Deluxe Edition, ältere Stände sind nicht kompatibel
 // Speichern & Verlassen: Der Spielstand wird ohnehin nach jeder Aktion
 // gespeichert; „verlassen“ führt zurück zum Startbildschirm, von dem aus die
 // Partie mit „Fortsetzen“ weiterläuft.
@@ -754,20 +1315,23 @@ function savedLabel(sv) {
   return d.toDateString() === now.toDateString() ? `heute ${hm}` : `${d.getDate()}.${d.getMonth() + 1}. ${hm}`;
 }
 function save() { try { if (S && !S.tut) { S.savedAt = Date.now(); localStorage.setItem(KEY, JSON.stringify(S)); } } catch (e) { } }
-function load() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && s.v === 1 ? s : null; } catch (e) { return null; } }
+function load() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && s.v === SAVE_V ? s : null; } catch (e) { return null; } }
 function clearSave() { try { localStorage.removeItem(KEY); } catch (e) { } }
 
 // ---------- Ansichten ----------
 let toastTimer = null;
 function toast(m) { U.toast = m; clearTimeout(toastTimer); toastTimer = setTimeout(() => { U.toast = null; render(); }, 2400); }
 const avatar = p => bwHead('pl' + S.players.indexOf(p) + p.name, Object.assign({ skin: '#FFFFFF' }, p.look));
-const isMyTurn = () => S && S.phase === 'play' && !cur().bot;
+const myAsk = () => S && S.ask && !S.players[S.ask.pi].bot ? S.ask : null;
+const isMyTurn = () => S && S.phase === 'play' && !S.ask && !cur().bot;
+const short = n => n.split(' ').slice(-1)[0];
 function viewStart() {
   const saved = load(), st = U.setup, prof = spielregalProfiles();
+  const n = st.bots + 1, per = deckFor(n).length / n;
   return `<div class="wrap start">
     <div class="hero">${heroSvg()}</div>
     <h1 class="hand">Prinzessinnenball</h1>
-    <p class="sub">Fünf Ballnächte, zu viele Prinzen: ein Stichspiel nach dem Prinzip von <i>Rebel Princess</i>.</p>
+    <p class="sub">Fünf Ballnächte, zu viele Prinzen: das Stichspiel nach den Regeln von <i>Rebel Princess</i> (Deluxe Edition).</p>
     ${saved && saved.screen === 'game' ? `<button class="btn wide" data-a="resume">Partie fortsetzen · Ballnacht ${saved.round || 1}/${ROUNDS}</button><p style="margin:6px 0 0;font-size:12.5px;opacity:.75">${saved.savedAt ? `Gespeichert ${savedLabel(saved)} · ` : ''}<button class="link" data-a="discard" style="font-size:12.5px">verwerfen</button></p>` : ''}
     <div class="panel">
       <p class="label">Dein Name</p>
@@ -775,7 +1339,10 @@ function viewStart() {
       ${prof.length ? `<div class="chips" style="margin-top:8px">${prof.slice(0, 8).map(n => `<button class="chip ${st.name === n ? 'on' : ''}" data-a="pickname" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div><p class="note">Wähle dein Spielregal-Profil, dann landet die Partie mit deinen Anträgen in deiner Partien-Liste.</p>` : ''}
       <p class="label" style="margin-top:14px">Gegnerinnen (Bots)</p>
       <div class="chips">${[2, 3, 4, 5].map(n => `<button class="chip ${st.bots === n ? 'on' : ''}" data-a="bots" data-n="${n}">${n}</button>`).join('')}</div>
-      <p class="note">${ROUNDS} Runden · ${st.bots + 1} Personen · ${Math.floor((st.bots + 1 === 5 ? 45 : 48) / (st.bots + 1))} Karten auf der Hand · Wenigste Anträge gewinnt.</p>
+      <p class="label" style="margin-top:14px">Rundenkarten</p>
+      <div class="chips"><button class="chip ${st.mode === 'first' ? 'on' : ''}" data-a="mode" data-m="first">Erste Partie (a–e)</button><button class="chip ${st.mode === 'random' ? 'on' : ''}" data-a="mode" data-m="random">Zufällig</button></div>
+      <div class="chips" style="margin-top:8px"><button class="chip ${st.exp ? 'on' : ''}" data-a="exp">${st.exp ? '✓ ' : ''}mit „Doppelt Rebellisch“</button></div>
+      <p class="note">${ROUNDS} Runden · ${n} Personen · ${per} Karten auf der Hand${n === 3 ? ' (ohne 1, 11, 12)' : n < 6 ? ' (ohne 11, 12)' : ''} · Wenigste Anträge gewinnt.</p>
     </div>
     <button class="btn wide" data-a="start">Zum Ball</button>
     <button class="btn white wide" data-a="tutorial" style="margin-top:12px">Lernspiel: Regeln spielend lernen</button>
@@ -784,75 +1351,116 @@ function viewStart() {
 }
 function oppRow(p, i) {
   const pr = princess(p);
-  const isCur = (S.phase === 'play') && curPi() === i;
+  const isCur = S.phase === 'play' && !S.ask && curPi() === i;
+  const extra = [p.late ? '1 spät' : '', p.aside.length ? `${p.aside.length} beiseite` : '', S.poison && S.poison.holder === i ? '☠ Geschenk' : '', p.bid ? 'Gebot' : ''].filter(Boolean).join(' · ');
   return `<button class="opp ${isCur ? 'cur' : ''}" data-a="pinfo" data-p="${i}"><span class="av">${avatar(p)}</span>
-    <span style="min-width:0;flex:1"><span class="nm">${esc(p.name)}${p.bot || p.name === 'Du' ? '' : ' (du)'}</span><span class="pr">${pr ? (p.used ? `<s>${esc(pr.n)}</s>` : esc(pr.n)) : '–'}</span><span class="pr">${p.hand.length} Karten</span></span>
-    <span class="sc"><b>${p.roundPts}</b><br>Σ${p.total}</span></button>`;
+    <span style="min-width:0;flex:1"><span class="nm">${esc(p.name)}</span><span class="pr">${pr ? (p.used ? `<s>${esc(pr.n)}</s>` : esc(pr.n)) : '–'}</span><span class="pr">${p.hand.length} Karten · ${p.tricks} Stich${p.tricks === 1 ? '' : 'e'}${extra ? ' · ' + extra : ''}</span>${p.open.length ? `<span class="pr">offen: ${p.open.map(c => `${SUIT_1[suit(c)]} ${val(c)}`).join(', ')}</span>` : ''}</span>
+    <span class="sc"><b>${trickPts(p.won)}</b><br>Σ${p.total}</span></button>`;
+}
+// Erklärt in einer Zeile, wer den Stich gewinnt und warum
+function trickWhy(tr, w, done) {
+  if (!tr.length) return '';
+  const cd = c => `<b style="color:${suit(c) === 'P' ? '#1A1A1A' : SUIT_COL[suit(c)].fg}">${SUIT_1[suit(c)]} ${val(c)}</b>`;
+  const L = S.rule === 'w' ? leadSuit(tr) : S.fx.ledSuit || suit(tr[0].c);
+  const out = [`${S.rule === 'w' ? 'Führende Farbe' : 'Ausgespielt'}: <b style="color:${L === 'P' ? '#1A1A1A' : SUIT_COL[L].fg}">${SUIT_N[L]}</b>`];
+  if (S.fx.asche) out.push('Aschenputtel: <b>niedrigste Karte gewinnt</b>');
+  if (S.rule === 'x' && tr.some(t => val(t.c) === 6)) out.push(`${tr.filter(t => val(t.c) === 6).length}× die 6: Rangfolge ${tr.filter(t => val(t.c) === 6).length % 2 ? 'umgekehrt' : 'wieder normal'}`);
+  const rr = { f: 'Königinnen sind Trumpf', g: 'die zweithöchste Karte gewinnt', l: 'am weitesten von der ersten Karte entfernt gewinnt', r: 'wer nicht bedient, gewinnt', u: 'Summe der ausgespielten Farbe zählt', v: 'Feen zählen zur ausgespielten Farbe', em: `Zielsumme ${S.target}` }[S.rule];
+  if (rr) out.push(esc(rule().n) + ': ' + rr);
+  tr.filter(t => t.zero).forEach(t => out.push(`${esc(short(nm(t.pi)))} (Schneewittchen) zählt als 0`));
+  if (done) {
+    const wc = tr.filter(t => t.pi === w).map(t => t.c);
+    out.push(`→ <b>${esc(short(nm(w)))}</b> gewinnt mit ${wc.map(cd).join(' + ')}`);
+  } else out.push(`→ vorne liegt <b>${esc(short(nm(w)))}</b>`);
+  return out.join(' · ');
+}
+function powerBox(me) {
+  const pr = princess(me);
+  if (!pr) return '';
+  const when = { pre: 'vor einem Stich', play: 'beim Ausspielen', turn: 'in deinem Zug', after: 'direkt nach deiner Karte', end: 'wenn alle gespielt haben', won: 'nach einem gewonnenen Stich' }[pr.when];
+  return `<div class="opp pbox" style="cursor:default"><span class="av" style="width:64px;height:76px;border-radius:12px">${princessArt(pr.k)}</span><span style="flex:1;min-width:0"><span class="nm">${esc(pr.n)}: ${esc(pr.t)}${me.used ? ' · erschöpft' : ''}</span><span style="font-size:12.5px;display:block">${esc(pr.tx)}</span><span style="font-size:11.5px;color:#6b6862;display:block">Einmal pro Ballnacht, ${when}.</span></span></div>`;
+  return `<div class="opp" style="cursor:default"><span class="av" style="width:56px;height:56px">${bwHead('prs' + pr.k, Object.assign({ skin: '#FFFFFF' }, { hair: 'bob', hat: 'tiara' }))}</span><span><span class="nm">${esc(pr.n)}: ${esc(pr.t)}${me.used ? ' · erschöpft' : ''}</span><span style="font-size:12.5px">${esc(pr.tx)}</span><span style="font-size:11.5px;color:#6b6862;display:block">Einmal pro Ballnacht, ${when}.</span></span></div>`;
 }
 function viewGame() {
-  const me = human();
+  const me = human(), mi = S.players.indexOf(me);
   const r = rule();
-  const shown = S.trick.length ? { trick: S.trick, w: S.phase === 'collect' ? trickWinner(S.trick) : -1 } : S.lastTrick ? S.lastTrick : { trick: [], w: -1 };
-  const live = !S.trick.length && S.lastTrick;
-  const pen = shown.trick.length ? trickPts(shown.trick.map(t => t.c), 0) : 0;
-  let msg, action = '';
-  if (S.phase === 'pass') {
-    const k = r.pass[0];
-    msg = `Wähle ${k} Karten zum Weitergeben (${r.pass[1] > 0 ? 'nach links' : 'nach rechts'}): ${U.passSel.length}/${k}`;
-    action = `<button class="btn" data-a="dopass" ${U.passSel.length === k ? '' : 'disabled'}>Geben</button>`;
+  const live = S.trick.length > 0;
+  const shown = live ? { trick: S.trick, w: trickWinner(), done: S.phase === 'collect' } : S.last ? { trick: S.last.trick, w: S.last.w, done: true, alice: S.last.alice } : { trick: [], w: -1 };
+  const pen = shown.trick.length ? trickPts(shown.trick.map(t => t.c)) : 0;
+  let msg = '', action = '', selectable = [], selMax = 0;
+  const a = myAsk();
+  if (a && (a.kind === 'cards' && !a.list)) {
+    msg = `<b>${esc(a.title)}:</b> ${esc(a.text)} (${U.sel.length}/${a.n})`;
+    selectable = me.hand.filter(c => a.filter === 'under8' ? val(c) < 8 : a.filter === 'noPF' ? (me.hand.some(x => suit(x) !== 'P' && x !== FROG) ? suit(c) !== 'P' && c !== FROG : true) : a.filter === 'suit' ? suit(c) === a.suit : true);
+    selMax = a.n;
+    action = `${a.optional ? '<button class="btn white" data-a="askskip">Überspringen</button>' : ''}<button class="btn" data-a="askok" ${U.sel.length === a.n ? '' : 'disabled'}>OK</button>`;
+  } else if (a && a.kind === 'pre') {
+    msg = `<b>${esc(a.title)}</b> – ${esc(a.text)}`;
+    action = a.opts.map(([k, l]) => `<button class="btn ${k === 'use' ? '' : 'white'}" data-a="askopt" data-k="${k}">${esc(l)}</button>`).join('');
+  } else if (a) {
+    msg = `<b>${esc(a.title)}</b>`;
+    action = `<button class="btn" data-a="askopen">Auswählen</button>`;
   } else if (isMyTurn()) {
-    const lg = legal(me, U.power && princess(me).k === 'schnee');
-    msg = U.sel && lg.includes(U.sel) ? 'Nochmal tippen oder „Ausspielen“.' : S.trick.length ? `Bediene ${SUIT_N[suit(S.trick[0].c)]}, wenn du kannst.` : 'Du spielst aus.';
-    const canP = canUsePower(me, 'play');
-    action = (canP ? `<button class="toggle ${U.power ? 'on' : ''}" data-a="power"><i></i>${esc(princess(me).n.split(' ').slice(-1)[0])}</button>` : '') + `<button class="btn" data-a="play" ${U.sel && lg.includes(U.sel) ? '' : 'disabled'}>Ausspielen</button>`;
-  } else if (S.phase === 'asche') {
-    msg = 'Aschenputtel: Prinzen aus dem Stich weitergeben?';
-    action = `<button class="btn white" data-a="ascheno">Behalten</button><button class="btn" data-a="ascheyes">Weitergeben</button>`;
+    const lg = legal(me, U.power);
+    selectable = lg; selMax = 1;
+    const pr = princess(me);
+    msg = U.sel[0] && lg.includes(U.sel[0]) ? 'Nochmal tippen oder „Ausspielen“.' : S.trick.length ? `Bediene ${SUIT_N[S.fx.ledSuit || suit(S.trick[0].c)]}, wenn du kannst.` : 'Du spielst aus.';
+    if (S.fx.ice && S.fx.ice.pi === mi) msg = `Eisprinzessin: Du musst ${cardName(S.fx.ice.c)} spielen.`;
+    if (canPower(me, 'play')) action += `<button class="toggle ${U.power ? 'on' : ''}" data-a="power"><i></i>${esc(short(pr.n))}</button>`;
+    if (canPower(me, 'turn') && !(pr.k === 'schwan' && S.oi === S.order.length - 1)) action += `<button class="btn white" data-a="turnpower">${esc(short(pr.n))}</button>`;
+    action += `<button class="btn" data-a="play" ${U.sel[0] && lg.includes(U.sel[0]) ? '' : 'disabled'}>Ausspielen</button>`;
+  } else if (S.phase === 'collect') {
+    msg = `${esc(nm(trickWinner()))} gewinnt den Stich …`;
+    action = `<button class="btn white" data-a="fast">${U.fast ? 'Normal' : 'Schneller'}</button>`;
   } else {
-    msg = S.phase === 'collect' ? `${esc(S.players[trickWinner(S.trick)].name)} gewinnt den Stich …` : `${esc(cur().name)} spielt …`;
+    msg = S.phase === 'play' ? `${esc(cur().name)} spielt …` : '…';
     action = `<button class="btn white" data-a="fast">${U.fast ? 'Normal' : 'Schneller'}</button>`;
   }
-  const lg = isMyTurn() ? legal(me, U.power && princess(me).k === 'schnee') : S.phase === 'pass' ? me.hand : [];
-  const hand = me.hand.map(c => {
-    const ok = lg.includes(c);
-    const cls = (S.phase === 'pass' ? (U.passSel.includes(c) ? 'sel' : '') : (U.sel === c ? 'sel' : '')) + (isMyTurn() || S.phase === 'pass' ? (ok ? ' ok' : ' no') : '');
+  const lateNote = me.late ? `<p class="note" style="margin:6px 0 0">Beiseite für den letzten Stich: ${cardName(me.late)}</p>` : me.aside.length ? `<p class="note" style="margin:6px 0 0">Beiseite: ${me.aside.length} Karten (${S.rule === 'm' ? 'spielst du danach' : 'gehen an die rechte Nachbarin'})</p>` : me.bid ? `<p class="note" style="margin:6px 0 0">Dein geheimes Gebot: ${val(me.bid)} Stich${val(me.bid) === 1 ? '' : 'e'}</p>` : '';
+  const handCards = me.hand.length ? me.hand : me.late ? [me.late] : [];
+  const hand = handCards.map(c => {
+    const ok = selectable.includes(c);
+    const cls = (U.sel.includes(c) ? 'sel' : '') + (selMax ? (ok ? ' ok' : ' no') : '') + (me.open.includes(c) ? ' open' : '');
     return cardHtml(c, cls, `data-a="card" data-c="${c}"`);
   }).join('');
+  const back = '<button class="card back" tabindex="-1" disabled><svg class="frame" viewBox="0 0 62 90" preserveAspectRatio="none"><path d="M6,3 H56 Q59,3 59,7 V83 Q59,87 55,87 H7 Q3,87 3,83 V7 Q3,3 6,3 Z" fill="#1A1A1A"/></svg><span class="bk">?</span></button>';
+  const tcard = t => t.down ? back : cardHtml(t.c, '', 'tabindex="-1" disabled');
   return `
   <div class="top"><div class="row">
-    <div class="round hand">Nacht ${S.round}/${ROUNDS}<small>Stich ${Math.min(S.trickNo + 1, S.trickNo + S.tricksLeft)}/${S.trickNo + S.tricksLeft}</small></div>
-    <div class="rule"><b>${esc(r.n)}</b>${esc(r.tx)}</div>
+    <div class="round hand">Nacht ${S.round}/${ROUNDS}<small>Stich ${S.trickNo + 1}</small></div>
+    <div class="rule"><b>${esc(r.k)} · ${esc(r.n)}</b>${esc(r.tx)}</div>
     ${U.tut ? '' : `<button class="icobtn" data-a="leave" aria-label="Speichern und verlassen" title="Speichern &amp; verlassen"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><rect x="4" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/><rect x="11.8" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/></svg></button>`}
     <button class="icobtn" data-a="menu" aria-label="Menü">?</button>
   </div></div>
   <div class="wrap">
     <div class="opps">${S.players.map(oppRow).join('')}</div>
-    <div class="table"><span class="lbl">${live ? 'letzter Stich' : 'Stich'}</span>${pen ? `<span class="pen">${pen > 0 ? '+' : ''}${pen} Antr.</span>` : ''}
-      <div class="trick">${shown.trick.map(t => `<div class="tp ${t.pi === shown.w ? 'win' : ''}">${cardHtml(t.c, '', 'tabindex="-1" disabled')}<div class="who">${esc(S.players[t.pi].name.split(' ').slice(-1)[0])}</div>${t.pw ? `<span class="pw">${esc(PRINCESSES.find(x => x.k === t.pw).n.split(' ').slice(-1)[0])}</span>` : ''}</div>`).join('') || '<p style="text-align:center;font-size:13px;margin-top:40px;background:#fff">Noch keine Karte gespielt.</p>'}</div>
-      ${shown.trick.length ? `<p class="why">${trickWhy(shown.trick, shown.w >= 0 ? shown.w : trickWinner(shown.trick), shown.w >= 0, shown.passed)}</p>` : ''}
+    <div class="table"><span class="lbl">${live ? 'Stich' : 'letzter Stich'}</span>${pen ? `<span class="pen">${pen > 0 ? '+' : ''}${pen} Antr.</span>` : ''}
+      <div class="trick">${shown.trick.map(t => `<div class="tp ${t.pi === shown.w && shown.done ? 'win' : ''}">${tcard(t)}<div class="who">${esc(short(nm(t.pi)))}</div>${t.zero ? '<span class="pw">= 0</span>' : ''}</div>`).join('') || `<p style="text-align:center;font-size:13px;margin-top:40px;background:#fff">${S.broken ? 'Die Prinzen haben sich auf den Ball geschlichen.' : 'Noch keine Karte gespielt. Prinzen dürfen noch nicht ausgespielt werden.'}</p>`}</div>
+      ${shown.trick.length && !shown.trick.some(t => t.down) ? `<p class="why">${shown.alice ? 'Alice hat den Stich zurückverteilt.' : trickWhy(shown.trick, shown.w, shown.done)}</p>` : ''}
+      ${S.gift && S.gift.length ? `<p class="why">Hochzeitsgeschenk: ${S.gift.length} verdeckte Karten gehen an den Gewinn dieses Stichs.</p>` : ''}
+      ${S.target != null ? `<p class="why">Zielsumme ${S.target} · im Stich bisher ${S.trick.reduce((s, t) => s + (t.zero ? 0 : val(t.c)), 0)}</p>` : ''}
     </div>
-    <section class="sec"><div class="sech"><h2 class="hand">Deine Prinzessin</h2></div>
-      ${(() => { const pr = princess(me); return pr ? `<div class="opp" style="cursor:default"><span class="av" style="width:56px;height:56px">${bwHead('prs' + pr.k, Object.assign({ skin: '#FFFFFF' }, pr.look))}</span><span><span class="nm">${esc(pr.n)}${me.used ? ' · genutzt' : ''}</span><span style="font-size:12.5px">${esc(pr.tx)}</span></span></div>` : ''; })()}
-    </section>
-    <section class="sec"><div class="sech"><h2 class="hand">Chronik</h2></div><div class="note" style="border-style:solid">${S.log.slice(0, 5).map(l => `<div>${esc(l)}</div>`).join('')}</div></section>
+    <section class="sec"><div class="sech"><h2 class="hand">Deine Prinzessin</h2></div>${powerBox(me)}</section>
+    <section class="sec"><div class="sech"><h2 class="hand">Chronik</h2></div><div class="note" style="border-style:solid">${S.log.slice(0, 6).map(l => `<div>${esc(l)}</div>`).join('')}</div></section>
   </div>
   <div class="handsec"><div class="in">
     <div class="handbar"><div class="msg">${msg}</div>${action}</div>
+    ${lateNote}
     <div class="cards">${hand}</div>
   </div></div>`;
 }
 function scoreTable() {
-  return `<table class="score"><tr><th>Nacht</th>${S.players.map(p => `<th>${esc(p.name.split(' ').slice(-1)[0])}</th>`).join('')}</tr>
-    ${S.history.map((h, i) => `<tr><td>${i + 1}. ${esc(RULES.find(r => r.k === h.rule).n)}</td>${h.pts.map(x => `<td>${x}</td>`).join('')}</tr>`).join('')}
+  return `<table class="score"><tr><th>Nacht</th>${S.players.map(p => `<th>${esc(short(p.name))}</th>`).join('')}</tr>
+    ${S.history.map((h, i) => `<tr><td>${i + 1}. ${esc(RULE(h.rule).n)}</td>${h.pts.map((x, j) => `<td title="${esc(h.why[j] || '')}">${x}${h.why[j] ? '*' : ''}</td>`).join('')}</tr>`).join('')}
     <tr class="tot"><td>Gesamt</td>${S.players.map(p => `<td>${p.total}</td>`).join('')}</tr></table>`;
 }
 function viewEnd() {
-  const rows = S.players.map((p, i) => ({ p, i })).sort((a, b) => a.p.total - b.p.total);
+  const rows = S.players.map((p, i) => ({ p, i })).sort((a, b) => a.p.total - b.p.total || b.p.zeroRounds - a.p.zeroRounds);
   const pod = rows.slice(0, 3); const ord = pod.length === 3 ? [pod[1], pod[0], pod[2]] : pod;
   const winHuman = S.final.some((r, i) => r.win && !S.players[i].bot);
   return `<div class="wrap" style="padding-top:18px;text-align:center">
     <h1 class="hand" style="font-size:44px;margin:0">${winHuman ? 'Du bleibst frei!' : esc(rows[0].p.name) + ' bleibt frei!'}</h1>
-    <p class="sub">Die wenigsten Heiratsanträge gewinnen.</p>
+    <p class="sub">Die wenigsten Heiratsanträge gewinnen. Gleichstand: mehr Nächte mit 0 oder weniger.</p>
     <div class="podium">${ord.map(r => `<div class="pp"><div class="ill">${bw('pl' + r.i + r.p.name, Object.assign({ skin: '#FFFFFF' }, r.p.look))}</div><div class="pl" style="height:${r === rows[0] ? 70 : r === rows[1] ? 48 : 32}px">${rows.indexOf(r) + 1}</div></div>`).join('')}</div>
     <div class="panel">${scoreTable()}</div>
     ${S.recorded ? `<p class="note" style="text-align:left">✓ Als digitale Partie für <b>Rebel Princess</b> vorgemerkt. Sie erscheint in Spielregal, sobald du die App öffnest.</p><p><a class="btn white wide" href="../">Zum Spielregal</a></p>` : ''}
@@ -863,44 +1471,78 @@ function sheetWrap(inner, closable = true) { return `<div class="ov" ${closable 
 function rulesHtml() {
   return `<div class="rules"><h3>So spielt man</h3>
   <p>Fünf Ballnächte lang versuchen die Prinzessinnen, den aufdringlichen Prinzen zu entkommen. Wer am Ende die <b>wenigsten Heiratsanträge</b> hat, gewinnt.</p>
-  <h4>Karten</h4>
-  <ul><li>4 Farben mit den Werten 1–12: Feen, Haustiere, Königinnen und Prinzen. Zu fünft fallen 3 Einsen heraus.</li>
-  <li>Jeder <b>Prinz</b> im gewonnenen Stich ist 1 Antrag. Der <b>Frosch</b> (Haustier 8) ist 5 Anträge wert.</li></ul>
+  <h4>Aufbau</h4>
+  <ul><li>4 Farben mit den Werten 1–12: Feen, Haustiere, Königinnen und Prinzen. Zu dritt fallen alle 1, 11 und 12 heraus, zu viert und zu fünft die 11 und 12.</li>
+  <li>Jede Person bekommt 2 Prinzessinnen und wählt eine. Ihre Fähigkeit gilt <b>einmal pro Ballnacht</b>.</li>
+  <li>Jede Nacht gilt eine <b>Rundenkarte</b>. Sie bestimmt, wie viele Karten ihr zu Beginn nach links/rechts weitergebt, und bringt eine Sonderregel.</li></ul>
   <h4>Ein Stich</h4>
-  <ul><li>Die erste Karte bestimmt die Farbe. Wer kann, muss sie <b>bedienen</b>. Die höchste Karte der ausgespielten Farbe gewinnt.</li>
-  <li>Prinzen dürfen erst ausgespielt werden, wenn schon ein Prinz gefallen ist. Im ersten Stich einer Runde geht das nie, außer man hat nur noch Prinzen.</li>
-  <li>Wer den Stich gewinnt, spielt den nächsten aus.</li></ul>
-  <h4>Ballnacht-Regeln</h4>
-  <p>Jede Nacht gilt eine Sonderregel, zum Beispiel Karten weitergeben, Trumpf oder „niedrigste Karte gewinnt“.</p>
+  <ul><li>Die erste Karte bestimmt die Farbe, wer kann, muss <b>bedienen</b>. Die höchste Karte der ausgespielten Farbe gewinnt und spielt den nächsten Stich aus.</li>
+  <li><b>Prinzen sind nicht eingeladen:</b> Ausspielen darf man sie erst, wenn jemand, der nicht bedienen konnte, einen Prinzen abgeworfen hat (oder man nur noch Prinzen hat).</li></ul>
+  <h4>Wertung</h4>
+  <ul><li>Jeder <b>Prinz</b> in deinen Stichen ist 1 Antrag, der <b>Frosch</b> (Haustier 8) 5 Anträge.</li>
+  <li><b>Rebel of the Ball:</b> Wer alle Prinzen und den Frosch gewinnt, bekommt −10 statt allem anderen.</li>
+  <li>Die nächste Nacht beginnt, wer insgesamt die wenigsten Anträge hat.</li>
+  <li>Nach 5 Nächten gewinnt die wenigste Summe. Bei Gleichstand gewinnt, wer öfter eine Nacht mit 0 oder weniger hatte.</li></ul>
+  <h4>Rundenkarten</h4>
+  <ul>${RULES.map(x => `<li><b>${x.k} · ${esc(x.n)}</b>${x.exp ? ' (Erw.)' : ''}${x.end ? ' ⌛' : ''}: ${esc(x.tx)} <i>Weitergeben: ${x.pass[0] ? `${x.pass[0]} ${x.pass[1] === 'L' ? 'nach links' : x.pass[1] === 'R' ? 'nach rechts' : 'in jede Richtung'}` : '–'}</i></li>`).join('')}</ul>
   <h4>Prinzessinnen</h4>
-  <p>Du wählst zu Beginn eine von zwei Prinzessinnen. Die meisten Fähigkeiten gelten <b>einmal pro Runde</b>: Schalte sie vor dem Ausspielen ein. Zwei Fähigkeiten wirken dauerhaft.</p>
+  <ul>${PRINCESSES.map(x => `<li><b>${esc(x.n)}: ${esc(x.t)}</b>${x.exp ? ' (Erw.)' : ''} – ${esc(x.tx)}</li>`).join('')}</ul>
+  <p>Wollen mehrere Prinzessinnen sich gegenseitig aufheben (Meerjungfrau, Rapunzel, Eisprinzessin für die ausspielende Person, Pocahontas), gilt nur die erste in diesem Stich. Reihenfolge der Regeln: Prinzessinnen vor Rundenkarte vor Grundregeln.</p>
   <h4>Unterschiede zum Original</h4>
-  <p style="font-size:13px">Das Prinzip folgt <i>Rebel Princess</i>: Stichspiel wie Hearts, 4×12 Karten, Prinzen als Anträge, Frosch = 5, 5 Runden mit Sonderregel, Prinzessinnen mit Fähigkeiten. Die konkreten Rundenregeln, Fähigkeiten und Illustrationen sind eigene Entwürfe.</p></div>`;
+  <p style="font-size:13px">Grundregeln, alle 26 Rundenkarten (a–z) und die 12 Prinzessinnen folgen der Anleitung der Deluxe Edition und den Regelklärungen von Wonderbow. Dazu kommen die Standard-Rundenkarten und -Prinzessinnen aus <i>Doppelt Rebellisch</i>; Team-Modus und Team-Karten fehlen, da du gegen Bots spielst. Wie viele Karten eine Rundenkarte weitergeben lässt, steht nur auf den Karten selbst. Abgelesen sind e, n, s, t, u und z, die übrigen sind geschätzt. Spielt eine Gegnerin Dornröschen, gibt das Spiel deine niedrigste Karte für dich ab. Die Illustrationen sind eigene Entwürfe.</p></div>`;
+}
+// Auswahl-Dialoge für Fragen (Spieler, Farbe, Karten aus einer Liste, Stichkarten, Tausch)
+function askSheet() {
+  const a = myAsk(); if (!a) return '';
+  let h = `<h3>${esc(a.title)}</h3><p style="font-size:13px">${esc(a.text)}</p>`;
+  if (a.kind === 'opts') h += `<div class="btnrow" style="flex-direction:column">${a.opts.map(([k, l]) => `<button class="btn ${k === 'use' ? '' : 'white'} wide" data-a="askopt" data-k="${k}">${esc(l)}</button>`).join('')}</div>`;
+  if (a.kind === 'player') h += `<div class="btnrow" style="flex-direction:column">${a.opts.map(i => `<button class="btn white wide" data-a="askopt" data-k="${i}">${esc(nm(i))}${S.players[i].bot ? '' : ' (du)'} · ${S.players[i].hand.length} Karten · Σ${S.players[i].total}</button>`).join('')}</div>`;
+  if (a.kind === 'suit') h += `<div class="btnrow" style="flex-wrap:wrap">${a.opts.map(s => `<button class="btn white" data-a="askopt" data-k="${s}"><span class="si">${suitIcon(s)}</span>${SUIT_N[s]}</button>`).join('')}</div>`;
+  if (a.kind === 'cards' && a.list) {
+    h += `<div class="cards wrapc">${a.list.map(c => cardHtml(c, U.sel.includes(c) ? 'sel ok' : 'ok', `data-a="card" data-c="${c}"`)).join('')}</div>
+      <div class="btnrow">${a.optional ? '<button class="btn white" data-a="askskip">Überspringen</button>' : ''}<button class="btn" data-a="askok" ${U.sel.length === a.n ? '' : 'disabled'}>OK (${U.sel.length}/${a.n})</button></div>`;
+  }
+  if (a.kind === 'trick2') {
+    h += `<div class="trick">${S.trick.map((t, i) => `<button class="tp ${U.sel.includes(i) ? 'selc' : ''}" data-a="tsel" data-i="${i}" ${t.c === FROG ? 'disabled' : ''}>${cardHtml(t.c, '', 'tabindex="-1" disabled')}<div class="who">${esc(short(nm(t.pi)))}</div></button>`).join('')}</div>
+      <div class="btnrow"><button class="btn white" data-a="askskip">Überspringen</button><button class="btn" data-a="askok" ${U.sel.length === 2 ? '' : 'disabled'}>Tauschen</button></div>`;
+  }
+  if (a.kind === 'haggle') {
+    const me = human();
+    h += `<p class="label">Aus dem Stich nehmen</p><div class="cards wrapc">${a.list.map(c => cardHtml(c, U.hg && U.hg.trick === c ? 'sel ok' : 'ok', `data-a="hgt" data-c="${c}"`)).join('')}</div>
+      <p class="label" style="margin-top:10px">Dafür hergeben</p><div class="cards wrapc">${me.hand.map(c => cardHtml(c, U.hg && U.hg.hand === c ? 'sel ok' : 'ok', `data-a="hgh" data-c="${c}"`)).join('')}</div>
+      <div class="btnrow"><button class="btn white" data-a="askskip">Nicht tauschen</button><button class="btn" data-a="askok" ${U.hg && U.hg.trick && U.hg.hand ? '' : 'disabled'}>Tauschen</button></div>`;
+  }
+  if (a.kind === 'rot') {
+    const me = human();
+    const pool = deckFor(N()).filter(c => c !== FROG && !me.hand.includes(c) && !S.trick.some(t => t.c === c) && !S.players.some(p => p.won.includes(c)));
+    h += `${SUITS.map(s => `<p class="label" style="margin-top:8px">${SUIT_N[s]}</p><div class="valrow">${pool.filter(c => suit(c) === s).map(c => `<button class="vb ${U.sel[0] === c ? 'on' : ''}" data-a="rotpick" data-c="${c}">${val(c)}</button>`).join('')}</div>`).join('')}
+      <div class="btnrow"><button class="btn white" data-a="close">Abbrechen</button><button class="btn" data-a="askok" ${U.sel.length ? '' : 'disabled'}>Verlangen</button></div>`;
+  }
+  return sheetWrap(h, false);
 }
 function viewSheet() {
   const sh = U.sheet;
   if (S && S.screen === 'game' && S.phase === 'princess') {
     const ch = S.princessChoice;
-    return sheetWrap(`<h3>Wähle deine Prinzessin</h3><p style="font-size:13px">Ihre Fähigkeit begleitet dich durch alle fünf Ballnächte.</p>
-      <div class="pcards">${ch.map(k => { const pr = PRINCESSES.find(x => x.k === k); return `<button class="pcard ${U.pick === k ? 'on' : ''}" data-a="pick" data-k="${k}"><div class="pi">${princessArt(k)}</div><b>${esc(pr.n)}</b><small>${esc(pr.tx)}</small></button>`; }).join('')}</div>
+    return sheetWrap(`<h3>Wähle deine Prinzessin</h3><p style="font-size:13px">Ihre Fähigkeit kannst du in jeder Ballnacht einmal nutzen.</p>
+      <div class="pcards">${ch.map(k => { const pr = PRINCESSES.find(x => x.k === k); return `<button class="pcard ${U.pick === k ? 'on' : ''}" data-a="pick" data-k="${k}"><div class="pi">${princessArt(k)}</div><b>${esc(pr.n)}</b><small><b>${esc(pr.t)}.</b> ${esc(pr.tx)}</small></button>`; }).join('')}</div>
       <div class="btnrow"><button class="btn" data-a="pickok" ${U.pick ? '' : 'disabled'}>Zum Ball</button></div>`, false);
   }
   if (S && S.screen === 'game' && S.phase === 'roundEnd' && !sh) {
-    const last = S.history[S.history.length - 1];
-    const next = RULES.find(r => r.k === S.rules[S.round]);
+    const next = RULE(S.rules[S.round]);
     return sheetWrap(`<h3>Ballnacht ${S.round} vorbei</h3>${scoreTable()}
-      <p class="note">Nächste Nacht: <b>${esc(next.n)}</b> – ${esc(next.tx)}</p>
+      <p class="note">Nächste Nacht: <b>${esc(next.k)} · ${esc(next.n)}</b> – ${esc(next.tx)}</p>
       <div class="btnrow"><button class="btn" data-a="nextround">Weiter</button></div>`, false);
   }
+  if (sh && sh.type === 'ask') return askSheet();
   if (!sh) return '';
   if (sh.type === 'rules') return sheetWrap(rulesHtml());
   if (sh.type === 'menu') return sheetWrap(`<h3>Menü</h3><div class="btnrow" style="flex-direction:column">${S && S.screen === 'game' && !S.tut ? '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}<button class="btn white wide" data-a="rules">Spielregeln</button>${S && S.history.length ? '<button class="btn white wide" data-a="scores">Punktestand</button>' : ''}<button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
   if (sh.type === 'scores') return sheetWrap(`<h3>Punktestand</h3>${scoreTable()}`);
-  if (sh.type === 'pinfo') { const p = S.players[sh.p], pr = princess(p); return sheetWrap(`<h3>${esc(p.name)}</h3>${pr ? `<div style="display:flex;gap:12px;align-items:center"><div style="width:90px;height:108px;flex:none">${princessArt(pr.k)}</div><div><b>${esc(pr.n)}</b><p style="font-size:13px;margin:4px 0">${esc(pr.tx)}</p><p style="font-size:12px;color:#6b6862">${pr.when === 'passive' ? 'wirkt dauerhaft' : p.used ? 'in dieser Runde schon genutzt' : 'in dieser Runde noch verfügbar'}</p></div></div>` : ''}<p class="label" style="margin-top:12px">Gewonnene Karten mit Anträgen</p><div style="display:flex;gap:4px;flex-wrap:wrap">${p.won.filter(c => cardPts(c, sh.p)).map(c => cardHtml(c, '', 'disabled')).join('') || '<span style="font-size:13px">keine</span>'}</div>`); }
+  if (sh.type === 'pinfo') { const p = S.players[sh.p], pr = princess(p); return sheetWrap(`<h3>${esc(p.name)}</h3>${pr ? `<div style="display:flex;gap:12px;align-items:center"><div style="width:90px;height:108px;flex:none">${princessArt(pr.k)}</div><div><b>${esc(pr.n)}: ${esc(pr.t)}</b><p style="font-size:13px;margin:4px 0">${esc(pr.tx)}</p><p style="font-size:12px;color:#6b6862">${p.used ? 'in dieser Ballnacht schon genutzt' : 'in dieser Ballnacht noch verfügbar'}</p></div></div>` : ''}<p class="label" style="margin-top:12px">Gewonnene Karten mit Anträgen</p><div style="display:flex;gap:4px;flex-wrap:wrap">${p.won.filter(c => cardPts(c)).map(c => cardHtml(c, '', 'disabled')).join('') || '<span style="font-size:13px">keine</span>'}</div>`); }
   return '';
 }
 
-// ---------- Render & Events ----------
 // ---------- Lernspiel (Tutorial) ----------
 // Geführte Mini-Partie mit vorbereitetem Spielstand. Jeder Schritt hat einen
 // Text, optional ein markiertes Element (sel), erlaubte Aktionen (allow) und
@@ -954,43 +1596,53 @@ const tutName = i => esc(S.players[i].name);
 const tutCard = c => `${SUIT_1[suit(c)]} ${val(c)}`;
 const TUT_STEPS = [
   { pos: 'top', text: 'Willkommen zum <b>Prinzessinnenball</b>! Fünf Ballnächte lang weichst du den Prinzen aus. Jeder <b>Prinz</b> in einem Stich, den du gewinnst, ist <b>1 Antrag</b>, der <b>Frosch</b> sogar 5. Wer am Ende die wenigsten Anträge hat, gewinnt.' },
-  { sel: '.rule', pos: 'bottom', text: 'Jede Nacht gilt eine <b>Sonderregel</b>. Heute ist der „Letzte Walzer“: Anträge im letzten Stich zählen doppelt.' },
-  { sel: '.opps', pos: 'bottom', text: 'Hier siehst du alle Mitspielerinnen und ihre Prinzessin. Du bist <b>Dornröschen</b>. Rechts stehen die Anträge von heute und insgesamt.' },
-  { sel: '.cards .card[data-c="F2"]', allow: { card: d => d.c === 'F2', play: () => U.sel === 'F2' }, done: () => !TUT_ME().hand.includes('F2'), pos: 'top',
+  { sel: '.rule', pos: 'bottom', text: 'Jede Nacht gilt eine <b>Rundenkarte</b>. Heute „Es war einmal“: keine Sonderregel. Normalerweise gebt ihr zu Beginn auch Karten nach links oder rechts weiter, das überspringen wir heute.' },
+  { sel: '.opps', pos: 'bottom', text: 'Hier sitzen alle am Tisch. Zu dritt fallen die 1, 11 und 12 heraus. Du bist <b>Schneewittchen</b>. Rechts stehen die Anträge von heute und insgesamt.' },
+  { sel: '.cards .card[data-c="F2"]', allow: { card: d => d.c === 'F2', play: () => U.sel[0] === 'F2' }, done: () => !TUT_ME().hand.includes('F2'), pos: 'top',
     text: 'Du spielst aus. Die erste Karte bestimmt die Farbe. Beginne mit der kleinen <b>Fee 2</b>: antippen und dann „Ausspielen“ oder noch einmal tippen.' },
-  { wait: true, pos: 'top', done: () => S.trickNo >= 1 && S.phase === 'play' && !cur().bot, text: 'Die anderen müssen <b>Farbe bedienen</b>, also Feen legen, wenn sie welche haben …' },
-  { sel: '.table', pos: 'top', text: () => { const lt = S.lastTrick; const w = lt.trick.find(t => t.pi === lt.w); return `Die höchste Karte der ausgespielten Farbe gewinnt: <b>${tutName(lt.w)}</b> mit ${tutCard(w.c)}. Wer gewinnt, spielt als Nächstes aus, jetzt ${tutCard(S.trick[0].c)}.`; } },
-  { sel: '.cards .card[data-c="H9"]', allow: { card: d => d.c === 'H9', play: () => U.sel === 'H9' }, done: () => !TUT_ME().hand.includes('H9'), pos: 'top',
-    text: 'Du hast Haustiere, also musst du bedienen. Nur erlaubte Karten sind hervorgehoben. Spiel diesmal die <b>Haustier 9</b>.' },
-  { wait: true, pos: 'top', done: () => S.trickNo >= 2 && S.phase === 'play' && !cur().bot, text: 'Mal sehen, was die letzte Spielerin wirft …' },
-  { sel: '.opps', pos: 'bottom', text: () => { const f = S.lastTrick.trick.find(t => t.c === FROG); return `Autsch! ${f ? tutName(f.pi) : 'Jemand'} hat den <b>Frosch</b> abgeworfen. Deine 9 war die höchste Karte, also gehört dir der Stich: <b>5 Anträge</b>. Hohe Karten sind gefährlich!`; } },
-  { sel: '[data-a=power]', allow: { power: true }, done: () => U.power, pos: 'top',
-    text: 'Zeit für deine Prinzessin! <b>Dornröschen</b> lässt deine Karte als 0 zählen, sie kann den Stich nicht gewinnen. Schalte die Fähigkeit ein.' },
-  { sel: '.cards .card[data-c="K12"]', allow: { card: d => d.c === 'K12', play: () => U.sel === 'K12', power: true }, done: () => !TUT_ME().hand.includes('K12'), pos: 'top',
-    text: 'Spiel jetzt deine <b>Königin 12</b> aus. Normalerweise würde sie sicher gewinnen, mit Dornröschen nicht.' },
+  { wait: true, pos: 'top', done: () => S.trickNo >= 1 && S.phase === 'play' && curPi() === 0, text: 'Die anderen müssen <b>Farbe bedienen</b>, also Feen legen, wenn sie welche haben …' },
+  { sel: '.table', pos: 'top', text: () => { const lt = S.last; const w = lt.trick.find(t => t.pi === lt.w); return `Die höchste Fee gewinnt: <b>${tutName(lt.w)}</b> mit ${tutCard(w.c)}. Wer gewinnt, spielt als Nächstes aus, hier ${tutCard(S.trick[0].c)}.`; } },
+  { sel: '.cards .card[data-c="H9"]', allow: { card: d => d.c === 'H9', play: () => U.sel[0] === 'H9' }, done: () => !TUT_ME().hand.includes('H9'), pos: 'top',
+    text: 'Du hast Haustiere, also musst du bedienen. Nur erlaubte Karten sind hervorgehoben. Spiel die <b>Haustier 9</b>.' },
+  { wait: true, pos: 'top', done: () => S.trickNo >= 2 && S.phase === 'play' && curPi() === 0, text: 'Mal sehen, was die letzte Spielerin legen muss …' },
+  { sel: '.opps', pos: 'bottom', text: () => `Autsch! ${tutName(1)} hatte nur noch den <b>Frosch</b> als Haustier und musste ihn legen. Deine 9 war höher, also gehört dir der Stich: <b>5 Anträge</b>. Hohe Karten sind gefährlich!` },
+  { sel: '[data-a=power]', allow: { power: true }, done: () => U.power === 'schnee', pos: 'top',
+    text: 'Zeit für deine Prinzessin! <b>Schneewittchen</b> spielt eine 7 oder niedriger als <b>0</b>. Schalte die Fähigkeit ein.' },
+  { sel: '.cards .card[data-c="K7"]', allow: { card: d => d.c === 'K7', play: () => U.sel[0] === 'K7', power: true }, done: () => !TUT_ME().hand.includes('K7'), pos: 'top',
+    text: 'Spiel jetzt deine <b>Königin 7</b> aus. Als 0 kann sie gegen jede andere Königin nur verlieren.' },
   { wait: true, pos: 'top', done: () => S.trickNo >= 3 && S.phase === 'play', text: 'Die anderen legen Königinnen nach …' },
-  { sel: '.table', pos: 'top', text: () => `Siehst du? <b>${tutName(S.lastTrick.w)}</b> gewinnt, obwohl deine 12 höher war. Jede Fähigkeit gilt <b>einmal pro Nacht</b>, zwei Prinzessinnen wirken dauerhaft.` },
-  { sel: '.cards', pos: 'top', text: 'Die schwarzen Karten sind <b>Prinzen</b>. Ausspielen darfst du sie erst, wenn schon einer gefallen ist. Kannst du nicht bedienen, wirf sie am besten ab, dann landen sie bei anderen.' },
-  { pos: 'top', text: 'Nach allen Stichen werden die Anträge gezählt. Dann beginnt die nächste Ballnacht mit neuer Sonderregel, manchmal gebt ihr vorher Karten weiter. Nach 5 Nächten gewinnt, wer die <b>wenigsten Anträge</b> hat. Viel Glück!' },
+  { sel: '.table', pos: 'top', text: () => `Siehst du? <b>${tutName(S.last.w)}</b> gewinnt. Jede Fähigkeit gilt <b>einmal pro Ballnacht</b>, danach ist die Prinzessin erschöpft, bis die nächste Nacht beginnt.` },
+  { sel: '.cards', pos: 'top', text: 'Die schwarzen Karten sind <b>Prinzen</b>. Sie sind nicht eingeladen: Ausspielen darfst du sie erst, wenn sich einer auf den Ball geschlichen hat, also jemand einen Prinzen abwirft, weil sie nicht bedienen kann.' },
+  { pos: 'top', text: 'Nach allen Stichen werden die Anträge gezählt. Wer <b>alle Prinzen und den Frosch</b> gewinnt, ist „Rebel of the Ball“ und bekommt −10. Die nächste Nacht beginnt, wer am wenigsten hat. Nach 5 Nächten gewinnen die <b>wenigsten Anträge</b>. Viel Glück!' },
 ];
 function tutSetup() {
   U.fast = true;
-  newGame(U.setup.name || 'Du', 2, 99);
-  S.tut = true;
+  S = null;
+  newGame(U.setup.name || 'Du', 2, 99, { mode: 'first', exp: false });
+  S.tut = true; S.noPass = true;
   const [me, b1, b2] = S.players;
-  me.princess = 'dorn'; b1.princess = 'erbse'; b2.princess = 'asche';
-  S.rules[0] = 'letzter';
+  me.princess = 'schnee'; b1.princess = 'asche'; b2.princess = 'erbse';
+  S.phase = 'ready'; S.princessChoice = null; S.leader = 0;
   startRound();
-  me.hand = sortHand(['F2', 'F4', 'F6', 'F11', 'H1', 'H5', 'H9', 'H11', 'K1', 'K2', 'K8', 'K12', 'P1', 'P5', 'P9', 'P12']);
-  b1.hand = sortHand(['F1', 'F3', 'F9', 'F10', 'H3', 'H6', 'H8', 'H10', 'K3', 'K5', 'K9', 'K10', 'P2', 'P3', 'P6', 'P10']);
-  b2.hand = sortHand(['F5', 'F7', 'F8', 'F12', 'H2', 'H4', 'H7', 'H12', 'K4', 'K6', 'K7', 'K11', 'P4', 'P7', 'P8', 'P11']);
+  me.hand = sortHand(['F2', 'F4', 'F6', 'H5', 'H9', 'H10', 'K3', 'K7', 'K9', 'P2', 'P5', 'P9']);
+  b1.hand = sortHand(['F3', 'F8', 'F9', 'H8', 'K2', 'K4', 'K6', 'K10', 'P3', 'P4', 'P6', 'P10']);
+  b2.hand = sortHand(['F5', 'F7', 'F10', 'H2', 'H3', 'H4', 'H6', 'H7', 'K5', 'K8', 'P7', 'P8']);
   S.log = ['Lernspiel: erste Ballnacht mit vorbereiteten Karten.'];
+}
+// Im Lernspiel spielen die Bots immer ihre niedrigste erlaubte Karte
+function tutBot() {
+  if (S.phase === 'collect') return collect();
+  const p = cur();
+  const c = legal(p, null).slice().sort((a, b) => val(a) - val(b) || SUITS.indexOf(suit(a)) - SUITS.indexOf(suit(b)))[0];
+  playCard(p, c, null);
 }
 
 const $app = document.getElementById('app');
 function render() {
   if (U.tut) tutCheck();
-  const nm = document.getElementById('nm'); if (nm) U.setup.name = nm.value;
+  const nmi = document.getElementById('nm'); if (nmi) U.setup.name = nmi.value;
+  if (S && myAsk() && !(myAsk().kind === 'cards' && !myAsk().list) && myAsk().kind !== 'pre' && !U.sheet) U.sheet = { type: 'ask' };
+  if (U.sheet && U.sheet.type === 'ask' && !myAsk()) U.sheet = null;
   let h = !S || S.screen !== 'game' && S.screen !== 'end' ? viewStart() : S.screen === 'end' ? viewEnd()
     : S.phase === 'princess' ? `<div class="wrap start"><div class="hero">${heroSvg()}</div><h1 class="hand">Prinzessinnenball</h1></div>` : viewGame();
   h += viewSheet();
@@ -1002,62 +1654,97 @@ function render() {
   pump();
 }
 function pump() {
-  if (!S || S.screen !== 'game' || U.busy) return;
+  if (!S || S.screen !== 'game' || U.busy || S.ask) return;
   const need = S.phase === 'collect' || (S.phase === 'play' && cur().bot);
   if (!need) return;
   U.busy = true;
   const delay = S.phase === 'collect' ? (U.fast ? 450 : 1300) : (U.fast ? 200 : 700);
   setTimeout(() => {
     U.busy = false;
-    if (!S || S.screen !== 'game') return;
-    if (S.phase === 'collect' || (S.phase === 'play' && cur().bot)) botStep();
+    if (!S || S.screen !== 'game' || S.ask) return;
+    if (S.phase === 'collect' || (S.phase === 'play' && cur().bot)) { if (S.tut) tutBot(); else botStep(); }
     render();
   }, delay);
 }
+function resetSel() { U.sel = []; U.power = null; U.hg = null; }
 const H = {
   leave: () => { if (!S || S.tut) return; save(); S = null; U.sheet = null; window.scrollTo(0, 0); toast('Partie gespeichert. Mit „Partie fortsetzen“ geht es weiter.'); },
   discard: () => { if (confirm('Gespeicherte Partie wirklich verwerfen?')) clearSave(); },
-  tutorial: () => { const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : U.setup.name; U.sheet = null; tutSetup(); U.tut = { i: 0 }; window.scrollTo(0, 0); },
+  tutorial: () => { const nmi = document.getElementById('nm'); U.setup.name = nmi ? nmi.value.trim() : U.setup.name; U.sheet = null; resetSel(); tutSetup(); U.tut = { i: 0 }; window.scrollTo(0, 0); },
   tutnext: () => { if (U.tut) U.tut.i = Math.min(U.tut.i + 1, TUT_STEPS.length - 1); },
   tutend: () => { U.tut = null; U.sheet = null; U.fast = false; S = null; window.scrollTo(0, 0); },
   tutquit: () => { U.tut = null; U.sheet = null; U.fast = false; S = null; window.scrollTo(0, 0); },
   bots: d => { U.setup.bots = +d.n; },
-  pickname: d => { U.setup.name = d.n; const nm = document.getElementById('nm'); if (nm) nm.value = d.n; },
-  start: () => { const sv = load(); if (sv && sv.screen === 'game' && !confirm(`Es gibt eine gespeicherte Partie (Ballnacht ${sv.round || 1}). Neue Partie starten und die gespeicherte verwerfen?`)) return; const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : ''; U.pick = null; newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0); window.scrollTo(0, 0); },
-  resume: () => { S = load(); U.sheet = null; U.sel = null; U.passSel = []; },
+  mode: d => { U.setup.mode = d.m; },
+  exp: () => { U.setup.exp = !U.setup.exp; },
+  pickname: d => { U.setup.name = d.n; const nmi = document.getElementById('nm'); if (nmi) nmi.value = d.n; },
+  start: () => { const sv = load(); if (sv && sv.screen === 'game' && !confirm(`Es gibt eine gespeicherte Partie (Ballnacht ${sv.round || 1}). Neue Partie starten und die gespeicherte verwerfen?`)) return; const nmi = document.getElementById('nm'); U.setup.name = nmi ? nmi.value.trim() : ''; U.pick = null; resetSel(); newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0, { mode: U.setup.mode, exp: U.setup.exp, rules: window.__forceRules }); window.scrollTo(0, 0); },
+  resume: () => { S = load(); U.sheet = null; resetSel(); },
   rules: () => { U.sheet = { type: 'rules' }; },
   menu: () => { U.sheet = { type: 'menu' }; },
   scores: () => { U.sheet = { type: 'scores' }; },
   restart: () => { if (confirm('Laufende Partie wirklich abbrechen?')) { clearSave(); S = null; U.sheet = null; } },
   newgame: () => { clearSave(); S = null; U.sheet = null; },
-  close: () => { U.sheet = null; }, ovclose: () => { U.sheet = null; },
+  close: () => { U.sheet = null; if (S && S.ask && S.ask.kind === 'rot') { S.ask = null; } },
+  ovclose: () => { U.sheet = null; },
   pinfo: d => { U.sheet = { type: 'pinfo', p: +d.p }; },
   pick: d => { U.pick = d.k; },
-  pickok: () => { human().princess = U.pick; S.phase = 'ready'; startRound(); },
+  pickok: () => { human().princess = U.pick; S.princessChoice = null; S.phase = 'ready'; startRound(); },
   fast: () => { U.fast = !U.fast; },
-  power: () => { U.power = !U.power; if (U.sel && !legal(human(), U.power && princess(human()).k === 'schnee').includes(U.sel)) U.sel = null; },
+  power: () => { const k = princess(human()).k; U.power = U.power ? null : k; if (U.sel[0] && !legal(human(), U.power).includes(U.sel[0])) U.sel = []; },
   card: d => {
-    const me = human(), c = d.c;
-    if (S.phase === 'pass') {
-      const k = rule().pass[0];
-      const i = U.passSel.indexOf(c);
-      if (i >= 0) U.passSel.splice(i, 1); else if (U.passSel.length < k) U.passSel.push(c);
+    const c = d.c, a = myAsk();
+    if (a && a.kind === 'cards') {
+      const i = U.sel.indexOf(c);
+      if (i >= 0) U.sel.splice(i, 1); else if (U.sel.length < a.n) U.sel.push(c); else if (a.n === 1) U.sel = [c];
       return;
     }
     if (!isMyTurn()) return;
-    if (U.sel === c) return H.play();
-    U.sel = c;
+    if (U.sel[0] === c) return H.play();
+    U.sel = [c];
   },
   play: () => {
-    const me = human();
-    const pw = U.power && canUsePower(me, 'play') ? princess(me).k : null;
-    if (playCard(me, U.sel, pw)) { if (pw) log(`${me.name} nutzt ${princess(me).n}.`); U.sel = null; U.power = false; }
+    const me = human(), c = U.sel[0];
+    if (!c) return;
+    if (U.power === 'schnee' && val(c) > 7) { toast('Schneewittchen: nur Karten bis 7.'); return; }
+    if (playCard(me, c, U.power)) resetSel();
   },
-  dopass: () => { const me = human(); S.passSel[S.players.indexOf(me)] = U.passSel.slice(); U.passSel = []; doPass(); const got = S.passed[(S.players.indexOf(me) - rule().pass[1] + S.players.length) % S.players.length]; toast(`Du bekommst: ${got.map(c => SUIT_1[suit(c)] + ' ' + val(c)).join(', ')}`); },
-  ascheyes: () => { const { w, cards } = S.pending; S.pending = null; passPrinces(w, cards); },
-  ascheno: () => { const { w, cards } = S.pending; S.pending = null; finishTrick(w, cards); },
+  askok: () => {
+    const a = myAsk(); if (!a) return;
+    let sel = U.sel.slice();
+    if (a.kind === 'haggle') sel = U.hg;
+    if (a.kind === 'rot') { resetSel(); U.sheet = null; S.ask = null; return rotDone(a.pi, sel[0]); }
+    resetSel(); U.sheet = null; answer(sel);
+  },
+  askskip: () => { resetSel(); U.sheet = null; answer(null); },
+  askopt: d => { resetSel(); U.sheet = null; answer(d.k); },
+  askopen: () => { U.sheet = { type: 'ask' }; },
+  tsel: d => { const i = +d.i, k = U.sel.indexOf(i); if (k >= 0) U.sel.splice(k, 1); else if (U.sel.length < 2) U.sel.push(i); },
+  hgt: d => { U.hg = Object.assign({}, U.hg, { trick: d.c }); },
+  hgh: d => { U.hg = Object.assign({}, U.hg, { hand: d.c }); },
+  rotpick: d => { U.sel = [d.c]; },
+  turnpower: () => {
+    const me = human(), pi = S.players.indexOf(me), k = princess(me).k;
+    if (k === 'schwan') { useTurnPower(pi); resetSel(); return; }
+    if (k === 'rot') { S.ask = { pi, kind: 'rot', title: 'Rotkäppchen: Demaskierung', text: 'Welche Karte verlangst du? Wer sie hat, muss sie dir geben; du gibst danach eine Karte derselben Farbe zurück.', next: 'rot' }; U.sheet = { type: 'ask' }; }
+  },
   nextround: () => { startRound(); },
 };
+// Rotkäppchen: Karte bekommen, dann eine Karte derselben Farbe zurückgeben (Mensch wählt)
+function rotDone(pi, want) {
+  const p = S.players[pi];
+  p.used = true;
+  const holder = S.players.findIndex((q, i) => i !== pi && q.hand.includes(want));
+  if (holder < 0) { log(`${p.name} verlangt ${cardName(want)} (Rotkäppchen) – niemand hat sie.`); return; }
+  const q = S.players[holder];
+  q.hand = q.hand.filter(c => c !== want); p.hand = sortHand(p.hand.concat([want]));
+  log(`${p.name} nutzt Rotkäppchen: ${q.name} gibt ${cardName(want)}.`);
+  const back = p.hand.filter(c => suit(c) === suit(want) && c !== want);
+  if (!back.length) return;
+  S.rotTo = holder;
+  ask(pi, { kind: 'cards', n: 1, list: back, title: 'Rotkäppchen', text: `Welche ${SUIT_1[suit(want)]} gibst du ${q.name} zurück?`, next: 'rotback' });
+}
+CONT.rotback = (pi, sel) => { const p = S.players[pi], q = S.players[S.rotTo]; p.hand = p.hand.filter(c => c !== sel[0]); q.hand = sortHand(q.hand.concat(sel)); S.rotTo = null; };
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-a]');
   if (!el || !$app.contains(el)) return;
@@ -1068,13 +1755,15 @@ document.addEventListener('click', e => {
   fn(el.dataset); render();
 });
 window.__rp = {
-  simulate(n, seed) {
-    newGame(null, n - 1, seed);
+  simulate(n, seed, opts) {
+    newGame(null, n - 1, seed, opts || {});
     let guard = 0;
-    while (S.screen === 'game' && guard++ < 2000) botStep();
-    return { final: S.final, guard, history: S.history };
+    while (S.screen === 'game' && guard++ < 4000) botStep();
+    return { final: S.final, guard, history: S.history, rules: S.rules };
   },
   state: () => S,
+  rules: () => RULES.map(r => r.k),
+  deck: n => deckFor(n),
   reset: () => { S = null; U.sheet = null; clearSave(); render(); },
 };
 render();
