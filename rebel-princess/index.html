@@ -140,6 +140,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .coach .cwait{font-weight:800;letter-spacing:3px}
 .tut-hl{outline:3px dashed var(--ink)!important;outline-offset:4px;animation:tutp 1s ease-in-out infinite;position:relative;z-index:6;border-radius:12px}
 @keyframes tutp{50%{outline-offset:7px}}
+.why{position:relative;margin:10px 2px 0;font-size:12.5px;line-height:1.4;background:var(--white);border:1.5px solid var(--ink);border-radius:10px;padding:6px 9px}
 </style>
 </head>
 <body>
@@ -386,7 +387,7 @@ const princess = p => PRINCESSES.find(x => x.k === p.princess);
 // ---------- Illustrationen ----------
 const INK = 'stroke="#1A1A1A" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"';
 function suitIcon(s, inv) {
-  const f = inv ? '#FFFFFF' : '#161616', b = inv ? '#161616' : '#FFFFFF';
+  const f = inv ? '#FFFFFF' : '#161616', b = SUIT_COL[s] ? SUIT_COL[s].fg : (inv ? '#161616' : '#FFFFFF');
   const st = `stroke="${f}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"`;
   switch (s) {
     case 'F': return `<svg viewBox="0 0 20 20"><g ${st}><path d="M10,10 C4,2 1,8 4,12 C6,14 9,12 10,10 Z M10,10 C16,2 19,8 16,12 C14,14 11,12 10,10 Z" fill="${b}"/><path d="M10,6 V18" fill="none"/></g></svg>`;
@@ -395,6 +396,13 @@ function suitIcon(s, inv) {
     case 'P': return `<svg viewBox="0 0 20 20"><g ${st}><circle cx="10" cy="13" r="5" fill="${b}"/><path d="M7.5,8.5 L10,3 L12.5,8.5" fill="${b}"/><circle cx="10" cy="3" r="1.4" fill="${f}"/></g></svg>`;
   }
 }
+// Farbcodes je Farbe (Owner-Wunsch: Stiche auf einen Blick erkennen)
+const SUIT_COL = {
+  F: { bg: '#DCE7F7', fg: '#2F5BB0' },
+  H: { bg: '#DCEDD2', fg: '#3B8546' },
+  K: { bg: '#F8DCD3', fg: '#C4452E' },
+  P: { bg: '#1A1A1A', fg: '#F4A6B8' },
+};
 const strip = s => s.replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
 // Haustiere im Café-Strich: schwarze Silhouetten oder weiße Formen mit Kontur
 function petSvg(v) {
@@ -461,8 +469,8 @@ function cardHtml(c, cls = '', attrs = '') {
   const isP = s === 'P';
   const badge = c === FROG ? `<span class="badge">${S && S.rule === 'frosch10' ? 10 : 5}×</span>` : isP ? '<span class="badge">1×</span>' : (s === 'K' && v === 12 && S && S.rule === 'tee') ? '<span class="badge">−3</span>' : '';
   const hatch = c === FROG ? range(8).map(i => `<path d="M${6 + i * 6.4},85 L${12 + i * 6.4},63" stroke="#1A1A1A" stroke-width="1.2" opacity=".35"/>`).join('') : '';
-  const frame = `<svg class="frame" viewBox="0 0 62 90" preserveAspectRatio="none" aria-hidden="true"><path d="${roughRect(c)}" fill="${isP ? '#1A1A1A' : '#FBF8F2'}"/>${hatch}<path d="${roughRect(c)}" fill="none" stroke="#1A1A1A" stroke-width="2.4" stroke-linejoin="round" filter="url(#rough)"/></svg>`;
-  return `<button class="card ${s} ${c === FROG ? 'frog' : ''} ${cls}" ${attrs} aria-label="${SUIT_1[s]} ${v}${c === FROG ? ' (Frosch)' : ''}">${frame}<span class="v">${v}</span><span class="s">${suitIcon(s, isP)}</span><span class="art">${artCache[c]}</span>${badge}</button>`;
+  const frame = `<svg class="frame" viewBox="0 0 62 90" preserveAspectRatio="none" aria-hidden="true"><path d="${roughRect(c)}" fill="${SUIT_COL[s].bg}"/>${hatch}<path d="${roughRect(c)}" fill="none" stroke="#1A1A1A" stroke-width="2.4" stroke-linejoin="round" filter="url(#rough)"/></svg>`;
+  return `<button class="card ${s} ${c === FROG ? 'frog' : ''} ${cls}" ${attrs} aria-label="${SUIT_1[s]} ${v}${c === FROG ? ' (Frosch)' : ''}">${frame}<span class="v" style="color:${isP ? '#F3EEE4' : SUIT_COL[s].fg}">${v}</span><span class="s">${suitIcon(s, isP)}</span><span class="art">${artCache[c]}</span>${badge}</button>`;
 }
 // Prinzessinnen: jede mit ihrem übergroßen Gegenstand (wie die Café-Referenz)
 const PRINCESS_SCENE = {
@@ -591,6 +599,30 @@ function playCard(p, c, pw) {
   if (S.trick.length === S.players.length) S.phase = 'collect';
   return true;
 }
+// Erklärt in einer Zeile, wer den Stich gewinnt und warum
+function trickWhy(trick, w, done, passed) {
+  if (!trick.length) return '';
+  const nm = pi => esc(S.players[pi].name.split(' ').slice(-1)[0]);
+  const cd = c => `<b style="color:${suit(c) === 'P' ? '#1A1A1A' : SUIT_COL[suit(c)].fg}">${SUIT_1[suit(c)]} ${val(c)}</b>`;
+  const lead = suit(trick[0].c);
+  const rosen = trick.find(t => t.pw === 'rosen');
+  const trump = rosen ? 'K' : S.rule === 'feen' ? 'F' : null;
+  const meer = trick.find(t => t.pw === 'meer');
+  const low = (S.rule === 'umgekehrt') !== !!meer;
+  const out = [`Ausgespielt: <b style="color:${lead === 'P' ? '#1A1A1A' : SUIT_COL[lead].fg}">${SUIT_N[lead]}</b>`];
+  if (trump) out.push(`${SUIT_N[trump]} sind Trumpf${rosen ? ` (${nm(rosen.pi)} nutzt Rosenrot)` : ' (Feenzauber)'}`);
+  if (meer) out.push(`${nm(meer.pi)} nutzt die Meerjungfrau: <b>${low ? 'niedrigste' : 'höchste'} Karte gewinnt</b>`);
+  else if (low) out.push('Spiegelsaal: <b>niedrigste Karte gewinnt</b>');
+  trick.filter(t => t.pw === 'dorn').forEach(t => out.push(`${nm(t.pi)} (Dornröschen) zählt als 0`));
+  trick.filter(t => t.pw === 'rapunzel').forEach(t => out.push(`${nm(t.pi)} (Rapunzel) zählt +6`));
+  trick.filter(t => t.pw === 'schnee').forEach(t => out.push(`${nm(t.pi)} (Schneewittchen) bedient nicht`));
+  const off = trick.filter(t => suit(t.c) !== lead && suit(t.c) !== trump);
+  if (off.length) out.push(`${off.map(t => cd(t.c)).join(', ')} ${off.length > 1 ? 'zählen' : 'zählt'} nicht (andere Farbe)`);
+  const wc = trick.find(t => t.pi === w);
+  out.push(`→ <b>${nm(w)}</b> ${done ? 'gewinnt' : 'führt gerade'} mit ${cd(wc.c)}`);
+  if (passed && passed.cards.length) out.push(`${nm(passed.from)} (Aschenputtel) gibt ${passed.cards.map(cd).join(', ')} an <b>${nm(passed.to)}</b> weiter`);
+  return out.join(' · ');
+}
 function collectTrick() {
   const w = trickWinner(S.trick);
   const cards = S.trick.map(t => t.c);
@@ -614,6 +646,7 @@ function passPrinces(w, cards) {
   const rest = cards.filter(c => !pr.includes(c));
   S.players[to].won.push(...pr);
   S.players[to].roundPts += trickPts(pr, to);
+  if (S.lastTrick) S.lastTrick.passed = { from: w, to, cards: pr };
   log(`${wp.name} (Aschenputtel) schiebt ${pr.length} Prinz${pr.length > 1 ? 'en' : ''} zu ${S.players[to].name}.`);
   finishTrick(w, rest);
 }
@@ -796,6 +829,7 @@ function viewGame() {
     <div class="opps">${S.players.map(oppRow).join('')}</div>
     <div class="table"><span class="lbl">${live ? 'letzter Stich' : 'Stich'}</span>${pen ? `<span class="pen">${pen > 0 ? '+' : ''}${pen} Antr.</span>` : ''}
       <div class="trick">${shown.trick.map(t => `<div class="tp ${t.pi === shown.w ? 'win' : ''}">${cardHtml(t.c, '', 'tabindex="-1" disabled')}<div class="who">${esc(S.players[t.pi].name.split(' ').slice(-1)[0])}</div>${t.pw ? `<span class="pw">${esc(PRINCESSES.find(x => x.k === t.pw).n.split(' ').slice(-1)[0])}</span>` : ''}</div>`).join('') || '<p style="text-align:center;font-size:13px;margin-top:40px;background:#fff">Noch keine Karte gespielt.</p>'}</div>
+      ${shown.trick.length ? `<p class="why">${trickWhy(shown.trick, shown.w >= 0 ? shown.w : trickWinner(shown.trick), shown.w >= 0, shown.passed)}</p>` : ''}
     </div>
     <section class="sec"><div class="sech"><h2 class="hand">Deine Prinzessin</h2></div>
       ${(() => { const pr = princess(me); return pr ? `<div class="opp" style="cursor:default"><span class="av" style="width:56px;height:56px">${bwHead('prs' + pr.k, Object.assign({ skin: '#FFFFFF' }, pr.look))}</span><span><span class="nm">${esc(pr.n)}${me.used ? ' · genutzt' : ''}</span><span style="font-size:12.5px">${esc(pr.tx)}</span></span></div>` : ''; })()}
