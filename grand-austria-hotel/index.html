@@ -176,7 +176,8 @@ button:disabled{cursor:default}
 .emphead .k{width:62px;height:72px;flex:none}
 .track{display:grid;grid-template-columns:repeat(16,1fr);gap:2px;margin-top:8px}
 .track .c{aspect-ratio:1/1.5;border:1.5px solid var(--ink);border-radius:4px;background:#fff;position:relative;font-family:"Space Mono",monospace;font-size:7.5px;display:flex;align-items:flex-start;justify-content:center;padding-top:1px}
-.track .c.th{background:var(--yellow)}
+.track .c.th0{background:#F6C3B6}.track .c.th12{background:#FFF1C9}
+.track .c .ev{position:absolute;left:0;right:0;top:-1px;font-size:8px;opacity:.7;text-align:center}
 .track .c .mk{position:absolute;left:50%;bottom:1px;transform:translateX(-50%);display:flex;flex-direction:column;gap:1px;align-items:center}
 .track .c .mk i{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--ink);display:block}
 .etiles{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
@@ -290,10 +291,12 @@ const DICE_BY_N = { 2: 10, 3: 12, 4: 14 };
 const LINE_COST = [0, 0, 1, 2, 3];
 const ROUNDS = 7;
 const EMP_ROUNDS = [3, 5, 7];
-const EMP_NEED = [3, 6, 9];
-const EMP_BASE = [4, 7, 10];
-const EMP_MAX = 15;
-const POL_VP = [10, 6, 3];
+// Kaiserleiste 0–13: SP je Position bei der Kaiserwertung, danach 3/5/7 Schritte zurück
+const EMP_MAX = 13;
+const EMP_VP = [0, 1, 1, 2, 2, 3, 4, 4, 5, 6, 7, 8, 9, 10];
+const EMP_BACK = [3, 5, 7];
+const K_MAX = 20;
+const POL_VP = [15, 10, 5];
 const GUEST_LEFT_PENALTY = 5;
 const FLOOR_VP = [1, 2, 3, 4];
 
@@ -392,7 +395,7 @@ const STAFF = [
   { n: 'Bankdirektor', c: 2, t: 'end', e: 'eMoney', tx: 'Spielende: zusätzlich +1 SP je 2 Kronen.', look: { hair: 'bald', must: 1, body: '#2C47B5', pat: 'stripes' }, prop: 'coins' },
   { n: 'Fremdenführerin', c: 2, t: 'now', e: 'nGuide', tx: 'Sofort: Nimm einen Gast aus der Warteschlange gratis.', look: { hat: 'feather', hair: 'long', body: '#1F8A4D' }, prop: 'flag' },
   { n: 'Kapellmeister', c: 4, t: 'round', e: 'rVP', tx: 'Rundenende: +2 SP.', look: { hair: 'curls', must: 1, body: '#E4472E' }, prop: 'note' },
-  { n: 'Geldwechsler', c: 0, t: 'perm', e: 'act4k', tx: 'Aktion 4 (Kronen): zusätzlich +1 Krone.', look: { hair: 'side', glasses: 1, body: '#F1B02B' }, prop: 'coins' },
+  { n: 'Geldwechsler', c: 0, t: 'perm', e: 'act4k', tx: 'Aktion 4: zusätzlich +1 Krone.', look: { hair: 'side', glasses: 1, body: '#F1B02B' }, prop: 'coins' },
   { n: 'Kellnerin', c: 1, t: 'perm', e: 'service4', tx: 'Küchenservice: 4 statt 3 Gerichte.', look: { hair: 'bun', body: '#161616', pat: 'dots' }, prop: 'tray' },
   { n: 'Kammerdiener', c: 2, t: 'now', e: 'nE3', tx: 'Sofort: +3 Kaiser.', look: { hair: 'side', must: 1, body: '#FFF9EE', pat: 'stripes' }, prop: 'tray' },
   { n: 'Gärtnerin', c: 1, t: 'now', e: 'nGarden', tx: 'Sofort: +1 Torte, +1 Kaffee, +1 Kaiser.', look: { hat: 'beret', hatC: '#1F8A4D', hair: 'long', body: '#F1B02B' }, prop: 'flower' },
@@ -412,23 +415,36 @@ const POLITICS = [
   { n: 'Weltausstellung', tx: '7 Gäste eingezogen', test: p => p.rooms.filter(x => x === 2).length >= 7 },
 ];
 
-// Kaiserplättchen (je eines für Runde 3, 5, 7)
+// Kaiserplättchen: je ein zufälliges der Stufe A (Runde 3), B (Runde 5) und C (Runde 7).
+// Bonus ab Feld 3, Strafe auf Feld 0; bei zwei Strafen gilt die linke, falls möglich.
 const EMP_TILES = [
-  { n: 'Schatulle', good: { k: 4 }, bad: { k: -3 }, gt: '+4 Kronen', bt: '−3 Kronen' },
-  { n: 'Hoftafel', good: { food: { s: 1, c: 1, w: 1, k: 1 } }, bad: { lose: 'k' }, gt: 'je 1 Strudel, Torte, Wein, Kaffee', bt: 'aller Kaffee weg' },
-  { n: 'Bauerlass', good: { room: 1 }, bad: { vp: -4 }, gt: '1 Zimmer gratis', bt: '−4 SP' },
-  { n: 'Orden', good: { vp: 3 }, bad: { hand: 1 }, gt: '+3 SP', bt: '1 Personalkarte abwerfen' },
-  { n: 'Geldbörse', good: { vp: 2, k: 2 }, bad: { vp: -2, k: -2 }, gt: '+2 SP, +2 Kronen', bt: '−2 SP, −2 Kronen' },
-  { n: 'Weinkeller', good: { vp: 2, food: { w: 1, c: 1 } }, bad: { lose: 'w' }, gt: '+2 SP, +1 Wein, +1 Torte', bt: 'aller Wein weg' },
+  [
+    { n: 'Schatulle', good: { k: 3 }, bad: [{ k: -3 }, { vp: -5 }], gt: '+3 Kronen', bt: '−3 Kronen oder −5 SP' },
+    { n: 'Hoftafel', good: { food: { s: 1, c: 1 } }, bad: [{ vp: -4 }], gt: '+1 Strudel, +1 Torte', bt: '−4 SP' },
+    { n: 'Bauerlass', good: { room: 1 }, bad: [{ k: -2 }, { vp: -4 }], gt: '1 Zimmer gratis', bt: '−2 Kronen oder −4 SP' },
+    { n: 'Orden', good: { vp: 4 }, bad: [{ vp: -4 }], gt: '+4 SP', bt: '−4 SP' },
+  ],
+  [
+    { n: 'Geldbörse', good: { k: 5 }, bad: [{ k: -5 }, { vp: -7 }], gt: '+5 Kronen', bt: '−5 Kronen oder −7 SP' },
+    { n: 'Weinkeller', good: { food: { w: 2, k: 1 } }, bad: [{ vp: -6 }], gt: '+2 Wein, +1 Kaffee', bt: '−6 SP' },
+    { n: 'Hofball', good: { vp: 6 }, bad: [{ vp: -6 }], gt: '+6 SP', bt: '−6 SP' },
+    { n: 'Baugenehmigung', good: { room: 2 }, bad: [{ k: -4 }, { vp: -7 }], gt: '2 Zimmer gratis', bt: '−4 Kronen oder −7 SP' },
+  ],
+  [
+    { n: 'Großer Orden', good: { vp: 8 }, bad: [{ vp: -8 }], gt: '+8 SP', bt: '−8 SP' },
+    { n: 'Hoflieferant', good: { vp: 5, k: 3 }, bad: [{ vp: -8 }], gt: '+5 SP, +3 Kronen', bt: '−8 SP' },
+    { n: 'Audienz', good: { vp: 7 }, bad: [{ k: -6 }, { vp: -9 }], gt: '+7 SP', bt: '−6 Kronen oder −9 SP' },
+    { n: 'Ehrenbürger', good: { vp: 9 }, bad: [{ vp: -10 }], gt: '+9 SP', bt: '−10 SP' },
+  ],
 ];
 
 const ACTIONS = {
   1: { n: 'Strudel & Torte', short: 'Strudel/Torte' },
   2: { n: 'Wein & Kaffee', short: 'Wein/Kaffee' },
   3: { n: 'Zimmer vorbereiten', short: 'Zimmer' },
-  4: { n: 'Kronen', short: 'Kronen' },
-  5: { n: 'Kaiserleiste', short: 'Kaiser' },
-  6: { n: 'Personal einstellen', short: 'Personal' },
+  4: { n: 'Kaiser & Kronen', short: 'Kaiser/Kronen' },
+  5: { n: 'Personal ausspielen', short: 'Personal' },
+  6: { n: 'Joker (1 Krone)', short: 'Joker' },
 };
 const BOT_NAMES = [
   ['Frau Kipferl', { hair: 'bun', hat: 'flower', body: '#F28AA6', pat: 'dots' }],
@@ -436,6 +452,33 @@ const BOT_NAMES = [
   ['Frau Melange', { hair: 'bob', glasses: 1, body: '#1F8A4D', pat: 'checks' }],
   ['Herr Krapfen', { hair: 'curls', beard: 1, body: '#E4472E', pat: 'dash' }],
 ];
+// Leopold (Automa aus „Alles Walzer“ – Dinner for One): 20 Anweisungskarten.
+// g: gewünschte Gästefarben (null = beliebig), d: Würfel ('?' = meiste Würfel),
+// ex: Zusatzaktionen [Art, Wert, Stufe] mit Stufe 0 = alle, 1 = ab mittel, 2 = nur schwer,
+// h: Handsymbol bei Gleichstand ('l' = von rechts suchen, 'r' = von links).
+const LEO_DECK = [
+  { g: ['y'], d: [1, 2], ex: [['e', 1, 0], ['pol', 'A', 1]], h: 'l' },
+  { g: ['b'], d: [3], ex: [['e', 2, 0]], h: 'r' },
+  { g: ['r', 'g'], d: ['?'], ex: [['pol', 'B', 0], ['e', 1, 2]], h: 'l' },
+  { g: [null], d: [4, 5], ex: [['staff', 0, 0]], h: 'r' },
+  { g: ['g'], d: [6], ex: [['e', 1, 0], ['pol', 'C', 1]], h: 'r' },
+  { g: ['r'], d: [2], ex: [['pol', '?', 0]], h: 'l' },
+  { g: ['b', 'y'], d: [5], ex: [['e', 2, 1]], h: 'l' },
+  { g: ['y'], d: [3, 4], ex: [['staff', 0, 1], ['e', 1, 0]], h: 'r' },
+  { g: [null], d: ['?'], ex: [['pol', 'A', 0], ['e', 1, 1]], h: 'r' },
+  { g: ['b'], d: [1], ex: [['e', 3, 0]], h: 'l' },
+  { g: ['r'], d: [6, 1], ex: [['pol', 'B', 1], ['e', 1, 2]], h: 'r' },
+  { g: ['g', 'b'], d: [4], ex: [['staff', 0, 0]], h: 'l' },
+  { g: ['y'], d: [2, 3], ex: [['pol', 'C', 0]], h: 'r' },
+  { g: ['r'], d: [5, 6], ex: [['e', 2, 0], ['pol', '?', 2]], h: 'l' },
+  { g: [null], d: [1, 4], ex: [['e', 1, 0]], h: 'l' },
+  { g: ['b'], d: ['?'], ex: [['staff', 0, 1], ['pol', 'A', 2]], h: 'r' },
+  { g: ['g'], d: [3], ex: [['pol', 'B', 0], ['e', 1, 1]], h: 'l' },
+  { g: ['y', 'r'], d: [2, 6], ex: [['e', 2, 0]], h: 'r' },
+  { g: ['b'], d: [5], ex: [['staff', 0, 2], ['pol', 'C', 1]], h: 'l' },
+  { g: [null], d: [4], ex: [['pol', '?', 0], ['e', 1, 0]], h: 'r' },
+];
+const LEO_LEVELS = ['einfach', 'mittel', 'schwer'];
 const BOT_MARK = ['#2C47B5', '#E4472E', '#1F8A4D', '#F28AA6'];
 
 // ---------- Zufall ----------
@@ -569,9 +612,9 @@ function actionIcon(a) {
     case 1: return g(at(foodSvg('s'), 2, 6, 30) + at(foodSvg('c'), 26, 8, 30));
     case 2: return g(at(foodSvg('w'), 4, 4, 30) + at(foodSvg('k'), 26, 8, 30));
     case 3: return g('<g stroke="#161616" stroke-width="2.2" stroke-linejoin="round"><path d="M8,40 V16 L29,3 L50,16 V40 Z" fill="#FFF9EE"/><rect x="14" y="19" width="10" height="9" fill="#2C47B5"/><rect x="34" y="19" width="10" height="9" fill="#F1B02B"/><path d="M24,40 V31 C24,27 34,27 34,31 V40" fill="#E4472E"/></g>');
-    case 4: return g(at(coinSvg(), 4, 8, 28) + at(coinSvg(), 24, 6, 30));
-    case 5: return g(at(crownSvg(), 11, 2, 38));
-    case 6: return `<svg viewBox="0 0 58 42" class="ill" aria-hidden="true"><svg x="9" y="-2" width="40" height="48" viewBox="0 0 100 120">${person('act5', { hair: 'side', must: 1, body: '#161616', prop: 'tray' }).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '')}</svg></svg>`;
+    case 4: return g(at(coinSvg(), 2, 8, 28) + at(crownSvg(), 26, 4, 32));
+    case 5: return `<svg viewBox="0 0 58 42" class="ill" aria-hidden="true"><svg x="9" y="-2" width="40" height="48" viewBox="0 0 100 120">${person('act5', { hair: 'side', must: 1, body: '#161616', prop: 'tray' }).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '')}</svg></svg>`;
+    case 6: return g('<g stroke="#161616" stroke-width="2.2" stroke-linejoin="round"><path d="M29,3 L34.5,15 L48,16.5 L38,25.5 L41,39 L29,32 L17,39 L20,25.5 L10,16.5 L23.5,15 Z" fill="#F28AA6"/><text x="29" y="27" text-anchor="middle" font-size="12" font-family="Caveat Brush,cursive" fill="#161616" stroke="none">?</text></g>');
   }
 }
 function heroSvg() {
@@ -628,25 +671,40 @@ function serviceAmount(p) { return hasE(p, 'service4') ? 4 : 3; }
 function staffCost(p, id, n) { return Math.max(0, STAFF[id].c - n); }
 function log(msg) { S.log.unshift(msg); if (S.log.length > 80) S.log.length = 80; }
 
-function newGame(name, nBots, seed) {
-  S = { v: 2, id: 'ghw-' + Date.now().toString(36) + '-' + ((seed >>> 0) % 1679616).toString(36), rng: seed | 0, round: 1, players: [], log: [], final: null, roundInfo: null, recorded: false };
+function newGame(name, nBots, seed, leo) {
+  S = { v: 3, id: 'ghw-' + Date.now().toString(36) + '-' + ((seed >>> 0) % 1679616).toString(36), rng: seed | 0, round: 1, players: [], log: [], final: null, roundInfo: null, recorded: false };
   const n = nBots + 1;
   const bots = shuffle(BOT_NAMES.slice()).slice(0, nBots);
   const mk = (nm, bot, look, mark) => ({ name: nm, bot, look, mark, k: 0, vp: 0, emp: 0, kitchen: { s: 1, c: 1, w: 1, k: 1 }, fresh: { s: 0, c: 0, w: 0, k: 0 }, credits: 0, serviceBought: false, tables: [null, null, null], rooms: new Array(20).fill(0), roomGuest: new Array(20).fill(-1), hand: [], staff: [], freeRooms: 0, freeGuest: 0, pol: [] });
   if (name !== null) S.players.push(mk(name || 'Du', false, { hat: 'beret', hair: 'bob', body: '#F1B02B', pat: 'dash' }, '#F1B02B'));
   bots.forEach((b, i) => S.players.push(mk(b[0], true, b[1], BOT_MARK[i])));
   if (name === null) S.players.push(mk('Herr Powidl', true, { hat: 'top', body: '#F1B02B' }, '#F1B02B'));
+  if (leo != null) {
+    S.leo = { level: leo, deck: shuffle(range(LEO_DECK.length)), card: null };
+    const L = mk('Leopold', true, { hat: 'top', must: 1, body: '#161616', pat: 'stripes', prop: 'tray' }, '#2C47B5');
+    L.automa = true; L.kitchen = { s: 0, c: 0, w: 0, k: 0 }; L.pol = {};
+    S.players.push(L);
+  }
   S.guestDeck = shuffle(range(GUESTS.length));
   S.staffDeck = shuffle(range(STAFF.length));
+  if (S.leo) {
+    // Leopolds privater Stapel: 5 zufällige Personalkarten mit Schlusswertung
+    const ends = S.staffDeck.filter(id => STAFF[id].t === 'end').slice(0, 5);
+    S.staffDeck = S.staffDeck.filter(id => !ends.includes(id));
+    S.players[1].leoStaff = ends;
+  }
   S.politics = shuffle(range(POLITICS.length)).slice(0, 3).map(id => ({ id, by: [] }));
-  S.empTiles = shuffle(range(EMP_TILES.length)).slice(0, 3);
+  S.empTiles = EMP_TILES.map(st => Math.floor(rnd() * st.length));
   S.empDone = [];
   // Spielaufbau wie im Original: 10 Kronen, je 1 Strudel/Torte/Wein/Kaffee,
   // 6 Personalkarten, drei Zimmer unten links (Erdgeschoss kostet nichts).
   S.players.forEach(p => {
+    if (p.automa) return; // Leopold hat kein Geld, keine Waren, keine Hand, keine vorbereiteten Zimmer
     p.k = 10;
     p.rooms[0] = 1; p.rooms[1] = 1; p.rooms[2] = 1;
-    p.hand = S.staffDeck.splice(0, 6);
+    // Solo: 10 Karten ziehen, 6 davon behalten
+    if (S.leo && !p.bot) S.staffPick = { ids: S.staffDeck.splice(0, 10), sel: [] };
+    else p.hand = S.staffDeck.splice(0, 6);
   });
   S.line = S.guestDeck.splice(0, 5);
   log(`Das Hotel öffnet! ${S.players.length} Hoteliers, ${ROUNDS} Runden.`);
@@ -656,13 +714,15 @@ function newGame(name, nBots, seed) {
   for (let i = S.players.length - 1; i >= 0; i--) {
     const p = S.players[i];
     p.freeGuest = 1;
+    if (p.automa) { p.freeGuest = 0; continue; }
     if (p.bot) { const s = botPickGuest(p, true); takeGuest(p, s >= 0 ? s : 0); }
   }
   startRound();
 }
 function startRound() {
   const n = S.players.length;
-  const sp = (S.round - 1) % n;
+  // Solo: Leopold (Platz 2) beginnt in Runde 1, danach wird getauscht
+  const sp = (S.round - (S.leo ? 0 : 1)) % n;
   const fwd = range(n).map(i => (sp + i) % n);
   S.seq = fwd.concat(fwd.slice().reverse());
   S.seqIdx = 0;
@@ -677,12 +737,15 @@ function startTurn() {
   const p = cur();
   p.credits = 0; p.serviceBought = false;
 }
+// Kronen: höchstens 20, Überschuss verfällt. Kaiserleiste: höchstens 13, jeder Schritt darüber = 1 SP.
+function addK(p, n) { p.k = clamp(p.k + n, 0, K_MAX); }
+function addEmp(p, n) { const to = p.emp + n; if (to > EMP_MAX) { p.vp += to - EMP_MAX; p.emp = EMP_MAX; } else p.emp = Math.max(0, to); }
 function addFood(p, food, where = 'kitchen') { for (const f of FOODS) if (food[f]) p[where][f] += food[f]; }
 function applyRew(p, r, src) {
   if (!r) return;
   if (r.vp) p.vp = Math.max(0, p.vp + r.vp);
-  if (r.k) p.k = Math.max(0, p.k + r.k);
-  if (r.e) p.emp = clamp(p.emp + r.e, 0, EMP_MAX);
+  if (r.k) addK(p, r.k);
+  if (r.e) addEmp(p, r.e);
   if (r.food) addFood(p, r.food, 'kitchen');
   if (r.room) p.freeRooms += r.room;
   if (r.guest) p.freeGuest += r.guest;
@@ -746,9 +809,9 @@ function checkin(p, t, room) {
   if (grp.every(j => p.rooms[j] === 2)) {
     const b = GROUP_BONUS[grp.length];
     const c = ROOM_COLOR[room];
-    if (c === 'r') { p.k += b; msg += ` · rote Gruppe komplett: +${b} Kronen`; }
+    if (c === 'r') { addK(p, b); msg += ` · rote Gruppe komplett: +${b} Kronen`; }
     if (c === 'b') { p.vp += b; msg += ` · blaue Gruppe komplett: +${b} SP`; }
-    if (c === 'y') { p.emp = clamp(p.emp + grp.length, 0, EMP_MAX); msg += ` · gelbe Gruppe komplett: +${grp.length} Kaiser`; }
+    if (c === 'y') { addEmp(p, grp.length); msg += ` · gelbe Gruppe komplett: +${grp.length} Kaiser`; }
   }
   log(msg + '.');
 }
@@ -797,28 +860,32 @@ function hire(p, id, n) {
   if (hi < 0 || p.k < cost) return false;
   p.k -= cost; p.hand.splice(hi, 1); p.staff.push(id);
   const e = STAFF[id].e;
-  if (e === 'nPage') { p.emp = clamp(p.emp + 1, 0, EMP_MAX); p.k += 2; }
+  if (e === 'nPage') { addEmp(p, 1); addK(p, 2); }
   if (e === 'nRoom') p.freeRooms++;
   if (e === 'nFood') addFood(p, { s: 2, w: 1 }, 'fresh');
   if (e === 'nGuide') p.freeGuest++;
-  if (e === 'nE3') p.emp = clamp(p.emp + 3, 0, EMP_MAX);
-  if (e === 'nGarden') { addFood(p, { c: 1, k: 1 }, 'fresh'); p.emp = clamp(p.emp + 1, 0, EMP_MAX); }
+  if (e === 'nE3') addEmp(p, 3);
+  if (e === 'nGarden') { addFood(p, { c: 1, k: 1 }, 'fresh'); addEmp(p, 1); }
   return cost;
 }
 // Würfelaktion ausführen. params: {as, b, emp, rooms, staff, skip}
-// Stärke = Würfel auf dem Feld (inkl. des genommenen); „verstärken“: 1 Krone für +1.
+// Stärke = Würfel auf dem Feld (inkl. des genommenen); einmal pro Zug für 1 Krone
+// „verstärken“ (+1). Die 6 ist ein Joker: 1 Krone für eine der Aktionen 1–5,
+// Stärke = Zahl der Sechser.
 function doDie(p, face, params = {}) {
   if (S.turn.dieTaken || !S.dice[face]) return false;
   const boost = !params.skip && !!params.boost;
-  if (boost && p.k < 1) return false;
+  const joker = face === 6 && !params.skip;
+  if (joker && !(params.as >= 1 && params.as <= 5)) return false;
+  if (p.k < (boost ? 1 : 0) + (joker ? 1 : 0)) return false;
   const n = S.dice[face] + (boost ? 1 : 0);
-  const a = face;
+  const a = joker ? params.as : face;
   S.dice[face]--;
   S.turn.dieTaken = true;
   const who = p.name;
   if (params.skip) { log(`${who} nimmt eine ${face} und lässt die Aktion verfallen.`); return true; }
-  if (boost) p.k -= 1;
-  const pre = `${who} nimmt eine ${face} (Stärke ${n}${boost ? ', für 1 K verstärkt' : ''})`;
+  p.k -= (boost ? 1 : 0) + (joker ? 1 : 0);
+  const pre = `${who} nimmt eine ${face}${joker ? ` (Joker → ${ACTIONS[a].short})` : ''} (Stärke ${n}${boost ? ', für 1 K verstärkt' : ''})`;
   if (a === 1 || a === 2) {
     const A = a === 1 ? 's' : 'w', B = a === 1 ? 'c' : 'k';
     // mindestens so viel Strudel wie Torte bzw. Wein wie Kaffee
@@ -834,13 +901,10 @@ function doDie(p, face, params = {}) {
     for (const i of (params.rooms || []).slice(0, m)) if (prepareRoom(p, i, false)) done++;
     log(`${pre}: ${done} Zimmer vorbereitet.`);
   } else if (a === 4) {
-    const k = n + (hasE(p, 'act4k') ? 1 : 0);
-    p.k += k;
-    log(`${pre}: +${k} Kronen.`);
+    const e = clamp(params.emp | 0, 0, n);
+    addEmp(p, e); addK(p, n - e + (hasE(p, 'act4k') ? 1 : 0));
+    log(`${pre}: +${n - e} Kronen, +${e} Kaiser.`);
   } else if (a === 5) {
-    p.emp = clamp(p.emp + n, 0, EMP_MAX);
-    log(`${pre}: +${n} auf der Kaiserleiste.`);
-  } else if (a === 6) {
     const c = params.staff != null ? hire(p, params.staff, n) : false;
     if (c === false) log(`${pre}: stellt niemanden ein.`);
     else log(`${pre}: stellt ${STAFF[params.staff].n} ein (${c} K).`);
@@ -848,6 +912,7 @@ function doDie(p, face, params = {}) {
   return true;
 }
 function checkPolitics(p) {
+  if (p.automa) return;
   for (const pc of S.politics) {
     if (pc.by.includes(S.players.indexOf(p))) continue;
     if (POLITICS[pc.id].test(p)) {
@@ -876,8 +941,8 @@ function endRound() {
       if (e === 'rS') p.kitchen.s++;
       if (e === 'rK') p.kitchen.k++;
       if (e === 'rW') p.kitchen.w++;
-      if (e === 'rKr') p.k += 2;
-      if (e === 'rE') p.emp = clamp(p.emp + 1, 0, EMP_MAX);
+      if (e === 'rKr') addK(p, 2);
+      if (e === 'rE') addEmp(p, 1);
       if (e === 'rVP') p.vp += 2;
     }
   }
@@ -886,20 +951,23 @@ function endRound() {
   while (S.line.length < 5 && S.guestDeck.length) S.line.push(S.guestDeck.pop());
   const ei = EMP_ROUNDS.indexOf(S.round);
   if (ei >= 0) {
-    const tile = EMP_TILES[S.empTiles[ei]];
-    info.emp = { need: EMP_NEED[ei], base: EMP_BASE[ei], tile: tile.n, res: [] };
+    // Kaiserwertung: SP nach Position, dann 3/5/7 zurück, dann Bonus (≥3) oder Strafe (0)
+    const tile = EMP_TILES[ei][S.empTiles[ei]];
+    info.emp = { back: EMP_BACK[ei], tile: tile.n, res: [] };
     for (const p of S.players) {
-      if (p.emp >= EMP_NEED[ei]) {
-        p.vp += EMP_BASE[ei]; applyRew(p, tile.good);
-        info.emp.res.push([p.name, true, `+${EMP_BASE[ei]} SP, ${tile.gt}`]);
-        log(`Kaiserwertung: ${p.name} wird empfangen (+${EMP_BASE[ei]} SP, ${tile.gt}).`);
-      } else if (hasE(p, 'noEmpPen')) {
-        info.emp.res.push([p.name, false, 'keine Strafe (Hofberichterstatter)']);
-      } else {
-        applyRew(p, tile.bad);
-        info.emp.res.push([p.name, false, tile.bt]);
-        log(`Kaiserwertung: ${p.name} verfehlt ${EMP_NEED[ei]} (${tile.bt}).`);
-      }
+      const pts = EMP_VP[p.emp];
+      p.vp += pts;
+      const from = p.emp;
+      p.emp = Math.max(0, p.emp - EMP_BACK[ei]);
+      let txt = `${pts} SP für Feld ${from}, zurück auf ${p.emp}`;
+      if (p.automa) txt += ' (Leopold: kein Bonus, keine Strafe)';
+      else if (p.emp >= 3) { applyRew(p, tile.good); txt += ` · Bonus: ${tile.gt}`; }
+      else if (p.emp === 0) {
+        if (hasE(p, 'noEmpPen')) txt += ' · keine Strafe (Hofberichterstatter)';
+        else { const bad = tile.bad.find(b => !b.k || p.k >= -b.k) || tile.bad[tile.bad.length - 1]; applyRew(p, bad); txt += ` · Strafe: ${rewText(bad)}`; }
+      } else txt += ' · weder Bonus noch Strafe';
+      info.emp.res.push([p.name, p.emp >= 3, txt]);
+      log(`Kaiserwertung: ${p.name} – ${txt}.`);
     }
     S.empDone.push(ei);
   }
@@ -913,7 +981,7 @@ function finalScoring() {
   S.final = S.players.map(p => {
     // Schlusswertung des Originals: 1–4 SP je bezogenem Zimmer (nach Etage),
     // 1 SP je übriger Ware und Krone, −5 SP je Gast, der noch im Café sitzt.
-    const goods = FOODS.reduce((s, f) => s + p.kitchen[f] + p.fresh[f], 0);
+    const goods = p.automa ? 0 : FOODS.reduce((s, f) => s + p.kitchen[f] + p.fresh[f], 0);
     const row = { name: p.name, base: p.vp, roomVp: 0, money: p.k + goods, staff: 0, guests: 0 };
     p.rooms.forEach((st, i) => { if (st === 2) row.roomVp += FLOOR_VP[Math.floor(i / 5)]; });
     for (const id of p.staff) {
@@ -927,7 +995,7 @@ function finalScoring() {
     }
     row.guests = -GUEST_LEFT_PENALTY * p.tables.filter(Boolean).length;
     row.total = row.base + row.roomVp + row.money + row.staff + row.guests;
-    row.tie = p.k + goods;
+    row.tie = p.automa ? 1e9 : p.k + goods; // Gleichstand gegen Leopold: Leopold gewinnt
     row.rooms = p.rooms.filter(x => x === 2).length;
     return row;
   });
@@ -1027,14 +1095,15 @@ function botEval(p, a, n) {
     const rooms = botRooms(p, m, false);
     return [rooms.reduce((s, i) => s + roomScore(p, i), 0), { rooms }];
   }
-  if (a === 4) return [n * (p.k < 5 ? 1.15 : 0.75), {}];
-  if (a === 5) {
+  if (a === 4) {
+    // Kaiserschritte lohnen vor einer Wertung, damit man nach dem Zurücksetzen auf ≥3 steht
     const ei = EMP_ROUNDS.findIndex(r => r >= S.round);
-    const gap = ei >= 0 ? Math.max(0, EMP_NEED[ei] - p.emp) : 0;
-    const e = Math.min(n, gap);
-    return [e * 1.9 + (n - e) * 0.4, {}];
+    const want = ei >= 0 ? Math.max(0, EMP_BACK[ei] + 3 + 2 - p.emp) : 0;
+    const room = K_MAX - p.k;
+    const e = clamp(Math.max(Math.min(n, want), n - room), 0, n);
+    return [e * 1.6 + (n - e) * (p.k < 5 ? 1.1 : 0.7), { emp: e }];
   }
-  if (a === 6) {
+  if (a === 5) {
     let best = null, bv = 0;
     for (const id of p.hand) {
       const c = staffCost(p, id, n);
@@ -1083,23 +1152,98 @@ function botFree(p) {
   if (p.freeRooms > 0) { const rs = botRooms(p, p.freeRooms, true); for (const i of rs) if (prepareRoom(p, i, true)) p.freeRooms--; if (!rs.length) p.freeRooms = 0; }
   while (p.freeGuest > 0) { const s = botPickGuest(p); if (s < 0 || !takeGuest(p, s)) { p.freeGuest = 0; break; } }
 }
+// ---------- Leopold ----------
+function leoRoomFor(p, c) {
+  if (c === 'g') { for (let col = 4; col >= 0; col--) for (let f = 0; f < 4; f++) { const i = f * 5 + col; if (p.rooms[i] === 0) return i; } return -1; }
+  for (let i = 0; i < 20; i++) if (p.rooms[i] === 0 && ROOM_COLOR[i] === c) return i;
+  return -1;
+}
+function leoPickGuest(p, want, hand) {
+  const order = hand === 'l' ? range(S.line.length).reverse() : range(S.line.length);
+  const vp = id => GUESTS[id][3].vp || 0;
+  const best = filt => { let b = -1; for (const s of order) if (filt(S.line[s]) && (b < 0 || vp(S.line[s]) > vp(S.line[b]))) b = s; return b; };
+  const placeable = id => leoRoomFor(p, GUESTS[id][1]) >= 0;
+  let s = want ? best(id => GUESTS[id][1] === want && placeable(id)) : -1;
+  if (s < 0) s = best(placeable);
+  return s;
+}
+function leoTurn() {
+  const p = cur(), L = S.leo;
+  if (!L.deck.length) L.deck = shuffle(range(LEO_DECK.length));
+  const ci = L.deck.pop(), card = LEO_DECK[ci];
+  L.card = ci;
+  const did = [];
+  for (const want of card.g) {
+    const s = leoPickGuest(p, want, card.h);
+    if (s < 0) continue;
+    const id = S.line[s], room = leoRoomFor(p, GUESTS[id][1]);
+    S.line.splice(s, 1);
+    if (S.guestDeck.length) S.line.push(S.guestDeck.pop());
+    p.rooms[room] = 2; p.roomGuest[room] = id;
+    p.vp += GUESTS[id][3].vp || 0;
+    did.push(`${GUESTS[id][0]} (+${GUESTS[id][3].vp || 0} SP)`);
+  }
+  // Würfel: abgebildete Zahl(en), sonst die meisten; Gleichstand per Handsymbol
+  const faces = (hand => hand === 'l' ? [6, 5, 4, 3, 2, 1] : [1, 2, 3, 4, 5, 6])(card.h);
+  let cands = card.d[0] === '?' ? [] : card.d.filter(f => S.dice[f] > 0);
+  if (!cands.length) cands = faces.filter(f => S.dice[f] > 0);
+  const most = Math.max(...cands.map(f => S.dice[f]));
+  const face = faces.find(f => cands.includes(f) && S.dice[f] === most);
+  if (face) { S.dice[face]--; S.turn.dieTaken = true; did.push(`nimmt eine ${face}`); }
+  for (const [t, v, tier] of card.ex) {
+    if (tier > L.level) continue;
+    if (t === 'e') { addEmp(p, v); did.push(`+${v} Kaiser`); }
+    if (t === 'staff' && p.leoStaff && p.leoStaff.length) { const id = p.leoStaff.pop(); p.staff.push(id); did.push(`deckt ${STAFF[id].n} auf`); }
+    if (t === 'pol') did.push(leoPolitics(p, v, card.h));
+  }
+  log(`Leopold: ${did.join(', ') || 'nichts'}.`);
+  const last = S.log[0];
+  endTurn();
+  return last;
+}
+// Politik-Countdown: III → II → I, bei I sofort auf das höchste freie Siegpunktfeld
+function leoPolitics(p, which, hand) {
+  const me = S.players.indexOf(p);
+  const done = i => S.politics[i].by.includes(me);
+  let idx = { A: 0, B: 1, C: 2 }[which];
+  if (idx == null || done(idx)) {
+    const dist = i => done(i) ? 99 : p.pol[i] || 4;
+    const order = hand === 'l' ? [2, 1, 0] : [0, 1, 2];
+    idx = order.filter(i => !done(i)).sort((a, b) => dist(b) - dist(a))[0];
+    if (idx == null) return 'keine Politik mehr offen';
+  }
+  const pc = S.politics[idx];
+  p.pol[idx] = p.pol[idx] ? p.pol[idx] - 1 : 3;
+  if (p.pol[idx] <= 1) {
+    const v = POL_VP[Math.min(pc.by.length, POL_VP.length - 1)];
+    pc.by.push(me); p.vp += v; delete p.pol[idx];
+    return `erfüllt „${POLITICS[pc.id].n}“ (+${v} SP)`;
+  }
+  return `Politik „${POLITICS[pc.id].n}“ auf ${'I'.repeat(p.pol[idx])}`;
+}
 function botTurn() {
   const p = cur();
+  if (p.automa) return leoTurn();
   botFree(p);
   if (!S.turn.guestTaken) { const s = botPickGuest(p); if (s >= 0) takeGuest(p, s); }
   let best = null;
   for (let f = 1; f <= 6; f++) {
     const n = S.dice[f]; if (!n) continue;
-    const [v, pr] = botEval(p, f, n);
-    if (!best || v > best.v) best = { f, v, pr };
-    // verstärken lohnt, wenn der Zugewinn deutlich über 1 Krone liegt
-    if (p.k >= 4) {
-      const [v2, pr2] = botEval(p, f, n + 1);
-      if (v2 - 1.4 > best.v && v2 - v > 1.4) best = { f, v: v2 - 1.4, pr: Object.assign({ boost: true }, pr2) };
+    const acts = f === 6 ? (p.k >= 2 ? [1, 2, 3, 4, 5] : []) : [f];
+    for (const a of acts) {
+      const cost = f === 6 ? 1.3 : 0;
+      const [v, pr] = botEval(p, a, n);
+      const pr0 = f === 6 ? Object.assign({ as: a }, pr) : pr;
+      if (!best || v - cost > best.v) best = { f, v: v - cost, pr: pr0 };
+      // verstärken lohnt, wenn der Zugewinn deutlich über 1 Krone liegt
+      if (p.k >= 4 + (f === 6 ? 1 : 0)) {
+        const [v2, pr2] = botEval(p, a, n + 1);
+        if (v2 - cost - 1.4 > best.v && v2 - v > 1.4) best = { f, v: v2 - cost - 1.4, pr: Object.assign(f === 6 ? { as: a } : {}, pr2, { boost: true }) };
+      }
     }
   }
   if (best) {
-    if (best.f === 6 && best.pr.staff == null) best.pr.skip = true;
+    if (best.pr.staff === null && (best.f === 5 || best.pr.as === 5)) best.pr.skip = true;
     if (!doDie(p, best.f, best.pr)) { const f = [1, 2, 3, 4, 5, 6].find(x => S.dice[x]); doDie(p, f, { skip: true }); }
   }
   botFree(p);
@@ -1112,7 +1256,7 @@ function botTurn() {
 
 // ---------- Speicher ----------
 const KEY = 'grand-hotel-wien-v1';
-const SAVE_V = 2; // v2: Regeln ans Original angepasst, ältere Stände sind nicht kompatibel
+const SAVE_V = 3; // v3: Regeln des Grundspiels + Leopold, ältere Stände sind nicht kompatibel
 // Speichern & Verlassen: Der Spielstand wird ohnehin nach jeder Aktion
 // gespeichert; „verlassen“ führt zurück zum Startbildschirm, von dem aus die
 // Partie mit „Fortsetzen“ weiterläuft.
@@ -1129,7 +1273,7 @@ function clearSave() { try { localStorage.removeItem(KEY); } catch (e) { } }
 // ---------- UI-Helfer ----------
 let toastTimer = null;
 function toast(msg) { U.toast = msg; clearTimeout(toastTimer); toastTimer = setTimeout(() => { U.toast = null; render(); }, 2600); }
-const isMyTurn = () => S && S.screen === 'game' && !cur().bot && !S.roundInfo;
+const isMyTurn = () => S && S.screen === 'game' && !cur().bot && !S.roundInfo && !S.staffPick;
 function tok(kind, v) {
   const svg = kind === 'vp' ? starSvg() : kind === 'k' ? coinSvg() : kind === 'e' ? crownSvg() : kind === 'room' ? roomSvg() : foodSvg(kind);
   return `<span class="tok">${svg}${v != null ? v : ''}</span>`;
@@ -1219,9 +1363,11 @@ function viewStart() {
       <p class="label">Dein Name</p>
       <input class="input" id="nm" maxlength="30" placeholder="z. B. Frau Direktorin" value="${esc(st.name)}">
       ${spielregalProfiles().length ? `<div class="chips" style="margin-top:8px">${spielregalProfiles().slice(0, 8).map(n => `<button class="chip ${st.name === n ? 'on' : ''}" data-a="pickname" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div><p class="note">Wähle dein Spielregal-Profil, dann landet die Partie mit deinen Punkten in deiner Partien-Liste.</p>` : ''}
-      <p class="label" style="margin-top:14px">Gegner (Bots)</p>
-      <div class="chips">${[1, 2, 3].map(n => `<button class="chip ${st.bots === n ? 'on' : ''}" data-a="bots" data-n="${n}">${n} Bot${n > 1 ? 's' : ''}</button>`).join('')}</div>
-      <p class="note">7 Runden · ${DICE_BY_N[st.bots + 1]} Würfel pro Runde · jede Person macht 2 Züge pro Runde (hin und zurück).</p>
+      <p class="label" style="margin-top:14px">Gegner</p>
+      <div class="chips"><button class="chip ${st.bots === 0 ? 'on' : ''}" data-a="bots" data-n="0">Leopold (Solo)</button>${[1, 2, 3].map(n => `<button class="chip ${st.bots === n ? 'on' : ''}" data-a="bots" data-n="${n}">${n} Bot${n > 1 ? 's' : ''}</button>`).join('')}</div>
+      ${st.bots === 0 ? `<p class="label" style="margin-top:12px">Schwierigkeit</p><div class="chips">${LEO_LEVELS.map((l, i) => `<button class="chip ${st.leo === i ? 'on' : ''}" data-a="leolvl" data-n="${i}">${l}</button>`).join('')}</div>
+      <p class="note">Solovariante „Dinner for One“ aus <i>Alles Walzer</i>: Leopold zieht jede Runde Anweisungskarten. Er nimmt kostenlos Gäste und bezieht sofort Zimmer, nimmt Würfel ohne Aktion und arbeitet sich über Kaiserleiste, Politik und Personal vor. Er hat nie Geld oder Waren. Bei Gleichstand gewinnt Leopold. Du ziehst 10 Personalkarten und behältst 6.</p>`
+      : `<p class="note">7 Runden · ${DICE_BY_N[st.bots + 1]} Würfel pro Runde · jede Person macht 2 Züge pro Runde (hin und zurück).</p>`}
     </div>
     <button class="btn wide" data-a="start">Hotel eröffnen</button>
     <button class="btn white wide" data-a="tutorial" style="margin-top:12px">Lernspiel: Regeln spielend lernen</button>
@@ -1266,7 +1412,7 @@ function viewGame() {
   const nextEmp = EMP_ROUNDS.findIndex(r => r >= S.round);
   const marks = range(EMP_MAX + 1).map(i => {
     const here = S.players.filter(pl => pl.emp === i);
-    return `<div class="c ${EMP_NEED.includes(i) ? 'th' : ''}">${i}<span class="mk">${here.map(pl => `<i style="background:${pl.mark}"></i>`).join('')}</span></div>`;
+    return `<div class="c ${i >= 3 ? '' : i === 0 ? 'th0' : 'th12'}">${i}<small class="ev">${EMP_VP[i]}</small><span class="mk">${here.map(pl => `<i style="background:${pl.mark}"></i>`).join('')}</span></div>`;
   }).join('');
   return `
   <div class="top"><div class="row">
@@ -1286,13 +1432,13 @@ function viewGame() {
     <section class="sec"><div class="sech"><h2 class="hand">Dein Hotel</h2><span class="hint">${me.rooms.filter(x => x === 2).length} belegt · ${me.rooms.filter(x => x === 1).length} frei</span></div>
       ${hotelGrid(me)}
       <div class="legend"><span><i style="background:${COL.r}"></i>Rot: Gruppe voll → Kronen</span><span><i style="background:${COL.b}"></i>Blau: → SP</span><span><i style="background:${COL.y}"></i>Gelb: → Kaiser</span></div></section>
-    <section class="sec"><div class="sech"><h2 class="hand">Personal</h2><span class="hint">Einstellen mit Würfel 6</span></div>
+    <section class="sec"><div class="sech"><h2 class="hand">Personal</h2><span class="hint">Ausspielen mit Würfel 5</span></div>
       ${me.staff.length ? `<p class="label">Eingestellt</p><div class="staffrow">${me.staff.map(id => staffCard(id, { btn: 'staffinfo', cls: 'hired' })).join('')}</div>` : ''}
       <p class="label">Auf der Hand</p><div class="staffrow">${me.hand.map(id => staffCard(id, { btn: 'staffinfo' })).join('') || '<span class="note">Keine Karten mehr.</span>'}</div></section>
     <section class="sec"><div class="sech"><h2 class="hand">Der Kaiser</h2><span class="hint">Wertung nach Runde 3, 5, 7</span></div>
-      <div class="emp"><div class="emphead"><span class="k">${kaiser()}</span><div><b>Kaiserleiste</b><div style="font-size:12.5px">${nextEmp >= 0 ? `Nächste Wertung nach Runde ${EMP_ROUNDS[nextEmp]}: mindestens <b>${EMP_NEED[nextEmp]}</b> nötig. Du stehst auf <b>${me.emp}</b>.` : 'Alle Wertungen vorbei.'}</div></div></div>
+      <div class="emp"><div class="emphead"><span class="k">${kaiser()}</span><div><b>Kaiserleiste</b><div style="font-size:12.5px">${nextEmp >= 0 ? `Wertung nach Runde ${EMP_ROUNDS[nextEmp]}: SP nach Feld (kleine Zahl), dann <b>${EMP_BACK[nextEmp]} zurück</b>. Danach ab Feld 3 Bonus, auf 0 Strafe. Du stehst auf <b>${me.emp}</b>.` : 'Alle Wertungen vorbei.'}</div></div></div>
       <div class="track">${marks}</div>
-      <div class="etiles">${S.empTiles.map((t, i) => { const T = EMP_TILES[t]; return `<div class="etile ${S.empDone.includes(i) ? 'done' : ''}"><b>Runde ${EMP_ROUNDS[i]} · ≥${EMP_NEED[i]}</b><br><span class="g">✓ +${EMP_BASE[i]} SP, ${T.gt}</span><br><span class="x">✗ ${T.bt}</span></div>`; }).join('')}</div></div></section>
+      <div class="etiles">${S.empTiles.map((t, i) => { const T = EMP_TILES[i][t]; return `<div class="etile ${S.empDone.includes(i) ? 'done' : ''}"><b>Runde ${EMP_ROUNDS[i]} · −${EMP_BACK[i]}</b><br><span class="g">≥3: ${T.gt}</span><br><span class="x">0: ${T.bt}</span></div>`; }).join('')}</div></div></section>
     <section class="sec"><div class="sech"><h2 class="hand">Politik</h2><span class="hint">Wer zuerst erfüllt, bekommt am meisten</span></div>
       <div class="pol">${S.politics.map(pc => { const P = POLITICS[pc.id]; const nx = POL_VP[Math.min(pc.by.length, 2)]; return `<div class="polc"><div class="pv">${nx}<small>SP nächste</small></div><div style="flex:1"><b>${esc(P.n)}</b><div style="font-size:12.5px">${esc(P.tx)}</div><div class="who">${pc.by.map(pi => `<span style="background:${S.players[pi].mark}" title="${esc(S.players[pi].name)}">${head('pl' + pi + S.players[pi].name, S.players[pi].look)}</span>`).join('')}</div></div></div>`; }).join('')}</div></section>
     <section class="sec"><div class="sech"><h2 class="hand">Chronik</h2><button class="link" data-a="logtoggle" style="font-size:12px">${U.logOpen ? 'weniger' : 'alles'}</button></div>
@@ -1343,6 +1489,7 @@ function viewSheet() {
         ${kitchenHtml(p, false)}<div style="margin-top:10px">${hotelGrid(p)}</div>
         ${p.staff.length ? `<p class="label" style="margin-top:12px">Personal</p><div class="staffrow">${p.staff.map(id => staffCard(id)).join('')}</div>` : ''}`);
     }
+    case 'staffpick': { const sp = S.staffPick; return sheetWrap(`<h3>Personal wählen</h3><p style="font-size:13px">Solo-Regel: Von 10 gezogenen Personalkarten behältst du <b>6</b> auf der Hand. Die übrigen kommen unter den Stapel.</p><div class="staffrow" style="flex-wrap:wrap">${sp.ids.map(id => staffCard(id, { btn: 'spsel', cls: sp.sel.includes(id) ? 'ok' : '' })).join('')}</div><div class="btnrow"><button class="btn" data-a="spok" ${sp.sel.length === 6 ? '' : 'disabled'}>${sp.sel.length}/6 behalten</button></div>`); }
     case 'staffinfo': return sheetWrap(`<h3>${esc(STAFF[sh.id].n)}</h3><div style="display:flex;justify-content:center;margin:8px 0">${staffCard(sh.id)}</div><p class="note">Typ „${KIND[STAFF[sh.id].t]}“: ${{ now: 'wirkt einmal sofort beim Einstellen.', perm: 'wirkt dauerhaft ab dem Einstellen.', round: 'wirkt am Ende jeder Runde.', end: 'bringt Punkte bei der Schlussabrechnung.' }[STAFF[sh.id].t]} Einstellen kostet die aufgedruckten Kronen, je weiterem Würfel auf Feld 5 eine Krone weniger.</p>`);
     case 'guest': {
       const id = S.line[sh.slot];
@@ -1366,7 +1513,7 @@ function viewSheet() {
       const info = S.roundInfo;
       return sheetWrap(`<h3>Runde ${info.round} vorbei</h3>
         <p style="font-size:13.5px">Personal mit Rundenwirkung hat geliefert, und der älteste Gast hat die Warteschlange verlassen.</p>
-        ${info.emp ? `<div class="emp" style="margin-top:10px"><div class="emphead"><span class="k">${kaiser()}</span><div><b class="hand" style="font-size:22px">Kaiserwertung · ${esc(info.emp.tile)}</b><div style="font-size:12.5px">Mindestens ${info.emp.need} auf der Kaiserleiste.</div></div></div>
+        ${info.emp ? `<div class="emp" style="margin-top:10px"><div class="emphead"><span class="k">${kaiser()}</span><div><b class="hand" style="font-size:22px">Kaiserwertung · ${esc(info.emp.tile)}</b><div style="font-size:12.5px">SP nach Feld, dann ${info.emp.back} Schritte zurück. Ab Feld 3 Bonus, auf 0 Strafe.</div></div></div>
           ${info.emp.res.map(([n, ok, t]) => `<div style="font-size:13.5px;margin-top:6px">${ok ? '✓' : '✗'} <b>${esc(n)}</b>: ${esc(t)}</div>`).join('')}</div>` : ''}
         <div class="btnrow"><button class="btn" data-a="roundok">Weiter zu Runde ${info.round + 1}</button></div>`);
     }
@@ -1382,9 +1529,15 @@ function dieSheet(sh) {
   const boost = !!sh.boost && me.k >= 1;
   const n = base + (boost ? 1 : 0);
   const kAvail = me.k - (boost ? 1 : 0);
-  const a = sh.face;
-  let h = `<h3>${ACTIONS[a].n}</h3><p style="font-size:13px">Du nimmst eine <b>${sh.face}</b>. Auf dem Feld liegen <b>${base}</b> Würfel, die Aktion hat also Stärke <b>${n}</b>${boost ? ' (verstärkt)' : ''}.</p>
-    <label class="boost"><input type="checkbox" data-a="boost" ${boost ? 'checked' : ''} ${me.k < 1 ? 'disabled' : ''}> <span><b>Verstärken:</b> 1 Krone zahlen, Stärke +1</span></label>`;
+  const joker = sh.face === 6;
+  const a = joker ? sh.as : sh.face;
+  const kAvail2 = kAvail - (joker ? 1 : 0);
+  let h = `<h3>${joker && a ? `Joker → ${ACTIONS[a].n}` : ACTIONS[sh.face].n}</h3><p style="font-size:13px">Du nimmst eine <b>${sh.face}</b>. Auf dem Feld liegen <b>${base}</b> Würfel, die Aktion hat also Stärke <b>${n}</b>${boost ? ' (verstärkt)' : ''}.</p>`;
+  if (joker && !a) {
+    if (me.k < 1) return h + `<p class="note">Der Joker kostet 1 Krone, du hast keine.</p><button class="skip" data-a="dieskip">Würfel nehmen, Aktion verfallen lassen</button>`;
+    return h + `<p>Zahle <b>1 Krone</b> und führe eine der Aktionen 1–5 mit Stärke ${base} aus:</p><div class="acts6">${[1, 2, 3, 4, 5].map(x => `<button data-a="as" data-x="${x}"><span class="aic" style="display:block">${actionIcon(x)}</span>${ACTIONS[x].short}</button>`).join('')}</div><button class="skip" data-a="dieskip">Würfel nehmen, Aktion verfallen lassen</button>`;
+  }
+  h += `<label class="boost"><input type="checkbox" data-a="boost" ${boost ? 'checked' : ''} ${me.k < 1 + (joker ? 1 : 0) ? 'disabled' : ''}> <span><b>Verstärken:</b> 1 Krone zahlen, Stärke +1</span></label>`;
   if (a === 1 || a === 2) {
     const A = a === 1 ? 's' : 'w', B = a === 1 ? 'c' : 'k';
     const max = Math.floor(n / 2), b = Math.min(sh.b || 0, max);
@@ -1397,17 +1550,19 @@ function dieSheet(sh) {
     const sel = sh.sel || [];
     const spent = sel.reduce((s, i) => s + roomCost(me, i), 0);
     h += `<p>Bereite bis zu <b>${m}</b> Zimmer vor (Kosten je Stockwerk 0/1/2/3 K). Neue Zimmer müssen im Erdgeschoss liegen oder an ein vorhandenes grenzen.</p>
-      ${hotelGrid(me, { ok: i => sel.length < m && roomOK(me, i, sel) && roomCost(me, i) <= kAvail - spent, sel, act: 'rsel' })}
+      ${hotelGrid(me, { ok: i => sel.length < m && roomOK(me, i, sel) && roomCost(me, i) <= kAvail2 - spent, sel, act: 'rsel' })}
       <p class="note">Ausgewählt: ${sel.length}/${m} · Kosten ${spent} K · du hast ${me.k} K${boost ? ' (davon 1 K fürs Verstärken)' : ''}</p>`;
   } else if (a === 4) {
-    h += `<div class="split"><div>${coinSvg()}<div class="big">${n + (hasE(me, 'act4k') ? 1 : 0)}</div>Kronen</div></div>`;
+    const e = Math.min(sh.emp || 0, n);
+    h += `<div class="split"><div>${coinSvg()}<div class="big">${n - e + (hasE(me, 'act4k') ? 1 : 0)}</div>Kronen</div><div>${crownSvg()}<div class="big">${e}</div>Kaiser</div></div>
+      <div class="stepper"><span style="font-size:13px">Schritte auf der Kaiserleiste</span><span style="display:flex;gap:8px"><button data-a="eminus" ${e <= 0 ? 'disabled' : ''}>−</button><button data-a="eplus" ${e >= n ? 'disabled' : ''}>+</button></span></div>
+      <p class="note">Höchstens ${K_MAX} Kronen, Überschuss verfällt. Kaiserleiste bis ${EMP_MAX}, jeder Schritt darüber = 1 SP.</p>`;
   } else if (a === 5) {
-    h += `<div class="split"><div>${crownSvg()}<div class="big">${n}</div>Schritte auf der Kaiserleiste</div></div><p class="note">Du stehst auf ${me.emp}, danach auf ${Math.min(EMP_MAX, me.emp + n)}.</p>`;
-  } else if (a === 6) {
-    h += `<p>Spiele eine Karte aus deiner Hand aus. Sie wird um die Stärke billiger: <b>${n} K Rabatt</b>.</p><div class="staffrow">${me.hand.map(id => { const c = staffCost(me, id, n); return staffCard(id, { btn: c <= kAvail ? 'pick' : null, price: c, cls: sh.staff === id ? 'ok' : c > kAvail ? 'no' : '' }); }).join('')}</div>`;
+    h += `<p>Spiele eine Karte aus deiner Hand aus. Sie wird um die Stärke billiger: <b>${n} K Rabatt</b>.</p><div class="staffrow">${me.hand.map(id => { const c = staffCost(me, id, n); return staffCard(id, { btn: c <= kAvail2 ? 'pick' : null, price: c, cls: sh.staff === id ? 'ok' : c > kAvail2 ? 'no' : '' }); }).join('')}</div>`;
   }
-  const ready = a === 6 ? sh.staff != null : a === 3 ? (sh.sel || []).length > 0 : true;
-  h += `<div class="btnrow"><button class="btn" data-a="dieok" ${ready ? '' : 'disabled'}>${boost ? 'Für 1 K verstärkt ausführen' : 'Ausführen'}</button></div><button class="skip" data-a="dieskip">Würfel nehmen, Aktion verfallen lassen</button>`;
+  const ready = a === 5 ? sh.staff != null : a === 3 ? (sh.sel || []).length > 0 : true;
+  const cost = (boost ? 1 : 0) + (joker ? 1 : 0);
+  h += `<div class="btnrow">${joker ? '<button class="btn white" data-a="asback">Zurück</button>' : ''}<button class="btn" data-a="dieok" ${ready ? '' : 'disabled'}>${cost ? `Für ${cost} K ausführen` : 'Ausführen'}</button></div><button class="skip" data-a="dieskip">Würfel nehmen, Aktion verfallen lassen</button>`;
   return h;
 }
 function rulesHtml() {
@@ -1424,19 +1579,27 @@ function rulesHtml() {
   <ul><li><b>1 · Strudel &amp; Torte:</b> pro Würfel 1 Gericht, mindestens so viel Strudel wie Torte.</li>
   <li><b>2 · Wein &amp; Kaffee:</b> pro Würfel 1 Getränk, mindestens so viel Wein wie Kaffee.</li>
   <li><b>3 · Zimmer:</b> pro Würfel 1 Zimmer vorbereiten. Kosten je Stockwerk 0/1/2/3 Kronen, im Erdgeschoss oder angrenzend an ein bestehendes Zimmer.</li>
-  <li><b>4 · Kronen:</b> pro Würfel 1 Krone.</li>
-  <li><b>5 · Kaiserleiste:</b> pro Würfel 1 Schritt.</li>
-  <li><b>6 · Personal:</b> Spiele 1 Karte aus deiner Hand aus, pro Würfel 1 Krone billiger.</li></ul>
+  <li><b>4 · Kaiser &amp; Kronen:</b> Teile die Stärke beliebig auf Kronen und Schritte auf der Kaiserleiste auf. Höchstens 20 Kronen; Schritte über Feld 13 hinaus bringen je 1 SP.</li>
+  <li><b>5 · Personal:</b> Spiele 1 Karte aus deiner Hand aus, sie wird um die Stärke billiger.</li>
+  <li><b>6 · Joker:</b> Zahle 1 Krone und führe eine der Aktionen 1–5 aus, mit der Stärke der Sechser.</li></ul>
   <h4>Spielbeginn</h4>
   <p>Alle starten mit 10 Kronen, je 1 Strudel, Torte, Wein und Kaffee, 6 Personalkarten und drei vorbereiteten Zimmern unten links. Entgegen der Spielreihenfolge sucht sich jede Person einen ersten Gast gratis aus der Reihe aus.</p>
   <h4>Gäste &amp; Zimmer</h4>
   <p>Ist eine Bestellung komplett, zieht der Gast automatisch in ein freies, vorbereitetes Zimmer seiner Farbe (grüne Gäste in jede Farbe) und du erhältst seine Belohnung. Ist kein passendes Zimmer frei, wartet er am Tisch. Ist eine <b>zusammenhängende Farbgruppe</b> komplett belegt, gibt es einen Bonus: <b>Rot</b> bringt Kronen, <b>Blau</b> SP, <b>Gelb</b> Kaiserschritte (1/3/5/8 je nach Gruppengröße).</p>
   <h4>Kaiser &amp; Politik</h4>
-  <p>Nach Runde <b>3, 5 und 7</b> wertet der Kaiser. Wer mindestens 3/6/9 erreicht, bekommt 4/7/10 SP plus den Bonus des Plättchens. Alle anderen erhalten die Strafe des Plättchens. Drei <b>Politik-Ziele</b> bringen 10/6/3 SP, je nachdem, wie früh du sie erfüllst.</p>
+  <p>Nach Runde <b>3, 5 und 7</b> wertet der Kaiser: Du bekommst die SP unter deinem Feld der Kaiserleiste, dann geht es <b>3, 5 bzw. 7 Schritte zurück</b>. Stehst du danach auf Feld 3 oder höher, gibt es den Bonus des Kaiserplättchens, auf Feld 1–2 nichts, auf Feld 0 die Strafe. Drei <b>Politikkarten</b> (A, B, C) bringen 15/10/5 SP: Wer zuerst erfüllt, belegt das höchste freie Feld.</p>
+  <h4>Solo gegen Leopold</h4>
+  <p>Die Solovariante „Dinner for One“ aus <i>Alles Walzer</i>. Leopold zieht pro Zug eine Anweisungskarte:</p>
+  <ul><li><b>Gäste:</b> Er nimmt 1–2 Gäste der gewünschten Farbe kostenlos und bezieht sofort ein Zimmer. Farbige Gäste kommen etagenweise von unten, grüne spaltenweise von rechts. Er erhält die SP der Gäste, aber keine Belohnungen.</li>
+  <li><b>Würfel:</b> Er nimmt den angezeigten Würfel ohne Aktion.</li>
+  <li><b>Extras:</b> Er rückt auf der Kaiserleiste vor, deckt Personal mit Schlusswertung auf oder zählt bei einer Politikkarte von III auf I herunter und erfüllt sie dann.</li></ul>
+  <p>Je nach Schwierigkeit gelten mehr Symbole. Leopold beginnt Runde 1, danach wird die Reihenfolge getauscht. Bei der Kaiserwertung bekommt er SP nach seinem Feld, aber keinen Bonus und keine Strafe. Am Ende zählen nur seine Zimmer und sein Personal. Bei Gleichstand gewinnt Leopold.</p>
   <h4>Spielende</h4>
   <p>Wie im Original: Jedes bezogene Zimmer bringt 1/2/3/4 SP je nach Etage, jede übrige Krone und Ware 1 SP. Dazu kommen die Boni deines Personals. Jeder Gast, der noch im Café sitzt, kostet <b>5 SP</b>. Bei Gleichstand gewinnt, wer mehr Kronen und Waren übrig hat.</p>
   <h4>Unterschiede zum Original</h4>
-  <p style="font-size:13px">Aktionen, Verstärken, Spielaufbau, U-förmige Zugreihenfolge und Schlusswertung folgen den Regeln von <i>Grand Austria Hotel</i>. Die Karten (Gäste, Personal, Politik, Kaiserplättchen), die Hotel-Aufteilung und die Illustrationen sind eigene Entwürfe mit eigenen Zahlen. Vereinfacht: kein Personal-Draft, Gäste ziehen automatisch in ein passendes Zimmer ein, und die Gegner sind eigene Bots, nicht der Automa.</p>`;
+  <p style="font-size:13px">Diese Regeln folgen <i>Grand Austria Hotel</i>: die Aktionen samt Joker und Verstärken, Kronen-Obergrenze, Kaiserwertung mit Zurücksetzen, Spielaufbau, U-förmige Zugreihenfolge, Politik und Schlusswertung. Den Ablauf der Solovariante mit Leopold übernimmt das Spiel ebenfalls.</p>
+  <p style="font-size:13px">Eigene Entwürfe mit eigenen Zahlen sind: die Karten (Gäste, Personal, Politik, Kaiserplättchen), die Hotel-Aufteilung, die SP-Werte der Kaiserleiste (das Regelheft zeigt nur Ausschnitte) und der Inhalt von Leopolds 20 Anweisungskarten (die Karten selbst sind nicht im Regelheft abgedruckt). Auch die Illustrationen sind eigene Entwürfe.</p>
+  <p style="font-size:13px">Vereinfacht: kein Personal-Draft im Mehrpersonenspiel, Gäste ziehen automatisch in ein passendes Zimmer ein, kein Passen.</p>`;
 }
 
 // ---------- Render & Events ----------
@@ -1507,17 +1670,17 @@ const TUT_STEPS = [
   { sel: '.kitchen', text: 'Der übrige Strudel liegt in deiner <b>Küche</b>. Später kannst du für 1 Krone bis zu 3 Gerichte aus der Küche servieren, das ist der Küchenservice.' },
   { sel: '[data-a=endturn]', allow: { endturn: true }, done: () => S.seqIdx === 3 && !cur().bot, wait: true,
     text: 'Mehr geht in diesem Zug nicht. <b>Beende deinen Zug</b>. Danach ist die Gegnerin zweimal dran, denn erst geht es reihum und dann zurück.' },
-  { text: () => `${esc(S.players[1].name)} hat die 4 (Kronen) und die 5 (Kaiserleiste) genommen. Jetzt bist du wieder dran, mit deinem <b>zweiten Zug</b> dieser Runde.` },
+  { text: () => `${esc(S.players[1].name)} hat zweimal die 4 genommen: Kronen und Kaiserschritte. Jetzt bist du wieder dran, mit deinem <b>zweiten Zug</b> dieser Runde.` },
   { sel: '.act[data-f="3"]', allow: { die: d => d.f === '3' }, done: () => U.sheet && U.sheet.type === 'die',
     text: 'Neue Gäste brauchen freie Zimmer. <b>Würfel 3</b> bereitet Zimmer vor. Tippe auf das Feld.' },
   { sel: '.sheet .room.ok', allow: { rsel: true }, done: () => U.sheet && U.sheet.sel && U.sheet.sel.length > 0,
     text: 'Zimmer kosten je nach Stockwerk 0 bis 3 Kronen. Sie liegen im Erdgeschoss oder grenzen an ein bestehendes Zimmer. Wähle ein leuchtendes Zimmer.' },
   { sel: '[data-a=dieok]', allow: { dieok: true, rsel: true }, done: () => S.turn.dieTaken,
     text: 'Bei Stärke 2 dürftest du noch ein zweites wählen. Tippe auf „Ausführen“.' },
-  { sel: '.emp', text: 'Der <b>Kaiser</b> wertet nach Runde 3, 5 und 7. Wer dann genug Schritte auf der Kaiserleiste hat, bekommt Punkte. Alle anderen bekommen eine Strafe. Schritte gibt es mit Würfel 5 und über gelbe Gäste.' },
-  { sel: '.staffrow', text: 'Dein <b>Personal</b> spielst du mit Würfel 6 aus. Jeder Würfel auf dem Feld macht die Karte 1 Krone billiger. Manche helfen sofort, manche dauerhaft, manche am Rundenende oder erst bei der Schlussabrechnung.' },
+  { sel: '.emp', text: 'Der <b>Kaiser</b> wertet nach Runde 3, 5 und 7. Du bekommst Punkte nach deinem Feld auf der Kaiserleiste und gehst dann 3, 5 bzw. 7 zurück. Stehst du danach auf 3 oder mehr, gibt es einen Bonus, auf 0 eine Strafe. Schritte gibt es mit Würfel 4 und über gelbe Gäste.' },
+  { sel: '.staffrow', text: 'Dein <b>Personal</b> spielst du mit Würfel 5 aus. Jeder Würfel auf dem Feld macht die Karte 1 Krone billiger. Manche helfen sofort, manche dauerhaft, manche am Rundenende oder erst bei der Schlussabrechnung.' },
   { sel: '.pol', text: '<b>Politik</b>: Wer ein Ziel zuerst erfüllt, bekommt die meisten Punkte.' },
-  { sel: '.act[data-f="4"]', text: 'Noch ein Tipp: Die <b>4 bringt Kronen</b>, so viele wie Würfel auf dem Feld liegen. Und jede Aktion kannst du für <b>1 Krone verstärken</b>: Sie zählt dann, als läge ein Würfel mehr dort.' },
+  { sel: '.act[data-f="6"]', text: 'Noch ein Tipp: Die <b>6 ist ein Joker</b>. Für 1 Krone führst du damit jede andere Aktion aus. Mit der 4 teilst du die Stärke auf Kronen und Kaiserschritte auf. Und einmal pro Zug kannst du eine Aktion für <b>1 Krone verstärken</b>.' },
   { text: 'Das war das Wichtigste! Hol jede Runde Gäste, bewirte sie, bereite passende Zimmer vor und behalte den Kaiser im Blick. Viel Erfolg, Frau Direktorin oder Herr Direktor!' },
 ];
 function tutSetup() {
@@ -1535,8 +1698,8 @@ function tutSetup() {
 }
 function tutBot() {
   const p = cur();
-  const f = [4, 5, 2, 1, 3, 6].find(x => S.dice[x]);
-  doDie(p, f, { b: 0, skip: f === 6 });
+  const f = [4, 2, 6, 5, 1, 3].find(x => S.dice[x]);
+  doDie(p, f, { emp: 1, b: 0, skip: f >= 5 });
   endTurn();
 }
 
@@ -1548,6 +1711,7 @@ function render() {
   else if (S.screen === 'end') h = viewEnd();
   else h = viewGame();
   if (S && S.roundInfo && S.screen === 'game' && !U.sheet) U.sheet = { type: 'round' };
+  if (S && S.staffPick && S.screen === 'game') U.sheet = { type: 'staffpick' };
   h += viewSheet();
   if (U.toast) h += `<div class="toast">${esc(U.toast)}</div>`;
   const nm = document.getElementById('nm');
@@ -1560,7 +1724,7 @@ function render() {
 }
 function pump() {
   if (!S || S.screen !== 'game' || U.busy || S.roundInfo) return;
-  if (!cur().bot) return;
+  if (!cur().bot || S.staffPick) return;
   U.busy = true;
   setTimeout(() => {
     U.busy = false;
@@ -1577,8 +1741,11 @@ const H = {
   tutend: () => { U.tut = null; U.sheet = null; U.fast = false; S = null; window.scrollTo(0, 0); },
   tutquit: () => { U.tut = null; U.sheet = null; U.fast = false; S = null; window.scrollTo(0, 0); },
   bots: d => { U.setup.bots = +d.n; },
+  leolvl: d => { U.setup.leo = +d.n; },
+  spsel: d => { const sp = S.staffPick, id = +d.id, k = sp.sel.indexOf(id); if (k >= 0) sp.sel.splice(k, 1); else if (sp.sel.length < 6) sp.sel.push(id); },
+  spok: () => { const sp = S.staffPick; if (sp.sel.length !== 6) return; human().hand = sp.sel.slice(); S.staffDeck.push(...sp.ids.filter(id => !sp.sel.includes(id))); S.staffPick = null; U.sheet = null; },
   pickname: d => { U.setup.name = d.n; const nm = document.getElementById('nm'); if (nm) nm.value = d.n; },
-  start: () => { const sv = load(); if (sv && sv.screen === 'game' && !confirm(`Es gibt eine gespeicherte Partie (Runde ${sv.round || 1}). Neue Partie starten und die gespeicherte verwerfen?`)) return; const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : ''; U.fast = false; newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0); S.screen = 'game'; window.scrollTo(0, 0); },
+  start: () => { const sv = load(); if (sv && sv.screen === 'game' && !confirm(`Es gibt eine gespeicherte Partie (Runde ${sv.round || 1}). Neue Partie starten und die gespeicherte verwerfen?`)) return; const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : ''; U.fast = false; const solo = U.setup.bots === 0; newGame(U.setup.name || 'Du', solo ? 0 : U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0, solo ? (U.setup.leo ?? 1) : null); S.screen = 'game'; window.scrollTo(0, 0); },
   resume: () => { S = load(); U.sheet = null; },
   rules: () => { U.sheet = { type: 'rules' }; },
   menu: () => { U.sheet = { type: 'menu' }; },
@@ -1586,19 +1753,22 @@ const H = {
   newgame: () => { clearSave(); S = null; U.sheet = null; },
   showboard: () => { U.sheet = { type: 'board' }; },
   close: () => { U.sheet = null; },
-  ovclose: () => { if (U.sheet && U.sheet.type !== 'round') U.sheet = null; },
+  ovclose: () => { if (U.sheet && U.sheet.type !== 'round' && U.sheet.type !== 'staffpick') U.sheet = null; },
   opp: d => { U.sheet = { type: 'opp', p: +d.p }; },
   staffinfo: d => { U.sheet = { type: 'staffinfo', id: +d.id }; },
   guest: d => { U.sheet = { type: 'guest', slot: +d.s }; },
   takeguest: d => { if (takeGuest(human(), +d.s)) { U.sheet = null; toast('Gast sitzt an deinem Tisch.'); } },
-  die: d => { if (isMyTurn() && !S.turn.dieTaken && S.dice[+d.f]) U.sheet = { type: 'die', face: +d.f, b: 0, sel: [], staff: null, boost: false }; },
+  die: d => { if (isMyTurn() && !S.turn.dieTaken && S.dice[+d.f]) U.sheet = { type: 'die', face: +d.f, b: 0, emp: 0, sel: [], staff: null, boost: false, as: 0 }; },
+  as: d => { Object.assign(U.sheet, { as: +d.x, b: 0, emp: 0, sel: [], staff: null }); },
+  asback: () => { U.sheet.as = 0; U.sheet.boost = false; },
+  eplus: () => { U.sheet.emp++; }, eminus: () => { U.sheet.emp--; },
   boost: () => { const sh = U.sheet; sh.boost = !sh.boost && human().k >= 1; sh.sel = []; sh.staff = null; sh.b = Math.min(sh.b, Math.floor((S.dice[sh.face] + (sh.boost ? 1 : 0)) / 2)); },
   bplus: () => { U.sheet.b++; }, bminus: () => { U.sheet.b--; },
   rsel: d => { const i = +d.i, s = U.sheet.sel; const k = s.indexOf(i); if (k >= 0) U.sheet.sel = s.slice(0, k); else s.push(i); },
   pick: d => { U.sheet.staff = +d.id; },
   dieok: () => {
     const sh = U.sheet, me = human();
-    const ok = doDie(me, sh.face, { boost: sh.boost, b: sh.b, rooms: sh.sel, staff: sh.staff });
+    const ok = doDie(me, sh.face, { boost: sh.boost, as: sh.as, b: sh.b, emp: sh.emp, rooms: sh.sel, staff: sh.staff });
     if (ok) { U.sheet = null; toast(S.log[0]); }
   },
   dieskip: () => { if (doDie(human(), U.sheet.face, { skip: true })) U.sheet = null; },
@@ -1639,8 +1809,8 @@ document.addEventListener('keydown', e => {
 
 // Test-Hook: komplette Bot-Partie synchron durchspielen
 window.__ghw = {
-  simulate(nPlayers, seed) {
-    newGame(null, nPlayers - 1, seed); S.screen = 'game';
+  simulate(nPlayers, seed, leo) {
+    newGame(null, leo != null ? 0 : nPlayers - 1, seed, leo); S.screen = 'game';
     let guard = 0;
     while (S.screen === 'game' && guard++ < 500) { botTurn(); S.roundInfo = null; }
     const res = { final: S.final, turns: guard };

@@ -47,8 +47,11 @@ if (shots) await page.screenshot({ path: `${shots}/1-start.png`, fullPage: true 
 // --- Bot-Simulationen ---
 const sim = await page.evaluate(() => {
   const out = [];
-  for (const n of [2, 3, 4]) for (let seed = 1; seed <= 25; seed++) {
-    const r = window.__ghw.simulate(n, seed * 7919 + n);
+  const runs = [];
+  for (const n of [2, 3, 4]) for (let seed = 1; seed <= 25; seed++) runs.push([n, seed * 7919 + n, null]);
+  for (const lv of [0, 1, 2]) for (let seed = 1; seed <= 10; seed++) runs.push(["L" + lv, seed * 104729 + lv, lv]);
+  for (const [n, seed, leo] of runs) {
+    const r = window.__ghw.simulate(leo != null ? 2 : n, seed, leo);
     const S = window.__ghw.state();
     const bad = [];
     if (!r.final) bad.push("keine Endabrechnung");
@@ -56,6 +59,7 @@ const sim = await page.evaluate(() => {
     for (const p of S.players) {
       if (p.k < 0 || p.vp < 0 || p.emp < 0) bad.push(`${p.name} negativ`);
       for (const f of ["s", "c", "w", "k"]) if (p.kitchen[f] < 0 || p.fresh[f] !== 0) bad.push(`${p.name} Küche ${f}`);
+      if (p.k > 20 || p.emp > 13) bad.push(`${p.name} über Limit`);
     }
     for (const row of r.final || []) if (!Number.isFinite(row.total)) bad.push("total NaN");
     out.push({ n, seed, turns: r.turns, totals: (r.final || []).map((x) => x.total), rooms: (r.final || []).map((x) => x.rooms), bad });
@@ -66,65 +70,78 @@ const sim = await page.evaluate(() => {
 const badSims = sim.filter((s) => s.bad.length);
 if (badSims.length) fail(`Simulationen mit Problemen: ${JSON.stringify(badSims.slice(0, 3))}`);
 const avg = (a) => (a.reduce((x, y) => x + y, 0) / a.length).toFixed(1);
-for (const n of [2, 3, 4]) {
+for (const n of [2, 3, 4, "L0", "L1", "L2"]) {
   const s = sim.filter((x) => x.n === n);
   console.log(`Bots ${n}P: Ø Siegerpunkte ${avg(s.map((x) => Math.max(...x.totals)))}, Ø Punkte ${avg(s.flatMap((x) => x.totals))}, Ø belegte Zimmer ${avg(s.flatMap((x) => x.rooms))}`);
 }
 
 // --- Menschliche Partie per Klick ---
+async function playUi(label) {
+  await page.waitForSelector(".board");
+  await page.click("[data-a=fast]").catch(() => {});
+  let myTurns = 0, guests = 0, served = 0, guard = 0, shot2 = false;
+  while (guard++ < 500) {
+    if (await page.locator("text=Neue Partie").count()) break;
+    if (await page.locator("[data-a=roundok]").count()) { await page.click("[data-a=roundok]"); continue; }
+    const live = page.locator(".act.live");
+    if (!(await live.count())) {
+      if (await page.locator("[data-a=endturn]:not([disabled])").count()) { await page.click("[data-a=endturn]"); continue; }
+      await page.waitForTimeout(150); continue;
+    }
+    myTurns++;
+    if (myTurns % 2 === 1 && (await page.locator(".tslot").count())) {
+      await page.locator(".line .gcard").first().click();
+      const take = page.locator("[data-a=takeguest]:not([disabled])");
+      if (await take.count()) { await take.click(); guests++; } else await page.click("[data-a=close]");
+    }
+    const n = await live.count();
+    await live.nth(myTurns % n).click();
+    await page.waitForSelector(".sheet");
+    if (await page.locator("[data-a=as]").count()) await page.locator("[data-a=as]").nth(myTurns % 5).click();
+    if (myTurns % 4 === 2 && (await page.locator("[data-a=boost]:not([disabled])").count())) await page.click("[data-a=boost]");
+    if (await page.locator(".sheet .room.ok").count()) await page.locator(".sheet .room.ok").first().click({ force: true });
+    if (await page.locator(".sheet [data-a=pick]").count()) await page.locator(".sheet [data-a=pick]").first().click();
+    if (await page.locator("[data-a=bplus]:not([disabled])").count()) await page.click("[data-a=bplus]");
+    if (await page.locator("[data-a=eplus]:not([disabled])").count()) await page.click("[data-a=eplus]");
+    if (!shot2 && shots) await page.screenshot({ path: `${shots}/3-sheet-${label}.png` });
+    const ok = page.locator("[data-a=dieok]:not([disabled])");
+    if (await ok.count()) await ok.click(); else await page.click("[data-a=dieskip]");
+    for (let i = 0; i < 8; i++) {
+      const can = page.locator(".slot.can");
+      if (!(await can.count())) break;
+      await can.first().click({ force: true });
+      if (await page.locator("[data-a=buyservice]").count()) await page.click("[data-a=buyservice]");
+      served++;
+    }
+    if (await page.locator("[data-a=freerooms]").count()) {
+      await page.click("[data-a=freerooms]");
+      if (await page.locator(".sheet .room.ok").count()) { await page.locator(".sheet .room.ok").first().click({ force: true }); await page.click("[data-a=frok]"); }
+      else await page.click("[data-a=frskip]");
+    }
+    if (!shot2 && shots) { await page.screenshot({ path: `${shots}/2-game-${label}.png`, fullPage: true }); shot2 = true; }
+    await page.click("[data-a=endturn]");
+  }
+  if (!(await page.locator("text=Neue Partie").count())) fail(`${label}: Partie nicht beendet (guard=${guard}, Züge=${myTurns})`);
+  if (myTurns !== 14) fail(`${label}: erwartet 14 eigene Züge, waren ${myTurns}`);
+  console.log(`UI-Partie ${label}: ${myTurns} Züge, ${guests} Gäste geholt, ${served} Gerichte serviert.`);
+  if (shots) await page.screenshot({ path: `${shots}/4-end-${label}.png`, fullPage: true });
+}
 await page.fill("#nm", "Testerin");
 await page.click("text=2 Bots");
 await page.click("text=Hotel eröffnen");
-await page.waitForSelector(".board");
-await page.click("[data-a=fast]").catch(() => {});
-let myTurns = 0, guests = 0, served = 0, guard = 0, shot2 = false;
-while (guard++ < 400) {
-  if (await page.locator("text=Neue Partie").count()) break;
-  if (await page.locator("[data-a=roundok]").count()) { await page.click("[data-a=roundok]"); continue; }
-  const live = page.locator(".act.live");
-  if (!(await live.count())) {
-    if (await page.locator("[data-a=endturn]:not([disabled])").count()) { await page.click("[data-a=endturn]"); continue; }
-    await page.waitForTimeout(200); continue;
-  }
-  myTurns++;
-  // ab und zu einen Gast holen
-  if (myTurns % 2 === 1 && (await page.locator(".tslot").count())) {
-    await page.locator(".line .gcard").first().click();
-    const take = page.locator("[data-a=takeguest]:not([disabled])");
-    if (await take.count()) { await take.click(); guests++; } else await page.click("[data-a=close]");
-  }
-  // Würfel wählen: der mit den meisten Würfeln
-  const n = await live.count();
-  await live.nth(myTurns % n).click();
-  await page.waitForSelector(".sheet");
-  if (await page.locator("[data-a=as]").count()) await page.locator("[data-a=as]").nth(myTurns % 5).click();
-  if (await page.locator(".sheet .room.ok").count()) await page.locator(".sheet .room.ok").first().click({ force: true });
-  if (await page.locator(".sheet [data-a=pick]").count()) await page.locator(".sheet [data-a=pick]").first().click();
-  if (await page.locator("[data-a=bplus]:not([disabled])").count()) await page.click("[data-a=bplus]");
-  if (!shot2 && shots) { await page.screenshot({ path: `${shots}/3-sheet.png` }); }
-  const ok = page.locator("[data-a=dieok]:not([disabled])");
-  if (await ok.count()) await ok.click(); else await page.click("[data-a=dieskip]");
-  // servieren
-  for (let i = 0; i < 8; i++) {
-    const can = page.locator(".slot.can");
-    if (!(await can.count())) break;
-    await can.first().click({ force: true });
-    if (await page.locator("[data-a=buyservice]").count()) await page.click("[data-a=buyservice]");
-    served++;
-  }
-  if (await page.locator("[data-a=freerooms]").count()) {
-    await page.click("[data-a=freerooms]");
-    if (await page.locator(".sheet .room.ok").count()) { await page.locator(".sheet .room.ok").first().click({ force: true }); await page.click("[data-a=frok]"); }
-    else await page.click("[data-a=frskip]");
-  }
-  if (!shot2 && shots) { await page.screenshot({ path: `${shots}/2-game.png`, fullPage: true }); shot2 = true; }
-  await page.click("[data-a=endturn]");
-}
-const ended = await page.locator("text=Neue Partie").count();
-if (!ended) fail(`Menschliche Partie nicht beendet (guard=${guard}, Züge=${myTurns})`);
-if (myTurns !== 14) fail(`Erwartet 14 eigene Züge, waren ${myTurns}`);
-console.log(`UI-Partie: ${myTurns} Züge, ${guests} Gäste geholt, ${served} Gerichte serviert.`);
-if (shots) await page.screenshot({ path: `${shots}/4-end.png`, fullPage: true });
+await playUi("2 Bots");
+// Solo gegen Leopold (Automa aus Alles Walzer): erst 6 von 10 Personalkarten wählen
+await page.click("[data-a=newgame]");
+await page.click("text=Leopold (Solo)");
+await page.click("[data-a=leolvl][data-n='2']");
+await page.click("text=Hotel eröffnen");
+await page.waitForSelector("[data-a=spok]");
+if (shots) await page.screenshot({ path: `${shots}/5-staffpick.png` });
+for (let i = 0; i < 6; i++) await page.locator(".sheet [data-a=spsel]").nth(i).click();
+await page.click("[data-a=spok]");
+await playUi("Leopold");
+const leoLog = await page.evaluate(() => window.__ghw.state().log.filter((l) => l.startsWith("Leopold:")).length);
+if (leoLog !== 14) fail(`Leopold sollte 14 Züge machen, waren ${leoLog}`);
 
 await browser.close();
 server.close();
