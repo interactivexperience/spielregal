@@ -7960,6 +7960,8 @@ const TONE_HEX = { teal: "rgb(var(--tealdeep))", amber: "rgb(var(--accent))", re
 // Seiten im Repo und werden auf der Detailseite des passenden Spiels verlinkt.
 const DIGITALE_UMSETZUNGEN = [
   { bggId: "182874", titel: /grand austria hotel/i, href: "grand-austria-hotel/", name: "Grand Hotel Wien" },
+  { bggId: "291845", titel: /^three sisters$|^drei schwestern$/i, href: "three-sisters/", name: "Drei Schwestern" },
+  { bggId: "381249", titel: /rebel princess/i, href: "rebel-princess/", name: "Prinzessinnenball" },
 ];
 function digitaleUmsetzung(game) {
   return DIGITALE_UMSETZUNGEN.find((u) =>
@@ -8000,14 +8002,16 @@ function digitalePartienUebernehmen(inbox, games, plays, players) {
     const sieger = Array.isArray(e.winners) ? e.winners : [];
     const ichGewinne = ich && sieger.includes(ich.name);
     const botSieger = sieger.filter((n) => bots.some((b) => b.name === n));
-    const tabelle = [...ergebnisse].sort((a, b) => b.total - a.total).map((r) => `${r.name}${r.bot ? " (Bot)" : ""}: ${r.total}`).join(" · ");
+    // Bei manchen Spielen gewinnt die niedrigste Zahl (z.B. Anträge bei Rebel Princess)
+    const tabelle = [...ergebnisse].sort((a, b) => e.lowWins ? a.total - b.total : b.total - a.total)
+      .map((r) => `${r.name}${r.bot ? " (Bot)" : ""}: ${r.total}`).join(" · ");
     newPlays.push({
       id: e.id, gameId: game.id, gameName: game.name, date: e.date || new Date().toISOString().slice(0, 10), mode: "bga",
       players: ergebnisse.map((r) => r.bot ? `${r.name} (Bot)` : r.name).join(", "),
       playerIds: profil ? [profil.id] : [],
       winner: ichGewinne ? (profil ? profil.name : ich.name) : "",
       ...(profil && ich ? { scores: { [profil.id]: String(ich.total) } } : {}),
-      notes: `Im Browser gespielt (Grand Hotel Wien) gegen ${bots.length} Bot${bots.length === 1 ? "" : "s"}.${botSieger.length ? ` Gewonnen hat ${botSieger.join(" und ")} (Bot).` : ""} Ergebnis: ${tabelle}`,
+      notes: `Im Browser gespielt (${e.app || "Grand Hotel Wien"}) gegen ${bots.length} Bot${bots.length === 1 ? "" : "s"}.${botSieger.length ? ` Gewonnen hat ${botSieger.join(" und ")} (Bot).` : ""} Ergebnis${e.unit ? ` (${e.unit})` : ""}: ${tabelle}`,
       images: [], source: e.source || "digital",
     });
   }

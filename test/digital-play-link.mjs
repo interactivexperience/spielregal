@@ -38,6 +38,8 @@ const SP = process.argv[2];
 const games = [
   { id: "g1", name: "Grand Austria Hotel", bggId: "182874", status: "owned", categories: [], mechanisms: [], publishers: [], designers: [], images: [], addedDate: "2026-01-01" },
   { id: "g2", name: "Anderes Spiel", status: "owned", categories: [], mechanisms: [], publishers: [], designers: [], images: [], addedDate: "2026-01-02" },
+  { id: "g3", name: "Three Sisters", bggId: "291845", status: "owned", categories: [], mechanisms: [], publishers: [], designers: [], images: [], addedDate: "2026-01-03" },
+  { id: "g4", name: "Rebel Princess", bggId: "381249", status: "owned", categories: [], mechanisms: [], publishers: [], designers: [], images: [], addedDate: "2026-01-04" },
 ];
 await page.addInitScript((g) => {
   if (location.pathname.endsWith("/index.html") && !location.pathname.includes("grand-austria")) {
@@ -55,6 +57,14 @@ await page.waitForTimeout(800);
 if (await page.locator("text=Im Browser spielen").count()) { console.log("FEHLER: Link bei falschem Spiel"); fehler++; }
 await page.locator('[aria-label="Zurück"]').first().click();
 await page.waitForTimeout(500);
+for (const [name, href] of [["Three Sisters", "three-sisters/"], ["Rebel Princess", "rebel-princess/"]]) {
+  await page.locator(`text=${name}`).first().click();
+  await page.waitForTimeout(800);
+  const l = page.locator("a:has-text('Im Browser spielen')");
+  if ((await l.count()) !== 1 || (await l.getAttribute("href")) !== href) { console.log(`FEHLER: Link bei ${name}`); fehler++; }
+  await page.locator('[aria-label="Zurück"]').first().click();
+  await page.waitForTimeout(500);
+}
 await page.locator("text=Grand Austria Hotel").first().click();
 await page.waitForTimeout(800);
 const link = page.locator("a:has-text('Im Browser spielen')");
@@ -69,4 +79,4 @@ else {
 }
 await b.close(); server.close();
 if (fehler) process.exit(1);
-console.log("OK — Link erscheint nur bei Grand Austria Hotel und öffnet das Spiel.");
+console.log("OK — Links erscheinen nur bei Spielen mit Browser-Umsetzung und öffnen das Spiel.");

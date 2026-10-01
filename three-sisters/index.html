@@ -1,0 +1,947 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F4EEDD">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Drei Schwestern">
+<title>Drei Schwestern</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat+Brush&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#161616; --paper:#F4EEDD; --cream:#FFFBF0; --red:#E4472E; --blue:#2C47B5; --yellow:#F1B02B;
+  --pink:#F28AA6; --green:#1F8A4D; --leaf:#5DB35A; --orange:#EE7B2C; --brown:#8A5A3B; --muted:#6d655a;
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior-y:contain}
+body::before{content:"";position:fixed;inset:0;background:var(--grain);opacity:.18;pointer-events:none;z-index:0}
+#app{position:relative;z-index:1}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+.hand{font-family:"Caveat Brush","Comic Sans MS",cursive}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px 120px}
+.ill{display:block;width:100%;height:100%;overflow:visible}
+.grainy{position:relative;isolation:isolate}
+.grainy::after{content:"";position:absolute;inset:0;border-radius:inherit;background:var(--grain);mix-blend-mode:multiply;opacity:.35;pointer-events:none}
+.start{padding-top:12px;text-align:center}
+.start h1{font-size:54px;line-height:.9;margin:6px 0 4px}
+.sub{font-size:13px;color:var(--muted);margin:0 0 14px}
+.hero{width:100%;max-width:420px;margin:0 auto;aspect-ratio:360/280}
+.panel{background:var(--cream);border:2.5px solid var(--ink);border-radius:18px;box-shadow:4px 4px 0 var(--ink);padding:16px;text-align:left;margin:14px 0}
+.label{font-family:"Space Mono",monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:0 0 6px}
+.input{width:100%;font:inherit;font-size:16px;padding:10px 12px;border:2px solid var(--ink);border-radius:12px;background:#fff}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:2px solid var(--ink);border-radius:999px;padding:7px 14px;background:#fff;font-weight:600}
+.chip.on{background:var(--ink);color:var(--cream)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 20px;border:2.5px solid var(--ink);border-radius:14px;background:var(--yellow);box-shadow:3px 3px 0 var(--ink);font-weight:700;font-size:16px;text-decoration:none;color:var(--ink)}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.btn.green{background:var(--green);color:#fff}.btn.white{background:#fff}.btn.blue{background:var(--blue);color:#fff}
+.btn:disabled{opacity:.4;box-shadow:none;transform:none}
+.btn.wide{width:100%}
+.link{text-decoration:underline;text-underline-offset:3px;font-weight:600}
+.note{font-size:12.5px;color:#3b362f;background:#fff;border:1.5px dashed var(--ink);border-radius:10px;padding:6px 9px;margin-top:8px}
+.top{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:2.5px solid var(--ink);padding:calc(6px + env(safe-area-inset-top)) 0 6px}
+.top .row{max-width:560px;margin:0 auto;padding:0 16px;display:flex;align-items:center;gap:10px}
+.round{font-size:26px;line-height:1;white-space:nowrap}
+.round small{font-family:"Space Mono",monospace;font-size:11px;color:var(--muted);display:block;margin-top:2px}
+.icobtn{width:40px;height:40px;border:2px solid var(--ink);border-radius:50%;background:#fff;font-weight:800;font-size:18px;flex:none;display:grid;place-items:center}
+.players{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;padding:2px 2px 4px}
+.players::-webkit-scrollbar{display:none}
+.pchip{flex:none;display:flex;align-items:center;gap:6px;border:2px solid var(--ink);border-radius:14px;background:#fff;padding:3px 8px 3px 3px;text-align:left}
+.pchip.cur{background:var(--yellow);box-shadow:2px 2px 0 var(--ink)}
+.pchip .av{width:32px;height:32px;border-radius:50%;overflow:hidden;border:2px solid var(--ink);flex:none}
+.pchip .nm{font-size:12px;font-weight:700;max-width:78px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.pchip .st{font-family:"Space Mono",monospace;font-size:10.5px}
+.sec{margin:18px 0 0}
+.sech{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 8px}
+.sech h2{font-size:28px;margin:0;line-height:1}
+.sech .hint{font-size:12px;color:var(--muted);text-align:right}
+.banner{margin:12px 0 0;border:2.5px solid var(--ink);border-radius:16px;padding:10px 12px;background:var(--cream);display:flex;gap:10px;align-items:center;box-shadow:3px 3px 0 var(--ink)}
+.banner.mine{background:#FFE9A8}
+.banner .face{width:44px;height:44px;flex:none}
+.banner b{display:block}
+.banner .small{font-size:12.5px;color:#3b362f}
+/* Markt-Rondell */
+.rondel{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.space{border:2.5px solid var(--ink);border-radius:16px;background:var(--cream);padding:6px;text-align:center;min-height:118px;position:relative;box-shadow:3px 3px 0 var(--ink)}
+.space.edith{background:#E6F2DA}
+.space .sic{width:46px;height:38px;margin:0 auto}
+.space .sn{font-size:11.5px;font-weight:700;line-height:1.15;min-height:26px}
+.space .edm{position:absolute;left:-6px;top:-10px;width:30px;height:36px}
+.dice{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;margin-top:4px}
+.die{width:30px;height:30px;padding:0}
+.die svg{width:100%;height:100%}
+.die.live{animation:pulse 1.4s ease-in-out infinite}
+.die.taken{opacity:.25}
+@keyframes pulse{50%{transform:scale(1.1)}}
+.order{font-family:"Space Mono",monospace;font-size:11px;color:var(--muted);margin-top:8px;display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.order span{border:1.5px solid var(--ink);border-radius:99px;padding:0 6px;background:#fff;color:var(--ink)}
+.order span.now{background:var(--ink);color:#fff}
+.order span.done{opacity:.35}
+.evt{display:flex;gap:8px;margin-top:10px}
+.evt>div{flex:1;border:2px solid var(--ink);border-radius:14px;background:#fff;padding:6px 8px;display:flex;gap:8px;align-items:center;font-size:12px;line-height:1.2}
+.evt svg{width:34px;height:34px;flex:none}
+/* Garten */
+.garden{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.zone{border:2.5px solid var(--ink);border-radius:16px;background:#E9DCC0;padding:6px 7px 7px;position:relative}
+.zone.hl{outline:3px solid var(--green);outline-offset:2px}
+.zone .zn{position:absolute;right:6px;top:4px;width:26px;height:26px}
+.trk{display:flex;align-items:center;gap:3px;margin-top:4px}
+.trk .ti{width:22px;height:22px;flex:none}
+.cell{width:19px;height:19px;border-radius:50%;border:2px solid var(--ink);background:#fff;display:grid;place-items:center;flex:none;position:relative}
+.cell.h{border-width:3px}
+.cell.h::after{content:"";position:absolute;inset:-5px;border:1.5px dashed var(--ink);border-radius:50%}
+.cell.x{background:var(--ink)}
+.cell.n{background:var(--green);border-color:var(--green)}
+.cell.n::before{content:"+";color:#fff;font-weight:900;font-size:12px;line-height:1}
+.cell.x.c{background:#F1B02B}.cell.x.b{background:#5DB35A}.cell.x.s{background:#EE7B2C}
+.res{display:grid;gap:8px}
+.rrow{border:2px solid var(--ink);border-radius:14px;background:#fff;padding:7px 9px}
+.rrow .rh{display:flex;align-items:center;gap:6px;font-weight:700;font-size:13px}
+.rrow .rh svg{width:24px;height:24px}
+.rrow .rh .v{margin-left:auto;font-family:"Space Mono",monospace;font-size:12px}
+.boxes{display:flex;gap:3px;margin-top:5px;flex-wrap:wrap}
+.box{min-width:22px;height:22px;border:2px solid var(--ink);border-radius:6px;font-family:"Space Mono",monospace;font-size:9.5px;display:grid;place-items:center;background:#fff;padding:0 2px}
+.box.x{background:var(--ink);color:#fff}
+.box.t{background:#FFE9A8}
+.box.x.t{background:var(--ink);color:#FFE9A8}
+.fruits,.tools{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.tool .tx{font-size:11px;line-height:1.2;margin-top:3px;color:#3b362f}
+.tool.done{background:#E6F2DA}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--paper);border-top:2.5px solid var(--ink);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+.bar .in{max-width:560px;margin:0 auto;display:flex;gap:10px;align-items:center}
+.bar .msg{flex:1;font-size:12.5px;line-height:1.25}
+.ov{position:fixed;inset:0;z-index:60;background:rgba(22,22,22,.45);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--paper);width:100%;max-width:560px;max-height:88vh;overflow:auto;border:2.5px solid var(--ink);border-bottom:0;border-radius:22px 22px 0 0;padding:14px 16px calc(18px + env(safe-area-inset-bottom));position:relative}
+.sheet h3{font-family:"Caveat Brush",cursive;font-size:30px;font-weight:400;margin:0 0 4px;line-height:1;padding-right:48px}
+.sheet .x{position:absolute;right:12px;top:12px}
+.grab{width:44px;height:5px;border-radius:9px;background:var(--ink);opacity:.25;margin:0 auto 10px}
+.opts{display:grid;gap:8px;margin-top:10px}
+.opt{border:2.5px solid var(--ink);border-radius:14px;background:#fff;padding:10px 12px;text-align:left;display:flex;gap:10px;align-items:center;box-shadow:2px 2px 0 var(--ink)}
+.opt:disabled{opacity:.35;box-shadow:none}
+.opt svg{width:32px;height:32px;flex:none}
+.opt b{display:block}
+.opt small{font-size:12px;color:#3b362f}
+.opt.on{background:#E6F2DA}
+.stepper{display:flex;align-items:center;justify-content:space-between;gap:8px;border:2px solid var(--ink);border-radius:14px;background:#fff;padding:6px 10px;margin-top:8px}
+.stepper .lbl{display:flex;align-items:center;gap:8px;font-weight:700}
+.stepper .lbl svg{width:28px;height:28px}
+.stepper button{width:38px;height:38px;border:2px solid var(--ink);border-radius:50%;background:var(--yellow);font-size:20px;font-weight:800}
+.stepper button:disabled{opacity:.3}
+.stepper .num{font-family:"Space Mono",monospace;font-weight:700;font-size:18px;min-width:22px;text-align:center}
+.btnrow{display:flex;gap:8px;margin-top:12px}
+.btnrow .btn{flex:1}
+.skip{display:block;margin:14px auto 0;font-size:13px;color:var(--muted);text-decoration:underline}
+.toast{position:fixed;left:50%;top:calc(76px + env(safe-area-inset-top));transform:translateX(-50%);z-index:70;background:var(--ink);color:var(--cream);padding:8px 14px;border-radius:12px;font-size:13px;max-width:min(92vw,520px);box-shadow:3px 3px 0 var(--pink)}
+.log{font-size:12.5px;border:2px solid var(--ink);border-radius:14px;background:#fff;padding:8px 10px;max-height:220px;overflow:auto}
+.log div{padding:3px 0;border-bottom:1px dashed #d8cfbf}
+.log div:last-child{border:0}
+.rules h4{font-family:"Caveat Brush",cursive;font-size:22px;font-weight:400;margin:16px 0 2px}
+.rules p,.rules li{font-size:14px}
+.rules ul{padding-left:18px;margin:4px 0}
+.score{width:100%;border-collapse:collapse;font-size:13px}
+.score th,.score td{padding:5px 4px;border-bottom:1.5px dashed #c9bfae;text-align:right}
+.score th:first-child,.score td:first-child{text-align:left}
+.score tr.tot td{font-weight:800;border-bottom:0;font-size:15px}
+.podium{display:flex;justify-content:center;align-items:flex-end;gap:8px;margin:8px 0}
+.podium .pp{text-align:center;width:96px}
+.podium .pp .ill{height:110px}
+.podium .pl{border:2.5px solid var(--ink);border-radius:10px 10px 0 0;font-family:"Caveat Brush",cursive;font-size:26px;display:grid;place-items:center}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="wob" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <pattern id="p-dots" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.5" fill="#161616"/><circle cx="7.5" cy="7.5" r="1.5" fill="#161616"/></pattern>
+    <pattern id="p-dots-w" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.5" fill="#FFF9EE"/><circle cx="7.5" cy="7.5" r="1.5" fill="#FFF9EE"/></pattern>
+    <pattern id="p-stripes" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0,0 V8" stroke="#161616" stroke-width="2.2"/></pattern>
+    <pattern id="p-stripes-w" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0,0 V8" stroke="#FFF9EE" stroke-width="2.2"/></pattern>
+    <pattern id="p-checks" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M0,0 V10 M0,0 H10" stroke="#161616" stroke-width="1.6"/></pattern>
+    <pattern id="p-checks-w" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M0,0 V10 M0,0 H10" stroke="#FFF9EE" stroke-width="1.6"/></pattern>
+    <pattern id="p-dash" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M2,3 l3,4 M8,1 l2,5 M4,9 l3,2" stroke="#161616" stroke-width="1.6" stroke-linecap="round"/></pattern>
+    <pattern id="p-dash-w" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M2,3 l3,4 M8,1 l2,5 M4,9 l3,2" stroke="#FFF9EE" stroke-width="1.6" stroke-linecap="round"/></pattern>
+  </defs>
+</svg>
+<div id="app"></div>
+<script>
+'use strict';
+/* =====================================================================
+   Drei Schwestern – ein Würfel-Gartenspiel nach dem Spielprinzip von
+   „Three Sisters“ (Riddle/Pinchback). Mais, Bohnen und Kürbis wachsen
+   in sechs Gartenzonen; Bögen, Werte und Illustrationen sind eigene
+   Neuschöpfungen, die Mechanik ist angelehnt und vereinfacht.
+   ===================================================================== */
+function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function prng(seed) {
+  let a = (typeof seed === 'number' ? seed : hashStr(String(seed))) >>> 0;
+  return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+
+// ---------- Figuren (gemeinsam mit Grand Hotel Wien) ----------
+const SKINS = ['#F7D6BF', '#EFC09C', '#D99B70', '#A86B45', '#7A4A2E'];
+const BODIES = ['#E4472E', '#2C47B5', '#F1B02B', '#F28AA6', '#1F8A4D', '#161616', '#FFF9EE'];
+const HAIRC = ['#161616', '#161616', '#161616', '#6B3E22', '#C8452B', '#E8C15A'];
+
+function propSvg(p) {
+  switch (p) {
+    case 'tray': return '<path d="M62,98 H94" stroke-width="3.2"/><path d="M68,98 C68,88 88,88 88,98 Z" fill="#FFF9EE"/><circle cx="78" cy="87" r="2" fill="#161616"/>';
+    case 'key': return '<circle cx="80" cy="98" r="6" fill="#F1B02B"/><circle cx="80" cy="98" r="2" fill="#FFF9EE"/><path d="M86,98 H97 M93,98 V103 M96,98 V102" fill="none"/>';
+    case 'cup': return '<path d="M70,94 H88 V100 C88,106 84,109 79,109 C74,109 70,106 70,100 Z" fill="#FFF9EE"/><path d="M88,97 C94,97 94,104 88,104" fill="none"/><ellipse cx="79" cy="94" rx="9" ry="2" fill="#161616"/><path d="M76,88 q-3,-4 0,-7 M82,88 q-3,-4 0,-7" fill="none" stroke-width="1.6"/>';
+    case 'cake': return '<path d="M66,106 H94 V96 L66,100 Z" fill="#F28AA6"/><path d="M66,100 L94,96" stroke="#FFF9EE" stroke-width="2.6"/><path d="M66,100 L94,96 V106 H66Z" fill="none"/><circle cx="88" cy="91" r="3.4" fill="#E4472E"/><path d="M88,88 q2,-4 5,-4" fill="none" stroke-width="1.6"/>';
+    case 'bottle': return '<path d="M79,78 h6 v9 c4,2 5,6 5,9 v16 h-16 v-16 c0,-3 1,-7 5,-9 z" fill="#1F8A4D"/><rect x="75" y="98" width="14" height="7" fill="#FFF9EE"/>';
+    case 'coins': return '<ellipse cx="80" cy="106" rx="10" ry="4" fill="#F1B02B"/><ellipse cx="80" cy="101" rx="10" ry="4" fill="#F1B02B"/><ellipse cx="80" cy="96" rx="10" ry="4" fill="#F1B02B"/><text x="80" y="98.5" font-size="6" text-anchor="middle" font-family="Space Mono,monospace" font-weight="700" stroke="none" fill="#161616">K</text>';
+    case 'bell': return '<path d="M70,106 H92" stroke-width="3.2"/><path d="M72,106 C72,92 90,92 90,106 Z" fill="#F1B02B"/><circle cx="81" cy="91" r="2" fill="#161616"/>';
+    case 'book': return '<path d="M66,92 L80,95 L94,92 V108 L80,111 L66,108 Z" fill="#E4472E"/><path d="M80,95 V111" fill="none"/>';
+    case 'paper': return '<rect x="68" y="84" width="24" height="26" rx="2" fill="#FFF9EE" transform="rotate(8 80 97)"/><path d="M72,92 H88 M72,97 H86 M72,102 H88" fill="none" stroke-width="1.5" transform="rotate(8 80 97)"/>';
+    case 'note': return '<path d="M74,108 V86 L92,82 V102" fill="none" stroke-width="2.6"/><ellipse cx="70.5" cy="108" rx="5" ry="3.6" fill="#161616"/><ellipse cx="88.5" cy="102" rx="5" ry="3.6" fill="#161616"/>';
+    case 'broom': return '<path d="M86,70 L78,104" fill="none" stroke-width="2.6"/><path d="M70,104 L86,104 L84,116 L68,116 Z" fill="#F1B02B"/><path d="M72,106 L71,115 M77,106 L76,115 M82,106 L81,115" fill="none" stroke-width="1.4"/>';
+    case 'suitcase': return '<rect x="66" y="94" width="28" height="20" rx="3" fill="#B8692F"/><path d="M74,94 V89 H86 V94" fill="none"/><path d="M66,102 H94" stroke="#F1B02B" stroke-width="2"/>';
+    case 'basket': return '<path d="M66,98 H94 L90,114 H70 Z" fill="#B8692F"/><path d="M70,98 C70,86 90,86 90,98" fill="none"/><circle cx="76" cy="96" r="3.5" fill="#E4472E"/><circle cx="84" cy="96" r="3.5" fill="#1F8A4D"/>';
+    case 'flower': return '<path d="M80,112 V92" fill="none"/><circle cx="80" cy="88" r="6" fill="#F28AA6"/><circle cx="80" cy="88" r="2.4" fill="#F1B02B"/><path d="M80,102 q6,-6 10,-2 q-4,6 -10,2Z" fill="#1F8A4D"/>';
+    case 'flag': return '<path d="M78,116 V78" fill="none" stroke-width="2.4"/><path d="M78,78 L96,84 L78,90 Z" fill="#E4472E"/>';
+    case 'strudel': return '<path d="M64,104 C64,94 96,94 96,104 C96,110 64,110 64,104 Z" fill="#C9772E"/><path d="M71,99 l3,9 M79,98 l3,10 M87,98 l3,9" fill="none" stroke-width="1.6"/>';
+    default: return '';
+  }
+}
+
+function person(seed, o = {}, vb = '0 0 100 120') {
+  const r = prng(seed);
+  const pk = a => a[Math.floor(r() * a.length)];
+  const skin = o.skin || pk(SKINS);
+  const body = o.body || pk(BODIES);
+  const pat = o.pat || pk(['dots', 'stripes', 'checks', 'dash', 'none', 'none']);
+  const hair = o.hair || pk(['bun', 'bob', 'short', 'curls', 'side', 'long']);
+  const hairC = o.hairC || pk(HAIRC);
+  const hat = o.hat || 'none';
+  const dark = body === '#161616';
+  const ink = '#161616';
+  let s = `<svg viewBox="${vb}" class="ill" aria-hidden="true"><g filter="url(#wob)" stroke="${ink}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">`;
+  if (hair === 'long') s += `<path d="M30,38 C25,66 32,74 40,74 L60,74 C68,74 75,66 70,38 Z" fill="${hairC}"/>`;
+  if (hair === 'bun') s += `<circle cx="50" cy="17" r="7.5" fill="${hairC}"/>`;
+  s += `<rect x="44" y="48" width="12" height="14" fill="${skin}" stroke="none"/><path d="M44,49 V61 M56,49 V61" fill="none"/>`;
+  const bodyD = 'M21,122 C19,92 25,66 50,60 C75,66 81,92 79,122 Z';
+  s += `<path d="${bodyD}" fill="${body}"/>`;
+  if (pat !== 'none') s += `<path d="${bodyD}" fill="url(#p-${pat}${dark ? '-w' : ''})" stroke="none"/>`;
+  s += `<path d="M42,61 L50,71 L58,61" fill="${o.collar || (dark ? '#FFF9EE' : '#FFF9EE')}"/>`;
+  s += `<path d="M31,78 C25,94 27,106 34,113" fill="none"/><path d="M69,78 C75,94 73,106 66,113" fill="none"/>`;
+  s += `<circle cx="50" cy="38" r="16.5" fill="${skin}"/>`;
+  switch (hair) {
+    case 'bun': case 'long': s += `<path d="M33.5,38 C33,20 67,20 66.5,38 C60,28 40,28 33.5,38 Z" fill="${hairC}"/>`; break;
+    case 'bob': s += `<path d="M31,48 C26,17 74,17 69,48 L65,48 L64.5,33 C56,30 44,30 35.5,33 L35,48 Z" fill="${hairC}"/>`; break;
+    case 'short': s += `<path d="M33.5,35 C33,19 67,19 66.5,35 C62,28 54,27 50,30 C45,27 38,29 33.5,35 Z" fill="${hairC}"/>`; break;
+    case 'curls': s += [[36, 29], [42, 22.5], [50, 20.5], [58, 22.5], [64, 29]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="6.2" fill="${hairC}"/>`).join(''); break;
+    case 'side': s += `<path d="M33.5,37 C32,19 68,17 66.5,37 C63,27 51,27 44,24 C40,29 37,32 33.5,37 Z" fill="${hairC}"/>`; break;
+    case 'bald': s += `<path d="M34,40 C33,33 35,31 37,30 M66,40 C67,33 65,31 63,30" fill="none" stroke="${hairC}" stroke-width="3.2"/>`; break;
+  }
+  // Gesicht
+  if (o.sleepy) s += `<path d="M41,39 q3,2.5 6,0 M53,39 q3,2.5 6,0" fill="none" stroke-width="1.8"/>`;
+  else if (o.glasses) s += `<circle cx="44" cy="38" r="4.6" fill="${ink}"/><circle cx="56" cy="38" r="4.6" fill="${ink}"/><path d="M48.5,38 H51.5" fill="none"/>`;
+  else s += `<circle cx="44" cy="38.5" r="1.8" fill="${ink}" stroke="none"/><circle cx="56" cy="38.5" r="1.8" fill="${ink}" stroke="none"/>`;
+  s += `<circle cx="40.5" cy="44.5" r="3.4" fill="#F28AA6" stroke="none" opacity=".85"/><circle cx="59.5" cy="44.5" r="3.4" fill="#F28AA6" stroke="none" opacity=".85"/>`;
+  s += `<path d="M50,39 q-2.6,5 1,6" fill="none" stroke-width="1.7"/>`;
+  if (o.beard) s += `<path d="M36,44 C38,62 62,62 64,44 C60,52 40,52 36,44 Z" fill="${hairC}"/>`;
+  if (o.must === 'kaiser') s += `<path d="M33.5,36 C33,48 37,52 41,50 Z" fill="${hairC}"/><path d="M66.5,36 C67,48 63,52 59,50 Z" fill="${hairC}"/><path d="M32,44 C38,42 46,44 50,47.5 C54,44 62,42 68,44 C66,49 56,50 50,49 C44,50 34,49 32,44 Z" fill="${hairC}"/>`;
+  else if (o.must) s += `<path d="M41,48.5 C44,44.5 48,45.5 50,47.5 C52,45.5 56,44.5 59,48.5 C56,47.5 53,49.5 50,49.5 C47,49.5 44,47.5 41,48.5 Z" fill="${hairC === '#E8C15A' ? '#6B3E22' : hairC}"/>`;
+  else if (!o.beard) s += `<path d="M47,49.5 q3,2.2 6,0" fill="none" stroke-width="1.7"/>`;
+  const hatC = o.hatC || '#161616';
+  switch (hat) {
+    case 'top': s += `<rect x="38" y="1" width="24" height="21" rx="2" fill="#161616"/><rect x="38" y="14" width="24" height="4.5" fill="#E4472E"/><path d="M29,23 H71" stroke-width="4.5"/>`; break;
+    case 'bowler': s += `<path d="M35,25 C35,6 65,6 65,25 Z" fill="${hatC}"/><path d="M30,25 Q50,29 70,25" fill="none" stroke-width="4.5"/>`; break;
+    case 'beret': s += `<path d="M30,27 C27,14 64,7 73,22 C64,28 44,29 30,27 Z" fill="${hatC}"/><path d="M53,11 l2,-6" fill="none" stroke-width="3"/>`; break;
+    case 'cap': s += `<path d="M35,25 L36,9 H64 L65,25 Z" fill="#E4472E"/><path d="M36,18 H64" stroke="#F1B02B" stroke-width="3.2"/><path d="M36,18 H64" fill="none" stroke-width="0"/><path d="M33,25 Q46,31 60,25 Z" fill="#161616"/>`; break;
+    case 'cap2': s += `<path d="M36,25 L37,13 H63 L64,25 Z" fill="${hatC === '#161616' ? '#2C47B5' : hatC}"/><path d="M37,17 H63" stroke="#F1B02B" stroke-width="2.4"/><path d="M34,25 Q44,30 56,25 Z" fill="#161616"/>`; break;
+    case 'tiara': s += `<path d="M38,24 L41,15 L45,21 L50,11 L55,21 L59,15 L62,24 Z" fill="#F1B02B"/><circle cx="50" cy="17" r="1.6" fill="#E4472E"/>`; break;
+    case 'crown': s += `<path d="M34,25 L32,7 L42,16 L50,2 L58,16 L68,7 L66,25 Z" fill="#F1B02B"/><circle cx="50" cy="17" r="2.6" fill="#E4472E"/><circle cx="40" cy="20" r="1.8" fill="#2C47B5"/><circle cx="60" cy="20" r="1.8" fill="#2C47B5"/>`; break;
+    case 'chef': s += `<path d="M37,25 V15 C29,13 31,2 40,4 C42,-3 58,-3 60,4 C69,2 71,13 63,15 V25 Z" fill="#FFF9EE"/>`; break;
+    case 'flower': s += `<circle cx="65" cy="24" r="4.5" fill="#F28AA6"/><circle cx="65" cy="24" r="1.7" fill="#F1B02B"/>`; break;
+    case 'feather': s += `<path d="M25,26 Q50,15 75,26 Q50,31 25,26 Z" fill="${hatC}"/><path d="M38,23 C38,9 62,9 62,23 Z" fill="${hatC}"/><path d="M60,15 C67,3 76,4 80,0" fill="none" stroke-width="2.2"/>`; break;
+  }
+  if (o.prop && o.prop !== 'none') s += propSvg(o.prop);
+  if (o.extra) s += o.extra;
+  s += '</g></svg>';
+  return s;
+}
+const head = (seed, o) => person(seed, o, '22 0 56 62');
+
+// ---------- Daten ----------
+const ROUNDS = 8;
+const CROPS = ['c', 'b', 's']; // Mais, Bohne, Kürbis
+const CROP_N = { c: 'Mais', b: 'Bohnen', s: 'Kürbis' };
+const TRACK_LEN = { c: 5, b: 5, s: 4 };
+const HARVEST = { c: [3, 5], b: [2, 4, 5], s: [2, 4] };
+const SPACES = ['kompost', 'bienen', 'obst', 'schuppen', 'markt', 'nochmal'];
+const SPACE_N = { kompost: 'Kompost +1', bienen: 'Biene +1', obst: 'Obstbaum', schuppen: 'Schuppen', markt: 'Markt: +2 Waren', nochmal: 'Nochmal in der Zone' };
+const EVENTS = ['regen', 'schuppen', 'markt'];
+const EVENT_N = { regen: 'Regen: eine Zone gießen', schuppen: 'Schuppen: 1 Werkzeug', markt: 'Bauernmarkt: +3 Waren' };
+const WAREN_MAX = 20, WAREN_BONUS = [5, 10, 15, 20];
+const BEE_MAX = 8, BEE_SP = [0, 1, 2, 4, 6, 9, 12, 16, 20], BEE_STAUDE = [4, 8];
+const STAUDE_MAX = 10, STAUDE_SP = [0, 1, 3, 5, 8, 11, 14, 18, 22, 26, 30];
+const KOMPOST_MAX = 6;
+const FRUITS = [
+  { k: 'apfel', n: 'Apfel', sp: 5, col: '#E4472E' },
+  { k: 'birne', n: 'Birne', sp: 6, col: '#B7C83A' },
+  { k: 'kirsche', n: 'Kirsche', sp: 7, col: '#B3202E' },
+  { k: 'pflaume', n: 'Pflaume', sp: 8, col: '#6A3A8C' },
+];
+const FRUIT_LEN = 4;
+const TOOLS = [
+  { k: 'karre', n: 'Schubkarre', tx: 'Pflanzen setzt 3 statt 2 Markierungen.' },
+  { k: 'kanne', n: 'Gießkanne', tx: 'Gießen wirkt zusätzlich in einer Nachbarzone.' },
+  { k: 'hacke', n: 'Hacke', tx: 'Bohnen brauchen keinen Mais mehr.' },
+  { k: 'korb', n: 'Erntekorb', tx: 'Jede Ernte bringt +1 Ware.' },
+  { k: 'kiste', n: 'Komposter', tx: 'Am Rundenende +1 Kompost.' },
+  { k: 'imker', n: 'Imkerhut', tx: 'Jede Obst-Markierung bringt +1 Biene.' },
+];
+const TOOL_LEN = 3, TOOL_SP = 2;
+const BOT_NAMES = [
+  ['Tante Rübe', { hat: 'feather', hatC: '#1F8A4D', hair: 'bun', body: '#EE7B2C', pat: 'dots' }],
+  ['Onkel Kohl', { hat: 'cap2', hatC: '#2C47B5', beard: 1, body: '#5DB35A', pat: 'checks' }],
+  ['Frau Pastinak', { hair: 'bob', glasses: 1, body: '#F28AA6', pat: 'stripes' }],
+];
+const MARKS = ['#F1B02B', '#2C47B5', '#E4472E', '#F28AA6'];
+
+// ---------- Zufall & Helfer ----------
+let S = null;
+const U = { sheet: null, toast: null, busy: false, setup: { name: '', bots: 2 }, fast: false, plan: null, logOpen: false };
+function rnd() { S.rng = (S.rng + 0x6D2B79F5) | 0; let t = Math.imul(S.rng ^ (S.rng >>> 15), 1 | S.rng); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const range = n => Array.from({ length: n }, (_, i) => i);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const clone = o => JSON.parse(JSON.stringify(o));
+function log(m) { S.log.unshift(m); if (S.log.length > 80) S.log.length = 80; }
+
+// ---------- Icons ----------
+const ST = 'stroke="#161616" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"';
+function icon(k) {
+  const w = (inner, vb = '0 0 32 32') => `<svg viewBox="${vb}" aria-hidden="true"><g ${ST}>${inner}</g></svg>`;
+  switch (k) {
+    case 'c': return w('<path d="M16,29 C10,24 10,12 16,4 C22,12 22,24 16,29 Z" fill="#F1B02B"/><path d="M13,10 h6 M12,14 h8 M12,18 h8 M13,22 h6" fill="none" stroke-width="1.2"/><path d="M16,29 C10,26 6,20 6,13 C10,17 13,21 16,29 Z M16,29 C22,26 26,20 26,13 C22,17 19,21 16,29 Z" fill="#5DB35A"/>');
+    case 'b': return w('<path d="M8,6 C4,14 10,26 22,28 C26,28 27,25 24,23 C15,20 12,14 13,7 C13,4 9,3 8,6 Z" fill="#5DB35A"/><circle cx="12" cy="13" r="1.8" fill="#2E7A30"/><circle cx="15" cy="19" r="1.8" fill="#2E7A30"/><circle cx="20" cy="24" r="1.8" fill="#2E7A30"/><path d="M8,6 C7,3 9,1 11,2" fill="none"/>');
+    case 's': return w('<path d="M16,9 C27,9 30,16 28,22 C26,28 20,29 16,28 C12,29 6,28 4,22 C2,16 5,9 16,9 Z" fill="#EE7B2C"/><path d="M16,10 C12,14 12,24 16,28 M16,10 C20,14 20,24 16,28" fill="none" stroke-width="1.4"/><path d="M16,9 C16,6 17,4 20,3" fill="none" stroke-width="2.4"/><path d="M18,6 C22,3 26,5 25,8 C22,8 20,8 18,6 Z" fill="#5DB35A"/>');
+    case 'kompost': return w('<path d="M3,27 C5,16 12,13 16,13 C20,13 27,16 29,27 Z" fill="#8A5A3B"/><path d="M9,20 c2,-2 4,2 6,0 s4,2 6,0" fill="none" stroke="#F28AA6" stroke-width="2.4"/><circle cx="12" cy="24" r="1" fill="#F1B02B" stroke="none"/><circle cx="20" cy="17" r="1" fill="#F1B02B" stroke="none"/><path d="M14,13 l-2,-5 l4,2 l2,-4 l1,6" fill="#5DB35A"/>');
+    case 'bienen': return w('<ellipse cx="16" cy="18" rx="10" ry="7.5" fill="#F1B02B"/><path d="M12,11.5 V24.5 M17,10.5 V25.5 M22,12 V24" stroke-width="2.6"/><ellipse cx="13" cy="8" rx="5" ry="4" fill="#FFFBF0" transform="rotate(-25 13 8)"/><ellipse cx="20" cy="8" rx="5" ry="4" fill="#FFFBF0" transform="rotate(25 20 8)"/><circle cx="26.5" cy="17" r="1.2" fill="#161616" stroke="none"/>');
+    case 'obst': return w('<path d="M16,10 C22,6 29,11 27,19 C25,27 19,29 16,27 C13,29 7,27 5,19 C3,11 10,6 16,10 Z" fill="#E4472E"/><path d="M16,10 C16,7 17,5 19,3" fill="none" stroke-width="2.2"/><path d="M17,6 C20,2 25,3 25,6 C22,7 19,7 17,6 Z" fill="#5DB35A"/><path d="M9,15 C9,13 10,12 12,12" fill="none" stroke="#fff" stroke-width="2"/>');
+    case 'schuppen': return w('<path d="M3,14 L16,4 L29,14 Z" fill="#E4472E"/><rect x="6" y="14" width="20" height="14" fill="#2C47B5"/><rect x="12" y="18" width="8" height="10" fill="#FFFBF0"/><path d="M16,18 V28" fill="none"/>');
+    case 'markt': return w('<path d="M4,12 L8,4 H24 L28,12 Z" fill="#F28AA6"/><path d="M8,4 L10,12 M14,4 L14,12 M18,4 L18,12 M24,4 L22,12" fill="none" stroke-width="1.2"/><rect x="5" y="12" width="22" height="15" fill="#FFFBF0"/><circle cx="11" cy="20" r="3" fill="#EE7B2C"/><circle cx="17" cy="21" r="3" fill="#F1B02B"/><circle cx="22" cy="19" r="2.6" fill="#E4472E"/>');
+    case 'nochmal': return w('<path d="M24,10 A10,10 0 1 0 26,19" fill="none" stroke-width="3"/><path d="M27,4 L25,12 L18,9 Z" fill="#161616"/><text x="16" y="21" text-anchor="middle" font-size="10" font-family="Space Mono,monospace" font-weight="700" stroke="none" fill="#161616">2×</text>');
+    case 'waren': return w('<path d="M5,13 H27 L24,28 H8 Z" fill="#C98F55"/><path d="M8,13 C8,5 24,5 24,13" fill="none" stroke-width="2.2"/><circle cx="12" cy="12" r="3.4" fill="#EE7B2C"/><circle cx="19" cy="11" r="3.4" fill="#F1B02B"/><path d="M7,19 H25 M7.8,24 H24.2" fill="none" stroke-width="1.2"/>');
+    case 'staude': return w('<path d="M16,29 V16 M16,22 C12,20 10,17 10,14 M16,20 C20,18 22,15 22,12" fill="none" stroke="#2E7A30" stroke-width="2.2"/>' + [[16, 10, '#F28AA6'], [9, 12, '#2C47B5'], [23, 9, '#F1B02B']].map(([x, y, c]) => `<circle cx="${x}" cy="${y - 3}" r="2.6" fill="${c}"/><circle cx="${x - 3}" cy="${y}" r="2.6" fill="${c}"/><circle cx="${x + 3}" cy="${y}" r="2.6" fill="${c}"/><circle cx="${x}" cy="${y + 3}" r="2.6" fill="${c}"/><circle cx="${x}" cy="${y}" r="1.8" fill="#FFFBF0"/>`).join(''));
+    case 'regen': return w('<path d="M8,18 C3,18 3,11 8,11 C9,5 18,4 20,9 C26,8 29,13 26,17 C25,18 24,18 23,18 Z" fill="#FFFBF0"/><path d="M10,22 l-2,5 M16,22 l-2,5 M22,22 l-2,5" fill="none" stroke="#2C47B5" stroke-width="2.4"/>');
+    case 'sp': return w('<path d="M16,3 L19.6,11.4 L28.6,12.2 L21.8,18.2 L23.8,27 L16,22.4 L8.2,27 L10.2,18.2 L3.4,12.2 L12.4,11.4 Z" fill="#2C47B5"/>');
+    case 'gieß': case 'kanne': return w('<path d="M7,12 H21 V27 H7 Z" fill="#2C47B5"/><path d="M21,15 L29,9 M27,7 l4,4" fill="none" stroke-width="2.4"/><path d="M7,15 C2,15 2,22 7,22" fill="none" stroke-width="2.2"/><path d="M10,12 C10,6 18,6 18,12" fill="none" stroke-width="2"/>');
+    case 'karre': return w('<path d="M3,10 H24 L21,20 H7 Z" fill="#E4472E"/><circle cx="12" cy="25" r="4" fill="#FFFBF0"/><path d="M24,10 L29,8 M21,20 L27,26" fill="none" stroke-width="2.2"/>');
+    case 'hacke': return w('<path d="M8,28 L24,6" fill="none" stroke="#8A5A3B" stroke-width="3"/><path d="M19,6 L29,6 L28,11 Z" fill="#9AA3AD"/>');
+    case 'korb': return w('<path d="M4,14 H28 L25,28 H7 Z" fill="#C98F55"/><path d="M8,14 C8,4 24,4 24,14" fill="none" stroke-width="2.4"/><path d="M6,19 H26 M8,24 H24 M12,14 L13,28 M20,14 L19,28" fill="none" stroke-width="1.2"/>');
+    case 'kiste': return w('<rect x="5" y="9" width="22" height="19" fill="#5DB35A"/><path d="M5,9 L8,4 H24 L27,9" fill="#2E7A30"/><path d="M5,15 H27 M5,21 H27" fill="none" stroke-width="1.2"/><path d="M12,24 c2,-2 4,2 6,0" fill="none" stroke="#F28AA6" stroke-width="2"/>');
+    case 'imker': return w('<path d="M5,17 C5,6 27,6 27,17 Z" fill="#FFFBF0"/><path d="M2,17 H30" stroke-width="3"/><path d="M6,17 L8,28 H24 L26,17" fill="#FFFBF0" stroke-dasharray="2 2"/><circle cx="23" cy="9" r="2" fill="#F1B02B"/>');
+    case 'apfel': case 'birne': case 'kirsche': case 'pflaume': {
+      const f = FRUITS.find(x => x.k === k);
+      if (k === 'birne') return w(`<path d="M16,8 C20,8 19,14 22,18 C26,24 22,29 16,29 C10,29 6,24 10,18 C13,14 12,8 16,8 Z" fill="${f.col}"/><path d="M16,8 V3" fill="none" stroke-width="2"/><path d="M16,5 C19,1 24,3 23,5 Z" fill="#5DB35A"/>`);
+      if (k === 'kirsche') return w(`<circle cx="10" cy="22" r="6" fill="${f.col}"/><circle cx="22" cy="23" r="6" fill="${f.col}"/><path d="M10,16 C12,10 16,6 19,4 M22,17 C21,11 20,7 19,4" fill="none" stroke-width="1.8"/><path d="M19,4 C23,1 28,3 27,6 Z" fill="#5DB35A"/>`);
+      if (k === 'pflaume') return w(`<ellipse cx="16" cy="18" rx="10" ry="11" fill="${f.col}"/><path d="M16,8 C13,13 13,23 16,29" fill="none" stroke-width="1.3"/><path d="M16,8 C17,5 19,3 21,3" fill="none" stroke-width="2"/>`);
+      return icon('obst');
+    }
+  }
+  return '';
+}
+function dieSvg(v, fill = '#FFFBF0') {
+  const P = { 1: [[12, 12]], 2: [[7.5, 7.5], [16.5, 16.5]], 3: [[7, 7], [12, 12], [17, 17]], 4: [[7.5, 7.5], [16.5, 7.5], [7.5, 16.5], [16.5, 16.5]], 5: [[7, 7], [17, 7], [12, 12], [7, 17], [17, 17]], 6: [[7.5, 6.5], [16.5, 6.5], [7.5, 12], [16.5, 12], [7.5, 17.5], [16.5, 17.5]] };
+  return `<svg viewBox="0 0 24 24" aria-label="Würfel ${v}"><rect x="2" y="2" width="20" height="20" rx="5" fill="${fill}" stroke="#161616" stroke-width="1.8"/>${P[v].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.9" fill="#161616"/>`).join('')}</svg>`;
+}
+function zoneNum(z) { return `<svg viewBox="0 0 26 26" class="ill"><circle cx="13" cy="13" r="11" fill="#FFFBF0" stroke="#161616" stroke-width="2"/><text x="13" y="18" text-anchor="middle" font-family="Caveat Brush,cursive" font-size="16" fill="#161616">${z + 1}</text></svg>`; }
+// Die drei Schwestern als Figuren: Mais-, Bohnen- und Kürbishut
+function sister(k) {
+  const o = {
+    c: { hair: 'long', hairC: '#E8C15A', body: '#F1B02B', pat: 'dash', extra: '<path d="M50,0 C42,8 42,20 50,24 C58,20 58,8 50,0 Z" fill="#F1B02B"/><path d="M50,24 C40,22 34,16 32,10 C40,12 46,16 50,24 Z M50,24 C60,22 66,16 68,10 C60,12 54,16 50,24 Z" fill="#5DB35A"/>' },
+    b: { hair: 'bob', hairC: '#161616', body: '#5DB35A', pat: 'dots', extra: '<path d="M36,22 C30,10 44,0 58,4 C70,8 70,18 64,22" fill="none" stroke="#2E7A30" stroke-width="4"/><ellipse cx="60" cy="10" rx="8" ry="4" fill="#5DB35A" transform="rotate(30 60 10)"/>' },
+    s: { hair: 'curls', hairC: '#6B3E22', body: '#EE7B2C', pat: 'stripes', extra: '<path d="M50,6 C64,6 70,14 66,22 C60,26 40,26 34,22 C30,14 36,6 50,6 Z" fill="#EE7B2C"/><path d="M50,7 C46,12 46,20 50,25 M50,7 C54,12 54,20 50,25" fill="none" stroke-width="1.6"/><path d="M50,6 C50,2 52,0 55,0" fill="none" stroke-width="2.4"/>' },
+  }[k];
+  return person('sister' + k, o);
+}
+function heroSvg() {
+  const fig = (k, x, y, w) => `<svg x="${x}" y="${y}" width="${w}" height="${w * 1.2}" viewBox="0 0 100 120">${sister(k).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '')}</svg>`;
+  const ic = (k, x, y, s) => icon(k).replace('<svg ', `<svg x="${x}" y="${y}" width="${s}" height="${s}" `);
+  return `<svg viewBox="0 0 360 280" class="ill" role="img" aria-label="Illustration: drei Schwestern im Garten">
+   <g filter="url(#wob)">
+    <circle cx="300" cy="50" r="30" fill="#F1B02B"/><path d="M300,6 v-6 M344,50 h8 M330,18 l6,-6" stroke="#161616" stroke-width="4" stroke-linecap="round"/>
+    <path d="M18,60 l20,0 l-10,14 l18,0" fill="none" stroke="#2C47B5" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M10,250 C80,226 280,226 350,250 L350,280 L10,280 Z" fill="#8A5A3B" stroke="#161616" stroke-width="2.6"/>
+    <path d="M30,258 c4,-4 8,4 12,0 M110,262 c4,-4 8,4 12,0 M220,260 c4,-4 8,4 12,0 M300,262 c4,-4 8,4 12,0" fill="none" stroke="#F28AA6" stroke-width="3"/>
+    <circle cx="50" cy="120" r="4" fill="#161616"/><circle cx="62" cy="130" r="4" fill="#161616"/><circle cx="46" cy="140" r="4" fill="#161616"/>
+   </g>
+   ${fig('c', 40, 92, 96)}${fig('b', 132, 80, 100)}${fig('s', 226, 92, 96)}
+   ${ic('bienen', 236, 36, 36)}${ic('regen', 92, 20, 44)}${ic('apfel', 20, 200, 30)}${ic('s', 310, 214, 34)}
+  </svg>`;
+}
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
+
+// ---------- Spielzustand ----------
+function newSheet() {
+  return { zones: range(6).map(() => ({ c: 0, b: 0, s: 0 })), kompost: 1, waren: 0, bienen: 0, stauden: 0, fruit: [0, 0, 0, 0], tools: [0, 0, 0, 0, 0, 0], sp: 0, harvests: 0 };
+}
+const hasTool = (p, k) => p.tools[TOOLS.findIndex(t => t.k === k)] >= TOOL_LEN;
+function newGame(name, nBots, seed) {
+  S = { v: 1, id: 'ts-' + Date.now().toString(36) + '-' + ((seed >>> 0) % 1679616).toString(36), rng: seed | 0, round: 1, players: [], log: [], final: null, recorded: false, screen: 'game' };
+  const bots = shuffle(BOT_NAMES.slice()).slice(0, nBots);
+  const mk = (nm, bot, look, mark) => Object.assign({ name: nm, bot, look, mark, tasks: [] }, newSheet());
+  if (name !== null) S.players.push(mk(name || 'Du', false, { hat: 'beret', hatC: '#E4472E', hair: 'bob', body: '#2C47B5', pat: 'dots' }, MARKS[0]));
+  bots.forEach((b, i) => S.players.push(mk(b[0], true, b[1], MARKS[i + 1])));
+  if (name === null) S.players.push(mk('Herr Mangold', true, { hat: 'bowler', body: '#1F8A4D' }, MARKS[0]));
+  S.players.forEach((p, i) => { p.waren = i; });
+  log(`Die Gartensaison beginnt: ${S.players.length} Gärtner·innen, ${ROUNDS} Runden.`);
+  startRound();
+}
+function startRound() {
+  const n = S.players.length;
+  const nd = 2 * n + 1;
+  S.marker = (S.round - 1) % 6;
+  const vals = range(nd).map(() => 1 + Math.floor(rnd() * 6)).sort((a, b) => a - b);
+  const distinct = [...new Set(vals)];
+  // Würfelgruppen im Uhrzeigersinn ab der Gärtnerin-Figur
+  S.dice = vals.map((v, i) => ({ i, v, space: (S.marker + distinct.indexOf(v)) % 6, by: -1 }));
+  const sp = (S.round - 1) % n;
+  const fwd = range(n).map(i => (sp + i) % n);
+  S.seq = fwd.concat(fwd.slice().reverse());
+  S.idx = 0;
+  S.phase = 'draft';
+  S.event = EVENTS[(S.round - 1) % EVENTS.length];
+  log(`— Runde ${S.round}: ${nd} Würfel (${vals.join(' ')}).`);
+}
+const cur = () => S.players[S.seq[S.idx]];
+const human = () => S.players.find(p => !p.bot);
+
+// ---------- Markieren & Belohnungen ----------
+function canPlant(p, z, crop, extra = {}) {
+  const zo = p.zones[z];
+  const n = zo[crop] + (extra[crop] || 0);
+  if (n >= TRACK_LEN[crop]) return false;
+  if (crop === 'b' && !hasTool(p, 'hacke') && zo.c + (extra.c || 0) < 2) return false;
+  return true;
+}
+function mark(p, z, crop) {
+  const zo = p.zones[z];
+  if (zo[crop] >= TRACK_LEN[crop]) return false;
+  zo[crop]++;
+  if (HARVEST[crop].includes(zo[crop])) harvest(p, z, crop);
+  return true;
+}
+function harvest(p, z, crop) {
+  p.harvests++;
+  if (crop === 'c') p.sp += 3;
+  if (crop === 'b') { p.sp += 1; addKompost(p, 1); }
+  if (crop === 's') { addWaren(p, 2); addStaude(p, 1); }
+  if (hasTool(p, 'korb')) addWaren(p, 1);
+}
+function addKompost(p, n) { p.kompost = clamp(p.kompost + n, 0, KOMPOST_MAX); }
+function addWaren(p, n) {
+  for (let i = 0; i < n; i++) {
+    if (p.waren >= WAREN_MAX) return;
+    p.waren++;
+    if (WAREN_BONUS.includes(p.waren)) p.tasks.push({ t: 'plant1', src: 'Waren-Bonus' });
+  }
+}
+function addStaude(p, n) { p.stauden = clamp(p.stauden + n, 0, STAUDE_MAX); }
+function addBiene(p, n) {
+  for (let i = 0; i < n; i++) {
+    if (p.bienen >= BEE_MAX) return;
+    p.bienen++;
+    if (BEE_STAUDE.includes(p.bienen)) addStaude(p, 1);
+  }
+}
+function markFruit(p, fi) {
+  if (p.fruit[fi] >= FRUIT_LEN) return false;
+  p.fruit[fi]++;
+  if (p.fruit[fi] === 2) addWaren(p, 1);
+  if (p.fruit[fi] === FRUIT_LEN) p.sp += FRUITS[fi].sp;
+  if (hasTool(p, 'imker')) addBiene(p, 1);
+  return true;
+}
+function markTool(p, ti) {
+  if (p.tools[ti] >= TOOL_LEN) return false;
+  p.tools[ti]++;
+  if (p.tools[ti] === TOOL_LEN) p.sp += TOOL_SP;
+  return true;
+}
+function plantMax(p) { return hasTool(p, 'karre') ? 3 : 2; }
+// Pflanzen: plan = {c,b,s}; Mais zuerst, damit Bohnen in derselben Aktion folgen dürfen
+function doPlant(p, z, plan) {
+  let left = plantMax(p), done = 0;
+  for (const crop of CROPS) for (let i = 0; i < (plan[crop] || 0) && left > 0; i++) {
+    if (!canPlant(p, z, crop)) break;
+    mark(p, z, crop); left--; done++;
+  }
+  return done;
+}
+function doWater(p, z, neighbor = true) {
+  let n = 0;
+  for (const crop of CROPS) if (p.zones[z][crop] > 0 && p.zones[z][crop] < TRACK_LEN[crop]) { mark(p, z, crop); n++; }
+  if (neighbor && hasTool(p, 'kanne')) {
+    const zs = [z - 1, z + 1].filter(x => x >= 0 && x < 6);
+    p.tasks.unshift({ t: 'waterOne', zones: zs, src: 'Gießkanne' });
+  }
+  return n;
+}
+function endScore(p) {
+  const row = { name: p.name, ernte: p.sp, bienen: BEE_SP[p.bienen], stauden: STAUDE_SP[p.stauden], waren: Math.floor(p.waren / 3) };
+  row.total = row.ernte + row.bienen + row.stauden + row.waren;
+  return row;
+}
+
+// ---------- Aufgaben ----------
+// Jede Aktion erzeugt Aufgaben, die nacheinander erledigt werden.
+// zone: Pflanzen oder Gießen in Zone z · plant1: 1 Pflanze in beliebiger Zone
+// waterAny: Gieße eine beliebige Zone · waterOne: Gieße eine der zones
+// fruit: Obstbaum markieren · tool: Werkzeug markieren
+function taskTitle(t) {
+  switch (t.t) {
+    case 'zone': return `Zone ${t.z + 1}: pflanzen oder gießen`;
+    case 'plant1': return `${t.src}: 1 Pflanze setzen`;
+    case 'waterAny': return 'Regen: eine Zone gießen';
+    case 'waterOne': return `${t.src}: Nachbarzone gießen`;
+    case 'fruit': return 'Obstbaum markieren';
+    case 'tool': return 'Werkzeug im Schuppen markieren';
+  }
+}
+// Alle Optionen einer Aufgabe als {label, apply(p)}
+function taskOptions(p, t) {
+  const out = [];
+  if (t.t === 'zone') {
+    out.push({ k: 'water', label: 'Gießen', apply: q => doWater(q, t.z) });
+    const m = plantMax(p);
+    for (let c = 0; c <= m; c++) for (let b = 0; b <= m - c; b++) for (let s = 0; s <= m - c - b; s++) {
+      if (c + b + s === 0) continue;
+      const plan = { c, b, s };
+      const q = clone(p); q.tasks = [];
+      if (doPlant(q, t.z, plan) !== c + b + s) continue;
+      out.push({ k: 'plant', plan, label: 'Pflanzen', apply: r => doPlant(r, t.z, plan) });
+    }
+  } else if (t.t === 'plant1') {
+    for (let z = 0; z < 6; z++) for (const crop of CROPS) if (canPlant(p, z, crop)) out.push({ z, crop, apply: q => mark(q, z, crop) });
+  } else if (t.t === 'waterAny' || t.t === 'waterOne') {
+    for (const z of (t.zones || range(6))) out.push({ z, apply: q => doWater(q, z, t.t === 'waterAny') });
+  } else if (t.t === 'fruit') {
+    FRUITS.forEach((f, fi) => { if (p.fruit[fi] < FRUIT_LEN) out.push({ fi, apply: q => markFruit(q, fi) }); });
+  } else if (t.t === 'tool') {
+    TOOLS.forEach((f, ti) => { if (p.tools[ti] < TOOL_LEN) out.push({ ti, apply: q => markTool(q, ti) }); });
+  }
+  return out;
+}
+function resolveTask(p, opt) {
+  const t = p.tasks.shift();
+  if (opt) opt.apply(p);
+  return t;
+}
+function skipTask(p) { p.tasks.shift(); }
+
+// ---------- Bewertung für Bots ----------
+function potential(p) {
+  let v = endScore(p).total;
+  const left = ROUNDS - S.round + (S.phase === 'draft' ? 1 : 0.5);
+  const time = clamp(left / ROUNDS, 0.15, 1);
+  p.zones.forEach(z => {
+    for (const crop of CROPS) {
+      const n = z[crop];
+      const next = HARVEST[crop].find(h => h > n);
+      if (next) v += (crop === 'c' ? 3 : crop === 'b' ? 1.6 : 2.6) * (n / next) * time * 0.9;
+    }
+    if (z.c >= 2 && z.b === 0) v += 0.4 * time;
+  });
+  v += p.kompost * 0.5 * time;
+  v += (p.waren % 5) * 0.3 * time;
+  p.fruit.forEach((n, fi) => { if (n < FRUIT_LEN) v += FRUITS[fi].sp * (n / FRUIT_LEN) * 0.6 * time; });
+  p.tools.forEach(n => { if (n < TOOL_LEN) v += (TOOL_SP + 3 * time) * (n / TOOL_LEN) * 0.7; });
+  v += p.tools.filter(n => n >= TOOL_LEN).length * 2.5 * time;
+  v += (BEE_SP[Math.min(BEE_MAX, p.bienen + 1)] - BEE_SP[p.bienen]) * 0.2;
+  return v;
+}
+function bestOption(p, t) {
+  let best = null, bv = -Infinity;
+  for (const o of taskOptions(p, t)) {
+    const q = clone(p); q.tasks = [];
+    o.apply(q);
+    // Folgeaufgaben (z.B. Gießkanne) grob mitbewerten
+    let v = potential(q) + q.tasks.length * 0.8;
+    if (v > bv) { bv = v; best = o; }
+  }
+  return best;
+}
+function botTasks(p) {
+  let guard = 0;
+  while (p.tasks.length && guard++ < 40) {
+    const t = p.tasks[0];
+    const o = bestOption(p, t);
+    resolveTask(p, o);
+  }
+}
+
+// ---------- Würfel nehmen ----------
+function availableDice() { return S.dice.filter(d => d.by < 0); }
+function takeDie(p, di, adjust = 0) {
+  const d = S.dice[di];
+  if (!d || d.by >= 0 || Math.abs(adjust) > p.kompost) return false;
+  const pi = S.players.indexOf(p);
+  d.by = pi;
+  p.kompost -= Math.abs(adjust);
+  let v = d.v + adjust;
+  while (v > 6) v -= 6;
+  while (v < 1) v += 6;
+  const space = SPACES[d.space];
+  p.tasks.push({ t: 'zone', z: v - 1, src: 'Würfel' });
+  if (space === 'kompost') addKompost(p, 1);
+  if (space === 'bienen') addBiene(p, 1);
+  if (space === 'markt') addWaren(p, 2);
+  if (space === 'obst') p.tasks.push({ t: 'fruit' });
+  if (space === 'schuppen') p.tasks.push({ t: 'tool' });
+  if (space === 'nochmal') p.tasks.push({ t: 'zone', z: v - 1, src: 'Nochmal' });
+  log(`${p.name} nimmt eine ${d.v}${adjust ? ` (mit Kompost → ${v})` : ''}: Zone ${v}, ${SPACE_N[space]}.`);
+  return true;
+}
+function botPick(p) {
+  let best = null, bv = -Infinity;
+  for (const d of availableDice()) {
+    for (const adj of [0, -1, 1, -2, 2]) {
+      if (Math.abs(adj) > p.kompost) continue;
+      const q = clone(p); q.tasks = [];
+      const save = clone(S.dice); const savedRng = S.rng;
+      takeDie(q, d.i, adj);
+      S.dice = save; S.rng = savedRng; S.log.shift();
+      botTasks(q);
+      const v = potential(q) + (p.kompost - q.kompost) * -0.1;
+      if (v > bv) { bv = v; best = { di: d.i, adj }; }
+    }
+  }
+  return best;
+}
+function afterPick() {
+  // nächste Person im Draft – oder gemeinsame Phase
+  S.idx++;
+  if (S.idx >= S.seq.length) startShared();
+}
+function startShared() {
+  S.phase = 'shared';
+  const left = availableDice();
+  S.sharedDie = left.length ? left[0].v : null;
+  for (const p of S.players) {
+    if (S.sharedDie) p.tasks.push({ t: 'zone', z: S.sharedDie - 1, src: 'Gemeinschaftswürfel' });
+    if (S.event === 'regen') p.tasks.push({ t: 'waterAny' });
+    if (S.event === 'schuppen') p.tasks.push({ t: 'tool' });
+    if (S.event === 'markt') addWaren(p, 3);
+    if (hasTool(p, 'kiste')) addKompost(p, 1);
+  }
+  log(`Gemeinschaftswürfel ${S.sharedDie || '–'} · ${EVENT_N[S.event]}.`);
+  for (const p of S.players) if (p.bot) botTasks(p);
+  maybeEndRound();
+}
+function maybeEndRound() {
+  if (S.phase !== 'shared') return;
+  if (S.players.some(p => p.tasks.length)) return;
+  if (S.round >= ROUNDS) return finish();
+  S.round++;
+  startRound();
+}
+function finish() {
+  S.final = S.players.map(endScore);
+  S.screen = 'end'; S.phase = 'end';
+  log('Saisonende! Die Ernte wird gezählt.');
+  recordPlay();
+}
+function botStep() {
+  const p = cur();
+  botTasks(p);
+  const pick = botPick(p);
+  if (pick) takeDie(p, pick.di, pick.adj);
+  botTasks(p);
+  afterPick();
+}
+
+// ---------- Tracking für Spielregal ----------
+const INBOX_KEY = 'spielregal:inbox:plays';
+function localDate() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+function recordPlay() {
+  const me = human();
+  if (!me || S.recorded || !S.final) return;
+  const best = Math.max(...S.final.map(r => r.total));
+  const entry = { id: S.id, source: 'drei-schwestern', app: 'Drei Schwestern', bggId: '291845', gameName: 'Three Sisters', date: localDate(), human: me.name,
+    results: S.final.map((r, i) => ({ name: r.name, bot: S.players[i].bot, total: r.total })), winners: S.final.filter(r => r.total === best).map(r => r.name) };
+  try {
+    const inbox = JSON.parse(localStorage.getItem(INBOX_KEY) || '[]');
+    if (!inbox.some(e => e.id === entry.id)) inbox.push(entry);
+    localStorage.setItem(INBOX_KEY, JSON.stringify(inbox));
+    S.recorded = true;
+  } catch (e) { S.recorded = false; }
+}
+function spielregalProfiles() { try { return (JSON.parse(localStorage.getItem('spielregal:players') || '[]') || []).filter(p => p && p.name).map(p => p.name); } catch (e) { return []; } }
+const KEY = 'drei-schwestern-v1';
+function save() { try { if (S) localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } }
+function load() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && s.v === 1 ? s : null; } catch (e) { return null; } }
+function clearSave() { try { localStorage.removeItem(KEY); } catch (e) { } }
+
+// ---------- Ansichten ----------
+const isMyPick = () => S && S.phase === 'draft' && !cur().bot && !human().tasks.length;
+const myTasks = () => S && S.screen === 'game' && human() && human().tasks.length > 0;
+let toastTimer = null;
+function toast(m) { U.toast = m; clearTimeout(toastTimer); toastTimer = setTimeout(() => { U.toast = null; render(); }, 2400); }
+function avatar(p) { const i = S.players.indexOf(p); return head('pl' + i + p.name, p.look); }
+function cells(n, len, harvest, cls, preview = 0) {
+  return range(len).map(i => `<span class="cell ${harvest.includes(i + 1) ? 'h' : ''} ${i < n ? 'x ' + cls : i < n + preview ? 'n' : ''}"></span>`).join('');
+}
+function zoneHtml(p, z, opts = {}) {
+  const zo = p.zones[z];
+  const pv = opts.preview || {};
+  return `<div class="zone grainy ${opts.hl ? 'hl' : ''}"><span class="zn">${zoneNum(z)}</span>
+    ${CROPS.map(c => `<div class="trk"><span class="ti">${icon(c)}</span>${cells(zo[c], TRACK_LEN[c], HARVEST[c], c, pv[c] || 0)}</div>`).join('')}</div>`;
+}
+function sheetHtml(p, hlZone = -1) {
+  const sc = endScore(p);
+  const boxes = (n, max, special, label) => `<div class="boxes">${range(max).map(i => `<span class="box ${i < n ? 'x' : ''} ${special(i + 1) ? 't' : ''}">${label ? label(i + 1) : ''}</span>`).join('')}</div>`;
+  return `
+   <div class="garden">${range(6).map(z => zoneHtml(p, z, { hl: z === hlZone })).join('')}</div>
+   <p class="note" style="margin-top:8px">Gestrichelte Kreise sind Ernten: Mais +3 SP · Bohnen +1 SP und +1 Kompost · Kürbis +2 Waren und +1 Staude. Bohnen brauchen 2 Mais in derselben Zone.</p>
+   <div class="res" style="margin-top:10px">
+    <div class="rrow"><div class="rh">${icon('kompost')}Kompost<span class="v">${p.kompost}/${KOMPOST_MAX}</span></div>${boxes(p.kompost, KOMPOST_MAX, () => false)}<div style="font-size:11.5px;margin-top:3px">1 Kompost = Würfelwert ±1</div></div>
+    <div class="rrow"><div class="rh">${icon('waren')}Waren<span class="v">${p.waren} · ${sc.waren} SP</span></div>${boxes(p.waren, WAREN_MAX, i => WAREN_BONUS.includes(i), i => WAREN_BONUS.includes(i) ? '+🌱' : '')}<div style="font-size:11.5px;margin-top:3px">Bei 5/10/15/20: eine Gratis-Pflanze · je 3 Waren = 1 SP</div></div>
+    <div class="rrow"><div class="rh">${icon('bienen')}Bienen<span class="v">${sc.bienen} SP</span></div>${boxes(p.bienen, BEE_MAX, i => BEE_STAUDE.includes(i), i => BEE_SP[i])}</div>
+    <div class="rrow"><div class="rh">${icon('staude')}Stauden<span class="v">${sc.stauden} SP</span></div>${boxes(p.stauden, STAUDE_MAX, () => false, i => STAUDE_SP[i])}</div>
+   </div>
+   <p class="label" style="margin-top:14px">Obstgarten</p>
+   <div class="fruits">${FRUITS.map((f, fi) => `<div class="rrow"><div class="rh">${icon(f.k)}${f.n}<span class="v">${p.fruit[fi] >= FRUIT_LEN ? '✓ ' : ''}${f.sp} SP</span></div>${boxes(p.fruit[fi], FRUIT_LEN, i => i === 2 || i === FRUIT_LEN, i => i === 2 ? '+W' : i === FRUIT_LEN ? f.sp : '')}</div>`).join('')}</div>
+   <p class="label" style="margin-top:14px">Schuppen</p>
+   <div class="tools">${TOOLS.map((t, ti) => `<div class="rrow tool ${p.tools[ti] >= TOOL_LEN ? 'done' : ''}"><div class="rh">${icon(t.k)}${t.n}</div>${boxes(p.tools[ti], TOOL_LEN, i => i === TOOL_LEN, i => i === TOOL_LEN ? '+2' : '')}<div class="tx">${esc(t.tx)}</div></div>`).join('')}</div>`;
+}
+function viewStart() {
+  const saved = load(); const st = U.setup; const prof = spielregalProfiles();
+  return `<div class="wrap start">
+    <div class="hero">${heroSvg()}</div>
+    <h1 class="hand">Drei Schwestern</h1>
+    <p class="sub">Mais, Bohnen &amp; Kürbis: ein Würfel-Gartenspiel nach dem Prinzip von <i>Three Sisters</i>.</p>
+    ${saved && saved.screen === 'game' ? `<button class="btn blue wide" data-a="resume">Partie fortsetzen · Runde ${saved.round}/${ROUNDS}</button>` : ''}
+    <div class="panel">
+      <p class="label">Dein Name</p>
+      <input class="input" id="nm" maxlength="30" placeholder="z. B. Gärtnerin Mi" value="${esc(st.name)}">
+      ${prof.length ? `<div class="chips" style="margin-top:8px">${prof.slice(0, 8).map(n => `<button class="chip ${st.name === n ? 'on' : ''}" data-a="pickname" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div><p class="note">Wähle dein Spielregal-Profil, dann landet die Partie mit deinen Punkten in deiner Partien-Liste.</p>` : ''}
+      <p class="label" style="margin-top:14px">Gegner (Bots)</p>
+      <div class="chips">${[1, 2, 3].map(n => `<button class="chip ${st.bots === n ? 'on' : ''}" data-a="bots" data-n="${n}">${n} Bot${n > 1 ? 's' : ''}</button>`).join('')}</div>
+      <p class="note">${ROUNDS} Runden · ${2 * (st.bots + 1) + 1} Würfel pro Runde · jede Person nimmt 2 Würfel pro Runde (hin und zurück).</p>
+    </div>
+    <button class="btn wide" data-a="start">Garten anlegen</button>
+    <p style="margin-top:14px"><button class="link" data-a="rules">Spielregeln lesen</button></p>
+  </div>`;
+}
+function viewGame() {
+  const me = human(); const p = cur();
+  let banner;
+  if (myTasks()) {
+    banner = `<div class="banner mine"><span class="face">${avatar(me)}</span><div style="flex:1"><b>${esc(taskTitle(me.tasks[0]))}</b><span class="small">${me.tasks.length > 1 ? `danach noch ${me.tasks.length - 1} Aktion${me.tasks.length > 2 ? 'en' : ''}` : 'letzte Aktion'}</span></div><button class="btn green" data-a="task">Los</button></div>`;
+  } else if (isMyPick()) {
+    banner = `<div class="banner mine"><span class="face">${avatar(me)}</span><div><b>Du bist dran: nimm einen Würfel</b><span class="small">Die Augenzahl wählt die Gartenzone, das Marktfeld bringt einen Bonus.</span></div></div>`;
+  } else if (S.phase === 'draft') {
+    banner = `<div class="banner"><span class="face">${avatar(p)}</span><div><b>${esc(p.name)} wählt …</b><span class="small">${esc(S.log[0] || '')}</span></div></div>`;
+  } else {
+    banner = `<div class="banner"><div><b>Rundenende</b><span class="small">${esc(S.log[0] || '')}</span></div></div>`;
+  }
+  const rondel = range(6).map(si => {
+    const ds = S.dice.filter(d => d.space === si);
+    const live = isMyPick();
+    return `<div class="space ${si === S.marker ? 'edith' : ''}">${si === S.marker ? `<span class="edm">${person('edith', { hat: 'feather', hatC: '#5DB35A', hair: 'bun', body: '#1F8A4D', pat: 'dash' })}</span>` : ''}<div class="sic">${icon(SPACES[si])}</div><div class="sn">${SPACE_N[SPACES[si]]}</div>
+      <div class="dice">${ds.map(d => `<button class="die ${d.by >= 0 ? 'taken' : live ? 'live' : ''}" data-a="die" data-i="${d.i}" ${d.by < 0 && live ? '' : 'disabled'} aria-label="Würfel ${d.v}">${dieSvg(d.v, d.by >= 0 ? S.players[d.by].mark : '#FFFBF0')}</button>`).join('') || '<span style="font-size:11px;color:#6d655a">–</span>'}</div></div>`;
+  }).join('');
+  const order = S.seq.map((pi, k) => `<span class="${k === S.idx && S.phase === 'draft' ? 'now' : k < S.idx || S.phase !== 'draft' ? 'done' : ''}">${esc(S.players[pi].name.split(' ').slice(-1)[0])}</span>`).join('');
+  return `
+  <div class="top"><div class="row">
+    <div class="round hand">Runde ${S.round}/${ROUNDS}<small>${S.phase === 'draft' ? `Zug ${S.idx + 1}/${S.seq.length}` : 'Rundenende'}</small></div>
+    <div class="players">${S.players.map((pl, i) => `<button class="pchip ${S.phase === 'draft' && cur() === pl ? 'cur' : ''}" data-a="opp" data-p="${i}"><span class="av" style="background:${pl.mark}">${avatar(pl)}</span><span><span class="nm">${esc(pl.name)}</span><span class="st">★${endScore(pl).total}</span></span></button>`).join('')}</div>
+    <button class="icobtn" data-a="menu" aria-label="Menü">?</button>
+  </div></div>
+  <div class="wrap">
+    ${banner}
+    <section class="sec"><div class="sech"><h2 class="hand">Gartenmarkt</h2><span class="hint">Würfel liegen nach Augenzahl im Kreis, Start bei der Gärtnerin</span></div>
+      <div class="rondel">${rondel}</div>
+      <div class="order">Reihenfolge: ${order}</div>
+      <div class="evt"><div>${S.phase === 'shared' && S.sharedDie ? dieSvg(S.sharedDie, '#E6F2DA') : icon('nochmal').replace('2×', '?')}<span><b>Gemeinschaftswürfel</b><br>Der übrige Würfel gilt am Rundenende für alle.</span></div><div>${icon(S.event === 'regen' ? 'regen' : S.event)}<span><b>Rundenende</b><br>${EVENT_N[S.event]}</span></div></div>
+    </section>
+    <section class="sec"><div class="sech"><h2 class="hand">Dein Garten</h2><span class="hint">★ ${endScore(me).total} Punkte</span></div>${sheetHtml(me)}</section>
+    <section class="sec"><div class="sech"><h2 class="hand">Chronik</h2><button class="link" data-a="logtoggle" style="font-size:12px">${U.logOpen ? 'weniger' : 'alles'}</button></div>
+      <div class="log">${S.log.slice(0, U.logOpen ? 80 : 6).map(l => `<div>${esc(l)}</div>`).join('')}</div></section>
+  </div>
+  <div class="bar"><div class="in">${myTasks() ? `<div class="msg">${esc(taskTitle(me.tasks[0]))}</div><button class="btn green" data-a="task">Ausführen</button>` : isMyPick() ? `<div class="msg">Tippe einen Würfel im Gartenmarkt an.</div>` : `<div class="msg"><b>${esc(S.phase === 'draft' ? p.name : 'Alle')}</b> ${S.phase === 'draft' ? 'wählt …' : 'sind fertig.'}</div><button class="btn white" data-a="fast">${U.fast ? 'Normal' : 'Schneller'}</button>`}</div></div>`;
+}
+function viewEnd() {
+  const rows = S.final.map((r, i) => Object.assign({ i }, r)).sort((a, b) => b.total - a.total);
+  const pod = rows.slice(0, 3); const ord = pod.length === 3 ? [pod[1], pod[0], pod[2]] : pod.length === 2 ? [pod[1], pod[0]] : pod;
+  const me = human(); const win = rows[0];
+  return `<div class="wrap" style="padding-top:18px;text-align:center">
+    <h1 class="hand" style="font-size:44px;margin:0">${!S.players[win.i].bot ? 'Du gewinnst!' : esc(win.name) + ' gewinnt!'}</h1>
+    <p class="sub">Was für eine Ernte.</p>
+    <div class="podium">${ord.map(r => `<div class="pp"><div class="ill">${person('pl' + r.i + r.name, S.players[r.i].look)}</div><div class="pl grainy" style="height:${r === rows[0] ? 70 : r === rows[1] ? 48 : 32}px;background:${S.players[r.i].mark}">${rows.indexOf(r) + 1}</div></div>`).join('')}</div>
+    <div class="panel"><table class="score"><tr><th></th>${rows.map(r => `<th>${esc(r.name)}</th>`).join('')}</tr>
+      <tr><td>Ernte, Obst, Schuppen</td>${rows.map(r => `<td>${r.ernte}</td>`).join('')}</tr>
+      <tr><td>Bienen</td>${rows.map(r => `<td>${r.bienen}</td>`).join('')}</tr>
+      <tr><td>Stauden</td>${rows.map(r => `<td>${r.stauden}</td>`).join('')}</tr>
+      <tr><td>Waren (je 3 = 1)</td>${rows.map(r => `<td>${r.waren}</td>`).join('')}</tr>
+      <tr class="tot"><td>Gesamt</td>${rows.map(r => `<td>${r.total}</td>`).join('')}</tr></table></div>
+    ${S.recorded ? `<p class="note" style="text-align:left">✓ Als digitale Partie für <b>Three Sisters</b> vorgemerkt. Sie erscheint in Spielregal, sobald du die App öffnest.</p><p><a class="btn white wide" href="../">Zum Spielregal</a></p>` : ''}
+    <button class="btn wide" data-a="newgame">Neue Partie</button>
+    <p><button class="link" data-a="opp" data-p="${S.players.indexOf(me)}">Meinen Garten ansehen</button></p>
+  </div>`;
+}
+function sheetWrap(inner) { return `<div class="ov" data-a="ovclose"><div class="sheet" data-stop="1"><div class="grab"></div><button class="icobtn x" data-a="close" aria-label="Schließen">✕</button>${inner}</div></div>`; }
+function taskSheet() {
+  const me = human(); const t = me.tasks[0];
+  if (!t) return '';
+  let h = `<h3>${esc(taskTitle(t))}</h3>`;
+  const opts = taskOptions(me, t);
+  if (t.t === 'zone') {
+    const plan = U.plan || { c: 0, b: 0, s: 0 };
+    const total = plan.c + plan.b + plan.s, m = plantMax(me);
+    h += `<p style="font-size:13px">Pflanzen: bis zu ${m} Markierungen in Zone ${t.z + 1} verteilen. Gießen: +1 in jeder angefangenen Reihe dieser Zone.</p>
+      ${zoneHtml(me, t.z, { preview: plan })}
+      ${CROPS.map(c => { const ok = total < m && canPlant(me, t.z, c, plan); return `<div class="stepper"><span class="lbl">${icon(c)}${CROP_N[c]}</span><span style="display:flex;gap:8px;align-items:center"><button data-a="pminus" data-c="${c}" ${plan[c] ? '' : 'disabled'}>−</button><span class="num">${plan[c]}</span><button data-a="pplus" data-c="${c}" ${ok ? '' : 'disabled'}>+</button></span></div>`; }).join('')}
+      ${!hasTool(me, 'hacke') && me.zones[t.z].c + plan.c < 2 ? '<p class="note">Bohnen erst ab 2 Mais in dieser Zone.</p>' : ''}
+      <div class="btnrow"><button class="btn white" data-a="water">Gießen${(() => { const n = CROPS.filter(c => me.zones[t.z][c] > 0 && me.zones[t.z][c] < TRACK_LEN[c]).length; return ` (+${n})`; })()}</button><button class="btn green" data-a="plant" ${total ? '' : 'disabled'}>Pflanzen (${total})</button></div>`;
+  } else if (t.t === 'plant1') {
+    const sel = U.pick1;
+    h += `<p style="font-size:13px">Wähle Zone und Pflanze für eine Markierung.</p><div class="garden">${range(6).map(z => `<div><div style="display:flex;gap:4px;justify-content:center;margin-bottom:4px">${CROPS.map(c => `<button class="chip ${sel && sel.z === z && sel.c === c ? 'on' : ''}" style="padding:2px 8px" data-a="p1" data-z="${z}" data-c="${c}" ${canPlant(me, z, c) ? '' : 'disabled'}>${CROP_N[c].slice(0, 4)}</button>`).join('')}</div>${zoneHtml(me, z, { preview: sel && sel.z === z ? { [sel.c]: 1 } : {} })}</div>`).join('')}</div>
+      <div class="btnrow"><button class="btn green" data-a="p1ok" ${sel ? '' : 'disabled'}>Setzen</button></div>`;
+  } else if (t.t === 'waterAny' || t.t === 'waterOne') {
+    h += `<p style="font-size:13px">Tippe die Zone, die gegossen werden soll.</p><div class="opts">${opts.map(o => { const n = CROPS.filter(c => me.zones[o.z][c] > 0 && me.zones[o.z][c] < TRACK_LEN[c]).length; return `<button class="opt" data-a="wz" data-z="${o.z}">${zoneNum(o.z).replace('class="ill"', '')}<span><b>Zone ${o.z + 1}</b><small>+${n} Markierung${n === 1 ? '' : 'en'}</small></span></button>`; }).join('')}</div>`;
+  } else if (t.t === 'fruit') {
+    h += `<div class="opts">${FRUITS.map((f, fi) => `<button class="opt" data-a="fr" data-i="${fi}" ${me.fruit[fi] < FRUIT_LEN ? '' : 'disabled'}>${icon(f.k)}<span><b>${f.n} (${me.fruit[fi]}/${FRUIT_LEN})</b><small>Vollständig: ${f.sp} SP · bei 2: +1 Ware</small></span></button>`).join('')}</div>`;
+  } else if (t.t === 'tool') {
+    h += `<div class="opts">${TOOLS.map((tl, ti) => `<button class="opt" data-a="tl" data-i="${ti}" ${me.tools[ti] < TOOL_LEN ? '' : 'disabled'}>${icon(tl.k)}<span><b>${tl.n} (${me.tools[ti]}/${TOOL_LEN})</b><small>${esc(tl.tx)}</small></span></button>`).join('')}</div>`;
+  }
+  if (!opts.length || t.t !== 'zone') h += `<button class="skip" data-a="tskip">${opts.length ? 'Aktion verfallen lassen' : 'Nichts möglich – weiter'}</button>`;
+  else h += `<button class="skip" data-a="tskip">Aktion verfallen lassen</button>`;
+  return sheetWrap(h);
+}
+function dieSheet() {
+  const me = human(); const d = S.dice[U.sheet.i];
+  const adj = U.sheet.adj || 0;
+  let v = d.v + adj; while (v > 6) v -= 6; while (v < 1) v += 6;
+  return sheetWrap(`<h3>Würfel ${d.v}</h3>
+    <p style="font-size:13px">Zone <b>${v}</b> pflanzen oder gießen, danach: <b>${SPACE_N[SPACES[d.space]]}</b>.</p>
+    <div class="stepper"><span class="lbl">${icon('kompost')}Kompost: Wert ändern</span><span style="display:flex;gap:8px;align-items:center"><button data-a="adj" data-d="-1" ${Math.abs(adj - 1) <= me.kompost ? '' : 'disabled'}>−</button><span class="num">${adj > 0 ? '+' + adj : adj}</span><button data-a="adj" data-d="1" ${Math.abs(adj + 1) <= me.kompost ? '' : 'disabled'}>+</button></span></div>
+    ${zoneHtml(me, v - 1)}
+    <div class="btnrow"><button class="btn green" data-a="takedie">Nehmen${adj ? ` (−${Math.abs(adj)} Kompost)` : ''}</button></div>`);
+}
+function rulesHtml() {
+  return `<h3>So spielt man</h3>
+  <p>Ihr legt in <b>8 Runden</b> eure Gärten an. Mais, Bohnen und Kürbis, die „drei Schwestern“, wachsen in sechs Zonen. Wer am Ende die meisten <b>Siegpunkte</b> hat, gewinnt.</p>
+  <h4>Eine Runde</h4>
+  <ul><li>Es werden 2 Würfel pro Person plus einer geworfen. Sie werden nach Augenzahl sortiert und im Uhrzeigersinn auf den Gartenmarkt gelegt, die niedrigste Gruppe auf das Feld mit der Gärtnerin. Die Gärtnerin wandert jede Runde ein Feld weiter.</li>
+  <li>Reihum und dann rückwärts nimmt jede Person 2 Würfel. Die Augenzahl bestimmt die <b>Zone</b>, das Marktfeld bringt einen <b>Bonus</b>.</li>
+  <li>Mit <b>Kompost</b> änderst du den Würfelwert um ±1 pro Kompost (6 und 1 sind benachbart).</li>
+  <li>Der übrige Würfel ist der <b>Gemeinschaftswürfel</b>: Alle dürfen ihn am Rundenende nutzen. Dazu kommt das Rundenereignis: Regen, Schuppen oder Bauernmarkt.</li></ul>
+  <h4>Pflanzen &amp; Gießen</h4>
+  <ul><li><b>Pflanzen:</b> 2 Markierungen in der Zone, beliebig auf Mais, Bohnen und Kürbis verteilt. <b>Bohnen</b> brauchen 2 Mais in derselben Zone.</li>
+  <li><b>Gießen:</b> +1 in jeder angefangenen Reihe der Zone.</li>
+  <li>Gestrichelte Kreise sind <b>Ernten</b>: Mais bringt 3 SP, Bohnen 1 SP und 1 Kompost, Kürbis 2 Waren und 1 Staude.</li></ul>
+  <h4>Rund um den Garten</h4>
+  <ul><li><b>Waren:</b> Bei 5, 10, 15 und 20 bekommst du eine Gratis-Pflanze. Am Ende ist jede 3. Ware 1 SP wert.</li>
+  <li><b>Bienen</b> und <b>Stauden</b> zählen am Ende nach Tabelle. Jede 4. Biene bringt eine Staude.</li>
+  <li><b>Obstbäume</b> bringen bei Vollendung 5–8 SP.</li>
+  <li><b>Werkzeuge</b> im Schuppen bringen bei Vollendung 2 SP und eine Dauerfähigkeit.</li></ul>
+  <h4>Unterschiede zum Original</h4>
+  <p style="font-size:13px">Das Prinzip folgt <i>Three Sisters</i>: Würfel-Draft über ein Marktrondell, Zonen nach Augenzahl, pflanzen oder gießen, Bohnen nach Mais, Ernten, Kompost als Würfelmanipulation, Nebenleisten. Bogen, Leistenlängen, Punktwerte, Werkzeuge und das Gemeinschaftswürfel-Detail sind eigene Entwürfe.</p>`;
+}
+function viewSheet() {
+  const sh = U.sheet; if (!sh) return '';
+  switch (sh.type) {
+    case 'rules': return sheetWrap(`<div class="rules">${rulesHtml()}</div>`);
+    case 'menu': return sheetWrap(`<h3>Menü</h3><div class="opts"><button class="btn white wide" data-a="rules">Spielregeln</button><button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
+    case 'opp': { const p = S.players[sh.p]; return sheetWrap(`<h3>${esc(p.name)}</h3><p style="font-size:13px">★ ${endScore(p).total} Punkte · ${p.harvests} Ernten</p>${sheetHtml(p)}`); }
+    case 'die': return dieSheet();
+    case 'task': return taskSheet();
+  }
+  return '';
+}
+
+// ---------- Render & Events ----------
+const $app = document.getElementById('app');
+function render() {
+  const nm = document.getElementById('nm'); if (nm) U.setup.name = nm.value;
+  let h = !S || !S.screen || S.screen === 'start' ? viewStart() : S.screen === 'end' ? viewEnd() : viewGame();
+  if (U.sheet && U.sheet.type === 'task' && !myTasks()) U.sheet = null;
+  h += viewSheet();
+  if (U.toast) h += `<div class="toast">${esc(U.toast)}</div>`;
+  $app.innerHTML = h;
+  save();
+  pump();
+}
+function pump() {
+  if (!S || S.screen !== 'game' || U.busy) return;
+  if (S.phase !== 'draft' || !cur().bot) return;
+  U.busy = true;
+  setTimeout(() => {
+    U.busy = false;
+    if (!S || S.screen !== 'game' || S.phase !== 'draft' || !cur().bot) return;
+    botStep();
+    render();
+  }, U.fast ? 150 : 900);
+}
+function afterHumanTask() {
+  const me = human();
+  U.plan = null; U.pick1 = null;
+  if (me.tasks.length) { U.sheet = { type: 'task' }; return; }
+  U.sheet = null;
+  if (S.phase === 'draft' && cur() === me) afterPick();
+  else if (S.phase === 'shared') maybeEndRound();
+}
+const H = {
+  bots: d => { U.setup.bots = +d.n; },
+  pickname: d => { U.setup.name = d.n; const nm = document.getElementById('nm'); if (nm) nm.value = d.n; },
+  start: () => { const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : ''; newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0); window.scrollTo(0, 0); },
+  resume: () => { S = load(); U.sheet = null; },
+  rules: () => { U.sheet = { type: 'rules' }; },
+  menu: () => { U.sheet = { type: 'menu' }; },
+  restart: () => { if (confirm('Laufende Partie wirklich abbrechen?')) { clearSave(); S = null; U.sheet = null; } },
+  newgame: () => { clearSave(); S = null; U.sheet = null; },
+  close: () => { U.sheet = null; },
+  ovclose: () => { U.sheet = null; },
+  opp: d => { U.sheet = { type: 'opp', p: +d.p }; },
+  logtoggle: () => { U.logOpen = !U.logOpen; },
+  fast: () => { U.fast = !U.fast; },
+  die: d => { if (isMyPick()) U.sheet = { type: 'die', i: +d.i, adj: 0 }; },
+  adj: d => { U.sheet.adj += +d.d; },
+  takedie: () => { const me = human(); if (takeDie(me, U.sheet.i, U.sheet.adj)) { U.plan = null; U.sheet = { type: 'task' }; } },
+  task: () => { if (myTasks()) U.sheet = { type: 'task' }; },
+  pplus: d => { U.plan = U.plan || { c: 0, b: 0, s: 0 }; U.plan[d.c]++; },
+  pminus: d => { U.plan = U.plan || { c: 0, b: 0, s: 0 }; U.plan[d.c]--; if (d.c === 'c' && !hasTool(human(), 'hacke')) { const t = human().tasks[0]; while (U.plan.b > 0 && human().zones[t.z].c + U.plan.c < 2) U.plan.b--; } },
+  plant: () => { const me = human(), t = me.tasks[0]; const plan = U.plan || {}; resolveTask(me, { apply: q => doPlant(q, t.z, plan) }); log(`${me.name} pflanzt in Zone ${t.z + 1}.`); afterHumanTask(); },
+  water: () => { const me = human(), t = me.tasks[0]; resolveTask(me, { apply: q => doWater(q, t.z) }); log(`${me.name} gießt Zone ${t.z + 1}.`); afterHumanTask(); },
+  p1: d => { U.pick1 = { z: +d.z, c: d.c }; },
+  p1ok: () => { const me = human(), s = U.pick1; resolveTask(me, { apply: q => mark(q, s.z, s.c) }); afterHumanTask(); },
+  wz: d => { const me = human(), t = me.tasks[0], z = +d.z; resolveTask(me, { apply: q => doWater(q, z, t.t === 'waterAny') }); afterHumanTask(); },
+  fr: d => { const me = human(); resolveTask(me, { apply: q => markFruit(q, +d.i) }); afterHumanTask(); },
+  tl: d => { const me = human(); resolveTask(me, { apply: q => markTool(q, +d.i) }); afterHumanTask(); },
+  tskip: () => { skipTask(human()); afterHumanTask(); },
+};
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-a]');
+  if (!el || !$app.contains(el)) return;
+  if (el.dataset.a === 'ovclose' && e.target.closest('[data-stop]')) return;
+  if (el.disabled) return;
+  const fn = H[el.dataset.a]; if (!fn) return;
+  fn(el.dataset); render();
+});
+window.__ts = {
+  simulate(n, seed) {
+    newGame(null, n - 1, seed);
+    let guard = 0;
+    while (S.screen === 'game' && guard++ < 400) { if (S.phase === 'draft') botStep(); else maybeEndRound(); }
+    return { final: S.final, guard };
+  },
+  state: () => S,
+  reset: () => { S = null; U.sheet = null; clearSave(); render(); },
+};
+render();
+</script>
+</body>
+</html>

@@ -105,6 +105,16 @@ try {
   const p3 = await page.evaluate(() => JSON.parse(localStorage.getItem("spielregal:plays") || "[]"));
   check(g3.length === 1 && g3[0].status === "none" && g3[0].bggId === "182874", "Spiel nicht angelegt: " + JSON.stringify(g3).slice(0, 200));
   check(p3.length === 1 && p3[0].winner === "" && p3[0].playerIds.length === 0 && /Frau Kipferl \(Bot\)/.test(p3[0].notes), "Bot-Sieg falsch: " + JSON.stringify(p3).slice(0, 300));
+  // 4. Rebel Princess: niedrigste Zahl gewinnt, Spiel wird über BGG-ID gefunden
+  await page.evaluate(() => {
+    localStorage.setItem("spielregal:games", JSON.stringify([{ id: "rp", name: "Rebel Princess", bggId: "381249", status: "owned", categories: [], mechanisms: [], publishers: [], designers: [], images: [], addedDate: "2026-01-01" }]));
+    localStorage.setItem("spielregal:plays", "[]");
+    localStorage.setItem("spielregal:inbox:plays", JSON.stringify([{ id: "rp-test", source: "prinzessinnenball", app: "Prinzessinnenball", bggId: "381249", gameName: "Rebel Princess", date: "2026-10-01", human: "Mi", lowWins: true, unit: "Anträge", results: [{ name: "Mi", bot: false, total: 4 }, { name: "Gräfin Holle", bot: true, total: 19 }], winners: ["Mi"] }]));
+  });
+  await page.reload(); await page.waitForTimeout(3000);
+  const p4 = await page.evaluate(() => JSON.parse(localStorage.getItem("spielregal:plays") || "[]"));
+  check(p4.length === 1 && p4[0].gameId === "rp" && p4[0].winner === "Mi" && p4[0].scores && p4[0].scores["pl-mi"] === "4"
+    && /Prinzessinnenball/.test(p4[0].notes) && /Ergebnis \(Anträge\): Mi: 4 · Gräfin Holle \(Bot\): 19/.test(p4[0].notes), "Rebel Princess falsch: " + JSON.stringify(p4).slice(0, 400));
 } catch (e) { console.log("FEHLER: " + e.message); fehler++; }
 await b.close(); server.close();
 if (fehler) process.exit(1);
