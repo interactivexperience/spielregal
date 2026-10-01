@@ -83,10 +83,11 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .handsec .in{max-width:560px;margin:0 auto;padding:0 12px}
 .handbar{display:flex;align-items:center;gap:8px;margin-bottom:6px;min-height:38px}
 .handbar .msg{flex:1;font-size:12.5px;line-height:1.2}
-.cards{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
-.cards .card{width:52px;height:76px;transition:transform .12s}
-.cards .card .v{font-size:18px}
-.cards .card .art{top:15px;bottom:6px;left:3px;right:3px}
+.cards{display:flex;gap:6px;overflow-x:auto;overflow-y:visible;padding:16px 6px 6px;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.cards::-webkit-scrollbar{display:none}
+.cards .card{width:74px;height:107px;transition:transform .12s;scroll-snap-align:center}
+.cards .card .v{font-size:23px}
+.cards .card .art{top:20px;bottom:9px;left:5px;right:5px}
 .cards .card.no{opacity:.35}
 .cards .card.sel{transform:translateY(-12px) rotate(-3deg)}
 .cards .card.ok{filter:none}
@@ -126,6 +127,19 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .podium .pp .ill{height:110px}
 .podium .pl{border:2.5px solid var(--ink);border-radius:10px 10px 0 0;font-family:"Caveat Brush",cursive;font-size:26px;display:grid;place-items:center;background:var(--white)}
 .podium .pp:nth-child(2) .pl{background:var(--ink);color:#fff}
+/* Lernspiel */
+.coach{position:fixed;left:12px;right:12px;bottom:84px;z-index:75;max-width:536px;margin:0 auto;display:flex;gap:10px;align-items:flex-start;background:var(--white);border:2.5px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--ink);padding:10px 12px}
+.coach.top{top:calc(10px + env(safe-area-inset-top));bottom:auto!important}
+.coach .cface{width:52px;height:52px;flex:none;border-radius:50%;border:2px solid var(--ink);overflow:hidden;background:var(--white)}
+.coach .ctext{flex:1;min-width:0}
+.coach .cstep{font-family:"Space Mono",monospace;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.coach p{margin:2px 0 8px;font-size:14px;line-height:1.35}
+.coach .cbtns{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.coach .btn{min-height:40px;padding:6px 16px;font-size:14.5px}
+.coach .cquit{font-size:12px;color:var(--muted);text-decoration:underline;margin-left:auto}
+.coach .cwait{font-weight:800;letter-spacing:3px}
+.tut-hl{outline:3px dashed var(--ink)!important;outline-offset:4px;animation:tutp 1s ease-in-out infinite;position:relative;z-index:6;border-radius:12px}
+@keyframes tutp{50%{outline-offset:7px}}
 </style>
 </head>
 <body>
@@ -683,6 +697,7 @@ function botStep() {
 const INBOX_KEY = 'spielregal:inbox:plays';
 function localDate() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
 function recordPlay() {
+  if (S.tut) return;
   const me = human();
   if (!me || S.recorded || !S.final) return;
   const entry = { id: S.id, source: 'prinzessinnenball', app: 'Prinzessinnenball', bggId: '381249', gameName: 'Rebel Princess', date: localDate(), human: me.name, lowWins: true, unit: 'Anträge',
@@ -696,7 +711,7 @@ function recordPlay() {
 }
 function spielregalProfiles() { try { return (JSON.parse(localStorage.getItem('spielregal:players') || '[]') || []).filter(p => p && p.name).map(p => p.name); } catch (e) { return []; } }
 const KEY = 'prinzessinnenball-v1';
-function save() { try { if (S) localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } }
+function save() { try { if (S && !S.tut) localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } }
 function load() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && s.v === 1 ? s : null; } catch (e) { return null; } }
 function clearSave() { try { localStorage.removeItem(KEY); } catch (e) { } }
 
@@ -721,6 +736,7 @@ function viewStart() {
       <p class="note">${ROUNDS} Runden · ${st.bots + 1} Personen · ${Math.floor((st.bots + 1 === 5 ? 45 : 48) / (st.bots + 1))} Karten auf der Hand · Wenigste Anträge gewinnt.</p>
     </div>
     <button class="btn wide" data-a="start">Zum Ball</button>
+    <button class="btn white wide" data-a="tutorial" style="margin-top:12px">Lernspiel: Regeln spielend lernen</button>
     <p style="margin-top:14px"><button class="link" data-a="rules">Spielregeln lesen</button></p>
   </div>`;
 }
@@ -841,14 +857,103 @@ function viewSheet() {
 }
 
 // ---------- Render & Events ----------
+// ---------- Lernspiel (Tutorial) ----------
+// Geführte Mini-Partie mit vorbereitetem Spielstand. Jeder Schritt hat einen
+// Text, optional ein markiertes Element (sel), erlaubte Aktionen (allow) und
+// eine Bedingung (done), bei der es automatisch weitergeht; ohne done gibt es
+// einen Weiter-Knopf. Das Lernspiel wird weder gespeichert noch getrackt, eine
+// laufende echte Partie bleibt also erhalten.
+function tutStep() { return U.tut ? TUT_STEPS[U.tut.i] : null; }
+function tutCheck() {
+  let guard = 0;
+  while (U.tut && guard++ < 20) {
+    const st = TUT_STEPS[U.tut.i];
+    if (!st.done || !st.done()) break;
+    U.tut.i++;
+  }
+}
+function tutAllowed(a, d) {
+  if (a === 'tutnext' || a === 'tutend' || a === 'tutquit') return true;
+  const st = tutStep(), al = st && st.allow;
+  if (!al || !(a in al)) return false;
+  return al[a] === true || !!al[a](d);
+}
+function tutHtml() {
+  const st = tutStep(); if (!st) return '';
+  const last = U.tut.i === TUT_STEPS.length - 1;
+  const txt = typeof st.text === 'function' ? st.text() : st.text;
+  const btn = last ? '<button class="btn" data-a="tutend">Echtes Spiel starten</button>'
+    : !st.done ? '<button class="btn" data-a="tutnext">Weiter</button>'
+    : st.wait ? '<span class="cwait">· · ·</span>' : '';
+  return `<div class="coach" id="coach" role="dialog" aria-live="polite"><div class="cface">${tutFace()}</div><div class="ctext"><span class="cstep">Lernspiel · ${U.tut.i + 1}/${TUT_STEPS.length}</span><p>${txt}</p><div class="cbtns">${btn}${last ? '' : '<button class="cquit" data-a="tutquit">Lernspiel beenden</button>'}</div></div></div>`;
+}
+function tutDecorate() {
+  const st = tutStep(), coach = document.getElementById('coach');
+  if (!st || !coach) return;
+  const el = st.sel ? document.querySelector(st.sel) : null;
+  if (el) el.classList.add('tut-hl');
+  const bottomBox = document.querySelector('.bar, .handsec');
+  const inBottom = el && el.closest('.bar, .handsec');
+  const top = st.pos ? st.pos === 'top' : (!!U.sheet || !!inBottom);
+  coach.classList.toggle('top', top);
+  if (!top) coach.style.bottom = ((bottomBox ? bottomBox.getBoundingClientRect().height : 0) + 10) + 'px';
+  const key = U.tut.i + (U.sheet ? 's' : '');
+  if (el && U.tut.scrolled !== key) {
+    U.tut.scrolled = key;
+    if (inBottom) el.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+    else if (!el.closest('.top')) el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
+  }
+}
+const tutFace = () => person('coach', { pose: 'stand', hair: 'bun', hat: 'tiara', top: 'black', glasses: 1 }, '33 9 34 34');
+const TUT_ME = () => S.players[0];
+const tutName = i => esc(S.players[i].name);
+const tutCard = c => `${SUIT_1[suit(c)]} ${val(c)}`;
+const TUT_STEPS = [
+  { pos: 'top', text: 'Willkommen zum <b>Prinzessinnenball</b>! Fünf Ballnächte lang weichst du den Prinzen aus. Jeder <b>Prinz</b> in einem Stich, den du gewinnst, ist <b>1 Antrag</b>, der <b>Frosch</b> sogar 5. Wer am Ende die wenigsten Anträge hat, gewinnt.' },
+  { sel: '.rule', pos: 'bottom', text: 'Jede Nacht gilt eine <b>Sonderregel</b>. Heute ist der „Letzte Walzer“: Anträge im letzten Stich zählen doppelt.' },
+  { sel: '.opps', pos: 'bottom', text: 'Hier siehst du alle Mitspielerinnen und ihre Prinzessin. Du bist <b>Dornröschen</b>. Rechts stehen die Anträge von heute und insgesamt.' },
+  { sel: '.cards .card[data-c="F2"]', allow: { card: d => d.c === 'F2', play: () => U.sel === 'F2' }, done: () => !TUT_ME().hand.includes('F2'), pos: 'top',
+    text: 'Du spielst aus. Die erste Karte bestimmt die Farbe. Beginne mit der kleinen <b>Fee 2</b>: antippen und dann „Ausspielen“ oder noch einmal tippen.' },
+  { wait: true, pos: 'top', done: () => S.trickNo >= 1 && S.phase === 'play' && !cur().bot, text: 'Die anderen müssen <b>Farbe bedienen</b>, also Feen legen, wenn sie welche haben …' },
+  { sel: '.table', pos: 'top', text: () => { const lt = S.lastTrick; const w = lt.trick.find(t => t.pi === lt.w); return `Die höchste Karte der ausgespielten Farbe gewinnt: <b>${tutName(lt.w)}</b> mit ${tutCard(w.c)}. Wer gewinnt, spielt als Nächstes aus, jetzt ${tutCard(S.trick[0].c)}.`; } },
+  { sel: '.cards .card[data-c="H9"]', allow: { card: d => d.c === 'H9', play: () => U.sel === 'H9' }, done: () => !TUT_ME().hand.includes('H9'), pos: 'top',
+    text: 'Du hast Haustiere, also musst du bedienen. Nur erlaubte Karten sind hervorgehoben. Spiel diesmal die <b>Haustier 9</b>.' },
+  { wait: true, pos: 'top', done: () => S.trickNo >= 2 && S.phase === 'play' && !cur().bot, text: 'Mal sehen, was die letzte Spielerin wirft …' },
+  { sel: '.opps', pos: 'bottom', text: () => { const f = S.lastTrick.trick.find(t => t.c === FROG); return `Autsch! ${f ? tutName(f.pi) : 'Jemand'} hat den <b>Frosch</b> abgeworfen. Deine 9 war die höchste Karte, also gehört dir der Stich: <b>5 Anträge</b>. Hohe Karten sind gefährlich!`; } },
+  { sel: '[data-a=power]', allow: { power: true }, done: () => U.power, pos: 'top',
+    text: 'Zeit für deine Prinzessin! <b>Dornröschen</b> lässt deine Karte als 0 zählen, sie kann den Stich nicht gewinnen. Schalte die Fähigkeit ein.' },
+  { sel: '.cards .card[data-c="K12"]', allow: { card: d => d.c === 'K12', play: () => U.sel === 'K12', power: true }, done: () => !TUT_ME().hand.includes('K12'), pos: 'top',
+    text: 'Spiel jetzt deine <b>Königin 12</b> aus. Normalerweise würde sie sicher gewinnen, mit Dornröschen nicht.' },
+  { wait: true, pos: 'top', done: () => S.trickNo >= 3 && S.phase === 'play', text: 'Die anderen legen Königinnen nach …' },
+  { sel: '.table', pos: 'top', text: () => `Siehst du? <b>${tutName(S.lastTrick.w)}</b> gewinnt, obwohl deine 12 höher war. Jede Fähigkeit gilt <b>einmal pro Nacht</b>, zwei Prinzessinnen wirken dauerhaft.` },
+  { sel: '.cards', pos: 'top', text: 'Die schwarzen Karten sind <b>Prinzen</b>. Ausspielen darfst du sie erst, wenn schon einer gefallen ist. Kannst du nicht bedienen, wirf sie am besten ab, dann landen sie bei anderen.' },
+  { pos: 'top', text: 'Nach allen Stichen werden die Anträge gezählt. Dann beginnt die nächste Ballnacht mit neuer Sonderregel, manchmal gebt ihr vorher Karten weiter. Nach 5 Nächten gewinnt, wer die <b>wenigsten Anträge</b> hat. Viel Glück!' },
+];
+function tutSetup() {
+  U.fast = true;
+  newGame(U.setup.name || 'Du', 2, 99);
+  S.tut = true;
+  const [me, b1, b2] = S.players;
+  me.princess = 'dorn'; b1.princess = 'erbse'; b2.princess = 'asche';
+  S.rules[0] = 'letzter';
+  startRound();
+  me.hand = sortHand(['F2', 'F4', 'F6', 'F11', 'H1', 'H5', 'H9', 'H11', 'K1', 'K2', 'K8', 'K12', 'P1', 'P5', 'P9', 'P12']);
+  b1.hand = sortHand(['F1', 'F3', 'F9', 'F10', 'H3', 'H6', 'H8', 'H10', 'K3', 'K5', 'K9', 'K10', 'P2', 'P3', 'P6', 'P10']);
+  b2.hand = sortHand(['F5', 'F7', 'F8', 'F12', 'H2', 'H4', 'H7', 'H12', 'K4', 'K6', 'K7', 'K11', 'P4', 'P7', 'P8', 'P11']);
+  S.log = ['Lernspiel: erste Ballnacht mit vorbereiteten Karten.'];
+}
+
 const $app = document.getElementById('app');
 function render() {
+  if (U.tut) tutCheck();
   const nm = document.getElementById('nm'); if (nm) U.setup.name = nm.value;
   let h = !S || S.screen !== 'game' && S.screen !== 'end' ? viewStart() : S.screen === 'end' ? viewEnd()
     : S.phase === 'princess' ? `<div class="wrap start"><div class="hero">${heroSvg()}</div><h1 class="hand">Prinzessinnenball</h1></div>` : viewGame();
   h += viewSheet();
   if (U.toast) h += `<div class="toast">${esc(U.toast)}</div>`;
+  if (U.tut) h += tutHtml();
   $app.innerHTML = h;
+  if (U.tut) tutDecorate();
   save();
   pump();
 }
@@ -866,6 +971,10 @@ function pump() {
   }, delay);
 }
 const H = {
+  tutorial: () => { const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : U.setup.name; U.sheet = null; tutSetup(); U.tut = { i: 0 }; window.scrollTo(0, 0); },
+  tutnext: () => { if (U.tut) U.tut.i = Math.min(U.tut.i + 1, TUT_STEPS.length - 1); },
+  tutend: () => { U.tut = null; U.sheet = null; U.fast = false; S = null; window.scrollTo(0, 0); },
+  tutquit: () => { U.tut = null; U.sheet = null; U.fast = false; S = null; window.scrollTo(0, 0); },
   bots: d => { U.setup.bots = +d.n; },
   pickname: d => { U.setup.name = d.n; const nm = document.getElementById('nm'); if (nm) nm.value = d.n; },
   start: () => { const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : ''; U.pick = null; newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0); window.scrollTo(0, 0); },
@@ -908,6 +1017,7 @@ document.addEventListener('click', e => {
   if (!el || !$app.contains(el)) return;
   if (el.dataset.a === 'ovclose' && e.target.closest('[data-stop]')) return;
   if (el.disabled) return;
+  if (U.tut && S && !tutAllowed(el.dataset.a, el.dataset)) { toast('Folge dem markierten Hinweis im Lernspiel.'); render(); return; }
   const fn = H[el.dataset.a]; if (!fn) return;
   fn(el.dataset); render();
 });

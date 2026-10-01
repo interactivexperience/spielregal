@@ -235,6 +235,19 @@ button:disabled{cursor:default}
 .podium .pl{border:2.5px solid var(--ink);border-radius:10px 10px 0 0;font-family:"Caveat Brush",cursive;font-size:26px;display:grid;place-items:center}
 .deco{position:fixed;pointer-events:none;z-index:0;opacity:.85}
 @media (min-width:600px){.gcard{width:150px}.tslot{min-height:220px}}
+/* --- Lernspiel --- */
+.coach{position:fixed;left:12px;right:12px;bottom:84px;z-index:75;max-width:536px;margin:0 auto;display:flex;gap:10px;align-items:flex-start;background:var(--cream);border:2.5px solid var(--ink);border-radius:18px;box-shadow:4px 4px 0 var(--ink);padding:10px 12px}
+.coach.top{top:calc(10px + env(safe-area-inset-top));bottom:auto!important}
+.coach .cface{width:52px;height:56px;flex:none;border-radius:50%;background:var(--yellow);border:2px solid var(--ink);overflow:hidden}
+.coach .ctext{flex:1;min-width:0}
+.coach .cstep{font-family:"Space Mono",monospace;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.coach p{margin:2px 0 8px;font-size:14px;line-height:1.35}
+.coach .cbtns{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.coach .btn{min-height:40px;padding:6px 16px;font-size:14.5px}
+.coach .cquit{font-size:12px;color:var(--muted);text-decoration:underline;margin-left:auto}
+.coach .cwait{font-weight:800;letter-spacing:3px;animation:pulse 1.2s infinite}
+.tut-hl{outline:4px solid var(--pink)!important;outline-offset:3px;animation:tutp 1.1s ease-in-out infinite;position:relative;z-index:6;border-radius:12px}
+@keyframes tutp{50%{outline-color:var(--red)}}
 </style>
 </head>
 <body>
@@ -911,6 +924,7 @@ function finalScoring() {
 const INBOX_KEY = 'spielregal:inbox:plays';
 function localDate() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
 function recordPlay() {
+  if (S.tut) return;
   const me = human();
   if (!me || S.recorded || !S.final) return;
   const best = Math.max(...S.final.map(r => r.total));
@@ -1079,7 +1093,7 @@ function botTurn() {
 
 // ---------- Speicher ----------
 const KEY = 'grand-hotel-wien-v1';
-function save() { try { if (S) localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* privat/voll – egal */ } }
+function save() { try { if (S && !S.tut) localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* privat/voll – egal */ } }
 function load() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && s.v === 1 ? s : null; } catch (e) { return null; } }
 function clearSave() { try { localStorage.removeItem(KEY); } catch (e) { } }
 
@@ -1181,6 +1195,7 @@ function viewStart() {
       <p class="note">7 Runden · ${DICE_BY_N[st.bots + 1]} Würfel pro Runde · jede Person macht 2 Züge pro Runde (hin und zurück).</p>
     </div>
     <button class="btn wide" data-a="start">Hotel eröffnen</button>
+    <button class="btn white wide" data-a="tutorial" style="margin-top:12px">Lernspiel: Regeln spielend lernen</button>
     <p style="margin-top:14px"><button class="link" data-a="rules">Spielregeln lesen</button></p>
   </div>`;
 }
@@ -1394,8 +1409,109 @@ function rulesHtml() {
 }
 
 // ---------- Render & Events ----------
+// ---------- Lernspiel (Tutorial) ----------
+// Geführte Mini-Partie mit vorbereitetem Spielstand. Jeder Schritt hat einen
+// Text, optional ein markiertes Element (sel), erlaubte Aktionen (allow) und
+// eine Bedingung (done), bei der es automatisch weitergeht; ohne done gibt es
+// einen Weiter-Knopf. Das Lernspiel wird weder gespeichert noch getrackt, eine
+// laufende echte Partie bleibt also erhalten.
+function tutStep() { return U.tut ? TUT_STEPS[U.tut.i] : null; }
+function tutCheck() {
+  let guard = 0;
+  while (U.tut && guard++ < 20) {
+    const st = TUT_STEPS[U.tut.i];
+    if (!st.done || !st.done()) break;
+    U.tut.i++;
+  }
+}
+function tutAllowed(a, d) {
+  if (a === 'tutnext' || a === 'tutend' || a === 'tutquit') return true;
+  const st = tutStep(), al = st && st.allow;
+  if (!al || !(a in al)) return false;
+  return al[a] === true || !!al[a](d);
+}
+function tutHtml() {
+  const st = tutStep(); if (!st) return '';
+  const last = U.tut.i === TUT_STEPS.length - 1;
+  const txt = typeof st.text === 'function' ? st.text() : st.text;
+  const btn = last ? '<button class="btn" data-a="tutend">Echtes Spiel starten</button>'
+    : !st.done ? '<button class="btn" data-a="tutnext">Weiter</button>'
+    : st.wait ? '<span class="cwait">· · ·</span>' : '';
+  return `<div class="coach" id="coach" role="dialog" aria-live="polite"><div class="cface">${tutFace()}</div><div class="ctext"><span class="cstep">Lernspiel · ${U.tut.i + 1}/${TUT_STEPS.length}</span><p>${txt}</p><div class="cbtns">${btn}${last ? '' : '<button class="cquit" data-a="tutquit">Lernspiel beenden</button>'}</div></div></div>`;
+}
+function tutDecorate() {
+  const st = tutStep(), coach = document.getElementById('coach');
+  if (!st || !coach) return;
+  const el = st.sel ? document.querySelector(st.sel) : null;
+  if (el) el.classList.add('tut-hl');
+  const bottomBox = document.querySelector('.bar, .handsec');
+  const inBottom = el && el.closest('.bar, .handsec');
+  const top = st.pos ? st.pos === 'top' : (!!U.sheet || !!inBottom);
+  coach.classList.toggle('top', top);
+  if (!top) coach.style.bottom = ((bottomBox ? bottomBox.getBoundingClientRect().height : 0) + 10) + 'px';
+  const key = U.tut.i + (U.sheet ? 's' : '');
+  if (el && U.tut.scrolled !== key) {
+    U.tut.scrolled = key;
+    if (inBottom) el.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+    else if (!el.closest('.top')) el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
+  }
+}
+const tutFace = () => person('concierge', { hat: 'top', must: 1, body: '#1F8A4D', pat: 'none', prop: 'key' }, '18 -4 64 70');
+const TUT_ME = () => S.players[0];
+const TUT_STEPS = [
+  { text: 'Willkommen im <b>Grand Hotel Wien</b>! Ich bin der Concierge. In 7 Runden holst du Gäste an deine Tische, bewirtest sie und bringst sie in Zimmern unter. Dafür gibt es <b>Siegpunkte</b>. Wir spielen gemeinsam deine ersten zwei Züge.' },
+  { sel: '.board', text: 'Das ist das <b>Aktionsbrett</b>. Zu Rundenbeginn werden Würfel geworfen und nach Augenzahl sortiert. Jede Zahl ist eine Aktion. Je mehr Würfel auf einem Feld liegen, desto <b>stärker</b> ist sie.' },
+  { sel: '.line .gcard[data-s="0"]', allow: { guest: d => d.s === '0' }, done: () => U.sheet && U.sheet.type === 'guest',
+    text: 'Zuerst holst du einen <b>Gast</b>. Vorne in der Warteschlange sind Gäste gratis. Tippe auf den Fiakerkutscher.' },
+  { sel: '[data-a=takeguest]', allow: { takeguest: true }, done: () => !!TUT_ME().tables[0],
+    text: 'Er bestellt <b>2 Strudel</b> und möchte in ein <b>rotes Zimmer</b>. Unten stehen seine Belohnungen. Hol ihn an deinen Tisch.' },
+  { sel: '.tables', text: 'Er sitzt jetzt an deinem Tisch, du hast Platz für drei. Die Symbole zeigen seine Bestellung. Erst wenn alles serviert ist, zieht er ein.' },
+  { sel: '.act[data-f="1"]', allow: { die: d => d.f === '1' }, done: () => U.sheet && U.sheet.type === 'die',
+    text: 'Strudel gibt es mit <b>Würfel 1</b>. Dort liegen 3 Würfel, also Stärke 3. Tippe auf das Feld.' },
+  { sel: '[data-a=dieok]', allow: { dieok: true }, done: () => S.turn.dieTaken,
+    text: 'Du bekommst 3 Gerichte und verteilst sie auf Strudel und Torte. Lass es bei <b>3 Strudel</b> und tippe auf „Ausführen“.' },
+  { sel: '.slot.can', allow: { serve: true }, done: () => TUT_ME().rooms[0] === 2,
+    text: 'Frisch erhaltene Gerichte servierst du <b>gratis</b>. Tippe die leuchtenden Felder an, bis der Gast alles hat.' },
+  { sel: '.hotel', text: 'Geschafft! Der Gast ist ins <b>rote Zimmer</b> gezogen und hat dir seine Belohnung gegeben: 2 SP und 2 Kronen. Ist eine zusammenhängende Farbgruppe voll belegt, gibt es einen Bonus.' },
+  { sel: '.kitchen', text: 'Der übrige Strudel liegt in deiner <b>Küche</b>. Später kannst du für 1 Krone bis zu 3 Gerichte aus der Küche servieren, das ist der Küchenservice.' },
+  { sel: '[data-a=endturn]', allow: { endturn: true }, done: () => S.seqIdx === 3 && !cur().bot, wait: true,
+    text: 'Mehr geht in diesem Zug nicht. <b>Beende deinen Zug</b>. Danach ist die Gegnerin zweimal dran, denn erst geht es reihum und dann zurück.' },
+  { text: () => `${esc(S.players[1].name)} hat zweimal die 4 genommen: Kronen und Kaiserschritte. Jetzt bist du wieder dran, mit deinem <b>zweiten Zug</b> dieser Runde.` },
+  { sel: '.act[data-f="3"]', allow: { die: d => d.f === '3' }, done: () => U.sheet && U.sheet.type === 'die',
+    text: 'Neue Gäste brauchen freie Zimmer. <b>Würfel 3</b> bereitet Zimmer vor. Tippe auf das Feld.' },
+  { sel: '.sheet .room.ok', allow: { rsel: true }, done: () => U.sheet && U.sheet.sel && U.sheet.sel.length > 0,
+    text: 'Zimmer kosten je nach Stockwerk 0 bis 3 Kronen. Sie liegen im Erdgeschoss oder grenzen an ein bestehendes Zimmer. Wähle ein leuchtendes Zimmer.' },
+  { sel: '[data-a=dieok]', allow: { dieok: true, rsel: true }, done: () => S.turn.dieTaken,
+    text: 'Bei Stärke 2 dürftest du noch ein zweites wählen. Tippe auf „Ausführen“.' },
+  { sel: '.emp', text: 'Der <b>Kaiser</b> wertet nach Runde 3, 5 und 7. Wer dann genug Schritte auf der Kaiserleiste hat, bekommt Punkte. Alle anderen bekommen eine Strafe. Schritte gibt es mit Würfel 4 und über gelbe Gäste.' },
+  { sel: '.staffrow', text: 'Dein <b>Personal</b> stellst du mit Würfel 5 ein. Manche helfen sofort, manche dauerhaft, manche am Rundenende oder erst bei der Schlussabrechnung.' },
+  { sel: '.pol', text: '<b>Politik</b>: Wer ein Ziel zuerst erfüllt, bekommt die meisten Punkte.' },
+  { sel: '.act[data-f="6"]', text: 'Noch ein Tipp: Die <b>6 ist ein Joker</b>. Für 1 Krone führst du damit jede andere Aktion aus. Mit der 4 teilst du die Stärke auf Kronen und Kaiserschritte auf.' },
+  { text: 'Das war das Wichtigste! Hol jede Runde Gäste, bewirte sie, bereite passende Zimmer vor und behalte den Kaiser im Blick. Viel Erfolg, Frau Direktorin oder Herr Direktor!' },
+];
+function tutSetup() {
+  U.fast = true;
+  newGame(U.setup.name || 'Du', 1, 4242);
+  S.screen = 'game'; S.tut = true;
+  const me = S.players[0], bot = S.players[1];
+  me.tables = [null, null, null]; bot.tables = [null, null, null];
+  me.kitchen = { s: 0, c: 0, w: 0, k: 0 }; me.k = 10;
+  S.line = [0, 12, 25, 16, 30];
+  S.guestDeck = S.guestDeck.filter(id => !S.line.includes(id));
+  S.dice = [0, 3, 2, 2, 2, 1, 1]; S.rolled = S.dice.slice();
+  S.log = ['Lernspiel: eine vorbereitete erste Runde.'];
+  startTurn();
+}
+function tutBot() {
+  const p = cur();
+  const f = [4, 2, 6, 5, 1, 3].find(x => S.dice[x]);
+  doDie(p, f, { emp: 1, b: 0, skip: f >= 5 });
+  endTurn();
+}
+
 const $app = document.getElementById('app');
 function render() {
+  if (U.tut) tutCheck();
   let h;
   if (!S || S.screen === 'start' || !S.screen) h = viewStart();
   else if (S.screen === 'end') h = viewEnd();
@@ -1405,7 +1521,9 @@ function render() {
   if (U.toast) h += `<div class="toast">${esc(U.toast)}</div>`;
   const nm = document.getElementById('nm');
   if (nm) U.setup.name = nm.value;
+  if (U.tut) h += tutHtml();
   $app.innerHTML = h;
+  if (U.tut) tutDecorate();
   save();
   pump();
 }
@@ -1416,11 +1534,15 @@ function pump() {
   setTimeout(() => {
     U.busy = false;
     if (!S || S.screen !== 'game' || S.roundInfo || !cur().bot) return;
-    botTurn();
+    if (S.tut) tutBot(); else botTurn();
     render();
   }, U.fast ? 120 : 950);
 }
 const H = {
+  tutorial: () => { const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : U.setup.name; U.sheet = null; tutSetup(); U.tut = { i: 0 }; window.scrollTo(0, 0); },
+  tutnext: () => { if (U.tut) U.tut.i = Math.min(U.tut.i + 1, TUT_STEPS.length - 1); },
+  tutend: () => { U.tut = null; U.sheet = null; U.fast = false; S = null; window.scrollTo(0, 0); },
+  tutquit: () => { U.tut = null; U.sheet = null; U.fast = false; S = null; window.scrollTo(0, 0); },
   bots: d => { U.setup.bots = +d.n; },
   pickname: d => { U.setup.name = d.n; const nm = document.getElementById('nm'); if (nm) nm.value = d.n; },
   start: () => { const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : ''; U.fast = false; newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0); S.screen = 'game'; window.scrollTo(0, 0); },
@@ -1473,6 +1595,7 @@ document.addEventListener('click', e => {
   if (!el || !$app.contains(el)) return;
   if (el.dataset.a === 'ovclose' && e.target.closest('[data-stop]')) return;
   if (el.disabled) return;
+  if (U.tut && S && !tutAllowed(el.dataset.a, el.dataset)) { toast('Folge dem markierten Hinweis im Lernspiel.'); render(); return; }
   const fn = H[el.dataset.a];
   if (!fn) return;
   fn(el.dataset);
