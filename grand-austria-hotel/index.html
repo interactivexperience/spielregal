@@ -616,7 +616,7 @@ function staffCost(p, id, n) { return Math.max(0, STAFF[id].c - (n - 1)); }
 function log(msg) { S.log.unshift(msg); if (S.log.length > 80) S.log.length = 80; }
 
 function newGame(name, nBots, seed) {
-  S = { v: 1, rng: seed | 0, round: 1, players: [], log: [], final: null, roundInfo: null };
+  S = { v: 1, id: 'ghw-' + Date.now().toString(36) + '-' + ((seed >>> 0) % 1679616).toString(36), rng: seed | 0, round: 1, players: [], log: [], final: null, roundInfo: null, recorded: false };
   const n = nBots + 1;
   const bots = shuffle(BOT_NAMES.slice()).slice(0, nBots);
   const mk = (nm, bot, look, mark) => ({ name: nm, bot, look, mark, k: 0, vp: 0, emp: 0, kitchen: { s: 1, c: 0, w: 1, k: 0 }, fresh: { s: 0, c: 0, w: 0, k: 0 }, credits: 0, serviceBought: false, tables: [null, null, null], rooms: new Array(20).fill(0), roomGuest: new Array(20).fill(-1), hand: [], staff: [], freeRooms: 0, freeGuest: 0, pol: [] });
@@ -903,7 +903,32 @@ function finalScoring() {
   });
   S.screen = 'end';
   log('Spielende! Die Abrechnung liegt vor.');
+  recordPlay();
 }
+// Beendete Partie für Spielregal hinterlegen: Die Sammlungs-App liegt auf
+// derselben Origin und übernimmt Einträge aus diesem Eingangskorb beim
+// nächsten Öffnen als digitale Partie (Modus "bga").
+const INBOX_KEY = 'spielregal:inbox:plays';
+function localDate() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+function recordPlay() {
+  const me = human();
+  if (!me || S.recorded || !S.final) return;
+  const best = Math.max(...S.final.map(r => r.total));
+  const entry = {
+    id: S.id, source: 'grand-hotel-wien', bggId: '182874', gameName: 'Grand Austria Hotel', date: localDate(),
+    human: me.name,
+    results: S.final.map((r, i) => ({ name: r.name, bot: S.players[i].bot, total: r.total, rooms: r.rooms })),
+    winners: S.final.filter(r => r.total === best).map(r => r.name),
+  };
+  try {
+    const inbox = JSON.parse(localStorage.getItem(INBOX_KEY) || '[]');
+    if (!inbox.some(e => e.id === entry.id)) inbox.push(entry);
+    localStorage.setItem(INBOX_KEY, JSON.stringify(inbox));
+    S.recorded = true;
+  } catch (e) { S.recorded = false; }
+}
+// Spielerprofile aus Spielregal (gleiche Origin), damit der Name passt
+function spielregalProfiles() { try { return (JSON.parse(localStorage.getItem('spielregal:players') || '[]') || []).filter(p => p && p.name).map(p => p.name); } catch (e) { return []; } }
 
 // ---------- Bots ----------
 function needs(p) {
@@ -1149,7 +1174,8 @@ function viewStart() {
     ${saved && saved.screen === 'game' ? `<button class="btn blue wide" data-a="resume">Partie fortsetzen · Runde ${saved.round}/${ROUNDS}</button>` : ''}
     <div class="panel">
       <p class="label">Dein Name</p>
-      <input class="input" id="nm" maxlength="18" placeholder="z. B. Frau Direktorin" value="${esc(st.name)}">
+      <input class="input" id="nm" maxlength="30" placeholder="z. B. Frau Direktorin" value="${esc(st.name)}">
+      ${spielregalProfiles().length ? `<div class="chips" style="margin-top:8px">${spielregalProfiles().slice(0, 8).map(n => `<button class="chip ${st.name === n ? 'on' : ''}" data-a="pickname" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div><p class="note">Wähle dein Spielregal-Profil, dann landet die Partie mit deinen Punkten in deiner Partien-Liste.</p>` : ''}
       <p class="label" style="margin-top:14px">Gegner (Bots)</p>
       <div class="chips">${[1, 2, 3].map(n => `<button class="chip ${st.bots === n ? 'on' : ''}" data-a="bots" data-n="${n}">${n} Bot${n > 1 ? 's' : ''}</button>`).join('')}</div>
       <p class="note">7 Runden · ${DICE_BY_N[st.bots + 1]} Würfel pro Runde · jede Person macht 2 Züge pro Runde (hin und zurück).</p>
@@ -1250,6 +1276,7 @@ function viewEnd() {
       <tr><td>Gäste noch am Tisch</td>${rows.map(r => `<td>${r.guests}</td>`).join('')}</tr>
       <tr><td>Belegte Zimmer</td>${rows.map(r => `<td>${r.rooms}</td>`).join('')}</tr>
       <tr class="tot"><td>Gesamt</td>${rows.map(r => `<td>${r.total}</td>`).join('')}</tr></table></div>
+    ${S.recorded ? `<p class="note" style="text-align:left">✓ Als digitale Partie für <b>Grand Austria Hotel</b> vorgemerkt. Sie erscheint in Spielregal, sobald du die App öffnest.</p><p><a class="btn white wide" href="../" style="text-decoration:none;margin-top:6px">Zum Spielregal</a></p>` : ''}
     <button class="btn wide" data-a="newgame">Neue Partie</button>
     <p><button class="link" data-a="showboard">Endstand der Hotels ansehen</button></p>
   </div>`;
@@ -1395,6 +1422,7 @@ function pump() {
 }
 const H = {
   bots: d => { U.setup.bots = +d.n; },
+  pickname: d => { U.setup.name = d.n; const nm = document.getElementById('nm'); if (nm) nm.value = d.n; },
   start: () => { const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : ''; U.fast = false; newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0); S.screen = 'game'; window.scrollTo(0, 0); },
   resume: () => { S = load(); U.sheet = null; },
   rules: () => { U.sheet = { type: 'rules' }; },

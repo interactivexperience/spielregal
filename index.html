@@ -7966,6 +7966,54 @@ function digitaleUmsetzung(game) {
     (game.bggId && String(game.bggId) === u.bggId) || u.titel.test(game.name || "") || u.titel.test(game.germanName || "")) || null;
 }
 
+const DIGITAL_INBOX_KEY = "spielregal:inbox:plays";
+// Wandelt Eingangskorb-Einträge in Partien um. Das Spiel wird über
+// DIGITALE_UMSETZUNGEN gefunden (eigenes Exemplar bevorzugt); fehlt es in
+// der Sammlung, wird es wie beim BGG-Import als "gespielt" angelegt.
+// Bots tauchen bewusst nicht als Sieger auf, sonst landen sie in der
+// Sieger-Statistik und im Kopf-an-Kopf-Vergleich wie echte Mitspieler.
+function digitalePartienUebernehmen(inbox, games, plays, players) {
+  const newGames = [], newPlays = [];
+  const vorhandeneIds = new Set(plays.map((p) => p.id));
+  for (const e of inbox) {
+    if (!e || !e.id || vorhandeneIds.has(e.id) || newPlays.some((p) => p.id === e.id)) continue;
+    const pseudo = { bggId: e.bggId, name: e.gameName };
+    const umsetzung = digitaleUmsetzung(pseudo);
+    const passend = (g) => umsetzung && digitaleUmsetzung(g) === umsetzung;
+    const alle = [...games, ...newGames];
+    let game = alle.find((g) => passend(g) && g.status === "owned" && !g.expansionOf)
+      || alle.find((g) => passend(g) && !g.expansionOf)
+      || alle.find((g) => passend(g));
+    if (!game) {
+      game = {
+        id: uid(), bggId: e.bggId || "", name: e.gameName || "Unbekannt", year: "", publishers: [], designers: [], images: [],
+        minPlayers: "", maxPlayers: "", bestPlayersMin: "", bestPlayersMax: "", minTime: "", maxTime: "", age: "",
+        complexity: "", mechanisms: [], categories: [], playerTypes: [], status: "none", location: "", summary: "",
+        notes: "", rating: "", addedDate: new Date().toISOString().slice(0, 10),
+      };
+      newGames.push(game);
+    }
+    const ergebnisse = Array.isArray(e.results) ? e.results : [];
+    const ich = ergebnisse.find((r) => !r.bot);
+    const profil = ich && (players || []).find((pl) => (pl.name || "").trim().toLowerCase() === (ich.name || "").trim().toLowerCase());
+    const bots = ergebnisse.filter((r) => r.bot);
+    const sieger = Array.isArray(e.winners) ? e.winners : [];
+    const ichGewinne = ich && sieger.includes(ich.name);
+    const botSieger = sieger.filter((n) => bots.some((b) => b.name === n));
+    const tabelle = [...ergebnisse].sort((a, b) => b.total - a.total).map((r) => `${r.name}${r.bot ? " (Bot)" : ""}: ${r.total}`).join(" · ");
+    newPlays.push({
+      id: e.id, gameId: game.id, gameName: game.name, date: e.date || new Date().toISOString().slice(0, 10), mode: "bga",
+      players: ergebnisse.map((r) => r.bot ? `${r.name} (Bot)` : r.name).join(", "),
+      playerIds: profil ? [profil.id] : [],
+      winner: ichGewinne ? (profil ? profil.name : ich.name) : "",
+      ...(profil && ich ? { scores: { [profil.id]: String(ich.total) } } : {}),
+      notes: `Im Browser gespielt (Grand Hotel Wien) gegen ${bots.length} Bot${bots.length === 1 ? "" : "s"}.${botSieger.length ? ` Gewonnen hat ${botSieger.join(" und ")} (Bot).` : ""} Ergebnis: ${tabelle}`,
+      images: [], source: e.source || "digital",
+    });
+  }
+  return { newGames, newPlays };
+}
+
 function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList, onClose, onEdit, onViewOther, readOnlyLabel, hidePrices, onQuickUpdate, onAddExpansion, guestMode }) {
   const [campaignPhotoOpen, setCampaignPhotoOpen] = useState(false);
   const [expansionSheetOpen, setExpansionSheetOpen] = useState(false);
@@ -8859,6 +8907,33 @@ function App() {
     setPlayModal(null);
   };
   const deletePlay = (id) => { setPlays(prev => prev.filter(p => p.id !== id)); setPlayModal(null); };
+
+  // Beendete Partien aus den Browser-Umsetzungen (z.B. grand-austria-hotel/)
+  // liegen in einem Eingangskorb auf derselben Origin und werden hier als
+  // digitale Partie übernommen. Mit Cloud-Sync erst nach dem ersten
+  // erfolgreichen Pull, sonst würde der Pull die neue Partie wieder
+  // überschreiben. Läuft auch beim Zurückkehren aus dem Spiel (bfcache).
+  const latestRef = React.useRef({ games, plays, players });
+  latestRef.current = { games, plays, players };
+  const pulledOnceRef = React.useRef(false);
+  if (syncStatus === "synced") pulledOnceRef.current = true;
+  useEffect(() => {
+    const importInbox = () => {
+      if (demoMode || (syncUrl && !pulledOnceRef.current)) return;
+      const inbox = loadKey(DIGITAL_INBOX_KEY, []);
+      if (!Array.isArray(inbox) || inbox.length === 0) return;
+      const { games: gs, plays: ps, players: pls } = latestRef.current;
+      const { newGames, newPlays } = digitalePartienUebernehmen(inbox, gs, ps, pls);
+      if (newGames.length) setGames((prev) => [...prev, ...newGames]);
+      if (newPlays.length) setPlays((prev) => [...prev.filter((p) => !newPlays.some((n) => n.id === p.id)), ...newPlays]);
+      try { localStorage.removeItem(DIGITAL_INBOX_KEY); } catch {}
+    };
+    importInbox();
+    const onVisible = () => { if (document.visibilityState === "visible") importInbox(); };
+    window.addEventListener("pageshow", importInbox);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => { window.removeEventListener("pageshow", importInbox); document.removeEventListener("visibilitychange", onVisible); };
+  }, [syncStatus, demoMode, syncUrl]);
 
   const tabs = guestMode
     ? [
