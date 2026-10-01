@@ -43,6 +43,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .round{font-size:26px;line-height:1;white-space:nowrap}
 .round small{font-family:"Space Mono",monospace;font-size:11px;color:var(--muted);display:block;margin-top:2px}
 .icobtn{width:40px;height:40px;border:2px solid var(--ink);border-radius:50%;background:var(--white);font-weight:800;font-size:18px;flex:none;display:grid;place-items:center}
+.icobtn.leave{width:auto;padding:0 12px 0 10px;border-radius:999px;display:flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap}
+.backlink{display:block;text-align:left;margin:4px 0 2px;font-weight:800;font-size:13.5px;color:inherit;text-decoration:none;opacity:.75}
 .rule{flex:1;border:2px solid var(--ink);border-radius:12px;background:var(--white);padding:4px 8px;font-size:11.5px;line-height:1.2;text-align:left;min-width:0}
 .rule b{font-family:"Caveat Brush",cursive;font-size:16px;font-weight:400;display:block;line-height:1}
 /* Tisch */
@@ -1329,6 +1331,7 @@ function viewStart() {
   const saved = load(), st = U.setup, prof = spielregalProfiles();
   const n = st.bots + 1, per = deckFor(n).length / n;
   return `<div class="wrap start">
+    <a class="backlink" href="../">← Zurück zu Spielregal</a>
     <div class="hero">${heroSvg()}</div>
     <h1 class="hand">Prinzessinnenball</h1>
     <p class="sub">Fünf Ballnächte, zu viele Prinzen: das Stichspiel nach den Regeln von <i>Rebel Princess</i> (Deluxe Edition).</p>
@@ -1429,7 +1432,7 @@ function viewGame() {
   <div class="top"><div class="row">
     <div class="round hand">Nacht ${S.round}/${ROUNDS}<small>Stich ${S.trickNo + 1}</small></div>
     <div class="rule"><b>${esc(r.k)} · ${esc(r.n)}</b>${esc(r.tx)}</div>
-    ${U.tut ? '' : `<button class="icobtn" data-a="leave" aria-label="Speichern und verlassen" title="Speichern &amp; verlassen"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><rect x="4" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/><rect x="11.8" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/></svg></button>`}
+    ${U.tut ? '' : `<button class="icobtn leave" data-a="leave" aria-label="Speichern und verlassen" title="Speichern &amp; verlassen"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><rect x="4" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/><rect x="11.8" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/></svg><span>Verlassen</span></button>`}
     <button class="icobtn" data-a="menu" aria-label="Menü">?</button>
   </div></div>
   <div class="wrap">

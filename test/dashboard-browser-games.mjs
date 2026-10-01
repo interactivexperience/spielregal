@@ -31,7 +31,7 @@ await page.route("**/cdn.tailwindcss.com/**", r => r.fulfill({ contentType: "app
 await page.route("**/fonts.googleapis.com/**", r => r.fulfill({ body: "", contentType: "text/css" }));
 
 
-// Prueft den Dashboard-Abschnitt „Im Browser spielen“ und die Zuordnung von
+// Prueft den Dashboard-Abschnitt „Digital spielen“ (Cover + Name) und die Zuordnung von
 // Three Sisters zur Harvest Edition (Link auf der Detailseite, Tracking).
 let fehler = 0;
 const check = (ok, msg) => { if (!ok) { console.log("FEHLER: " + msg); fehler++; } };
@@ -53,12 +53,15 @@ await page.addInitScript(([g, pl]) => {
 try {
   await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
   await page.waitForTimeout(2500);
-  check(await page.locator("text=Im Browser spielen").count() >= 1, "Abschnitt „Im Browser spielen“ fehlt im Dashboard");
+  check(await page.locator("text=Digital spielen").count() >= 1, "Abschnitt „Digital spielen“ fehlt im Dashboard");
   for (const href of ["grand-austria-hotel/", "three-sisters/", "rebel-princess/", "countryside/"])
-    check(await page.locator(`a[href="${href}"]`).count() === 1, `Dashboard-Link ${href} fehlt`);
-  check(await page.locator("text=Partie läuft · Runde 3/7").count() === 1, "laufende Grand-Hotel-Partie nicht angezeigt");
-  check(await page.locator("text=1× gespielt").count() === 1, "Zahl der Drei-Schwestern-Partien fehlt");
-  check(await page.locator("text=nach Three Sisters: Harvest Edition").count() === 1, "Harvest Edition nicht als Vorlage erkannt");
+    check(await page.locator(`a[href="${href}"] img[src="${href}cover.jpg"]`).count() === 1, `Dashboard-Cover ${href} fehlt`);
+  const covers = await page.evaluate(() => [...document.querySelectorAll("a img[src$='cover.jpg']")].map((i) => i.complete && i.naturalWidth > 0));
+  check(covers.length === 4 && covers.every(Boolean), "Cover-Bilder laden nicht: " + JSON.stringify(covers));
+  check(await page.locator('a[href="grand-austria-hotel/"]:has-text("Partie läuft")').count() === 1, "laufende Grand-Hotel-Partie nicht angezeigt");
+  check(await page.locator('a[href="three-sisters/"]:has-text("Partie läuft")').count() === 0, "Drei Schwestern fälschlich als laufend markiert");
+  if (process.env.SHOT) { await page.emulateMedia({ colorScheme: "dark" }); await page.locator("text=Digital spielen").first().scrollIntoViewIfNeeded(); await page.waitForTimeout(400); await page.screenshot({ path: process.env.SHOT }); }
+  for (const n of ["Grand Hotel Wien", "Drei Schwestern", "Prinzessinnenball", "Landgut"]) check(await page.locator(`a:has-text("${n}")`).count() >= 1, `Name ${n} fehlt`);
   await page.locator('button:has-text("Sammlung")').last().click();
   await page.waitForTimeout(500);
   await page.locator("text=Three Sisters: Harvest Edition").first().click();
@@ -77,4 +80,4 @@ try {
 } catch (e) { console.log("FEHLER: " + e.message); fehler++; }
 await b.close(); server.close();
 if (fehler) process.exit(1);
-console.log("OK — Dashboard zeigt die Browser-Spiele, Three Sisters greift bei der Harvest Edition.");
+console.log("OK — Dashboard zeigt die Browser-Spiele als Cover, Three Sisters greift bei der Harvest Edition.");

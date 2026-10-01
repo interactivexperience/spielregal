@@ -5638,26 +5638,18 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
   const sections = {
     browsergames: (
       <div key="browsergames" className="border-t border-line pt-5">
-        <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-3">Im Browser spielen</h2>
-        <div className="space-y-2">
+        <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-3">Digital spielen</h2>
+        <div className="grid grid-cols-2 gap-3">
           {DIGITALE_UMSETZUNGEN.map((u) => {
-            const gespielt = plays.filter((p) => p.source === u.source).length;
-            let laufend = null;
-            try { const sv = JSON.parse(localStorage.getItem(u.saveKey) || "null"); if (sv && sv.screen === "game") laufend = sv; } catch {}
-            const GIcon = u.icon === "hotel" ? Building : u.icon === "garden" ? Sun : u.icon === "farm" ? Barn : Crown;
-            const inSammlung = games.find((g) => digitaleUmsetzung(g) === u);
+            let laufend = false;
+            try { const sv = JSON.parse(localStorage.getItem(u.saveKey) || "null"); laufend = !!(sv && sv.screen === "game"); } catch {}
             return (
-              <a key={u.href} href={u.href} className="flex items-center gap-3 p-3 rounded-[14px] border border-line active:bg-rim/5">
-                <span className="w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-white" style={{ background: u.color }}><GIcon size={20} /></span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-base text-ink font-medium leading-tight truncate">{u.name}</span>
-                  <span className="block text-xs text-dim truncate">nach {inSammlung ? inSammlung.name : u.original} · {u.art}</span>
-                  <span className="block text-[11px] text-dim mt-0.5">
-                    {laufend ? <span className="text-accent font-medium">Partie läuft{u.rounds ? ` · ${u.unit} ${laufend.round || 1}/${u.rounds}` : ""}</span> : "Solo gegen Bots · mit Lernspiel"}
-                    {gespielt > 0 ? ` · ${gespielt}× gespielt` : ""}
-                  </span>
+              <a key={u.href} href={u.href} className="block active:opacity-80" aria-label={`${u.name} im Browser spielen`}>
+                <span className="relative block aspect-[3/4] rounded-[14px] overflow-hidden border border-line shadow-sm" style={{ background: u.color }}>
+                  <img src={`${u.href}cover.jpg`} alt="" className="w-full h-full object-cover" loading="lazy" />
+                  {laufend && <span className="absolute top-2 left-2 text-[10px] font-semibold uppercase tracking-wide bg-black/70 text-white rounded-full px-2 py-0.5">Partie läuft</span>}
                 </span>
-                <ChevronRight size={16} className="text-dim shrink-0" />
+                <span className="block mt-2 text-sm text-ink font-medium leading-tight">{u.name}</span>
               </a>
             );
           })}
@@ -5853,7 +5845,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const sortMenuClose = useSheetClose(() => setSortMenuOpen(false));
   const [reorderScreenOpen, setReorderScreenOpen] = useState(false);
-  const SECTION_LABELS = { browsergames: "Im Browser spielen", month: "Spiel des Monats", records: "Rekorde", wishlist: "Wunschliste", lent: "Verliehene Spiele", topRated: "Top 10 Spiele", dust: "Staubfänger", digital: "Digital vs. Physisch", bestof: "Best of" };
+  const SECTION_LABELS = { browsergames: "Digital spielen", month: "Spiel des Monats", records: "Rekorde", wishlist: "Wunschliste", lent: "Verliehene Spiele", topRated: "Top 10 Spiele", dust: "Staubfänger", digital: "Digital vs. Physisch", bestof: "Best of" };
   const PRESETS = [
     { key: "default", label: "Standard", icon: ListChecks, order: DEFAULT_DASHBOARD_ORDER },
     { key: "activity", label: "Nach Aktivität", icon: Sparkles, order: ["browsergames", "month", "dust", "topRated", "records", "bestof", "wishlist", "digital"] },
