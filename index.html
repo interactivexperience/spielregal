@@ -7956,6 +7956,16 @@ ${buildCollectionContextForAI(games, plays)}`;
 /* ---------------- GAME DETAIL VIEW ---------------- */
 const TONE_HEX = { teal: "rgb(var(--tealdeep))", amber: "rgb(var(--accent))", red: "rgb(var(--danger))", default: "rgb(var(--dim))" };
 
+// Selbstgebaute Browser-Umsetzungen einzelner Spiele, liegen als eigene
+// Seiten im Repo und werden auf der Detailseite des passenden Spiels verlinkt.
+const DIGITALE_UMSETZUNGEN = [
+  { bggId: "182874", titel: /grand austria hotel/i, href: "grand-austria-hotel/", name: "Grand Hotel Wien" },
+];
+function digitaleUmsetzung(game) {
+  return DIGITALE_UMSETZUNGEN.find((u) =>
+    (game.bggId && String(game.bggId) === u.bggId) || u.titel.test(game.name || "") || u.titel.test(game.germanName || "")) || null;
+}
+
 function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList, onClose, onEdit, onViewOther, readOnlyLabel, hidePrices, onQuickUpdate, onAddExpansion, guestMode }) {
   const [campaignPhotoOpen, setCampaignPhotoOpen] = useState(false);
   const [expansionSheetOpen, setExpansionSheetOpen] = useState(false);
@@ -8191,6 +8201,16 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
               sub={(game.status === "owned" || game.status === "wishlist") && game.format === "digital" ? "digital" : ""}
             />
           </div>
+
+          {(() => {
+            const umsetzung = digitaleUmsetzung(game);
+            if (!umsetzung) return null;
+            return (
+              <a href={umsetzung.href} className="w-full h-12 flex items-center justify-center gap-1.5 border border-line rounded-[14px] text-ink text-sm font-medium">
+                <Dices size={15} /> Im Browser spielen: {umsetzung.name}
+              </a>
+            );
+          })()}
 
           {onQuickUpdate && game.status === "owned" && (
             <div>
