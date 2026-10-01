@@ -38,8 +38,20 @@ const COVERS = {
         ${[[70, 90], [410, 120], [80, 330], [420, 360], [360, 40], [120, 200], [390, 230]].map(([x, y]) => `<path d="M${x},${y - 12} l3.5,8.5 l8.5,3.5 l-8.5,3.5 l-3.5,8.5 l-3.5,-8.5 l-8.5,-3.5 l8.5,-3.5 Z" fill="#1A1A1A" stroke="none"/>`).join('')}</g></svg>
       <div style="position:absolute;left:40px;top:120px;width:400px;height:520px"><svg viewBox="0 0 100 130" class="ill">${frogSvg()}</svg></div>
       <div style="position:absolute;inset:12px;border:4px solid #1A1A1A;border-radius:22px"></div></div>`,
-  "countryside": () => `<div style="position:absolute;inset:0;background:#DCEBF0">
-      <div style="position:absolute;inset:0">${heroSvg().replace('viewBox="0 0 360 240"', 'viewBox="70 0 180 240"')}</div></div>`,
+  "countryside": () => `<div style="position:absolute;inset:0;background:${PAL.cream}">
+      <svg viewBox="0 0 300 400" style="position:absolute;inset:0;width:100%;height:100%">
+        <rect width="300" height="400" fill="${PAL.cream}"/>
+        ${W(`<circle cx="226" cy="74" r="30" fill="#F1C76A"/>`)}
+        ${W(`<path d="M-10,196 C50,160 110,170 170,184 C220,196 260,160 310,170 V400 H-10 Z" fill="${PAL.hill1}"/><path d="M-10,226 C60,204 130,220 190,220 C240,220 270,206 310,210 V400 H-10 Z" fill="${PAL.hill2}"/>`)}
+        ${W(`<rect x="196" y="176" width="40" height="30" fill="#F1E3C6"/><path d="M191,178 L216,156 L241,178 Z" fill="${PAL.poppy}"/><rect x="210" y="188" width="11" height="18" fill="${PAL.olive}"/>`)}
+        <g transform="translate(-52,62) scale(2.1)">${tree('apfel')}</g>
+        ${W(`<path d="M-10,246 C70,234 150,244 220,240 C260,238 290,236 310,238 V400 H-10 Z" fill="${PAL.sage}"/>`)}
+        ${W(meadow(41, 238, 290, 20, 3, { w: 300, bottom: 404 }))}
+        <g transform="translate(-50,140) scale(3.2)">${figureArt({ dress: '#E0B03E', stripe: '#FBF2DC', pants: '#7FA6CF', hair: '#6B4A3A', ear: true, prop: 'bouquet' })}</g>
+        <g transform="translate(22,140) scale(3.2)">${figureArt({ dress: '#F1E6CF', stripe: '#7E9A5C', skirt: true, pants: '#B9A6D6', hair: '#3E3A36', hat: 'straw', ear: true })}</g>
+        ${W(meadow(77, 336, 392, 24, 4, { w: 300, bottom: 410 }))}
+        <rect width="300" height="400" filter="url(#tooth)" opacity=".3"/>
+      </svg></div>`,
 };
 for (const [dir, fn] of Object.entries(COVERS)) {
   const page = await (await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 2 })).newPage();
