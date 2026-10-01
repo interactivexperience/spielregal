@@ -1,0 +1,1477 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F7F0E3">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Grand Hotel">
+<title>Grand Hotel Wien</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat+Brush&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#161616; --paper:#F7F0E3; --cream:#FFF9EE; --red:#E4472E; --blue:#2C47B5;
+  --yellow:#F1B02B; --pink:#F28AA6; --green:#1F8A4D; --brown:#B8692F; --muted:#6d655a;
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior-y:contain}
+body::before{content:"";position:fixed;inset:0;background:var(--grain);opacity:.18;pointer-events:none;z-index:0}
+#app{position:relative;z-index:1}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+button:disabled{cursor:default}
+.hand{font-family:"Caveat Brush","Comic Sans MS",cursive;letter-spacing:.3px}
+.mono{font-family:"Space Mono",ui-monospace,monospace}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px 130px}
+.ill{display:block;width:100%;height:100%;overflow:visible}
+.grainy{position:relative;isolation:isolate}
+.grainy::after{content:"";position:absolute;inset:0;border-radius:inherit;background:var(--grain);mix-blend-mode:multiply;opacity:.35;pointer-events:none}
+
+/* --- Start --- */
+.start{padding-top:12px;text-align:center}
+.start h1{font-size:52px;line-height:.9;margin:6px 0 4px}
+.start .sub{font-size:13px;color:var(--muted);margin:0 0 14px}
+.hero{width:100%;max-width:420px;margin:0 auto;aspect-ratio:360/300}
+.panel{background:var(--cream);border:2.5px solid var(--ink);border-radius:18px;box-shadow:4px 4px 0 var(--ink);padding:16px;text-align:left;margin:14px 0}
+.label{font-family:"Space Mono",monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:0 0 6px}
+.input{width:100%;font:inherit;font-size:16px;padding:10px 12px;border:2px solid var(--ink);border-radius:12px;background:#fff}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:2px solid var(--ink);border-radius:999px;padding:7px 14px;background:#fff;font-weight:600}
+.chip.on{background:var(--ink);color:var(--cream)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 20px;border:2.5px solid var(--ink);border-radius:14px;background:var(--yellow);box-shadow:3px 3px 0 var(--ink);font-weight:700;font-size:16px}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.btn.blue{background:var(--blue);color:#fff}.btn.red{background:var(--red);color:#fff}.btn.white{background:#fff}
+.btn.pink{background:var(--pink)}.btn.green{background:var(--green);color:#fff}
+.btn:disabled{opacity:.4;box-shadow:none;transform:none}
+.btn.wide{width:100%}
+.link{text-decoration:underline;text-underline-offset:3px;font-weight:600}
+
+/* --- Header --- */
+.top{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:2.5px solid var(--ink);padding:calc(6px + env(safe-area-inset-top)) 0 6px}
+.top .row{max-width:560px;margin:0 auto;padding:0 16px;display:flex;align-items:center;gap:10px}
+.round{font-size:26px;line-height:1;white-space:nowrap}
+.round small{font-family:"Space Mono",monospace;font-size:11px;color:var(--muted);display:block;margin-top:2px}
+.icobtn{width:40px;height:40px;border:2px solid var(--ink);border-radius:50%;background:#fff;font-weight:800;font-size:18px;flex:none;display:grid;place-items:center}
+.players{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;padding:2px 2px 4px}
+.players::-webkit-scrollbar{display:none}
+.pchip{flex:none;display:flex;align-items:center;gap:6px;border:2px solid var(--ink);border-radius:14px;background:#fff;padding:3px 8px 3px 3px;text-align:left}
+.pchip.cur{background:var(--yellow);box-shadow:2px 2px 0 var(--ink)}
+.pchip .av{width:32px;height:32px;border-radius:50%;overflow:hidden;border:2px solid var(--ink);background:var(--pink);flex:none}
+.pchip .nm{font-size:12px;font-weight:700;max-width:78px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pchip .st{font-family:"Space Mono",monospace;font-size:10.5px;white-space:nowrap}
+
+/* --- Sections --- */
+.sec{margin:18px 0 0}
+.sech{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 8px}
+.sech h2{font-size:28px;margin:0;line-height:1}
+.sech .hint{font-size:12px;color:var(--muted);text-align:right}
+.banner{margin:12px 0 0;border:2.5px solid var(--ink);border-radius:16px;padding:10px 12px;background:var(--cream);display:flex;gap:10px;align-items:center;box-shadow:3px 3px 0 var(--ink)}
+.banner.mine{background:#FFE9A8}
+.banner .face{width:44px;height:44px;flex:none}
+.banner b{display:block}
+.banner .small{font-size:12.5px;color:#3b362f}
+.steps{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap}
+.step{font-family:"Space Mono",monospace;font-size:10.5px;border:1.5px solid var(--ink);border-radius:99px;padding:1px 7px;background:#fff}
+.step.done{background:var(--ink);color:var(--cream);text-decoration:line-through}
+
+/* --- Guest cards --- */
+.line{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 10px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.line::-webkit-scrollbar{display:none}
+.gcard{flex:none;width:136px;scroll-snap-align:start;background:var(--cream);border:2.5px solid var(--ink);border-radius:16px;box-shadow:3px 3px 0 var(--ink);overflow:hidden;text-align:left;display:flex;flex-direction:column;position:relative}
+.gcard.sm{width:auto;box-shadow:2px 2px 0 var(--ink);border-radius:14px}
+.gcard .band{height:64px;position:relative;border-bottom:2.5px solid var(--ink)}
+.gcard.sm .band{height:56px}
+.gcard .band .ill{position:absolute;left:50%;bottom:-2px;width:62px;height:74px;transform:translateX(-50%)}
+.gcard.sm .band .ill{width:52px;height:64px}
+.gcard .cost{position:absolute;top:6px;left:6px;background:#fff;border:2px solid var(--ink);border-radius:99px;font-family:"Space Mono",monospace;font-size:11px;font-weight:700;padding:0 6px;display:flex;align-items:center;gap:2px}
+.gcard .rc{position:absolute;top:6px;right:6px;font-family:"Space Mono",monospace;font-size:9px;font-weight:700;background:#fff;border:1.5px solid var(--ink);border-radius:6px;padding:0 4px;text-transform:uppercase}
+.gcard .body{padding:6px 8px 8px;display:flex;flex-direction:column;gap:5px;flex:1}
+.gcard .gn{font-family:"Caveat Brush",cursive;font-size:17px;line-height:1.02;min-height:35px}
+.gcard.sm .gn{font-size:14.5px;min-height:30px}
+.order{display:flex;gap:3px;flex-wrap:wrap}
+.slot{width:28px;height:28px;border:2px dashed var(--ink);border-radius:9px;display:grid;place-items:center;background:#fff;position:relative}
+.gcard.sm .slot{width:25px;height:25px;border-radius:8px}
+.slot svg{width:21px;height:21px}
+.slot.empty svg{opacity:.32}
+.slot.full{border-style:solid;background:#E3F3E7}
+.slot.can{border-style:solid;border-color:var(--ink);background:#FFE9A8;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.08)}}
+.slot.full::after{content:"✓";position:absolute;right:-5px;top:-7px;font-size:11px;font-weight:900;background:var(--green);color:#fff;border-radius:50%;width:14px;height:14px;display:grid;place-items:center;border:1.5px solid var(--ink)}
+.rew{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.tok{display:inline-flex;align-items:center;gap:2px;font-family:"Space Mono",monospace;font-weight:700;font-size:12px;line-height:1}
+.tok svg{width:17px;height:17px}
+.waiting{position:absolute;inset:auto 6px 6px 6px;background:var(--ink);color:var(--cream);font-size:11px;font-weight:700;border-radius:8px;padding:3px 6px;text-align:center}
+
+/* --- tables --- */
+.tables{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tslot{min-height:208px;border:2.5px dashed #9b927f;border-radius:14px;display:grid;place-items:center;color:var(--muted);font-size:12px;text-align:center;padding:8px;background:rgba(255,255,255,.35)}
+.kitchen{margin-top:10px;border:2.5px solid var(--ink);border-radius:16px;background:#fff;padding:8px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.kitchen .kt{font-family:"Caveat Brush",cursive;font-size:20px;margin-right:2px}
+.kit{display:flex;align-items:center;gap:3px;font-family:"Space Mono",monospace;font-weight:700;font-size:14px;padding:2px 6px 2px 2px;border-radius:10px}
+.kit svg{width:24px;height:24px}
+.kit .fr{font-size:10px;background:var(--green);color:#fff;border-radius:6px;padding:0 4px;margin-left:2px}
+.servbtn{margin-left:auto;font-size:12.5px;font-weight:700;border:2px solid var(--ink);border-radius:10px;padding:6px 9px;background:var(--pink)}
+.servbtn:disabled{opacity:.4}
+
+/* --- action board --- */
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.act{border:2.5px solid var(--ink);border-radius:16px;background:var(--cream);padding:6px 6px 8px;text-align:center;position:relative;box-shadow:3px 3px 0 var(--ink);min-height:132px;display:flex;flex-direction:column;align-items:center}
+.act:disabled{box-shadow:none}
+.act.empty{opacity:.45}
+.act.live{background:#fff}
+.act.live:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.act .num{position:absolute;left:6px;top:2px;font-family:"Caveat Brush",cursive;font-size:24px;line-height:1}
+.act .aic{width:58px;height:42px;margin-top:4px}
+.act .an{font-size:11.5px;font-weight:700;line-height:1.15;margin-top:2px;min-height:27px}
+.dice{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;margin-top:4px}
+.dice svg{width:19px;height:19px}
+.act .strength{position:absolute;right:5px;top:4px;font-family:"Space Mono",monospace;font-size:10px;font-weight:700;background:var(--ink);color:#fff;border-radius:6px;padding:0 4px}
+
+/* --- hotel --- */
+.hotel{border:2.5px solid var(--ink);border-radius:6px 6px 16px 16px;background:#FDE7C8;padding:8px;box-shadow:4px 4px 0 var(--ink)}
+.roof{width:100%;height:46px;display:block;margin-bottom:-3px}
+.rooms{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.room{aspect-ratio:1/1.05;border:2.5px solid var(--ink);border-radius:10px 10px 4px 4px;position:relative;overflow:hidden;display:grid;place-items:center;background:#fff}
+.room.e{border-style:dashed;background:rgba(255,255,255,.55)}
+.room.e .cc{font-family:"Space Mono",monospace;font-size:11px;font-weight:700;display:flex;align-items:center;gap:1px}
+.room.e .cc svg{width:13px;height:13px}
+.room.e .dot{position:absolute;top:4px;right:4px;width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink)}
+.room.p .curt{position:absolute;inset:0}
+.room .ill{position:absolute;inset:0}
+.room.ok{outline:3px solid var(--ink);outline-offset:1px;animation:pulse 1.4s ease-in-out infinite;background:#FFE9A8}
+.room.sel{outline:3.5px solid var(--green);outline-offset:1px}
+.room .tag{position:absolute;bottom:2px;left:2px;right:2px;font-family:"Space Mono",monospace;font-size:9px;font-weight:700;background:var(--cream);border:1.5px solid var(--ink);border-radius:5px;text-align:center}
+.floorlbl{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:6px}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:11.5px;margin-top:8px;color:#3b362f}
+.legend i{display:inline-block;width:12px;height:12px;border:1.5px solid var(--ink);border-radius:3px;vertical-align:-2px;margin-right:3px}
+
+/* --- staff --- */
+.staffrow{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:none}
+.staffrow::-webkit-scrollbar{display:none}
+.scard{flex:none;width:124px;background:#fff;border:2.5px solid var(--ink);border-radius:14px;box-shadow:3px 3px 0 var(--ink);overflow:hidden;text-align:left;display:flex;flex-direction:column}
+.scard .top2{height:70px;position:relative;border-bottom:2.5px solid var(--ink)}
+.scard .top2 .ill{position:absolute;left:50%;bottom:-2px;width:60px;height:72px;transform:translateX(-50%)}
+.scard .price{position:absolute;top:5px;left:5px;background:var(--yellow);border:2px solid var(--ink);border-radius:99px;font-family:"Space Mono",monospace;font-size:11px;font-weight:700;padding:0 6px}
+.scard .kind{position:absolute;top:5px;right:5px;background:var(--cream);border:1.5px solid var(--ink);border-radius:6px;font-family:"Space Mono",monospace;font-size:8.5px;font-weight:700;padding:0 4px;text-transform:uppercase}
+.scard .b{padding:6px 8px 8px}
+.scard .sn{font-family:"Caveat Brush",cursive;font-size:17px;line-height:1}
+.scard .tx{font-size:11.5px;line-height:1.25;margin-top:3px}
+.scard.hired{opacity:.95}
+.scard.ok{outline:3px solid var(--green);outline-offset:2px}
+.scard.no{opacity:.45}
+
+/* --- politics / emperor --- */
+.pol{display:grid;gap:8px}
+.polc{border:2.5px solid var(--ink);border-radius:14px;background:#fff;padding:8px 10px;display:flex;gap:10px;align-items:center}
+.polc .pv{font-family:"Caveat Brush",cursive;font-size:22px;line-height:1;text-align:center;min-width:46px}
+.polc .pv small{display:block;font-family:"Space Mono",monospace;font-size:9px}
+.polc b{font-size:13.5px}
+.polc .who{display:flex;gap:4px;margin-top:3px}
+.polc .who span{width:22px;height:22px;border-radius:50%;overflow:hidden;border:1.5px solid var(--ink);background:var(--pink)}
+.emp{border:2.5px solid var(--ink);border-radius:16px;background:var(--cream);padding:10px;box-shadow:3px 3px 0 var(--ink)}
+.emphead{display:flex;gap:10px;align-items:center}
+.emphead .k{width:62px;height:72px;flex:none}
+.track{display:grid;grid-template-columns:repeat(16,1fr);gap:2px;margin-top:8px}
+.track .c{aspect-ratio:1/1.5;border:1.5px solid var(--ink);border-radius:4px;background:#fff;position:relative;font-family:"Space Mono",monospace;font-size:7.5px;display:flex;align-items:flex-start;justify-content:center;padding-top:1px}
+.track .c.th{background:var(--yellow)}
+.track .c .mk{position:absolute;left:50%;bottom:1px;transform:translateX(-50%);display:flex;flex-direction:column;gap:1px;align-items:center}
+.track .c .mk i{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--ink);display:block}
+.etiles{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.etile{border:2px solid var(--ink);border-radius:10px;background:#fff;padding:5px 6px;font-size:11px;line-height:1.2}
+.etile b{font-family:"Caveat Brush",cursive;font-size:16px;font-weight:400}
+.etile .g{color:var(--green);font-weight:700}.etile .x{color:var(--red);font-weight:700}
+.etile.done{opacity:.5}
+
+/* --- log --- */
+.log{font-size:12.5px;border:2px solid var(--ink);border-radius:14px;background:#fff;padding:8px 10px;max-height:220px;overflow:auto}
+.log div{padding:3px 0;border-bottom:1px dashed #d8cfbf}
+.log div:last-child{border:0}
+
+/* --- bottom bar --- */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--paper);border-top:2.5px solid var(--ink);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+.bar .in{max-width:560px;margin:0 auto;display:flex;gap:10px;align-items:center}
+.bar .msg{flex:1;font-size:12.5px;line-height:1.25}
+.bar .btn{min-height:46px;padding:8px 16px}
+
+/* --- sheet --- */
+.ov{position:fixed;inset:0;z-index:60;background:rgba(22,22,22,.45);display:flex;align-items:flex-end;justify-content:center;animation:fade .15s}
+@keyframes fade{from{opacity:0}}
+.sheet{background:var(--paper);width:100%;max-width:560px;max-height:88vh;overflow:auto;border:2.5px solid var(--ink);border-bottom:0;border-radius:22px 22px 0 0;padding:14px 16px calc(18px + env(safe-area-inset-bottom));animation:up .2s ease-out;position:relative}
+@keyframes up{from{transform:translateY(40px)}}
+.sheet h3{font-family:"Caveat Brush",cursive;font-size:30px;font-weight:400;margin:0 0 4px;line-height:1}
+.sheet .x{position:absolute;right:12px;top:12px}
+.sheet p{margin:6px 0}
+.grab{width:44px;height:5px;border-radius:9px;background:var(--ink);opacity:.25;margin:0 auto 10px}
+.stepper{display:flex;align-items:center;justify-content:space-between;gap:10px;border:2px solid var(--ink);border-radius:14px;background:#fff;padding:8px 10px;margin:10px 0}
+.stepper .sv{display:flex;align-items:center;gap:6px;font-family:"Space Mono",monospace;font-weight:700;font-size:18px}
+.stepper .sv svg{width:30px;height:30px}
+.stepper button{width:40px;height:40px;border:2px solid var(--ink);border-radius:50%;background:var(--yellow);font-size:22px;font-weight:800;line-height:1}
+.stepper button:disabled{opacity:.3}
+.split{display:flex;gap:8px;margin:10px 0}
+.split>div{flex:1;border:2px solid var(--ink);border-radius:14px;background:#fff;padding:8px;text-align:center}
+.split .big{font-family:"Caveat Brush",cursive;font-size:34px;line-height:1}
+.split svg{width:34px;height:34px;display:block;margin:0 auto}
+.acts6{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:10px 0}
+.acts6 button{border:2px solid var(--ink);border-radius:12px;background:#fff;padding:6px 2px;font-size:10.5px;font-weight:700}
+.acts6 button .aic{width:40px;height:30px;margin:0 auto}
+.btnrow{display:flex;gap:8px;margin-top:12px}
+.btnrow .btn{flex:1}
+.skip{display:block;margin:14px auto 0;font-size:13px;color:var(--muted);text-decoration:underline}
+.note{font-size:12.5px;color:#3b362f;background:#fff;border:1.5px dashed var(--ink);border-radius:10px;padding:6px 9px;margin-top:8px}
+.rules h4{font-family:"Caveat Brush",cursive;font-size:22px;font-weight:400;margin:16px 0 2px}
+.rules p,.rules li{font-size:14px}
+.rules ul{padding-left:18px;margin:4px 0}
+.toast{position:fixed;left:50%;top:calc(76px + env(safe-area-inset-top));transform:translateX(-50%);z-index:70;background:var(--ink);color:var(--cream);padding:8px 14px;border-radius:12px;font-size:13px;max-width:min(92vw,520px);box-shadow:3px 3px 0 var(--pink);animation:fade .2s}
+.score{width:100%;border-collapse:collapse;font-size:13px}
+.score th,.score td{padding:5px 4px;border-bottom:1.5px dashed #c9bfae;text-align:right}
+.score th:first-child,.score td:first-child{text-align:left}
+.score tr.tot td{font-weight:800;border-bottom:0;font-size:15px}
+.podium{display:flex;justify-content:center;align-items:flex-end;gap:8px;margin:8px 0}
+.podium .pp{text-align:center;width:96px}
+.podium .pp .ill{height:110px}
+.podium .pl{border:2.5px solid var(--ink);border-radius:10px 10px 0 0;font-family:"Caveat Brush",cursive;font-size:26px;display:grid;place-items:center}
+.deco{position:fixed;pointer-events:none;z-index:0;opacity:.85}
+@media (min-width:600px){.gcard{width:150px}.tslot{min-height:220px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="wob" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="chalk" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" result="t"/>
+      <feColorMatrix in="t" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.4 1.25" result="m"/>
+      <feComposite in="SourceGraphic" in2="m" operator="in"/>
+    </filter>
+    <pattern id="p-dots" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.5" fill="#161616"/><circle cx="7.5" cy="7.5" r="1.5" fill="#161616"/></pattern>
+    <pattern id="p-dots-w" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.5" fill="#FFF9EE"/><circle cx="7.5" cy="7.5" r="1.5" fill="#FFF9EE"/></pattern>
+    <pattern id="p-stripes" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0,0 V8" stroke="#161616" stroke-width="2.2"/></pattern>
+    <pattern id="p-stripes-w" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0,0 V8" stroke="#FFF9EE" stroke-width="2.2"/></pattern>
+    <pattern id="p-checks" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M0,0 V10 M0,0 H10" stroke="#161616" stroke-width="1.6"/></pattern>
+    <pattern id="p-checks-w" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M0,0 V10 M0,0 H10" stroke="#FFF9EE" stroke-width="1.6"/></pattern>
+    <pattern id="p-dash" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M2,3 l3,4 M8,1 l2,5 M4,9 l3,2" stroke="#161616" stroke-width="1.6" stroke-linecap="round"/></pattern>
+    <pattern id="p-dash-w" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M2,3 l3,4 M8,1 l2,5 M4,9 l3,2" stroke="#FFF9EE" stroke-width="1.6" stroke-linecap="round"/></pattern>
+  </defs>
+</svg>
+<div id="app"></div>
+<script>
+'use strict';
+/* =====================================================================
+   Grand Hotel Wien – ein Würfel-Hotelspiel nach dem Spielprinzip von
+   „Grand Austria Hotel“ (Gigli/Luciani). Alle Texte, Karten und
+   Illustrationen sind eigene Neuschöpfungen; die Mechanik ist an das
+   Original angelehnt und an einigen Stellen vereinfacht (siehe Regeln).
+   ===================================================================== */
+
+// ---------- Grunddaten ----------
+const FOODS = ['s', 'c', 'w', 'k'];
+const FN = { s: 'Strudel', c: 'Torte', w: 'Wein', k: 'Kaffee' };
+const COL = { r: '#E4472E', b: '#2C47B5', y: '#F1B02B', g: '#1F8A4D' };
+const CN = { r: 'Rot', b: 'Blau', y: 'Gelb', g: 'Grün' };
+const DICE_BY_N = { 2: 10, 3: 12, 4: 14 };
+const LINE_COST = [0, 0, 1, 2, 3];
+const ROUNDS = 7;
+const EMP_ROUNDS = [3, 5, 7];
+const EMP_NEED = [3, 6, 9];
+const EMP_BASE = [4, 7, 10];
+const EMP_MAX = 15;
+const POL_VP = [10, 6, 3];
+const GUEST_LEFT_PENALTY = 3;
+
+// Hotel: 4 Stockwerke × 5 Zimmer, Index = Stock*5 + Spalte, Stock 0 = Erdgeschoss
+const LAYOUT = ['rrbby', 'ryybb', 'bbryy', 'ybrrb'];
+const ROOM_COLOR = LAYOUT.join('').split('');
+const FLOOR_COST = [0, 1, 2, 3];
+const GROUP_BONUS = [0, 1, 3, 5, 8];
+function neighbors(i) {
+  const f = Math.floor(i / 5), c = i % 5, out = [];
+  if (c > 0) out.push(i - 1);
+  if (c < 4) out.push(i + 1);
+  if (f > 0) out.push(i - 5);
+  if (f < 3) out.push(i + 5);
+  return out;
+}
+const GROUP_OF = new Array(20).fill(-1);
+const GROUPS = [];
+for (let i = 0; i < 20; i++) {
+  if (GROUP_OF[i] >= 0) continue;
+  const g = [], st = [i];
+  GROUP_OF[i] = GROUPS.length;
+  while (st.length) {
+    const x = st.pop(); g.push(x);
+    for (const n of neighbors(x)) if (GROUP_OF[n] < 0 && ROOM_COLOR[n] === ROOM_COLOR[x]) { GROUP_OF[n] = GROUPS.length; st.push(n); }
+  }
+  GROUPS.push(g);
+}
+
+// Gäste: [Name, Zimmerfarbe, Bestellung, Belohnung, Aussehen]
+const GUESTS = [
+  ['Fiakerkutscher', 'r', 'ss', { vp: 2, k: 2 }, { hat: 'bowler', must: 1, body: '#161616' }],
+  ['Marktfrau vom Naschmarkt', 'r', 'sw', { vp: 2, k: 3 }, { hair: 'bun', pat: 'checks', body: '#F1B02B', prop: 'basket' }],
+  ['Tabaktrafikant', 'r', 'swk', { vp: 3, k: 3 }, { hat: 'cap2', must: 1 }],
+  ['Bankier von der Ringstraße', 'r', 'wwkk', { vp: 5, k: 5 }, { hat: 'top', must: 1, body: '#161616', prop: 'coins' }],
+  ['Operettentenor', 'r', 'cww', { vp: 4, k: 3 }, { hair: 'side', must: 1, prop: 'note' }],
+  ['Kunsthändlerin', 'r', 'sckw', { vp: 5, k: 4 }, { hat: 'feather', hair: 'bob', glasses: 1 }],
+  ['Heuriger-Wirt aus Grinzing', 'r', 'www', { vp: 3, k: 4 }, { hair: 'bald', beard: 1, prop: 'bottle' }],
+  ['Zuckerlfabrikant', 'r', 'ccs', { vp: 4, k: 3 }, { hat: 'bowler', pat: 'stripes', body: '#F28AA6' }],
+  ['Börsenmakler', 'r', 'kkw', { vp: 4, k: 4 }, { hair: 'short', glasses: 1, body: '#2C47B5', prop: 'paper' }],
+  ['Hutmacherin', 'r', 'sk', { vp: 2, k: 3 }, { hat: 'feather', hair: 'long', hatC: '#E4472E' }],
+  ['Juwelier', 'r', 'cckw', { vp: 5, k: 5 }, { hair: 'curls', glasses: 1, prop: 'coins' }],
+  ['Kaufmann aus Triest', 'r', 'ssww', { vp: 4, k: 4 }, { hat: 'bowler', beard: 1, prop: 'suitcase' }],
+  ['Kaffeehausliterat', 'b', 'kk', { vp: 5 }, { hair: 'side', glasses: 1, body: '#161616', prop: 'book' }],
+  ['Frau Hofrätin', 'b', 'ckw', { vp: 7 }, { hat: 'feather', hair: 'bun', pat: 'dots', body: '#2C47B5' }],
+  ['Walzerkomponist', 'b', 'swc', { vp: 6 }, { hair: 'curls', must: 1, prop: 'note' }],
+  ['Malerin der Secession', 'b', 'kc', { vp: 5 }, { hat: 'beret', hair: 'bob', pat: 'dash', body: '#F1B02B' }],
+  ['Opernsängerin', 'b', 'cwwk', { vp: 9 }, { hair: 'bun', hat: 'tiara', body: '#E4472E', pat: 'dots' }],
+  ['Professor der Medizin', 'b', 'kkk', { vp: 7 }, { hair: 'bald', beard: 1, glasses: 1, prop: 'book' }],
+  ['Schachmeister', 'b', 'ks', { vp: 4 }, { hair: 'short', pat: 'checks', body: '#FFF9EE' }],
+  ['Burgschauspieler', 'b', 'sscw', { vp: 7 }, { hair: 'long', must: 1, body: '#161616' }],
+  ['Philosophin', 'b', 'kwc', { vp: 7 }, { hair: 'bob', glasses: 1, prop: 'book' }],
+  ['Architekt', 'b', 'sskk', { vp: 8 }, { hat: 'bowler', glasses: 1, prop: 'paper' }],
+  ['Dichterin', 'b', 'cc', { vp: 5 }, { hair: 'long', hat: 'flower', pat: 'stripes', body: '#F28AA6' }],
+  ['Hofkapellmeister', 'b', 'swck', { vp: 8, k: 1 }, { hair: 'curls', must: 1, body: '#161616', prop: 'note' }],
+  ['Leutnant der Garde', 'y', 'sw', { vp: 2, e: 2 }, { hat: 'cap', must: 1, body: '#2C47B5' }],
+  ['Gräfin aus Böhmen', 'y', 'cwk', { vp: 4, e: 3 }, { hair: 'bun', hat: 'tiara', pat: 'dots', body: '#1F8A4D' }],
+  ['Hofdame', 'y', 'ccw', { vp: 4, e: 3 }, { hair: 'bob', hat: 'flower', body: '#FFF9EE', pat: 'dash' }],
+  ['Diplomat aus Paris', 'y', 'kwk', { vp: 4, e: 3 }, { hat: 'top', glasses: 1, body: '#161616' }],
+  ['Hofzuckerbäcker', 'y', 'ssc', { vp: 3, e: 2, k: 1 }, { hat: 'chef', must: 1, body: '#FFF9EE', prop: 'cake' }],
+  ['Kammerherr', 'y', 'wwk', { vp: 4, e: 3 }, { hair: 'side', beard: 1, body: '#E4472E' }],
+  ['Fürstin', 'y', 'sckwc', { vp: 7, e: 4 }, { hat: 'tiara', hair: 'long', body: '#F28AA6', pat: 'dots' }],
+  ['Rittmeister', 'y', 'ww', { vp: 2, e: 2 }, { hat: 'cap', must: 1, body: '#1F8A4D' }],
+  ['Botschafterin', 'y', 'kc', { vp: 3, e: 2 }, { hat: 'feather', hair: 'bob', body: '#2C47B5' }],
+  ['Minister', 'y', 'swkk', { vp: 5, e: 3 }, { hair: 'bald', must: 1, glasses: 1, body: '#161616', prop: 'paper' }],
+  ['Sommerfrischler', 'g', 'ss', { vp: 1, food: { w: 1 } }, { hat: 'beret', hatC: '#1F8A4D', pat: 'stripes', body: '#FFF9EE' }],
+  ['Reisende Familie', 'g', 'sscc', { vp: 5, room: 1 }, { hair: 'curls', prop: 'suitcase', pat: 'checks', body: '#F1B02B' }],
+  ['Ballonfahrer', 'g', 'wk', { vp: 3, k: 1, e: 1 }, { hat: 'cap2', glasses: 1, body: '#E4472E' }],
+  ['Bergsteigerin', 'g', 'sw', { vp: 2, food: { c: 1, k: 1 } }, { hat: 'beret', hatC: '#E4472E', hair: 'long', pat: 'checks', body: '#1F8A4D' }],
+  ['Zirkusdirektor', 'g', 'cwk', { vp: 4, room: 1 }, { hat: 'top', must: 1, body: '#E4472E', pat: 'stripes' }],
+  ['Weltreisender', 'g', 'kwsc', { vp: 5, k: 2, e: 1 }, { hat: 'bowler', beard: 1, prop: 'suitcase', body: '#2C47B5' }],
+];
+
+// Personal
+const STAFF = [
+  { n: 'Portier', c: 1, t: 'perm', e: 'lineDisc', tx: 'Gäste aus der Warteschlange kosten 1 Krone weniger.', look: { hat: 'cap2', must: 1, body: '#E4472E' }, prop: 'key' },
+  { n: 'Page', c: 0, t: 'now', e: 'nPage', tx: 'Sofort: +1 Kaiser, +2 Kronen.', look: { hat: 'cap2', hair: 'short', body: '#2C47B5' }, prop: 'bell' },
+  { n: 'Zimmermädchen', c: 2, t: 'perm', e: 'act3plus', tx: 'Aktion 3: ein Zimmer mehr vorbereiten.', look: { hair: 'bun', pat: 'dots', body: '#161616' }, prop: 'broom' },
+  { n: 'Zuckerbäckerin', c: 2, t: 'perm', e: 'act1cake', tx: 'Aktion 1: zusätzlich +1 Torte.', look: { hat: 'chef', hair: 'bob', body: '#FFF9EE' }, prop: 'cake' },
+  { n: 'Sommelier', c: 2, t: 'perm', e: 'act2wine', tx: 'Aktion 2: zusätzlich +1 Wein.', look: { hair: 'side', must: 1, body: '#161616' }, prop: 'bottle' },
+  { n: 'Kaffeesieder', c: 2, t: 'round', e: 'rK', tx: 'Rundenende: +1 Kaffee.', look: { hair: 'curls', body: '#B8692F', pat: 'stripes' }, prop: 'cup' },
+  { n: 'Strudelbäcker', c: 1, t: 'round', e: 'rS', tx: 'Rundenende: +1 Strudel.', look: { hat: 'chef', must: 1, body: '#FFF9EE' }, prop: 'strudel' },
+  { n: 'Oberkellner', c: 3, t: 'perm', e: 'freeService', tx: 'Küchenservice kostet dich nichts.', look: { hair: 'side', must: 1, body: '#161616', collar: '#FFF9EE' }, prop: 'tray' },
+  { n: 'Buchhalterin', c: 2, t: 'round', e: 'rKr', tx: 'Rundenende: +2 Kronen.', look: { hair: 'bob', glasses: 1, body: '#2C47B5' }, prop: 'book' },
+  { n: 'Concierge', c: 3, t: 'perm', e: 'checkinVp', tx: 'Jeder Gast, der einzieht: +1 SP.', look: { hat: 'top', body: '#1F8A4D' }, prop: 'key' },
+  { n: 'Hausdame', c: 2, t: 'perm', e: 'roomDisc', tx: 'Zimmer kosten dich 1 Krone weniger.', look: { hair: 'bun', glasses: 1, body: '#F28AA6', pat: 'checks' }, prop: 'key' },
+  { n: 'Zeremonienmeister', c: 3, t: 'round', e: 'rE', tx: 'Rundenende: +1 Kaiser.', look: { hat: 'top', must: 1, body: '#E4472E' }, prop: 'bell' },
+  { n: 'Hofberichterstatter', c: 2, t: 'perm', e: 'noEmpPen', tx: 'Bei Kaiserwertungen erhältst du nie eine Strafe.', look: { hat: 'bowler', glasses: 1, body: '#F1B02B' }, prop: 'paper' },
+  { n: 'Liftboy', c: 1, t: 'now', e: 'nRoom', tx: 'Sofort: 1 Zimmer gratis vorbereiten.', look: { hat: 'cap2', hair: 'short', body: '#E4472E', pat: 'dots' }, prop: 'key' },
+  { n: 'Lieferant', c: 1, t: 'now', e: 'nFood', tx: 'Sofort: +2 Strudel, +1 Wein.', look: { hat: 'cap2', beard: 1, body: '#1F8A4D' }, prop: 'basket' },
+  { n: 'Pianist', c: 3, t: 'end', e: 'eBlue', tx: 'Spielende: +2 SP je belegtem blauen Zimmer.', look: { hair: 'curls', body: '#161616' }, prop: 'note' },
+  { n: 'Empfangsdame', c: 3, t: 'end', e: 'eRed', tx: 'Spielende: +2 SP je belegtem roten Zimmer.', look: { hair: 'long', hat: 'flower', body: '#E4472E' }, prop: 'bell' },
+  { n: 'Gardeoffizier', c: 3, t: 'end', e: 'eYellow', tx: 'Spielende: +2 SP je belegtem gelben Zimmer.', look: { hat: 'cap', must: 1, body: '#2C47B5' }, prop: 'none' },
+  { n: 'Baumeisterin', c: 4, t: 'end', e: 'eFloor', tx: 'Spielende: +5 SP je komplett belegtem Stockwerk.', look: { hat: 'beret', hair: 'bob', body: '#F1B02B', pat: 'dash' }, prop: 'paper' },
+  { n: 'Hoteldirektor', c: 4, t: 'end', e: 'eStaff', tx: 'Spielende: +2 SP je eingestelltem Personal.', look: { hat: 'top', must: 1, glasses: 1, body: '#161616' }, prop: 'coins' },
+  { n: 'Bankdirektor', c: 2, t: 'end', e: 'eMoney', tx: 'Spielende: zusätzlich +1 SP je 2 Kronen.', look: { hair: 'bald', must: 1, body: '#2C47B5', pat: 'stripes' }, prop: 'coins' },
+  { n: 'Fremdenführerin', c: 2, t: 'now', e: 'nGuide', tx: 'Sofort: Nimm einen Gast aus der Warteschlange gratis.', look: { hat: 'feather', hair: 'long', body: '#1F8A4D' }, prop: 'flag' },
+  { n: 'Kapellmeister', c: 4, t: 'round', e: 'rVP', tx: 'Rundenende: +2 SP.', look: { hair: 'curls', must: 1, body: '#E4472E' }, prop: 'note' },
+  { n: 'Geldwechsler', c: 0, t: 'perm', e: 'act4k', tx: 'Aktion 4: zusätzlich +1 Krone.', look: { hair: 'side', glasses: 1, body: '#F1B02B' }, prop: 'coins' },
+  { n: 'Kellnerin', c: 1, t: 'perm', e: 'service4', tx: 'Küchenservice: 4 statt 3 Gerichte.', look: { hair: 'bun', body: '#161616', pat: 'dots' }, prop: 'tray' },
+  { n: 'Kammerdiener', c: 2, t: 'now', e: 'nE3', tx: 'Sofort: +3 Kaiser.', look: { hair: 'side', must: 1, body: '#FFF9EE', pat: 'stripes' }, prop: 'tray' },
+  { n: 'Gärtnerin', c: 1, t: 'now', e: 'nGarden', tx: 'Sofort: +1 Torte, +1 Kaffee, +1 Kaiser.', look: { hat: 'beret', hatC: '#1F8A4D', hair: 'long', body: '#F1B02B' }, prop: 'flower' },
+  { n: 'Nachtportier', c: 2, t: 'round', e: 'rW', tx: 'Rundenende: +1 Wein.', look: { hat: 'cap2', must: 1, body: '#2C47B5', glasses: 1 }, prop: 'key' },
+];
+const KIND = { now: 'Sofort', perm: 'Dauer', round: 'Runde', end: 'Ende' };
+
+// Politik (3 pro Partie)
+const POLITICS = [
+  { n: 'Bankett im Rathaus', tx: '3 rote Zimmer belegt', test: p => occColor(p, 'r') >= 3 },
+  { n: 'Künstlersalon', tx: '3 blaue Zimmer belegt', test: p => occColor(p, 'b') >= 3 },
+  { n: 'Jubiläumsball', tx: '3 gelbe Zimmer belegt', test: p => occColor(p, 'y') >= 3 },
+  { n: 'Hotelgutachten', tx: 'Ein Stockwerk komplett belegt', test: p => fullFloors(p) >= 1 },
+  { n: 'Personalkonferenz', tx: '4 Personal eingestellt', test: p => p.staff.length >= 4 },
+  { n: 'Audienz bei Hofe', tx: 'Kaiserleiste auf 8 oder mehr', test: p => p.emp >= 8 },
+  { n: 'Großer Umbau', tx: '10 Zimmer vorbereitet oder belegt', test: p => p.rooms.filter(x => x > 0).length >= 10 },
+  { n: 'Weltausstellung', tx: '7 Gäste eingezogen', test: p => p.rooms.filter(x => x === 2).length >= 7 },
+];
+
+// Kaiserplättchen (je eines für Runde 3, 5, 7)
+const EMP_TILES = [
+  { n: 'Schatulle', good: { k: 4 }, bad: { k: -3 }, gt: '+4 Kronen', bt: '−3 Kronen' },
+  { n: 'Hoftafel', good: { food: { s: 1, c: 1, w: 1, k: 1 } }, bad: { lose: 'k' }, gt: 'je 1 Strudel, Torte, Wein, Kaffee', bt: 'aller Kaffee weg' },
+  { n: 'Bauerlass', good: { room: 1 }, bad: { vp: -4 }, gt: '1 Zimmer gratis', bt: '−4 SP' },
+  { n: 'Orden', good: { vp: 3 }, bad: { hand: 1 }, gt: '+3 SP', bt: '1 Personalkarte abwerfen' },
+  { n: 'Geldbörse', good: { vp: 2, k: 2 }, bad: { vp: -2, k: -2 }, gt: '+2 SP, +2 Kronen', bt: '−2 SP, −2 Kronen' },
+  { n: 'Weinkeller', good: { vp: 2, food: { w: 1, c: 1 } }, bad: { lose: 'w' }, gt: '+2 SP, +1 Wein, +1 Torte', bt: 'aller Wein weg' },
+];
+
+const ACTIONS = {
+  1: { n: 'Strudel & Torte', short: 'Strudel/Torte' },
+  2: { n: 'Wein & Kaffee', short: 'Wein/Kaffee' },
+  3: { n: 'Zimmer vorbereiten', short: 'Zimmer' },
+  4: { n: 'Kronen & Kaiser', short: 'Kronen/Kaiser' },
+  5: { n: 'Personal einstellen', short: 'Personal' },
+  6: { n: 'Joker (1 Krone)', short: 'Joker' },
+};
+const BOT_NAMES = [
+  ['Frau Kipferl', { hair: 'bun', hat: 'flower', body: '#F28AA6', pat: 'dots' }],
+  ['Herr Gugelhupf', { hat: 'bowler', must: 1, body: '#2C47B5', pat: 'stripes' }],
+  ['Frau Melange', { hair: 'bob', glasses: 1, body: '#1F8A4D', pat: 'checks' }],
+  ['Herr Krapfen', { hair: 'curls', beard: 1, body: '#E4472E', pat: 'dash' }],
+];
+const BOT_MARK = ['#2C47B5', '#E4472E', '#1F8A4D', '#F28AA6'];
+
+// ---------- Zufall ----------
+function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function prng(seed) {
+  let a = (typeof seed === 'number' ? seed : hashStr(String(seed))) >>> 0;
+  return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+let S = null; // persistenter Spielzustand
+const U = { sheet: null, toast: null, busy: false, setup: { name: '', bots: 2 }, logOpen: false };
+function rnd() {
+  S.rng = (S.rng + 0x6D2B79F5) | 0;
+  let t = Math.imul(S.rng ^ (S.rng >>> 15), 1 | S.rng);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const range = n => Array.from({ length: n }, (_, i) => i);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+// ---------- Illustrationen ----------
+const SKINS = ['#F7D6BF', '#EFC09C', '#D99B70', '#A86B45', '#7A4A2E'];
+const BODIES = ['#E4472E', '#2C47B5', '#F1B02B', '#F28AA6', '#1F8A4D', '#161616', '#FFF9EE'];
+const HAIRC = ['#161616', '#161616', '#161616', '#6B3E22', '#C8452B', '#E8C15A'];
+
+function propSvg(p) {
+  switch (p) {
+    case 'tray': return '<path d="M62,98 H94" stroke-width="3.2"/><path d="M68,98 C68,88 88,88 88,98 Z" fill="#FFF9EE"/><circle cx="78" cy="87" r="2" fill="#161616"/>';
+    case 'key': return '<circle cx="80" cy="98" r="6" fill="#F1B02B"/><circle cx="80" cy="98" r="2" fill="#FFF9EE"/><path d="M86,98 H97 M93,98 V103 M96,98 V102" fill="none"/>';
+    case 'cup': return '<path d="M70,94 H88 V100 C88,106 84,109 79,109 C74,109 70,106 70,100 Z" fill="#FFF9EE"/><path d="M88,97 C94,97 94,104 88,104" fill="none"/><ellipse cx="79" cy="94" rx="9" ry="2" fill="#161616"/><path d="M76,88 q-3,-4 0,-7 M82,88 q-3,-4 0,-7" fill="none" stroke-width="1.6"/>';
+    case 'cake': return '<path d="M66,106 H94 V96 L66,100 Z" fill="#F28AA6"/><path d="M66,100 L94,96" stroke="#FFF9EE" stroke-width="2.6"/><path d="M66,100 L94,96 V106 H66Z" fill="none"/><circle cx="88" cy="91" r="3.4" fill="#E4472E"/><path d="M88,88 q2,-4 5,-4" fill="none" stroke-width="1.6"/>';
+    case 'bottle': return '<path d="M79,78 h6 v9 c4,2 5,6 5,9 v16 h-16 v-16 c0,-3 1,-7 5,-9 z" fill="#1F8A4D"/><rect x="75" y="98" width="14" height="7" fill="#FFF9EE"/>';
+    case 'coins': return '<ellipse cx="80" cy="106" rx="10" ry="4" fill="#F1B02B"/><ellipse cx="80" cy="101" rx="10" ry="4" fill="#F1B02B"/><ellipse cx="80" cy="96" rx="10" ry="4" fill="#F1B02B"/><text x="80" y="98.5" font-size="6" text-anchor="middle" font-family="Space Mono,monospace" font-weight="700" stroke="none" fill="#161616">K</text>';
+    case 'bell': return '<path d="M70,106 H92" stroke-width="3.2"/><path d="M72,106 C72,92 90,92 90,106 Z" fill="#F1B02B"/><circle cx="81" cy="91" r="2" fill="#161616"/>';
+    case 'book': return '<path d="M66,92 L80,95 L94,92 V108 L80,111 L66,108 Z" fill="#E4472E"/><path d="M80,95 V111" fill="none"/>';
+    case 'paper': return '<rect x="68" y="84" width="24" height="26" rx="2" fill="#FFF9EE" transform="rotate(8 80 97)"/><path d="M72,92 H88 M72,97 H86 M72,102 H88" fill="none" stroke-width="1.5" transform="rotate(8 80 97)"/>';
+    case 'note': return '<path d="M74,108 V86 L92,82 V102" fill="none" stroke-width="2.6"/><ellipse cx="70.5" cy="108" rx="5" ry="3.6" fill="#161616"/><ellipse cx="88.5" cy="102" rx="5" ry="3.6" fill="#161616"/>';
+    case 'broom': return '<path d="M86,70 L78,104" fill="none" stroke-width="2.6"/><path d="M70,104 L86,104 L84,116 L68,116 Z" fill="#F1B02B"/><path d="M72,106 L71,115 M77,106 L76,115 M82,106 L81,115" fill="none" stroke-width="1.4"/>';
+    case 'suitcase': return '<rect x="66" y="94" width="28" height="20" rx="3" fill="#B8692F"/><path d="M74,94 V89 H86 V94" fill="none"/><path d="M66,102 H94" stroke="#F1B02B" stroke-width="2"/>';
+    case 'basket': return '<path d="M66,98 H94 L90,114 H70 Z" fill="#B8692F"/><path d="M70,98 C70,86 90,86 90,98" fill="none"/><circle cx="76" cy="96" r="3.5" fill="#E4472E"/><circle cx="84" cy="96" r="3.5" fill="#1F8A4D"/>';
+    case 'flower': return '<path d="M80,112 V92" fill="none"/><circle cx="80" cy="88" r="6" fill="#F28AA6"/><circle cx="80" cy="88" r="2.4" fill="#F1B02B"/><path d="M80,102 q6,-6 10,-2 q-4,6 -10,2Z" fill="#1F8A4D"/>';
+    case 'flag': return '<path d="M78,116 V78" fill="none" stroke-width="2.4"/><path d="M78,78 L96,84 L78,90 Z" fill="#E4472E"/>';
+    case 'strudel': return '<path d="M64,104 C64,94 96,94 96,104 C96,110 64,110 64,104 Z" fill="#C9772E"/><path d="M71,99 l3,9 M79,98 l3,10 M87,98 l3,9" fill="none" stroke-width="1.6"/>';
+    default: return '';
+  }
+}
+
+function person(seed, o = {}, vb = '0 0 100 120') {
+  const r = prng(seed);
+  const pk = a => a[Math.floor(r() * a.length)];
+  const skin = o.skin || pk(SKINS);
+  const body = o.body || pk(BODIES);
+  const pat = o.pat || pk(['dots', 'stripes', 'checks', 'dash', 'none', 'none']);
+  const hair = o.hair || pk(['bun', 'bob', 'short', 'curls', 'side', 'long']);
+  const hairC = o.hairC || pk(HAIRC);
+  const hat = o.hat || 'none';
+  const dark = body === '#161616';
+  const ink = '#161616';
+  let s = `<svg viewBox="${vb}" class="ill" aria-hidden="true"><g filter="url(#wob)" stroke="${ink}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">`;
+  if (hair === 'long') s += `<path d="M30,38 C25,66 32,74 40,74 L60,74 C68,74 75,66 70,38 Z" fill="${hairC}"/>`;
+  if (hair === 'bun') s += `<circle cx="50" cy="17" r="7.5" fill="${hairC}"/>`;
+  s += `<rect x="44" y="48" width="12" height="14" fill="${skin}" stroke="none"/><path d="M44,49 V61 M56,49 V61" fill="none"/>`;
+  const bodyD = 'M21,122 C19,92 25,66 50,60 C75,66 81,92 79,122 Z';
+  s += `<path d="${bodyD}" fill="${body}"/>`;
+  if (pat !== 'none') s += `<path d="${bodyD}" fill="url(#p-${pat}${dark ? '-w' : ''})" stroke="none"/>`;
+  s += `<path d="M42,61 L50,71 L58,61" fill="${o.collar || (dark ? '#FFF9EE' : '#FFF9EE')}"/>`;
+  s += `<path d="M31,78 C25,94 27,106 34,113" fill="none"/><path d="M69,78 C75,94 73,106 66,113" fill="none"/>`;
+  s += `<circle cx="50" cy="38" r="16.5" fill="${skin}"/>`;
+  switch (hair) {
+    case 'bun': case 'long': s += `<path d="M33.5,38 C33,20 67,20 66.5,38 C60,28 40,28 33.5,38 Z" fill="${hairC}"/>`; break;
+    case 'bob': s += `<path d="M31,48 C26,17 74,17 69,48 L65,48 L64.5,33 C56,30 44,30 35.5,33 L35,48 Z" fill="${hairC}"/>`; break;
+    case 'short': s += `<path d="M33.5,35 C33,19 67,19 66.5,35 C62,28 54,27 50,30 C45,27 38,29 33.5,35 Z" fill="${hairC}"/>`; break;
+    case 'curls': s += [[36, 29], [42, 22.5], [50, 20.5], [58, 22.5], [64, 29]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="6.2" fill="${hairC}"/>`).join(''); break;
+    case 'side': s += `<path d="M33.5,37 C32,19 68,17 66.5,37 C63,27 51,27 44,24 C40,29 37,32 33.5,37 Z" fill="${hairC}"/>`; break;
+    case 'bald': s += `<path d="M34,40 C33,33 35,31 37,30 M66,40 C67,33 65,31 63,30" fill="none" stroke="${hairC}" stroke-width="3.2"/>`; break;
+  }
+  // Gesicht
+  if (o.sleepy) s += `<path d="M41,39 q3,2.5 6,0 M53,39 q3,2.5 6,0" fill="none" stroke-width="1.8"/>`;
+  else if (o.glasses) s += `<circle cx="44" cy="38" r="4.6" fill="${ink}"/><circle cx="56" cy="38" r="4.6" fill="${ink}"/><path d="M48.5,38 H51.5" fill="none"/>`;
+  else s += `<circle cx="44" cy="38.5" r="1.8" fill="${ink}" stroke="none"/><circle cx="56" cy="38.5" r="1.8" fill="${ink}" stroke="none"/>`;
+  s += `<circle cx="40.5" cy="44.5" r="3.4" fill="#F28AA6" stroke="none" opacity=".85"/><circle cx="59.5" cy="44.5" r="3.4" fill="#F28AA6" stroke="none" opacity=".85"/>`;
+  s += `<path d="M50,39 q-2.6,5 1,6" fill="none" stroke-width="1.7"/>`;
+  if (o.beard) s += `<path d="M36,44 C38,62 62,62 64,44 C60,52 40,52 36,44 Z" fill="${hairC}"/>`;
+  if (o.must === 'kaiser') s += `<path d="M33.5,36 C33,48 37,52 41,50 Z" fill="${hairC}"/><path d="M66.5,36 C67,48 63,52 59,50 Z" fill="${hairC}"/><path d="M32,44 C38,42 46,44 50,47.5 C54,44 62,42 68,44 C66,49 56,50 50,49 C44,50 34,49 32,44 Z" fill="${hairC}"/>`;
+  else if (o.must) s += `<path d="M41,48.5 C44,44.5 48,45.5 50,47.5 C52,45.5 56,44.5 59,48.5 C56,47.5 53,49.5 50,49.5 C47,49.5 44,47.5 41,48.5 Z" fill="${hairC === '#E8C15A' ? '#6B3E22' : hairC}"/>`;
+  else if (!o.beard) s += `<path d="M47,49.5 q3,2.2 6,0" fill="none" stroke-width="1.7"/>`;
+  const hatC = o.hatC || '#161616';
+  switch (hat) {
+    case 'top': s += `<rect x="38" y="1" width="24" height="21" rx="2" fill="#161616"/><rect x="38" y="14" width="24" height="4.5" fill="#E4472E"/><path d="M29,23 H71" stroke-width="4.5"/>`; break;
+    case 'bowler': s += `<path d="M35,25 C35,6 65,6 65,25 Z" fill="${hatC}"/><path d="M30,25 Q50,29 70,25" fill="none" stroke-width="4.5"/>`; break;
+    case 'beret': s += `<path d="M30,27 C27,14 64,7 73,22 C64,28 44,29 30,27 Z" fill="${hatC}"/><path d="M53,11 l2,-6" fill="none" stroke-width="3"/>`; break;
+    case 'cap': s += `<path d="M35,25 L36,9 H64 L65,25 Z" fill="#E4472E"/><path d="M36,18 H64" stroke="#F1B02B" stroke-width="3.2"/><path d="M36,18 H64" fill="none" stroke-width="0"/><path d="M33,25 Q46,31 60,25 Z" fill="#161616"/>`; break;
+    case 'cap2': s += `<path d="M36,25 L37,13 H63 L64,25 Z" fill="${hatC === '#161616' ? '#2C47B5' : hatC}"/><path d="M37,17 H63" stroke="#F1B02B" stroke-width="2.4"/><path d="M34,25 Q44,30 56,25 Z" fill="#161616"/>`; break;
+    case 'tiara': s += `<path d="M38,24 L41,15 L45,21 L50,11 L55,21 L59,15 L62,24 Z" fill="#F1B02B"/><circle cx="50" cy="17" r="1.6" fill="#E4472E"/>`; break;
+    case 'crown': s += `<path d="M34,25 L32,7 L42,16 L50,2 L58,16 L68,7 L66,25 Z" fill="#F1B02B"/><circle cx="50" cy="17" r="2.6" fill="#E4472E"/><circle cx="40" cy="20" r="1.8" fill="#2C47B5"/><circle cx="60" cy="20" r="1.8" fill="#2C47B5"/>`; break;
+    case 'chef': s += `<path d="M37,25 V15 C29,13 31,2 40,4 C42,-3 58,-3 60,4 C69,2 71,13 63,15 V25 Z" fill="#FFF9EE"/>`; break;
+    case 'flower': s += `<circle cx="65" cy="24" r="4.5" fill="#F28AA6"/><circle cx="65" cy="24" r="1.7" fill="#F1B02B"/>`; break;
+    case 'feather': s += `<path d="M25,26 Q50,15 75,26 Q50,31 25,26 Z" fill="${hatC}"/><path d="M38,23 C38,9 62,9 62,23 Z" fill="${hatC}"/><path d="M60,15 C67,3 76,4 80,0" fill="none" stroke-width="2.2"/>`; break;
+  }
+  if (o.prop && o.prop !== 'none') s += propSvg(o.prop);
+  if (o.extra) s += o.extra;
+  s += '</g></svg>';
+  return s;
+}
+const head = (seed, o) => person(seed, o, '22 0 56 62');
+function kaiser(vb) { return person('kaiser', { hat: 'crown', hair: 'short', hairC: '#F5F5F0', must: 'kaiser', body: '#2C47B5', pat: 'none', skin: '#F7D6BF', collar: '#E4472E', extra: '<path d="M24,72 H38 M62,72 H76" stroke="#F1B02B" stroke-width="4"/><circle cx="50" cy="82" r="2" fill="#F1B02B"/><circle cx="50" cy="92" r="2" fill="#F1B02B"/><circle cx="50" cy="102" r="2" fill="#F1B02B"/>' }, vb); }
+function guestArt(id, sleepy) { const g = GUESTS[id]; return person('g' + id, Object.assign({}, g[4], sleepy ? { sleepy: 1, glasses: 0 } : {})); }
+function staffArt(id) { const st = STAFF[id]; return person('st' + id, Object.assign({}, st.look, { prop: st.prop })); }
+
+function foodSvg(f) {
+  const st = 'stroke="#161616" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"';
+  switch (f) {
+    case 's': return `<svg viewBox="0 0 24 24" aria-label="Strudel"><g ${st}><path d="M2.5,15 C2.5,8.5 21.5,8.5 21.5,15 C21.5,19.5 2.5,19.5 2.5,15 Z" fill="#C9772E"/><path d="M7,11.5 l2,6 M11.5,11 l2,7 M16,11.5 l2,6" fill="none" stroke-width="1.3"/><circle cx="6" cy="13" r=".6" fill="#fff" stroke="none"/><circle cx="14" cy="12.5" r=".6" fill="#fff" stroke="none"/></g></svg>`;
+    case 'c': return `<svg viewBox="0 0 24 24" aria-label="Torte"><g ${st}><path d="M2.5,19.5 H21.5 V11 L2.5,15.2 Z" fill="#F28AA6"/><path d="M2.5,15.2 L21.5,11" stroke="#FFF9EE" stroke-width="2.4"/><path d="M2.5,19.5 H21.5 V11 L2.5,15.2 Z" fill="none"/><circle cx="17" cy="7.6" r="2.6" fill="#E4472E"/><path d="M17,5 q1.5,-3 4,-3" fill="none" stroke-width="1.3"/></g></svg>`;
+    case 'w': return `<svg viewBox="0 0 24 24" aria-label="Wein"><g ${st}><path d="M6.5,2.5 H17.5 C17.5,10 15,12.6 12,12.6 C9,12.6 6.5,10 6.5,2.5 Z" fill="#FFF9EE"/><path d="M7,6.5 H17 C16.6,10.5 14.6,12.6 12,12.6 C9.4,12.6 7.4,10.5 7,6.5 Z" fill="#C8312A"/><path d="M12,12.6 V20 M8,21 H16" fill="none"/></g></svg>`;
+    case 'k': return `<svg viewBox="0 0 24 24" aria-label="Kaffee"><g ${st}><path d="M3.5,9 H17 V13.5 C17,17.5 14,19.5 10.2,19.5 C6.5,19.5 3.5,17.5 3.5,13.5 Z" fill="#FFF9EE"/><path d="M17,10.5 C21,10.5 21,15.5 17,15.5" fill="none"/><ellipse cx="10.2" cy="9.2" rx="6.6" ry="1.5" fill="#3A2216"/><path d="M8,6 q-2,-2 0,-4 M12.5,6 q-2,-2 0,-4" fill="none" stroke-width="1.2"/><path d="M2,21.5 H19" fill="none"/></g></svg>`;
+  }
+}
+const coinSvg = () => `<svg viewBox="0 0 24 24" aria-label="Kronen"><g stroke="#161616" stroke-width="1.7"><circle cx="12" cy="12" r="9" fill="#F1B02B"/><circle cx="12" cy="12" r="6.2" fill="none" stroke-width="1"/></g><text x="12" y="15.6" text-anchor="middle" font-size="10" font-weight="700" font-family="Space Mono,monospace" fill="#161616">K</text></svg>`;
+const starSvg = () => `<svg viewBox="0 0 24 24" aria-label="Siegpunkte"><path d="M12,2.2 L14.8,8.6 L21.7,9.2 L16.5,13.8 L18,20.6 L12,17 L6,20.6 L7.5,13.8 L2.3,9.2 L9.2,8.6 Z" fill="#2C47B5" stroke="#161616" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+const crownSvg = () => `<svg viewBox="0 0 24 24" aria-label="Kaiser"><path d="M3.5,19 L2.5,7 L8,12 L12,4 L16,12 L21.5,7 L20.5,19 Z" fill="#F1B02B" stroke="#161616" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="14" r="1.6" fill="#E4472E"/></svg>`;
+const roomSvg = () => `<svg viewBox="0 0 24 24" aria-label="Zimmer"><g stroke="#161616" stroke-width="1.7" stroke-linejoin="round"><path d="M3,21 V9 L12,3 L21,9 V21 Z" fill="#FFF9EE"/><rect x="9" y="13" width="6" height="8" fill="#E4472E"/></g></svg>`;
+function dieSvg(v, fill = '#FFF9EE') {
+  const P = { 1: [[12, 12]], 2: [[7.5, 7.5], [16.5, 16.5]], 3: [[7, 7], [12, 12], [17, 17]], 4: [[7.5, 7.5], [16.5, 7.5], [7.5, 16.5], [16.5, 16.5]], 5: [[7, 7], [17, 7], [12, 12], [7, 17], [17, 17]], 6: [[7.5, 6.5], [16.5, 6.5], [7.5, 12], [16.5, 12], [7.5, 17.5], [16.5, 17.5]] };
+  return `<svg viewBox="0 0 24 24" aria-label="Würfel ${v}"><rect x="2" y="2" width="20" height="20" rx="5" fill="${fill}" stroke="#161616" stroke-width="1.8"/>${P[v].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.9" fill="#161616"/>`).join('')}</svg>`;
+}
+function actionIcon(a) {
+  const g = (inner) => `<svg viewBox="0 0 58 42" class="ill" aria-hidden="true"><g filter="url(#wob)">${inner}</g></svg>`;
+  const at = (svg, x, y, s) => svg.replace('<svg ', `<svg x="${x}" y="${y}" width="${s}" height="${s}" `);
+  switch (a) {
+    case 1: return g(at(foodSvg('s'), 2, 6, 30) + at(foodSvg('c'), 26, 8, 30));
+    case 2: return g(at(foodSvg('w'), 4, 4, 30) + at(foodSvg('k'), 26, 8, 30));
+    case 3: return g('<g stroke="#161616" stroke-width="2.2" stroke-linejoin="round"><path d="M8,40 V16 L29,3 L50,16 V40 Z" fill="#FFF9EE"/><rect x="14" y="19" width="10" height="9" fill="#2C47B5"/><rect x="34" y="19" width="10" height="9" fill="#F1B02B"/><path d="M24,40 V31 C24,27 34,27 34,31 V40" fill="#E4472E"/></g>');
+    case 4: return g(at(coinSvg(), 2, 8, 28) + at(crownSvg(), 26, 4, 32));
+    case 5: return `<svg viewBox="0 0 58 42" class="ill" aria-hidden="true"><svg x="9" y="-2" width="40" height="48" viewBox="0 0 100 120">${person('act5', { hair: 'side', must: 1, body: '#161616', prop: 'tray' }).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '')}</svg></svg>`;
+    case 6: return g('<g stroke="#161616" stroke-width="2.2" stroke-linejoin="round"><path d="M29,3 L34.5,15 L48,16.5 L38,25.5 L41,39 L29,32 L17,39 L20,25.5 L10,16.5 L23.5,15 Z" fill="#F28AA6"/><text x="29" y="27" text-anchor="middle" font-size="12" font-family="Caveat Brush,cursive" fill="#161616" stroke="none">?</text></g>');
+  }
+}
+function heroSvg() {
+  const win = [];
+  for (let f = 0; f < 4; f++) for (let c = 0; c < 5; c++) {
+    if (f === 0 && c === 2) continue; // Eingangstür
+    const x = 92 + c * 36, y = 228 - f * 42, col = COL[ROOM_COLOR[f * 5 + c]];
+    win.push(`<rect x="${x}" y="${y}" width="24" height="28" rx="6" fill="${col}"/>`);
+    if ((f * 5 + c) % 3 === 1) win.push(`<circle cx="${x + 12}" cy="${y + 15}" r="6" fill="#F7D6BF"/><path d="M${x + 6},${y + 12} C${x + 6},${y + 5} ${x + 18},${y + 5} ${x + 18},${y + 12} Z" fill="#161616"/><circle cx="${x + 9.5}" cy="${y + 15.5}" r=".9" fill="#161616"/><circle cx="${x + 14.5}" cy="${y + 15.5}" r=".9" fill="#161616"/>`);
+  }
+  const fig = (seed, o, x, y, w) => `<svg x="${x}" y="${y}" width="${w}" height="${w * 1.2}" viewBox="0 0 100 120">${person(seed, o).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '')}</svg>`;
+  return `<svg viewBox="0 0 360 300" class="ill" role="img" aria-label="Illustration: das Grand Hotel mit Gästen">
+  <g filter="url(#wob)">
+   <circle cx="44" cy="52" r="26" fill="#F1B02B"/><path d="M18,96 l10,-14 M30,100 l10,-14 M42,98 l10,-14" stroke="#161616" stroke-width="4" stroke-linecap="round"/>
+   <path d="M316,30 l26,0 l-14,16 l22,0" fill="none" stroke="#2C47B5" stroke-width="9" stroke-linejoin="round"/>
+   <path d="M330,120 c-14,10 14,20 0,30 c-14,10 14,20 0,30" fill="none" stroke="#F28AA6" stroke-width="7" stroke-linecap="round"/>
+   <circle cx="22" cy="150" r="3.5" fill="#161616"/><circle cx="34" cy="160" r="3.5" fill="#161616"/><circle cx="20" cy="172" r="3.5" fill="#161616"/>
+   <g stroke="#161616" stroke-width="2.6" stroke-linejoin="round">
+    <path d="M78,272 V96 H282 V272 Z" fill="#FDE7C8"/>
+    <path d="M70,98 L180,40 L290,98 Z" fill="#E4472E"/>
+    <rect x="120" y="58" width="120" height="30" rx="8" fill="#FFF9EE"/>
+    <path d="M180,40 V20" fill="none"/><path d="M180,20 L200,26 L180,32 Z" fill="#F1B02B"/>
+    ${win.join('')}
+    <path d="M160,272 V250 C160,236 200,236 200,250 V272 Z" fill="#161616"/>
+    <path d="M60,272 H300" fill="none" stroke-width="3"/>
+   </g>
+   <text x="180" y="81" text-anchor="middle" font-family="Caveat Brush,Comic Sans MS,cursive" font-size="24" fill="#161616">GRAND HOTEL</text>
+  </g>
+  ${fig('heroA', { hat: 'beret', hair: 'bob', body: '#2C47B5', pat: 'dots', prop: 'cup' }, 4, 182, 86)}
+  ${fig('heroB', { hat: 'top', must: 1, body: '#161616', prop: 'suitcase' }, 280, 186, 82)}
+  <g filter="url(#wob)" stroke="#161616" stroke-width="2.4"><path d="M196,282 C196,266 268,266 268,282 C268,294 196,294 196,282 Z" fill="#C9772E"/><path d="M210,272 l4,16 M226,270 l4,19 M242,270 l4,19 M256,272 l3,15" fill="none" stroke-width="1.8"/></g>
+ </svg>`;
+}
+function roofSvg(name) {
+  return `<svg viewBox="0 0 300 46" class="roof" preserveAspectRatio="none" aria-hidden="true"><g filter="url(#wob)" stroke="#161616" stroke-width="2.4" stroke-linejoin="round"><path d="M4,44 L150,4 L296,44 Z" fill="#E4472E"/><rect x="98" y="22" width="104" height="18" rx="6" fill="#FFF9EE"/></g><text x="150" y="36" text-anchor="middle" font-family="Caveat Brush,cursive" font-size="15" fill="#161616">${esc(name)}</text></svg>`;
+}
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
+
+// ---------- Spiel-Logik ----------
+const cur = () => S.players[S.seq[S.seqIdx]];
+const human = () => S.players.find(p => !p.bot);
+const hasE = (p, e) => p.staff.some(id => STAFF[id].e === e);
+function occColor(p, c) { let n = 0; p.rooms.forEach((st, i) => { if (st === 2 && ROOM_COLOR[i] === c) n++; }); return n; }
+function fullFloors(p) { let n = 0; for (let f = 0; f < 4; f++) if (range(5).every(c => p.rooms[f * 5 + c] === 2)) n++; return n; }
+function roomCost(p, i) { return Math.max(0, FLOOR_COST[Math.floor(i / 5)] - (hasE(p, 'roomDisc') ? 1 : 0)); }
+function roomOK(p, i, extra) {
+  if (p.rooms[i] !== 0 || (extra && extra.includes(i))) return false;
+  if (i < 5) return true;
+  return neighbors(i).some(j => p.rooms[j] > 0 || (extra && extra.includes(j)));
+}
+function lineCost(p, slot) { return Math.max(0, LINE_COST[slot] - (hasE(p, 'lineDisc') ? 1 : 0)); }
+function serviceCost(p) { return hasE(p, 'freeService') ? 0 : 1; }
+function serviceAmount(p) { return hasE(p, 'service4') ? 4 : 3; }
+function staffCost(p, id, n) { return Math.max(0, STAFF[id].c - (n - 1)); }
+function log(msg) { S.log.unshift(msg); if (S.log.length > 80) S.log.length = 80; }
+
+function newGame(name, nBots, seed) {
+  S = { v: 1, rng: seed | 0, round: 1, players: [], log: [], final: null, roundInfo: null };
+  const n = nBots + 1;
+  const bots = shuffle(BOT_NAMES.slice()).slice(0, nBots);
+  const mk = (nm, bot, look, mark) => ({ name: nm, bot, look, mark, k: 0, vp: 0, emp: 0, kitchen: { s: 1, c: 0, w: 1, k: 0 }, fresh: { s: 0, c: 0, w: 0, k: 0 }, credits: 0, serviceBought: false, tables: [null, null, null], rooms: new Array(20).fill(0), roomGuest: new Array(20).fill(-1), hand: [], staff: [], freeRooms: 0, freeGuest: 0, pol: [] });
+  if (name !== null) S.players.push(mk(name || 'Du', false, { hat: 'beret', hair: 'bob', body: '#F1B02B', pat: 'dash' }, '#F1B02B'));
+  bots.forEach((b, i) => S.players.push(mk(b[0], true, b[1], BOT_MARK[i])));
+  if (name === null) S.players.push(mk('Herr Powidl', true, { hat: 'top', body: '#F1B02B' }, '#F1B02B'));
+  S.guestDeck = shuffle(range(GUESTS.length));
+  S.staffDeck = shuffle(range(STAFF.length));
+  S.politics = shuffle(range(POLITICS.length)).slice(0, 3).map(id => ({ id, by: [] }));
+  S.empTiles = shuffle(range(EMP_TILES.length)).slice(0, 3);
+  S.empDone = [];
+  S.players.forEach((p, i) => {
+    p.k = 10 + i;
+    p.rooms[0] = 1; p.rooms[2] = 1; p.rooms[4] = 1;
+    p.hand = S.staffDeck.splice(0, 6);
+    p.tables[0] = { id: S.guestDeck.pop(), filled: null };
+    p.tables[0].filled = GUESTS[p.tables[0].id][2].split('').map(() => false);
+  });
+  S.line = S.guestDeck.splice(0, 5);
+  log(`Das Hotel öffnet! ${S.players.length} Hoteliers, ${ROUNDS} Runden.`);
+  startRound();
+}
+function startRound() {
+  const n = S.players.length;
+  const sp = (S.round - 1) % n;
+  const fwd = range(n).map(i => (sp + i) % n);
+  S.seq = fwd.concat(fwd.slice().reverse());
+  S.seqIdx = 0;
+  S.dice = [0, 0, 0, 0, 0, 0, 0];
+  for (let i = 0; i < DICE_BY_N[n]; i++) S.dice[1 + Math.floor(rnd() * 6)]++;
+  S.rolled = S.dice.slice();
+  log(`— Runde ${S.round}: ${DICE_BY_N[n]} Würfel gewürfelt (${range(6).map(i => `${i + 1}×${S.dice[i + 1]}`).join(', ')}).`);
+  startTurn();
+}
+function startTurn() {
+  S.turn = { guestTaken: false, dieTaken: false };
+  const p = cur();
+  p.credits = 0; p.serviceBought = false;
+}
+function addFood(p, food, where = 'kitchen') { for (const f of FOODS) if (food[f]) p[where][f] += food[f]; }
+function applyRew(p, r, src) {
+  if (!r) return;
+  if (r.vp) p.vp = Math.max(0, p.vp + r.vp);
+  if (r.k) p.k = Math.max(0, p.k + r.k);
+  if (r.e) p.emp = clamp(p.emp + r.e, 0, EMP_MAX);
+  if (r.food) addFood(p, r.food, 'kitchen');
+  if (r.room) p.freeRooms += r.room;
+  if (r.guest) p.freeGuest += r.guest;
+  if (r.lose) { p.kitchen[r.lose] = 0; p.fresh[r.lose] = 0; }
+  if (r.hand && p.hand.length) {
+    // teuerste Handkarte abwerfen
+    let bi = 0; p.hand.forEach((id, i) => { if (STAFF[id].c > STAFF[p.hand[bi]].c) bi = i; });
+    p.hand.splice(bi, 1);
+  }
+}
+function rewText(r) {
+  const out = [];
+  if (r.vp) out.push(`${r.vp > 0 ? '+' : ''}${r.vp} SP`);
+  if (r.k) out.push(`${r.k > 0 ? '+' : ''}${r.k} Kronen`);
+  if (r.e) out.push(`+${r.e} Kaiser`);
+  if (r.food) out.push(FOODS.filter(f => r.food[f]).map(f => `+${r.food[f]} ${FN[f]}`).join(', '));
+  if (r.room) out.push(`${r.room} Zimmer gratis`);
+  return out.join(', ');
+}
+
+function takeGuest(p, slot) {
+  const free = p.freeGuest > 0;
+  const cost = free ? 0 : lineCost(p, slot);
+  const t = p.tables.indexOf(null);
+  if (t < 0 || S.line[slot] == null || p.k < cost) return false;
+  if (!free && (S.turn.guestTaken || S.turn.dieTaken)) return false;
+  const id = S.line[slot];
+  p.k -= cost;
+  if (free) p.freeGuest--; else S.turn.guestTaken = true;
+  p.tables[t] = { id, filled: GUESTS[id][2].split('').map(() => false) };
+  S.line.splice(slot, 1);
+  if (S.guestDeck.length) S.line.push(S.guestDeck.pop());
+  log(`${p.name} holt „${GUESTS[id][0]}“ an den Tisch${cost ? ` (${cost} K)` : ''}.`);
+  return true;
+}
+function prepareRoom(p, i, free) {
+  if (!roomOK(p, i)) return false;
+  const cost = free ? 0 : roomCost(p, i);
+  if (p.k < cost) return false;
+  p.k -= cost;
+  p.rooms[i] = 1;
+  checkWaiting(p);
+  return true;
+}
+function bestRoomFor(p, color) {
+  const cands = range(20).filter(i => p.rooms[i] === 1 && (color === 'g' || ROOM_COLOR[i] === color));
+  if (!cands.length) return -1;
+  // bevorzugt: Zimmer, das eine Farbgruppe vervollständigt; sonst kleinste Restgruppe
+  const rest = i => GROUPS[GROUP_OF[i]].filter(j => j !== i && p.rooms[j] !== 2).length;
+  cands.sort((a, b) => rest(a) - rest(b) || a - b);
+  return cands[0];
+}
+function checkin(p, t, room) {
+  const g = p.tables[t];
+  const def = GUESTS[g.id];
+  p.rooms[room] = 2; p.roomGuest[room] = g.id; p.tables[t] = null;
+  applyRew(p, def[3]);
+  let msg = `${def[0]} zieht bei ${p.name} ein (${rewText(def[3])})`;
+  if (hasE(p, 'checkinVp')) p.vp += 1;
+  const grp = GROUPS[GROUP_OF[room]];
+  if (grp.every(j => p.rooms[j] === 2)) {
+    const b = GROUP_BONUS[grp.length];
+    const c = ROOM_COLOR[room];
+    if (c === 'r') { p.k += b; msg += ` · rote Gruppe komplett: +${b} Kronen`; }
+    if (c === 'b') { p.vp += b; msg += ` · blaue Gruppe komplett: +${b} SP`; }
+    if (c === 'y') { p.emp = clamp(p.emp + grp.length, 0, EMP_MAX); msg += ` · gelbe Gruppe komplett: +${grp.length} Kaiser`; }
+  }
+  log(msg + '.');
+}
+function checkWaiting(p) {
+  let moved = true;
+  while (moved) {
+    moved = false;
+    for (let t = 0; t < 3; t++) {
+      const g = p.tables[t];
+      if (!g || !g.filled.every(Boolean)) continue;
+      const room = bestRoomFor(p, GUESTS[g.id][1]);
+      if (room >= 0) { checkin(p, t, room); moved = true; }
+    }
+  }
+}
+// Kann f an Gast (t, oi) serviert werden? → 'fresh' | 'credit' | 'buy' | null
+function serveSource(p, t, oi) {
+  const g = p.tables[t];
+  if (!g || g.filled[oi]) return null;
+  const f = GUESTS[g.id][2][oi];
+  if (p.fresh[f] > 0) return 'fresh';
+  if (p.kitchen[f] > 0 && p.credits > 0) return 'credit';
+  if (p.kitchen[f] > 0 && !p.serviceBought && p.k >= serviceCost(p)) return 'buy';
+  return null;
+}
+function buyService(p) {
+  if (p.serviceBought || p.k < serviceCost(p)) return false;
+  p.k -= serviceCost(p); p.serviceBought = true; p.credits = serviceAmount(p);
+  log(`${p.name} bezahlt den Küchenservice.`);
+  return true;
+}
+function serve(p, t, oi) {
+  const src = serveSource(p, t, oi);
+  if (!src) return false;
+  const f = GUESTS[p.tables[t].id][2][oi];
+  if (src === 'buy') buyService(p);
+  if (src === 'fresh') p.fresh[f]--;
+  else { p.kitchen[f]--; p.credits--; }
+  p.tables[t].filled[oi] = true;
+  checkWaiting(p);
+  return true;
+}
+function hire(p, id, n) {
+  const hi = p.hand.indexOf(id);
+  const cost = staffCost(p, id, n);
+  if (hi < 0 || p.k < cost) return false;
+  p.k -= cost; p.hand.splice(hi, 1); p.staff.push(id);
+  const e = STAFF[id].e;
+  if (e === 'nPage') { p.emp = clamp(p.emp + 1, 0, EMP_MAX); p.k += 2; }
+  if (e === 'nRoom') p.freeRooms++;
+  if (e === 'nFood') addFood(p, { s: 2, w: 1 }, 'fresh');
+  if (e === 'nGuide') p.freeGuest++;
+  if (e === 'nE3') p.emp = clamp(p.emp + 3, 0, EMP_MAX);
+  if (e === 'nGarden') { addFood(p, { c: 1, k: 1 }, 'fresh'); p.emp = clamp(p.emp + 1, 0, EMP_MAX); }
+  return cost;
+}
+// Würfelaktion ausführen. params: {as, b, emp, rooms, staff, skip}
+function doDie(p, face, params = {}) {
+  if (S.turn.dieTaken || !S.dice[face]) return false;
+  const n = S.dice[face];
+  let a = face;
+  if (face === 6) {
+    if (params.skip) { a = 0; }
+    else { if (p.k < 1 || !(params.as >= 1 && params.as <= 5)) return false; p.k -= 1; a = params.as; }
+  }
+  S.dice[face]--;
+  S.turn.dieTaken = true;
+  const who = p.name;
+  if (params.skip || a === 0) { log(`${who} nimmt eine ${face} und lässt die Aktion verfallen.`); return true; }
+  const pre = face === 6 ? `${who} nimmt eine 6 (Joker → ${ACTIONS[a].short}, Stärke ${n})` : `${who} nimmt eine ${face} (Stärke ${n})`;
+  if (a === 1 || a === 2) {
+    const A = a === 1 ? 's' : 'w', B = a === 1 ? 'c' : 'k';
+    const nb = clamp(params.b | 0, 0, n);
+    p.fresh[A] += n - nb; p.fresh[B] += nb;
+    let extra = '';
+    if (a === 1 && hasE(p, 'act1cake')) { p.fresh.c++; extra = ' +1 Torte'; }
+    if (a === 2 && hasE(p, 'act2wine')) { p.fresh.w++; extra = ' +1 Wein'; }
+    log(`${pre}: ${n - nb} ${FN[A]}, ${nb} ${FN[B]}${extra}.`);
+  } else if (a === 3) {
+    const m = n + (hasE(p, 'act3plus') ? 1 : 0);
+    let done = 0;
+    for (const i of (params.rooms || []).slice(0, m)) if (prepareRoom(p, i, false)) done++;
+    log(`${pre}: ${done} Zimmer vorbereitet.`);
+  } else if (a === 4) {
+    const e = clamp(params.emp | 0, 0, n);
+    p.emp = clamp(p.emp + e, 0, EMP_MAX); p.k += n - e + (hasE(p, 'act4k') ? 1 : 0);
+    log(`${pre}: +${n - e} Kronen, +${e} Kaiser.`);
+  } else if (a === 5) {
+    const c = params.staff != null ? hire(p, params.staff, n) : false;
+    if (c === false) log(`${pre}: stellt niemanden ein.`);
+    else log(`${pre}: stellt ${STAFF[params.staff].n} ein (${c} K).`);
+  }
+  return true;
+}
+function checkPolitics(p) {
+  for (const pc of S.politics) {
+    if (pc.by.includes(S.players.indexOf(p))) continue;
+    if (POLITICS[pc.id].test(p)) {
+      const v = POL_VP[Math.min(pc.by.length, POL_VP.length - 1)];
+      pc.by.push(S.players.indexOf(p)); p.vp += v;
+      log(`${p.name} erfüllt „${POLITICS[pc.id].n}“: +${v} SP.`);
+      if (!p.bot) toast(`Politik erfüllt: ${POLITICS[pc.id].n} (+${v} SP)`);
+    }
+  }
+}
+function endTurn() {
+  const p = cur();
+  for (const f of FOODS) { p.kitchen[f] += p.fresh[f]; p.fresh[f] = 0; }
+  p.credits = 0;
+  checkWaiting(p);
+  checkPolitics(p);
+  S.seqIdx++;
+  if (S.seqIdx >= S.seq.length) endRound();
+  else startTurn();
+}
+function endRound() {
+  const info = { round: S.round, lines: [] };
+  for (const p of S.players) {
+    for (const id of p.staff) {
+      const e = STAFF[id].e;
+      if (e === 'rS') p.kitchen.s++;
+      if (e === 'rK') p.kitchen.k++;
+      if (e === 'rW') p.kitchen.w++;
+      if (e === 'rKr') p.k += 2;
+      if (e === 'rE') p.emp = clamp(p.emp + 1, 0, EMP_MAX);
+      if (e === 'rVP') p.vp += 2;
+    }
+  }
+  // ältester Gast verlässt die Warteschlange
+  if (S.line.length) { const gone = S.line.shift(); log(`„${GUESTS[gone][0]}“ hat genug gewartet und geht.`); }
+  while (S.line.length < 5 && S.guestDeck.length) S.line.push(S.guestDeck.pop());
+  const ei = EMP_ROUNDS.indexOf(S.round);
+  if (ei >= 0) {
+    const tile = EMP_TILES[S.empTiles[ei]];
+    info.emp = { need: EMP_NEED[ei], base: EMP_BASE[ei], tile: tile.n, res: [] };
+    for (const p of S.players) {
+      if (p.emp >= EMP_NEED[ei]) {
+        p.vp += EMP_BASE[ei]; applyRew(p, tile.good);
+        info.emp.res.push([p.name, true, `+${EMP_BASE[ei]} SP, ${tile.gt}`]);
+        log(`Kaiserwertung: ${p.name} wird empfangen (+${EMP_BASE[ei]} SP, ${tile.gt}).`);
+      } else if (hasE(p, 'noEmpPen')) {
+        info.emp.res.push([p.name, false, 'keine Strafe (Hofberichterstatter)']);
+      } else {
+        applyRew(p, tile.bad);
+        info.emp.res.push([p.name, false, tile.bt]);
+        log(`Kaiserwertung: ${p.name} verfehlt ${EMP_NEED[ei]} (${tile.bt}).`);
+      }
+    }
+    S.empDone.push(ei);
+  }
+  for (const p of S.players) checkPolitics(p);
+  if (S.round >= ROUNDS) { finalScoring(); S.roundInfo = null; return; }
+  S.roundInfo = S.players.some(p => !p.bot) ? info : null;
+  S.round++;
+  startRound();
+}
+function finalScoring() {
+  S.final = S.players.map(p => {
+    const row = { name: p.name, base: p.vp, money: Math.floor(p.k / 3), staff: 0, guests: 0 };
+    for (const id of p.staff) {
+      const e = STAFF[id].e;
+      if (e === 'eBlue') row.staff += 2 * occColor(p, 'b');
+      if (e === 'eRed') row.staff += 2 * occColor(p, 'r');
+      if (e === 'eYellow') row.staff += 2 * occColor(p, 'y');
+      if (e === 'eFloor') row.staff += 5 * fullFloors(p);
+      if (e === 'eStaff') row.staff += 2 * p.staff.length;
+      if (e === 'eMoney') row.staff += Math.floor(p.k / 2);
+    }
+    row.guests = -GUEST_LEFT_PENALTY * p.tables.filter(Boolean).length;
+    row.total = row.base + row.money + row.staff + row.guests;
+    row.rooms = p.rooms.filter(x => x === 2).length;
+    return row;
+  });
+  S.screen = 'end';
+  log('Spielende! Die Abrechnung liegt vor.');
+}
+
+// ---------- Bots ----------
+function needs(p) {
+  const n = { s: 0, c: 0, w: 0, k: 0 };
+  for (const g of p.tables) if (g) GUESTS[g.id][2].split('').forEach((f, i) => { if (!g.filled[i]) n[f]++; });
+  return n;
+}
+function freeRoomsOf(p, c) { return range(20).filter(i => p.rooms[i] === 1 && (c === 'g' || ROOM_COLOR[i] === c)).length; }
+function guestValue(id) { const r = GUESTS[id][3]; return (r.vp || 0) + (r.k || 0) * 0.7 + (r.e || 0) * 0.9 + (r.room ? 2 : 0) + (r.food ? 1.5 : 0); }
+function roomScore(p, i) {
+  const c = ROOM_COLOR[i];
+  let s = 1.4 - roomCost(p, i) * 0.3;
+  const wanting = p.tables.filter(g => g && (GUESTS[g.id][1] === c)).length;
+  if (wanting > freeRoomsOf(p, c)) s += 3;
+  const grp = GROUPS[GROUP_OF[i]];
+  if (grp.length <= 2) s += 0.4;
+  if (S.round >= 6 && !wanting) s -= 0.8;
+  return s;
+}
+function botRooms(p, m, free) {
+  const chosen = []; let money = p.k;
+  for (let k = 0; k < m; k++) {
+    let best = -1, bs = 0.2;
+    for (let i = 0; i < 20; i++) {
+      if (!roomOK(p, i, chosen)) continue;
+      const cost = free ? 0 : roomCost(p, i);
+      if (cost > money - (free ? 0 : 1) && cost > 0) continue;
+      const sc = roomScore(p, i);
+      if (sc > bs) { bs = sc; best = i; }
+    }
+    if (best < 0) break;
+    chosen.push(best); if (!free) money -= roomCost(p, best);
+  }
+  return chosen;
+}
+function staffValue(p, id) {
+  const st = STAFF[id], left = ROUNDS - S.round + 1;
+  switch (st.t) {
+    case 'now': return 4;
+    case 'perm': return Math.max(1, 1.1 * left);
+    case 'round': return (st.e === 'rVP' ? 2 : st.e === 'rKr' ? 1.4 : 1.1) * left;
+    case 'end': {
+      if (st.e === 'eStaff') return 2 * (p.staff.length + 2);
+      if (st.e === 'eFloor') return 3 + (S.round > 4 ? 5 * fullFloors(p) : 2);
+      if (st.e === 'eMoney') return 3;
+      return 2 * (occColor(p, { eBlue: 'b', eRed: 'r', eYellow: 'y' }[st.e]) + Math.min(3, left * 0.6));
+    }
+  }
+  return 1;
+}
+function botEval(p, a, n) {
+  // gibt [Wert, params] zurück
+  if (a === 1 || a === 2) {
+    const A = a === 1 ? 's' : 'w', B = a === 1 ? 'c' : 'k';
+    const need = needs(p);
+    const nA = Math.max(0, need[A] - p.kitchen[A]), nB = Math.max(0, need[B] - p.kitchen[B]);
+    let b = Math.min(n, nB);
+    if (n - b > nA) b += Math.floor((n - b - nA) / 2);
+    const useA = Math.min(n - b, nA), useB = Math.min(b, nB);
+    return [useA * 2.8 + useB * 3.1 + (n - useA - useB) * 0.3, { b }];
+  }
+  if (a === 3) {
+    const m = n + (hasE(p, 'act3plus') ? 1 : 0);
+    const rooms = botRooms(p, m, false);
+    return [rooms.reduce((s, i) => s + roomScore(p, i), 0), { rooms }];
+  }
+  if (a === 4) {
+    const ei = EMP_ROUNDS.findIndex(r => r >= S.round);
+    const gap = ei >= 0 ? Math.max(0, EMP_NEED[ei] - p.emp) : 0;
+    const e = Math.min(n, gap);
+    return [e * 1.9 + (n - e) * (p.k < 5 ? 1.1 : 0.7), { emp: e }];
+  }
+  if (a === 5) {
+    let best = null, bv = 0;
+    for (const id of p.hand) {
+      const c = staffCost(p, id, n);
+      if (c > p.k) continue;
+      const v = staffValue(p, id) * 0.8 - c * 0.8;
+      if (v > bv) { bv = v; best = id; }
+    }
+    return [bv, { staff: best }];
+  }
+  return [0, {}];
+}
+function botPickGuest(p) {
+  if (p.tables.indexOf(null) < 0 || S.round > 6) return -1;
+  const seated = p.tables.filter(Boolean).length;
+  let best = -1, bs = seated >= 2 ? 1.0 : -0.5;
+  S.line.forEach((id, slot) => {
+    const cost = p.freeGuest > 0 ? 0 : lineCost(p, slot);
+    if (cost > p.k - 1 && cost > 0) return;
+    const len = GUESTS[id][2].length;
+    let sc = guestValue(id) / (len + 1) - cost * 0.55;
+    const c = GUESTS[id][1];
+    if (c === 'g' || freeRoomsOf(p, c) > 0 || range(20).some(i => ROOM_COLOR[i] === c && roomOK(p, i))) sc += 0.6;
+    if (sc > bs) { bs = sc; best = slot; }
+  });
+  return best;
+}
+function botServe(p) {
+  const order = range(3).filter(t => p.tables[t]).sort((a, b) => p.tables[a].filled.filter(x => !x).length - p.tables[b].filled.filter(x => !x).length);
+  for (const t of order) { const g = p.tables[t]; if (!g) continue; g.filled.forEach((f, oi) => { if (!f && p.fresh[GUESTS[g.id][2][oi]] > 0) serve(p, t, oi); }); }
+  // Küchenservice lohnt sich, wenn ein Gast fertig wird oder ≥3 Gerichte rausgehen
+  if (!p.serviceBought && p.k >= serviceCost(p) + (serviceCost(p) ? 1 : 0)) {
+    const kit = Object.assign({}, p.kitchen);
+    let can = 0, completes = false;
+    for (const t of range(3).filter(t => p.tables[t])) {
+      const g = p.tables[t]; let missing = 0, avail = 0;
+      g.filled.forEach((f, oi) => { if (!f) { missing++; const fd = GUESTS[g.id][2][oi]; if (kit[fd] > 0) { kit[fd]--; avail++; } } });
+      can += avail; if (missing > 0 && avail === missing && missing <= serviceAmount(p)) completes = true;
+    }
+    if (completes || can >= 2) {
+      buyService(p);
+      for (const t of order) { const g = p.tables[t]; if (!g) continue; g.filled.forEach((f, oi) => { if (!f && p.credits > 0 && p.tables[t] === g) serve(p, t, oi); }); }
+    }
+  }
+}
+function botFree(p) {
+  if (p.freeRooms > 0) { const rs = botRooms(p, p.freeRooms, true); for (const i of rs) if (prepareRoom(p, i, true)) p.freeRooms--; if (!rs.length) p.freeRooms = 0; }
+  while (p.freeGuest > 0) { const s = botPickGuest(p); if (s < 0 || !takeGuest(p, s)) { p.freeGuest = 0; break; } }
+}
+function botTurn() {
+  const p = cur();
+  botFree(p);
+  if (!S.turn.guestTaken) { const s = botPickGuest(p); if (s >= 0) takeGuest(p, s); }
+  let best = null;
+  for (let f = 1; f <= 6; f++) {
+    const n = S.dice[f]; if (!n) continue;
+    if (f === 6) {
+      if (p.k < 2) continue;
+      for (let a = 1; a <= 5; a++) { const [v, pr] = botEval(p, a, n); if (!best || v - 1.3 > best.v) best = { f, v: v - 1.3, pr: Object.assign({ as: a }, pr) }; }
+    } else {
+      const [v, pr] = botEval(p, f, n);
+      if (!best || v > best.v) best = { f, v, pr };
+    }
+  }
+  if (best) {
+    if (best.pr.staff === null && (best.f === 5 || best.pr.as === 5)) best.pr.skip = true;
+    if (!doDie(p, best.f, best.pr)) { const f = [1, 2, 3, 4, 5, 6].find(x => S.dice[x]); doDie(p, f, { skip: true }); }
+  }
+  botFree(p);
+  botServe(p);
+  botFree(p);
+  const last = S.log[0];
+  endTurn();
+  return last;
+}
+
+// ---------- Speicher ----------
+const KEY = 'grand-hotel-wien-v1';
+function save() { try { if (S) localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* privat/voll – egal */ } }
+function load() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && s.v === 1 ? s : null; } catch (e) { return null; } }
+function clearSave() { try { localStorage.removeItem(KEY); } catch (e) { } }
+
+// ---------- UI-Helfer ----------
+let toastTimer = null;
+function toast(msg) { U.toast = msg; clearTimeout(toastTimer); toastTimer = setTimeout(() => { U.toast = null; render(); }, 2600); }
+const isMyTurn = () => S && S.screen === 'game' && !cur().bot && !S.roundInfo;
+function tok(kind, v) {
+  const svg = kind === 'vp' ? starSvg() : kind === 'k' ? coinSvg() : kind === 'e' ? crownSvg() : kind === 'room' ? roomSvg() : foodSvg(kind);
+  return `<span class="tok">${svg}${v != null ? v : ''}</span>`;
+}
+function rewHtml(r) {
+  let h = '';
+  if (r.vp) h += tok('vp', r.vp);
+  if (r.k) h += tok('k', r.k);
+  if (r.e) h += tok('e', r.e);
+  if (r.room) h += tok('room', '');
+  if (r.food) for (const f of FOODS) if (r.food[f]) h += tok(f, '');
+  return h;
+}
+function guestCard(id, opts = {}) {
+  const g = GUESTS[id];
+  const color = COL[g[1]];
+  const order = g[2].split('');
+  const slots = order.map((f, oi) => {
+    const full = opts.filled && opts.filled[oi];
+    const can = !full && opts.canServe && opts.canServe(oi);
+    const cls = full ? 'full' : can ? 'can' : 'empty';
+    const inner = foodSvg(f);
+    return can ? `<button class="slot ${cls}" data-a="serve" data-t="${opts.table}" data-o="${oi}" aria-label="${FN[f]} servieren">${inner}</button>` : `<span class="slot ${cls}">${inner}</span>`;
+  }).join('');
+  const tag = opts.cost != null ? `<span class="cost">${coinSvg().replace('<svg', '<svg width="13" height="13"')}${opts.cost}</span>` : '';
+  const el = opts.btn ? 'button' : 'div';
+  return `<${el} class="gcard ${opts.sm ? 'sm' : ''}" ${opts.btn ? `data-a="${opts.btn}" data-s="${opts.slot}"` : ''}>
+    <div class="band grainy" style="background:${color}">${tag}<span class="rc">${g[1] === 'g' ? 'jedes' : CN[g[1]]}</span>${guestArt(id)}</div>
+    <div class="body"><div class="gn">${esc(g[0])}</div><div class="order">${slots}</div><div class="rew">${rewHtml(g[3])}</div></div>
+    ${opts.waiting ? '<div class="waiting">wartet auf Zimmer</div>' : ''}
+  </${el}>`;
+}
+function staffCard(id, opts = {}) {
+  const st = STAFF[id];
+  const bg = { now: '#F28AA6', perm: '#7FB2E5', round: '#F1B02B', end: '#9FD3A9' }[st.t];
+  const el = opts.btn ? 'button' : 'div';
+  return `<${el} class="scard ${opts.cls || ''}" ${opts.btn ? `data-a="${opts.btn}" data-id="${id}"` : ''}>
+    <div class="top2 grainy" style="background:${bg}"><span class="price">${opts.price != null ? opts.price : st.c} K</span><span class="kind">${KIND[st.t]}</span>${staffArt(id)}</div>
+    <div class="b"><div class="sn">${esc(st.n)}</div><div class="tx">${esc(st.tx)}</div></div>
+  </${el}>`;
+}
+function roomTile(p, i, mode) {
+  const st = p.rooms[i], c = ROOM_COLOR[i];
+  if (st === 2) {
+    const gid = p.roomGuest[i];
+    return `<div class="room grainy" style="background:${COL[c]}"><svg viewBox="0 0 100 100" class="ill" aria-hidden="true"><g filter="url(#wob)" stroke="#161616" stroke-width="3"><rect x="10" y="58" width="80" height="34" rx="6" fill="#FFF9EE"/><path d="M10,70 H90" fill="none"/></g><svg x="14" y="8" width="72" height="80" viewBox="22 0 56 62">${gid >= 0 ? head('g' + gid, Object.assign({}, GUESTS[gid][4], { sleepy: 1, glasses: 0 })).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '') : ''}</svg><g stroke="#161616" stroke-width="3"><path d="M8,66 C30,58 70,58 92,66 V92 H8 Z" fill="#FFF9EE"/><path d="M20,74 h10 M40,78 h14 M64,74 h12" stroke-width="2" fill="none"/></g></svg></div>`;
+  }
+  const ok = mode && mode.ok && mode.ok(i);
+  const sel = mode && mode.sel && mode.sel.includes(i);
+  const attrs = (ok || sel) && mode.act ? `data-a="${mode.act}" data-i="${i}" role="button" tabindex="0"` : '';
+  if (st === 1) {
+    return `<div class="room p grainy ${sel ? 'sel' : ''}" style="background:${COL[c]}" ${attrs}><svg viewBox="0 0 100 100" class="curt" aria-hidden="true"><g filter="url(#wob)" stroke="#161616" stroke-width="3"><path d="M8,6 C30,30 26,70 12,96 L8,96 Z" fill="#FFF9EE"/><path d="M92,6 C70,30 74,70 88,96 L92,96 Z" fill="#FFF9EE"/><path d="M30,80 H70 V90 H30 Z" fill="#FFF9EE"/></g></svg>${sel ? '<span class="tag">neu</span>' : ''}</div>`;
+  }
+  if (sel) return `<div class="room p sel grainy" style="background:${COL[c]}" ${attrs}><span class="tag">✓ ${mode.free ? 'gratis' : roomCost(p, i) + ' K'}</span></div>`;
+  return `<div class="room e ${ok ? 'ok' : ''}" ${attrs}><span class="dot" style="background:${COL[c]}"></span><span class="cc">${coinSvg()}${roomCost(p, i)}</span></div>`;
+}
+function hotelGrid(p, mode) {
+  let h = '<div class="hotel">' + roofSvg(p.bot ? `Hotel ${p.name}` : 'Dein Hotel') + '<div class="rooms">';
+  for (let f = 3; f >= 0; f--) for (let c = 0; c < 5; c++) h += roomTile(p, f * 5 + c, mode);
+  h += '</div></div>';
+  return h;
+}
+function kitchenHtml(p, mine) {
+  const items = FOODS.map(f => `<span class="kit">${foodSvg(f)}${p.kitchen[f]}${p.fresh[f] ? `<span class="fr">+${p.fresh[f]}</span>` : ''}</span>`).join('');
+  let btn = '';
+  if (mine) {
+    const can = isMyTurn() && !p.serviceBought && p.k >= serviceCost(p);
+    btn = p.serviceBought ? `<span class="servbtn" style="background:#9FD3A9">Service: noch ${p.credits}</span>` : `<button class="servbtn" data-a="service" ${can ? '' : 'disabled'}>Küchenservice · ${serviceCost(p)} K</button>`;
+  }
+  return `<div class="kitchen"><span class="kt">Küche</span>${items}${btn}</div>`;
+}
+function playerChip(p, i) {
+  const isCur = S.screen === 'game' && cur() === p;
+  return `<button class="pchip ${isCur ? 'cur' : ''}" data-a="opp" data-p="${i}"><span class="av" style="background:${p.mark}">${head('pl' + i + p.name, p.look)}</span><span><span class="nm">${esc(p.name)}</span><span class="st">★${p.vp} · ${p.k}K · ♛${p.emp}</span></span></button>`;
+}
+
+// ---------- Screens ----------
+function viewStart() {
+  const saved = load();
+  const st = U.setup;
+  return `<div class="wrap start">
+    <div class="hero">${heroSvg()}</div>
+    <h1 class="hand">Grand Hotel Wien</h1>
+    <p class="sub">Würfel, Strudel &amp; Kaiserschmarrn – ein Hotelspiel nach dem Prinzip von <i>Grand Austria Hotel</i>.</p>
+    ${saved && saved.screen === 'game' ? `<button class="btn blue wide" data-a="resume">Partie fortsetzen · Runde ${saved.round}/${ROUNDS}</button>` : ''}
+    <div class="panel">
+      <p class="label">Dein Name</p>
+      <input class="input" id="nm" maxlength="18" placeholder="z. B. Frau Direktorin" value="${esc(st.name)}">
+      <p class="label" style="margin-top:14px">Gegner (Bots)</p>
+      <div class="chips">${[1, 2, 3].map(n => `<button class="chip ${st.bots === n ? 'on' : ''}" data-a="bots" data-n="${n}">${n} Bot${n > 1 ? 's' : ''}</button>`).join('')}</div>
+      <p class="note">7 Runden · ${DICE_BY_N[st.bots + 1]} Würfel pro Runde · jede Person macht 2 Züge pro Runde (hin und zurück).</p>
+    </div>
+    <button class="btn wide" data-a="start">Hotel eröffnen</button>
+    <p style="margin-top:14px"><button class="link" data-a="rules">Spielregeln lesen</button></p>
+  </div>`;
+}
+function stepsHtml() {
+  const p = cur();
+  const s = [
+    ['Gast holen (optional)', S.turn.guestTaken || S.turn.dieTaken],
+    ['Würfel nehmen', S.turn.dieTaken],
+    ['Servieren', false],
+  ];
+  return `<div class="steps">${s.map(([t, d]) => `<span class="step ${d ? 'done' : ''}">${t}</span>`).join('')}</div>`;
+}
+function viewGame() {
+  const me = human();
+  const mi = S.players.indexOf(me);
+  const mine = isMyTurn();
+  const p = cur();
+  let banner;
+  if (mine) {
+    const msg = !S.turn.dieTaken ? (S.turn.guestTaken ? 'Jetzt einen Würfel vom Aktionsbrett nehmen.' : 'Hol dir optional einen Gast, dann nimm einen Würfel.') : 'Serviere Gerichte (gelb leuchtende Felder antippen) und beende deinen Zug.';
+    banner = `<div class="banner mine"><span class="face">${head('pl' + mi + me.name, me.look)}</span><div><b>Du bist am Zug · Zug ${S.seqIdx < S.players.length ? 1 : 2} von 2</b><span class="small">${msg}</span>${stepsHtml()}</div></div>`;
+  } else {
+    const pi = S.players.indexOf(p);
+    banner = `<div class="banner"><span class="face">${head('pl' + pi + p.name, p.look)}</span><div><b>${esc(p.name)} ist am Zug …</b><span class="small">${esc(S.log[0] || '')}</span></div></div>`;
+  }
+  if (mine && (me.freeRooms > 0 || me.freeGuest > 0)) {
+    banner += `<div class="banner" style="background:#E3F3E7">${me.freeRooms ? `<div style="flex:1"><b>${me.freeRooms} Zimmer gratis!</b><span class="small">Wähle, wo du vorbereitest.</span></div><button class="btn green" data-a="freerooms">Wählen</button>` : `<div style="flex:1"><b>Gast gratis!</b><span class="small">Tippe einen Gast in der Warteschlange an.</span></div>`}</div>`;
+  }
+  const canGuest = mine && me.tables.includes(null) && (me.freeGuest > 0 || (!S.turn.guestTaken && !S.turn.dieTaken));
+  const line = S.line.map((id, slot) => guestCard(id, { cost: me.freeGuest > 0 ? 0 : lineCost(me, slot), btn: 'guest', slot })).join('');
+  const board = [1, 2, 3, 4, 5, 6].map(f => {
+    const n = S.dice[f];
+    const live = mine && !S.turn.dieTaken && n > 0;
+    const dice = range(n).map(() => dieSvg(f)).join('') + range(Math.max(0, (S.rolled[f] || 0) - n)).map(() => dieSvg(f, '#d9d0bf').replace('<svg', '<svg style="opacity:.35"')).join('');
+    return `<button class="act ${live ? 'live' : ''} ${n ? '' : 'empty'}" data-a="die" data-f="${f}" ${live ? '' : 'disabled'}>
+      <span class="num">${f}</span>${n ? `<span class="strength">×${n}</span>` : ''}<span class="aic">${actionIcon(f)}</span><span class="an">${ACTIONS[f].n}</span><span class="dice">${dice || '<span style="font-size:11px;color:#6d655a">leer</span>'}</span></button>`;
+  }).join('');
+  const tables = me.tables.map((g, t) => g ? guestCard(g.id, { sm: 1, filled: g.filled, table: t, waiting: g.filled.every(Boolean), canServe: mine ? oi => !!serveSource(me, t, oi) : null }) : `<div class="tslot">freier Tisch</div>`).join('');
+  const nextEmp = EMP_ROUNDS.findIndex(r => r >= S.round);
+  const marks = range(EMP_MAX + 1).map(i => {
+    const here = S.players.filter(pl => pl.emp === i);
+    return `<div class="c ${EMP_NEED.includes(i) ? 'th' : ''}">${i}<span class="mk">${here.map(pl => `<i style="background:${pl.mark}"></i>`).join('')}</span></div>`;
+  }).join('');
+  return `
+  <div class="top"><div class="row">
+    <div class="round hand">Runde ${S.round}/${ROUNDS}<small>${S.seqIdx + 1}/${S.seq.length} Züge</small></div>
+    <div class="players">${S.players.map(playerChip).join('')}</div>
+    <button class="icobtn" data-a="menu" aria-label="Menü und Regeln">?</button>
+  </div></div>
+  <div class="wrap">
+    ${banner}
+    <section class="sec"><div class="sech"><h2 class="hand">Warteschlange</h2><span class="hint">${canGuest ? 'Antippen, um Gast an deinen Tisch zu holen' : 'max. 1 Gast pro Zug, vor dem Würfel'}</span></div>
+      <div class="line">${line}</div></section>
+    <section class="sec"><div class="sech"><h2 class="hand">Aktionsbrett</h2><span class="hint">Stärke = Anzahl Würfel auf dem Feld</span></div>
+      <div class="board">${board}</div></section>
+    <section class="sec"><div class="sech"><h2 class="hand">Deine Tische</h2><span class="hint">${me.k} Kronen · ★ ${me.vp} SP</span></div>
+      <div class="tables">${tables}</div>${kitchenHtml(me, true)}</section>
+    <section class="sec"><div class="sech"><h2 class="hand">Dein Hotel</h2><span class="hint">${me.rooms.filter(x => x === 2).length} belegt · ${me.rooms.filter(x => x === 1).length} frei</span></div>
+      ${hotelGrid(me)}
+      <div class="legend"><span><i style="background:${COL.r}"></i>Rot: Gruppe voll → Kronen</span><span><i style="background:${COL.b}"></i>Blau: → SP</span><span><i style="background:${COL.y}"></i>Gelb: → Kaiser</span></div></section>
+    <section class="sec"><div class="sech"><h2 class="hand">Personal</h2><span class="hint">Einstellen mit Würfel 5</span></div>
+      ${me.staff.length ? `<p class="label">Eingestellt</p><div class="staffrow">${me.staff.map(id => staffCard(id, { btn: 'staffinfo', cls: 'hired' })).join('')}</div>` : ''}
+      <p class="label">Auf der Hand</p><div class="staffrow">${me.hand.map(id => staffCard(id, { btn: 'staffinfo' })).join('') || '<span class="note">Keine Karten mehr.</span>'}</div></section>
+    <section class="sec"><div class="sech"><h2 class="hand">Der Kaiser</h2><span class="hint">Wertung nach Runde 3, 5, 7</span></div>
+      <div class="emp"><div class="emphead"><span class="k">${kaiser()}</span><div><b>Kaiserleiste</b><div style="font-size:12.5px">${nextEmp >= 0 ? `Nächste Wertung nach Runde ${EMP_ROUNDS[nextEmp]}: mindestens <b>${EMP_NEED[nextEmp]}</b> nötig. Du stehst auf <b>${me.emp}</b>.` : 'Alle Wertungen vorbei.'}</div></div></div>
+      <div class="track">${marks}</div>
+      <div class="etiles">${S.empTiles.map((t, i) => { const T = EMP_TILES[t]; return `<div class="etile ${S.empDone.includes(i) ? 'done' : ''}"><b>Runde ${EMP_ROUNDS[i]} · ≥${EMP_NEED[i]}</b><br><span class="g">✓ +${EMP_BASE[i]} SP, ${T.gt}</span><br><span class="x">✗ ${T.bt}</span></div>`; }).join('')}</div></div></section>
+    <section class="sec"><div class="sech"><h2 class="hand">Politik</h2><span class="hint">Wer zuerst erfüllt, bekommt am meisten</span></div>
+      <div class="pol">${S.politics.map(pc => { const P = POLITICS[pc.id]; const nx = POL_VP[Math.min(pc.by.length, 2)]; return `<div class="polc"><div class="pv">${nx}<small>SP nächste</small></div><div style="flex:1"><b>${esc(P.n)}</b><div style="font-size:12.5px">${esc(P.tx)}</div><div class="who">${pc.by.map(pi => `<span style="background:${S.players[pi].mark}" title="${esc(S.players[pi].name)}">${head('pl' + pi + S.players[pi].name, S.players[pi].look)}</span>`).join('')}</div></div></div>`; }).join('')}</div></section>
+    <section class="sec"><div class="sech"><h2 class="hand">Chronik</h2><button class="link" data-a="logtoggle" style="font-size:12px">${U.logOpen ? 'weniger' : 'alles'}</button></div>
+      <div class="log">${S.log.slice(0, U.logOpen ? 80 : 6).map(l => `<div>${esc(l)}</div>`).join('')}</div></section>
+  </div>
+  <div class="bar"><div class="in">
+    ${mine ? `<div class="msg">${S.turn.dieTaken ? 'Fertig serviert?' : 'Wähle einen Würfel auf dem Aktionsbrett.'}</div><button class="btn ${S.turn.dieTaken ? 'red' : 'white'}" data-a="endturn" ${S.turn.dieTaken ? '' : 'disabled'}>Zug beenden</button>`
+      : `<div class="msg"><b>${esc(p.name)}</b> denkt nach …</div><button class="btn white" data-a="fast">Schneller</button>`}
+  </div></div>`;
+}
+function viewEnd() {
+  const rows = S.final.map((r, i) => Object.assign({ i }, r)).sort((a, b) => b.total - a.total || b.rooms - a.rooms);
+  const podium = rows.slice(0, 3);
+  const ord = podium.length === 3 ? [podium[1], podium[0], podium[2]] : podium.length === 2 ? [podium[1], podium[0]] : podium;
+  const hgt = r => r === rows[0] ? 70 : r === rows[1] ? 48 : 32;
+  const win = rows[0];
+  const me = human();
+  return `<div class="wrap" style="padding-top:18px;text-align:center">
+    <h1 class="hand" style="font-size:44px;margin:0">${win.name === (me && me.name) && !S.players[win.i].bot ? 'Du gewinnst!' : esc(win.name) + ' gewinnt!'}</h1>
+    <p class="sub" style="color:#6d655a;margin:4px 0 0">Der Kaiser ist zufrieden.</p>
+    <div class="podium">${ord.map(r => `<div class="pp"><div class="ill">${person('pl' + r.i + r.name, S.players[r.i].look)}</div><div class="pl grainy" style="height:${hgt(r)}px;background:${S.players[r.i].mark}">${rows.indexOf(r) + 1}</div></div>`).join('')}</div>
+    <div class="panel"><table class="score"><tr><th></th>${rows.map(r => `<th>${esc(r.name)}</th>`).join('')}</tr>
+      <tr><td>Punkte im Spiel</td>${rows.map(r => `<td>${r.base}</td>`).join('')}</tr>
+      <tr><td>Kronen (je 3 = 1)</td>${rows.map(r => `<td>${r.money}</td>`).join('')}</tr>
+      <tr><td>Personal (Ende)</td>${rows.map(r => `<td>${r.staff}</td>`).join('')}</tr>
+      <tr><td>Gäste noch am Tisch</td>${rows.map(r => `<td>${r.guests}</td>`).join('')}</tr>
+      <tr><td>Belegte Zimmer</td>${rows.map(r => `<td>${r.rooms}</td>`).join('')}</tr>
+      <tr class="tot"><td>Gesamt</td>${rows.map(r => `<td>${r.total}</td>`).join('')}</tr></table></div>
+    <button class="btn wide" data-a="newgame">Neue Partie</button>
+    <p><button class="link" data-a="showboard">Endstand der Hotels ansehen</button></p>
+  </div>`;
+}
+
+// ---------- Sheets ----------
+function sheetWrap(inner, cls = '') { return `<div class="ov" data-a="ovclose"><div class="sheet ${cls}" data-stop="1"><div class="grab"></div><button class="icobtn x" data-a="close" aria-label="Schließen">✕</button>${inner}</div></div>`; }
+function viewSheet() {
+  const sh = U.sheet; if (!sh) return '';
+  const me = S && human();
+  switch (sh.type) {
+    case 'rules': return sheetWrap(rulesHtml(), 'rules');
+    case 'menu': return sheetWrap(`<h3>Menü</h3><div class="btnrow" style="flex-direction:column"><button class="btn white wide" data-a="rules">Spielregeln</button><button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
+    case 'opp': {
+      const p = S.players[sh.p];
+      return sheetWrap(`<h3>${esc(p.name)}</h3><p style="font-size:13px">★ ${p.vp} SP · ${p.k} Kronen · Kaiser ${p.emp} · ${p.staff.length} Personal</p>
+        <div class="tables" style="margin:8px 0">${p.tables.map(g => g ? guestCard(g.id, { sm: 1, filled: g.filled, waiting: g.filled.every(Boolean) }) : '<div class="tslot">frei</div>').join('')}</div>
+        ${kitchenHtml(p, false)}<div style="margin-top:10px">${hotelGrid(p)}</div>
+        ${p.staff.length ? `<p class="label" style="margin-top:12px">Personal</p><div class="staffrow">${p.staff.map(id => staffCard(id)).join('')}</div>` : ''}`);
+    }
+    case 'staffinfo': return sheetWrap(`<h3>${esc(STAFF[sh.id].n)}</h3><div style="display:flex;justify-content:center;margin:8px 0">${staffCard(sh.id)}</div><p class="note">Typ „${KIND[STAFF[sh.id].t]}“: ${{ now: 'wirkt einmal sofort beim Einstellen.', perm: 'wirkt dauerhaft ab dem Einstellen.', round: 'wirkt am Ende jeder Runde.', end: 'bringt Punkte bei der Schlussabrechnung.' }[STAFF[sh.id].t]} Einstellen kostet die aufgedruckten Kronen, je weiterem Würfel auf Feld 5 eine Krone weniger.</p>`);
+    case 'guest': {
+      const id = S.line[sh.slot];
+      if (id == null) return '';
+      const cost = me.freeGuest > 0 ? 0 : lineCost(me, sh.slot);
+      const can = isMyTurn() && me.tables.includes(null) && me.k >= cost && (me.freeGuest > 0 || (!S.turn.guestTaken && !S.turn.dieTaken));
+      const why = !isMyTurn() ? 'Du bist gerade nicht am Zug.' : !me.tables.includes(null) ? 'Alle 3 Tische sind besetzt.' : me.k < cost ? 'Nicht genug Kronen.' : S.turn.dieTaken ? 'Gäste holst du vor dem Würfel.' : S.turn.guestTaken ? 'Nur ein Gast pro Zug.' : '';
+      const g = GUESTS[id];
+      return sheetWrap(`<h3>${esc(g[0])}</h3><div style="display:flex;gap:12px;align-items:flex-start;margin-top:8px">${guestCard(id, { cost })}<div style="font-size:13.5px"><p><b>Bestellt:</b> ${g[2].split('').map(f => FN[f]).join(', ')}</p><p><b>Zimmer:</b> ${g[1] === 'g' ? 'jede Farbe' : CN[g[1]]}</p><p><b>Belohnung beim Einzug:</b> ${rewText(g[3])}</p></div></div>
+        ${why ? `<p class="note">${why}</p>` : ''}<div class="btnrow"><button class="btn" data-a="takeguest" data-s="${sh.slot}" ${can ? '' : 'disabled'}>An meinen Tisch · ${cost} K</button></div>`);
+    }
+    case 'die': return sheetWrap(dieSheet(sh));
+    case 'freerooms': {
+      const sel = sh.sel || [];
+      return sheetWrap(`<h3>Gratis-Zimmer</h3><p>Wähle bis zu ${me.freeRooms} Zimmer (Erdgeschoss oder angrenzend an ein bestehendes).</p>
+        ${hotelGrid(me, { ok: i => sel.length < me.freeRooms && roomOK(me, i, sel), sel, act: 'frsel', free: true })}
+        <div class="btnrow"><button class="btn" data-a="frok" ${sel.length ? '' : 'disabled'}>${sel.length} vorbereiten</button></div><button class="skip" data-a="frskip">Verfallen lassen</button>`);
+    }
+    case 'service': return sheetWrap(`<h3>Küchenservice</h3><p>Für <b>${serviceCost(me)} Krone</b> darfst du in diesem Zug bis zu <b>${serviceAmount(me)}</b> Gerichte aus deiner Küche an deine Gäste servieren. Frisch erhaltene Gerichte (grün markiert) servierst du immer gratis.</p><div class="btnrow"><button class="btn" data-a="buyservice">Bezahlen</button></div>`);
+    case 'round': {
+      const info = S.roundInfo;
+      return sheetWrap(`<h3>Runde ${info.round} vorbei</h3>
+        <p style="font-size:13.5px">Personal mit Rundenwirkung hat geliefert, und der älteste Gast hat die Warteschlange verlassen.</p>
+        ${info.emp ? `<div class="emp" style="margin-top:10px"><div class="emphead"><span class="k">${kaiser()}</span><div><b class="hand" style="font-size:22px">Kaiserwertung · ${esc(info.emp.tile)}</b><div style="font-size:12.5px">Mindestens ${info.emp.need} auf der Kaiserleiste.</div></div></div>
+          ${info.emp.res.map(([n, ok, t]) => `<div style="font-size:13.5px;margin-top:6px">${ok ? '✓' : '✗'} <b>${esc(n)}</b>: ${esc(t)}</div>`).join('')}</div>` : ''}
+        <div class="btnrow"><button class="btn" data-a="roundok">Weiter zu Runde ${info.round + 1}</button></div>`);
+    }
+    case 'board': {
+      return sheetWrap(`<h3>Endstand</h3>${S.players.map(p => `<p class="label" style="margin-top:12px">${esc(p.name)}</p>${hotelGrid(p)}`).join('')}`);
+    }
+  }
+  return '';
+}
+function dieSheet(sh) {
+  const me = human();
+  const n = S.dice[sh.face];
+  const a = sh.face === 6 ? sh.as : sh.face;
+  let h = `<h3>${sh.face === 6 && a ? `Joker → ${ACTIONS[a].n}` : ACTIONS[sh.face].n}</h3><p style="font-size:13px">Du nimmst eine <b>${sh.face}</b>. Auf dem Feld liegen <b>${n}</b> Würfel, die Aktion hat also Stärke <b>${n}</b>.</p>`;
+  if (sh.face === 6 && !a) {
+    if (me.k < 1) return h + `<p class="note">Der Joker kostet 1 Krone, du hast keine.</p><button class="skip" data-a="dieskip">Würfel nehmen, Aktion verfallen lassen</button>`;
+    h += `<p>Zahle <b>1 Krone</b> und führe eine beliebige Aktion 1–5 mit Stärke ${n} aus:</p><div class="acts6">${[1, 2, 3, 4, 5].map(x => `<button data-a="as" data-x="${x}"><span class="aic" style="display:block">${actionIcon(x)}</span>${ACTIONS[x].short}</button>`).join('')}</div><button class="skip" data-a="dieskip">Würfel nehmen, Aktion verfallen lassen</button>`;
+    return h;
+  }
+  if (a === 1 || a === 2) {
+    const A = a === 1 ? 's' : 'w', B = a === 1 ? 'c' : 'k';
+    const b = sh.b || 0, max = n;
+    const bonus = a === 1 && hasE(me, 'act1cake') ? ' (+1 Torte durch Zuckerbäckerin)' : a === 2 && hasE(me, 'act2wine') ? ' (+1 Wein durch Sommelier)' : '';
+    h += `<div class="split"><div>${foodSvg(A)}<div class="big">${n - b}</div>${FN[A]}</div><div>${foodSvg(B)}<div class="big">${b}</div>${FN[B]}</div></div>
+      <div class="stepper"><span style="font-size:13px">Davon ${FN[B]} – frei aufteilen</span><span style="display:flex;gap:8px"><button data-a="bminus" ${b <= 0 ? 'disabled' : ''}>−</button><button data-a="bplus" ${b >= max ? 'disabled' : ''}>+</button></span></div>
+      ${bonus ? `<p class="note">${bonus}</p>` : ''}<p class="note">Frische Gerichte darfst du in diesem Zug gratis servieren; der Rest wandert in die Küche.</p>`;
+  } else if (a === 3) {
+    const m = n + (hasE(me, 'act3plus') ? 1 : 0);
+    const sel = sh.sel || [];
+    const spent = sel.reduce((s, i) => s + roomCost(me, i), 0);
+    h += `<p>Bereite bis zu <b>${m}</b> Zimmer vor (Kosten je Stockwerk 0/1/2/3 K). Neue Zimmer müssen im Erdgeschoss liegen oder an ein vorhandenes grenzen.</p>
+      ${hotelGrid(me, { ok: i => sel.length < m && roomOK(me, i, sel) && roomCost(me, i) <= me.k - spent, sel, act: 'rsel' })}
+      <p class="note">Ausgewählt: ${sel.length}/${m} · Kosten ${spent} K · du hast ${me.k} K${sh.face === 6 ? ' (zzgl. 1 K Joker)' : ''}</p>`;
+  } else if (a === 4) {
+    const e = sh.emp || 0;
+    h += `<div class="split"><div>${coinSvg()}<div class="big">${n - e + (hasE(me, 'act4k') ? 1 : 0)}</div>Kronen</div><div>${crownSvg()}<div class="big">${e}</div>Kaiser</div></div>
+      <div class="stepper"><span style="font-size:13px">Schritte auf der Kaiserleiste</span><span style="display:flex;gap:8px"><button data-a="eminus" ${e <= 0 ? 'disabled' : ''}>−</button><button data-a="eplus" ${e >= n ? 'disabled' : ''}>+</button></span></div>`;
+  } else if (a === 5) {
+    const kAvail = me.k - (sh.face === 6 ? 1 : 0);
+    h += `<p>Wähle eine Karte aus deiner Hand. Rabatt: ${n - 1} K (je weiterem Würfel 1 K).</p><div class="staffrow">${me.hand.map(id => { const c = staffCost(me, id, n); return staffCard(id, { btn: c <= kAvail ? 'pick' : null, price: c, cls: sh.staff === id ? 'ok' : c > kAvail ? 'no' : '' }); }).join('')}</div>`;
+  }
+  const ready = a === 5 ? sh.staff != null : a === 3 ? (sh.sel || []).length > 0 : true;
+  h += `<div class="btnrow">${sh.face === 6 ? '<button class="btn white" data-a="asback">Zurück</button>' : ''}<button class="btn" data-a="dieok" ${ready ? '' : 'disabled'}>${sh.face === 6 ? 'Für 1 K ausführen' : 'Ausführen'}</button></div><button class="skip" data-a="dieskip">Würfel nehmen, Aktion verfallen lassen</button>`;
+  return h;
+}
+function rulesHtml() {
+  return `<h3>So spielt man</h3>
+  <p>Ihr führt kleine Wiener Hotels und wollt nach <b>7 Runden</b> die meisten <b>Siegpunkte (SP)</b> haben. Ihr holt Gäste an eure Kaffeehaus-Tische, erfüllt ihre Bestellungen, bringt sie in passenden Zimmern unter und haltet den Kaiser bei Laune.</p>
+  <h4>Ablauf einer Runde</h4>
+  <ul><li>Zu Beginn werden alle Würfel geworfen (2 Spieler: 10, 3: 12, 4: 14) und nach Augenzahl auf das Aktionsbrett gelegt.</li>
+  <li>Jede Person macht <b>zwei Züge</b>: erst reihum, dann in umgekehrter Reihenfolge. Die Startperson wechselt jede Runde.</li></ul>
+  <h4>Dein Zug</h4>
+  <ul><li><b>Optional:</b> Hol <b>einen Gast</b> aus der Warteschlange an einen freien Tisch (max. 3). Die vorderen Plätze sind gratis, die hinteren kosten 1–3 Kronen.</li>
+  <li><b>Pflicht:</b> Nimm <b>einen Würfel</b> und führe die Aktion aus. Die <b>Stärke</b> entspricht der Zahl der Würfel auf diesem Feld, inklusive des genommenen.</li>
+  <li><b>Jederzeit:</b> Serviere Gerichte an deine Gäste. Was du gerade erhalten hast, servierst du gratis. Aus der Küche kostet es 1 Krone für bis zu 3 Gerichte (Küchenservice, einmal pro Zug).</li></ul>
+  <h4>Die sechs Aktionen</h4>
+  <ul><li><b>1 · Strudel &amp; Torte:</b> pro Würfel 1 Gericht, frei aufgeteilt.</li>
+  <li><b>2 · Wein &amp; Kaffee:</b> pro Würfel 1 Getränk, frei aufgeteilt.</li>
+  <li><b>3 · Zimmer:</b> pro Würfel 1 Zimmer vorbereiten. Kosten je Stockwerk 0/1/2/3 Kronen, im Erdgeschoss oder angrenzend an ein bestehendes Zimmer.</li>
+  <li><b>4 · Kronen &amp; Kaiser:</b> Teile die Stärke beliebig auf Kronen und Schritte auf der Kaiserleiste auf.</li>
+  <li><b>5 · Personal:</b> Stelle 1 Karte aus deiner Hand ein. Pro weiterem Würfel auf dem Feld wird sie 1 Krone billiger.</li>
+  <li><b>6 · Joker:</b> Zahle 1 Krone und führe eine Aktion 1–5 aus, mit der Stärke der Sechser.</li></ul>
+  <h4>Gäste &amp; Zimmer</h4>
+  <p>Ist eine Bestellung komplett, zieht der Gast automatisch in ein freies, vorbereitetes Zimmer seiner Farbe (grüne Gäste in jede Farbe) und du erhältst seine Belohnung. Ist kein passendes Zimmer frei, wartet er am Tisch. Ist eine <b>zusammenhängende Farbgruppe</b> komplett belegt, gibt es einen Bonus: <b>Rot</b> bringt Kronen, <b>Blau</b> SP, <b>Gelb</b> Kaiserschritte (1/3/5/8 je nach Gruppengröße).</p>
+  <h4>Kaiser &amp; Politik</h4>
+  <p>Nach Runde <b>3, 5 und 7</b> wertet der Kaiser. Wer mindestens 3/6/9 erreicht, bekommt 4/7/10 SP plus den Bonus des Plättchens. Alle anderen erhalten die Strafe des Plättchens. Drei <b>Politik-Ziele</b> bringen 10/6/3 SP, je nachdem, wie früh du sie erfüllst.</p>
+  <h4>Spielende</h4>
+  <p>Zu deinen Punkten kommen 1 SP je 3 Kronen und die Boni deines Personals. Für jeden Gast, der noch am Tisch sitzt, gibt es −3 SP.</p>
+  <h4>Unterschiede zum Original</h4>
+  <p style="font-size:13px">Das Spielprinzip folgt <i>Grand Austria Hotel</i> (Würfel-Draft mit Stärke nach Anzahl, Gäste bewirten, Zimmer vorbereiten, Personal, Kaiserleiste, Politik). Karten, Zahlen und Illustrationen sind eigene Entwürfe. Vereinfacht wurden unter anderem: Gerichte und Getränke frei aufteilbar, kein Personal-Draft (6 zufällige Karten), Gäste ziehen automatisch ein, eigene Hotel-Aufteilung und eigene Kaiser- und Politikwerte.</p>`;
+}
+
+// ---------- Render & Events ----------
+const $app = document.getElementById('app');
+function render() {
+  let h;
+  if (!S || S.screen === 'start' || !S.screen) h = viewStart();
+  else if (S.screen === 'end') h = viewEnd();
+  else h = viewGame();
+  if (S && S.roundInfo && S.screen === 'game' && !U.sheet) U.sheet = { type: 'round' };
+  h += viewSheet();
+  if (U.toast) h += `<div class="toast">${esc(U.toast)}</div>`;
+  const nm = document.getElementById('nm');
+  if (nm) U.setup.name = nm.value;
+  $app.innerHTML = h;
+  save();
+  pump();
+}
+function pump() {
+  if (!S || S.screen !== 'game' || U.busy || S.roundInfo) return;
+  if (!cur().bot) return;
+  U.busy = true;
+  setTimeout(() => {
+    U.busy = false;
+    if (!S || S.screen !== 'game' || S.roundInfo || !cur().bot) return;
+    botTurn();
+    render();
+  }, U.fast ? 120 : 950);
+}
+const H = {
+  bots: d => { U.setup.bots = +d.n; },
+  start: () => { const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : ''; U.fast = false; newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0); S.screen = 'game'; window.scrollTo(0, 0); },
+  resume: () => { S = load(); U.sheet = null; },
+  rules: () => { U.sheet = { type: 'rules' }; },
+  menu: () => { U.sheet = { type: 'menu' }; },
+  restart: () => { if (confirm('Laufende Partie wirklich abbrechen?')) { clearSave(); S = null; U.sheet = null; } },
+  newgame: () => { clearSave(); S = null; U.sheet = null; },
+  showboard: () => { U.sheet = { type: 'board' }; },
+  close: () => { U.sheet = null; },
+  ovclose: () => { if (U.sheet && U.sheet.type !== 'round') U.sheet = null; },
+  opp: d => { U.sheet = { type: 'opp', p: +d.p }; },
+  staffinfo: d => { U.sheet = { type: 'staffinfo', id: +d.id }; },
+  guest: d => { U.sheet = { type: 'guest', slot: +d.s }; },
+  takeguest: d => { if (takeGuest(human(), +d.s)) { U.sheet = null; toast('Gast sitzt an deinem Tisch.'); } },
+  die: d => { if (isMyTurn() && !S.turn.dieTaken && S.dice[+d.f]) U.sheet = { type: 'die', face: +d.f, b: 0, emp: 0, sel: [], staff: null, as: 0 }; },
+  as: d => { U.sheet.as = +d.x; U.sheet.b = 0; U.sheet.emp = 0; U.sheet.sel = []; U.sheet.staff = null; },
+  asback: () => { U.sheet.as = 0; },
+  bplus: () => { U.sheet.b++; }, bminus: () => { U.sheet.b--; },
+  eplus: () => { U.sheet.emp++; }, eminus: () => { U.sheet.emp--; },
+  rsel: d => { const i = +d.i, s = U.sheet.sel; const k = s.indexOf(i); if (k >= 0) U.sheet.sel = s.slice(0, k); else s.push(i); },
+  pick: d => { U.sheet.staff = +d.id; },
+  dieok: () => {
+    const sh = U.sheet, me = human();
+    const ok = doDie(me, sh.face, { as: sh.as, b: sh.b, emp: sh.emp, rooms: sh.sel, staff: sh.staff });
+    if (ok) { U.sheet = null; toast(S.log[0]); }
+  },
+  dieskip: () => { if (doDie(human(), U.sheet.face, { skip: true })) U.sheet = null; },
+  serve: d => {
+    const me = human(), t = +d.t, oi = +d.o;
+    const src = serveSource(me, t, oi);
+    if (src === 'buy') { U.sheet = { type: 'service', t, oi }; return; }
+    const g = me.tables[t];
+    serve(me, t, oi);
+    if (g && !me.tables[t]) toast(`${GUESTS[g.id][0]} zieht ein!`);
+  },
+  service: () => { U.sheet = { type: 'service' }; },
+  buyservice: () => { const me = human(), sh = U.sheet; buyService(me); if (sh.t != null) { const g = me.tables[sh.t]; serve(me, sh.t, sh.oi); if (g && !me.tables[sh.t]) toast(`${GUESTS[g.id][0]} zieht ein!`); } U.sheet = null; },
+  freerooms: () => { U.sheet = { type: 'freerooms', sel: [] }; },
+  frsel: d => { const i = +d.i, s = U.sheet.sel; const k = s.indexOf(i); if (k >= 0) U.sheet.sel = s.slice(0, k); else s.push(i); },
+  frok: () => { const me = human(); for (const i of U.sheet.sel) if (prepareRoom(me, i, true)) me.freeRooms--; U.sheet = null; },
+  frskip: () => { human().freeRooms = 0; U.sheet = null; },
+  endturn: () => { if (isMyTurn() && S.turn.dieTaken) { endTurn(); window.scrollTo({ top: 0, behavior: 'smooth' }); } },
+  roundok: () => { S.roundInfo = null; U.sheet = null; window.scrollTo({ top: 0, behavior: 'smooth' }); },
+  fast: () => { U.fast = !U.fast; },
+  logtoggle: () => { U.logOpen = !U.logOpen; },
+};
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-a]');
+  if (!el || !$app.contains(el)) return;
+  if (el.dataset.a === 'ovclose' && e.target.closest('[data-stop]')) return;
+  if (el.disabled) return;
+  const fn = H[el.dataset.a];
+  if (!fn) return;
+  fn(el.dataset);
+  render();
+});
+document.addEventListener('keydown', e => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('[role=button][data-a]')) { e.preventDefault(); e.target.click(); }
+  if (e.key === 'Escape' && U.sheet && U.sheet.type !== 'round') { U.sheet = null; render(); }
+});
+
+// Test-Hook: komplette Bot-Partie synchron durchspielen
+window.__ghw = {
+  simulate(nPlayers, seed) {
+    newGame(null, nPlayers - 1, seed); S.screen = 'game';
+    let guard = 0;
+    while (S.screen === 'game' && guard++ < 500) { botTurn(); S.roundInfo = null; }
+    const res = { final: S.final, turns: guard };
+    return res;
+  },
+  state: () => S,
+  reset: () => { S = null; U.sheet = null; clearSave(); render(); },
+};
+
+S = null;
+const saved = load();
+if (saved && saved.screen === 'game') { /* Fortsetzen-Button auf dem Startbildschirm */ }
+render();
+</script>
+</body>
+</html>
