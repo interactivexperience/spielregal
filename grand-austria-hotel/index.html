@@ -1781,7 +1781,7 @@ function viewSheet() {
       const ok = i => sel.length < 3 && (sel.length ? roomOK(me, i, sel) && !sel.includes(i) : i === 0) && FLOOR_COST[Math.floor(i / 5)] <= me.k - spent;
       return sheetWrap(`<h3>Hotel einrichten</h3><p style="font-size:13px">Spielaufbau: Bereite <b>3 Zimmer</b> vor. Du beginnst <b>unten links</b>, jedes weitere Zimmer muss an ein vorhandenes grenzen. Zimmer kosten je Etage 0/1/2/3 Kronen (du hast ${me.k}). Wähle Farben, in die deine ersten Gäste einziehen können.</p>
         ${hotelGrid(me, { ok, sel, act: 'rpsel' })}<p class="note">Ausgewählt ${sel.length}/3 · Kosten ${spent} K</p>
-        <div class="btnrow"><button class="btn white" data-a="rpreset" ${sel.length ? '' : 'disabled'}>Zurücksetzen</button><button class="btn" data-a="rpok" ${sel.length === 3 ? '' : 'disabled'}>Fertig</button></div>`, 'nox');
+        <div class="btnrow"><button class="btn white" data-a="rpreset" ${sel.length ? '' : 'disabled'}>Zurücksetzen</button><button class="btn" data-a="rpok" ${sel.length === 3 ? '' : 'disabled'}>Fertig</button></div><button class="link setupcancel" data-a="setupcancel" style="display:block;margin:14px auto 0;font-size:13px;opacity:.75">Abbrechen – zurück zum Start</button>`, 'nox');
     }
     case 'checkin': {
       const g = me.tables[sh.t], c = GUESTS[g.id][1];
@@ -1790,9 +1790,9 @@ function viewSheet() {
     }
     case 'draft': {
       const D = S.draft, mi = S.players.indexOf(me), pack = D.packs[mi];
-      return sheetWrap(`<h3>Personal-Draft</h3><p style="font-size:13px">Wähle <b>eine</b> Karte und behalte sie. Den Rest gibst du nach links weiter, von rechts bekommst du den nächsten Stapel – bis jede Person 6 Karten hat. Behalten: ${D.kept[mi].length}/6.</p><div class="staffrow" style="flex-wrap:wrap">${pack.map(id => staffCard(id, { btn: 'dpick' })).join('')}</div>${D.kept[mi].length ? `<p class="label" style="margin-top:10px">Schon behalten</p><div class="staffrow">${D.kept[mi].map(id => staffCard(id)).join('')}</div>` : ''}`, 'nox');
+      return sheetWrap(`<h3>Personal-Draft</h3><p style="font-size:13px">Wähle <b>eine</b> Karte und behalte sie. Den Rest gibst du nach links weiter, von rechts bekommst du den nächsten Stapel – bis jede Person 6 Karten hat. Behalten: ${D.kept[mi].length}/6.</p><div class="staffrow" style="flex-wrap:wrap">${pack.map(id => staffCard(id, { btn: 'dpick' })).join('')}</div>${D.kept[mi].length ? `<p class="label" style="margin-top:10px">Schon behalten</p><div class="staffrow">${D.kept[mi].map(id => staffCard(id)).join('')}</div>` : ''}<button class="link setupcancel" data-a="setupcancel" style="display:block;margin:14px auto 0;font-size:13px;opacity:.75">Abbrechen – zurück zum Start</button>`, 'nox');
     }
-    case 'staffpick': { const sp = S.staffPick; return sheetWrap(`<h3>Personal wählen</h3><p style="font-size:13px">Solo-Regel: Von 10 gezogenen Personalkarten behältst du <b>6</b> auf der Hand. Die übrigen kommen unter den Stapel.</p><div class="staffrow" style="flex-wrap:wrap">${sp.ids.map(id => staffCard(id, { btn: 'spsel', cls: sp.sel.includes(id) ? 'ok' : '' })).join('')}</div><div class="btnrow"><button class="btn" data-a="spok" ${sp.sel.length === 6 ? '' : 'disabled'}>${sp.sel.length}/6 behalten</button></div>`); }
+    case 'staffpick': { const sp = S.staffPick; return sheetWrap(`<h3>Personal wählen</h3><p style="font-size:13px">Solo-Regel: Von 10 gezogenen Personalkarten behältst du <b>6</b> auf der Hand. Die übrigen kommen unter den Stapel.</p><div class="staffrow" style="flex-wrap:wrap">${sp.ids.map(id => staffCard(id, { btn: 'spsel', cls: sp.sel.includes(id) ? 'ok' : '' })).join('')}</div><div class="btnrow"><button class="btn" data-a="spok" ${sp.sel.length === 6 ? '' : 'disabled'}>${sp.sel.length}/6 behalten</button></div><button class="link setupcancel" data-a="setupcancel" style="display:block;margin:14px auto 0;font-size:13px;opacity:.75">Abbrechen – zurück zum Start</button>`); }
     case 'staffinfo': return sheetWrap(`<h3>${esc(STAFF[sh.id].n)}</h3><div style="display:flex;justify-content:center;margin:8px 0">${staffCard(sh.id)}</div><p class="note">Typ „${KIND[STAFF[sh.id].t]}“: ${{ now: 'wirkt einmal sofort beim Einstellen.', perm: 'wirkt dauerhaft ab dem Einstellen.', round: 'liefert einmal pro Runde seine Ware (zu Beginn deines ersten Zuges der Runde).', end: 'bringt Punkte bei der Schlussabrechnung.' }[STAFF[sh.id].t]} Einstellen kostet die aufgedruckten Kronen, je weiterem Würfel auf Feld 5 eine Krone weniger.</p>`);
     case 'guest': {
       const id = S.line[sh.slot];
@@ -2075,6 +2075,8 @@ const H = {
   resume: () => { S = load(); U.sheet = null; },
   rules: () => { U.sheet = { type: 'rules' }; },
   menu: () => { U.sheet = { type: 'menu' }; },
+  // Pflicht-Auswahl beim Spielstart verlassen: Partie verwerfen, zurück zum Startbildschirm
+  setupcancel: () => { clearSave(); S = null; U.sheet = null; window.scrollTo(0, 0); },
   restart: () => { if (confirm('Laufende Partie wirklich abbrechen?')) { clearSave(); S = null; U.sheet = null; } },
   newgame: () => { clearSave(); S = null; U.sheet = null; },
   showboard: () => { U.sheet = { type: 'board' }; },

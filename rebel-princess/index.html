@@ -1558,7 +1558,7 @@ function viewSheet() {
     const ch = S.princessChoice;
     return sheetWrap(`<h3>Wähle deine Prinzessin</h3><p style="font-size:13px">Ihre Fähigkeit kannst du in jeder Ballnacht einmal nutzen.</p>
       <div class="pcards">${ch.map(k => { const pr = PRINCESSES.find(x => x.k === k); return `<button class="pcard ${U.pick === k ? 'on' : ''}" data-a="pick" data-k="${k}"><div class="pi">${princessArt(k)}</div><b>${esc(pr.n)}</b><small><b>${esc(pr.t)}.</b> ${esc(pr.tx)}</small></button>`; }).join('')}</div>
-      <div class="btnrow"><button class="btn" data-a="pickok" ${U.pick ? '' : 'disabled'}>Zum Ball</button></div>`, false);
+      <div class="btnrow"><button class="btn" data-a="pickok" ${U.pick ? '' : 'disabled'}>Zum Ball</button></div><button class="link setupcancel" data-a="setupcancel" style="display:block;margin:14px auto 0;font-size:13px;opacity:.75">Abbrechen – zurück zum Start</button>`, false);
   }
   if (S && S.screen === 'game' && S.phase === 'roundEnd' && !sh) {
     const next = RULE(S.rules[S.round]);
@@ -1715,6 +1715,8 @@ const H = {
   rules: () => { U.sheet = { type: 'rules' }; },
   menu: () => { U.sheet = { type: 'menu' }; },
   scores: () => { U.sheet = { type: 'scores' }; },
+  // Pflicht-Auswahl beim Spielstart verlassen: Partie verwerfen, zurück zum Startbildschirm
+  setupcancel: () => { clearSave(); S = null; U.sheet = null; window.scrollTo(0, 0); },
   restart: () => { if (confirm('Laufende Partie wirklich abbrechen?')) { clearSave(); S = null; U.sheet = null; } },
   newgame: () => { clearSave(); S = null; U.sheet = null; },
   close: () => { U.sheet = null; if (S && S.ask && S.ask.kind === 'rot') { S.ask = null; } },
