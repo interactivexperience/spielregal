@@ -141,7 +141,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .ov{position:fixed;inset:0;z-index:60;background:rgba(43,50,69,.38);display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:var(--bg);width:100%;max-width:560px;max-height:88vh;overflow:auto;border-radius:28px 28px 0 0;padding:14px 16px calc(18px + env(safe-area-inset-bottom));position:relative}
 .sheet h3{font-family:"DM Sans",sans-serif;font-weight:700;font-size:26px;letter-spacing:-.8px;margin:0 0 6px;line-height:1.08;padding-right:48px;color:var(--navy)}
-.sheet .x{position:absolute;right:12px;top:12px}
+.sheet .icobtn.x{position:absolute;right:12px;top:12px}
 .grab{width:44px;height:5px;border-radius:9px;background:var(--ink);opacity:.18;margin:0 auto 10px}
 .opts{display:grid;gap:8px;margin-top:10px}
 .opt{border-radius:18px;background:var(--card);padding:10px 12px;text-align:left;display:flex;gap:10px;align-items:center;box-shadow:0 4px 0 var(--line)}
@@ -1276,7 +1276,7 @@ function taskSheet() {
   let h = `<h3>${esc(taskTitle(t))}</h3>`;
   if (t.t === 'die') {
     const adj = U.adj || 0, z = wrapV(t.v + adj) - 1;
-    h += `<p style="font-size:13px">Der niedrigste übrige Würfel gilt für alle: Gartenaktion in Zone <b>${z + 1}</b> und „<b>${RONDEL_N[RONDEL[t.space].k]}</b>“.</p>${adjustUi(me, t.v, adj, 'adj')}${zoneHtml(me, z)}
+    h += `<p style="font-size:13px">Der niedrigste übrige Würfel gilt für alle: Gartenaktion in Zone <b>${z + 1}</b> und „<b>${RONDEL_N[RONDEL[t.space].k]}</b>“.</p>${adjustUi(me, t.v, adj, 'adj')}${zoneHtml(me, z, { big: 1 })}
       <div class="btnrow"><button class="btn green" data-a="takedie">Nutzen${adjustCost(me, adj) ? ` (−${adjustCost(me, adj)} Kompost)` : ''}</button></div>`;
     return sheetWrap(h);
   }
@@ -1312,7 +1312,7 @@ function dieSheet() {
   return sheetWrap(`<h3>Würfel ${d.v}</h3>
     <p style="font-size:13px">Gartenaktion in Zone <b>${z + 1}</b> (pflanzen oder gießen), dazu „<b>${RONDEL_N[RONDEL[d.space].k]}</b>“.</p>
     ${adjustUi(me, d.v, adj, 'adj')}
-    ${zoneHtml(me, z)}
+    ${zoneHtml(me, z, { big: 1 })}
     <div class="btnrow"><button class="btn green" data-a="takedie">Nehmen${adjustCost(me, adj) ? ` (−${adjustCost(me, adj)} Kompost)` : ''}</button></div>`);
 }
 function rulesHtml() {
