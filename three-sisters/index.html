@@ -145,7 +145,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .grab{width:44px;height:5px;border-radius:9px;background:var(--ink);opacity:.18;margin:0 auto 10px}
 .opts{display:grid;gap:8px;margin-top:10px}
 .opt{border-radius:18px;background:var(--card);padding:10px 12px;text-align:left;display:flex;gap:10px;align-items:center;box-shadow:0 4px 0 var(--line)}
-.opt:disabled{opacity:.35;box-shadow:none}
+.opt:disabled,.opt.off{opacity:.4;box-shadow:none;filter:grayscale(1)}
+.opt.off{background:transparent;border:1.5px dashed var(--line)}
 .opt svg{width:34px;height:34px;flex:none}
 .opt b{display:block}
 .opt small{font-size:12px;color:var(--muted)}
@@ -842,10 +843,21 @@ function taskTitle(t) {
   }
   return '';
 }
+// „Spaten · Kästchen 2 von 2 – wird fertig“ statt „Spaten 2/2“ (las sich wie schon fertig)
+const stepLabel = (name, n, len) => `${name} · Kästchen ${n + 1} von ${len}${n + 1 === len ? ' – wird fertig' : ''}`;
+// Fertige oder gestrichene Leisten: im Auswahlfenster ausgegraut, nicht wählbar
+function doneOpts(p, t) {
+  const k = t.t, out = [];
+  if (['per', 'bonus'].includes(k)) FLOWERS.filter(f => !t.f || f === t.f).forEach(f => { const st = p.per[f]; if (st.n >= PER_LEN) out.push({ ic: f, label: FLOWER_N[f], sub: 'fertig ✓' }); else if (st.n >= st.cap) out.push({ ic: f, label: FLOWER_N[f], sub: 'gestrichen – nicht mehr erreichbar' }); });
+  if (['apiary', 'ay', 'bonus'].includes(k) && p.hive >= HIVE.length) ['wax', 'honey', 'split'].forEach(s => { const st = p.api[s]; if (st.n >= 4) out.push({ ic: s, label: API_N[s], sub: 'fertig ✓' }); else if (st.n >= st.cap) out.push({ ic: s, label: API_N[s], sub: 'gestrichen – nicht mehr erreichbar' }); });
+  if (['yard', 'ay', 'bonus'].includes(k)) FRUITS.filter(f => !t.f || f.k === t.f).forEach(f => { const st = p.yard[f.k]; if (st.n >= f.len) out.push({ ic: f.k, label: f.n, sub: 'fertig ✓' }); else if (st.n >= st.cap) out.push({ ic: f.k, label: f.n, sub: 'gestrichen – nicht mehr erreichbar' }); });
+  if (['shed', 'bonus'].includes(k)) SHED.forEach(it => { const st = p.shed[it.k]; if (st.x) out.push({ ic: it.k, label: it.n, sub: 'gestrichen – nicht mehr erreichbar' }); else if (st.n >= it.len) out.push({ ic: it.k, label: it.n, sub: `fertig ✓ – ${it.tx}` }); });
+  return out;
+}
 function perOpts(p, only) {
   return FLOWERS.filter(f => (!only || f === only) && p.per[f].n < p.per[f].cap).map(f => {
     const e = PER[f].box[p.per[f].n];
-    return { o: 'per:' + f, ic: f, label: `${FLOWER_N[f]} ${p.per[f].n + 1}/${PER_LEN}`, sub: p.per[f].n + 1 === PER_LEN ? `vollendet: ${PER[f].vp === 'yard' ? '1 SP je Hof-Ernte' : PER[f].vp + ' SP'}` : e ? `Dieses Kästchen: ${EFFECT_N[e]}` : `Dieses Kästchen: kein Bonus – ein Schritt zur fertigen Staude (${PER[f].vp === 'yard' ? '1 SP je Hof-Ernte' : PER[f].vp + ' SP'}).`, apply: q => perAction(q, f) };
+    return { o: 'per:' + f, ic: f, label: stepLabel(FLOWER_N[f], p.per[f].n, PER_LEN), sub: p.per[f].n + 1 === PER_LEN ? `vollendet: ${PER[f].vp === 'yard' ? '1 SP je Hof-Ernte' : PER[f].vp + ' SP'}` : e ? `Dieses Kästchen: ${EFFECT_N[e]}` : `Dieses Kästchen: kein Bonus – ein Schritt zur fertigen Staude (${PER[f].vp === 'yard' ? '1 SP je Hof-Ernte' : PER[f].vp + ' SP'}).`, apply: q => perAction(q, f) };
   });
 }
 const FRUIT_GAIN = { apple: '3 SP am Ende', blackberry: '2 SP am Ende', peach: '1 Gießaktion in einer Zone deiner Wahl', raspberry: '+3 Waren' };
@@ -855,18 +867,18 @@ function yardSub(p, f) {
   return `Dieses Kästchen: Ernte → ${FRUIT_GAIN[f.k]}${f.k === 'raspberry' && RASP_VP[n + 1] ? ` und ${RASP_VP[n + 1]} SP` : ''}.`;
 }
 function yardOpts(p, only) {
-  return FRUITS.filter(f => (!only || f.k === only) && p.yard[f.k].n < p.yard[f.k].cap).map(f => ({ o: 'yard:' + f.k, ic: f.k, label: `${f.n} ${p.yard[f.k].n + 1}/${f.len}`, sub: yardSub(p, f), apply: q => yardAction(q, f.k) }));
+  return FRUITS.filter(f => (!only || f.k === only) && p.yard[f.k].n < p.yard[f.k].cap).map(f => ({ o: 'yard:' + f.k, ic: f.k, label: stepLabel(f.n, p.yard[f.k].n, f.len), sub: yardSub(p, f), apply: q => yardAction(q, f.k) }));
 }
 function apiaryOpts(p) {
-  if (p.hive < HIVE.length) return [{ o: 'api:hive', ic: 'bienen', label: `Hauptstock ${p.hive + 1}/${HIVE.length}`, sub: HIVE[p.hive] ? `Dieses Kästchen: ${EFFECT_N[HIVE[p.hive]]}` : 'Dieses Kästchen: kein Bonus. Erst wenn der Hauptstock voll ist, kannst du Wachs, Honig und Ableger nutzen.', apply: q => apiaryAction(q, 'hive') }];
+  if (p.hive < HIVE.length) return [{ o: 'api:hive', ic: 'bienen', label: stepLabel('Hauptstock', p.hive, HIVE.length), sub: HIVE[p.hive] ? `Dieses Kästchen: ${EFFECT_N[HIVE[p.hive]]}` : 'Dieses Kästchen: kein Bonus. Erst wenn der Hauptstock voll ist, kannst du Wachs, Honig und Ableger nutzen.', apply: q => apiaryAction(q, 'hive') }];
   return ['wax', 'honey', 'split'].filter(s => p.api[s].n < p.api[s].cap).map(s => {
     const n = p.api[s].n, hi = apiHarv(p, s);
     const sub = API_STEPS[s][n] !== 'h' ? 'Dieses Kästchen: Wachstum, noch keine Ernte' : s === 'wax' ? `+${WAX_GOODS[hi]} Waren, ${WAX_VP[hi]} SP` : s === 'honey' ? `${HONEY_VP[hi]} SP` : EFFECT_N[SPLIT[n]];
-    return { o: 'api:' + s, ic: s, label: `${API_N[s]} ${n + 1}/${p.api[s].cap}`, sub, apply: q => apiaryAction(q, s) };
+    return { o: 'api:' + s, ic: s, label: stepLabel(API_N[s], n, p.api[s].cap), sub, apply: q => apiaryAction(q, s) };
   });
 }
 function shedOpts(p) {
-  return SHED.filter(it => !p.shed[it.k].x && p.shed[it.k].n < it.len).map(it => ({ o: 'shed:' + it.k, ic: it.k, label: `${it.n} ${p.shed[it.k].n + 1}/${it.len}`, sub: it.tx, apply: q => shedAction(q, it.k) }));
+  return SHED.filter(it => !p.shed[it.k].x && p.shed[it.k].n < it.len).map(it => ({ o: 'shed:' + it.k, ic: it.k, label: stepLabel(it.n, p.shed[it.k].n, it.len), sub: it.tx, apply: q => shedAction(q, it.k) }));
 }
 function zoneOpts(p, z, mode) {
   const out = [];
@@ -1302,6 +1314,8 @@ function taskSheet() {
     const hint = { ay: 'Wähle <b>eine</b> Leiste und fülle dort das nächste Kästchen aus – im Bienenstock oder bei einer Obstsorte im Hof. Unter jeder Leiste steht, was dir genau dieses Kästchen bringt.', yard: 'Fülle bei einer Obstsorte das nächste Kästchen aus. Darunter steht, was es dir bringt.', apiary: 'Fülle im Bienenstock das nächste Kästchen aus. Darunter steht, was es dir bringt.', per: 'Fülle bei einer Staude das nächste Kästchen aus. Darunter steht, was es dir bringt.', shed: 'Fülle bei einem Schuppen-Gegenstand das nächste Kästchen aus. Ist er fertig, wirkt er den Rest des Spiels.', bonus: 'Bonusaktion: Fülle ein Kästchen bei Stauden, Bienenstock, Hof oder Schuppen aus.' }[t.t];
     if (hint) h += `<p style="font-size:13px;margin:2px 0 10px">${hint}</p>`;
     h += `<div class="opts">${opts.map(o => `<button class="opt" data-a="opt" data-o="${o.o}">${icon(o.ic)}<span><b>${esc(o.label)}</b><small>${esc(o.sub || '')}</small></span></button>`).join('')}</div>`;
+    const done = doneOpts(me, t);
+    if (done.length) h += `<p class="label" style="margin-top:14px">Schon fertig</p><div class="opts">${done.map(o => `<div class="opt off" aria-disabled="true">${icon(o.ic)}<span><b>${esc(o.label)}</b><small>${esc(o.sub)}</small></span></div>`).join('')}</div>`;
   }
   h += `<button class="skip" data-a="tskip">${opts.length ? 'Aktion verfallen lassen' : 'Nichts möglich – weiter'}</button>`;
   return sheetWrap(h);
