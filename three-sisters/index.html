@@ -66,6 +66,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .icobtn{width:40px;height:40px;border-radius:50%;background:var(--card);font-weight:700;font-size:17px;flex:none;display:grid;place-items:center}
 .icobtn.leave{width:auto;padding:0 12px 0 10px;border-radius:999px;display:flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap}
 .backlink{display:block;text-align:left;margin:4px 0 2px;font-weight:800;font-size:13.5px;color:inherit;text-decoration:none;opacity:.75}
+.top .prow{margin-top:8px}
 .players{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;padding:2px 2px 6px}
 .players::-webkit-scrollbar{display:none}
 .pchip{flex:none;display:flex;align-items:center;gap:6px;border-radius:999px;background:var(--card);padding:3px 10px 3px 3px;text-align:left}
@@ -101,6 +102,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .order span{border-radius:99px;padding:1px 8px;background:var(--card);color:var(--ink);font-weight:600}
 .order span.now{background:var(--forest);color:var(--cream)}
 .order span.done{opacity:.4}
+.order i{font-style:normal;opacity:.6}
 .evt{display:flex;gap:10px;margin-top:12px}
 .evt>div{flex:1;border-radius:18px;background:var(--card);padding:8px 10px;display:flex;gap:8px;align-items:center;font-size:12px;line-height:1.25}
 .evt svg{width:36px;height:36px;flex:none}
@@ -251,6 +253,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .coach .cface{box-shadow:0 0 0 3px var(--peach)}
 .tut-hl{outline:4px solid var(--tomato)!important;outline-offset:3px;animation:tutp 1.1s ease-in-out infinite;position:relative;z-index:6;border-radius:16px}
 @keyframes tutp{50%{outline-color:var(--mustard)}}
+/* Info-Blase bei langem Drücken */
+.lpinfo{position:fixed;z-index:200;max-width:280px;background:var(--navy);color:var(--cream);border-radius:16px;padding:9px 13px;font-size:13.5px;line-height:1.38;box-shadow:0 10px 28px rgba(43,50,69,.35);pointer-events:none}
+[data-info],[title]{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+button:disabled[data-info]{pointer-events:none}
 </style>
 </head>
 <body>
@@ -1114,9 +1120,13 @@ function zoneHtml(p, z, o = {}) {
   const Z = ZONES[z];
   const plants = range(Z.corn).map(ci => `<span class="pair">${stalk(p, z, 'c', ci, o)}${Z.beans.map((c, bi) => c === ci ? stalk(p, z, 'b', bi, o) : '').join('')}</span>`).join('');
   const pumps = Z.pump.map((r, i) => stalk(p, z, 's', i, o) + `<span class="bt" title="${FLOWER_N[RING_F[r]]} – zwischen diesem Kürbis und dem nächsten im Ring (Zone ${PUMPS[(r + 1) % PUMPS.length].z + 1})">${icon(RING_F[r])}</span>`).join('');
-  return `<div class="zone grainy ${o.hl ? 'hl' : ''} ${o.big ? 'big' : ''}" data-z="${z}"><span class="zn">${zoneNum(z)}</span><div class="plants">${plants}</div><div class="pumps">${pumps}</div></div>`;
+  return `<div class="zone grainy ${o.hl ? 'hl' : ''} ${o.big ? 'big' : ''}" data-z="${z}" data-info="Zone ${z + 1}: Würfel mit ${z + 1} Augen arbeiten hier. Pflanzen füllt das unterste Kästchen von bis zu 2 Pflanzen, Gießen lässt alle gepflanzten wachsen. Mais 4 hoch (3 SP), Bohne 2 hoch (1 SP, erst wenn ihr Mais 2 hoch ist), Kürbisse unten bringen Waren."><span class="zn">${zoneNum(z)}</span><div class="plants">${plants}</div><div class="pumps">${pumps}</div></div>`;
 }
-const boxRow = (n, cap, len, lab = () => '', cls = () => '') => `<div class="boxes">${range(len).map(i => `<span class="box ${i < n ? 'x' : i >= cap ? 'cut' : ''} ${cls(i)}">${lab(i)}</span>`).join('')}</div>`;
+const boxRow = (n, cap, len, lab = () => '', cls = () => '', info = () => '') => `<div class="boxes">${range(len).map(i => { const t = info(i); return `<span class="box ${i < n ? 'x' : i >= cap ? 'cut' : ''} ${cls(i)}"${t ? ` data-info="${esc(t)}"` : ''}>${lab(i)}</span>`; }).join('')}</div>`;
+// Texte für langes Drücken
+const RONDEL_INFO = { pw: 'Pflanzen oder Gießen: Nach der Gartenaktion deines Würfels pflanzt oder gießt du noch einmal in derselben Zone.', ay: 'Bienenstock oder Hof: 1 Feld im Bienenstock (erst Hauptstock, dann Wachs, Honig oder Ableger) oder 1 Feld bei einer Obstsorte im Hof.', shed: 'Schuppenzeit: 1 Kästchen bei einem Schuppen-Gegenstand ausfüllen. Fertige Gegenstände helfen den Rest des Spiels und bringen SP.', cg: '1 Kompost & 4 Waren: +1 Kompost (verschiebt einen Würfel um ±1) und 4 Schritte auf der Warenleiste.', market: 'Bauernmarkt: Je höher dein Warenstand, desto mehr Aktionen gibt es (Stauden, Hof, Kompost, Bonus).' };
+const perInfo = (f, i) => i === PER_LEN - 1 ? `${FLOWER_N[f]} fertig: ${PER[f].vp === 'yard' ? 'am Ende 1 SP je Hof-Ernte (höchstens 15)' : PER[f].vp + ' SP am Ende'}` : PER[f].box[i] ? `Beim Ausfüllen: ${EFFECT_N[PER[f].box[i]]}` : '';
+const fruitInfo = (f, i) => f.steps[i] === 'h' ? `Ernte: ${f.tx}` : 'Wachstum: nur ein Schritt weiter, noch keine Ernte.';
 function sheetHtml(p, hlZone = -1) {
   const sc = endScore(p);
   const market = MARKET.find(([g]) => p.goods >= g);
@@ -1131,15 +1141,15 @@ function sheetHtml(p, hlZone = -1) {
       <div style="font-size:11.5px;margin-top:3px">Sterne = Bonusaktion${nextStar >= 0 ? ` (nächster bei ${STARS[nextStar]})` : ''} · Markt jetzt: ${market[1].map(a => MARKET_N[a]).join(' + ')}</div></div>
    </div>
    <p class="label" style="margin-top:14px">Stauden <span class="lv">${sc.per} SP</span></p>
-   <div class="pers">${FLOWERS.map(f => { const st = p.per[f]; return `<div class="per"><span class="pi">${icon(f)}</span><b>${FLOWER_N[f]}</b>${boxRow(st.n, st.cap, PER_LEN, i => i === PER_LEN - 1 ? (PER[f].vp === 'yard' ? 'H' : PER[f].vp) : EFFECT_S[PER[f].box[i]] || '', i => i === PER_LEN - 1 ? 'vp' : PER[f].box[i] ? 't' : '')}</div>`; }).join('')}</div>
+   <div class="pers">${FLOWERS.map(f => { const st = p.per[f]; return `<div class="per"><span class="pi">${icon(f)}</span><b>${FLOWER_N[f]}</b>${boxRow(st.n, st.cap, PER_LEN, i => i === PER_LEN - 1 ? (PER[f].vp === 'yard' ? 'H' : PER[f].vp) : EFFECT_S[PER[f].box[i]] || '', i => i === PER_LEN - 1 ? 'vp' : PER[f].box[i] ? 't' : '', i => perInfo(f, i))}</div>`; }).join('')}</div>
    <p class="label" style="margin-top:14px">Bienenstock <span class="lv">${sc.api} SP</span></p>
-   <div class="rrow"><div class="rh">${icon('bienen')}Hauptstock</div>${boxRow(p.hive, HIVE.length, HIVE.length, i => EFFECT_S[HIVE[i]] || '', i => HIVE[i] ? 't' : '')}
-     <div class="apis">${['wax', 'honey', 'split'].map(s => `<div><div class="rh">${icon(s)}${API_N[s]}</div>${boxRow(p.api[s].n, p.api[s].cap, 4, i => { const st = API_STEPS[s]; if (st[i] !== 'h') return ''; const hi = [...st.slice(0, i)].filter(c => c === 'h').length; return s === 'wax' ? `${WAX_GOODS[hi]}W` : s === 'honey' ? HONEY_VP[hi] : EFFECT_S[SPLIT[i]]; }, i => API_STEPS[s][i] === 'h' ? 'hv t' : 'gr')}</div>`).join('')}</div>
+   <div class="rrow"><div class="rh">${icon('bienen')}Hauptstock</div>${boxRow(p.hive, HIVE.length, HIVE.length, i => EFFECT_S[HIVE[i]] || '', i => HIVE[i] ? 't' : '', i => HIVE[i] ? `Beim Ausfüllen: ${EFFECT_N[HIVE[i]]}` : 'Hauptstock: erst ganz füllen, dann Wachs, Honig oder Ableger.')}
+     <div class="apis">${['wax', 'honey', 'split'].map(s => `<div><div class="rh">${icon(s)}${API_N[s]}</div>${boxRow(p.api[s].n, p.api[s].cap, 4, i => { const st = API_STEPS[s]; if (st[i] !== 'h') return ''; const hi = [...st.slice(0, i)].filter(c => c === 'h').length; return s === 'wax' ? `${WAX_GOODS[hi]}W` : s === 'honey' ? HONEY_VP[hi] : EFFECT_S[SPLIT[i]]; }, i => API_STEPS[s][i] === 'h' ? 'hv t' : 'gr', i => { const st = API_STEPS[s]; if (st[i] !== 'h') return 'Wachstum: nur ein Schritt weiter, noch keine Ernte.'; const hi = [...st.slice(0, i)].filter(c => c === 'h').length; return s === 'wax' ? `Wachs-Ernte: ${WAX_GOODS[hi]} Waren, am Ende ${WAX_VP[hi]} SP` : s === 'honey' ? `Honig-Ernte: am Ende ${HONEY_VP[hi]} SP` : `Ableger: ${EFFECT_N[SPLIT[i]]}`; })}</div>`).join('')}</div>
      <div style="font-size:11.5px;margin-top:4px">Erst den Hauptstock füllen, dann Wachs (Waren, 2/2/5 SP), Honig (5/5/8 SP) oder Ableger (3 SP + Aktionen). Runde Felder sind Ernten, eckige nur Wachstum.</div></div>
    <p class="label" style="margin-top:14px">Hof <span class="lv">${sc.yard} SP</span></p>
-   <div class="fruits">${FRUITS.map(f => `<div class="rrow"><div class="rh">${icon(f.k)}${f.n}</div>${boxRow(p.yard[f.k].n, p.yard[f.k].cap, f.len, i => f.k === 'raspberry' && RASP_VP[i + 1] ? RASP_VP[i + 1] : f.steps[i] === 'h' && f.k === 'apple' ? '3' : f.steps[i] === 'h' && f.k === 'blackberry' ? '2' : '', i => (f.steps[i] === 'h' ? 'hv ' : 'gr ') + (f.k === 'raspberry' && RASP_VP[i + 1] ? 't' : ''))}<div class="tx">${f.tx}</div></div>`).join('')}</div>
+   <div class="fruits">${FRUITS.map(f => `<div class="rrow"><div class="rh">${icon(f.k)}${f.n}</div>${boxRow(p.yard[f.k].n, p.yard[f.k].cap, f.len, i => f.k === 'raspberry' && RASP_VP[i + 1] ? RASP_VP[i + 1] : f.steps[i] === 'h' && f.k === 'apple' ? '3' : f.steps[i] === 'h' && f.k === 'blackberry' ? '2' : '', i => (f.steps[i] === 'h' ? 'hv ' : 'gr ') + (f.k === 'raspberry' && RASP_VP[i + 1] ? 't' : ''), i => fruitInfo(f, i))}<div class="tx">${f.tx}</div></div>`).join('')}</div>
    <p class="label" style="margin-top:14px">Schuppen <span class="lv">${sc.shed} SP</span></p>
-   <div class="tools">${SHED.map(it => { const st = p.shed[it.k]; return `<div class="rrow tool ${shedDone(p, it.k) ? 'done' : ''} ${st.x ? 'gone' : ''}"><div class="rh">${icon(it.k)}${it.n}</div>${boxRow(st.n, st.x ? st.n : it.len, it.len, i => i === it.len - 1 && it.vp ? it.vp : '', i => i === it.len - 1 ? 't' : '')}<div class="tx">${esc(it.tx)}${it.vp ? ` ${it.vp} SP.` : ''}</div></div>`; }).join('')}</div>`;
+   <div class="tools">${SHED.map(it => { const st = p.shed[it.k]; return `<div class="rrow tool ${shedDone(p, it.k) ? 'done' : ''} ${st.x ? 'gone' : ''}"><div class="rh">${icon(it.k)}${it.n}</div>${boxRow(st.n, st.x ? st.n : it.len, it.len, i => i === it.len - 1 && it.vp ? it.vp : '', i => i === it.len - 1 ? 't' : '', i => i === it.len - 1 ? `${it.n} fertig: ${it.tx}${it.vp ? ` ${it.vp} SP.` : ''}` : `${it.n}: ${it.len} Kästchen bis fertig.`)}<div class="tx">${esc(it.tx)}${it.vp ? ` ${it.vp} SP.` : ''}</div></div>`; }).join('')}</div>`;
 }
 function viewStart() {
   const saved = load(); const st = U.setup; const prof = spielregalProfiles();
@@ -1178,18 +1188,20 @@ function viewGame() {
   const live = isMyPick(), ok = live ? pickable() : [];
   const space = si => {
     const ds = S.dice.filter(d => d.space === si), R = RONDEL[si];
-    return `<div class="space grainy ${si === S.pawn ? 'edith' : ''}" style="background:${RONDEL_BG[R.k]}">${si === S.pawn ? `<span class="edm">${gardener('edith', EDITH.look)}</span>` : ''}${R.pin ? '<span class="pin" title="goldene Nadel">📌</span>' : ''}<div class="sic">${icon(R.k === 'shed' ? (R.tool === 'A' ? 'shears' : 'mower') : R.k === 'market' ? 'markt' : R.k)}</div><div class="sn">${RONDEL_N[R.k]}</div>
-      <div class="dice">${ds.map(d => `<button class="die ${d.by !== null ? 'taken' : live && ok.includes(d) ? 'live' : ''}" data-a="die" data-i="${d.i}" ${live && ok.includes(d) ? '' : 'disabled'} aria-label="Würfel ${d.v}">${dieSvg(d.v, dieFill(d))}</button>`).join('') || '<span style="font-size:11px;color:#7A6D61">–</span>'}</div></div>`;
+    return `<div class="space grainy ${si === S.pawn ? 'edith' : ''}" style="background:${RONDEL_BG[R.k]}" data-info="${esc(RONDEL_INFO[R.k] + (R.pin ? ' Goldene Nadel: Hier startet Farmerin Edith.' : '') + ' Die Augenzahl eines Würfels hier bestimmt die Gartenzone.')}">${si === S.pawn ? `<span class="edm">${gardener('edith', EDITH.look)}</span>` : ''}${R.pin ? '<span class="pin" title="goldene Nadel">📌</span>' : ''}<div class="sic">${icon(R.k === 'shed' ? (R.tool === 'A' ? 'shears' : 'mower') : R.k === 'market' ? 'markt' : R.k)}</div><div class="sn">${RONDEL_N[R.k]}</div>
+      <div class="dice">${ds.map(d => `<button class="die ${d.by !== null ? 'taken' : live && ok.includes(d) ? 'live' : ''}" data-a="die" data-i="${d.i}" ${live && ok.includes(d) ? '' : 'disabled'} aria-label="Würfel ${d.v}" data-info="Würfel ${d.v}: Gartenaktion in Zone ${d.v}, danach „${RONDEL_N[R.k]}“.${d.by !== null ? ' Schon vergeben.' : ''}">${dieSvg(d.v, dieFill(d))}</button>`).join('') || '<span style="font-size:11px;color:#7A6D61">–</span>'}</div></div>`;
   };
-  const who = i => i === -1 ? 'Edith' : esc(S.players[i].name.split(' ').slice(-1)[0]);
-  const order = S.seq.map((pi, k) => `<span class="${k === S.idx && S.phase === 'draft' ? 'now' : k < S.idx || S.phase !== 'draft' ? 'done' : ''}">${who(pi)}</span>`).join('') + (S.solo ? '' : `<span class="${S.phase === 'shared' ? 'now' : ''}">alle: niedrigster Würfel</span>`);
+  const who = i => i === -1 ? 'Edith' : !S.players[i].bot ? 'Du' : esc(S.players[i].name.split(' ').slice(-1)[0]);
+  const soloNote = k => !S.solo ? '' : k === 2 ? ' · niedrigster Würfel' : k === 3 ? ' · letzter Würfel' : '';
+  const order = S.seq.map((pi, k) => `${k ? '<i>→</i>' : ''}<span class="${k === S.idx && S.phase === 'draft' ? 'now' : k < S.idx || S.phase !== 'draft' ? 'done' : ''}">${who(pi)}${soloNote(k)}</span>`).join('') + (S.solo ? '' : `<i>→</i><span class="${S.phase === 'shared' ? 'now' : ''}">alle: niedrigster Würfel</span>`);
   const chips = S.players.map((pl, i) => `<button class="pchip ${S.phase === 'draft' && cur() === pl ? 'cur' : ''}" data-a="opp" data-p="${i}"><span class="av" style="background:${pl.mark}">${avatar(pl)}</span><span><span class="nm">${esc(pl.name)}</span><span class="st">★${endScore(pl).total}</span></span></button>`).join('')
     + (S.solo ? `<span class="pchip ${othersTurn() ? 'cur' : ''}"><span class="av" style="background:${EDITH.mark}">${edithHead()}</span><span><span class="nm">Edith</span><span class="st">streicht</span></span></span>` : '');
   return `
   <div class="top"><div class="row">
     <div class="round hand">Runde ${S.round}/${ROUNDS}<small>${S.phase === 'draft' ? `Wahl ${S.idx + 1}/${S.seq.length}` : 'Rundenende'}</small></div>
-    <div class="players">${chips}</div>
+    <span style="flex:1"></span>
     <button class="icobtn" data-a="menu" aria-label="Menü: Verlassen, Regeln"><svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
+  </div><div class="row prow"><div class="players">${chips}</div>
   </div><div class="status" aria-label="Dein Vorrat"><span title="Kompost: je 1 verschiebt einen Würfel um ±1">${icon('kompost')}${me.compost} Kompost</span><span title="Warenleiste">${icon('markt')}${me.goods}/${GOODS_MAX} Waren</span><span class="t" title="Punkte, wenn jetzt gewertet würde">★ ${endScore(me).total} Punkte</span></div></div>
   <div class="wrap">
     ${banner}
@@ -1479,6 +1491,42 @@ const H = {
   shovel: () => { const me = human(); if (!shedDone(me, 'shovel') || me.compost < 3) return; me.compost -= 3; front(me, { t: 'bonus', src: 'Spaten' }); U.sheet = { type: 'task' }; },
   tskip: () => { human().tasks.shift(); afterHumanTask(); },
 };
+// Langes Drücken (≈0,45 s) auf ein Element mit data-info oder title zeigt eine Info-Blase.
+// Kurzes Tippen bleibt unverändert; nach einer Info-Blase wird der folgende Klick verschluckt.
+(function () {
+  let timer = null, sx = 0, sy = 0, shown = false;
+  const hide = () => { const b = document.getElementById('lpinfo'); if (b) b.remove(); };
+  const infoOf = el => el.getAttribute('data-info') || el.getAttribute('title') || '';
+  document.addEventListener('pointerdown', e => {
+    hide(); shown = false; clearTimeout(timer);
+    let el = e.target.closest && e.target.closest('[data-info],[title]');
+    // gesperrte Knöpfe bekommen keine Ereignisse: geometrisch suchen
+    let best = null, area = Infinity;
+    for (const c of document.querySelectorAll('button:disabled[data-info]')) { const r = c.getBoundingClientRect(); if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom && r.width * r.height < area) { best = c; area = r.width * r.height; } }
+    if (best && (!el || el.contains(best))) el = best;
+    if (!el || !infoOf(el)) return;
+    sx = e.clientX; sy = e.clientY;
+    timer = setTimeout(() => {
+      if (!el.isConnected) return;
+      shown = true;
+      const b = document.createElement('div');
+      b.id = 'lpinfo'; b.className = 'lpinfo'; b.setAttribute('role', 'tooltip'); b.textContent = infoOf(el);
+      document.body.appendChild(b);
+      const r = el.getBoundingClientRect(), bw = b.offsetWidth, bh = b.offsetHeight;
+      const x = Math.min(Math.max(8, r.left + r.width / 2 - bw / 2), innerWidth - bw - 8);
+      let y = r.top - bh - 10; if (y < 8) y = Math.min(r.bottom + 10, innerHeight - bh - 8);
+      b.style.left = x + 'px'; b.style.top = y + 'px';
+      if (navigator.vibrate) navigator.vibrate(12);
+    }, 450);
+  }, true);
+  const cancel = () => clearTimeout(timer);
+  document.addEventListener('pointerup', cancel, true);
+  document.addEventListener('pointercancel', cancel, true);
+  document.addEventListener('pointermove', e => { if (Math.hypot(e.clientX - sx, e.clientY - sy) > 10) cancel(); }, true);
+  document.addEventListener('click', e => { if (shown) { shown = false; e.preventDefault(); e.stopPropagation(); } }, true);
+  document.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest('[data-info],[title]')) e.preventDefault(); });
+  addEventListener('scroll', hide, { passive: true });
+})();
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-a]');
   if (!el || !$app.contains(el)) return;

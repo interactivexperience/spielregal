@@ -91,6 +91,10 @@ In jedem Spiel stehen die eigenen Vorräte immer sichtbar in einer Leiste unter 
 Drei Schwestern Kompost/Waren/Punkte, Landgut Münzen/Waren/Körbe/Arbeitskräfte/Hand x/12;
 im Prinzessinnenball sind Hand und Anträge ohnehin immer sichtbar. Der Lernspiel-Coach muss sich
 deutlich von den Spielelementen abheben (je Spiel im eigenen Stil).
+Mitspieler-Chips stehen in einer eigenen Zeile unter der Überschrift; Verlassen/Beenden liegt während
+der Partie im Menü (☰), nicht in der Kopfzeile. **Langes Drücken** (≈0,45 s) auf ein Element mit
+`data-info` (oder `title`) zeigt eine Info-Blase (Owner-Wunsch „länger auf Elemente klicken, um mehr
+Infos zu bekommen“); neue Spielelemente bekommen einen erklärenden `data-info`-Text.
 
 Jedes Spiel hat einen eigenen Smoke-Test in `test/` (`gah-smoke.mjs`,
 `rebel-princess-smoke.mjs`, `three-sisters-smoke.mjs`, `countryside-smoke.mjs`); nach Änderungen an einem Spiel

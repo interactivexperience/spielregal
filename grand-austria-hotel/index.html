@@ -65,6 +65,7 @@ button:disabled{cursor:default}
 .banner.perks .perk{margin:6px 6px 0 0;min-height:36px;font-size:13.5px}
 .icobtn.leave{width:auto;padding:0 12px 0 10px;border-radius:999px;display:flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap}
 .backlink{display:block;text-align:left;margin:4px 0 2px;font-weight:800;font-size:13.5px;color:inherit;text-decoration:none;opacity:.75}
+.top .prow{margin-top:8px}
 .players{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;padding:2px 2px 4px}
 .players::-webkit-scrollbar{display:none}
 .pchip{flex:none;display:flex;align-items:center;gap:6px;border:2px solid var(--ink);border-radius:14px;background:#fff;padding:3px 8px 3px 3px;text-align:left}
@@ -269,6 +270,10 @@ button:disabled{cursor:default}
 .coach .cch{font-size:22px}
 .tut-hl{outline:4px solid var(--pink)!important;outline-offset:3px;animation:tutp 1.1s ease-in-out infinite;position:relative;z-index:6;border-radius:12px}
 @keyframes tutp{50%{outline-color:var(--red)}}
+/* Info-Blase bei langem Drücken */
+.lpinfo{position:fixed;z-index:200;max-width:280px;background:#fff;color:var(--ink);border:2.5px solid var(--ink);border-radius:12px;padding:8px 11px;font-size:13.5px;line-height:1.38;box-shadow:4px 4px 0 var(--red);pointer-events:none}
+[data-info],[title]{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+button:disabled[data-info]{pointer-events:none}
 </style>
 </head>
 <body>
@@ -1528,6 +1533,19 @@ function rewHtml(r) {
   if (r.gizia) h += t('Zusatzaktion', 'Aktion ohne Würfel');
   return h;
 }
+// Texte für langes Drücken
+const ACT_INFO = {
+  1: 'Würfel 1: so viele Strudel und Torten, wie Würfel auf dem Feld liegen (Stärke). Frisch erhaltene Gerichte servierst du in diesem Zug gratis.',
+  2: 'Würfel 2: so viel Wein und Kaffee, wie Würfel auf dem Feld liegen (Stärke). Frisch erhaltene Getränke servierst du in diesem Zug gratis.',
+  3: 'Würfel 3: so viele Zimmer vorbereiten, wie die Stärke angibt. Kosten je nach Etage 0–3 Kronen; ein neues Zimmer liegt im Erdgeschoss oder grenzt an ein vorbereitetes.',
+  4: 'Würfel 4: die Stärke frei auf Kronen und Kaiserschritte aufteilen.',
+  5: 'Würfel 5: eine Personalkarte aus der Hand ausspielen. Jeder Würfel auf dem Feld macht sie 1 Krone billiger.',
+  6: 'Würfel 6: Joker. Für 1 Krone führst du jede andere Aktion mit dieser Stärke aus.',
+};
+const KIND_INFO = { now: 'wirkt einmal sofort', perm: 'wirkt dauerhaft', round: 'liefert einmal pro Runde (zu Beginn deines ersten Zuges)', end: 'zählt bei der Schlussabrechnung' };
+const guestInfo = id => { const g = GUESTS[id]; return `${g[0]}: bestellt ${g[2].split('').map(f => FN[f]).join(', ')}; zieht in ${g[1] === 'g' ? 'ein Zimmer beliebiger Farbe' : `ein ${CN[g[1]].toLowerCase()}es Zimmer`}. Belohnung beim Einzug: ${rewText(g[3])}.`; };
+const FLOOR_N = ['Erdgeschoss', '1. Stock', '2. Stock', '3. Stock'];
+const roomInfo = (p, i) => { const st = p.rooms[i], f = Math.floor(i / 5), c = ROOM_COLOR[i]; return `${FLOOR_N[f]}, ${CN[c]}: ${st === 2 ? 'bezogen' : st === 1 ? 'vorbereitet, wartet auf einen Gast' : `vorbereiten kostet ${roomCost(p, i)} Kronen`}${ROOM_VP[i] && st === 0 ? `, dafür sofort +${ROOM_VP[i]} SP` : ''}. Bezogen zählt es am Ende ${FLOOR_VP[f]} SP.`; };
 function guestCard(id, opts = {}) {
   const g = GUESTS[id];
   const color = COL[g[1]];
@@ -1541,7 +1559,7 @@ function guestCard(id, opts = {}) {
   }).join('');
   const tag = opts.cost != null ? `<span class="cost">${coinSvg().replace('<svg', '<svg width="13" height="13"')}${opts.cost}</span>` : '';
   const el = opts.btn ? 'button' : 'div';
-  return `<${el} class="gcard ${opts.sm ? 'sm' : ''}" ${opts.btn ? `data-a="${opts.btn}" data-s="${opts.slot}"` : ''}>
+  return `<${el} class="gcard ${opts.sm ? 'sm' : ''}" ${opts.btn ? `data-a="${opts.btn}" data-s="${opts.slot}"` : ''} data-info="${esc(guestInfo(id))}">
     <div class="band grainy" style="background:${color}">${tag}<span class="rc">${g[1] === 'g' ? 'jedes' : CN[g[1]]}</span>${guestArt(id)}</div>
     <div class="body"><div class="gn">${esc(g[0])}</div><div class="order">${slots}</div><div class="rew">${rewHtml(g[3])}</div></div>
     ${opts.waiting ? (opts.canIn ? `<button class="waiting in" data-a="checkin" data-t="${opts.table}">Einziehen → Zimmer wählen</button>` : '<div class="waiting">wartet auf Zimmer</div>') : ''}
@@ -1551,7 +1569,7 @@ function staffCard(id, opts = {}) {
   const st = STAFF[id];
   const bg = { now: '#F28AA6', perm: '#7FB2E5', round: '#F1B02B', end: '#9FD3A9' }[st.t];
   const el = opts.btn ? 'button' : 'div';
-  return `<${el} class="scard ${opts.cls || ''}" ${opts.btn ? `data-a="${opts.btn}" data-id="${id}"` : ''}>
+  return `<${el} class="scard ${opts.cls || ''}" ${opts.btn ? `data-a="${opts.btn}" data-id="${id}"` : ''} data-info="${esc(`${st.n} (${st.c} Kronen, ${KIND_INFO[st.t]}): ${st.tx}`)}">
     <div class="top2 grainy" style="background:${bg}"><span class="price">${opts.price != null ? opts.price : st.c} K</span><span class="kind">${KIND[st.t]}</span>${staffArt(id)}</div>
     <div class="b"><div class="sn">${esc(st.n)}</div><div class="tx">${esc(st.tx)}</div></div>
   </${el}>`;
@@ -1560,16 +1578,16 @@ function roomTile(p, i, mode) {
   const st = p.rooms[i], c = ROOM_COLOR[i];
   if (st === 2) {
     const gid = p.roomGuest[i];
-    return `<div class="room grainy" style="background:${COL[c]}"><svg viewBox="0 0 100 100" class="ill" aria-hidden="true"><g filter="url(#wob)" stroke="#161616" stroke-width="3"><rect x="10" y="58" width="80" height="34" rx="6" fill="#FFF9EE"/><path d="M10,70 H90" fill="none"/></g><svg x="14" y="8" width="72" height="80" viewBox="22 0 56 62">${gid >= 0 ? head('g' + gid, Object.assign({}, GUESTS[gid][4], { sleepy: 1, glasses: 0 })).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '') : ''}</svg><g stroke="#161616" stroke-width="3"><path d="M8,66 C30,58 70,58 92,66 V92 H8 Z" fill="#FFF9EE"/><path d="M20,74 h10 M40,78 h14 M64,74 h12" stroke-width="2" fill="none"/></g></svg></div>`;
+    return `<div class="room grainy" style="background:${COL[c]}" data-info="${esc(roomInfo(p, i))}"><svg viewBox="0 0 100 100" class="ill" aria-hidden="true"><g filter="url(#wob)" stroke="#161616" stroke-width="3"><rect x="10" y="58" width="80" height="34" rx="6" fill="#FFF9EE"/><path d="M10,70 H90" fill="none"/></g><svg x="14" y="8" width="72" height="80" viewBox="22 0 56 62">${gid >= 0 ? head('g' + gid, Object.assign({}, GUESTS[gid][4], { sleepy: 1, glasses: 0 })).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '') : ''}</svg><g stroke="#161616" stroke-width="3"><path d="M8,66 C30,58 70,58 92,66 V92 H8 Z" fill="#FFF9EE"/><path d="M20,74 h10 M40,78 h14 M64,74 h12" stroke-width="2" fill="none"/></g></svg></div>`;
   }
   const ok = mode && mode.ok && mode.ok(i);
   const sel = mode && mode.sel && mode.sel.includes(i);
   const attrs = (ok || sel) && mode.act ? `data-a="${mode.act}" data-i="${i}" role="button" tabindex="0"` : '';
   if (st === 1) {
-    return `<div class="room p grainy ${sel ? 'sel' : ''} ${ok ? 'ok' : ''}" style="background:${COL[c]}" ${attrs}><svg viewBox="0 0 100 100" class="curt" aria-hidden="true"><g filter="url(#wob)" stroke="#161616" stroke-width="3"><path d="M8,6 C30,30 26,70 12,96 L8,96 Z" fill="#FFF9EE"/><path d="M92,6 C70,30 74,70 88,96 L92,96 Z" fill="#FFF9EE"/><path d="M30,80 H70 V90 H30 Z" fill="#FFF9EE"/></g></svg>${sel ? '<span class="tag">neu</span>' : ''}</div>`;
+    return `<div class="room p grainy ${sel ? 'sel' : ''} ${ok ? 'ok' : ''}" style="background:${COL[c]}" ${attrs} data-info="${esc(roomInfo(p, i))}"><svg viewBox="0 0 100 100" class="curt" aria-hidden="true"><g filter="url(#wob)" stroke="#161616" stroke-width="3"><path d="M8,6 C30,30 26,70 12,96 L8,96 Z" fill="#FFF9EE"/><path d="M92,6 C70,30 74,70 88,96 L92,96 Z" fill="#FFF9EE"/><path d="M30,80 H70 V90 H30 Z" fill="#FFF9EE"/></g></svg>${sel ? '<span class="tag">neu</span>' : ''}</div>`;
   }
   if (sel) return `<div class="room p sel grainy" style="background:${COL[c]}" ${attrs}><span class="tag">✓ ${mode.free ? 'gratis' : roomCost(p, i) + ' K'}</span></div>`;
-  return `<div class="room e ${ok ? 'ok' : ''}" ${attrs}><span class="dot" style="background:${COL[c]}"></span><span class="cc">${coinSvg()}${roomCost(p, i)}</span>${ROOM_VP[i] ? `<span class="rvp">+${ROOM_VP[i]}★</span>` : ''}</div>`;
+  return `<div class="room e ${ok ? 'ok' : ''}" ${attrs} data-info="${esc(roomInfo(p, i))}"><span class="dot" style="background:${COL[c]}"></span><span class="cc">${coinSvg()}${roomCost(p, i)}</span>${ROOM_VP[i] ? `<span class="rvp">+${ROOM_VP[i]}★</span>` : ''}</div>`;
 }
 function hotelGrid(p, mode) {
   let h = '<div class="hotel">' + roofSvg(p.bot ? `Hotel ${p.name}` : 'Dein Hotel') + '<div class="rooms">';
@@ -1662,7 +1680,7 @@ function viewGame() {
     const n = S.dice[f];
     const live = mine && !S.turn.dieTaken && n > 0;
     const dice = range(n).map(() => dieSvg(f)).join('') + range(Math.max(0, (S.rolled[f] || 0) - n)).map(() => dieSvg(f, '#d9d0bf').replace('<svg', '<svg style="opacity:.35"')).join('');
-    return `<button class="act ${live ? 'live' : ''} ${n ? '' : 'empty'}" data-a="die" data-f="${f}" ${live ? '' : 'disabled'}>
+    return `<button class="act ${live ? 'live' : ''} ${n ? '' : 'empty'}" data-a="die" data-f="${f}" ${live ? '' : 'disabled'} data-info="${esc(ACT_INFO[f] + ` Stärke jetzt: ${n}.`)}">
       <span class="num">${f}</span>${n ? `<span class="strength">×${n}</span>` : ''}<span class="aic">${actionIcon(f)}</span><span class="an">${ACTIONS[f].n}</span><span class="dice">${dice || '<span style="font-size:11px;color:#6d655a">leer</span>'}</span></button>`;
   }).join('');
   const tables = me.tables.map((g, t) => g ? guestCard(g.id, { sm: 1, filled: g.filled, table: t, waiting: g.filled.every(Boolean), canIn: mine && g.filled.every(Boolean) && me.rooms.some((st, i) => st === 1 && (GUESTS[g.id][1] === 'g' || ROOM_COLOR[i] === GUESTS[g.id][1])), canServe: mine ? oi => !!serveSource(me, t, oi) : null }) : `<div class="tslot">freier Tisch</div>`).join('');
@@ -1674,8 +1692,9 @@ function viewGame() {
   return `
   <div class="top"><div class="row">
     <div class="round hand">Runde ${S.round}/${ROUNDS}<small>${S.seqIdx + 1}/${S.seq.length} Züge</small></div>
-    <div class="players">${S.players.map(playerChip).join('')}</div>
+    <span style="flex:1"></span>
     <button class="icobtn" data-a="menu" aria-label="Menü: Verlassen, Regeln"><svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
+  </div><div class="row prow"><div class="players">${S.players.map(playerChip).join('')}</div>
   </div>${statusHtml(me)}</div>
   <div class="wrap">
     ${banner}
@@ -2119,6 +2138,42 @@ const H = {
   fast: () => { U.fast = !U.fast; },
   logtoggle: () => { U.logOpen = !U.logOpen; },
 };
+// Langes Drücken (≈0,45 s) auf ein Element mit data-info oder title zeigt eine Info-Blase.
+// Kurzes Tippen bleibt unverändert; nach einer Info-Blase wird der folgende Klick verschluckt.
+(function () {
+  let timer = null, sx = 0, sy = 0, shown = false;
+  const hide = () => { const b = document.getElementById('lpinfo'); if (b) b.remove(); };
+  const infoOf = el => el.getAttribute('data-info') || el.getAttribute('title') || '';
+  document.addEventListener('pointerdown', e => {
+    hide(); shown = false; clearTimeout(timer);
+    let el = e.target.closest && e.target.closest('[data-info],[title]');
+    // gesperrte Knöpfe bekommen keine Ereignisse: geometrisch suchen
+    let best = null, area = Infinity;
+    for (const c of document.querySelectorAll('button:disabled[data-info]')) { const r = c.getBoundingClientRect(); if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom && r.width * r.height < area) { best = c; area = r.width * r.height; } }
+    if (best && (!el || el.contains(best))) el = best;
+    if (!el || !infoOf(el)) return;
+    sx = e.clientX; sy = e.clientY;
+    timer = setTimeout(() => {
+      if (!el.isConnected) return;
+      shown = true;
+      const b = document.createElement('div');
+      b.id = 'lpinfo'; b.className = 'lpinfo'; b.setAttribute('role', 'tooltip'); b.textContent = infoOf(el);
+      document.body.appendChild(b);
+      const r = el.getBoundingClientRect(), bw = b.offsetWidth, bh = b.offsetHeight;
+      const x = Math.min(Math.max(8, r.left + r.width / 2 - bw / 2), innerWidth - bw - 8);
+      let y = r.top - bh - 10; if (y < 8) y = Math.min(r.bottom + 10, innerHeight - bh - 8);
+      b.style.left = x + 'px'; b.style.top = y + 'px';
+      if (navigator.vibrate) navigator.vibrate(12);
+    }, 450);
+  }, true);
+  const cancel = () => clearTimeout(timer);
+  document.addEventListener('pointerup', cancel, true);
+  document.addEventListener('pointercancel', cancel, true);
+  document.addEventListener('pointermove', e => { if (Math.hypot(e.clientX - sx, e.clientY - sy) > 10) cancel(); }, true);
+  document.addEventListener('click', e => { if (shown) { shown = false; e.preventDefault(); e.stopPropagation(); } }, true);
+  document.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest('[data-info],[title]')) e.preventDefault(); });
+  addEventListener('scroll', hide, { passive: true });
+})();
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-a]');
   if (!el || !$app.contains(el)) return;

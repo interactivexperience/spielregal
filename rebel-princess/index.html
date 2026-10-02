@@ -163,6 +163,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 @keyframes tutp{50%{outline-offset:7px}}
 .rule{min-width:80px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden}
 .why{position:relative;margin:10px 2px 0;font-size:12.5px;line-height:1.4;background:var(--white);border:1.5px solid var(--ink);border-radius:10px;padding:6px 9px}
+/* Info-Blase bei langem Drücken */
+.lpinfo{position:fixed;z-index:200;max-width:280px;background:var(--white);color:var(--ink);border:2.5px solid var(--ink);border-radius:12px;padding:8px 11px;font-size:13.5px;line-height:1.38;box-shadow:4px 4px 0 var(--pink);pointer-events:none}
+[data-info],[title]{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+button:disabled[data-info]{pointer-events:none}
 </style>
 </head>
 <body>
@@ -1270,7 +1274,8 @@ function cardHtml(c, cls = '', attrs = '') {
   const badge = pts ? `<span class="badge">${pts > 0 ? pts + '×' : pts}</span>` : '';
   const hatch = c === FROG ? range(8).map(i => `<path d="M${6 + i * 6.4},85 L${12 + i * 6.4},63" stroke="#1A1A1A" stroke-width="1.2" opacity=".35"/>`).join('') : '';
   const frame = `<svg class="frame" viewBox="0 0 62 90" preserveAspectRatio="none" aria-hidden="true"><path d="${roughRect(c)}" fill="${CREAM}"/><rect x="10" y="19" width="49.6" height="58" fill="${SUIT_COL[s].bg}"/>${hatch}<path d="${roughRect(c)}" fill="none" stroke="#1A1A1A" stroke-width="2.4" stroke-linejoin="round" filter="url(#rough)"/></svg>`;
-  return `<button class="card ${s} ${c === FROG ? 'frog' : ''} ${cls}" ${attrs} aria-label="${SUIT_1[s]} ${v}${c === FROG ? ' (Frosch)' : ''}">${frame}<span class="v" style="color:${isP ? '#1A1A1A' : SUIT_COL[s].fg}">${v}</span><span class="s">${suitIcon(s, false)}</span><span class="art">${artCache[c]}</span>${badge}</button>`;
+  const info = `${c === FROG ? 'Frosch (Haustier 8)' : `${SUIT_1[s]} ${v}`}: ${pts > 0 ? `${pts} ${pts === 1 ? 'Antrag' : 'Anträge'} für die Person, die den Stich gewinnt` : pts < 0 ? `${pts} Anträge für die Person, die den Stich gewinnt` : 'bringt selbst keine Anträge'}. ${isP ? 'Prinzen darfst du erst ausspielen, wenn schon einer abgeworfen wurde.' : `Wer ${SUIT_N[s]} hat, muss sie bedienen; die höchste Karte der ausgespielten Farbe gewinnt.`}`;
+  return `<button class="card ${s} ${c === FROG ? 'frog' : ''} ${cls}" ${attrs} data-info="${esc(info)}" aria-label="${SUIT_1[s]} ${v}${c === FROG ? ' (Frosch)' : ''}">${frame}<span class="v" style="color:${isP ? '#1A1A1A' : SUIT_COL[s].fg}">${v}</span><span class="s">${suitIcon(s, false)}</span><span class="art">${artCache[c]}</span>${badge}</button>`;
 }
 // Prinzessinnen: jede mit ihrem übergroßen Gegenstand (wie die Café-Referenz)
 const PRINCESS_SCENE = {
@@ -1452,7 +1457,7 @@ function viewGame() {
   return `
   <div class="top"><div class="row">
     <div class="round hand">Nacht ${S.round}/${ROUNDS}<small>Stich ${S.trickNo + 1}</small></div>
-    <div class="rule"><b>${esc(r.k)} · ${esc(r.n)}</b>${esc(r.tx)}</div>
+    <div class="rule" data-info="${esc(`Regel dieser Nacht – ${r.k} · ${r.n}: ${r.tx}`)}"><b>${esc(r.k)} · ${esc(r.n)}</b>${esc(r.tx)}</div>
     <button class="icobtn" data-a="menu" aria-label="Menü: Verlassen, Regeln"><svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
   </div></div>
   <div class="wrap">
@@ -1770,6 +1775,42 @@ function rotDone(pi, want) {
   ask(pi, { kind: 'cards', n: 1, list: back, title: 'Rotkäppchen', text: `Welche ${SUIT_1[suit(want)]} gibst du ${q.name} zurück?`, next: 'rotback' });
 }
 CONT.rotback = (pi, sel) => { const p = S.players[pi], q = S.players[S.rotTo]; p.hand = p.hand.filter(c => c !== sel[0]); q.hand = sortHand(q.hand.concat(sel)); S.rotTo = null; };
+// Langes Drücken (≈0,45 s) auf ein Element mit data-info oder title zeigt eine Info-Blase.
+// Kurzes Tippen bleibt unverändert; nach einer Info-Blase wird der folgende Klick verschluckt.
+(function () {
+  let timer = null, sx = 0, sy = 0, shown = false;
+  const hide = () => { const b = document.getElementById('lpinfo'); if (b) b.remove(); };
+  const infoOf = el => el.getAttribute('data-info') || el.getAttribute('title') || '';
+  document.addEventListener('pointerdown', e => {
+    hide(); shown = false; clearTimeout(timer);
+    let el = e.target.closest && e.target.closest('[data-info],[title]');
+    // gesperrte Knöpfe bekommen keine Ereignisse: geometrisch suchen
+    let best = null, area = Infinity;
+    for (const c of document.querySelectorAll('button:disabled[data-info]')) { const r = c.getBoundingClientRect(); if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom && r.width * r.height < area) { best = c; area = r.width * r.height; } }
+    if (best && (!el || el.contains(best))) el = best;
+    if (!el || !infoOf(el)) return;
+    sx = e.clientX; sy = e.clientY;
+    timer = setTimeout(() => {
+      if (!el.isConnected) return;
+      shown = true;
+      const b = document.createElement('div');
+      b.id = 'lpinfo'; b.className = 'lpinfo'; b.setAttribute('role', 'tooltip'); b.textContent = infoOf(el);
+      document.body.appendChild(b);
+      const r = el.getBoundingClientRect(), bw = b.offsetWidth, bh = b.offsetHeight;
+      const x = Math.min(Math.max(8, r.left + r.width / 2 - bw / 2), innerWidth - bw - 8);
+      let y = r.top - bh - 10; if (y < 8) y = Math.min(r.bottom + 10, innerHeight - bh - 8);
+      b.style.left = x + 'px'; b.style.top = y + 'px';
+      if (navigator.vibrate) navigator.vibrate(12);
+    }, 450);
+  }, true);
+  const cancel = () => clearTimeout(timer);
+  document.addEventListener('pointerup', cancel, true);
+  document.addEventListener('pointercancel', cancel, true);
+  document.addEventListener('pointermove', e => { if (Math.hypot(e.clientX - sx, e.clientY - sy) > 10) cancel(); }, true);
+  document.addEventListener('click', e => { if (shown) { shown = false; e.preventDefault(); e.stopPropagation(); } }, true);
+  document.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest('[data-info],[title]')) e.preventDefault(); });
+  addEventListener('scroll', hide, { passive: true });
+})();
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-a]');
   if (!el || !$app.contains(el)) return;

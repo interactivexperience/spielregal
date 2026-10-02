@@ -52,12 +52,13 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .note{font-size:13px;color:var(--muted);background:var(--soft);border-radius:16px;padding:9px 12px;margin-top:10px}
 .top{position:sticky;top:0;z-index:30;background:rgba(236,231,226,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:calc(8px + env(safe-area-inset-top)) 0 8px}
 .top .row{max-width:560px;margin:0 auto;padding:0 16px;display:flex;align-items:center;gap:10px}
-.round{font-size:19px;line-height:1;white-space:nowrap;color:var(--ink)}
+.round{font-size:26px;line-height:1;white-space:nowrap;color:var(--ink)}
 .round small{font-family:"Outfit",system-ui,sans-serif;font-weight:500;font-size:11.5px;color:var(--muted);display:block;margin-top:3px;letter-spacing:0}
 .icobtn{width:40px;height:40px;border-radius:50%;background:var(--card);font-weight:700;font-size:17px;flex:none;display:grid;place-items:center}
 .icobtn.leave{width:auto;padding:0 12px 0 10px;border-radius:999px;display:flex;align-items:center;gap:5px;font-size:13px;font-weight:600;white-space:nowrap}
-@media (max-width:430px){.round{font-size:16px}.round small{display:none}.top .row{gap:7px}}
+@media (max-width:430px){.top .row{gap:7px}}
 .backlink{display:block;text-align:left;margin:4px 0 2px;font-weight:600;font-size:13.5px;color:inherit;text-decoration:none;opacity:.75}
+.top .prow{margin-top:8px}
 .players{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;padding:2px}
 .players::-webkit-scrollbar{display:none}
 .pchip{flex:none;display:flex;align-items:center;gap:6px;border-radius:999px;background:var(--card);padding:3px 12px 3px 3px;text-align:left}
@@ -196,6 +197,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .coach .cface{box-shadow:0 0 0 3px var(--plum)}
 .tut-hl{outline:4px solid var(--plum)!important;outline-offset:3px;animation:tutp 1.1s ease-in-out infinite;position:relative;z-index:6;border-radius:14px}
 @keyframes tutp{50%{outline-color:var(--gold)}}
+/* Info-Blase bei langem Drücken */
+.lpinfo{position:fixed;z-index:200;max-width:280px;background:var(--plum);color:#fff;border-radius:18px;padding:9px 13px;font-size:13.5px;line-height:1.38;box-shadow:0 10px 28px rgba(31,26,23,.3);pointer-events:none}
+[data-info],[title]{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+button:disabled[data-info]{pointer-events:none}
 </style>
 </head>
 <body>
@@ -1164,9 +1169,13 @@ const myAsk = () => S && S.ask && !P(S.ask.pi).bot ? S.ask : null;
 const idle = () => S && S.screen === 'game' && !S.ask && !S.q.length;
 const isMyTurn = () => idle() && !cur().bot;
 function face(p) { return `<svg viewBox="41 6.5 19 19" class="ill">${figureArt(p.look)}</svg>`; }
+// Texte für langes Drücken
+const cardInfo = k => { const c = CARDS[k]; return `${c.n} (Gebiet ${TT_N[c.t]}, ${c.sun} Sonnenstunden): ${c.fx}`; };
+const SUN_NOTE = ' Sonnenstunden sammelst du nicht an: Sie gelten nur für diese Karte. Fehlende Stunden zahlst du mit Münzen (1 Münze = 1 Stunde).';
+const fieldInfo = (p, f) => `${f.n}: ${f.tx}${/sun/.test(f.k) || f.k === 'coin3' ? SUN_NOTE : ''}${f.lock && !unlocked(p, f.lock) ? ` Noch gesperrt: Lege ${p.markers[f.lock]} Marker von hier auf erfüllte Aufträge, um es freizuschalten.` : ''}${p.placed.includes(f.k) ? ' Heute schon belegt.' : ''}`;
 function cardHtml(k, o = {}) {
   const c = CARDS[k];
-  return `<${o.btn ? 'button' : 'div'} class="pc ${o.cls || ''} ${o.sm ? 'sm' : ''}" ${o.btn ? `data-a="${o.btn}" data-i="${o.i}" data-k="${k}"` : ''}>
+  return `<${o.btn ? 'button' : 'div'} class="pc ${o.cls || ''} ${o.sm ? 'sm' : ''}" ${o.btn ? `data-a="${o.btn}" data-i="${o.i}" data-k="${k}"` : ''} data-info="${esc(cardInfo(k))}">
     <div class="art">${cardArt(k)}</div><span class="sun">${sunSvg(c.sun)}</span><span class="ty" style="background:${TT_C[c.t]}" title="${TT_N[c.t]}">${typeIcon(c.t)}</span>
     <div class="nm">${esc(c.n)}</div><div class="fx">${esc(c.fx)}</div></${o.btn ? 'button' : 'div'}>`;
 }
@@ -1206,7 +1215,7 @@ function boardHtml(p, live) {
   const fld = f => {
     const open = !f.lock || unlocked(p, f.lock);
     const ok = live && canUseField(p, f);
-    return `<button class="fld ${open ? '' : 'locked'} ${ok ? 'live' : ''} ${placed(f) ? 'used' : ''}" data-a="field" data-k="${f.k}" ${ok ? '' : 'disabled'}><span class="wk">${placed(f) ? workerSvg(p.mark) : workerSvg('rgba(91,59,34,.25)')}</span><b>${esc(f.n)}</b>${esc(f.tx)}${!open ? `<span class="mk">${range(p.markers[f.lock]).map(() => `<i style="background:${p.mark}"></i>`).join('')}</span>` : ''}</button>`;
+    return `<button class="fld ${open ? '' : 'locked'} ${ok ? 'live' : ''} ${placed(f) ? 'used' : ''}" data-a="field" data-k="${f.k}" ${ok ? '' : 'disabled'} data-info="${esc(fieldInfo(p, f))}"><span class="wk">${placed(f) ? workerSvg(p.mark) : workerSvg('rgba(91,59,34,.25)')}</span><b>${esc(f.n)}</b>${esc(f.tx)}${!open ? `<span class="mk">${range(p.markers[f.lock]).map(() => `<i style="background:${p.mark}"></i>`).join('')}</span>` : ''}</button>`;
   };
   const other = UNLOCKS.filter(u => !FIELDS.some(f => f.lock === u.k)).map(u => `<div class="fld mkt ${unlocked(p, u.k) ? '' : 'locked'}"><b>${unlocked(p, u.k) ? '✓ ' : ''}${esc(u.tx)}</b>${!unlocked(p, u.k) ? `<span class="mk">${range(p.markers[u.k]).map(() => `<i style="background:${p.mark}"></i>`).join('')}</span>` : ''}</div>`).join('');
   return `<div class="board"><div class="bank">Bank: ${range(workersFree(p)).map(() => `<span style="width:18px;height:22px;display:inline-block">${workerSvg(p.mark)}</span>`).join('') || '–'} · eingesetzt: ${p.placed.length}</div>
@@ -1248,8 +1257,9 @@ function viewGame() {
   return `
   <div class="top"><div class="row">
     <div class="round hand">${S.solo ? `Stapel ${5 - S.soloStacks.length}/5` : S.endTrig ? 'Letzte Züge' : 'Landgut'}<small>${S.solo ? 'Solo' : `Ziel: ${VP_END} SP`}</small></div>
-    <div class="players">${chips}</div>
+    <span style="flex:1"></span>
     <button class="icobtn" data-a="menu" aria-label="Menü: Verlassen, Regeln"><svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
+  </div><div class="row prow"><div class="players">${chips}</div>
   </div>${statusHtml(me)}</div>
   <div class="wrap">
     ${banner}
@@ -1575,6 +1585,42 @@ const H = {
     if (a.t === 'sell') return reply(U.tmp.sell || {});
   },
 };
+// Langes Drücken (≈0,45 s) auf ein Element mit data-info oder title zeigt eine Info-Blase.
+// Kurzes Tippen bleibt unverändert; nach einer Info-Blase wird der folgende Klick verschluckt.
+(function () {
+  let timer = null, sx = 0, sy = 0, shown = false;
+  const hide = () => { const b = document.getElementById('lpinfo'); if (b) b.remove(); };
+  const infoOf = el => el.getAttribute('data-info') || el.getAttribute('title') || '';
+  document.addEventListener('pointerdown', e => {
+    hide(); shown = false; clearTimeout(timer);
+    let el = e.target.closest && e.target.closest('[data-info],[title]');
+    // gesperrte Knöpfe bekommen keine Ereignisse: geometrisch suchen
+    let best = null, area = Infinity;
+    for (const c of document.querySelectorAll('button:disabled[data-info]')) { const r = c.getBoundingClientRect(); if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom && r.width * r.height < area) { best = c; area = r.width * r.height; } }
+    if (best && (!el || el.contains(best))) el = best;
+    if (!el || !infoOf(el)) return;
+    sx = e.clientX; sy = e.clientY;
+    timer = setTimeout(() => {
+      if (!el.isConnected) return;
+      shown = true;
+      const b = document.createElement('div');
+      b.id = 'lpinfo'; b.className = 'lpinfo'; b.setAttribute('role', 'tooltip'); b.textContent = infoOf(el);
+      document.body.appendChild(b);
+      const r = el.getBoundingClientRect(), bw = b.offsetWidth, bh = b.offsetHeight;
+      const x = Math.min(Math.max(8, r.left + r.width / 2 - bw / 2), innerWidth - bw - 8);
+      let y = r.top - bh - 10; if (y < 8) y = Math.min(r.bottom + 10, innerHeight - bh - 8);
+      b.style.left = x + 'px'; b.style.top = y + 'px';
+      if (navigator.vibrate) navigator.vibrate(12);
+    }, 450);
+  }, true);
+  const cancel = () => clearTimeout(timer);
+  document.addEventListener('pointerup', cancel, true);
+  document.addEventListener('pointercancel', cancel, true);
+  document.addEventListener('pointermove', e => { if (Math.hypot(e.clientX - sx, e.clientY - sy) > 10) cancel(); }, true);
+  document.addEventListener('click', e => { if (shown) { shown = false; e.preventDefault(); e.stopPropagation(); } }, true);
+  document.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest('[data-info],[title]')) e.preventDefault(); });
+  addEventListener('scroll', hide, { passive: true });
+})();
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-a]');
   if (!el || !$app.contains(el)) return;
