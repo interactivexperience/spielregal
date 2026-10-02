@@ -125,7 +125,15 @@ Würfelwahlen der Runde als Punkte (gefüllt = gewählt) statt einer Reihenfolge
 Kreis (7 Felder im Uhrzeigersinn, Pfeile, goldene Nadel oben), das Ereignis der Runde steht in der Mitte, darunter die
 Ereignisleiste 1–8; der gemeinsam genutzte niedrigste Würfel trägt die Marke „alle“. Erklärungen stehen nicht als grauer
 Text daneben, sondern hinter einem i-Knopf (`data-a="info"`, Antippen = Info-Blase) bzw. langem Drücken. Legenden sind
-Symbol-Chips mit einem Wort (`lgChip`), Details per langem Drücken statt verkürzter Fließtexte.
+Symbol-Chips mit einem Wort (`lgChip`), Details per langem Drücken statt verkürzter Fließtexte. Jeder Bogen-Abschnitt (Garten, Stauden,
+Bienenstock, Hof, Schuppen) beginnt mit einem großflächigen Riso-Bildstreifen (`scene`/`sceneHead`, Titel + SP darauf)
+wie die Illustrationen des echten Bogens; Gartenzonen zeigen Erdreihen (`.zbg`). Owner: weniger „technisch“, Lesbarkeit
+und Bedienung haben aber Vorrang – Kästchen und Knöpfe bleiben unverändert.
+Landgut ist auf **drei Wischseiten** verteilt (`.pages`, Scroll-Snap): Auslage & Aufträge · Mein Hof (Siegpunktpfad,
+Gebiete, Chronik) · Arbeitsplan; Reiter im Kopf statt Titel (lila Punkt am Arbeitsplan, wenn du dran bist), Ziel 30 SP
+bzw. Solo-Stapel als dunkle Pille in der Vorratsleiste. `goTo` und der Lernspiel-Coach wechseln automatisch auf die
+Seite des Ziels; während des Wischens wird nicht neu gezeichnet (`render` wartet). Kopfzeilen (`.thead`) sind in allen
+Spielen deckend in der Seitenfarbe, ohne milchigen Blur (Owner: „kein milchiger Hintergrund“).
 
 Jedes Spiel hat einen eigenen Smoke-Test in `test/` (`gah-smoke.mjs`,
 `rebel-princess-smoke.mjs`, `three-sisters-smoke.mjs`, `countryside-smoke.mjs`); nach Änderungen an einem Spiel

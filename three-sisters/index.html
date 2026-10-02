@@ -303,6 +303,8 @@ input,textarea{-webkit-user-select:text;user-select:text}
 /* Kopfzeile: Titel, Mitspieler und Vorräte mit milchigem Hintergrund; die Ansage schwebt ohne Band darunter */
 .top:not(.coach){background:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;padding:0!important;border-bottom:0!important;pointer-events:none}
 .top .thead{pointer-events:auto;padding:calc(8px + env(safe-area-inset-top)) 0 8px;background:rgba(233,230,232,.6);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);}
+/* Owner: kein milchiger Hintergrund – Kopf deckend in der Seitenfarbe */
+.top .thead{background:var(--bg)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 .top .tbanner{pointer-events:none;padding-bottom:6px}
 .top .tbanner .banner{pointer-events:auto;box-shadow:0 8px 24px rgba(31,26,23,.18)}
 /* Ansage ohne Band dahinter: Kasten selbst deckend, damit er lesbar bleibt */
@@ -355,6 +357,14 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .legend .box{min-width:18px;height:18px;font-size:9px}
 .legend .vp{color:var(--tomato);font-weight:800}
 .rrow .sub{font-size:12px;margin-top:3px;color:var(--ink)}
+/* Bildstreifen der Bogen-Abschnitte */
+.scene{position:relative;height:96px;border-radius:24px;overflow:hidden;margin:16px 0 10px}
+.scene .scn{position:absolute;inset:0;width:100%;height:100%}
+.scene .scap{position:absolute;left:14px;top:12px;display:flex;flex-direction:column;gap:3px;color:var(--navy)}
+.scene .scap b{font-size:22px;line-height:1;font-weight:700;letter-spacing:-.01em}
+.scene .scap span{align-self:flex-start;font-size:12px;font-weight:700;background:rgba(255,255,255,.75);border-radius:99px;padding:2px 9px}
+.zone .zbg{position:absolute;inset:0;width:100%;height:100%;border-radius:inherit;pointer-events:none}
+.zone .plants,.zone .pumps{position:relative}
 </style>
 </head>
 <body>
@@ -1245,7 +1255,7 @@ function zoneHtml(p, z, o = {}) {
   const Z = ZONES[z];
   const plants = range(Z.corn).map(ci => `<span class="pair">${stalk(p, z, 'c', ci, o)}${Z.beans.map((c, bi) => c === ci ? stalk(p, z, 'b', bi, o) : '').join('')}</span>`).join('');
   const pumps = Z.pump.map((r, i) => stalk(p, z, 's', i, o) + `<span class="bt" title="${FLOWER_N[RING_F[r]]} – zwischen diesem Kürbis und dem nächsten im Ring (Zone ${PUMPS[(r + 1) % PUMPS.length].z + 1})">${icon(RING_F[r])}</span>`).join('');
-  return `<div class="zone grainy ${o.hl ? 'hl' : ''} ${o.big ? 'big' : ''}" data-z="${z}" data-info="Zone ${z + 1}: Würfel mit ${z + 1} Augen arbeiten hier. Pflanzen füllt das unterste Kästchen von bis zu 2 Pflanzen, Gießen lässt alle gepflanzten wachsen. Mais 4 hoch (3 SP), Bohne 2 hoch (1 SP, erst wenn ihr Mais 2 hoch ist), Kürbisse unten bringen Waren."><span class="zn">${zoneNum(z)}</span><div class="plants">${plants}</div><div class="pumps">${pumps}</div></div>`;
+  return `<div class="zone grainy ${o.hl ? 'hl' : ''} ${o.big ? 'big' : ''}" data-z="${z}" data-info="Zone ${z + 1}: Würfel mit ${z + 1} Augen arbeiten hier. Pflanzen füllt das unterste Kästchen von bis zu 2 Pflanzen, Gießen lässt alle gepflanzten wachsen. Mais 4 hoch (3 SP), Bohne 2 hoch (1 SP, erst wenn ihr Mais 2 hoch ist), Kürbisse unten bringen Waren."><svg class="zbg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0,100 L0,58 C30,50 70,54 100,48 L100,100 Z" fill="rgba(160,103,74,.13)"/><path d="M6,70 C35,64 65,66 94,62 M6,82 C35,76 65,78 94,74 M6,94 C35,88 65,90 94,86" stroke="rgba(160,103,74,.22)" stroke-width="1.4" fill="none" vector-effect="non-scaling-stroke" stroke-linecap="round"/></svg><span class="zn">${zoneNum(z)}</span><div class="plants">${plants}</div><div class="pumps">${pumps}</div></div>`;
 }
 // lv = [Index, Optionsschlüssel]: dieses Kästchen ist direkt antippbar (Auswahl auf dem Bogen)
 const boxRow = (n, cap, len, lab = () => '', cls = () => '', info = () => '', lv = null, rk = '') => `<div class="boxes"${rk ? ` data-rk="${rk}"` : ''}>${range(len).map(i => { const t = info(i); return lv && lv[0] === i ? `<button class="box live ${cls(i)}" data-a="opt" data-o="${lv[1]}"${t ? ` data-info="${esc(t)}"` : ''} aria-label="Dieses Kästchen ausfüllen">${lab(i)}</button>` : `<span class="box ${i < n ? 'x' : i >= cap ? 'cut' : ''} ${cls(i)}"${t ? ` data-info="${esc(t)}"` : ''}>${lab(i)}</span>`; }).join('')}</div>`;
@@ -1253,12 +1263,34 @@ const boxRow = (n, cap, len, lab = () => '', cls = () => '', info = () => '', lv
 const RONDEL_INFO = { pw: 'Pflanzen oder Gießen: Nach der Gartenaktion deines Würfels pflanzt oder gießt du noch einmal in derselben Zone.', ay: 'Bienenstock oder Hof: 1 Feld im Bienenstock (erst Hauptstock, dann Wachs, Honig oder Ableger) oder 1 Feld bei einer Obstsorte im Hof.', shed: 'Schuppenzeit: 1 Kästchen bei einem Schuppen-Gegenstand ausfüllen. Fertige Gegenstände helfen den Rest des Spiels und bringen SP.', cg: '1 Kompost & 4 Waren: +1 Kompost (verschiebt einen Würfel um ±1) und 4 Schritte auf der Warenleiste.', market: 'Bauernmarkt: Je höher dein Warenstand, desto mehr Aktionen gibt es (Stauden, Hof, Kompost, Bonus).' };
 const perInfo = (f, i) => i === PER_LEN - 1 ? `${FLOWER_N[f]} fertig: ${PER[f].vp === 'yard' ? 'am Ende 1 SP je Hof-Ernte (höchstens 15)' : PER[f].vp + ' SP am Ende'}` : PER[f].box[i] ? `Beim Ausfüllen: ${EFFECT_N[PER[f].box[i]]}` : '';
 const fruitInfo = (f, i) => f.steps[i] === 'h' ? `Ernte: ${f.tx}` : 'Wachstum: nur ein Schritt weiter, noch keine Ernte.';
+// Großflächige Riso-Bildstreifen als Kopf der Bogen-Abschnitte (wie die Illustrationen auf dem echten Bogen)
+const icAt = (k, x, y, sz) => icon(k).replace('<svg viewBox="0 0 32 32"', `<svg viewBox="0 0 32 32" x="${x}" y="${y}" width="${sz}" height="${sz}" overflow="visible"`);
+const SCENE_BG = { garden: '#F8ECE1', per: '#F6E3EA', api: '#FBF0D2', yard: '#E6F0DA', shed: '#E1E9F3' };
+function scene(kind) {
+  const hill = (col, d) => `<path d="${d}" fill="${col}"/>`;
+  const ground = {
+    garden: hill(C.sage, 'M0,96 L0,74 C70,62 140,70 200,66 C270,61 320,64 360,58 L360,96 Z') + hill(shade(C.brown, 1.25), 'M150,96 C170,80 260,76 360,80 L360,96 Z') + [0, 1, 2].map(i => `<path d="M${180 + i * 50},92 C${200 + i * 50},86 ${240 + i * 40},85 ${280 + i * 30},86" stroke="${shade(C.brown, 0.95)}" stroke-width="2" fill="none" stroke-linecap="round" opacity=".5"/>`).join(''),
+    per: hill(C.sage, 'M0,96 L0,80 C80,70 160,76 240,70 C300,66 340,70 360,66 L360,96 Z') + hill(C.leaf, 'M120,96 C150,78 250,74 360,82 L360,96 Z'),
+    api: hill(C.sage, 'M0,96 L0,78 C90,70 200,76 360,70 L360,96 Z') + `<circle cx="330" cy="20" r="14" fill="${C.yellow}" opacity=".8"/>`,
+    yard: hill(C.sage, 'M0,96 L0,76 C90,64 200,72 360,62 L360,96 Z') + hill(C.leaf, 'M170,96 C200,82 290,78 360,80 L360,96 Z'),
+    shed: hill(C.sage, 'M0,96 L0,80 C90,72 200,78 360,70 L360,96 Z'),
+  }[kind];
+  let art = '';
+  if (kind === 'garden') art = `<g transform="translate(130,14) scale(.95)">${bouquet('mais')}</g><g transform="translate(205,22) scale(.85)">${bouquet('bohne')}</g><g transform="translate(270,30) scale(.85)">${bouquet('kuerbis')}</g>`;
+  if (kind === 'per') art = FLOWERS.map((f, i) => icAt(f, 128 + i * 38, 30 + (i % 2) * 12, 44)).join('') + P.moth(300, 18, 1.1, C.pink);
+  if (kind === 'api') art = icAt('honey', 140, 30, 50) + icAt('wax', 196, 38, 42) + icAt('split', 244, 34, 46) + icAt('bienen', 296, 46, 36) + P.moth(230, 20, .9, C.mustard);
+  if (kind === 'yard') art = icAt('apple', 132, 30, 48) + icAt('blackberry', 186, 38, 42) + icAt('raspberry', 236, 32, 44) + icAt('peach', 288, 36, 48);
+  if (kind === 'shed') art = icAt('schuppen', 140, 14, 74) + icAt('pitchfork', 220, 34, 46) + icAt('wheelbarrow', 262, 46, 44) + icAt('barrel', 310, 44, 38);
+  return `<svg class="scn" viewBox="0 0 360 96" preserveAspectRatio="xMaxYMax slice" aria-hidden="true"><g filter="url(#riso)">${ground}${art}</g></svg>`;
+}
+const sceneHead = (kind, title, sp) => `<div class="scene" style="background:${SCENE_BG[kind]}">${scene(kind)}<div class="scap"><b>${title}</b>${sp != null ? `<span>${sp} SP</span>` : ''}</div></div>`;
 const lgChip = (sym, tx, info) => `<span class="lg" data-info="${esc(info)}">${sym}${tx ? `<span>${tx}</span>` : ''}</span>`;
 function sheetHtml(p, hlZone = -1) {
   const sc = endScore(p);
   const market = MARKET.find(([g]) => p.goods >= g);
   const nextStar = STARS.findIndex((s, i) => s > p.goods && !p.starX.includes(i));
   return `
+   ${sceneHead('garden', p === human() ? 'Dein Garten' : 'Garten', sc.garden)}
    <div class="garden">${range(6).map(z => zoneHtml(p, z, { hl: z === hlZone })).join('')}</div>
    <div class="legend">${lgChip('<span class="lgb c"><i></i><i></i><i></i><i></i></span>', '3 ★', 'Mais: 4 Kästchen hoch. Ist er ganz gewachsen, bringt er am Ende 3 SP.')}${lgChip('<span class="lgb b"><i></i><i></i></span>', '1 ★', 'Bohne: 2 Kästchen hoch, bringt 1 SP. Pflanzen darfst du sie erst, wenn der Mais daneben 2 hoch ist.')}${lgChip('<span class="lgb h s"><i></i><i></i><i></i></span>', icon('waren'), 'Kürbis: Bei der Ernte (letztes Kästchen) bekommst du Waren; die kleine orange Zahl nennt wie viele.')}${lgChip(icon('tulip'), 'zwischen 2 Kürbissen', 'Die Kürbisse bilden einen Ring um den Garten (Zone 1 → 2 → … → 6 → 1). Sind zwei Nachbar-Kürbisse geerntet, löst die Staude dazwischen aus. Das Blumensymbol rechts neben einem Kürbis ist die Staude zum nächsten Kürbis im Ring.')}${lgChip('<span class="hvc"></span>', 'Ernte', 'Gepunkteter Rand = das Erntekästchen einer Pflanze.')}</div>
    <div class="res" style="margin-top:10px">
@@ -1278,16 +1310,16 @@ function tracksHtml(p, pk = null) {
   const rc = key => !pk ? '' : pk[key] ? 'pick' : 'nopick';
   const tip = key => pk && pk[key] ? `<span class="tip">✎ ${esc(String(pk[key].sub || '').replace(/^Dieses Kästchen: /, ''))}</span>` : '';
   const has = pre => !pk || Object.keys(pk).some(k => k.startsWith(pre));
-  return `${has('per:') ? `   <p class="label" style="margin-top:14px">Stauden <span class="lv">${sc.per} SP</span></p>
+  return `${has('per:') ? `   ${pk ? `<p class="label" style="margin-top:14px">Stauden <span class="lv">${sc.per} SP</span></p>` : sceneHead('per', 'Stauden', sc.per)}
    <div class="legend" style="margin:0 0 8px">${lgChip(['apple', 'blackberry', 'raspberry', 'peach'].map(icon).join(''), 'Obst-Aktion', 'Obstsymbol: 1 Aktion bei genau dieser Obstsorte im Hof. Pfirsich +2: ab jetzt bringt jede Pfirsich-Ernte 2 Waren mehr.')}${lgChip(icon('kompost'), 'Kompost', '+1 oder +2 Kompost.')}${lgChip(icon('waren'), 'Waren', '+2 Waren auf der Warenleiste.')}${lgChip(icon('schuppen'), 'Schuppen', '1 Schuppenaktion.')}${lgChip('<span class="box t">Hof</span>', 'Hofaktion', '1 Hofaktion bei einer Obstsorte deiner Wahl.')}${lgChip('🌱', 'Pflanzen', 'Pflanzaktion in einer Zone deiner Wahl.')}${lgChip(icon('bienen'), 'Bienen', '2 Bienenstock-Aktionen.')}${lgChip('<span class="box t">±1</span>', 'gratis', 'Ab jetzt darfst du beim Pflanzen/Gießen einen Würfel 1× gratis um 1 verschieben.')}${lgChip('<span class="box vp">3</span>', 'am Ende', 'Rote Zahl: so viele SP, wenn die Staude fertig ist. H bei der Tulpe: 1 SP je Hof-Ernte.')}</div>
    <div class="pers">${FLOWERS.map(f => { const st = p.per[f]; return `<div class="per ${rc('per:' + f)}"><span class="pi">${icon(f)}</span><b>${FLOWER_N[f]}</b>${tip('per:' + f)}${boxRow(st.n, st.cap, PER_LEN, i => i === PER_LEN - 1 ? (PER[f].vp === 'yard' ? 'H' : PER[f].vp) : effS(PER[f].box[i]) || '', i => i === PER_LEN - 1 ? 'vp' : PER[f].box[i] ? 't' : '', i => perInfo(f, i), L('per:' + f, st.n), R8('per:' + f))}</div>`; }).join('')}</div>
-` : ''}${has('api:') ? `   <p class="label" style="margin-top:14px">Bienenstock <span class="lv">${sc.api} SP</span></p>
+` : ''}${has('api:') ? `   ${pk ? `<p class="label" style="margin-top:14px">Bienenstock <span class="lv">${sc.api} SP</span></p>` : sceneHead('api', 'Bienenstock', sc.api)}
    <div class="rrow"><div class="${rc('api:hive')}"><div class="rh">${icon('bienen')}Hauptstock${tip('api:hive')}</div>${boxRow(p.hive, HIVE.length, HIVE.length, i => effS(HIVE[i]) || '', i => HIVE[i] ? 't' : '', i => HIVE[i] ? `Beim Ausfüllen: ${EFFECT_N[HIVE[i]]}` : 'Hauptstock: erst ganz füllen, dann Wachs, Honig oder Ableger.', L('api:hive', p.hive), R8('api:hive'))}</div>
      <div class="apis">${['wax', 'honey', 'split'].map(s => `<div class="${rc('api:' + s)}"><div class="rh">${icon(s)}${API_N[s]}${tip('api:' + s)}</div>${boxRow(p.api[s].n, p.api[s].cap, 4, i => { const st = API_STEPS[s]; if (st[i] !== 'h') return ''; const hi = [...st.slice(0, i)].filter(c => c === 'h').length; return s === 'wax' ? `${WAX_GOODS[hi]}W` : s === 'honey' ? HONEY_VP[hi] : effS(SPLIT[i]); }, i => API_STEPS[s][i] === 'h' ? 'hv t' : 'gr', i => { const st = API_STEPS[s]; if (st[i] !== 'h') return 'Wachstum: nur ein Schritt weiter, noch keine Ernte.'; const hi = [...st.slice(0, i)].filter(c => c === 'h').length; return s === 'wax' ? `Wachs-Ernte: ${WAX_GOODS[hi]} Waren, am Ende ${WAX_VP[hi]} SP` : s === 'honey' ? `Honig-Ernte: am Ende ${HONEY_VP[hi]} SP` : `Ableger: ${EFFECT_N[SPLIT[i]]}`; }, L('api:' + s, p.api[s].n), R8('api:' + s))}</div>`).join('')}</div>
      <div class="legend">${lgChip('<span class="box hv t"></span>', 'Ernte', 'Runde Felder sind Ernten: Wachs bringt Waren und SP, Honig SP, Ableger Aktionen.')}${lgChip('<span class="box"></span>', 'Wachstum', 'Eckige Felder sind nur Wachstum: ein Schritt weiter, noch keine Ernte.')}${lgChip(icon('bienen'), 'zuerst', 'Erst den Hauptstock ganz füllen, dann Wachs (Waren, 2/2/5 SP), Honig (5/5/8 SP) oder Ableger (3 SP + Aktionen) in beliebiger Reihenfolge.')}</div></div>
-` : ''}${has('yard:') ? `   <p class="label" style="margin-top:14px">Hof <span class="lv">${sc.yard} SP</span></p>
+` : ''}${has('yard:') ? `   ${pk ? `<p class="label" style="margin-top:14px">Hof <span class="lv">${sc.yard} SP</span></p>` : sceneHead('yard', 'Hof', sc.yard)}
    <div class="fruits">${FRUITS.map(f => `<div class="rrow ${rc('yard:' + f.k)}"><div class="rh">${icon(f.k)}${f.n}${tip('yard:' + f.k)}</div>${boxRow(p.yard[f.k].n, p.yard[f.k].cap, f.len, i => f.k === 'raspberry' && RASP_VP[i + 1] ? RASP_VP[i + 1] : f.steps[i] === 'h' && f.k === 'apple' ? '3' : f.steps[i] === 'h' && f.k === 'blackberry' ? '2' : '', i => (f.steps[i] === 'h' ? 'hv ' : 'gr ') + (f.k === 'raspberry' && RASP_VP[i + 1] ? 't' : ''), i => fruitInfo(f, i), L('yard:' + f.k, p.yard[f.k].n), R8('yard:' + f.k))}<div class="tx">${f.tx}</div></div>`).join('')}</div>
-` : ''}${has('shed:') ? `   <p class="label" style="margin-top:14px">Schuppen <span class="lv">${sc.shed} SP</span></p>
+` : ''}${has('shed:') ? `   ${pk ? `<p class="label" style="margin-top:14px">Schuppen <span class="lv">${sc.shed} SP</span></p>` : sceneHead('shed', 'Schuppen', sc.shed)}
    <div class="tools">${SHED.map(it => { const st = p.shed[it.k]; return `<div class="rrow tool ${shedDone(p, it.k) ? 'done' : ''} ${st.x ? 'gone' : ''} ${rc('shed:' + it.k)}"><div class="rh">${icon(it.k)}${it.n}${tip('shed:' + it.k)}</div>${boxRow(st.n, st.x ? st.n : it.len, it.len, i => i === it.len - 1 && it.vp ? it.vp : '', i => i === it.len - 1 ? 't' : '', i => i === it.len - 1 ? `${it.n} fertig: ${it.tx}${it.vp ? ` ${it.vp} SP.` : ''}` : `${it.n}: ${it.len} Kästchen bis fertig.`, L('shed:' + it.k, st.n), R8('shed:' + it.k))}<div class="tx">${esc(it.tx)}${it.vp ? ` ${it.vp} SP.` : ''}</div></div>`; }).join('')}</div>` : ''}`;
 }
 function viewStart() {
@@ -1353,7 +1385,7 @@ function viewGame() {
         ${range(RONDEL.length).map(space).join('')}</div>
       <div class="evtrack" data-info="Ereignisse der Saison: Am Ende jeder Runde passiert für alle das Ereignis dieser Runde. Gelb = jetzt, blass = vorbei."><span class="lab">Ereignisse</span>${EVENTS.map((e, i) => `<span class="ev ${i + 1 === S.round ? 'now' : i + 1 < S.round ? 'done' : ''}" data-info="${esc(`Runde ${i + 1}: ${EVENT_N[e]}`)}">${evIc(e)}<i>${i + 1}</i></span>`).join('')}</div>
     </section>
-    <section class="sec"><div class="sech"><h2 class="hand">Dein Garten</h2></div>${sheetHtml(me)}</section>
+    <section class="sec">${sheetHtml(me)}</section>
     <section class="sec"><div class="sech"><h2 class="hand">Chronik</h2><button class="link" data-a="logtoggle" style="font-size:12px">${U.logOpen ? 'weniger' : 'alles'}</button></div>
       <div class="log">${S.log.slice(0, U.logOpen ? 80 : 6).map(l => `<div>${esc(l)}</div>`).join('')}</div></section>
   </div>

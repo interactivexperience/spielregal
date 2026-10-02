@@ -260,6 +260,8 @@ input,textarea{-webkit-user-select:text;user-select:text}
 /* Kopfzeile: Titel, Mitspieler und Vorräte mit milchigem Hintergrund; die Ansage schwebt ohne Band darunter */
 .top:not(.coach){background:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;padding:0!important;border-bottom:0!important;pointer-events:none}
 .top .thead{pointer-events:auto;padding:calc(8px + env(safe-area-inset-top)) 0 8px;background:rgba(236,231,226,.6);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);}
+/* Owner: kein milchiger Hintergrund – Kopf deckend in der Seitenfarbe */
+.top .thead{background:var(--bg)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 .top .tbanner{pointer-events:none;padding-bottom:6px}
 .top .tbanner .banner{pointer-events:auto;box-shadow:0 8px 24px rgba(31,26,23,.18)}
 /* Ansage ohne Band dahinter: Kasten selbst deckend, damit er lesbar bleibt */
@@ -306,6 +308,15 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .market .mhead b{font-family:"Fraunces",Georgia,serif;font-size:18px}
 .market .msub{margin:2px 0 8px;font-size:11.5px;color:var(--muted)}
 .market .fld.mkt{background:#fff;border:1.5px dashed #E4C9A8}
+/* Drei Seiten zum Wischen */
+.ptabs{display:flex;gap:3px;background:var(--card);border-radius:999px;padding:3px;flex:1;min-width:0}
+.ptabs .pt{flex:1;min-width:0;border-radius:999px;padding:8px 4px;font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
+.ptabs .pt.on{background:var(--ink);color:#fff}
+.ptabs .pt.act::after{content:"";position:absolute;right:7px;top:6px;width:7px;height:7px;border-radius:50%;background:#8C74D6}
+.pages{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;align-items:flex-start}
+.pages::-webkit-scrollbar{display:none}
+.pages>.page{flex:0 0 100%;min-width:0;scroll-snap-align:start;scroll-snap-stop:always}
+.status .gd.goal{background:var(--ink);color:#fff;padding-left:10px}
 </style>
 </head>
 <body>
@@ -735,7 +746,8 @@ function heroSvg() {
 }
 // ---------- Helfer ----------
 let S = null;
-const U = { undo: [], sheet: null, toast: null, busy: false, setup: { name: '', bots: 1 }, fast: false, sel: [], tmp: {} };
+const PAGES = ['Auslage', 'Mein Hof', 'Arbeitsplan'];
+const U = { page: 1, undo: [], sheet: null, toast: null, busy: false, setup: { name: '', bots: 1 }, fast: false, sel: [], tmp: {} };
 function rnd() { S.rng = (S.rng + 0x6D2B79F5) | 0; let t = Math.imul(S.rng ^ (S.rng >>> 15), 1 | S.rng); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function range(n) { return Array.from({ length: n }, (_, i) => i); }
@@ -1296,9 +1308,9 @@ function goodsHtml(p) {
   const items = GOODS.filter(g => p.goods[g] > 0).map(g => `<span class="gd">${goodSvg(g)}${p.goods[g]}</span>`).join('');
   return `<div class="stock"><span class="gd">${coinSvg()}${p.coins}</span>${items}<span class="gd" style="opacity:.7" title="leere Körbe">🧺 ${freeBaskets(p)} frei</span></div>`;
 }
-function statusHtml(p) {
+function statusHtml(p, pre = '') {
   const goods = GOODS.filter(g => p.goods[g] > 0).map(g => `<span class="gd">${goodSvg(g)}${p.goods[g]}</span>`).join('');
-  return `<div class="status" aria-label="Dein Vorrat"><span class="gd" title="Münzen (bezahlen fehlende Sonnenstunden)">${coinSvg()}${p.coins}</span>${goods}<span class="gd" title="leere Körbe">🧺 ${freeBaskets(p)}</span><span class="gd wk" title="Arbeitskräfte auf der Bank"><span style="display:inline-flex">${workerSvg(p.mark)}</span>${workersFree(p)}/4</span><span class="gd ${p.hand.length >= HAND_MAX ? 'warn' : ''}" title="Handkarten (Limit ${HAND_MAX} am Zugende)">🂠 ${p.hand.length}/${HAND_MAX}</span></div>`;
+  return `<div class="status" aria-label="Dein Vorrat">${pre}<span class="gd" title="Münzen (bezahlen fehlende Sonnenstunden)">${coinSvg()}${p.coins}</span>${goods}<span class="gd" title="leere Körbe">🧺 ${freeBaskets(p)}</span><span class="gd wk" title="Arbeitskräfte auf der Bank"><span style="display:inline-flex">${workerSvg(p.mark)}</span>${workersFree(p)}/4</span><span class="gd ${p.hand.length >= HAND_MAX ? 'warn' : ''}" title="Handkarten (Limit ${HAND_MAX} am Zugende)">🂠 ${p.hand.length}/${HAND_MAX}</span></div>`;
 }
 function vpTrack() {
   // Siegpunkte als Wiesenpfad: Gouache-Wiese, Blume an jedem 5. Feld, Zaun am Ziel, Spielende als kleine Köpfe
@@ -1387,22 +1399,23 @@ function viewGame() {
   const chips = S.players.map((pl, i) => `<button class="pchip ${S.cur === i ? 'cur' : ''}" data-a="opp" data-p="${i}"><span class="av" style="background:${pl.mark}">${face(pl)}</span><span><span class="nm">${esc(pl.name)}</span><span class="st">★${pl.vp} · ${pl.coins} Mz.</span></span></button>`).join('');
   return `
   <div class="top"><div class="thead"><div class="row">
-    <div class="round hand">${S.solo ? `Stapel ${5 - S.soloStacks.length}/5` : S.endTrig ? 'Letzte Züge' : 'Landgut'}<small>${S.solo ? 'Solo' : `Ziel: ${VP_END} SP`}</small></div>
-    <span style="flex:1"></span>
+    <div class="ptabs" role="tablist">${PAGES.map((pg, i) => `<button class="pt ${U.page === i ? 'on' : ''} ${i === 2 && mine && !myAsk() ? 'act' : ''}" role="tab" data-a="page" data-p="${i}" aria-selected="${U.page === i}">${pg}</button>`).join('')}</div>
     <button class="icobtn" data-a="menu" aria-label="Menü: Verlassen, Regeln"><svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
   </div><div class="row prow"><div class="players">${chips}</div>
-  </div>${statusHtml(me)}</div><div class="tbanner">${banner}</div></div>
-  <div class="wrap">
-    <section class="sec">${vpTrack()}</section>
+  </div>${statusHtml(me, `<span class="gd goal" data-info="${esc(S.solo ? `Solo: Auslage-Stapel ${5 - S.soloStacks.length} von 5. Ist der letzte Stapel aufgebraucht, endet die Partie.` : S.endTrig ? 'Jemand hat das Ziel erreicht: Jede Person hat noch genau zwei Züge.' : `Wer zuerst ${VP_END} SP erreicht, löst das Spielende aus; danach hat jede Person noch zwei Züge.`)}">${S.solo ? `Stapel ${5 - S.soloStacks.length}/5` : S.endTrig ? 'Letzte Züge' : `Ziel ${VP_END} SP`}</span>`)}</div><div class="tbanner">${banner}</div></div>
+  <div class="pages"><div class="page"><div class="wrap">
     <section class="sec"><div class="sech"><h2 class="hand">Auslage</h2><span class="hint">${S.deck.length} im Stapel · <button class="link" data-a="discview" style="font-size:inherit">${S.discard.length} abgelegt</button></span></div>
       <div class="ring">${S.display.map((k, i) => cardHtml(k)).join('')}</div></section>
     <section class="sec"><div class="sech"><h2 class="hand">Aufträge</h2><span class="hint">Jeden Auftrag nur einmal</span></div><div class="orders">${S.otiles.map(orderTile).join('')}</div></section>
+    </div></div><div class="page"><div class="wrap">
+    <section class="sec">${vpTrack()}</section>
     <section class="sec"><div class="sech"><h2 class="hand">Dein Landgut</h2></div>
       <div class="terrs">${me.terrs.map((tr, ti) => terrHtml(me, tr, ti)).join('')}</div></section>
-    <section class="sec"><div class="sech"><h2 class="hand">Arbeitsplan</h2></div>${boardHtml(me, mine)}</section>
     <section class="sec"><div class="sech"><h2 class="hand">Chronik</h2><button class="link" data-a="logtoggle" style="font-size:12px">${U.logOpen ? 'weniger' : 'alles'}</button></div>
       <div class="log">${S.log.slice(0, U.logOpen ? 90 : 6).map(l => `<div>${esc(l)}</div>`).join('')}</div></section>
-  </div>
+    </div></div><div class="page"><div class="wrap">
+    <section class="sec"><div class="sech"><h2 class="hand">Arbeitsplan</h2></div>${boardHtml(me, mine)}</section>
+  </div></div></div>
   ${U.tut ? '' : handFan(me)}<div class="bar"><div class="in">${U.undo.length && (mine || myAsk()) ? `<button class="icobtn undo" data-a="undo" aria-label="Zug rückgängig" data-info="Zug rückgängig: geht im eigenen Zug, bis eine verdeckte Karte oder ein Gebiet aufgedeckt wird."><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M7.5 4.5 3.5 8.5l4 4M4 8.5h7.5a4.5 4.5 0 0 1 0 9H9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : ''}${myAsk() ? `<div class="msg" data-a="go">${esc(askTitle(S.ask))}</div><button class="btn" data-a="askopen">Auswählen</button>`
     : mine ? (forcedEndDay(me) ? `<div class="msg" data-a="go"><b>Jetzt den Tag beenden</b> – ${workersFree(me) ? 'kein freies Feld passt mehr' : 'alle Arbeitskräfte sind eingesetzt'}.</div><button class="btn" data-a="endday">Tag beenden</button>`
       : `<div class="msg" data-a="go">${workersFree(me)} ${workersFree(me) === 1 ? 'Arbeitskraft' : 'Arbeitskräfte'} auf der Bank.</div><button class="btn white" data-a="endday">Tag beenden</button>`)
@@ -1638,7 +1651,7 @@ function tutDecorate() {
   const st = tutStep(), coach = document.getElementById('coach');
   if (!st || !coach) return;
   const el = st.sel ? document.querySelector(st.sel) : null;
-  if (el) el.classList.add('tut-hl');
+  if (el) { el.classList.add('tut-hl'); const pi = pageOf(el); if (pi >= 0 && pi !== U.page) pageGo(pi, false); }
   const bottomBox = document.querySelector('.bar');
   const inBottom = el && el.closest('.bar');
   const top = st.pos ? st.pos === 'top' : (!!myAsk() || !!U.sheet || !!inBottom);
@@ -1706,9 +1719,41 @@ function goTarget() {
   if (myAsk()) return () => { U.sheet = { type: 'ask' }; };
   return '.board';
 }
+// Drei Seiten (Auslage & Aufträge · Mein Hof · Arbeitsplan) zum Wischen; die aktive Seite bestimmt die Höhe
+const pagesEl = () => document.querySelector('.pages');
+function pageSync(instant) {
+  const pg = pagesEl(); if (!pg) return;
+  const w = pg.clientWidth || 1, kids = pg.children;
+  if (instant && Math.abs(pg.scrollLeft - U.page * w) > 1) { U.progScroll = Date.now(); pg.scrollLeft = U.page * w; }
+  if (pg.scrollTop) pg.scrollTop = 0;
+  const a = kids[U.page]; if (a) pg.style.height = a.offsetHeight + 'px';
+  document.querySelectorAll('.ptabs .pt').forEach((t, i) => { t.classList.toggle('on', i === U.page); t.setAttribute('aria-selected', i === U.page); });
+}
+function pageOf(el) { const pg = el && el.closest('.page'); return pg ? [...pg.parentElement.children].indexOf(pg) : -1; }
+function pageGo(i, smooth) {
+  const pg = pagesEl(); if (!pg || i < 0) return;
+  const top = document.querySelector('.top'), y0 = pg.getBoundingClientRect().top + window.scrollY - (top ? top.getBoundingClientRect().height : 0) - 8;
+  if (i !== U.page && window.scrollY > y0) window.scrollTo({ top: Math.max(0, y0) });
+  U.page = i;
+  if (smooth) pg.scrollTo({ left: i * pg.clientWidth, behavior: 'smooth' }); else pageSync(true);
+  pageSync(false);
+}
+let pScrollT = 0, pTouch = false;
+document.addEventListener('scroll', e => {
+  const pg = e.target; if (!pg.classList || !pg.classList.contains('pages')) return;
+  if (Date.now() - (U.progScroll || 0) < 60) return;
+  pScrollT = Date.now();
+  clearTimeout(pg._t);
+  pg._t = setTimeout(() => { const i = Math.round(pg.scrollLeft / (pg.clientWidth || 1)); if (i !== U.page) { pageGo(i, false); } else pageSync(false); if (U.rpend) render(); }, 110);
+}, true);
+document.addEventListener('touchstart', e => { if (e.target.closest && e.target.closest('.pages')) pTouch = true; }, { passive: true, capture: true });
+document.addEventListener('touchend', () => { pTouch = false; }, { passive: true, capture: true });
+document.addEventListener('touchcancel', () => { pTouch = false; }, { passive: true, capture: true });
+addEventListener('resize', () => pageSync(true));
 function goTo(sel) {
   setTimeout(() => {
     const el = document.querySelector(sel); if (!el) return;
+    const pi = pageOf(el); if (pi >= 0 && pi !== U.page) pageGo(pi, false);
     const top = document.querySelector('.top'), off = (top ? top.getBoundingClientRect().bottom : 0) + 12;
     window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - off), behavior: 'smooth' });
     el.classList.remove('goflash'); void el.offsetWidth; el.classList.add('goflash'); setTimeout(() => el.classList.remove('goflash'), 1300);
@@ -1716,6 +1761,9 @@ function goTo(sel) {
 }
 const $app = document.getElementById('app');
 function render() {
+  // nicht mitten im Wischen zwischen den Seiten neu zeichnen
+  if (S && S.screen === 'game' && pagesEl() && (pTouch || Date.now() - pScrollT < 140)) { U.rpend = true; clearTimeout(U.rpT); U.rpT = setTimeout(render, 180); return; }
+  U.rpend = false;
   if (U.tut) tutCheck();
   // neue Frage: ein zuvor weggeklicktes Fenster wieder öffnen
   if (S && S.ask !== U.lastAsk) { U.lastAsk = S.ask; if (U.sheet && U.sheet.type === 'hidden') U.sheet = null; }
@@ -1730,6 +1778,7 @@ function render() {
   $app.innerHTML = h;
   if (!hadSheet) { const sh = document.querySelector('.ov .sheet'); if (sh) { sh.classList.add('enter'); sh.parentElement.classList.add('enter'); } }
   { const bar = document.querySelector('.bar'); if (bar) document.documentElement.style.setProperty('--barh', bar.offsetHeight + 'px'); }
+  pageSync(true);
   if (HP.el) { const me = S && S.screen === 'game' && human(); if (!me || U.tut || HP.i >= me.hand.length) previewHide(); else document.querySelectorAll('.hfan .hcard').forEach(c => c.classList.toggle('up', +c.dataset.i === HP.i)); }
   if (U.tut) tutDecorate();
   save();
@@ -1749,7 +1798,7 @@ function resetTmp() { U.sel = []; U.tmp = {}; }
 function reply(v) { pushUndo(); resetTmp(); U.sheet = null; answer(v); }
 // Zug rückgängig: nur im eigenen Zug und nur, solange keine verdeckte Karte/kein Gebiet aufgedeckt wurde
 function undoSize() { return { d: S.deck.length, t: TT.reduce((n, t) => n + S.tstacks[t].length, 0) }; }
-function pushUndo() { if (!S || S.tut || U.tut || S.screen !== 'game') return; U.undo.push({ s: JSON.stringify(S), ...undoSize() }); if (U.undo.length > 40) U.undo.shift(); }
+function pushUndo() { if (!S || S.tut || U.tut || S.screen !== 'game' || S.ask && (S.ask.t === 'setupTerr' || /^Startaufstellung/.test(S.ask.why || ''))) return; U.undo.push({ s: JSON.stringify(S), ...undoSize() }); if (U.undo.length > 40) U.undo.shift(); }
 function undoCheck() {
   if (!U.undo.length) return;
   if (!S || S.tut || S.screen !== 'game' || cur().bot) { U.undo = []; return; }
@@ -1760,14 +1809,14 @@ function undoCheck() {
 const H = {
   leave: () => { U.undo = []; if (!S || S.tut) return; save(); S = null; U.sheet = null; window.scrollTo(0, 0); toast('Partie gespeichert. Mit „Partie fortsetzen“ geht es weiter.'); },
   discard: () => { if (confirm('Gespeicherte Partie wirklich verwerfen?')) clearSave(); },
-  tutorial: () => { U.undo = []; const nmi = document.getElementById('nm'); U.setup.name = nmi ? nmi.value.trim() : U.setup.name; U.sheet = null; resetTmp(); tutSetup(); U.tut = { i: 0 }; window.scrollTo(0, 0); },
+  tutorial: () => { U.page = 1; U.undo = []; const nmi = document.getElementById('nm'); U.setup.name = nmi ? nmi.value.trim() : U.setup.name; U.sheet = null; resetTmp(); tutSetup(); U.tut = { i: 0 }; window.scrollTo(0, 0); },
   tutnext: () => { if (U.tut) U.tut.i = Math.min(U.tut.i + 1, TUT_STEPS.length - 1); },
   tutend: () => { U.tut = null; U.sheet = null; U.fast = false; S = null; window.scrollTo(0, 0); },
   tutquit: () => { U.tut = null; U.sheet = null; U.fast = false; S = null; window.scrollTo(0, 0); },
   bots: d => { U.setup.bots = +d.n; },
   pickname: d => { U.setup.name = d.n; const nmi = document.getElementById('nm'); if (nmi) nmi.value = d.n; },
-  start: () => { const sv = load(); if (sv && sv.screen === 'game' && !confirm('Es gibt eine gespeicherte Partie. Neue Partie starten und die gespeicherte verwerfen?')) return; const nmi = document.getElementById('nm'); U.setup.name = nmi ? nmi.value.trim() : ''; resetTmp(); newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0); window.scrollTo(0, 0); },
-  resume: () => { U.undo = []; S = load(); U.sheet = null; resetTmp(); },
+  start: () => { U.page = 1; const sv = load(); if (sv && sv.screen === 'game' && !confirm('Es gibt eine gespeicherte Partie. Neue Partie starten und die gespeicherte verwerfen?')) return; const nmi = document.getElementById('nm'); U.setup.name = nmi ? nmi.value.trim() : ''; resetTmp(); newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0); window.scrollTo(0, 0); },
+  resume: () => { U.page = 1; U.undo = []; S = load(); U.sheet = null; resetTmp(); },
   rules: () => { U.sheet = { type: 'rules' }; },
   menu: () => { U.sheet = { type: 'menu' }; },
   go: () => { if (U.tut) return goTo('.tut-hl'); const t = goTarget(); if (typeof t === 'function') t(); else goTo(t); },
@@ -1849,6 +1898,7 @@ document.addEventListener('click', e => {
   if ((el.dataset.a === 'ovclose' || el.dataset.a === 'zclose') && e.target.closest('[data-stop]')) return;
   if (el.disabled) return;
   if (U.tut && S && !tutAllowed(el.dataset.a, el.dataset)) { toast('Folge dem markierten Hinweis im Lernspiel.'); render(); return; }
+  if (el.dataset.a === 'page') { pageGo(+el.dataset.p, true); return; }
   const fn = H[el.dataset.a]; if (!fn) return;
   fn(el.dataset); render();
 });
