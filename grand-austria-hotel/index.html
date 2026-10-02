@@ -246,6 +246,12 @@ button:disabled{cursor:default}
 .coach p{margin:2px 0 8px;font-size:14px;line-height:1.35}
 .coach .cbtns{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .coach .btn{min-height:40px;padding:6px 16px;font-size:14.5px}
+.coach .cch{display:block;font-family:"Caveat Brush",cursive;font-size:19px;line-height:1.1;margin:1px 0 2px;color:var(--red,#E4472E)}
+.coach .cwhy{font-size:12.8px;line-height:1.35;margin:-2px 0 8px;padding:6px 9px;border:2px dashed var(--ink);border-radius:10px}
+.coach .cwhy b{text-transform:uppercase;font-family:"Space Mono",monospace;font-size:11px}
+.startbar{position:sticky;top:0;z-index:20;display:flex;justify-content:flex-end;padding:calc(8px + env(safe-area-inset-top)) 0 2px;pointer-events:none}
+.startbar .icobtn{pointer-events:auto;text-decoration:none;color:inherit}
+.coach{max-height:62vh;overflow-y:auto}
 .coach .cquit{font-size:12px;color:var(--muted);text-decoration:underline;margin-left:auto}
 .coach .cwait{font-weight:800;letter-spacing:3px;animation:pulse 1.2s infinite}
 .tut-hl{outline:4px solid var(--pink)!important;outline-offset:3px;animation:tutp 1.1s ease-in-out infinite;position:relative;z-index:6;border-radius:12px}
@@ -1357,7 +1363,7 @@ function viewStart() {
   const saved = load();
   const st = U.setup;
   return `<div class="wrap start">
-    <a class="backlink" href="../">← Zurück zu Spielregal</a>
+    <div class="startbar"><a class="icobtn leave" href="../" aria-label="Beenden und zurück zu Spielregal"><svg viewBox="0 0 20 20" width="13" height="13" aria-hidden="true"><path d="M4.5 4.5l11 11M15.5 4.5l-11 11" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg><span>Beenden</span></a></div>
     <div class="hero">${heroSvg()}</div>
     <h1 class="hand">Grand Hotel Wien</h1>
     <p class="sub">Würfel, Strudel &amp; Kaiserschmarrn – ein Hotelspiel nach dem Prinzip von <i>Grand Austria Hotel</i>.</p>
@@ -1421,7 +1427,7 @@ function viewGame() {
   <div class="top"><div class="row">
     <div class="round hand">Runde ${S.round}/${ROUNDS}<small>${S.seqIdx + 1}/${S.seq.length} Züge</small></div>
     <div class="players">${S.players.map(playerChip).join('')}</div>
-    ${U.tut ? '' : `<button class="icobtn leave" data-a="leave" aria-label="Speichern und verlassen" title="Speichern &amp; verlassen"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><rect x="4" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/><rect x="11.8" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/></svg><span>Verlassen</span></button>`}
+    ${U.tut ? `<button class="icobtn leave" data-a="tutquit" aria-label="Lernspiel beenden"><svg viewBox="0 0 20 20" width="13" height="13" aria-hidden="true"><path d="M4.5 4.5l11 11M15.5 4.5l-11 11" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg><span>Beenden</span></button>` : `<button class="icobtn leave" data-a="leave" aria-label="Speichern und verlassen" title="Speichern &amp; verlassen"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><rect x="4" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/><rect x="11.8" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/></svg><span>Verlassen</span></button>`}
     <button class="icobtn" data-a="menu" aria-label="Menü und Regeln">?</button>
   </div></div>
   <div class="wrap">
@@ -1634,7 +1640,7 @@ function tutHtml() {
   const btn = last ? '<button class="btn" data-a="tutend">Echtes Spiel starten</button>'
     : !st.done ? '<button class="btn" data-a="tutnext">Weiter</button>'
     : st.wait ? '<span class="cwait">· · ·</span>' : '';
-  return `<div class="coach" id="coach" role="dialog" aria-live="polite"><div class="cface">${tutFace()}</div><div class="ctext"><span class="cstep">Lernspiel · ${U.tut.i + 1}/${TUT_STEPS.length}</span><p>${txt}</p><div class="cbtns">${btn}${last ? '' : '<button class="cquit" data-a="tutquit">Lernspiel beenden</button>'}</div></div></div>`;
+  return `<div class="coach" id="coach" role="dialog" aria-live="polite"><div class="cface">${tutFace()}</div><div class="ctext"><span class="cstep">Lernspiel · ${U.tut.i + 1}/${TUT_STEPS.length}</span>${st.ch ? `<b class="cch">${st.ch}</b>` : ''}<p>${txt}</p>${st.why ? `<p class="cwhy"><b>Warum?</b> ${st.why}</p>` : ''}<div class="cbtns">${btn}${last ? '' : '<button class="cquit" data-a="tutquit">Lernspiel beenden</button>'}</div></div></div>`;
 }
 function tutDecorate() {
   const st = tutStep(), coach = document.getElementById('coach');
@@ -1656,35 +1662,35 @@ function tutDecorate() {
 const tutFace = () => person('concierge', { hat: 'top', must: 1, body: '#1F8A4D', pat: 'none', prop: 'key' }, '18 -4 64 70');
 const TUT_ME = () => S.players[0];
 const TUT_STEPS = [
-  { text: 'Willkommen im <b>Grand Hotel Wien</b>! Ich bin der Concierge. In 7 Runden holst du Gäste an deine Tische, bewirtest sie und bringst sie in Zimmern unter. Dafür gibt es <b>Siegpunkte</b>. Wir spielen gemeinsam deine ersten zwei Züge.' },
-  { sel: '.board', text: 'Das ist das <b>Aktionsbrett</b>. Zu Rundenbeginn werden Würfel geworfen und nach Augenzahl sortiert. Jede Zahl ist eine Aktion. Je mehr Würfel auf einem Feld liegen, desto <b>stärker</b> ist sie.' },
-  { sel: '.line .gcard[data-s="0"]', allow: { guest: d => d.s === '0' }, done: () => U.sheet && U.sheet.type === 'guest',
+  { ch: 'Worum es geht', text: 'Willkommen im <b>Grand Hotel Wien</b>! Ich bin der Concierge. <b>Dein Ziel:</b> nach 7 Runden die meisten Siegpunkte (SP). Die meisten SP bringen Gäste, die du bewirtest und in deinem Hotel einziehen lässt. Merke dir den Kreislauf: <b>Gast holen → Bestellung servieren → Zimmer vorbereiten → Gast zieht ein</b>. Wir spielen deine ersten zwei Züge gemeinsam.' },
+  { ch: 'So läuft ein Zug', why: 'Pro Zug nimmst du <b>genau einen Würfel</b> und führst seine Aktion aus. Volle Felder sind darum wertvoll – und jeder Würfel, den andere nehmen, schwächt die Aktion für dich.', sel: '.board', text: 'Das ist das <b>Aktionsbrett</b>. Zu Rundenbeginn werden Würfel geworfen und nach Augenzahl sortiert. Jede Zahl ist eine Aktion. Je mehr Würfel auf einem Feld liegen, desto <b>stärker</b> ist sie.' },
+  { ch: 'Zug 1 · Schritt 1: Gast holen', why: 'Ohne Gäste keine Punkte. Erst die Bestellung eines Gastes sagt dir, welche Würfel du brauchst.', sel: '.line .gcard[data-s="0"]', allow: { guest: d => d.s === '0' }, done: () => U.sheet && U.sheet.type === 'guest',
     text: 'Zu Spielbeginn darfst du dir einen <b>Gast gratis</b> aus der Reihe aussuchen. Tippe auf den Fiakerkutscher.' },
-  { sel: '[data-a=takeguest]', allow: { takeguest: true }, done: () => !!TUT_ME().tables[0],
+  { ch: 'Zug 1 · Schritt 1: Gast holen', why: 'Beim Aussuchen zählen zwei Dinge: Passt die Bestellung zu den Würfeln? Und hast du ein Zimmer in seiner Farbe – oder kannst bald eines vorbereiten?', sel: '[data-a=takeguest]', allow: { takeguest: true }, done: () => !!TUT_ME().tables[0],
     text: 'Er bestellt <b>2 Strudel</b> und möchte in ein <b>rotes Zimmer</b>. Unten stehen seine Belohnungen. Hol ihn an deinen Tisch.' },
-  { sel: '.tables', text: 'Er sitzt jetzt an deinem Tisch, du hast Platz für drei. Die Symbole zeigen seine Bestellung. Erst wenn alles serviert ist, zieht er ein.' },
-  { sel: '.act[data-f="1"]', allow: { die: d => d.f === '1' }, done: () => U.sheet && U.sheet.type === 'die',
+  { ch: 'Zug 1 · Schritt 1: Gast holen', why: 'Jeder Tisch ist ein offener Auftrag. Wer am Spielende noch im Café sitzt, kostet dich 5 SP. Hol also nur Gäste, die du auch bedienen kannst.', sel: '.tables', text: 'Er sitzt jetzt an deinem Tisch, du hast Platz für drei. Die Symbole zeigen seine Bestellung. Erst wenn alles serviert ist, zieht er ein.' },
+  { ch: 'Zug 1 · Schritt 2: Servieren', why: 'Würfel 1 bringt Strudel und Torte, Würfel 2 Wein und Kaffee. Du wählst den Würfel nach dem, was deine Gäste bestellt haben.', sel: '.act[data-f="1"]', allow: { die: d => d.f === '1' }, done: () => U.sheet && U.sheet.type === 'die',
     text: 'Strudel gibt es mit <b>Würfel 1</b>. Dort liegen 3 Würfel, also Stärke 3. Tippe auf das Feld.' },
-  { sel: '[data-a=dieok]', allow: { dieok: true }, done: () => S.turn.dieTaken,
+  { ch: 'Zug 1 · Schritt 2: Servieren', why: 'Strudel ist genau das, was der Fiakerkutscher will. Torte bräuchte gerade niemand.', sel: '[data-a=dieok]', allow: { dieok: true }, done: () => S.turn.dieTaken,
     text: 'Du bekommst 3 Gerichte und verteilst sie auf Strudel und Torte. Lass es bei <b>3 Strudel</b> und tippe auf „Ausführen“.' },
-  { sel: '.slot.can', allow: { serve: true }, done: () => TUT_ME().rooms[0] === 2,
+  { ch: 'Zug 1 · Schritt 2: Servieren', why: 'Was du in diesem Zug bekommst, servierst du sofort und gratis. Später kostet das Servieren aus der Küche 1 Krone.', sel: '.slot.can', allow: { serve: true }, done: () => TUT_ME().rooms[0] === 2,
     text: 'Frisch erhaltene Gerichte servierst du <b>gratis</b>. Tippe die leuchtenden Felder an, bis der Gast alles hat.' },
-  { sel: '.hotel', text: 'Geschafft! Der Gast ist ins <b>rote Zimmer</b> gezogen und hat dir seine Belohnung gegeben: 2 SP und 2 Kronen. Ist eine zusammenhängende Farbgruppe voll belegt, gibt es einen Bonus.' },
-  { sel: '.kitchen', text: 'Der übrige Strudel liegt in deiner <b>Küche</b>. Später kannst du für 1 Krone bis zu 3 Gerichte aus der Küche servieren, das ist der Küchenservice.' },
-  { sel: '[data-a=endturn]', allow: { endturn: true }, done: () => S.seqIdx === 3 && !cur().bot, wait: true,
+  { ch: 'Zug 1 · Schritt 3: Einzug', why: 'Dafür machst du das alles: Beim Einzug gibt es sofort die Belohnung, und bei Spielende zählt jedes bezogene Zimmer noch einmal 1 bis 4 SP.', sel: '.hotel', text: 'Geschafft! Der Gast ist ins <b>rote Zimmer</b> gezogen und hat dir seine Belohnung gegeben: 2 SP und 2 Kronen. Ist eine zusammenhängende Farbgruppe voll belegt, gibt es einen Bonus.' },
+  { ch: 'Zug 1 · Reste', why: 'Nichts verfällt: Reste sind Vorrat für den nächsten Gast und sparen dir später einen Würfel.', sel: '.kitchen', text: 'Der übrige Strudel liegt in deiner <b>Küche</b>. Später kannst du für 1 Krone bis zu 3 Gerichte aus der Küche servieren, das ist der Küchenservice.' },
+  { ch: 'Zug 1 · Ende', why: 'Pro Zug gibt es nur einen Würfel. Die Reihenfolge läuft hin und zurück, damit niemand dauerhaft zuerst wählt.', sel: '[data-a=endturn]', allow: { endturn: true }, done: () => S.seqIdx === 3 && !cur().bot, wait: true,
     text: 'Mehr geht in diesem Zug nicht. <b>Beende deinen Zug</b>. Danach ist die Gegnerin zweimal dran, denn erst geht es reihum und dann zurück.' },
-  { text: () => `${esc(S.players[1].name)} hat zweimal die 4 genommen: Kronen und Kaiserschritte. Jetzt bist du wieder dran, mit deinem <b>zweiten Zug</b> dieser Runde.` },
-  { sel: '.act[data-f="3"]', allow: { die: d => d.f === '3' }, done: () => U.sheet && U.sheet.type === 'die',
+  { ch: 'Zug 2', why: 'Achte darauf, was andere nehmen: Weggenommene Würfel fehlen dir, die Aktionen werden schwächer.', text: () => `${esc(S.players[1].name)} hat zweimal die 4 genommen: Kronen und Kaiserschritte. Jetzt bist du wieder dran, mit deinem <b>zweiten Zug</b> dieser Runde.` },
+  { ch: 'Zug 2 · Zimmer vorbereiten', why: 'Ein Gast zieht nur in ein <b>vorbereitetes</b> Zimmer seiner Farbe ein. Bereitest du Zimmer vor, bevor er fertig bedient ist, kann er sofort einziehen.', sel: '.act[data-f="3"]', allow: { die: d => d.f === '3' }, done: () => U.sheet && U.sheet.type === 'die',
     text: 'Neue Gäste brauchen freie Zimmer. <b>Würfel 3</b> bereitet Zimmer vor. Tippe auf das Feld.' },
-  { sel: '.sheet .room.ok', allow: { rsel: true }, done: () => U.sheet && U.sheet.sel && U.sheet.sel.length > 0,
+  { ch: 'Zug 2 · Zimmer vorbereiten', why: 'Untere Etagen sind billig, obere bringen am Ende mehr SP. Bereite die Farben vor, die deine nächsten Gäste wollen.', sel: '.sheet .room.ok', allow: { rsel: true }, done: () => U.sheet && U.sheet.sel && U.sheet.sel.length > 0,
     text: 'Zimmer kosten je nach Stockwerk 0 bis 3 Kronen. Sie liegen im Erdgeschoss oder grenzen an ein bestehendes Zimmer. Wähle ein leuchtendes Zimmer.' },
-  { sel: '[data-a=dieok]', allow: { dieok: true, rsel: true }, done: () => S.turn.dieTaken,
+  { ch: 'Zug 2 · Zimmer vorbereiten', why: 'Die Stärke sagt, wie viele Zimmer du vorbereiten darfst.', sel: '[data-a=dieok]', allow: { dieok: true, rsel: true }, done: () => S.turn.dieTaken,
     text: 'Bei Stärke 2 dürftest du noch ein zweites wählen. Tippe auf „Ausführen“.' },
-  { sel: '.emp', text: 'Der <b>Kaiser</b> wertet nach Runde 3, 5 und 7. Du bekommst Punkte nach deinem Feld auf der Kaiserleiste und gehst dann 3, 5 bzw. 7 zurück. Stehst du danach auf 3 oder mehr, gibt es einen Bonus, auf 0 eine Strafe. Schritte gibt es mit Würfel 4 und über gelbe Gäste.' },
-  { sel: '.staffrow', text: 'Dein <b>Personal</b> spielst du mit Würfel 5 aus. Jeder Würfel auf dem Feld macht die Karte 1 Krone billiger. Manche helfen sofort, manche dauerhaft, manche am Rundenende oder erst bei der Schlussabrechnung.' },
-  { sel: '.pol', text: '<b>Politik</b>: Wer ein Ziel zuerst erfüllt, bekommt die meisten Punkte.' },
-  { sel: '.act[data-f="6"]', text: 'Noch ein Tipp: Die <b>6 ist ein Joker</b>. Für 1 Krone führst du damit jede andere Aktion aus. Mit der 4 teilst du die Stärke auf Kronen und Kaiserschritte auf. Und einmal pro Zug kannst du eine Aktion für <b>1 Krone verstärken</b>.' },
-  { text: 'Das war das Wichtigste! Hol jede Runde Gäste, bewirte sie, bereite passende Zimmer vor und behalte den Kaiser im Blick. Viel Erfolg, Frau Direktorin oder Herr Direktor!' },
+  { ch: 'Nebenbei: der Kaiser', why: 'Wer den Kaiser ignoriert, bekommt bei den Wertungen Strafen. Ein paar Schritte rechtzeitig vor Runde 3, 5 und 7 genügen.', sel: '.emp', text: 'Der <b>Kaiser</b> wertet nach Runde 3, 5 und 7. Du bekommst Punkte nach deinem Feld auf der Kaiserleiste und gehst dann 3, 5 bzw. 7 zurück. Stehst du danach auf 3 oder mehr, gibt es einen Bonus, auf 0 eine Strafe. Schritte gibt es mit Würfel 4 und über gelbe Gäste.' },
+  { ch: 'Nebenbei: Personal', why: 'Personal ist dein Motor: Früh ausgespielt, hilft es dir in jeder weiteren Runde.', sel: '.staffrow', text: 'Dein <b>Personal</b> spielst du mit Würfel 5 aus. Jeder Würfel auf dem Feld macht die Karte 1 Krone billiger. Manche helfen sofort, manche dauerhaft, manche am Rundenende oder erst bei der Schlussabrechnung.' },
+  { ch: 'Nebenbei: Politik', why: 'Politikziele sind ein Wettrennen. Sie zeigen dir, welche Zimmer oder welches Personal sich zusätzlich lohnen.', sel: '.pol', text: '<b>Politik</b>: Wer ein Ziel zuerst erfüllt, bekommt die meisten Punkte.' },
+  { ch: 'Profi-Tipps', why: 'So kommst du an eine Aktion, auch wenn die passenden Würfel schon weg sind.', sel: '.act[data-f="6"]', text: 'Noch ein Tipp: Die <b>6 ist ein Joker</b>. Für 1 Krone führst du damit jede andere Aktion aus. Mit der 4 teilst du die Stärke auf Kronen und Kaiserschritte auf. Und einmal pro Zug kannst du eine Aktion für <b>1 Krone verstärken</b>.' },
+  { ch: 'Zusammenfassung', text: 'Das war das Wichtigste! Jede Runde gilt: <b>1.</b> Gäste holen, deren Bestellung zu den Würfeln passt. <b>2.</b> Servieren. <b>3.</b> Passende Zimmer vorbereiten. <b>4.</b> Einzüge kassieren. Nebenbei: den Kaiser vor jeder Wertung versorgen und Personal ausspielen. Viel Erfolg, Frau Direktorin oder Herr Direktor!' },
 ];
 function tutSetup() {
   U.fast = true;

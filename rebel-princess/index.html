@@ -148,6 +148,12 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .coach p{margin:2px 0 8px;font-size:14px;line-height:1.35}
 .coach .cbtns{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .coach .btn{min-height:40px;padding:6px 16px;font-size:14.5px}
+.coach .cch{display:block;font-weight:800;font-size:14.5px;line-height:1.15;margin:1px 0 2px}
+.coach .cwhy{font-size:12.8px;line-height:1.35;margin:-2px 0 8px;padding:6px 9px;border:2px solid var(--ink);border-radius:10px;background:#F4F0E9}
+.coach .cwhy b{text-transform:uppercase;font-family:"Space Mono",monospace;font-size:11px}
+.startbar{position:sticky;top:0;z-index:20;display:flex;justify-content:flex-end;padding:calc(8px + env(safe-area-inset-top)) 0 2px;pointer-events:none}
+.startbar .icobtn{pointer-events:auto;text-decoration:none;color:inherit}
+.coach{max-height:62vh;overflow-y:auto}
 .coach .cquit{font-size:12px;color:var(--muted);text-decoration:underline;margin-left:auto}
 .coach .cwait{font-weight:800;letter-spacing:3px}
 .tut-hl{outline:3px dashed var(--ink)!important;outline-offset:4px;animation:tutp 1s ease-in-out infinite;position:relative;z-index:6;border-radius:12px}
@@ -1331,7 +1337,7 @@ function viewStart() {
   const saved = load(), st = U.setup, prof = spielregalProfiles();
   const n = st.bots + 1, per = deckFor(n).length / n;
   return `<div class="wrap start">
-    <a class="backlink" href="../">← Zurück zu Spielregal</a>
+    <div class="startbar"><a class="icobtn leave" href="../" aria-label="Beenden und zurück zu Spielregal"><svg viewBox="0 0 20 20" width="13" height="13" aria-hidden="true"><path d="M4.5 4.5l11 11M15.5 4.5l-11 11" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg><span>Beenden</span></a></div>
     <div class="hero">${heroSvg()}</div>
     <h1 class="hand">Prinzessinnenball</h1>
     <p class="sub">Fünf Ballnächte, zu viele Prinzen: das Stichspiel nach den Regeln von <i>Rebel Princess</i> (Deluxe Edition).</p>
@@ -1432,7 +1438,7 @@ function viewGame() {
   <div class="top"><div class="row">
     <div class="round hand">Nacht ${S.round}/${ROUNDS}<small>Stich ${S.trickNo + 1}</small></div>
     <div class="rule"><b>${esc(r.k)} · ${esc(r.n)}</b>${esc(r.tx)}</div>
-    ${U.tut ? '' : `<button class="icobtn leave" data-a="leave" aria-label="Speichern und verlassen" title="Speichern &amp; verlassen"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><rect x="4" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/><rect x="11.8" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/></svg><span>Verlassen</span></button>`}
+    ${U.tut ? `<button class="icobtn leave" data-a="tutquit" aria-label="Lernspiel beenden"><svg viewBox="0 0 20 20" width="13" height="13" aria-hidden="true"><path d="M4.5 4.5l11 11M15.5 4.5l-11 11" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg><span>Beenden</span></button>` : `<button class="icobtn leave" data-a="leave" aria-label="Speichern und verlassen" title="Speichern &amp; verlassen"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><rect x="4" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/><rect x="11.8" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/></svg><span>Verlassen</span></button>`}
     <button class="icobtn" data-a="menu" aria-label="Menü">?</button>
   </div></div>
   <div class="wrap">
@@ -1574,7 +1580,7 @@ function tutHtml() {
   const btn = last ? '<button class="btn" data-a="tutend">Echtes Spiel starten</button>'
     : !st.done ? '<button class="btn" data-a="tutnext">Weiter</button>'
     : st.wait ? '<span class="cwait">· · ·</span>' : '';
-  return `<div class="coach" id="coach" role="dialog" aria-live="polite"><div class="cface">${tutFace()}</div><div class="ctext"><span class="cstep">Lernspiel · ${U.tut.i + 1}/${TUT_STEPS.length}</span><p>${txt}</p><div class="cbtns">${btn}${last ? '' : '<button class="cquit" data-a="tutquit">Lernspiel beenden</button>'}</div></div></div>`;
+  return `<div class="coach" id="coach" role="dialog" aria-live="polite"><div class="cface">${tutFace()}</div><div class="ctext"><span class="cstep">Lernspiel · ${U.tut.i + 1}/${TUT_STEPS.length}</span>${st.ch ? `<b class="cch">${st.ch}</b>` : ''}<p>${txt}</p>${st.why ? `<p class="cwhy"><b>Warum?</b> ${st.why}</p>` : ''}<div class="cbtns">${btn}${last ? '' : '<button class="cquit" data-a="tutquit">Lernspiel beenden</button>'}</div></div></div>`;
 }
 function tutDecorate() {
   const st = tutStep(), coach = document.getElementById('coach');
@@ -1598,25 +1604,25 @@ const TUT_ME = () => S.players[0];
 const tutName = i => esc(S.players[i].name);
 const tutCard = c => `${SUIT_1[suit(c)]} ${val(c)}`;
 const TUT_STEPS = [
-  { pos: 'top', text: 'Willkommen zum <b>Prinzessinnenball</b>! Fünf Ballnächte lang weichst du den Prinzen aus. Jeder <b>Prinz</b> in einem Stich, den du gewinnst, ist <b>1 Antrag</b>, der <b>Frosch</b> sogar 5. Wer am Ende die wenigsten Anträge hat, gewinnt.' },
-  { sel: '.rule', pos: 'bottom', text: 'Jede Nacht gilt eine <b>Rundenkarte</b>. Heute „Es war einmal“: keine Sonderregel. Normalerweise gebt ihr zu Beginn auch Karten nach links oder rechts weiter, das überspringen wir heute.' },
-  { sel: '.opps', pos: 'bottom', text: 'Hier sitzen alle am Tisch. Zu dritt fallen die 1, 11 und 12 heraus. Du bist <b>Schneewittchen</b>. Rechts stehen die Anträge von heute und insgesamt.' },
-  { sel: '.cards .card[data-c="F2"]', allow: { card: d => d.c === 'F2', play: () => U.sel[0] === 'F2' }, done: () => !TUT_ME().hand.includes('F2'), pos: 'top',
+  { ch: 'Worum es geht', pos: 'top', text: 'Willkommen zum <b>Prinzessinnenball</b>! Hier willst du <b>möglichst nichts gewinnen</b>: Jeder <b>Prinz</b> in einem Stich, den du bekommst, ist 1 <b>Antrag</b>, der <b>Frosch</b> sogar 5. Nach 5 Ballnächten gewinnt, wer die <b>wenigsten Anträge</b> hat. Jede Nacht spielt ihr reihum Karten aus; die höchste Karte der ausgespielten Farbe nimmt den Stich – und alle Prinzen darin.' },
+  { ch: 'Vor jeder Nacht', why: 'Die Rundenkarte ändert jede Nacht eine Regel. Lies sie immer zuerst – sie entscheidet, welche Karten heute gefährlich sind.', sel: '.rule', pos: 'bottom', text: 'Jede Nacht gilt eine <b>Rundenkarte</b>. Heute „Es war einmal“: keine Sonderregel. Normalerweise gebt ihr zu Beginn auch Karten nach links oder rechts weiter, das überspringen wir heute.' },
+  { ch: 'Der Tisch', why: 'Behalte im Blick, wer schon viele Anträge hat: Dieser Person kannst du gezielt Prinzen zuschieben.', sel: '.opps', pos: 'bottom', text: 'Hier sitzen alle am Tisch. Zu dritt fallen die 1, 11 und 12 heraus. Du bist <b>Schneewittchen</b>. Rechts stehen die Anträge von heute und insgesamt.' },
+  { ch: 'Stich 1 · Ausspielen', why: 'Mit einer niedrigen Karte gewinnst du den Stich fast nie. Genau das willst du: Wer nicht gewinnt, bekommt keine Prinzen.', sel: '.cards .card[data-c="F2"]', allow: { card: d => d.c === 'F2', play: () => U.sel[0] === 'F2' }, done: () => !TUT_ME().hand.includes('F2'), pos: 'top',
     text: 'Du spielst aus. Die erste Karte bestimmt die Farbe. Beginne mit der kleinen <b>Fee 2</b>: antippen und dann „Ausspielen“ oder noch einmal tippen.' },
-  { wait: true, pos: 'top', done: () => S.trickNo >= 1 && S.phase === 'play' && curPi() === 0, text: 'Die anderen müssen <b>Farbe bedienen</b>, also Feen legen, wenn sie welche haben …' },
-  { sel: '.table', pos: 'top', text: () => { const lt = S.last; const w = lt.trick.find(t => t.pi === lt.w); return `Die höchste Fee gewinnt: <b>${tutName(lt.w)}</b> mit ${tutCard(w.c)}. Wer gewinnt, spielt als Nächstes aus, hier ${tutCard(S.trick[0].c)}.`; } },
-  { sel: '.cards .card[data-c="H9"]', allow: { card: d => d.c === 'H9', play: () => U.sel[0] === 'H9' }, done: () => !TUT_ME().hand.includes('H9'), pos: 'top',
+  { ch: 'Stich 1', wait: true, pos: 'top', done: () => S.trickNo >= 1 && S.phase === 'play' && curPi() === 0, text: 'Die anderen müssen <b>Farbe bedienen</b>, also Feen legen, wenn sie welche haben …' },
+  { ch: 'Stich 1 · Auswertung', why: 'Wer gewinnt, nimmt alle Karten im Stich und spielt als Nächstes aus. Vorne zu liegen ist hier ein Nachteil.', sel: '.table', pos: 'top', text: () => { const lt = S.last; const w = lt.trick.find(t => t.pi === lt.w); return `Die höchste Fee gewinnt: <b>${tutName(lt.w)}</b> mit ${tutCard(w.c)}. Wer gewinnt, spielt als Nächstes aus, hier ${tutCard(S.trick[0].c)}.`; } },
+  { ch: 'Stich 2 · Bedienen', why: 'Bedienen ist Pflicht. Erst wenn dir eine Farbe fehlt, darfst du etwas anderes abwerfen – zum Beispiel einen Prinzen.', sel: '.cards .card[data-c="H9"]', allow: { card: d => d.c === 'H9', play: () => U.sel[0] === 'H9' }, done: () => !TUT_ME().hand.includes('H9'), pos: 'top',
     text: 'Du hast Haustiere, also musst du bedienen. Nur erlaubte Karten sind hervorgehoben. Spiel die <b>Haustier 9</b>.' },
-  { wait: true, pos: 'top', done: () => S.trickNo >= 2 && S.phase === 'play' && curPi() === 0, text: 'Mal sehen, was die letzte Spielerin legen muss …' },
-  { sel: '.opps', pos: 'bottom', text: () => `Autsch! ${tutName(1)} hatte nur noch den <b>Frosch</b> als Haustier und musste ihn legen. Deine 9 war höher, also gehört dir der Stich: <b>5 Anträge</b>. Hohe Karten sind gefährlich!` },
-  { sel: '[data-a=power]', allow: { power: true }, done: () => U.power === 'schnee', pos: 'top',
+  { ch: 'Stich 2', wait: true, pos: 'top', done: () => S.trickNo >= 2 && S.phase === 'play' && curPi() === 0, text: 'Mal sehen, was die letzte Spielerin legen muss …' },
+  { ch: 'Stich 2 · Auswertung', why: 'Darum sind hohe Karten gefährlich: Du weißt nie, was die anderen abwerfen müssen.', sel: '.opps', pos: 'bottom', text: () => `Autsch! ${tutName(1)} hatte nur noch den <b>Frosch</b> als Haustier und musste ihn legen. Deine 9 war höher, also gehört dir der Stich: <b>5 Anträge</b>. Hohe Karten sind gefährlich!` },
+  { ch: 'Stich 3 · Deine Prinzessin', why: 'Jede Prinzessin hat eine Fähigkeit, mit der du unerwünschte Stiche vermeidest oder anderen etwas zuschiebst.', sel: '[data-a=power]', allow: { power: true }, done: () => U.power === 'schnee', pos: 'top',
     text: 'Zeit für deine Prinzessin! <b>Schneewittchen</b> spielt eine 7 oder niedriger als <b>0</b>. Schalte die Fähigkeit ein.' },
-  { sel: '.cards .card[data-c="K7"]', allow: { card: d => d.c === 'K7', play: () => U.sel[0] === 'K7', power: true }, done: () => !TUT_ME().hand.includes('K7'), pos: 'top',
+  { ch: 'Stich 3 · Deine Prinzessin', why: 'Als 0 verliert die Königin gegen jede andere Königin. So wirst du eine mittelhohe Karte gefahrlos los.', sel: '.cards .card[data-c="K7"]', allow: { card: d => d.c === 'K7', play: () => U.sel[0] === 'K7', power: true }, done: () => !TUT_ME().hand.includes('K7'), pos: 'top',
     text: 'Spiel jetzt deine <b>Königin 7</b> aus. Als 0 kann sie gegen jede andere Königin nur verlieren.' },
-  { wait: true, pos: 'top', done: () => S.trickNo >= 3 && S.phase === 'play', text: 'Die anderen legen Königinnen nach …' },
-  { sel: '.table', pos: 'top', text: () => `Siehst du? <b>${tutName(S.last.w)}</b> gewinnt. Jede Fähigkeit gilt <b>einmal pro Ballnacht</b>, danach ist die Prinzessin erschöpft, bis die nächste Nacht beginnt.` },
-  { sel: '.cards', pos: 'top', text: 'Die schwarzen Karten sind <b>Prinzen</b>. Sie sind nicht eingeladen: Ausspielen darfst du sie erst, wenn sich einer auf den Ball geschlichen hat, also jemand einen Prinzen abwirft, weil sie nicht bedienen kann.' },
-  { pos: 'top', text: 'Nach allen Stichen werden die Anträge gezählt. Wer <b>alle Prinzen und den Frosch</b> gewinnt, ist „Rebel of the Ball“ und bekommt −10. Die nächste Nacht beginnt, wer am wenigsten hat. Nach 5 Nächten gewinnen die <b>wenigsten Anträge</b>. Viel Glück!' },
+  { ch: 'Stich 3', wait: true, pos: 'top', done: () => S.trickNo >= 3 && S.phase === 'play', text: 'Die anderen legen Königinnen nach …' },
+  { ch: 'Stich 3 · Auswertung', why: 'Weil die Fähigkeit nur einmal pro Nacht gilt, hebst du sie dir für den gefährlichsten Moment auf.', sel: '.table', pos: 'top', text: () => `Siehst du? <b>${tutName(S.last.w)}</b> gewinnt. Jede Fähigkeit gilt <b>einmal pro Ballnacht</b>, danach ist die Prinzessin erschöpft, bis die nächste Nacht beginnt.` },
+  { ch: 'Prinzen', why: 'Sobald Prinzen erlaubt sind, kannst du deine eigenen gezielt in Stiche werfen, die andere gewinnen.', sel: '.cards', pos: 'top', text: 'Die schwarzen Karten sind <b>Prinzen</b>. Sie sind nicht eingeladen: Ausspielen darfst du sie erst, wenn sich einer auf den Ball geschlichen hat, also jemand einen Prinzen abwirft, weil sie nicht bedienen kann.' },
+  { ch: 'Zusammenfassung', pos: 'top', text: 'Nach allen Stichen werden die Anträge gezählt. Ausnahme: Wer <b>alle Prinzen und den Frosch</b> gewinnt, ist „Rebel of the Ball“ und bekommt −10. Merke dir: <b>1.</b> Niedrige Karten sind sicher. <b>2.</b> Bedienen ist Pflicht. <b>3.</b> Fehlt dir eine Farbe, wirf Prinzen und hohe Karten ab. <b>4.</b> Heb die Fähigkeit deiner Prinzessin für den gefährlichsten Stich auf. Viel Glück!' },
 ];
 function tutSetup() {
   U.fast = true;
