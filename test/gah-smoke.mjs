@@ -57,7 +57,7 @@ const sim = await page.evaluate(() => {
     if (!r.final) bad.push("keine Endabrechnung");
     if (S.round !== 7) bad.push(`Runde ${S.round}`);
     for (const p of S.players) {
-      if (p.k < 0 || p.vp < 0 || p.emp < 0) bad.push(`${p.name} negativ`);
+      if (p.k < 0 || p.emp < 0) bad.push(`${p.name} negativ`); // SP dürfen laut Regelheft unter 0 fallen
       for (const f of ["s", "c", "w", "k"]) if (p.kitchen[f] < 0 || p.fresh[f] !== 0) bad.push(`${p.name} Küche ${f}`);
       if (p.k > 20 || p.emp > 13) bad.push(`${p.name} über Limit`);
     }

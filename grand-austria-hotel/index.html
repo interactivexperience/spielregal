@@ -55,6 +55,8 @@ button:disabled{cursor:default}
 .round{font-size:26px;line-height:1;white-space:nowrap}
 .round small{font-family:"Space Mono",monospace;font-size:11px;color:var(--muted);display:block;margin-top:2px}
 .icobtn{width:40px;height:40px;border:2px solid var(--ink);border-radius:50%;background:#fff;font-weight:800;font-size:18px;flex:none;display:grid;place-items:center}
+.tok.tx{font-size:9.5px;font-weight:700;padding:1px 4px;border:1.5px solid #161616;border-radius:6px;background:#FFF9EE;white-space:nowrap}
+.banner.perks .perk{margin:6px 6px 0 0;min-height:36px;font-size:13.5px}
 .icobtn.leave{width:auto;padding:0 12px 0 10px;border-radius:999px;display:flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap}
 .backlink{display:block;text-align:left;margin:4px 0 2px;font-weight:800;font-size:13.5px;color:inherit;text-decoration:none;opacity:.75}
 .players{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;padding:2px 2px 4px}
@@ -299,20 +301,22 @@ const DICE_BY_N = { 2: 10, 3: 12, 4: 14 };
 const LINE_COST = [0, 0, 1, 2, 3];
 const ROUNDS = 7;
 const EMP_ROUNDS = [3, 5, 7];
-// Kaiserleiste 0–13: SP je Position bei der Kaiserwertung, danach 3/5/7 Schritte zurück
+// Kaiserleiste 0–13: SP je Position bei der Kaiserwertung (Aufdruck des Spielplans), danach 3/5/7 Schritte zurück
 const EMP_MAX = 13;
-const EMP_VP = [0, 1, 1, 2, 2, 3, 4, 4, 5, 6, 7, 8, 9, 10];
+const EMP_VP = [0, 1, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8, 9];
 const EMP_BACK = [3, 5, 7];
 const K_MAX = 20;
 const POL_VP = [15, 10, 5];
 const GUEST_LEFT_PENALTY = 5;
 const FLOOR_VP = [1, 2, 3, 4];
 
-// Hotel: 4 Stockwerke × 5 Zimmer, Index = Stock*5 + Spalte, Stock 0 = Erdgeschoss
-const LAYOUT = ['rrbby', 'ryybb', 'bbryy', 'ybrrb'];
+// Hotelplan wie im Original: 4 Etagen × 5 Zimmer, Index = Etage*5 + Spalte, Etage 0 = unterste.
+// Die 20 Zimmer bilden 10 gleichfarbige Gruppen.
+const LAYOUT = ['byrrb', 'yyrry', 'brbyy', 'brbrb'];
 const ROOM_COLOR = LAYOUT.join('').split('');
 const FLOOR_COST = [0, 1, 2, 3];
-const GROUP_BONUS = [0, 1, 3, 5, 8];
+// Auslastungsbonus nach Farbe und Gruppengröße (Tabellen auf dem Dach des Hotelplans)
+const GROUP_BONUS = { b: [0, 2, 5, 9, 15], r: [0, 1, 3, 6, 10], y: [0, 1, 3, 6, 10] };
 function neighbors(i) {
   const f = Math.floor(i / 5), c = i % 5, out = [];
   if (c > 0) out.push(i - 1);
@@ -334,115 +338,159 @@ for (let i = 0; i < 20; i++) {
   GROUPS.push(g);
 }
 
-// Gäste: [Name, Zimmerfarbe, Bestellung, Belohnung, Aussehen]
-const GUESTS = [
-  ['Fiakerkutscher', 'r', 'ss', { vp: 2, k: 2 }, { hat: 'bowler', must: 1, body: '#161616' }],
-  ['Marktfrau vom Naschmarkt', 'r', 'sw', { vp: 2, k: 3 }, { hair: 'bun', pat: 'checks', body: '#F1B02B', prop: 'basket' }],
-  ['Tabaktrafikant', 'r', 'swk', { vp: 3, k: 3 }, { hat: 'cap2', must: 1 }],
-  ['Bankier von der Ringstraße', 'r', 'wwkk', { vp: 5, k: 5 }, { hat: 'top', must: 1, body: '#161616', prop: 'coins' }],
-  ['Operettentenor', 'r', 'cww', { vp: 4, k: 3 }, { hair: 'side', must: 1, prop: 'note' }],
-  ['Kunsthändlerin', 'r', 'sckw', { vp: 5, k: 4 }, { hat: 'feather', hair: 'bob', glasses: 1 }],
-  ['Heuriger-Wirt aus Grinzing', 'r', 'www', { vp: 3, k: 4 }, { hair: 'bald', beard: 1, prop: 'bottle' }],
-  ['Zuckerlfabrikant', 'r', 'ccs', { vp: 4, k: 3 }, { hat: 'bowler', pat: 'stripes', body: '#F28AA6' }],
-  ['Börsenmakler', 'r', 'kkw', { vp: 4, k: 4 }, { hair: 'short', glasses: 1, body: '#2C47B5', prop: 'paper' }],
-  ['Hutmacherin', 'r', 'sk', { vp: 2, k: 3 }, { hat: 'feather', hair: 'long', hatC: '#E4472E' }],
-  ['Juwelier', 'r', 'cckw', { vp: 5, k: 5 }, { hair: 'curls', glasses: 1, prop: 'coins' }],
-  ['Kaufmann aus Triest', 'r', 'ssww', { vp: 4, k: 4 }, { hat: 'bowler', beard: 1, prop: 'suitcase' }],
-  ['Kaffeehausliterat', 'b', 'kk', { vp: 5 }, { hair: 'side', glasses: 1, body: '#161616', prop: 'book' }],
-  ['Frau Hofrätin', 'b', 'ckw', { vp: 7 }, { hat: 'feather', hair: 'bun', pat: 'dots', body: '#2C47B5' }],
-  ['Walzerkomponist', 'b', 'swc', { vp: 6 }, { hair: 'curls', must: 1, prop: 'note' }],
-  ['Malerin der Secession', 'b', 'kc', { vp: 5 }, { hat: 'beret', hair: 'bob', pat: 'dash', body: '#F1B02B' }],
-  ['Opernsängerin', 'b', 'cwwk', { vp: 9 }, { hair: 'bun', hat: 'tiara', body: '#E4472E', pat: 'dots' }],
-  ['Professor der Medizin', 'b', 'kkk', { vp: 7 }, { hair: 'bald', beard: 1, glasses: 1, prop: 'book' }],
-  ['Schachmeister', 'b', 'ks', { vp: 4 }, { hair: 'short', pat: 'checks', body: '#FFF9EE' }],
-  ['Burgschauspieler', 'b', 'sscw', { vp: 7 }, { hair: 'long', must: 1, body: '#161616' }],
-  ['Philosophin', 'b', 'kwc', { vp: 7 }, { hair: 'bob', glasses: 1, prop: 'book' }],
-  ['Architekt', 'b', 'sskk', { vp: 8 }, { hat: 'bowler', glasses: 1, prop: 'paper' }],
-  ['Dichterin', 'b', 'cc', { vp: 5 }, { hair: 'long', hat: 'flower', pat: 'stripes', body: '#F28AA6' }],
-  ['Hofkapellmeister', 'b', 'swck', { vp: 8, k: 1 }, { hair: 'curls', must: 1, body: '#161616', prop: 'note' }],
-  ['Leutnant der Garde', 'y', 'sw', { vp: 2, e: 2 }, { hat: 'cap', must: 1, body: '#2C47B5' }],
-  ['Gräfin aus Böhmen', 'y', 'cwk', { vp: 4, e: 3 }, { hair: 'bun', hat: 'tiara', pat: 'dots', body: '#1F8A4D' }],
-  ['Hofdame', 'y', 'ccw', { vp: 4, e: 3 }, { hair: 'bob', hat: 'flower', body: '#FFF9EE', pat: 'dash' }],
-  ['Diplomat aus Paris', 'y', 'kwk', { vp: 4, e: 3 }, { hat: 'top', glasses: 1, body: '#161616' }],
-  ['Hofzuckerbäcker', 'y', 'ssc', { vp: 3, e: 2, k: 1 }, { hat: 'chef', must: 1, body: '#FFF9EE', prop: 'cake' }],
-  ['Kammerherr', 'y', 'wwk', { vp: 4, e: 3 }, { hair: 'side', beard: 1, body: '#E4472E' }],
-  ['Fürstin', 'y', 'sckwc', { vp: 7, e: 4 }, { hat: 'tiara', hair: 'long', body: '#F28AA6', pat: 'dots' }],
-  ['Rittmeister', 'y', 'ww', { vp: 2, e: 2 }, { hat: 'cap', must: 1, body: '#1F8A4D' }],
-  ['Botschafterin', 'y', 'kc', { vp: 3, e: 2 }, { hat: 'feather', hair: 'bob', body: '#2C47B5' }],
-  ['Minister', 'y', 'swkk', { vp: 5, e: 3 }, { hair: 'bald', must: 1, glasses: 1, body: '#161616', prop: 'paper' }],
-  ['Sommerfrischler', 'g', 'ss', { vp: 1, food: { w: 1 } }, { hat: 'beret', hatC: '#1F8A4D', pat: 'stripes', body: '#FFF9EE' }],
-  ['Reisende Familie', 'g', 'sscc', { vp: 5, room: 1 }, { hair: 'curls', prop: 'suitcase', pat: 'checks', body: '#F1B02B' }],
-  ['Ballonfahrer', 'g', 'wk', { vp: 3, k: 1, e: 1 }, { hat: 'cap2', glasses: 1, body: '#E4472E' }],
-  ['Bergsteigerin', 'g', 'sw', { vp: 2, food: { c: 1, k: 1 } }, { hat: 'beret', hatC: '#E4472E', hair: 'long', pat: 'checks', body: '#1F8A4D' }],
-  ['Zirkusdirektor', 'g', 'cwk', { vp: 4, room: 1 }, { hat: 'top', must: 1, body: '#E4472E', pat: 'stripes' }],
-  ['Weltreisender', 'g', 'kwsc', { vp: 5, k: 2, e: 1 }, { hat: 'bowler', beard: 1, prop: 'suitcase', body: '#2C47B5' }],
+// Gäste 49–104, 117, 118 mit den Belohnungen aus dem Anhang des Regelhefts.
+// Belohnungs-Schlüssel: k Kronen, e Kaiserschritte, food feste Waren, foodAny Ware nach Wahl,
+// room Zimmer gratis, roomLow gratis in den unteren beiden Etagen, roomPaid kostenpflichtig (Rabatte),
+// flip weiteres Zimmer beziehen, staff Personal ausspielen (Rabatte, 99 = gratis), draw Karten ziehen,
+// draw3 3 ziehen und 1 ausspielen (Rabatt), guest Gast gratis aus der Reihe, gizia Zusatzaktion.
+// Bestellung, Farbe und Siegpunkte stehen nur auf den Kartenbildern (nicht im Regelheft) und sind geschätzt.
+const GUEST_DEF = [
+  [49, 'Hofgärtner', 'r', { roomLow: 1 }], [50, 'Notar', 'b', { draw: 1, roomPaid: [0] }],
+  [51, 'Marktfrau vom Naschmarkt', 'r', { food: { s: 1 } }], [52, 'Fiakerkutscher', 'r', { food: { s: 1 }, k: 2 }, 'ss'],
+  [53, 'Leutnant der Garde', 'y', { food: { k: 1 }, e: 2 }], [54, 'Tabaktrafikant', 'r', { foodAny: 1, k: 2 }],
+  [55, 'Kaffeehausliterat', 'b', { draw: 2 }], [56, 'Kammersängerin', 'b', { food: { c: 1 }, staff: [3] }],
+  [57, 'Zuckerlfabrikant', 'r', { roomPaid: [1, 1] }], [58, 'Reisende Familie', 'g', { flip: 1 }],
+  [59, 'Malerin der Secession', 'b', { food: { c: 1 }, staff: [2] }], [60, 'Börsenmakler', 'r', { food: { k: 1 }, k: 3 }],
+  [61, 'Maler', 'y', { roomPaid: [1, 0] }], [62, 'Opernsängerin', 'y', { guest: 1, e: 3 }],
+  [63, 'Sommerfrischler', 'g', { guest: 1 }], [64, 'Herzogin', 'b', { staff: [1] }],
+  [65, 'Schachmeister', 'g', {}, null, 3], [66, 'Landgraf', 'b', { staff: [1], roomPaid: [0] }],
+  [67, 'Walzerkomponist', 'b', { draw: 2, e: 2 }], [68, 'Prinzessin', 'y', { e: 3 }],
+  [69, 'Bankier von der Ringstraße', 'r', { k: 3 }], [70, 'Hofdame', 'y', { staff: [1], e: 3 }],
+  [71, 'Freiherr', 'b', { room: 1 }], [72, 'Prinz', 'g', { flip: 1 }],
+  [73, 'Graf', 'b', { staff: [1, 1] }], [74, 'Hutmacherin', 'r', { k: 1 }],
+  [75, 'Philosophin', 'b', { draw3: 3 }], [76, 'Herzog', 'b', { draw3: 99 }],
+  [77, 'Heuriger-Wirt aus Grinzing', 'r', { k: 1 }], [78, 'Bergsteigerin', 'g', { guest: 1 }],
+  [79, 'Rittmeister', 'y', { k: 1, e: 1 }], [80, 'Professor', 'g', { guest: 1 }],
+  [81, 'General', 'r', { food: { w: 1 }, k: 3 }], [82, 'Zirkusdirektor', 'g', { flip: 1 }],
+  [83, 'Juwelier', 'r', { k: 5 }], [84, 'Ballonfahrer', 'g', { k: 3, guest: 1 }],
+  [85, 'Kaufmann aus Triest', 'r', { k: 3 }], [86, 'Dichterin', 'b', { staff: [3] }],
+  [87, 'Weltreisender', 'g', { k: 3, guest: 2 }], [88, 'Architekt', 'y', { room: 2 }],
+  [89, 'Kunsthändlerin', 'r', { k: 4 }], [90, 'Operettentenor', 'r', { food: { w: 1 }, k: 3 }],
+  [91, 'Burgschauspieler', 'b', { draw: 3 }], [92, 'Frau Hofrätin', 'r', { k: 1 }],
+  [93, 'Herr Horsa', 'y', { e: 1 }], [94, 'M. Ingalls', 'b', { staff: [1] }],
+  [95, 'Kammerherr', 'y', { e: 2 }], [96, 'Herr Oundo', 'b', { staff: [3] }],
+  [97, 'E. Gizia', 'g', { gizia: 1 }], [98, 'M. Polo', 'r', { k: 4 }],
+  [99, 'Cramersopholus', 'b', { draw: 1, e: 2 }], [100, 'Fürstin', 'y', { e: 3, flip: 1 }],
+  [101, 'Diplomat aus Paris', 'y', { e: 3, guest: 1 }], [102, 'Botschafterin', 'g', { e: 1, flip: 1 }],
+  [103, 'Durgoing', 'b', { draw: 2 }], [104, 'Hofkapellmeister', 'b', { staff: [99] }],
+  [117, 'Mag. Ferdinand', 'y', { e: 3 }], [118, 'Herr Moras', 'g', { guest: 1 }],
 ];
+function rewValue(r) {
+  let w = (r.k || 0) + (r.e || 0) * 1.2 + (r.foodAny || 0) * 1.5 + (r.room || 0) * 3 + (r.roomLow || 0) * 2.5 + (r.flip || 0) * 4 + (r.draw || 0) * 1.5 + (r.guest || 0) * 2.5 + (r.gizia || 0) * 4;
+  if (r.food) w += FOODS.reduce((s, f) => s + (r.food[f] || 0), 0) * 1.2;
+  if (r.roomPaid) w += r.roomPaid.reduce((s, d) => s + 1.5 + d, 0);
+  if (r.staff) w += r.staff.reduce((s, d) => s + (d >= 99 ? 5 : 2 + d * 0.7), 0);
+  if (r.draw3) w += r.draw3 >= 99 ? 6 : 3 + r.draw3;
+  return w;
+}
+const OLD_LOOKS = [{ hat: 'bowler', must: 1, body: '#161616' }, { hair: 'bun', pat: 'checks', body: '#F1B02B', prop: 'basket' }, { hat: 'cap2', must: 1 }, { hat: 'top', must: 1, body: '#161616', prop: 'coins' }, { hair: 'side', must: 1, prop: 'note' }, { hat: 'feather', hair: 'bob', glasses: 1 }, { hair: 'bald', beard: 1, prop: 'bottle' }, { hat: 'bowler', pat: 'stripes', body: '#F28AA6' }, { hair: 'short', glasses: 1, body: '#2C47B5', prop: 'paper' }, { hat: 'feather', hair: 'long', hatC: '#E4472E' }, { hair: 'curls', glasses: 1, prop: 'coins' }, { hat: 'bowler', beard: 1, prop: 'suitcase' }, { hair: 'side', glasses: 1, body: '#161616', prop: 'book' }, { hat: 'feather', hair: 'bun', pat: 'dots', body: '#2C47B5' }, { hair: 'curls', must: 1, prop: 'note' }, { hat: 'beret', hair: 'bob', pat: 'dash', body: '#F1B02B' }, { hair: 'bun', hat: 'tiara', body: '#E4472E', pat: 'dots' }, { hair: 'bald', beard: 1, glasses: 1, prop: 'book' }, { hair: 'short', pat: 'checks', body: '#FFF9EE' }, { hair: 'long', must: 1, body: '#161616' }, { hat: 'cap', must: 1, body: '#2C47B5' }, { hair: 'bun', hat: 'tiara', pat: 'dots', body: '#1F8A4D' }, { hair: 'bob', hat: 'flower', body: '#FFF9EE', pat: 'dash' }, { hat: 'top', glasses: 1, body: '#161616' }, { hat: 'chef', must: 1, body: '#FFF9EE', prop: 'cake' }, { hat: 'tiara', hair: 'long', body: '#F28AA6', pat: 'dots' }, { hat: 'beret', hatC: '#1F8A4D', pat: 'stripes', body: '#FFF9EE' }, { hair: 'curls', prop: 'suitcase', pat: 'checks', body: '#F1B02B' }, { hat: 'cap2', glasses: 1, body: '#E4472E' }];
+// Gäste: [Name, Zimmerfarbe, Bestellung, Belohnung inkl. SP, Aussehen, Kartennummer]
+const GUESTS = GUEST_DEF.map(([nr, name, col, rew, order, vp], i) => {
+  const r = prng('order' + nr), w = rewValue(rew);
+  const len = order ? order.length : w < 2.5 ? 2 : w < 5 ? 3 : 4;
+  const ord = order || Array.from({ length: len }).map(() => FOODS[Math.floor(r() * 4)]).sort((a, b) => FOODS.indexOf(a) - FOODS.indexOf(b)).join('');
+  const pts = vp != null ? vp : Math.max(0, len + 1 - Math.floor(w / 2));
+  return [name, col, ord, Object.assign({ vp: pts }, rew), OLD_LOOKS[i % OLD_LOOKS.length], nr];
+});
+const gi = nr => GUESTS.findIndex(g => g[5] === nr);
 
-// Personal
-const STAFF = [
-  { n: 'Portier', c: 1, t: 'perm', e: 'lineDisc', tx: 'Gäste aus der Warteschlange kosten 1 Krone weniger.', look: { hat: 'cap2', must: 1, body: '#E4472E' }, prop: 'key' },
-  { n: 'Page', c: 0, t: 'now', e: 'nPage', tx: 'Sofort: +1 Kaiser, +2 Kronen.', look: { hat: 'cap2', hair: 'short', body: '#2C47B5' }, prop: 'bell' },
-  { n: 'Zimmermädchen', c: 2, t: 'perm', e: 'act3plus', tx: 'Aktion 3: ein Zimmer mehr vorbereiten.', look: { hair: 'bun', pat: 'dots', body: '#161616' }, prop: 'broom' },
-  { n: 'Zuckerbäckerin', c: 2, t: 'perm', e: 'act1cake', tx: 'Aktion 1: zusätzlich +1 Torte.', look: { hat: 'chef', hair: 'bob', body: '#FFF9EE' }, prop: 'cake' },
-  { n: 'Sommelier', c: 2, t: 'perm', e: 'act2wine', tx: 'Aktion 2: zusätzlich +1 Wein.', look: { hair: 'side', must: 1, body: '#161616' }, prop: 'bottle' },
-  { n: 'Kaffeesieder', c: 2, t: 'round', e: 'rK', tx: 'Rundenende: +1 Kaffee.', look: { hair: 'curls', body: '#B8692F', pat: 'stripes' }, prop: 'cup' },
-  { n: 'Strudelbäcker', c: 1, t: 'round', e: 'rS', tx: 'Rundenende: +1 Strudel.', look: { hat: 'chef', must: 1, body: '#FFF9EE' }, prop: 'strudel' },
-  { n: 'Oberkellner', c: 3, t: 'perm', e: 'freeService', tx: 'Küchenservice kostet dich nichts.', look: { hair: 'side', must: 1, body: '#161616', collar: '#FFF9EE' }, prop: 'tray' },
-  { n: 'Buchhalterin', c: 2, t: 'round', e: 'rKr', tx: 'Rundenende: +2 Kronen.', look: { hair: 'bob', glasses: 1, body: '#2C47B5' }, prop: 'book' },
-  { n: 'Concierge', c: 3, t: 'perm', e: 'checkinVp', tx: 'Jeder Gast, der einzieht: +1 SP.', look: { hat: 'top', body: '#1F8A4D' }, prop: 'key' },
-  { n: 'Hausdame', c: 2, t: 'perm', e: 'roomDisc', tx: 'Zimmer kosten dich 1 Krone weniger.', look: { hair: 'bun', glasses: 1, body: '#F28AA6', pat: 'checks' }, prop: 'key' },
-  { n: 'Zeremonienmeister', c: 3, t: 'round', e: 'rE', tx: 'Rundenende: +1 Kaiser.', look: { hat: 'top', must: 1, body: '#E4472E' }, prop: 'bell' },
-  { n: 'Hofberichterstatter', c: 2, t: 'perm', e: 'noEmpPen', tx: 'Bei Kaiserwertungen erhältst du nie eine Strafe.', look: { hat: 'bowler', glasses: 1, body: '#F1B02B' }, prop: 'paper' },
-  { n: 'Liftboy', c: 1, t: 'now', e: 'nRoom', tx: 'Sofort: 1 Zimmer gratis vorbereiten.', look: { hat: 'cap2', hair: 'short', body: '#E4472E', pat: 'dots' }, prop: 'key' },
-  { n: 'Lieferant', c: 1, t: 'now', e: 'nFood', tx: 'Sofort: +2 Strudel, +1 Wein.', look: { hat: 'cap2', beard: 1, body: '#1F8A4D' }, prop: 'basket' },
-  { n: 'Pianist', c: 3, t: 'end', e: 'eBlue', tx: 'Spielende: +2 SP je belegtem blauen Zimmer.', look: { hair: 'curls', body: '#161616' }, prop: 'note' },
-  { n: 'Empfangsdame', c: 3, t: 'end', e: 'eRed', tx: 'Spielende: +2 SP je belegtem roten Zimmer.', look: { hair: 'long', hat: 'flower', body: '#E4472E' }, prop: 'bell' },
-  { n: 'Gardeoffizier', c: 3, t: 'end', e: 'eYellow', tx: 'Spielende: +2 SP je belegtem gelben Zimmer.', look: { hat: 'cap', must: 1, body: '#2C47B5' }, prop: 'none' },
-  { n: 'Baumeisterin', c: 4, t: 'end', e: 'eFloor', tx: 'Spielende: +5 SP je komplett belegtem Stockwerk.', look: { hat: 'beret', hair: 'bob', body: '#F1B02B', pat: 'dash' }, prop: 'paper' },
-  { n: 'Hoteldirektor', c: 4, t: 'end', e: 'eStaff', tx: 'Spielende: +2 SP je eingestelltem Personal.', look: { hat: 'top', must: 1, glasses: 1, body: '#161616' }, prop: 'coins' },
-  { n: 'Bankdirektor', c: 2, t: 'end', e: 'eMoney', tx: 'Spielende: zusätzlich +1 SP je 2 Kronen.', look: { hair: 'bald', must: 1, body: '#2C47B5', pat: 'stripes' }, prop: 'coins' },
-  { n: 'Fremdenführerin', c: 2, t: 'now', e: 'nGuide', tx: 'Sofort: Nimm einen Gast aus der Warteschlange gratis.', look: { hat: 'feather', hair: 'long', body: '#1F8A4D' }, prop: 'flag' },
-  { n: 'Kapellmeister', c: 4, t: 'round', e: 'rVP', tx: 'Rundenende: +2 SP.', look: { hair: 'curls', must: 1, body: '#E4472E' }, prop: 'note' },
-  { n: 'Geldwechsler', c: 0, t: 'perm', e: 'act4k', tx: 'Aktion 4: zusätzlich +1 Krone.', look: { hair: 'side', glasses: 1, body: '#F1B02B' }, prop: 'coins' },
-  { n: 'Kellnerin', c: 1, t: 'perm', e: 'service4', tx: 'Küchenservice: 4 statt 3 Gerichte.', look: { hair: 'bun', body: '#161616', pat: 'dots' }, prop: 'tray' },
-  { n: 'Kammerdiener', c: 2, t: 'now', e: 'nE3', tx: 'Sofort: +3 Kaiser.', look: { hair: 'side', must: 1, body: '#FFF9EE', pat: 'stripes' }, prop: 'tray' },
-  { n: 'Gärtnerin', c: 1, t: 'now', e: 'nGarden', tx: 'Sofort: +1 Torte, +1 Kaffee, +1 Kaiser.', look: { hat: 'beret', hatC: '#1F8A4D', hair: 'long', body: '#F1B02B' }, prop: 'flower' },
-  { n: 'Nachtportier', c: 2, t: 'round', e: 'rW', tx: 'Rundenende: +1 Wein.', look: { hat: 'cap2', must: 1, body: '#2C47B5', glasses: 1 }, prop: 'key' },
+// Personal 1–48 mit den Effekten aus dem Anhang des Regelhefts (t: now einmalig, round einmal pro
+// Runde, perm dauerhaft, end Schlusswertung). Kosten stehen nur auf den Kartenbildern und sind geschätzt;
+// Namen, die das Regelheft nicht nennt, sind eigene.
+const STAFF_DEF = [
+  [1, 'Konditor', 2, 'round', 'r1s', 'Einmal pro Runde: 1 Strudel.'],
+  [2, 'Kellnerin', 2, 'round', 'r1c', 'Einmal pro Runde: 1 Torte.'],
+  [3, 'Kellermeister', 2, 'round', 'r1w', 'Einmal pro Runde: 1 Wein.'],
+  [4, 'Sous Chef', 2, 'round', 'r1k', 'Einmal pro Runde: 1 Kaffee.'],
+  [5, 'Rezeptionistin', 4, 'perm', 'gR', 'Roter Gast zieht ein: +2 Kronen.'],
+  [6, 'Hofberichterstatter', 4, 'perm', 'gB', 'Blauer Gast zieht ein: +1 Kaiserschritt.'],
+  [7, 'Masseurin', 4, 'perm', 'gY', 'Gelber Gast zieht ein: +1 Krone.'],
+  [8, 'Fremdenführer', 4, 'perm', 'gG', 'Grüner Gast zieht ein: +2 SP.'],
+  [9, 'Malermeister', 6, 'perm', 'freeB', 'Blaue Zimmer vorzubereiten kostet nichts.'],
+  [10, 'Tapezierer', 6, 'perm', 'freeR', 'Rote Zimmer vorzubereiten kostet nichts.'],
+  [11, 'Hausmeister', 6, 'perm', 'freeY', 'Gelbe Zimmer vorzubereiten kostet nichts.'],
+  [12, 'Hausdame', 4, 'perm', 'd34vp2', 'Würfel 3 oder 4 genommen: +2 SP.'],
+  [13, 'Kofferträger', 3, 'perm', 'd12s1', 'Würfel 1 oder 2: Aktion einen Würfel stärker.'],
+  [14, 'Handwerker', 4, 'perm', 'd12room', 'Würfel 1 oder 2: zusätzlich ein Zimmer kostenpflichtig vorbereiten.'],
+  [15, 'Buchhalterin', 5, 'perm', 'd4both', 'Würfel 4: je Würfel 1 Krone und 1 Kaiserschritt.'],
+  [16, 'Bankier', 4, 'perm', 'd4vp4', 'Würfel 4 genommen: +4 SP.'],
+  [17, 'Croupier', 3, 'perm', 'd6free', 'Joker (6) kostet nichts und ist einen Würfel stärker.'],
+  [18, 'Garderobenfrau', 5, 'perm', 'd5s2', 'Würfel 5: Aktion zwei Würfel stärker.'],
+  [19, 'Zimmermädchen', 5, 'perm', 'd3vp5', 'Würfel 3 genommen: +5 SP.'],
+  [20, 'Hoflieferant', 3, 'perm', 'd5e2', 'Würfel 5 genommen: +2 Kaiserschritte.'],
+  [21, 'Lieferant', 2, 'now', 'nAll', 'Sofort: 1 Strudel, 1 Torte, 1 Wein, 1 Kaffee.'],
+  [22, 'Personalchefin', 5, 'perm', 'd3staff', 'Würfel 3: zusätzlich eine Personalkarte kostenpflichtig ausspielen.'],
+  [23, 'Kassier', 5, 'perm', 'occK', 'Jedes bezogene Zimmer: +1 Krone.'],
+  [24, 'Oberkellner', 5, 'perm', 'freeService', 'Waren aus der Küche servieren kostet nichts.'],
+  [25, 'Portier', 4, 'perm', 'freeLine', 'Gäste aus der Reihe kosten nichts.'],
+  [26, 'Advokat', 2, 'perm', 'penK', 'Kaiserstrafe für 1 Krone abwenden.'],
+  [27, 'Raumausstatterin', 6, 'end', 'endR', 'Ende: 3 SP je bezogenem roten Zimmer.'],
+  [28, 'Innenarchitekt', 6, 'end', 'endB', 'Ende: 3 SP je bezogenem blauen Zimmer.'],
+  [29, 'Hoteldetektiv', 4, 'end', 'endCopy', 'Ende: Effekt einer Schlusswertungs-Karte aus einem anderen Hotel für dein Hotel nutzen.'],
+  [30, 'Dekorateurin', 6, 'end', 'endY', 'Ende: 3 SP je bezogenem gelben Zimmer.'],
+  [31, 'Stubenmädchen', 6, 'end', 'endRooms', 'Ende: 1 SP je bezogenem Zimmer.'],
+  [32, 'Hoteldirektor', 5, 'end', 'endStaff', 'Ende: 1 SP je ausgespielter Personalkarte (mit dieser).'],
+  [33, 'Chefkoch', 4, 'perm', 'g4vp', 'Gast mit 4 Waren zieht ein: +4 SP.'],
+  [34, 'Baumeister', 5, 'end', 'endTiles', 'Ende: 1 SP je Zimmerplättchen in deinem Hotel.'],
+  [35, 'Page', 4, 'now', 'nFlip', 'Sofort: ein vorbereitetes Zimmer beziehen (umdrehen).'],
+  [36, 'Sommelier', 2, 'now', 'nW4', 'Sofort: 4 Wein.'],
+  [37, 'Zimmerdame', 5, 'end', 'endGroups', 'Ende: 2 SP je vollständig bezogener Zimmergruppe.'],
+  [38, 'Patissier', 3, 'now', 'nFill', 'Sofort: die Bestellung eines Gastes aus dem Vorrat erfüllen.'],
+  [39, 'Zuckerbäckerin', 2, 'now', 'nC4', 'Sofort: 4 Torten.'],
+  [40, 'Diplomat', 5, 'end', 'endPol', 'Ende: 5 SP je Politikkarte mit deinem Marker.'],
+  [41, 'Kammerdiener', 7, 'end', 'endEmp2', 'Ende: doppelt so viele SP wie deine Position auf der Kaiserleiste.'],
+  [42, 'Hofrat', 4, 'perm', 'bonus5', 'Bonus bei der Kaiserwertung: +5 SP.'],
+  [43, 'Kaffeesieder', 2, 'now', 'nK4', 'Sofort: 4 Kaffee.'],
+  [44, 'Strudelbäcker', 2, 'now', 'nS4', 'Sofort: 4 Strudel.'],
+  [45, 'Zeremonienmeister', 1, 'now', 'nE3', 'Sofort: 3 Kaiserschritte.'],
+  [46, 'Etagenkellner', 6, 'end', 'endFloors', 'Ende: 5 SP je vollständig bezogener Etage.'],
+  [47, 'Liftboy', 6, 'end', 'endCols', 'Ende: 4 SP je vollständig bezogener Spalte.'],
+  [48, 'Concierge', 6, 'end', 'endSets', 'Ende: 4 SP je Set aus rotem, blauem und gelbem bezogenem Zimmer.'],
 ];
+const STAFF_LOOKS = [{ hat: 'cap2', must: 1, body: '#E4472E' }, { hat: 'cap2', hair: 'short', body: '#2C47B5' }, { hair: 'bun', pat: 'dots', body: '#161616' }, { hat: 'chef', hair: 'bob', body: '#FFF9EE' }, { hair: 'side', must: 1, body: '#161616' }, { hair: 'curls', body: '#B8692F', pat: 'stripes' }, { hat: 'chef', must: 1, body: '#FFF9EE' }, { hair: 'side', must: 1, body: '#161616', collar: '#FFF9EE' }, { hair: 'bob', glasses: 1, body: '#2C47B5' }, { hat: 'top', body: '#1F8A4D' }, { hair: 'bun', glasses: 1, body: '#F28AA6', pat: 'checks' }, { hat: 'top', must: 1, body: '#E4472E' }, { hat: 'bowler', glasses: 1, body: '#F1B02B' }, { hat: 'cap2', hair: 'short', body: '#E4472E', pat: 'dots' }, { hat: 'cap2', beard: 1, body: '#1F8A4D' }, { hair: 'curls', body: '#161616' }, { hair: 'long', hat: 'flower', body: '#E4472E' }, { hat: 'cap', must: 1, body: '#2C47B5' }, { hat: 'beret', hair: 'bob', body: '#F1B02B', pat: 'dash' }, { hat: 'top', must: 1, glasses: 1, body: '#161616' }];
+const STAFF_PROPS = ['strudel', 'cake', 'bottle', 'cup', 'bell', 'paper', 'coins', 'flag', 'broom', 'broom', 'broom', 'key', 'suitcase', 'broom', 'book', 'coins', 'coins', 'key', 'broom', 'basket', 'basket', 'book', 'coins', 'tray', 'key', 'paper', 'flower', 'flower', 'book', 'flower', 'broom', 'coins', 'cake', 'paper', 'bell', 'bottle', 'key', 'cake', 'cake', 'paper', 'tray', 'paper', 'cup', 'strudel', 'bell', 'tray', 'key', 'key'];
+const STAFF = STAFF_DEF.map(([nr, n, c, t, e, tx], i) => ({ nr, n, c, t, e, tx, look: STAFF_LOOKS[i % STAFF_LOOKS.length], prop: STAFF_PROPS[i] || 'key' }));
 const KIND = { now: 'Sofort', perm: 'Dauer', round: 'Runde', end: 'Ende' };
 
-// Politik (3 pro Partie)
+// Politik: 12 Karten, je Partie eine A, eine B und eine C (Bedingungen aus dem Anhang)
+function fullCols(p) { let n = 0; for (let c = 0; c < 5; c++) if (range(4).every(f => p.rooms[f * 5 + c] === 2)) n++; return n; }
+const fullGroups = p => GROUPS.filter(g => g.every(i => p.rooms[i] === 2)).length;
+const tiles = p => p.rooms.filter(x => x > 0).length;
 const POLITICS = [
-  { n: 'Bankett im Rathaus', tx: '3 rote Zimmer belegt', test: p => occColor(p, 'r') >= 3 },
-  { n: 'Künstlersalon', tx: '3 blaue Zimmer belegt', test: p => occColor(p, 'b') >= 3 },
-  { n: 'Jubiläumsball', tx: '3 gelbe Zimmer belegt', test: p => occColor(p, 'y') >= 3 },
-  { n: 'Hotelgutachten', tx: 'Ein Stockwerk komplett belegt', test: p => fullFloors(p) >= 1 },
-  { n: 'Personalkonferenz', tx: '4 Personal eingestellt', test: p => p.staff.length >= 4 },
-  { n: 'Audienz bei Hofe', tx: 'Kaiserleiste auf 8 oder mehr', test: p => p.emp >= 8 },
-  { n: 'Großer Umbau', tx: '10 Zimmer vorbereitet oder belegt', test: p => p.rooms.filter(x => x > 0).length >= 10 },
-  { n: 'Weltausstellung', tx: '7 Gäste eingezogen', test: p => p.rooms.filter(x => x === 2).length >= 7 },
+  { L: 'A', n: 'Gut bei Kasse', tx: 'Du besitzt 20 Kronen.', test: p => p.k >= 20 },
+  { L: 'A', n: 'In Gunst des Kaisers', tx: 'Kaiserleiste auf Feld 10 oder weiter.', test: p => p.emp >= 10 },
+  { L: 'A', n: 'Großer Stab', tx: 'Mindestens 6 Personalkarten im Spiel.', test: p => p.staff.length >= 6 },
+  { L: 'A', n: 'Ausbau', tx: 'Mindestens 12 Zimmerplättchen im Hotel.', test: p => tiles(p) >= 12 },
+  { L: 'B', n: 'Volle Etagen', tx: 'Mindestens 2 Etagen vollständig bezogen.', test: p => fullFloors(p) >= 2 },
+  { L: 'B', n: 'Volle Spalten', tx: 'Mindestens 2 Spalten vollständig bezogen.', test: p => fullCols(p) >= 2 },
+  { L: 'B', n: 'Volle Gruppen', tx: 'Mindestens 6 Zimmergruppen vollständig bezogen.', test: p => fullGroups(p) >= 6 },
+  { L: 'B', n: 'Eine Farbe', tx: 'Alle Zimmer einer Farbe bezogen.', test: p => ['r', 'b', 'y'].some(c => ROOM_COLOR.every((cc, i) => cc !== c || p.rooms[i] === 2)) },
+  { L: 'C', n: 'Bunte Mischung', tx: 'Mindestens 3 Zimmer jeder Farbe bezogen.', test: p => ['r', 'b', 'y'].every(c => occColor(p, c) >= 3) },
+  { L: 'C', n: 'Rot und Gelb', tx: 'Mindestens 4 rote und 3 gelbe Zimmer bezogen.', test: p => occColor(p, 'r') >= 4 && occColor(p, 'y') >= 3 },
+  { L: 'C', n: 'Gelb und Blau', tx: 'Mindestens 4 gelbe und 3 blaue Zimmer bezogen.', test: p => occColor(p, 'y') >= 4 && occColor(p, 'b') >= 3 },
+  { L: 'C', n: 'Blau und Rot', tx: 'Mindestens 4 blaue und 3 rote Zimmer bezogen.', test: p => occColor(p, 'b') >= 4 && occColor(p, 'r') >= 3 },
 ];
 
-// Kaiserplättchen: je ein zufälliges der Stufe A (Runde 3), B (Runde 5) und C (Runde 7).
-// Bonus ab Feld 3, Strafe auf Feld 0; bei zwei Strafen gilt die linke, falls möglich.
+// Kaiserplättchen: 12 Stück, je Partie eines der Stufe A (Runde 3), B (Runde 5), C (Runde 7).
+// Bonus ab Feld 3, Strafe auf Feld 0 (Texte aus dem Anhang).
 const EMP_TILES = [
   [
-    { n: 'Schatulle', good: { k: 3 }, bad: [{ k: -3 }, { vp: -5 }], gt: '+3 Kronen', bt: '−3 Kronen oder −5 SP' },
-    { n: 'Hoftafel', good: { food: { s: 1, c: 1 } }, bad: [{ vp: -4 }], gt: '+1 Strudel, +1 Torte', bt: '−4 SP' },
-    { n: 'Bauerlass', good: { room: 1 }, bad: [{ k: -2 }, { vp: -4 }], gt: '1 Zimmer gratis', bt: '−2 Kronen oder −4 SP' },
-    { n: 'Orden', good: { vp: 4 }, bad: [{ vp: -4 }], gt: '+4 SP', bt: '−4 SP' },
+    { n: 'Kronen', good: { k: 3 }, bad: 'k3', gt: '+3 Kronen', bt: '−3 Kronen (sonst −5 SP)' },
+    { n: 'Speisekammer', good: { foodAny: 2 }, bad: 'kitchen', gt: '2 Waren nach Wahl', bt: 'alle Waren aus der Küche abgeben' },
+    { n: 'Empfehlung', good: { draw3: 3 }, bad: 'hand2', gt: '3 Personalkarten ziehen, eine mit 3 K Rabatt spielen', bt: '2 Handkarten abgeben (sonst −5 SP)' },
+    { n: 'Baugenehmigung', good: { room: 1 }, bad: 'room1', gt: '1 Zimmer gratis vorbereiten', bt: '1 freies Zimmer entfernen (sonst −5 SP)' },
   ],
   [
-    { n: 'Geldbörse', good: { k: 5 }, bad: [{ k: -5 }, { vp: -7 }], gt: '+5 Kronen', bt: '−5 Kronen oder −7 SP' },
-    { n: 'Weinkeller', good: { food: { w: 2, k: 1 } }, bad: [{ vp: -6 }], gt: '+2 Wein, +1 Kaffee', bt: '−6 SP' },
-    { n: 'Hofball', good: { vp: 6 }, bad: [{ vp: -6 }], gt: '+6 SP', bt: '−6 SP' },
-    { n: 'Baugenehmigung', good: { room: 2 }, bad: [{ k: -4 }, { vp: -7 }], gt: '2 Zimmer gratis', bt: '−4 Kronen oder −7 SP' },
+    { n: 'Festmahl', good: { food: { s: 1, c: 1, w: 1, k: 1 } }, bad: 'kitchenGuests', gt: 'je 1 Strudel, Torte, Wein, Kaffee', bt: 'alle Waren aus Küche und von Gästen abgeben' },
+    { n: 'Schatulle', good: { k: 5 }, bad: 'k5', gt: '+5 Kronen', bt: '−5 Kronen (sonst −7 SP)' },
+    { n: 'Hofstaat', good: { draw3: 99 }, bad: 'hand3', gt: '3 Personalkarten ziehen, eine gratis spielen', bt: '3 Handkarten abgeben (sonst −7 SP)' },
+    { n: 'Sonderzimmer', good: { build: 1 }, bad: 'room2', gt: '1 Zimmer in den unteren 2 Etagen gratis vorbereiten und beziehen', bt: '2 freie Zimmer entfernen (sonst −7 SP)' },
   ],
   [
-    { n: 'Großer Orden', good: { vp: 8 }, bad: [{ vp: -8 }], gt: '+8 SP', bt: '−8 SP' },
-    { n: 'Hoflieferant', good: { vp: 5, k: 3 }, bad: [{ vp: -8 }], gt: '+5 SP, +3 Kronen', bt: '−8 SP' },
-    { n: 'Audienz', good: { vp: 7 }, bad: [{ k: -6 }, { vp: -9 }], gt: '+7 SP', bt: '−6 Kronen oder −9 SP' },
-    { n: 'Ehrenbürger', good: { vp: 9 }, bad: [{ vp: -10 }], gt: '+9 SP', bt: '−10 SP' },
+    { n: 'Orden', good: { vp: 8 }, bad: 'vp8', gt: '+8 SP', bt: '−8 SP' },
+    { n: 'Kaiserzimmer', good: { buildAny: 1 }, bad: 'occ2', gt: '1 Zimmer gratis vorbereiten und beziehen', bt: '2 bezogene Zimmer entfernen' },
+    { n: 'Belobigung', good: { vpStaff: 2 }, bad: 'vpStaff', gt: '+2 SP je Personalkarte im Spiel', bt: '−2 SP je Personalkarte im Spiel' },
+    { n: 'Ernennung', good: { staff: [99] }, bad: 'endStaff', gt: 'eine Personalkarte gratis spielen', bt: 'eine Schlusswertungs-Karte abgeben (sonst −10 SP)' },
   ],
 ];
 
@@ -667,23 +715,39 @@ const human = () => S.players.find(p => !p.bot);
 const hasE = (p, e) => p.staff.some(id => STAFF[id].e === e);
 function occColor(p, c) { let n = 0; p.rooms.forEach((st, i) => { if (st === 2 && ROOM_COLOR[i] === c) n++; }); return n; }
 function fullFloors(p) { let n = 0; for (let f = 0; f < 4; f++) if (range(5).every(c => p.rooms[f * 5 + c] === 2)) n++; return n; }
-function roomCost(p, i) { return Math.max(0, FLOOR_COST[Math.floor(i / 5)] - (hasE(p, 'roomDisc') ? 1 : 0)); }
+function roomCost(p, i, disc = 0) {
+  const c = ROOM_COLOR[i];
+  if ((c === 'b' && hasE(p, 'freeB')) || (c === 'r' && hasE(p, 'freeR')) || (c === 'y' && hasE(p, 'freeY'))) return 0;
+  return Math.max(0, FLOOR_COST[Math.floor(i / 5)] - disc);
+}
 function roomOK(p, i, extra) {
   if (p.rooms[i] !== 0 || (extra && extra.includes(i))) return false;
   if (i < 5) return true;
   return neighbors(i).some(j => p.rooms[j] > 0 || (extra && extra.includes(j)));
 }
-function lineCost(p, slot) { return Math.max(0, LINE_COST[slot] - (hasE(p, 'lineDisc') ? 1 : 0)); }
+function lineCost(p, slot) { return hasE(p, 'freeLine') ? 0 : LINE_COST[slot]; }
 function serviceCost(p) { return hasE(p, 'freeService') ? 0 : 1; }
-function serviceAmount(p) { return hasE(p, 'service4') ? 4 : 3; }
-function staffCost(p, id, n) { return Math.max(0, STAFF[id].c - n); }
+function serviceAmount(p) { return 3; }
+function staffCost(p, id, n) { return n >= 99 ? 0 : Math.max(0, STAFF[id].c - n); }
+// Stärke einer Würfelaktion inkl. Personal-Boni (Kofferträger, Croupier, Garderobenfrau)
+function dieStrength(p, face, boost, gizia) {
+  let n = S.dice[face] + (boost ? 1 : 0);
+  if (gizia) return n;
+  if (face <= 2 && hasE(p, 'd12s1')) n++;
+  if (face === 6 && hasE(p, 'd6free')) n++;
+  if (face === 5 && hasE(p, 'd5s2')) n += 2;
+  return n;
+}
+const jokerCost = p => hasE(p, 'd6free') ? 0 : 1;
+const PERKS = ['freeRooms', 'freeLow', 'paidRooms', 'flips', 'staffPlays', 'draw3', 'foodAny', 'gizia', 'builds'];
+function perkCount(p) { return p.freeRooms + p.freeLow + p.paidRooms.length + p.flips + p.staffPlays.length + p.draw3.length + p.foodAny + p.gizia + p.builds.length; }
 function log(msg) { S.log.unshift(msg); if (S.log.length > 80) S.log.length = 80; }
 
 function newGame(name, nBots, seed, leo) {
-  S = { v: 3, id: 'ghw-' + Date.now().toString(36) + '-' + ((seed >>> 0) % 1679616).toString(36), rng: seed | 0, round: 1, players: [], log: [], final: null, roundInfo: null, recorded: false };
+  S = { v: SAVE_V, id: 'ghw-' + Date.now().toString(36) + '-' + ((seed >>> 0) % 1679616).toString(36), rng: seed | 0, round: 1, players: [], log: [], final: null, roundInfo: null, recorded: false };
   const n = nBots + 1;
   const bots = shuffle(BOT_NAMES.slice()).slice(0, nBots);
-  const mk = (nm, bot, look, mark) => ({ name: nm, bot, look, mark, k: 0, vp: 0, emp: 0, kitchen: { s: 1, c: 1, w: 1, k: 1 }, fresh: { s: 0, c: 0, w: 0, k: 0 }, credits: 0, serviceBought: false, tables: [null, null, null], rooms: new Array(20).fill(0), roomGuest: new Array(20).fill(-1), hand: [], staff: [], freeRooms: 0, freeGuest: 0, pol: [] });
+  const mk = (nm, bot, look, mark) => ({ name: nm, bot, look, mark, k: 0, vp: 0, emp: 0, kitchen: { s: 1, c: 1, w: 1, k: 1 }, fresh: { s: 0, c: 0, w: 0, k: 0 }, credits: 0, serviceBought: false, tables: [null, null, null], rooms: new Array(20).fill(0), roomGuest: new Array(20).fill(-1), hand: [], staff: [], freeLow: 0, paidRooms: [], flips: 0, staffPlays: [], draw3: [], foodAny: 0, gizia: 0, builds: [], rUsed: 0, freeRooms: 0, freeGuest: 0, pol: [] });
   if (name !== null) S.players.push(mk(name || 'Du', false, { hat: 'beret', hair: 'bob', body: '#F1B02B', pat: 'dash' }, '#F1B02B'));
   bots.forEach((b, i) => S.players.push(mk(b[0], true, b[1], BOT_MARK[i])));
   if (name === null) S.players.push(mk('Herr Powidl', true, { hat: 'top', body: '#F1B02B' }, '#F1B02B'));
@@ -701,7 +765,7 @@ function newGame(name, nBots, seed, leo) {
     S.staffDeck = S.staffDeck.filter(id => !ends.includes(id));
     S.players[1].leoStaff = ends;
   }
-  S.politics = shuffle(range(POLITICS.length)).slice(0, 3).map(id => ({ id, by: [] }));
+  S.politics = ['A', 'B', 'C'].map(L => { const ids = range(POLITICS.length).filter(i => POLITICS[i].L === L); return { id: ids[Math.floor(rnd() * ids.length)], by: [] }; });
   S.empTiles = EMP_TILES.map(st => Math.floor(rnd() * st.length));
   S.empDone = [];
   // Spielaufbau wie im Original: 10 Kronen, je 1 Strudel/Torte/Wein/Kaffee,
@@ -744,25 +808,38 @@ function startTurn() {
   S.turn = { guestTaken: false, dieTaken: false };
   const p = cur();
   p.credits = 0; p.serviceBought = false;
+  // Personal „einmal pro Spielrunde“: Ware zu Beginn des ersten eigenen Zuges der Runde
+  if (!p.automa && p.rUsed !== S.round) {
+    p.rUsed = S.round;
+    const got = [];
+    for (const id of p.staff) { const m = { r1s: 's', r1c: 'c', r1w: 'w', r1k: 'k' }[STAFF[id].e]; if (m) { p.fresh[m]++; got.push(FN[m]); } }
+    if (got.length) log(`${p.name} erhält vom Personal: ${got.join(', ')}.`);
+  }
 }
 // Kronen: höchstens 20, Überschuss verfällt. Kaiserleiste: höchstens 13, jeder Schritt darüber = 1 SP.
 function addK(p, n) { p.k = clamp(p.k + n, 0, K_MAX); }
 function addEmp(p, n) { const to = p.emp + n; if (to > EMP_MAX) { p.vp += to - EMP_MAX; p.emp = EMP_MAX; } else p.emp = Math.max(0, to); }
 function addFood(p, food, where = 'kitchen') { for (const f of FOODS) if (food[f]) p[where][f] += food[f]; }
+function drawStaff(p, n) { for (let i = 0; i < n && S.staffDeck.length; i++) p.hand.push(S.staffDeck.shift()); }
 function applyRew(p, r, src) {
   if (!r) return;
-  if (r.vp) p.vp = Math.max(0, p.vp + r.vp);
+  if (r.vp) p.vp += r.vp;
   if (r.k) addK(p, r.k);
   if (r.e) addEmp(p, r.e);
-  if (r.food) addFood(p, r.food, 'kitchen');
+  if (r.food) addFood(p, r.food, cur() === p ? 'fresh' : 'kitchen');
+  if (r.foodAny) p.foodAny += r.foodAny;
   if (r.room) p.freeRooms += r.room;
+  if (r.roomLow) p.freeLow += r.roomLow;
+  if (r.roomPaid) p.paidRooms.push(...r.roomPaid);
+  if (r.flip) p.flips += r.flip;
+  if (r.staff) p.staffPlays.push(...r.staff);
+  if (r.draw) drawStaff(p, r.draw);
+  if (r.draw3) p.draw3.push(r.draw3);
   if (r.guest) p.freeGuest += r.guest;
-  if (r.lose) { p.kitchen[r.lose] = 0; p.fresh[r.lose] = 0; }
-  if (r.hand && p.hand.length) {
-    // teuerste Handkarte abwerfen
-    let bi = 0; p.hand.forEach((id, i) => { if (STAFF[id].c > STAFF[p.hand[bi]].c) bi = i; });
-    p.hand.splice(bi, 1);
-  }
+  if (r.gizia) p.gizia += r.gizia;
+  if (r.build) p.builds.push(1);
+  if (r.buildAny) p.builds.push(3);
+  if (r.vpStaff) p.vp += r.vpStaff * p.staff.length;
 }
 function rewText(r) {
   const out = [];
@@ -770,10 +847,33 @@ function rewText(r) {
   if (r.k) out.push(`${r.k > 0 ? '+' : ''}${r.k} Kronen`);
   if (r.e) out.push(`+${r.e} Kaiser`);
   if (r.food) out.push(FOODS.filter(f => r.food[f]).map(f => `+${r.food[f]} ${FN[f]}`).join(', '));
+  if (r.foodAny) out.push(`${r.foodAny} Ware nach Wahl`);
   if (r.room) out.push(`${r.room} Zimmer gratis`);
-  return out.join(', ');
+  if (r.roomLow) out.push('1 Zimmer gratis (untere 2 Etagen)');
+  if (r.roomPaid) out.push(`${r.roomPaid.length} Zimmer vorbereiten${r.roomPaid.some(Boolean) ? ' (Rabatt)' : ''}`);
+  if (r.flip) out.push('1 Zimmer beziehen');
+  if (r.staff) out.push(r.staff.map(d => d >= 99 ? 'Personal gratis spielen' : `Personal spielen (−${d} K)`).join(', '));
+  if (r.draw) out.push(`${r.draw} Personal ziehen`);
+  if (r.draw3) out.push(`3 ziehen, 1 spielen${r.draw3 >= 99 ? ' (gratis)' : ` (−${r.draw3} K)`}`);
+  if (r.guest) out.push(`${r.guest} Gast gratis`);
+  if (r.gizia) out.push('Zusatzaktion ohne Würfel');
+  return out.join(', ') || 'keine Belohnung';
 }
-
+// Raumnutzung: Zimmerplättchen umdrehen (Gast oder Effekt), Auslastungsbonus nach Farbe und Gruppengröße
+function occupy(p, room, gid) {
+  p.rooms[room] = 2; p.roomGuest[room] = gid;
+  let msg = '';
+  if (hasE(p, 'occK')) addK(p, 1);
+  const grp = GROUPS[GROUP_OF[room]];
+  if (grp.every(j => p.rooms[j] === 2)) {
+    const c = ROOM_COLOR[room], b = GROUP_BONUS[c][grp.length];
+    if (c === 'r') { addK(p, b); msg = ` · rote Gruppe komplett: +${b} Kronen`; }
+    if (c === 'b') { p.vp += b; msg = ` · blaue Gruppe komplett: +${b} SP`; }
+    if (c === 'y') { addEmp(p, b); msg = ` · gelbe Gruppe komplett: +${b} Kaiser`; }
+  }
+  return msg;
+}
+function flipRoom(p, room) { if (p.rooms[room] !== 1) return false; const m = occupy(p, room, -1); log(`${p.name} bezieht ein weiteres Zimmer${m}.`); return true; }
 function takeGuest(p, slot) {
   const free = p.freeGuest > 0;
   const cost = free ? 0 : lineCost(p, slot);
@@ -809,18 +909,16 @@ function bestRoomFor(p, color) {
 function checkin(p, t, room) {
   const g = p.tables[t];
   const def = GUESTS[g.id];
-  p.rooms[room] = 2; p.roomGuest[room] = g.id; p.tables[t] = null;
-  applyRew(p, def[3]);
+  p.tables[t] = null;
   let msg = `${def[0]} zieht bei ${p.name} ein (${rewText(def[3])})`;
-  if (hasE(p, 'checkinVp')) p.vp += 1;
-  const grp = GROUPS[GROUP_OF[room]];
-  if (grp.every(j => p.rooms[j] === 2)) {
-    const b = GROUP_BONUS[grp.length];
-    const c = ROOM_COLOR[room];
-    if (c === 'r') { addK(p, b); msg += ` · rote Gruppe komplett: +${b} Kronen`; }
-    if (c === 'b') { p.vp += b; msg += ` · blaue Gruppe komplett: +${b} SP`; }
-    if (c === 'y') { addEmp(p, grp.length); msg += ` · gelbe Gruppe komplett: +${grp.length} Kaiser`; }
-  }
+  msg += occupy(p, room, g.id);
+  const bonusK = { r: 'gR', y: 'gY' }[def[1]];
+  if (def[1] === 'r' && hasE(p, 'gR')) addK(p, 2);
+  if (def[1] === 'b' && hasE(p, 'gB')) addEmp(p, 1);
+  if (def[1] === 'y' && hasE(p, 'gY')) addK(p, 1);
+  if (def[1] === 'g' && hasE(p, 'gG')) p.vp += 2;
+  if (def[2].length === 4 && hasE(p, 'g4vp')) p.vp += 4;
+  applyRew(p, def[3]);
   log(msg + '.');
 }
 function checkWaiting(p) {
@@ -867,13 +965,20 @@ function hire(p, id, n) {
   const cost = staffCost(p, id, n);
   if (hi < 0 || p.k < cost) return false;
   p.k -= cost; p.hand.splice(hi, 1); p.staff.push(id);
-  const e = STAFF[id].e;
-  if (e === 'nPage') { addEmp(p, 1); addK(p, 2); }
-  if (e === 'nRoom') p.freeRooms++;
-  if (e === 'nFood') addFood(p, { s: 2, w: 1 }, 'fresh');
-  if (e === 'nGuide') p.freeGuest++;
+  const e = STAFF[id].e, where = cur() === p ? 'fresh' : 'kitchen';
+  if (e === 'nAll') addFood(p, { s: 1, c: 1, w: 1, k: 1 }, where);
+  if (e === 'nW4') addFood(p, { w: 4 }, where);
+  if (e === 'nC4') addFood(p, { c: 4 }, where);
+  if (e === 'nK4') addFood(p, { k: 4 }, where);
+  if (e === 'nS4') addFood(p, { s: 4 }, where);
   if (e === 'nE3') addEmp(p, 3);
-  if (e === 'nGarden') { addFood(p, { c: 1, k: 1 }, 'fresh'); addEmp(p, 1); }
+  if (e === 'nFlip') p.flips++;
+  if (e === 'nFill') {
+    // Bestellung des Gastes mit den meisten offenen Waren aus dem Vorrat erfüllen
+    let bt = -1, bm = 0;
+    p.tables.forEach((g, t) => { if (g) { const m = g.filled.filter(x => !x).length; if (m > bm) { bm = m; bt = t; } } });
+    if (bt >= 0) { p.tables[bt].filled = p.tables[bt].filled.map(() => true); checkWaiting(p); }
+  }
   return cost;
 }
 // Würfelaktion ausführen. params: {as, b, emp, rooms, staff, skip}
@@ -881,41 +986,45 @@ function hire(p, id, n) {
 // „verstärken“ (+1). Die 6 ist ein Joker: 1 Krone für eine der Aktionen 1–5,
 // Stärke = Zahl der Sechser.
 function doDie(p, face, params = {}) {
-  if (S.turn.dieTaken || !S.dice[face]) return false;
-  const boost = !params.skip && !!params.boost;
+  const gz = !!params.gizia;
+  if ((!gz && S.turn.dieTaken) || !S.dice[face]) return false;
+  const boost = !params.skip && !gz && !!params.boost;
   const joker = face === 6 && !params.skip;
   if (joker && !(params.as >= 1 && params.as <= 5)) return false;
-  if (p.k < (boost ? 1 : 0) + (joker ? 1 : 0)) return false;
-  const n = S.dice[face] + (boost ? 1 : 0);
+  const jc = joker ? jokerCost(p) : 0;
+  if (p.k < (boost ? 1 : 0) + jc) return false;
+  const n = dieStrength(p, face, boost, gz);
   const a = joker ? params.as : face;
-  S.dice[face]--;
-  S.turn.dieTaken = true;
+  if (!gz) { S.dice[face]--; S.turn.dieTaken = true; } else p.gizia--;
   const who = p.name;
   if (params.skip) { log(`${who} nimmt eine ${face} und lässt die Aktion verfallen.`); return true; }
-  p.k -= (boost ? 1 : 0) + (joker ? 1 : 0);
-  const pre = `${who} nimmt eine ${face}${joker ? ` (Joker → ${ACTIONS[a].short})` : ''} (Stärke ${n}${boost ? ', für 1 K verstärkt' : ''})`;
+  p.k -= (boost ? 1 : 0) + jc;
+  const pre = `${who} ${gz ? 'nutzt (E. Gizia) das Feld' : 'nimmt eine'} ${face}${joker ? ` (Joker → ${ACTIONS[a].short})` : ''} (Stärke ${n}${boost ? ', für 1 K verstärkt' : ''})`;
   if (a === 1 || a === 2) {
     const A = a === 1 ? 's' : 'w', B = a === 1 ? 'c' : 'k';
-    // mindestens so viel Strudel wie Torte bzw. Wein wie Kaffee
     const nb = clamp(params.b | 0, 0, Math.floor(n / 2));
     p.fresh[A] += n - nb; p.fresh[B] += nb;
-    let extra = '';
-    if (a === 1 && hasE(p, 'act1cake')) { p.fresh.c++; extra = ' +1 Torte'; }
-    if (a === 2 && hasE(p, 'act2wine')) { p.fresh.w++; extra = ' +1 Wein'; }
-    log(`${pre}: ${n - nb} ${FN[A]}, ${nb} ${FN[B]}${extra}.`);
+    log(`${pre}: ${n - nb} ${FN[A]}, ${nb} ${FN[B]}.`);
   } else if (a === 3) {
-    const m = n + (hasE(p, 'act3plus') ? 1 : 0);
     let done = 0;
-    for (const i of (params.rooms || []).slice(0, m)) if (prepareRoom(p, i, false)) done++;
+    for (const i of (params.rooms || []).slice(0, n)) if (prepareRoom(p, i, false)) done++;
     log(`${pre}: ${done} Zimmer vorbereitet.`);
   } else if (a === 4) {
-    const e = clamp(params.emp | 0, 0, n);
-    addEmp(p, e); addK(p, n - e + (hasE(p, 'act4k') ? 1 : 0));
-    log(`${pre}: +${n - e} Kronen, +${e} Kaiser.`);
+    if (face === 4 && !gz && hasE(p, 'd4both')) { addEmp(p, n); addK(p, n); log(`${pre}: +${n} Kronen und +${n} Kaiser (Buchhalterin).`); }
+    else { const e = clamp(params.emp | 0, 0, n); addEmp(p, e); addK(p, n - e); log(`${pre}: +${n - e} Kronen, +${e} Kaiser.`); }
   } else if (a === 5) {
     const c = params.staff != null ? hire(p, params.staff, n) : false;
     if (c === false) log(`${pre}: stellt niemanden ein.`);
     else log(`${pre}: stellt ${STAFF[params.staff].n} ein (${c} K).`);
+  }
+  // Personal, das auf die Augenzahl des genommenen Würfels reagiert
+  if (!gz) {
+    if ((face === 3 || face === 4) && hasE(p, 'd34vp2')) p.vp += 2;
+    if (face === 4 && hasE(p, 'd4vp4')) p.vp += 4;
+    if (face === 3 && hasE(p, 'd3vp5')) p.vp += 5;
+    if (face === 5 && hasE(p, 'd5e2')) addEmp(p, 2);
+    if (face <= 2 && hasE(p, 'd12room')) p.paidRooms.push(0);
+    if (face === 3 && hasE(p, 'd3staff')) p.staffPlays.push(0);
   }
   return true;
 }
@@ -933,6 +1042,7 @@ function checkPolitics(p) {
 }
 function endTurn() {
   const p = cur();
+  if (!p.automa && perkCount(p)) { const fg = p.freeGuest; botFree(p); p.freeGuest = fg; }
   for (const f of FOODS) { p.kitchen[f] += p.fresh[f]; p.fresh[f] = 0; }
   p.credits = 0;
   checkWaiting(p);
@@ -944,15 +1054,6 @@ function endTurn() {
 function endRound() {
   const info = { round: S.round, lines: [] };
   for (const p of S.players) {
-    for (const id of p.staff) {
-      const e = STAFF[id].e;
-      if (e === 'rS') p.kitchen.s++;
-      if (e === 'rK') p.kitchen.k++;
-      if (e === 'rW') p.kitchen.w++;
-      if (e === 'rKr') addK(p, 2);
-      if (e === 'rE') addEmp(p, 1);
-      if (e === 'rVP') p.vp += 2;
-    }
   }
   // ältester Gast verlässt die Warteschlange
   if (S.line.length) { const gone = S.line.shift(); log(`„${GUESTS[gone][0]}“ hat genug gewartet und geht.`); }
@@ -969,10 +1070,10 @@ function endRound() {
       p.emp = Math.max(0, p.emp - EMP_BACK[ei]);
       let txt = `${pts} SP für Feld ${from}, zurück auf ${p.emp}`;
       if (p.automa) txt += ' (Leopold: kein Bonus, keine Strafe)';
-      else if (p.emp >= 3) { applyRew(p, tile.good); txt += ` · Bonus: ${tile.gt}`; }
+      else if (p.emp >= 3) { applyRew(p, tile.good); txt += ` · Bonus: ${tile.gt}`; if (hasE(p, 'bonus5')) { p.vp += 5; txt += ' (+5 SP Hofrat)'; } }
       else if (p.emp === 0) {
-        if (hasE(p, 'noEmpPen')) txt += ' · keine Strafe (Hofberichterstatter)';
-        else { const bad = tile.bad.find(b => !b.k || p.k >= -b.k) || tile.bad[tile.bad.length - 1]; applyRew(p, bad); txt += ` · Strafe: ${rewText(bad)}`; }
+        if (hasE(p, 'penK') && p.k >= 1) { p.k -= 1; txt += ' · Strafe für 1 Krone abgewendet (Advokat)'; }
+        else txt += ` · Strafe: ${empPenalty(p, tile.bad)}`;
       } else txt += ' · weder Bonus noch Strafe';
       info.emp.res.push([p.name, p.emp >= 3, txt]);
       log(`Kaiserwertung: ${p.name} – ${txt}.`);
@@ -985,6 +1086,57 @@ function endRound() {
   S.round++;
   startRound();
 }
+// Strafen der Kaiserplättchen (Anhang S. 20)
+function removeFree(p, n) {
+  let done = 0;
+  for (let f = 3; f >= 0 && done < n; f--) for (let c = 4; c >= 0 && done < n; c--) { const i = f * 5 + c; if (p.rooms[i] === 1) { p.rooms[i] = 0; done++; } }
+  return done;
+}
+function backUnder(p, n) { const out = p.hand.sort((a, b) => STAFF[a].c - STAFF[b].c).splice(0, n); S.staffDeck.push(...out); }
+function empPenalty(p, k) {
+  const freeN = p.rooms.filter(x => x === 1).length;
+  switch (k) {
+    case 'k3': if (p.k >= 3) { p.k -= 3; return '−3 Kronen'; } p.vp -= 5; return '−5 SP';
+    case 'k5': if (p.k >= 5) { p.k -= 5; return '−5 Kronen'; } p.vp -= 7; return '−7 SP';
+    case 'kitchen': FOODS.forEach(f => { p.kitchen[f] = 0; }); return 'Küche geleert';
+    case 'kitchenGuests': FOODS.forEach(f => { p.kitchen[f] = 0; }); p.tables.forEach(g => { if (g) g.filled = g.filled.map(() => false); }); return 'Küche und Gäste geleert';
+    case 'hand2': if (p.hand.length >= 2) { backUnder(p, 2); return '2 Handkarten abgegeben'; } p.vp -= 5; return '−5 SP';
+    case 'hand3': if (p.hand.length >= 3) { backUnder(p, 3); return '3 Handkarten abgegeben'; } p.vp -= 7; return '−7 SP';
+    case 'room1': if (freeN >= 1) { removeFree(p, 1); return '1 freies Zimmer entfernt'; } p.vp -= 5; return '−5 SP';
+    case 'room2': if (freeN >= 2) { removeFree(p, 2); return '2 freie Zimmer entfernt'; } p.vp -= 7; return '−7 SP';
+    case 'vp8': p.vp -= 8; return '−8 SP';
+    case 'vpStaff': p.vp -= 2 * p.staff.length; return `−${2 * p.staff.length} SP`;
+    case 'endStaff': { const k2 = p.staff.findIndex(id => STAFF[id].t === 'end'); if (k2 >= 0) { const id = p.staff.splice(k2, 1)[0]; return `${STAFF[id].n} abgegeben`; } p.vp -= 10; return '−10 SP'; }
+    case 'occ2': {
+      let n = 0;
+      for (let f = 3; f >= 0 && n < 2; f--) { const i = range(5).map(c => f * 5 + c).reverse().find(i => p.rooms[i] === 2); if (i != null) { p.rooms[i] = 0; p.roomGuest[i] = -1; n++; } }
+      return `${n} bezogene Zimmer entfernt`;
+    }
+  }
+  return '';
+}
+// Schlusswertung einer Personalkarte mit dem Symbol „Ende“
+function endPts(p, e) {
+  switch (e) {
+    case 'endR': return 3 * occColor(p, 'r');
+    case 'endB': return 3 * occColor(p, 'b');
+    case 'endY': return 3 * occColor(p, 'y');
+    case 'endRooms': return p.rooms.filter(x => x === 2).length;
+    case 'endStaff': return p.staff.length;
+    case 'endTiles': return tiles(p);
+    case 'endGroups': return 2 * fullGroups(p);
+    case 'endPol': return 5 * S.politics.filter(pc => pc.by.includes(S.players.indexOf(p))).length;
+    case 'endEmp2': return 2 * p.emp;
+    case 'endFloors': return 5 * fullFloors(p);
+    case 'endCols': return 4 * fullCols(p);
+    case 'endSets': return 4 * Math.min(occColor(p, 'r'), occColor(p, 'b'), occColor(p, 'y'));
+    case 'endCopy': {
+      const others = S.players.filter(q => q !== p).flatMap(q => q.staff.map(id => STAFF[id].e)).filter(x => x && x.startsWith('end') && x !== 'endCopy');
+      return others.reduce((m, x) => Math.max(m, endPts(p, x)), 0);
+    }
+  }
+  return 0;
+}
 function finalScoring() {
   S.final = S.players.map(p => {
     // Schlusswertung des Originals: 1–4 SP je bezogenem Zimmer (nach Etage),
@@ -992,15 +1144,7 @@ function finalScoring() {
     const goods = p.automa ? 0 : FOODS.reduce((s, f) => s + p.kitchen[f] + p.fresh[f], 0);
     const row = { name: p.name, base: p.vp, roomVp: 0, money: p.k + goods, staff: 0, guests: 0 };
     p.rooms.forEach((st, i) => { if (st === 2) row.roomVp += FLOOR_VP[Math.floor(i / 5)]; });
-    for (const id of p.staff) {
-      const e = STAFF[id].e;
-      if (e === 'eBlue') row.staff += 2 * occColor(p, 'b');
-      if (e === 'eRed') row.staff += 2 * occColor(p, 'r');
-      if (e === 'eYellow') row.staff += 2 * occColor(p, 'y');
-      if (e === 'eFloor') row.staff += 5 * fullFloors(p);
-      if (e === 'eStaff') row.staff += 2 * p.staff.length;
-      if (e === 'eMoney') row.staff += Math.floor(p.k / 2);
-    }
+    for (const id of p.staff) if (STAFF[id].t === 'end') row.staff += endPts(p, STAFF[id].e);
     row.guests = -GUEST_LEFT_PENALTY * p.tables.filter(Boolean).length;
     row.total = row.base + row.roomVp + row.money + row.staff + row.guests;
     row.tie = p.automa ? 1e9 : p.k + goods; // Gleichstand gegen Leopold: Leopold gewinnt
@@ -1046,7 +1190,7 @@ function needs(p) {
   return n;
 }
 function freeRoomsOf(p, c) { return range(20).filter(i => p.rooms[i] === 1 && (c === 'g' || ROOM_COLOR[i] === c)).length; }
-function guestValue(id) { const r = GUESTS[id][3]; return (r.vp || 0) + (r.k || 0) * 0.7 + (r.e || 0) * 0.9 + (r.room ? 2 : 0) + (r.food ? 1.5 : 0); }
+function guestValue(id) { const r = GUESTS[id][3]; return (r.vp || 0) + rewValue(r) * 0.8; }
 function roomScore(p, i) {
   const c = ROOM_COLOR[i];
   let s = 1.4 - roomCost(p, i) * 0.3;
@@ -1076,15 +1220,10 @@ function botRooms(p, m, free) {
 function staffValue(p, id) {
   const st = STAFF[id], left = ROUNDS - S.round + 1;
   switch (st.t) {
-    case 'now': return 4;
-    case 'perm': return Math.max(1, 1.1 * left);
-    case 'round': return (st.e === 'rVP' ? 2 : st.e === 'rKr' ? 1.4 : 1.1) * left;
-    case 'end': {
-      if (st.e === 'eStaff') return 2 * (p.staff.length + 2);
-      if (st.e === 'eFloor') return 3 + (S.round > 4 ? 5 * fullFloors(p) : 2);
-      if (st.e === 'eMoney') return 3;
-      return 2 * (occColor(p, { eBlue: 'b', eRed: 'r', eYellow: 'y' }[st.e]) + Math.min(3, left * 0.6));
-    }
+    case 'now': return { nAll: 4, nW4: 4, nC4: 4, nK4: 4, nS4: 4, nE3: 3.5, nFlip: 5, nFill: 5 }[st.e] || 3;
+    case 'round': return 1.4 * left;
+    case 'perm': return ({ d3vp5: 2.2, d4vp4: 2, d34vp2: 1.8, freeB: 1.3, freeR: 1.3, freeY: 1.3, occK: 1.4, d4both: 1.6, freeLine: 1.2, freeService: 1.1, penK: 0.6, bonus5: 1.4 }[st.e] || 1.1) * left;
+    case 'end': return endPts(p, st.e) + Math.min(6, left * 1.2);
   }
   return 1;
 }
@@ -1099,8 +1238,7 @@ function botEval(p, a, n) {
     return [useA * 2.8 + useB * 3.1 + (n - useA - useB) * 0.3, { b }];
   }
   if (a === 3) {
-    const m = n + (hasE(p, 'act3plus') ? 1 : 0);
-    const rooms = botRooms(p, m, false);
+    const rooms = botRooms(p, n, false);
     return [rooms.reduce((s, i) => s + roomScore(p, i), 0), { rooms }];
   }
   if (a === 4) {
@@ -1156,8 +1294,38 @@ function botServe(p) {
     }
   }
 }
+// Gratis-/Zusatzeffekte automatisch nutzen (Bots, und am Zugende übrig gebliebene Effekte)
+function bestFood(p) { const nd = needs(p); return FOODS.slice().sort((a, b) => (nd[b] - p.kitchen[b]) - (nd[a] - p.kitchen[a]))[0]; }
+function bestFlip(p) { const c = range(20).filter(i => p.rooms[i] === 1); c.sort((a, b) => GROUPS[GROUP_OF[a]].filter(j => j !== a && p.rooms[j] !== 2).length - GROUPS[GROUP_OF[b]].filter(j => j !== b && p.rooms[j] !== 2).length || b - a); return c.length ? c[0] : -1; }
+function buildRoom(p, maxFloor) {
+  const c = range(20).filter(i => Math.floor(i / 5) <= maxFloor && roomOK(p, i)).sort((a, b) => roomScore(p, b) - roomScore(p, a));
+  if (!c.length) return false;
+  p.rooms[c[0]] = 1; const m = occupy(p, c[0], -1); log(`${p.name} richtet ein Zimmer ein und bezieht es${m}.`); return true;
+}
+function playBest(p, disc, only) {
+  let best = null, bv = -1;
+  for (const id of (only || p.hand)) { const c = staffCost(p, id, disc); if (c > p.k) continue; const v = staffValue(p, id) - c * 0.8; if (v > bv) { bv = v; best = id; } }
+  if (best != null) { const c = hire(p, best, disc); log(`${p.name} spielt ${STAFF[best].n} aus (${c} K).`); }
+}
 function botFree(p) {
+  if (p.automa) return;
+  while (p.foodAny > 0) { p.foodAny--; const f = bestFood(p); p.fresh[f]++; }
   if (p.freeRooms > 0) { const rs = botRooms(p, p.freeRooms, true); for (const i of rs) if (prepareRoom(p, i, true)) p.freeRooms--; if (!rs.length) p.freeRooms = 0; }
+  while (p.freeLow > 0) { p.freeLow--; const c = range(10).filter(i => roomOK(p, i)).sort((a, b) => roomScore(p, b) - roomScore(p, a)); if (c.length) prepareRoom(p, c[0], true); }
+  while (p.paidRooms.length) { const d = p.paidRooms.shift(); const c = range(20).filter(i => roomOK(p, i) && roomCost(p, i, d) <= p.k - 1).sort((a, b) => roomScore(p, b) - roomScore(p, a)); if (c.length && roomScore(p, c[0]) > 0.6) { p.k -= roomCost(p, c[0], d); p.rooms[c[0]] = 1; checkWaiting(p); } }
+  while (p.flips > 0) { p.flips--; const r = bestFlip(p); if (r >= 0) flipRoom(p, r); }
+  while (p.builds.length) buildRoom(p, p.builds.shift());
+  while (p.staffPlays.length) playBest(p, p.staffPlays.shift());
+  while (p.draw3.length) {
+    const d = p.draw3.shift(), ids = S.staffDeck.splice(0, 3);
+    p.hand.push(...ids); playBest(p, d, ids);
+    const left = ids.filter(id => p.hand.includes(id)); p.hand = p.hand.filter(id => !left.includes(id)); S.staffDeck.push(...left);
+  }
+  while (p.gizia > 0) {
+    let best = null;
+    for (let f = 1; f <= 5; f++) if (S.dice[f]) { const [v, pr] = botEval(p, f, S.dice[f]); if (!best || v > best.v) best = { f, v, pr }; }
+    if (best) doDie(p, best.f, Object.assign({ gizia: true }, best.pr)); else p.gizia = 0;
+  }
   while (p.freeGuest > 0) { const s = botPickGuest(p); if (s < 0 || !takeGuest(p, s)) { p.freeGuest = 0; break; } }
 }
 // ---------- Leopold ----------
@@ -1236,10 +1404,11 @@ function botTurn() {
   if (!S.turn.guestTaken) { const s = botPickGuest(p); if (s >= 0) takeGuest(p, s); }
   let best = null;
   for (let f = 1; f <= 6; f++) {
-    const n = S.dice[f]; if (!n) continue;
-    const acts = f === 6 ? (p.k >= 2 ? [1, 2, 3, 4, 5] : []) : [f];
+    if (!S.dice[f]) continue;
+    const n = dieStrength(p, f, false);
+    const acts = f === 6 ? (p.k >= jokerCost(p) + 1 ? [1, 2, 3, 4, 5] : []) : [f];
     for (const a of acts) {
-      const cost = f === 6 ? 1.3 : 0;
+      const cost = f === 6 ? jokerCost(p) * 1.3 : 0;
       const [v, pr] = botEval(p, a, n);
       const pr0 = f === 6 ? Object.assign({ as: a }, pr) : pr;
       if (!best || v - cost > best.v) best = { f, v: v - cost, pr: pr0 };
@@ -1264,7 +1433,7 @@ function botTurn() {
 
 // ---------- Speicher ----------
 const KEY = 'grand-hotel-wien-v1';
-const SAVE_V = 3; // v3: Regeln des Grundspiels + Leopold, ältere Stände sind nicht kompatibel
+const SAVE_V = 4; // v4: Original-Karten aus dem Anhang des Regelhefts, ältere Stände sind nicht kompatibel
 // Speichern & Verlassen: Der Spielstand wird ohnehin nach jeder Aktion
 // gespeichert; „verlassen“ führt zurück zum Startbildschirm, von dem aus die
 // Partie mit „Fortsetzen“ weiterläuft.
@@ -1291,8 +1460,18 @@ function rewHtml(r) {
   if (r.vp) h += tok('vp', r.vp);
   if (r.k) h += tok('k', r.k);
   if (r.e) h += tok('e', r.e);
-  if (r.room) h += tok('room', '');
-  if (r.food) for (const f of FOODS) if (r.food[f]) h += tok(f, '');
+  if (r.food) for (const f of FOODS) if (r.food[f]) h += tok(f, r.food[f] > 1 ? r.food[f] : '');
+  const t = (s, l) => `<span class="tok tx" title="${l}">${s}</span>`;
+  if (r.foodAny) h += t('?Ware', 'Ware nach Wahl');
+  if (r.room) h += tok('room', r.room > 1 ? r.room : '') + t('gratis', 'Zimmer gratis');
+  if (r.roomLow) h += tok('room', '') + t('unten', 'gratis, untere 2 Etagen');
+  if (r.roomPaid) h += r.roomPaid.map(d => tok('room', '') + (d ? t(`−${d}K`, 'Rabatt') : '')).join('');
+  if (r.flip) h += t('⤾Zimmer', 'weiteres Zimmer beziehen');
+  if (r.staff) h += r.staff.map(d => t(d >= 99 ? 'Personal 0K' : `Personal −${d}K`, 'Personal ausspielen')).join('');
+  if (r.draw) h += t(`+${r.draw} Karten`, 'Personal ziehen');
+  if (r.draw3) h += t(`3→1${r.draw3 >= 99 ? ' 0K' : ` −${r.draw3}K`}`, '3 ziehen, 1 ausspielen');
+  if (r.guest) h += t(`+${r.guest} Gast`, 'Gast gratis aus der Reihe');
+  if (r.gizia) h += t('Zusatzaktion', 'Aktion ohne Würfel');
   return h;
 }
 function guestCard(id, opts = {}) {
@@ -1333,7 +1512,7 @@ function roomTile(p, i, mode) {
   const sel = mode && mode.sel && mode.sel.includes(i);
   const attrs = (ok || sel) && mode.act ? `data-a="${mode.act}" data-i="${i}" role="button" tabindex="0"` : '';
   if (st === 1) {
-    return `<div class="room p grainy ${sel ? 'sel' : ''}" style="background:${COL[c]}" ${attrs}><svg viewBox="0 0 100 100" class="curt" aria-hidden="true"><g filter="url(#wob)" stroke="#161616" stroke-width="3"><path d="M8,6 C30,30 26,70 12,96 L8,96 Z" fill="#FFF9EE"/><path d="M92,6 C70,30 74,70 88,96 L92,96 Z" fill="#FFF9EE"/><path d="M30,80 H70 V90 H30 Z" fill="#FFF9EE"/></g></svg>${sel ? '<span class="tag">neu</span>' : ''}</div>`;
+    return `<div class="room p grainy ${sel ? 'sel' : ''} ${ok ? 'ok' : ''}" style="background:${COL[c]}" ${attrs}><svg viewBox="0 0 100 100" class="curt" aria-hidden="true"><g filter="url(#wob)" stroke="#161616" stroke-width="3"><path d="M8,6 C30,30 26,70 12,96 L8,96 Z" fill="#FFF9EE"/><path d="M92,6 C70,30 74,70 88,96 L92,96 Z" fill="#FFF9EE"/><path d="M30,80 H70 V90 H30 Z" fill="#FFF9EE"/></g></svg>${sel ? '<span class="tag">neu</span>' : ''}</div>`;
   }
   if (sel) return `<div class="room p sel grainy" style="background:${COL[c]}" ${attrs}><span class="tag">✓ ${mode.free ? 'gratis' : roomCost(p, i) + ' K'}</span></div>`;
   return `<div class="room e ${ok ? 'ok' : ''}" ${attrs}><span class="dot" style="background:${COL[c]}"></span><span class="cc">${coinSvg()}${roomCost(p, i)}</span></div>`;
@@ -1405,8 +1584,19 @@ function viewGame() {
     const pi = S.players.indexOf(p);
     banner = `<div class="banner"><span class="face">${head('pl' + pi + p.name, p.look)}</span><div><b>${esc(p.name)} ist am Zug …</b><span class="small">${esc(S.log[0] || '')}</span></div></div>`;
   }
-  if (mine && (me.freeRooms > 0 || me.freeGuest > 0)) {
-    banner += `<div class="banner" style="background:#E3F3E7">${me.freeRooms ? `<div style="flex:1"><b>${me.freeRooms} Zimmer gratis!</b><span class="small">Wähle, wo du vorbereitest.</span></div><button class="btn green" data-a="freerooms">Wählen</button>` : `<div style="flex:1"><b>Gast gratis!</b><span class="small">Tippe einen Gast in der Warteschlange an.</span></div>`}</div>`;
+  if (mine && (perkCount(me) > 0 || me.freeGuest > 0)) {
+    const it = [];
+    if (me.freeGuest > 0) it.push(['', `${me.freeGuest} Gast gratis – tippe einen Gast in der Reihe an`]);
+    if (me.freeRooms > 0) it.push(['freerooms', `${me.freeRooms} Zimmer gratis vorbereiten`]);
+    if (me.freeLow > 0) it.push(['freelow', '1 Zimmer gratis (untere 2 Etagen)']);
+    if (me.paidRooms.length) it.push(['paidroom', `Zimmer vorbereiten${me.paidRooms[0] ? ` (−${me.paidRooms[0]} K)` : ' (kostenpflichtig)'}`]);
+    if (me.flips > 0) it.push(['flip', `${me.flips} weiteres Zimmer beziehen`]);
+    if (me.builds.length) it.push(['build', 'Zimmer gratis einrichten und beziehen']);
+    if (me.staffPlays.length) it.push(['splay', `Personal ausspielen${me.staffPlays[0] >= 99 ? ' (gratis)' : me.staffPlays[0] ? ` (−${me.staffPlays[0]} K)` : ''}`]);
+    if (me.draw3.length) it.push(['draw3', '3 Personalkarten ziehen, 1 ausspielen']);
+    if (me.foodAny > 0) it.push(['foodany', `${me.foodAny} Ware nach Wahl`]);
+    if (me.gizia > 0) it.push(['gizia', 'Zusatzaktion ohne Würfel (E. Gizia)']);
+    banner += `<div class="banner perks" style="background:#E3F3E7;display:block"><b>Extras für dich</b><span class="small"> – nicht genutzte Extras setzt das Spiel am Zugende automatisch ein.</span>${it.map(([a, t]) => a ? `<button class="btn green sm perk" data-a="${a}">${t}</button>` : `<div class="small" style="margin-top:6px">${t}</div>`).join('')}</div>`;
   }
   const canGuest = mine && me.tables.includes(null) && (me.freeGuest > 0 || (!S.turn.guestTaken && !S.turn.dieTaken));
   const line = S.line.map((id, slot) => guestCard(id, { cost: me.freeGuest > 0 ? 0 : lineCost(me, slot), btn: 'guest', slot })).join('');
@@ -1517,6 +1707,25 @@ function viewSheet() {
         ${hotelGrid(me, { ok: i => sel.length < me.freeRooms && roomOK(me, i, sel), sel, act: 'frsel', free: true })}
         <div class="btnrow"><button class="btn" data-a="frok" ${sel.length ? '' : 'disabled'}>${sel.length} vorbereiten</button></div><button class="skip" data-a="frskip">Verfallen lassen</button>`);
     }
+    case 'freelow': {
+      return sheetWrap(`<h3>Zimmer gratis</h3><p>Wähle ein Zimmer in den unteren beiden Etagen.</p>${hotelGrid(me, { ok: i => i < 10 && roomOK(me, i), act: 'lowpick', free: true })}<button class="skip" data-a="perkskip" data-k="freeLow">Verfallen lassen</button>`);
+    }
+    case 'paidroom': {
+      const d = me.paidRooms[0] || 0;
+      return sheetWrap(`<h3>Zimmer vorbereiten</h3><p>Kostenpflichtig${d ? `, ${d} Krone weniger` : ''}. Du hast ${me.k} K.</p>${hotelGrid(me, { ok: i => roomOK(me, i) && roomCost(me, i, d) <= me.k, act: 'paidpick' })}<button class="skip" data-a="perkskip" data-k="paidRooms">Verfallen lassen</button>`);
+    }
+    case 'flip': return sheetWrap(`<h3>Zimmer beziehen</h3><p>Drehe ein vorbereitetes Zimmer um, als ob ein Gast eingezogen wäre (zählt für Wertung und Auslastungsbonus).</p>${hotelGrid(me, { ok: i => me.rooms[i] === 1, act: 'flippick', free: true })}<button class="skip" data-a="perkskip" data-k="flips">Verfallen lassen</button>`);
+    case 'build': { const mx = me.builds[0]; return sheetWrap(`<h3>Zimmer einrichten</h3><p>Lege ein Zimmer gratis${mx < 3 ? ' in den unteren beiden Etagen' : ''} an und beziehe es sofort.</p>${hotelGrid(me, { ok: i => Math.floor(i / 5) <= mx && roomOK(me, i), act: 'buildpick', free: true })}<button class="skip" data-a="perkskip" data-k="builds">Verfallen lassen</button>`); }
+    case 'splay': {
+      const d = me.staffPlays[0];
+      return sheetWrap(`<h3>Personal ausspielen</h3><p>${d >= 99 ? 'Gratis.' : d ? `${d} Krone${d > 1 ? 'n' : ''} billiger.` : 'Zum vollen Preis.'} Du hast ${me.k} K.</p><div class="staffrow">${me.hand.map(id => { const c = staffCost(me, id, d); return staffCard(id, { btn: c <= me.k ? 'splaypick' : null, price: c, cls: c > me.k ? 'dim' : '' }); }).join('') || '<p class="note">Keine Karten auf der Hand.</p>'}</div><button class="skip" data-a="perkskip" data-k="staffPlays">Verfallen lassen</button>`);
+    }
+    case 'draw3': {
+      const d = sh.d, ids = sh.ids;
+      return sheetWrap(`<h3>3 Personalkarten</h3><p>Spiele eine davon aus (${d >= 99 ? 'gratis' : `bis zu ${d} K billiger`}). Die anderen gehen unter den Stapel zurück.</p><div class="staffrow">${ids.map(id => { const c = staffCost(me, id, d); return staffCard(id, { btn: c <= me.k ? 'd3pick' : null, price: c, cls: c > me.k ? 'dim' : '' }); }).join('')}</div><button class="skip" data-a="d3none">Keine ausspielen</button>`, 'nox');
+    }
+    case 'foodany': return sheetWrap(`<h3>Ware nach Wahl</h3><div class="acts6">${FOODS.map(fd => `<button data-a="foodpick" data-f="${fd}"><span class="aic" style="display:block">${foodSvg(fd)}</span>${FN[fd]}</button>`).join('')}</div>`);
+    case 'gizia': return sheetWrap(`<h3>Zusatzaktion</h3><p>Wähle ein Aktionsfeld mit mindestens einem Würfel. Du führst die Aktion aus, ohne einen Würfel zu nehmen (nicht verstärkbar).</p><div class="acts6">${[1, 2, 3, 4, 5, 6].filter(x => S.dice[x]).map(x => `<button data-a="gzpick" data-f="${x}"><span class="aic" style="display:block">${actionIcon(x)}</span>${ACTIONS[x].short} (${S.dice[x]})</button>`).join('')}</div>`);
     case 'service': return sheetWrap(`<h3>Küchenservice</h3><p>Für <b>${serviceCost(me)} Krone</b> darfst du in diesem Zug bis zu <b>${serviceAmount(me)}</b> Gerichte aus deiner Küche an deine Gäste servieren. Frisch erhaltene Gerichte (grün markiert) servierst du immer gratis.</p><div class="btnrow"><button class="btn" data-a="buyservice">Bezahlen</button></div>`);
     case 'round': {
       const info = S.roundInfo;
@@ -1534,28 +1743,29 @@ function viewSheet() {
 }
 function dieSheet(sh) {
   const me = human();
-  const base = S.dice[sh.face];
-  const boost = !!sh.boost && me.k >= 1;
-  const n = base + (boost ? 1 : 0);
+  const base = S.dice[sh.face], gz = !!sh.gizia;
+  const boost = !gz && !!sh.boost && me.k >= 1;
+  const n = dieStrength(me, sh.face, boost, gz);
   const kAvail = me.k - (boost ? 1 : 0);
   const joker = sh.face === 6;
   const a = joker ? sh.as : sh.face;
-  const kAvail2 = kAvail - (joker ? 1 : 0);
-  let h = `<h3>${joker && a ? `Joker → ${ACTIONS[a].n}` : ACTIONS[sh.face].n}</h3><p style="font-size:13px">Du nimmst eine <b>${sh.face}</b>. Auf dem Feld liegen <b>${base}</b> Würfel, die Aktion hat also Stärke <b>${n}</b>${boost ? ' (verstärkt)' : ''}.</p>`;
+  const jc = joker ? jokerCost(me) : 0;
+  const kAvail2 = kAvail - jc;
+  let h = `<h3>${joker && a ? `Joker → ${ACTIONS[a].n}` : ACTIONS[sh.face].n}</h3><p style="font-size:13px">${gz ? `Zusatzaktion (E. Gizia): Feld <b>${sh.face}</b> mit <b>${base}</b> Würfeln, kein Würfel wird entfernt` : `Du nimmst eine <b>${sh.face}</b>. Auf dem Feld liegen <b>${base}</b> Würfel`}, die Aktion hat Stärke <b>${n}</b>${boost ? ' (verstärkt)' : ''}${n > base + (boost ? 1 : 0) ? ' (mit Personal-Bonus)' : ''}.</p>`;
   if (joker && !a) {
-    if (me.k < 1) return h + `<p class="note">Der Joker kostet 1 Krone, du hast keine.</p><button class="skip" data-a="dieskip">Würfel nehmen, Aktion verfallen lassen</button>`;
-    return h + `<p>Zahle <b>1 Krone</b> und führe eine der Aktionen 1–5 mit Stärke ${base} aus:</p><div class="acts6">${[1, 2, 3, 4, 5].map(x => `<button data-a="as" data-x="${x}"><span class="aic" style="display:block">${actionIcon(x)}</span>${ACTIONS[x].short}</button>`).join('')}</div><button class="skip" data-a="dieskip">Würfel nehmen, Aktion verfallen lassen</button>`;
+    if (me.k < jc) return h + `<p class="note">Der Joker kostet 1 Krone, du hast keine.</p><button class="skip" data-a="dieskip">Würfel nehmen, Aktion verfallen lassen</button>`;
+    return h + `<p>${jc ? 'Zahle <b>1 Krone</b> und führe' : 'Führe (Croupier: gratis)'} eine der Aktionen 1–5 mit Stärke ${n} aus:</p><div class="acts6">${[1, 2, 3, 4, 5].map(x => `<button data-a="as" data-x="${x}"><span class="aic" style="display:block">${actionIcon(x)}</span>${ACTIONS[x].short}</button>`).join('')}</div><button class="skip" data-a="dieskip">Würfel nehmen, Aktion verfallen lassen</button>`;
   }
-  h += `<label class="boost"><input type="checkbox" data-a="boost" ${boost ? 'checked' : ''} ${me.k < 1 + (joker ? 1 : 0) ? 'disabled' : ''}> <span><b>Verstärken:</b> 1 Krone zahlen, Stärke +1</span></label>`;
+  if (!gz) h += `<label class="boost"><input type="checkbox" data-a="boost" ${boost ? 'checked' : ''} ${me.k < 1 + jc ? 'disabled' : ''}> <span><b>Verstärken:</b> 1 Krone zahlen, Stärke +1</span></label>`;
   if (a === 1 || a === 2) {
     const A = a === 1 ? 's' : 'w', B = a === 1 ? 'c' : 'k';
     const max = Math.floor(n / 2), b = Math.min(sh.b || 0, max);
-    const bonus = a === 1 && hasE(me, 'act1cake') ? ' (+1 Torte durch Zuckerbäckerin)' : a === 2 && hasE(me, 'act2wine') ? ' (+1 Wein durch Sommelier)' : '';
+    const bonus = '';
     h += `<div class="split"><div>${foodSvg(A)}<div class="big">${n - b}</div>${FN[A]}</div><div>${foodSvg(B)}<div class="big">${b}</div>${FN[B]}</div></div>
       <div class="stepper"><span style="font-size:13px">Davon ${FN[B]} – höchstens so viel wie ${FN[A]}</span><span style="display:flex;gap:8px"><button data-a="bminus" ${b <= 0 ? 'disabled' : ''}>−</button><button data-a="bplus" ${b >= max ? 'disabled' : ''}>+</button></span></div>
       ${bonus ? `<p class="note">${bonus}</p>` : ''}<p class="note">Frische Gerichte darfst du in diesem Zug gratis servieren; der Rest wandert in die Küche.</p>`;
   } else if (a === 3) {
-    const m = n + (hasE(me, 'act3plus') ? 1 : 0);
+    const m = n;
     const sel = sh.sel || [];
     const spent = sel.reduce((s, i) => s + roomCost(me, i), 0);
     h += `<p>Bereite bis zu <b>${m}</b> Zimmer vor (Kosten je Stockwerk 0/1/2/3 K). Neue Zimmer müssen im Erdgeschoss liegen oder an ein vorhandenes grenzen.</p>
@@ -1563,15 +1773,15 @@ function dieSheet(sh) {
       <p class="note">Ausgewählt: ${sel.length}/${m} · Kosten ${spent} K · du hast ${me.k} K${boost ? ' (davon 1 K fürs Verstärken)' : ''}</p>`;
   } else if (a === 4) {
     const e = Math.min(sh.emp || 0, n);
-    h += `<div class="split"><div>${coinSvg()}<div class="big">${n - e + (hasE(me, 'act4k') ? 1 : 0)}</div>Kronen</div><div>${crownSvg()}<div class="big">${e}</div>Kaiser</div></div>
+    h += `<div class="split"><div>${coinSvg()}<div class="big">${sh.face === 4 && !gz && hasE(me, 'd4both') ? n : n - e}</div>Kronen</div><div>${crownSvg()}<div class="big">${e}</div>Kaiser</div></div>
       <div class="stepper"><span style="font-size:13px">Schritte auf der Kaiserleiste</span><span style="display:flex;gap:8px"><button data-a="eminus" ${e <= 0 ? 'disabled' : ''}>−</button><button data-a="eplus" ${e >= n ? 'disabled' : ''}>+</button></span></div>
       <p class="note">Höchstens ${K_MAX} Kronen, Überschuss verfällt. Kaiserleiste bis ${EMP_MAX}, jeder Schritt darüber = 1 SP.</p>`;
   } else if (a === 5) {
     h += `<p>Spiele eine Karte aus deiner Hand aus. Sie wird um die Stärke billiger: <b>${n} K Rabatt</b>.</p><div class="staffrow">${me.hand.map(id => { const c = staffCost(me, id, n); return staffCard(id, { btn: c <= kAvail2 ? 'pick' : null, price: c, cls: sh.staff === id ? 'ok' : c > kAvail2 ? 'no' : '' }); }).join('')}</div>`;
   }
   const ready = a === 5 ? sh.staff != null : a === 3 ? (sh.sel || []).length > 0 : true;
-  const cost = (boost ? 1 : 0) + (joker ? 1 : 0);
-  h += `<div class="btnrow">${joker ? '<button class="btn white" data-a="asback">Zurück</button>' : ''}<button class="btn" data-a="dieok" ${ready ? '' : 'disabled'}>${cost ? `Für ${cost} K ausführen` : 'Ausführen'}</button></div><button class="skip" data-a="dieskip">Würfel nehmen, Aktion verfallen lassen</button>`;
+  const cost = (boost ? 1 : 0) + jc;
+  h += `<div class="btnrow">${joker ? '<button class="btn white" data-a="asback">Zurück</button>' : ''}<button class="btn" data-a="dieok" ${ready ? '' : 'disabled'}>${cost ? `Für ${cost} K ausführen` : 'Ausführen'}</button></div>${gz ? '' : '<button class="skip" data-a="dieskip">Würfel nehmen, Aktion verfallen lassen</button>'}`;
   return h;
 }
 function rulesHtml() {
@@ -1607,8 +1817,9 @@ function rulesHtml() {
   <p>Wie im Original: Jedes bezogene Zimmer bringt 1/2/3/4 SP je nach Etage, jede übrige Krone und Ware 1 SP. Dazu kommen die Boni deines Personals. Jeder Gast, der noch im Café sitzt, kostet <b>5 SP</b>. Bei Gleichstand gewinnt, wer mehr Kronen und Waren übrig hat.</p>
   <h4>Unterschiede zum Original</h4>
   <p style="font-size:13px">Diese Regeln folgen <i>Grand Austria Hotel</i>: die Aktionen samt Joker und Verstärken, Kronen-Obergrenze, Kaiserwertung mit Zurücksetzen, Spielaufbau, U-förmige Zugreihenfolge, Politik und Schlusswertung. Den Ablauf der Solovariante mit Leopold übernimmt das Spiel ebenfalls.</p>
-  <p style="font-size:13px">Eigene Entwürfe mit eigenen Zahlen sind: die Karten (Gäste, Personal, Politik, Kaiserplättchen), die Hotel-Aufteilung, die SP-Werte der Kaiserleiste (das Regelheft zeigt nur Ausschnitte) und der Inhalt von Leopolds 20 Anweisungskarten (die Karten selbst sind nicht im Regelheft abgedruckt). Auch die Illustrationen sind eigene Entwürfe.</p>
-  <p style="font-size:13px">Vereinfacht: kein Personal-Draft im Mehrpersonenspiel, Gäste ziehen automatisch in ein passendes Zimmer ein, kein Passen.</p>`;
+  <p style="font-size:13px">Aus dem Anhang des Regelhefts übernommen: die Effekte aller 48 Personalkarten, die Belohnungen aller Gästekarten (49–104, 117, 118), die 12 Politikkarten (je eine A, B und C pro Partie) und die 12 Kaiserplättchen mit Bonus und Strafe; vom Spielplan die Kaiserleiste (SP je Feld), die Kosten der Gästereihe (3/2/1/0/0 Kronen), der Hotelplan mit seinen 10 Farbgruppen und die Auslastungsboni (Blau 2/5/9/15 SP, Rot 1/3/6/10 Kronen, Gelb 1/3/6/10 Kaiserschritte).</p>
+  <p style="font-size:13px">Was nur auf den Kartenbildern steht, ist geschätzt: Kosten der Personalkarten, Farbe, Bestellung und Siegpunkte der Gäste, die SP-Werte der Politikkarten (15/10/5), die Werte der Personalkarten 46 und 47 (5 bzw. 4 SP) sowie der Inhalt von Leopolds 20 Anweisungskarten. Namen, die das Regelheft nicht nennt, sind eigene. Auch die Illustrationen sind eigene Entwürfe.</p>
+  <p style="font-size:13px">Vereinfacht: kein Personal-Draft im Mehrpersonenspiel, Gäste ziehen automatisch in ein passendes Zimmer ein, kein Passen; Personal „einmal pro Runde“ liefert seine Ware automatisch zu Beginn deines ersten Zuges der Runde; nicht genutzte Extras setzt das Spiel am Zugende automatisch ein.</p>`;
 }
 
 // ---------- Render & Events ----------
@@ -1673,9 +1884,9 @@ const TUT_STEPS = [
     text: 'Strudel gibt es mit <b>Würfel 1</b>. Dort liegen 3 Würfel, also Stärke 3. Tippe auf das Feld.' },
   { ch: 'Zug 1 · Schritt 2: Servieren', why: 'Strudel ist genau das, was der Fiakerkutscher will. Torte bräuchte gerade niemand.', sel: '[data-a=dieok]', allow: { dieok: true }, done: () => S.turn.dieTaken,
     text: 'Du bekommst 3 Gerichte und verteilst sie auf Strudel und Torte. Lass es bei <b>3 Strudel</b> und tippe auf „Ausführen“.' },
-  { ch: 'Zug 1 · Schritt 2: Servieren', why: 'Was du in diesem Zug bekommst, servierst du sofort und gratis. Später kostet das Servieren aus der Küche 1 Krone.', sel: '.slot.can', allow: { serve: true }, done: () => TUT_ME().rooms[0] === 2,
+  { ch: 'Zug 1 · Schritt 2: Servieren', why: 'Was du in diesem Zug bekommst, servierst du sofort und gratis. Später kostet das Servieren aus der Küche 1 Krone.', sel: '.slot.can', allow: { serve: true }, done: () => TUT_ME().rooms[2] === 2,
     text: 'Frisch erhaltene Gerichte servierst du <b>gratis</b>. Tippe die leuchtenden Felder an, bis der Gast alles hat.' },
-  { ch: 'Zug 1 · Schritt 3: Einzug', why: 'Dafür machst du das alles: Beim Einzug gibt es sofort die Belohnung, und bei Spielende zählt jedes bezogene Zimmer noch einmal 1 bis 4 SP.', sel: '.hotel', text: 'Geschafft! Der Gast ist ins <b>rote Zimmer</b> gezogen und hat dir seine Belohnung gegeben: 2 SP und 2 Kronen. Ist eine zusammenhängende Farbgruppe voll belegt, gibt es einen Bonus.' },
+  { ch: 'Zug 1 · Schritt 3: Einzug', why: 'Dafür machst du das alles: Beim Einzug gibt es sofort die Belohnung, und bei Spielende zählt jedes bezogene Zimmer noch einmal 1 bis 4 SP.', sel: '.hotel', text: 'Geschafft! Der Gast ist ins <b>rote Zimmer</b> gezogen und hat dir seine Belohnung gegeben: 2 SP, 2 Kronen und 1 Strudel. Ist eine zusammenhängende Farbgruppe voll belegt, gibt es einen Bonus.' },
   { ch: 'Zug 1 · Reste', why: 'Nichts verfällt: Reste sind Vorrat für den nächsten Gast und sparen dir später einen Würfel.', sel: '.kitchen', text: 'Der übrige Strudel liegt in deiner <b>Küche</b>. Später kannst du für 1 Krone bis zu 3 Gerichte aus der Küche servieren, das ist der Küchenservice.' },
   { ch: 'Zug 1 · Ende', why: 'Pro Zug gibt es nur einen Würfel. Die Reihenfolge läuft hin und zurück, damit niemand dauerhaft zuerst wählt.', sel: '[data-a=endturn]', allow: { endturn: true }, done: () => S.seqIdx === 3 && !cur().bot, wait: true,
     text: 'Mehr geht in diesem Zug nicht. <b>Beende deinen Zug</b>. Danach ist die Gegnerin zweimal dran, denn erst geht es reihum und dann zurück.' },
@@ -1699,7 +1910,7 @@ function tutSetup() {
   const me = S.players[0], bot = S.players[1];
   me.tables = [null, null, null]; bot.tables = [null, null, null];
   me.k = 10; me.freeGuest = 1; bot.freeGuest = 0;
-  S.line = [0, 12, 25, 16, 30];
+  S.line = [gi(52), gi(60), gi(68), gi(55), gi(63)];
   S.guestDeck = S.guestDeck.filter(id => !S.line.includes(id));
   S.dice = [0, 3, 2, 2, 2, 1, 1]; S.rolled = S.dice.slice();
   S.log = ['Lernspiel: eine vorbereitete erste Runde.'];
@@ -1762,7 +1973,7 @@ const H = {
   newgame: () => { clearSave(); S = null; U.sheet = null; },
   showboard: () => { U.sheet = { type: 'board' }; },
   close: () => { U.sheet = null; },
-  ovclose: () => { if (U.sheet && U.sheet.type !== 'round' && U.sheet.type !== 'staffpick') U.sheet = null; },
+  ovclose: () => { if (U.sheet && U.sheet.type !== 'round' && U.sheet.type !== 'staffpick' && U.sheet.type !== 'draw3') U.sheet = null; },
   opp: d => { U.sheet = { type: 'opp', p: +d.p }; },
   staffinfo: d => { U.sheet = { type: 'staffinfo', id: +d.id }; },
   guest: d => { U.sheet = { type: 'guest', slot: +d.s }; },
@@ -1777,7 +1988,7 @@ const H = {
   pick: d => { U.sheet.staff = +d.id; },
   dieok: () => {
     const sh = U.sheet, me = human();
-    const ok = doDie(me, sh.face, { boost: sh.boost, as: sh.as, b: sh.b, emp: sh.emp, rooms: sh.sel, staff: sh.staff });
+    const ok = doDie(me, sh.face, { boost: sh.boost, as: sh.as, b: sh.b, emp: sh.emp, rooms: sh.sel, staff: sh.staff, gizia: sh.gizia });
     if (ok) { U.sheet = null; toast(S.log[0]); }
   },
   dieskip: () => { if (doDie(human(), U.sheet.face, { skip: true })) U.sheet = null; },
@@ -1792,6 +2003,24 @@ const H = {
   service: () => { U.sheet = { type: 'service' }; },
   buyservice: () => { const me = human(), sh = U.sheet; buyService(me); if (sh.t != null) { const g = me.tables[sh.t]; serve(me, sh.t, sh.oi); if (g && !me.tables[sh.t]) toast(`${GUESTS[g.id][0]} zieht ein!`); } U.sheet = null; },
   freerooms: () => { U.sheet = { type: 'freerooms', sel: [] }; },
+  freelow: () => { U.sheet = { type: 'freelow' }; },
+  paidroom: () => { U.sheet = { type: 'paidroom' }; },
+  flip: () => { U.sheet = { type: 'flip' }; },
+  build: () => { U.sheet = { type: 'build' }; },
+  splay: () => { U.sheet = { type: 'splay' }; },
+  draw3: () => { const me = human(); const d = me.draw3.shift(); U.sheet = { type: 'draw3', d, ids: S.staffDeck.splice(0, 3) }; },
+  foodany: () => { U.sheet = { type: 'foodany' }; },
+  gizia: () => { U.sheet = { type: 'gizia' }; },
+  perkskip: d => { const me = human(); if (Array.isArray(me[d.k])) me[d.k].shift(); else me[d.k] = Math.max(0, me[d.k] - 1); U.sheet = null; },
+  lowpick: d => { const me = human(); if (prepareRoom(me, +d.i, true)) me.freeLow--; U.sheet = null; },
+  paidpick: d => { const me = human(), i = +d.i, dd = me.paidRooms[0] || 0, c = roomCost(me, i, dd); if (!roomOK(me, i) || c > me.k) return; me.k -= c; me.rooms[i] = 1; me.paidRooms.shift(); checkWaiting(me); U.sheet = null; },
+  flippick: d => { const me = human(); if (flipRoom(me, +d.i)) { me.flips--; U.sheet = null; } },
+  buildpick: d => { const me = human(), i = +d.i; if (!roomOK(me, i)) return; me.builds.shift(); me.rooms[i] = 1; log(`${me.name} richtet ein Zimmer ein und bezieht es${occupy(me, i, -1)}.`); U.sheet = null; },
+  splaypick: d => { const me = human(), dd = me.staffPlays[0], c = hire(me, +d.id, dd); if (c !== false) { me.staffPlays.shift(); log(`${me.name} spielt ${STAFF[+d.id].n} aus (${c} K).`); U.sheet = null; } },
+  d3pick: d => { const me = human(), sh = U.sheet, id = +d.id; me.hand.push(id); const c = hire(me, id, sh.d); if (c === false) { me.hand.pop(); return; } log(`${me.name} spielt ${STAFF[id].n} aus (${c} K).`); S.staffDeck.push(...sh.ids.filter(x => x !== id)); U.sheet = null; },
+  d3none: () => { S.staffDeck.push(...U.sheet.ids); U.sheet = null; },
+  foodpick: d => { const me = human(); if (me.foodAny > 0) { me.foodAny--; me.fresh[d.f]++; } U.sheet = me.foodAny > 0 ? { type: 'foodany' } : null; },
+  gzpick: d => { U.sheet = { type: 'die', face: +d.f, b: 0, emp: 0, sel: [], staff: null, boost: false, as: 0, gizia: true }; },
   frsel: d => { const i = +d.i, s = U.sheet.sel; const k = s.indexOf(i); if (k >= 0) U.sheet.sel = s.slice(0, k); else s.push(i); },
   frok: () => { const me = human(); for (const i of U.sheet.sel) if (prepareRoom(me, i, true)) me.freeRooms--; U.sheet = null; },
   frskip: () => { human().freeRooms = 0; U.sheet = null; },
@@ -1827,6 +2056,7 @@ window.__ghw = {
   },
   state: () => S,
   reset: () => { S = null; U.sheet = null; clearSave(); render(); },
+  render: () => render(),
 };
 
 S = null;

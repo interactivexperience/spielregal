@@ -99,7 +99,10 @@ weil der Owner die **Harvest Edition** besitzt).
 Die Spiele folgen den Regelheften, die der Owner hochgeladen hat (nicht im Repo):
 Grand Austria Hotel (Grundspiel + „Alles Walzer“ inkl. Solo-Automa Leopold), Three Sisters
 Harvest Edition (inkl. Solo gegen Farmerin Edith), Rebel Princess Deluxe Edition +
-„Doppelt Rebellisch“ + Wonderbow-FAQ, Countryside/Landgut. Was die Regelhefte nicht
+„Doppelt Rebellisch“ + Wonderbow-FAQ, Countryside/Landgut. Grand Hotel Wien nutzt die Inhalte aus dem Anhang des Regelhefts (Effekte aller
+Personal- und Gästekarten, 12 Politikkarten, 12 Kaiserplättchen) und vom Spielplan
+(Kaiserleiste, Hotelplan, Auslastungsboni, Gästereihe 3/2/1/0/0); Drei Schwestern nutzt die
+Bogen-Abbildung auf S. 2 des Regelhefts. Was die Regelhefte nicht
 abdrucken (Karteninhalte, Aufdruck der Bögen/Leisten), ist jeweils im Abschnitt
 „Unterschiede zum Original“ der Spielregeln im Spiel offen benannt; bei Änderungen dort
 mitpflegen.
