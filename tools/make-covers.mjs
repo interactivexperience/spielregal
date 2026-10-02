@@ -32,11 +32,11 @@ const COVERS = {
         <path d="M-20,290 C80,220 160,260 240,240 C330,214 400,250 500,224 V640 H-20 Z" fill="#DDEBC4"/></g>
         ${P.moth(90, 210, 2.4, C.mustard)}${P.moth(240, 80, 2, C.sky)}${P.moth(420, 260, 1.8, C.pink)}</svg>
       <div style="position:absolute;left:-60px;right:-60px;bottom:-10px;height:500px">${heroSvg()}</div></div>`,
-  "rebel-princess": () => `<div style="position:absolute;inset:0;background:#F4F0E9">
+  "rebel-princess": () => `<div style="position:absolute;inset:0;background:#F8EEDC">
       <svg viewBox="0 0 480 640" style="position:absolute;inset:0;width:100%;height:100%"><g filter="url(#crayon)" stroke="#1A1A1A" stroke-width="3">
         <path d="M30,560 H450" fill="none"/><path d="M240,0 V60" fill="none" stroke-width="2"/><path d="M212,90 C212,52 268,52 268,90 Z" fill="#1A1A1A"/>
         ${[[70, 90], [410, 120], [80, 330], [420, 360], [360, 40], [120, 200], [390, 230]].map(([x, y]) => `<path d="M${x},${y - 12} l3.5,8.5 l8.5,3.5 l-8.5,3.5 l-3.5,8.5 l-3.5,-8.5 l-8.5,-3.5 l8.5,-3.5 Z" fill="#1A1A1A" stroke="none"/>`).join('')}</g></svg>
-      <div style="position:absolute;left:40px;top:120px;width:400px;height:520px"><svg viewBox="0 0 100 130" class="ill">${frogSvg()}</svg></div>
+      <div style="position:absolute;left:34px;top:150px;width:330px;height:420px;background:#E27FE0"></div><div style="position:absolute;left:40px;top:120px;width:400px;height:520px"><svg viewBox="0 0 100 130" class="ill">${popify(frogSvg(), "#2BA35A")}</svg></div>
       <div style="position:absolute;inset:12px;border:4px solid #1A1A1A;border-radius:22px"></div></div>`,
   "countryside": () => `<div style="position:absolute;inset:0;background:${PAL.cream}">
       <svg viewBox="0 0 300 400" style="position:absolute;inset:0;width:100%;height:100%">
