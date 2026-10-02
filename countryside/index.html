@@ -1270,7 +1270,7 @@ function viewGame() {
   const mine = isMyTurn();
   let banner;
   if (myAsk()) banner = `<div class="banner mine"><span class="face">${face(me)}</span><div style="flex:1"><b>${esc(askTitle(S.ask))}</b><span class="small">Wähle im Fenster.</span></div><button class="btn sm" data-a="askopen">Öffnen</button></div>`;
-  else if (mine) banner = `<div class="banner mine"><span class="face">${face(me)}</span><div><b>Du bist dran</b><span class="small">Setze eine Arbeitskraft auf ein grün umrandetes Feld oder beende den Tag.</span></div></div>`;
+  else if (mine) banner = `<div class="banner mine"><span class="face">${face(me)}</span><div><b>Du bist dran</b><span class="small">Setze eine Arbeitskraft auf ein lila umrandetes Feld oder beende den Tag.</span></div></div>`;
   else banner = `<div class="banner"><span class="face">${face(p)}</span><div><b>${esc(p.name)} ist dran …</b><span class="small">${esc(S.log[0] || '')}</span></div></div>`;
   const chips = S.players.map((pl, i) => `<button class="pchip ${S.cur === i ? 'cur' : ''}" data-a="opp" data-p="${i}"><span class="av" style="background:${pl.mark}">${face(pl)}</span><span><span class="nm">${esc(pl.name)}</span><span class="st">★${pl.vp} · ${pl.coins} Mz.</span></span></button>`).join('');
   return `
