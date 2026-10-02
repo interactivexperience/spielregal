@@ -9,73 +9,80 @@
 <title>Drei Schwestern</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#F8ECE1; --cream:#FFF8EE; --card:#FFFBF5; --ink:#26382B; --muted:#7A6D61; --line:#EAD9C8;
+  /* App-Stil (Owner-Referenzen „App Style für Three Sisters“): ruhige, gedeckte Farbbänder, flache
+     geometrische Landschaft, viel Luft, große klare Grotesk (DM Sans), keine 3D-Schatten */
+  --bg:#E9E6E8; --cream:#F7F5F6; --card:#F7F5F6; --ink:#2B3245; --muted:#7C7F8E; --line:#D9D5DA;
+  --navy:#2B3245; --slate:#5E6E9A; --dusk:#8EA9C8; --mauve:#9A8DA0; --peach:#E7C7B3; --barn:#A8382F;
   --tomato:#E8553A; --coral:#F09A86; --pink:#F4A6B8; --mustard:#F2B33D; --yellow:#FFD84D;
-  --leaf:#5BA35A; --sage:#A8C66C; --mint:#DDEBC4; --forest:#2E6B3E; --sky:#9CC3EC; --blue:#3E64B8; --teal:#7FC9C9; --orange:#F07A2A;
+  --leaf:#5BA35A; --sage:#A8C66C; --mint:#DCE3EC; --forest:#2B3245; --sky:#9CC3EC; --blue:#3E64B8; --teal:#7FC9C9; --orange:#F07A2A;
   --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 -.25'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior-y:contain;overflow-x:hidden}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 "DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior-y:contain;overflow-x:hidden}
 #app{position:relative}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
-.hand{font-family:"Fredoka","Trebuchet MS",sans-serif;font-weight:700;letter-spacing:-.3px}
+.hand{font-family:"DM Sans",system-ui,sans-serif;font-weight:700;letter-spacing:-.8px}
 .wrap{max-width:560px;margin:0 auto;padding:0 16px 120px}
 .ill{display:block;width:100%;height:100%;overflow:visible}
 /* Risograph-Körnung auf Farbflächen */
 .grainy{position:relative;isolation:isolate}
 .grainy::after{content:"";position:absolute;inset:0;border-radius:inherit;background:var(--grain);opacity:.55;pointer-events:none;mix-blend-mode:soft-light}
-.start{padding-top:8px;text-align:center}
-.start h1{font-size:clamp(40px,12vw,58px);line-height:.95;margin:4px 0 6px;color:var(--forest)}
+.start{padding-top:8px;text-align:left}
+.start h1{font-size:clamp(40px,12vw,56px);line-height:.95;margin:0 0 6px;color:var(--navy);letter-spacing:-2px}
 .sub{font-size:13.5px;color:var(--muted);margin:0 0 14px}
-.hero{width:100%;max-width:440px;margin:0 auto;aspect-ratio:360/300}
-.panel{background:var(--card);border-radius:24px;padding:18px;text-align:left;margin:14px 0;box-shadow:0 6px 0 var(--line)}
-.label{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin:0 0 6px}
+.hero{width:100%;margin:0 auto;aspect-ratio:360/420;border-radius:32px;overflow:hidden;position:relative}
+.hero .htxt{position:absolute;left:24px;right:24px;top:26px}
+.hero .htxt p{margin:0;font-size:12.5px;color:rgba(43,50,69,.8);letter-spacing:.2px}
+.panel{background:var(--card);border-radius:28px;padding:18px;text-align:left;margin:14px 0}
+.label{font-size:12.5px;font-weight:500;color:var(--muted);margin:0 0 8px}
 .input{width:100%;font:inherit;font-size:16px;padding:11px 14px;border:0;border-radius:14px;background:var(--bg);color:var(--ink);outline:2px solid transparent}
 .input:focus{outline-color:var(--leaf)}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
-.chip{border-radius:999px;padding:8px 15px;background:var(--bg);font-weight:700;color:var(--ink)}
-.chip.on{background:var(--forest);color:var(--cream)}
+.chip{border-radius:999px;padding:9px 16px;background:var(--bg);font-weight:500;color:var(--ink)}
+.chip.on{background:var(--navy);color:var(--cream)}
 .chip:disabled{opacity:.35}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:10px 22px;border:0;border-radius:999px;background:var(--tomato);color:#fff;box-shadow:0 5px 0 #B8402A;font-family:"Fredoka",sans-serif;font-weight:600;font-size:17px;text-decoration:none}
-.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #B8402A}
-.btn.green{background:var(--leaf);box-shadow:0 5px 0 #3E7D3E}
-.btn.green:active{box-shadow:0 2px 0 #3E7D3E}
-.btn.white{background:var(--card);color:var(--ink);box-shadow:0 5px 0 var(--line)}
-.btn.blue{background:var(--blue);box-shadow:0 5px 0 #2C4A8C}
-.btn:disabled{opacity:.4;box-shadow:none;transform:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:10px 24px;border:0;border-radius:999px;background:var(--navy);color:#fff;font-family:"DM Sans",sans-serif;font-weight:500;font-size:16.5px;text-decoration:none;transition:transform .1s}
+.btn:active{transform:scale(.98)}
+.btn.green{background:var(--slate)}
+
+.btn.white{background:var(--card);color:var(--ink)}
+.btn.blue{background:var(--slate)}
+.btn:disabled{opacity:.35;transform:none}
 .btn.wide{width:100%}
 .link{text-decoration:underline;text-decoration-color:var(--coral);text-decoration-thickness:2px;text-underline-offset:4px;font-weight:700}
 .note{font-size:12.5px;color:var(--muted);background:var(--bg);border-radius:12px;padding:7px 10px;margin-top:8px}
-.top{position:sticky;top:0;z-index:30;background:rgba(248,236,225,.94);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:calc(6px + env(safe-area-inset-top)) 0 6px;box-shadow:0 2px 0 var(--line)}
+.top{position:sticky;top:0;z-index:30;background:rgba(233,230,232,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:calc(8px + env(safe-area-inset-top)) 0 8px}
 .top .row{max-width:560px;margin:0 auto;padding:0 16px;display:flex;align-items:center;gap:10px}
-.round{font-size:24px;line-height:1;white-space:nowrap;color:var(--forest)}
-.round small{font-family:system-ui,sans-serif;font-weight:600;font-size:11px;color:var(--muted);display:block;margin-top:2px;letter-spacing:0}
-.icobtn{width:40px;height:40px;border-radius:50%;background:var(--card);font-weight:800;font-size:17px;flex:none;display:grid;place-items:center;box-shadow:0 3px 0 var(--line)}
+.round{font-size:24px;line-height:1;white-space:nowrap;color:var(--navy)}
+.round small{font-family:"DM Sans",system-ui,sans-serif;font-weight:500;font-size:11px;color:var(--muted);display:block;margin-top:2px;letter-spacing:0}
+.icobtn{width:40px;height:40px;border-radius:50%;background:var(--card);font-weight:700;font-size:17px;flex:none;display:grid;place-items:center}
 .icobtn.leave{width:auto;padding:0 12px 0 10px;border-radius:999px;display:flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap}
 .backlink{display:block;text-align:left;margin:4px 0 2px;font-weight:800;font-size:13.5px;color:inherit;text-decoration:none;opacity:.75}
 .players{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;padding:2px 2px 6px}
 .players::-webkit-scrollbar{display:none}
-.pchip{flex:none;display:flex;align-items:center;gap:6px;border-radius:999px;background:var(--card);padding:3px 10px 3px 3px;text-align:left;box-shadow:0 3px 0 var(--line)}
-.pchip.cur{background:var(--yellow);box-shadow:0 3px 0 #D9A92B}
+.pchip{flex:none;display:flex;align-items:center;gap:6px;border-radius:999px;background:var(--card);padding:3px 10px 3px 3px;text-align:left}
+.pchip.cur{background:var(--navy);color:var(--cream)}
+.pchip.cur .st{color:rgba(247,245,246,.75)}
 .pchip .av{width:34px;height:34px;border-radius:50%;overflow:hidden;flex:none}
 .pchip .nm{font-size:12px;font-weight:700;max-width:78px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
 .pchip .st{font-size:11px;font-weight:600;color:var(--muted)}
 .sec{margin:22px 0 0}
 .sech{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 10px}
-.sech h2{font-size:26px;margin:0;line-height:1;color:var(--forest)}
+.sech h2{font-size:24px;margin:0;line-height:1;color:var(--navy)}
 .sech .hint{font-size:12px;color:var(--muted);text-align:right}
-.banner{margin:14px 0 0;border-radius:22px;padding:10px 12px;background:var(--card);display:flex;gap:10px;align-items:center;box-shadow:0 5px 0 var(--line)}
-.banner.mine{background:#FFEFB0;box-shadow:0 5px 0 #EBCB6A}
+.banner{margin:14px 0 0;border-radius:26px;padding:12px 14px;background:var(--card);display:flex;gap:12px;align-items:center}
+.banner.mine{background:var(--dusk);color:var(--navy)}
+.banner.mine .small{color:rgba(43,50,69,.75)}
 .banner .face{width:46px;height:46px;flex:none;border-radius:50%;overflow:hidden;background:var(--mint)}
 .banner b{display:block}
 .banner .small{font-size:12.5px;color:var(--muted)}
 /* Gartenmarkt */
 .rondel{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.space{border-radius:22px;padding:8px 6px;text-align:center;min-height:124px;position:relative}
+.space{border-radius:24px;padding:8px 6px;text-align:center;min-height:124px;position:relative}
 .space .sic{width:44px;height:40px;margin:0 auto}
 .space .sn{font-size:11.5px;font-weight:700;line-height:1.15;min-height:26px;color:var(--ink)}
 .space.edith{box-shadow:inset 0 0 0 3px var(--forest)}
@@ -95,8 +102,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .evt svg{width:36px;height:36px;flex:none}
 /* Garten */
 .garden{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.zone{border-radius:24px 26px 22px 28px;padding:8px 9px 9px;position:relative;background:#E7D3B4}
-.zone:nth-child(6n+2){background:#DDEBC4}.zone:nth-child(6n+3){background:#F6D2C4}.zone:nth-child(6n+4){background:#D8E8EC}.zone:nth-child(6n+5){background:#F3E1A8}.zone:nth-child(6n+6){background:#E9D7EC}
+.zone{border-radius:24px;padding:8px 9px 9px;position:relative;background:#DCD3CC}
+.zone:nth-child(6n+2){background:#D3DCE6}.zone:nth-child(6n+3){background:#E9D5CA}.zone:nth-child(6n+4){background:#CFD8DF}.zone:nth-child(6n+5){background:#E3DDC9}.zone:nth-child(6n+6){background:#DAD3E2}
 .zone.hl{box-shadow:inset 0 0 0 3px var(--forest)}
 .zone .zn{position:absolute;right:7px;top:6px;width:26px;height:26px}
 .trk{display:flex;align-items:center;gap:4px;margin-top:5px}
@@ -121,12 +128,12 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .fruits,.tools{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .tool .tx{font-size:11px;line-height:1.25;margin-top:4px;color:var(--muted)}
 .tool.done{background:var(--mint)}
-.bar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(248,236,225,.96);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 -2px 0 var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(247,245,246,.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:26px 26px 0 0;box-shadow:0 -4px 20px rgba(43,50,69,.08);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
 .bar .in{max-width:560px;margin:0 auto;display:flex;gap:10px;align-items:center}
 .bar .msg{flex:1;font-size:12.5px;line-height:1.25}
-.ov{position:fixed;inset:0;z-index:60;background:rgba(38,56,43,.38);display:flex;align-items:flex-end;justify-content:center}
+.ov{position:fixed;inset:0;z-index:60;background:rgba(43,50,69,.38);display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:var(--bg);width:100%;max-width:560px;max-height:88vh;overflow:auto;border-radius:28px 28px 0 0;padding:14px 16px calc(18px + env(safe-area-inset-bottom));position:relative}
-.sheet h3{font-family:"Fredoka",sans-serif;font-weight:700;font-size:26px;margin:0 0 6px;line-height:1.05;padding-right:48px;color:var(--forest)}
+.sheet h3{font-family:"DM Sans",sans-serif;font-weight:700;font-size:26px;letter-spacing:-.8px;margin:0 0 6px;line-height:1.08;padding-right:48px;color:var(--navy)}
 .sheet .x{position:absolute;right:12px;top:12px}
 .grab{width:44px;height:5px;border-radius:9px;background:var(--ink);opacity:.18;margin:0 auto 10px}
 .opts{display:grid;gap:8px;margin-top:10px}
@@ -148,7 +155,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .log{font-size:12.5px;border-radius:20px;background:var(--card);padding:8px 12px;max-height:220px;overflow:auto}
 .log div{padding:4px 0;border-bottom:1.5px dotted var(--line)}
 .log div:last-child{border:0}
-.rules h4{font-family:"Fredoka",sans-serif;font-weight:700;font-size:19px;margin:16px 0 2px;color:var(--forest)}
+.rules h4{font-family:"DM Sans",sans-serif;font-weight:700;font-size:19px;letter-spacing:-.4px;margin:16px 0 2px;color:var(--navy)}
 .rules p,.rules li{font-size:14px}
 .rules ul{padding-left:18px;margin:4px 0}
 .score{width:100%;border-collapse:collapse;font-size:13px}
@@ -158,7 +165,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .podium{display:flex;justify-content:center;align-items:flex-end;gap:10px;margin:8px 0}
 .podium .pp{text-align:center;width:96px}
 .podium .pp .ill{height:130px}
-.podium .pl{border-radius:18px 18px 0 0;font-family:"Fredoka",sans-serif;font-weight:700;font-size:24px;color:#fff;display:grid;place-items:center}
+.podium .pl{border-radius:18px 18px 0 0;font-family:"DM Sans",sans-serif;font-weight:700;font-size:24px;color:#fff;display:grid;place-items:center}
 /* Harvest-Edition-Bogen */
 .rondel{grid-template-columns:repeat(4,1fr);gap:8px}
 .space{min-height:112px;padding:8px 4px;border-radius:20px}
@@ -380,7 +387,7 @@ const RONDEL = [
   { k: 'pw' },
 ];
 const RONDEL_N = { ay: 'Bienenstock oder Hof', pw: 'Pflanzen oder Gießen', shed: 'Schuppenzeit', cg: '1 Kompost & 4 Waren', market: 'Bauernmarkt' };
-const RONDEL_BG = { ay: '#FFEFB0', pw: '#DDEBC4', shed: '#D6E6F5', cg: '#EBD3BE', market: '#F8D3DE' };
+const RONDEL_BG = { ay: '#E8DCC0', pw: '#D5DDCF', shed: '#CFD9E4', cg: '#E3D2C6', market: '#E3D3DA' };
 const RING = [0, 1, 2, 3, 7, 6, 5, 4]; // Anzeige als Ring in zwei Reihen
 const DICE_BY_N = { 1: 4, 2: 4, 3: 5, 4: 6 };
 // Gartenzonen: Mais (4 Kästchen), Bohnen (2 Kästchen, rankt am Mais mit diesem Index),
@@ -534,6 +541,24 @@ function dieSvg(v, fill = '#FFFBF5') {
   return `<svg viewBox="0 0 24 25" aria-label="Würfel ${v}"><rect x="2" y="3.5" width="20" height="20" rx="6" fill="${shade(fill === '#FFFBF5' ? '#EAD9C8' : fill, 0.85)}"/><rect x="2" y="2" width="20" height="20" rx="6" fill="${fill}"/>${Pp[v].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2" fill="${pip}"/>`).join('')}</svg>`;
 }
 function zoneNum(z) { const cols = [C.tomato, C.leaf, C.mustard, C.blue, C.rose, C.forest]; return `<svg viewBox="0 0 26 26" class="ill"><circle cx="13" cy="13" r="12" fill="${cols[z]}"/><text x="13" y="18" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="700" font-size="15" fill="#fff">${z + 1}</text></svg>`; }
+// Startbild im App-Stil: gedeckte Farbbänder, flache geometrische Scheune, kleine Gärtnerinnen am Horizont
+function bandsSvg() {
+  const bands = [[0, 64, '#7FA3C6'], [64, 124, '#88AACA'], [124, 176, '#95B1CC'], [176, 216, '#A6B9CC'], [216, 246, '#B9C3CD'], [246, 264, '#CAC5C6'], [264, 280, '#DCC6BB']];
+  const field = [[288, 300, '#5E6E9A'], [300, 308, '#A496AB'], [308, 322, '#6C7BA6'], [322, 330, '#B7AABD'], [330, 346, '#7584AD'], [346, 356, '#C2B7C5'], [356, 420, '#8A7867']];
+  const fig = (o, x, w) => gardener('band' + o.plant, o).replace('<svg viewBox="0 0 100 130" class="ill"', `<svg viewBox="0 0 100 130" x="${x}" y="${286 - w * 1.24}" width="${w}" height="${w * 1.3}" overflow="visible"`);
+  const corn = x => `<rect x="${x - 1.2}" y="306" width="2.4" height="44" fill="#4B3C33"/><path d="M${x},318 l-9,-6 l0,4 Z M${x},330 l9,-6 l0,4 Z M${x},340 l-8,-5 l0,4 Z" fill="#4B3C33"/><rect x="${x - 2.4}" y="300" width="4.8" height="9" fill="#E0B04A"/>`;
+  return `<svg viewBox="0 0 360 420" class="ill" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration: flache Landschaft in Farbbändern mit roter Scheune, Maisstauden und drei kleinen Gärtnerinnen am Horizont">
+    ${bands.map(([a, b, c]) => `<rect x="0" y="${a}" width="360" height="${b - a}" fill="${c}"/>`).join('')}
+    <rect x="0" y="280" width="360" height="8" fill="#2B3245"/>
+    ${field.map(([a, b, c]) => `<rect x="0" y="${a}" width="360" height="${b - a}" fill="${c}"/>`).join('')}
+    <rect x="208" y="246" width="42" height="36" fill="#A8382F"/>
+    <path d="M250,246 L278,226 L306,246 V282 H250 Z" fill="#2A1E1E"/>
+    <path d="M208,246 L236,226 L278,226 L250,246 Z" fill="#E5C9BC"/>
+    <rect x="72" y="268" width="26" height="14" fill="#3B3F55"/><path d="M72,268 L85,259 L98,268 Z" fill="#C9B8A6"/>
+    ${fig({ plant: 'mais', pants: '#E0B04A', pat: 'stripes', pose: 0 }, 128, 22)}${fig({ plant: 'bohne', pants: '#5E6E9A', pat: 'stripes', pose: 1 }, 150, 24)}${fig({ plant: 'kuerbis', pants: '#A8382F', pat: 'dots', pose: 0 }, 174, 22)}
+    ${[34, 48, 62, 300, 314, 328].map(corn).join('')}
+  </svg>`;
+}
 function heroSvg() {
   const fig = (o, x, y, w) => gardener('hero' + o.plant, o).replace('<svg viewBox="0 0 100 130" class="ill"', `<svg viewBox="0 0 100 130" x="${x}" y="${y}" width="${w}" height="${w * 1.3}" overflow="visible"`);
   const dots = (cx, cy, rx, ry, col, n, seed) => { const r = prng(seed); let s = ''; for (let i = 0; i < n; i++) { const a = r() * Math.PI * 2, d = Math.sqrt(r()); s += `<circle cx="${(cx + Math.cos(a) * rx * d).toFixed(1)}" cy="${(cy + Math.sin(a) * ry * d).toFixed(1)}" r="${2.6 + r() * 1.6}" fill="${col}"/>`; } return s; };
@@ -1104,9 +1129,8 @@ function viewStart() {
   const saved = load(); const st = U.setup; const prof = spielregalProfiles();
   return `<div class="wrap start">
     <div class="startbar"><a class="icobtn leave" href="../" aria-label="Beenden und zurück zu Spielregal"><svg viewBox="0 0 20 20" width="13" height="13" aria-hidden="true"><path d="M4.5 4.5l11 11M15.5 4.5l-11 11" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg><span>Beenden</span></a></div>
-    <div class="hero">${heroSvg()}</div>
-    <h1 class="hand">Drei Schwestern</h1>
-    <p class="sub">Mais, Bohnen &amp; Kürbis: das Roll &amp; Write nach den Regeln von <i>Three Sisters</i> (Harvest Edition).</p>
+    <div class="hero">${bandsSvg()}<div class="htxt"><h1 class="hand">Drei Schwestern.</h1><p>8 Runden · Harvest Edition · Roll &amp; Write</p></div></div>
+    <p class="sub" style="margin-top:14px">Mais, Bohnen &amp; Kürbis: das Roll &amp; Write nach den Regeln von <i>Three Sisters</i> (Harvest Edition).</p>
     ${saved && saved.screen === 'game' ? `<button class="btn blue wide" data-a="resume">Partie fortsetzen · Runde ${saved.round}/${ROUNDS}</button><p style="margin:6px 0 0;font-size:12.5px;opacity:.75">${saved.savedAt ? `Gespeichert ${savedLabel(saved)} · ` : ''}<button class="link" data-a="discard" style="font-size:12.5px">verwerfen</button></p>` : ''}
     <div class="panel">
       <p class="label">Dein Name</p>

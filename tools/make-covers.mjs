@@ -26,12 +26,7 @@ const COVERS = {
       <div style="position:absolute;left:30px;top:36px;width:64px;height:64px;transform:rotate(-12deg)">${dieSvg(6)}</div>
       <div style="position:absolute;right:36px;top:150px;width:54px;height:54px;transform:rotate(14deg)">${dieSvg(3)}</div>
       <div style="position:absolute;inset:10px;border:5px solid #161616;border-radius:20px;box-shadow:inset 0 0 0 3px #F6EBD6"></div></div>`,
-  "three-sisters": () => `<div style="position:absolute;inset:0;background:#F8ECE1">
-      <svg viewBox="0 0 480 640" style="position:absolute;inset:0;width:100%;height:100%"><g filter="url(#riso)">
-        <circle cx="340" cy="130" r="78" fill="#FFD84D"/><circle cx="120" cy="90" r="34" fill="#F4A6B8"/>
-        <path d="M-20,290 C80,220 160,260 240,240 C330,214 400,250 500,224 V640 H-20 Z" fill="#DDEBC4"/></g>
-        ${P.moth(90, 210, 2.4, C.mustard)}${P.moth(240, 80, 2, C.sky)}${P.moth(420, 260, 1.8, C.pink)}</svg>
-      <div style="position:absolute;left:-60px;right:-60px;bottom:-10px;height:500px">${heroSvg()}</div></div>`,
+  "three-sisters": () => `<div style="position:absolute;inset:0;background:#7FA3C6">${bandsSvg()}</div>`,
   "rebel-princess": () => `<div style="position:absolute;inset:0;background:#F8EEDC">
       <svg viewBox="0 0 480 640" style="position:absolute;inset:0;width:100%;height:100%"><g filter="url(#crayon)" stroke="#1A1A1A" stroke-width="3">
         <path d="M30,560 H450" fill="none"/><path d="M240,0 V60" fill="none" stroke-width="2"/><path d="M212,90 C212,52 268,52 268,90 Z" fill="#1A1A1A"/>
