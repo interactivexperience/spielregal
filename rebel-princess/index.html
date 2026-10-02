@@ -170,6 +170,11 @@ button:disabled[data-info]{pointer-events:none}
 /* langes Drücken: keine iOS-Textauswahl, Lupe oder Kontextmenü */
 body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 input,textarea{-webkit-user-select:text;user-select:text}
+/* Startbildschirm: Bild randlos bis an die Oberkante des Viewports, Beenden-Knopf liegt darüber */
+.start{padding-top:0}
+.start .startbar{position:absolute;left:0;right:0;top:0;max-width:560px;margin:0 auto;padding:calc(8px + env(safe-area-inset-top)) 16px 0}
+.start .hero{width:auto;max-width:none;margin:0 -16px;border-radius:0}
+.start{position:relative}
 </style>
 </head>
 <body>
@@ -1303,7 +1308,7 @@ function heroSvg() {
   const fig = (inner, x, y, w, flip, pop) => `<svg x="${x}" y="${y}" width="${w}" height="${w * 1.3}" viewBox="0 0 100 130" overflow="visible"><g ${flip ? 'transform="translate(100,0) scale(-1,1)"' : ''}>${pop ? popify(inner, pop) : inner}</g></svg>`;
   const sitter = (seed, o) => `<g filter="url(#crayon)">${bigProp('chair', 44, 92, 1)}</g>${figure(seed, Object.assign({ pose: 'sit', prop: 'cup' }, o))}`;
   return `<svg viewBox="0 0 360 250" class="ill" role="img" aria-label="Illustration: Prinzessinnen sitzen im Café, ein Prinz schleppt einen Riesenring herbei">
-   <rect x="0" y="34" width="238" height="204" fill="#F6B48F"/><rect x="238" y="0" width="122" height="238" fill="#E27FE0"/>
+   <rect x="0" y="0" width="238" height="238" fill="#F6B48F"/><rect x="238" y="0" width="122" height="238" fill="#E27FE0"/>
    <g filter="url(#crayon)" ${INK}>
     <path d="M6,238 H354" fill="none" stroke-width="3"/>
     <path d="M150,0 V40" fill="none" stroke-width="2"/><path d="M134,58 C134,36 166,36 166,58 Z" fill="#1A1A1A"/><path d="M144,64 l-3,6 M150,66 v7 M156,64 l3,6" fill="none" stroke-width="2"/>
