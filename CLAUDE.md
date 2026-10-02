@@ -111,7 +111,9 @@ Sonnenfeld; das gewählte Feld steht während der Geste unter der großen Karte.
 anderes Feld wählt man über den Arbeitsplan. Auf Handkarten keine Info-Blase. Im Lernspiel ist der Fächer ausgeblendet.
 Landgut-Arbeitsplan: jedes Aktionsfeld trägt eine kleine Illustration (`FIELD_ART`/`MARKET_ART`); der Markt ist als eigener
 Marktstand abgesetzt (Cremefläche mit gestreifter Markise, gestrichelte Felder, „nur beim Tag beenden“). Arbeitskräfte sind
-kleine Bäuerinnen mit Strohhut und Ringelshirt in der Spielerfarbe (`workerSvg`). Ist keine Arbeitskraft mehr frei oder passt
+kleine Bäuerinnen mit Strohhut und Ringelshirt in der Spielerfarbe (`workerSvg`); eingesetzt liegen sie oben rechts
+auf dem Feld und ragen darüber hinaus (wie Edith in Drei Schwestern), ohne Text zu verdecken, mit kurzer Fall-Animation.
+Der Handfächer schaut deutlich über den Footer-Rand (Owner: „höher rausschauen“). Ist keine Arbeitskraft mehr frei oder passt
 kein Feld, sagen Ansage und Fußleiste „Jetzt den Tag beenden“ statt Optionen anzubieten. **Zug rückgängig** (↶ in der
 Fußleiste und im Menü): Schnappschüsse vor Feld/Karte/Antwort/Tag beenden; der Stapel verfällt, sobald verdeckte Infos
 aufgedeckt werden (Nachziehstapel oder Gebietsstapel schrumpft) oder ein Bot dran ist; im Lernspiel aus.
@@ -121,8 +123,9 @@ statt Liste; Effekte nach jedem Neuzeichnen per Zustandsvergleich (`fxSnap`/`fxA
 Pflanz-Plopp, Ernte-Glöckchen mit fliegenden Waren/Punkten, Würfel rollen herein, genommene Würfel fliegen zur
 Person, Edith hüpft; synthetische Töne (WebAudio, `SND`) mit Schalter im Menü; `prefers-reduced-motion` respektiert.
 Drei-Schwestern-Kopf: Titel „Drei Schwestern.“, Runde als dunkle Pille in der Vorratsleiste; Mitspieler-Pillen zeigen die
-Würfelwahlen der Runde als Punkte (gefüllt = gewählt) statt einer Reihenfolge-Zeile. Das Aktionsrondell ist ein echter
-Kreis (7 Felder im Uhrzeigersinn, Pfeile, goldene Nadel oben), das Ereignis der Runde steht in der Mitte, darunter die
+Würfelwahlen der Runde als Punkte (gefüllt = gewählt) statt einer Reihenfolge-Zeile. Das Aktionsrondell ist ein umlaufendes
+Rechteck (7 Felder im Uhrzeigersinn um die Mitte, verbunden durch ein weiches Laufband `.trk`, keine Pfeile – Owner:
+„Pfeile passen nicht zum Stil“; goldene Nadel oben links), das Ereignis der Runde steht in der Mitte, darunter die
 Ereignisleiste 1–8; der gemeinsam genutzte niedrigste Würfel trägt die Marke „alle“. Erklärungen stehen nicht als grauer
 Text daneben, sondern hinter einem i-Knopf (`data-a="info"`, Antippen = Info-Blase) bzw. langem Drücken. Legenden sind
 Symbol-Chips mit einem Wort (`lgChip`), Details per langem Drücken statt verkürzter Fließtexte. Jeder Bogen-Abschnitt (Garten, Stauden,

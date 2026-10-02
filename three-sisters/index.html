@@ -320,20 +320,18 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .status span.rd{background:var(--navy);color:var(--cream)}
 .ibtn{width:22px;height:22px;border-radius:50%;background:var(--card);color:var(--muted);font:700 12px/22px Georgia,serif;font-style:italic;text-align:center;padding:0;flex:none;align-self:center}
 .sech:has(.ibtn){justify-content:flex-start}
-/* Rondell als Kreis: 7 Felder im Uhrzeigersinn, Ereignis in der Mitte */
-.rondel{display:block;position:relative;aspect-ratio:1;width:100%;max-width:400px;margin:4px auto 0}
-.rondel .ring{position:absolute;inset:0;width:100%;height:100%}
-.rondel .ring circle{fill:none;stroke:var(--line);stroke-width:1.1;stroke-dasharray:1.5 2.2}
-.rondel .ring path{fill:none;stroke:var(--muted);stroke-width:.9;stroke-linecap:round;stroke-linejoin:round;opacity:.8}
-.rondel .space{position:absolute;width:25.5%;min-height:25.5%;transform:translate(-50%,-50%);border-radius:30px;padding:7px 4px 6px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
-.rondel .space .sic{width:28px;height:26px}
-.rondel .space .sn{font-size:9.5px;min-height:0;line-height:1.1}
-.rondel .dice{gap:3px;margin-top:4px}
-.rondel .die{width:25px;height:25px;position:relative}
+/* Rondell als umlaufendes Rechteck: 7 Felder im Uhrzeigersinn um das Ereignis, ein Laufband verbindet sie */
+.rondel{display:grid;position:relative;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-areas:"s0 s1 s2" ". ev s3" "s6 s5 s4";gap:10px;margin:4px 0 0}
+.rondel .trk{position:absolute;left:16.6%;right:16.6%;top:16%;bottom:16%;border:14px solid #DDD6DA;border-radius:44px;pointer-events:none}
+.rondel .space{position:relative;min-height:104px;border-radius:26px;padding:8px 5px 7px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
+.rondel .space .sic{width:34px;height:32px}
+.rondel .space .sn{font-size:11px;min-height:0;line-height:1.15}
+.rondel .dice{gap:4px;margin-top:5px}
+.rondel .die{width:28px;height:28px;position:relative}
 .rondel .space .edm{left:-10px;top:-18px}
 .die.all{outline:2.5px solid var(--navy);outline-offset:1px;border-radius:7px}
 .die .allb{position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);background:var(--navy);color:var(--cream);font-size:8.5px;font-weight:700;border-radius:99px;padding:0 4px;line-height:12px}
-.rcenter{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:40%;text-align:center;display:flex;flex-direction:column;align-items:center;line-height:1.15;color:var(--navy)}
+.rcenter{grid-area:ev;align-self:center;position:relative;text-align:center;background:var(--card);border-radius:26px;padding:10px 6px;display:flex;flex-direction:column;align-items:center;line-height:1.15;color:var(--navy)}
 .rcenter svg{width:40px;height:40px}
 .rcenter small{font-size:10px;color:var(--muted);margin-top:2px}
 .rcenter b{font-size:14px}
@@ -1360,7 +1358,7 @@ function viewGame() {
   const shared = S.phase === 'shared' && S.shared ? (S.dice.find(d => d.by === null && d.v === S.shared.v && d.space === S.shared.space) || S.dice.find(d => d.v === S.shared.v && d.space === S.shared.space)) : null;
   const space = si => {
     const ds = S.dice.filter(d => d.space === si), R = RONDEL[si];
-    const a = si * 2 * Math.PI / RONDEL.length, pos = `left:${(50 + 37 * Math.sin(a)).toFixed(2)}%;top:${(50 - 37 * Math.cos(a)).toFixed(2)}%`;
+    const pos = `grid-area:s${si}`;
     return `<div class="space grainy ${si === S.pawn ? 'edith' : ''}" style="background:${RONDEL_BG[R.k]};${pos}" data-info="${esc(RONDEL_INFO[R.k] + (R.pin ? ' Goldene Nadel: Hier startet Farmerin Edith.' : '') + ' Die Augenzahl eines Würfels hier bestimmt die Gartenzone.')}">${si === S.pawn ? `<span class="edm">${gardener('edith', EDITH.look)}</span>` : ''}${R.pin ? '<span class="pin" title="goldene Nadel">📌</span>' : ''}<div class="sic">${icon(R.k === 'shed' ? (R.tool === 'A' ? 'shears' : 'mower') : R.k === 'market' ? 'markt' : R.k)}</div><div class="sn">${RONDEL_S[R.k]}</div>
       <div class="dice">${ds.map(d => `<button class="die ${d === shared ? 'all' : d.by !== null ? 'taken' : live && ok.includes(d) ? 'live' : ''}" data-a="die" data-i="${d.i}" ${live && ok.includes(d) ? '' : 'disabled'} aria-label="Würfel ${d.v}" data-info="Würfel ${d.v}: Gartenaktion in Zone ${d.v}, danach „${RONDEL_N[R.k]}“.${d.by !== null ? ' Schon vergeben.' : ''}${d === shared ? ' Diesen niedrigsten übrigen Würfel nutzen jetzt alle.' : ''}">${dieSvg(d.v, dieFill(d))}${d === shared ? '<span class="allb">alle</span>' : ''}</button>`).join('')}</div></div>`;
   };
@@ -1380,7 +1378,7 @@ function viewGame() {
   </div><div class="status" aria-label="Dein Vorrat"><span class="t rd" data-info="${esc(`Runde ${S.round} von ${ROUNDS}. Ereignis am Ende dieser Runde: ${EVENT_N[S.event]}.`)}">Runde ${S.round}/${ROUNDS}</span><span class="sc" data-info="${esc(`Kompost (${me.compost}): Beim Pflanzen oder Gießen darfst du je Kompost den Würfelwert um 1 verschieben (6 und 1 sind Nachbarn) und so in einer anderen Zone arbeiten.`)}">${icon('kompost')}${me.compost} Kompost</span><span class="sg" data-info="${esc(`Waren (${me.goods} von ${GOODS_MAX}): Je volle 5 Waren erreichst du einen Stern = sofort eine Bonusaktion. Beim Bauernmarkt gilt: je mehr Waren, desto mehr Aktionen.`)}">${icon('markt')}${me.goods} Waren</span><span class="t ss" data-info="${esc(`Punkte, wenn jetzt gewertet würde: Garten ${sc.garden}, Stauden ${sc.per}, Bienenstock ${sc.api}, Hof ${sc.yard}, Schuppen ${sc.shed}.`)}">★ ${sc.total}</span></div></div><div class="tbanner">${banner}</div></div>
   <div class="wrap">
     <section class="sec"><div class="sech"><h2 class="hand" data-info="${esc(RONDEL_HELP())}">Aktionsrondell</h2><button class="ibtn" data-a="info" data-info="${esc(RONDEL_HELP())}" aria-label="Erklärung zum Rondell">i</button></div>
-      <div class="rondel"><svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="37"/>${range(RONDEL.length).map(i => { const a = (i + .5) * 360 / RONDEL.length; return `<path d="M-1.6,-1.8 L1.4,0 L-1.6,1.8" transform="rotate(${a} 50 50) translate(50 13)"/>`; }).join('')}</svg>
+      <div class="rondel"><span class="trk" aria-hidden="true"></span>
         <div class="rcenter" data-info="${esc(`Ereignis der Runde ${S.round}: ${EVENT_INFO[S.event]}`)}">${evIc(S.event)}<small>Rundenende</small><b>${EVENT_N[S.event].split(':')[0]}</b><span>${EVENT_N[S.event].split(':')[1].trim()}</span></div>
         ${range(RONDEL.length).map(space).join('')}</div>
       <div class="evtrack" data-info="Ereignisse der Saison: Am Ende jeder Runde passiert für alle das Ereignis dieser Runde. Gelb = jetzt, blass = vorbei."><span class="lab">Ereignisse</span>${EVENTS.map((e, i) => `<span class="ev ${i + 1 === S.round ? 'now' : i + 1 < S.round ? 'done' : ''}" data-info="${esc(`Runde ${i + 1}: ${EVENT_N[e]}`)}">${evIc(e)}<i>${i + 1}</i></span>`).join('')}</div>
