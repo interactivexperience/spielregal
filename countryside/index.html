@@ -217,7 +217,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .start .hero{width:auto;max-width:none;margin:0 -16px;border-radius:0 0 28px 28px}
 .start{position:relative}
 /* Feste Kopfzeile mit Ansage durchscheinend: der Inhalt dahinter bleibt erkennbar */
-.top{background:rgba(236,231,226,.6);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3)}
+.top:not(.coach){background:rgba(236,231,226,.6);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3)}
 .top .banner{background:rgba(255,255,255,.7)}
 .top .banner.mine{background:rgba(75,58,110,.86)}
 /* Kartenhand (Owner-Vorbild: digitales „Root“): enger, gewölbter Fächer, der über den Footer-Rand ragt;
@@ -247,6 +247,14 @@ input,textarea{-webkit-user-select:text;user-select:text}
 [data-a=go]{cursor:pointer}
 .goflash{animation:goflash 1.2s ease-out}
 @keyframes goflash{0%,40%{box-shadow:0 0 0 4px var(--plum)}100%{box-shadow:0 0 0 0 rgba(75,58,110,0)}}
+/* Kopfzeile: Titel, Mitspieler und Vorräte mit milchigem Hintergrund; die Ansage schwebt ohne Band darunter */
+.top:not(.coach){background:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;padding:0!important;border-bottom:0!important;pointer-events:none}
+.top .thead{pointer-events:auto;padding:calc(8px + env(safe-area-inset-top)) 0 8px;background:rgba(236,231,226,.6);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);}
+.top .tbanner{pointer-events:none;padding-bottom:6px}
+.top .tbanner .banner{pointer-events:auto;box-shadow:0 8px 24px rgba(31,26,23,.18)}
+/* Ansage ohne Band dahinter: Kasten selbst deckend, damit er lesbar bleibt */
+.top .tbanner .banner{background:#fff}
+.top .tbanner .banner.mine{background:var(--plum)}
 </style>
 </head>
 <body>
@@ -1301,20 +1309,19 @@ function viewGame() {
   else banner = `<div data-a="go" class="banner"><span class="face">${face(p)}</span><div><b>${esc(p.name)} ist dran …</b><span class="small">${esc(S.log[0] || '')}</span></div></div>`;
   const chips = S.players.map((pl, i) => `<button class="pchip ${S.cur === i ? 'cur' : ''}" data-a="opp" data-p="${i}"><span class="av" style="background:${pl.mark}">${face(pl)}</span><span><span class="nm">${esc(pl.name)}</span><span class="st">★${pl.vp} · ${pl.coins} Mz.</span></span></button>`).join('');
   return `
-  <div class="top"><div class="row">
+  <div class="top"><div class="thead"><div class="row">
     <div class="round hand">${S.solo ? `Stapel ${5 - S.soloStacks.length}/5` : S.endTrig ? 'Letzte Züge' : 'Landgut'}<small>${S.solo ? 'Solo' : `Ziel: ${VP_END} SP`}</small></div>
     <span style="flex:1"></span>
     <button class="icobtn" data-a="menu" aria-label="Menü: Verlassen, Regeln"><svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
   </div><div class="row prow"><div class="players">${chips}</div>
-  </div>${statusHtml(me)}<div class="tbanner">${banner}</div></div>
+  </div>${statusHtml(me)}</div><div class="tbanner">${banner}</div></div>
   <div class="wrap">
     <section class="sec">${vpTrack()}</section>
     <section class="sec"><div class="sech"><h2 class="hand">Auslage</h2><span class="hint">${S.deck.length} im Stapel · ${S.discard.length} abgelegt</span></div>
       <div class="ring">${S.display.map((k, i) => cardHtml(k)).join('')}</div></section>
     <section class="sec"><div class="sech"><h2 class="hand">Aufträge</h2><span class="hint">Jeden Auftrag nur einmal</span></div><div class="orders">${S.otiles.map(orderTile).join('')}</div></section>
-    <section class="sec"><div class="sech"><h2 class="hand">Dein Landgut</h2><span class="hint">★ ${me.vp} SP</span></div>
-      ${goodsHtml(me)}
-      <div class="terrs" style="margin-top:10px">${me.terrs.map((tr, ti) => terrHtml(me, tr, ti)).join('')}</div></section>
+    <section class="sec"><div class="sech"><h2 class="hand">Dein Landgut</h2></div>
+      <div class="terrs">${me.terrs.map((tr, ti) => terrHtml(me, tr, ti)).join('')}</div></section>
     <section class="sec"><div class="sech"><h2 class="hand">Arbeitsplan</h2></div>${boardHtml(me, mine)}</section>
     <section class="sec"><div class="sech"><h2 class="hand">Chronik</h2><button class="link" data-a="logtoggle" style="font-size:12px">${U.logOpen ? 'weniger' : 'alles'}</button></div>
       <div class="log">${S.log.slice(0, U.logOpen ? 90 : 6).map(l => `<div>${esc(l)}</div>`).join('')}</div></section>
@@ -1548,7 +1555,7 @@ const TUT_STEPS = [
     text: 'Spielen wir einen <b>Kirschbaum</b>. Er braucht 5 Sonnenstunden. Tippe auf das Feld „5 Sonnen“.' },
   { ch: 'Zug 1 · Karte spielen', why: 'Die Sonne auf der Karte ist ihr Preis. Sonnenstunden sammelst du nicht an: Das Feld gibt sie dir nur für diese eine Karte.', sel: '[data-a=csel][data-k=kirschbaum]', allow: { csel: d => d.k === 'kirschbaum' }, done: () => U.tmp.card === 'kirschbaum', text: 'Wähle den Kirschbaum aus deiner Hand.' },
   { ch: 'Zug 1 · Karte spielen', why: 'Jede Karte gehört in ein bestimmtes Gebiet: Bäume auf die Wiese, Reben in den Garten, Tiere in den Stall.', sel: '[data-a=tplay]', allow: { tplay: true }, done: () => estate(TUT_ME()).includes('kirschbaum'), text: 'Er gehört auf eine <b>Wiese</b>. Tippe auf dein Wiesen-Gebiet.' },
-  { ch: 'Zug 1 · Waren', why: 'Waren brauchst du für Aufträge, oder du verkaufst sie für Münzen. Volle Körbe nehmen aber Platz für Münzen weg – zusammen sind es höchstens 15.', sel: '.stock', wait: false, done: null, text: 'Der Kirschbaum hat sofort eine <b>Kirsche</b> in einen Korb gelegt. Münzen und gefüllte Körbe teilen sich 15 Plätze. Deinen Vorrat siehst du immer oben in der Leiste.' },
+  { ch: 'Zug 1 · Waren', why: 'Waren brauchst du für Aufträge, oder du verkaufst sie für Münzen. Volle Körbe nehmen aber Platz für Münzen weg – zusammen sind es höchstens 15.', sel: '.status', wait: false, done: null, text: 'Der Kirschbaum hat sofort eine <b>Kirsche</b> in einen Korb gelegt. Münzen und gefüllte Körbe teilen sich 15 Plätze. Deinen Vorrat siehst du immer oben in der Leiste.' },
   { ch: 'Die anderen sind dran', why: 'Jede Person hat ihren eigenen Plan; nur die Auslage teilt ihr euch. Was andere nehmen, fehlt dir dort.', wait: true, done: () => isMyTurn(), text: () => `${esc(S.players[1].name)} ist dran …` },
   { ch: 'Zug 2 · Karte spielen', why: 'Fehlende Sonnenstunden mit Münzen zu bezahlen ist erlaubt. So spielst du teure Karten früher, als das Feld eigentlich hergibt.', sel: '[data-a=field][data-k=sun2]', allow: { field: d => d.k === 'sun2' }, done: () => myAsk() && S.ask.t === 'play',
     text: 'Jetzt eine <b>Rebe</b> für 3 Sonnenstunden. Das Feld „2 Sonnen + 2 Karten“ gibt nur 2, die dritte zahlst du mit einer <b>Münze</b>. Danach nimmst du 2 Karten. Tippe auf das Feld.' },

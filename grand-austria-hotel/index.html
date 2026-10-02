@@ -292,13 +292,21 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .start .hero{width:auto;max-width:none;margin:0 -16px;border-radius:0}
 .start{position:relative}
 /* Feste Kopfzeile mit Ansage durchscheinend: der Inhalt dahinter bleibt erkennbar */
-.top{background:rgba(247,240,227,.66);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.top:not(.coach){background:rgba(247,240,227,.66);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .top .banner{background:rgba(255,249,238,.8)}
 .top .banner.mine{background:rgba(255,233,168,.86)}
 /* Ansage antippbar: springt zur passenden Stelle */
 [data-a=go]{cursor:pointer}
 .goflash{animation:goflash 1.2s ease-out}
 @keyframes goflash{0%,40%{box-shadow:0 0 0 4px var(--red)}100%{box-shadow:0 0 0 0 rgba(228,71,46,0)}}
+/* Kopfzeile: Titel, Mitspieler und Vorräte mit milchigem Hintergrund; die Ansage schwebt ohne Band darunter */
+.top:not(.coach){background:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;padding:0!important;border-bottom:0!important;pointer-events:none}
+.top .thead{pointer-events:auto;padding:calc(6px + env(safe-area-inset-top)) 0 6px;background:rgba(247,240,227,.66);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:2.5px solid var(--ink);}
+.top .tbanner{pointer-events:none;padding-bottom:6px}
+.top .tbanner .banner{pointer-events:auto;box-shadow:0 8px 24px rgba(31,26,23,.18)}
+/* Ansage ohne Band dahinter: Kasten selbst deckend, damit er lesbar bleibt */
+.top .tbanner .banner{background:var(--cream)}
+.top .tbanner .banner.mine{background:#FFE9A8}
 </style>
 </head>
 <body>
@@ -1715,19 +1723,19 @@ function viewGame() {
     return `<div class="c ${i >= 3 ? '' : i === 0 ? 'th0' : 'th12'}">${i}<small class="ev">${EMP_VP[i]}</small><span class="mk">${here.map(pl => `<i style="background:${pl.mark}"></i>`).join('')}</span></div>`;
   }).join('');
   return `
-  <div class="top"><div class="row">
+  <div class="top"><div class="thead"><div class="row">
     <div class="round hand">Runde ${S.round}/${ROUNDS}<small>${S.seqIdx + 1}/${S.seq.length} Züge</small></div>
     <span style="flex:1"></span>
     <button class="icobtn" data-a="menu" aria-label="Menü: Verlassen, Regeln"><svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
   </div><div class="row prow"><div class="players">${S.players.map(playerChip).join('')}</div>
-  </div>${statusHtml(me)}<div class="tbanner">${banner}</div></div>
+  </div>${statusHtml(me)}</div><div class="tbanner">${banner}</div></div>
   <div class="wrap">
     ${perks}
     <section class="sec"><div class="sech"><h2 class="hand">Warteschlange</h2><span class="hint">${canGuest ? 'Antippen, um Gast an deinen Tisch zu holen' : 'max. 1 Gast pro Zug, vor dem Würfel'}</span></div>
       <div class="line">${line}</div></section>
     <section class="sec"><div class="sech"><h2 class="hand">Aktionsbrett</h2><span class="hint">Stärke = Anzahl Würfel auf dem Feld</span></div>
       <div class="board">${board}</div></section>
-    <section class="sec"><div class="sech"><h2 class="hand">Deine Tische</h2><span class="hint">${me.k} Kronen · ★ ${me.vp} SP</span></div>
+    <section class="sec"><div class="sech"><h2 class="hand">Deine Tische</h2></div>
       <div class="tables">${tables}</div>${kitchenHtml(me, true)}</section>
     <section class="sec"><div class="sech"><h2 class="hand">Dein Hotel</h2><span class="hint">${me.rooms.filter(x => x === 2).length} belegt · ${me.rooms.filter(x => x === 1).length} frei</span></div>
       ${hotelGrid(me)}
