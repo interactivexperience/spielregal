@@ -1544,7 +1544,8 @@ function askSheet() {
     h += `${SUITS.map(s => `<p class="label" style="margin-top:8px">${SUIT_N[s]}</p><div class="valrow">${pool.filter(c => suit(c) === s).map(c => `<button class="vb ${U.sel[0] === c ? 'on' : ''}" data-a="rotpick" data-c="${c}">${val(c)}</button>`).join('')}</div>`).join('')}
       <div class="btnrow"><button class="btn white" data-a="close">Abbrechen</button><button class="btn" data-a="askok" ${U.sel.length ? '' : 'disabled'}>Verlangen</button></div>`;
   }
-  return sheetWrap(h, false);
+  // ausblendbar (✕), damit Verlassen und Menü erreichbar bleiben; „Auswählen“ in der Handleiste holt es zurück
+  return sheetWrap(h, false).replace('<div class="grab"></div>', '<div class="grab"></div><button class="icobtn x" data-a="askhide" aria-label="Ausblenden">✕</button>');
 }
 function viewSheet() {
   const sh = U.sheet;
@@ -1745,6 +1746,7 @@ const H = {
   askskip: () => { resetSel(); U.sheet = null; answer(null); },
   askopt: d => { resetSel(); U.sheet = null; answer(d.k); },
   askopen: () => { U.sheet = { type: 'ask' }; },
+  askhide: () => { U.sheet = { type: 'hidden' }; },
   tsel: d => { const i = +d.i, k = U.sel.indexOf(i); if (k >= 0) U.sel.splice(k, 1); else if (U.sel.length < 2) U.sel.push(i); },
   hgt: d => { U.hg = Object.assign({}, U.hg, { trick: d.c }); },
   hgh: d => { U.hg = Object.assign({}, U.hg, { hand: d.c }); },

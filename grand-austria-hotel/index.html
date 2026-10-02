@@ -55,6 +55,7 @@ button:disabled{cursor:default}
 .round{font-size:26px;line-height:1;white-space:nowrap}
 .round small{font-family:"Space Mono",monospace;font-size:11px;color:var(--muted);display:block;margin-top:2px}
 .icobtn{width:40px;height:40px;border:2px solid var(--ink);border-radius:50%;background:#fff;font-weight:800;font-size:18px;flex:none;display:grid;place-items:center}
+.room .rvp{position:absolute;left:50%;bottom:3px;transform:translateX(-50%);font-size:10px;font-weight:800;background:#F1B02B;border:1.5px solid #161616;border-radius:6px;padding:0 3px}
 .tok.tx{font-size:9.5px;font-weight:700;padding:1px 4px;border:1.5px solid #161616;border-radius:6px;background:#FFF9EE;white-space:nowrap}
 .banner.perks .perk{margin:6px 6px 0 0;min-height:36px;font-size:13.5px}
 .icobtn.leave{width:auto;padding:0 12px 0 10px;border-radius:999px;display:flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap}
@@ -315,6 +316,9 @@ const FLOOR_VP = [1, 2, 3, 4];
 const LAYOUT = ['byrrb', 'yyrry', 'brbyy', 'brbrb'];
 const ROOM_COLOR = LAYOUT.join('').split('');
 const FLOOR_COST = [0, 1, 2, 3];
+// Aufgedruckte Siegpunkte oben rechts im Hotelplan: sofort beim Belegen des Feldes mit einem Zimmerplättchen
+const ROOM_VP = { 13: 1, 14: 1, 17: 2, 18: 2, 19: 2 };
+function placeTile(p, i) { p.rooms[i] = 1; const v = ROOM_VP[i]; if (v && !p.automa) { p.vp += v; log(`${p.name} erhält ${v} SP für das Zimmer oben rechts.`); } }
 // Auslastungsbonus nach Farbe und Gruppengröße (Tabellen auf dem Dach des Hotelplans)
 const GROUP_BONUS = { b: [0, 2, 5, 9, 15], r: [0, 1, 3, 6, 10], y: [0, 1, 3, 6, 10] };
 function neighbors(i) {
@@ -894,7 +898,7 @@ function prepareRoom(p, i, free) {
   const cost = free ? 0 : roomCost(p, i);
   if (p.k < cost) return false;
   p.k -= cost;
-  p.rooms[i] = 1;
+  placeTile(p, i);
   checkWaiting(p);
   return true;
 }
@@ -1193,7 +1197,7 @@ function freeRoomsOf(p, c) { return range(20).filter(i => p.rooms[i] === 1 && (c
 function guestValue(id) { const r = GUESTS[id][3]; return (r.vp || 0) + rewValue(r) * 0.8; }
 function roomScore(p, i) {
   const c = ROOM_COLOR[i];
-  let s = 1.4 - roomCost(p, i) * 0.3;
+  let s = 1.4 - roomCost(p, i) * 0.3 + (ROOM_VP[i] || 0) * 0.8;
   const wanting = p.tables.filter(g => g && (GUESTS[g.id][1] === c)).length;
   if (wanting > freeRoomsOf(p, c)) s += 3;
   const grp = GROUPS[GROUP_OF[i]];
@@ -1300,7 +1304,7 @@ function bestFlip(p) { const c = range(20).filter(i => p.rooms[i] === 1); c.sort
 function buildRoom(p, maxFloor) {
   const c = range(20).filter(i => Math.floor(i / 5) <= maxFloor && roomOK(p, i)).sort((a, b) => roomScore(p, b) - roomScore(p, a));
   if (!c.length) return false;
-  p.rooms[c[0]] = 1; const m = occupy(p, c[0], -1); log(`${p.name} richtet ein Zimmer ein und bezieht es${m}.`); return true;
+  placeTile(p, c[0]); const m = occupy(p, c[0], -1); log(`${p.name} richtet ein Zimmer ein und bezieht es${m}.`); return true;
 }
 function playBest(p, disc, only) {
   let best = null, bv = -1;
@@ -1312,7 +1316,7 @@ function botFree(p) {
   while (p.foodAny > 0) { p.foodAny--; const f = bestFood(p); p.fresh[f]++; }
   if (p.freeRooms > 0) { const rs = botRooms(p, p.freeRooms, true); for (const i of rs) if (prepareRoom(p, i, true)) p.freeRooms--; if (!rs.length) p.freeRooms = 0; }
   while (p.freeLow > 0) { p.freeLow--; const c = range(10).filter(i => roomOK(p, i)).sort((a, b) => roomScore(p, b) - roomScore(p, a)); if (c.length) prepareRoom(p, c[0], true); }
-  while (p.paidRooms.length) { const d = p.paidRooms.shift(); const c = range(20).filter(i => roomOK(p, i) && roomCost(p, i, d) <= p.k - 1).sort((a, b) => roomScore(p, b) - roomScore(p, a)); if (c.length && roomScore(p, c[0]) > 0.6) { p.k -= roomCost(p, c[0], d); p.rooms[c[0]] = 1; checkWaiting(p); } }
+  while (p.paidRooms.length) { const d = p.paidRooms.shift(); const c = range(20).filter(i => roomOK(p, i) && roomCost(p, i, d) <= p.k - 1).sort((a, b) => roomScore(p, b) - roomScore(p, a)); if (c.length && roomScore(p, c[0]) > 0.6) { p.k -= roomCost(p, c[0], d); placeTile(p, c[0]); checkWaiting(p); } }
   while (p.flips > 0) { p.flips--; const r = bestFlip(p); if (r >= 0) flipRoom(p, r); }
   while (p.builds.length) buildRoom(p, p.builds.shift());
   while (p.staffPlays.length) playBest(p, p.staffPlays.shift());
@@ -1515,7 +1519,7 @@ function roomTile(p, i, mode) {
     return `<div class="room p grainy ${sel ? 'sel' : ''} ${ok ? 'ok' : ''}" style="background:${COL[c]}" ${attrs}><svg viewBox="0 0 100 100" class="curt" aria-hidden="true"><g filter="url(#wob)" stroke="#161616" stroke-width="3"><path d="M8,6 C30,30 26,70 12,96 L8,96 Z" fill="#FFF9EE"/><path d="M92,6 C70,30 74,70 88,96 L92,96 Z" fill="#FFF9EE"/><path d="M30,80 H70 V90 H30 Z" fill="#FFF9EE"/></g></svg>${sel ? '<span class="tag">neu</span>' : ''}</div>`;
   }
   if (sel) return `<div class="room p sel grainy" style="background:${COL[c]}" ${attrs}><span class="tag">✓ ${mode.free ? 'gratis' : roomCost(p, i) + ' K'}</span></div>`;
-  return `<div class="room e ${ok ? 'ok' : ''}" ${attrs}><span class="dot" style="background:${COL[c]}"></span><span class="cc">${coinSvg()}${roomCost(p, i)}</span></div>`;
+  return `<div class="room e ${ok ? 'ok' : ''}" ${attrs}><span class="dot" style="background:${COL[c]}"></span><span class="cc">${coinSvg()}${roomCost(p, i)}</span>${ROOM_VP[i] ? `<span class="rvp">+${ROOM_VP[i]}★</span>` : ''}</div>`;
 }
 function hotelGrid(p, mode) {
   let h = '<div class="hotel">' + roofSvg(p.bot ? `Hotel ${p.name}` : 'Dein Hotel') + '<div class="rooms">';
@@ -1817,9 +1821,9 @@ function rulesHtml() {
   <p>Wie im Original: Jedes bezogene Zimmer bringt 1/2/3/4 SP je nach Etage, jede übrige Krone und Ware 1 SP. Dazu kommen die Boni deines Personals. Jeder Gast, der noch im Café sitzt, kostet <b>5 SP</b>. Bei Gleichstand gewinnt, wer mehr Kronen und Waren übrig hat.</p>
   <h4>Unterschiede zum Original</h4>
   <p style="font-size:13px">Diese Regeln folgen <i>Grand Austria Hotel</i>: die Aktionen samt Joker und Verstärken, Kronen-Obergrenze, Kaiserwertung mit Zurücksetzen, Spielaufbau, U-förmige Zugreihenfolge, Politik und Schlusswertung. Den Ablauf der Solovariante mit Leopold übernimmt das Spiel ebenfalls.</p>
-  <p style="font-size:13px">Aus dem Anhang des Regelhefts übernommen: die Effekte aller 48 Personalkarten, die Belohnungen aller Gästekarten (49–104, 117, 118), die 12 Politikkarten (je eine A, B und C pro Partie) und die 12 Kaiserplättchen mit Bonus und Strafe; vom Spielplan die Kaiserleiste (SP je Feld), die Kosten der Gästereihe (3/2/1/0/0 Kronen), der Hotelplan mit seinen 10 Farbgruppen und die Auslastungsboni (Blau 2/5/9/15 SP, Rot 1/3/6/10 Kronen, Gelb 1/3/6/10 Kaiserschritte).</p>
+  <p style="font-size:13px">Aus dem Anhang des Regelhefts übernommen: die Effekte aller 48 Personalkarten, die Belohnungen aller Gästekarten (49–104, 117, 118), die 12 Politikkarten (je eine A, B und C pro Partie) und die 12 Kaiserplättchen mit Bonus und Strafe; vom Spielplan die Kaiserleiste (SP je Feld), die Kosten der Gästereihe (3/2/1/0/0 Kronen), der Hotelplan mit seinen 10 Farbgruppen und den aufgedruckten Sofort-Siegpunkten oben rechts (1 bzw. 2 SP) und die Auslastungsboni (Blau 2/5/9/15 SP, Rot 1/3/6/10 Kronen, Gelb 1/3/6/10 Kaiserschritte).</p>
   <p style="font-size:13px">Was nur auf den Kartenbildern steht, ist geschätzt: Kosten der Personalkarten, Farbe, Bestellung und Siegpunkte der Gäste, die SP-Werte der Politikkarten (15/10/5), die Werte der Personalkarten 46 und 47 (5 bzw. 4 SP) sowie der Inhalt von Leopolds 20 Anweisungskarten. Namen, die das Regelheft nicht nennt, sind eigene. Auch die Illustrationen sind eigene Entwürfe.</p>
-  <p style="font-size:13px">Vereinfacht: kein Personal-Draft im Mehrpersonenspiel, Gäste ziehen automatisch in ein passendes Zimmer ein, kein Passen; Personal „einmal pro Runde“ liefert seine Ware automatisch zu Beginn deines ersten Zuges der Runde; nicht genutzte Extras setzt das Spiel am Zugende automatisch ein.</p>`;
+  <p style="font-size:13px">Vereinfacht: nur eine Seite des doppelseitigen Hotelplans, kein Personal-Draft im Mehrpersonenspiel, Gäste ziehen automatisch in ein passendes Zimmer ein, kein Passen; Personal „einmal pro Runde“ liefert seine Ware automatisch zu Beginn deines ersten Zuges der Runde; nicht genutzte Extras setzt das Spiel am Zugende automatisch ein.</p>`;
 }
 
 // ---------- Render & Events ----------
@@ -2013,9 +2017,9 @@ const H = {
   gizia: () => { U.sheet = { type: 'gizia' }; },
   perkskip: d => { const me = human(); if (Array.isArray(me[d.k])) me[d.k].shift(); else me[d.k] = Math.max(0, me[d.k] - 1); U.sheet = null; },
   lowpick: d => { const me = human(); if (prepareRoom(me, +d.i, true)) me.freeLow--; U.sheet = null; },
-  paidpick: d => { const me = human(), i = +d.i, dd = me.paidRooms[0] || 0, c = roomCost(me, i, dd); if (!roomOK(me, i) || c > me.k) return; me.k -= c; me.rooms[i] = 1; me.paidRooms.shift(); checkWaiting(me); U.sheet = null; },
+  paidpick: d => { const me = human(), i = +d.i, dd = me.paidRooms[0] || 0, c = roomCost(me, i, dd); if (!roomOK(me, i) || c > me.k) return; me.k -= c; placeTile(me, i); me.paidRooms.shift(); checkWaiting(me); U.sheet = null; },
   flippick: d => { const me = human(); if (flipRoom(me, +d.i)) { me.flips--; U.sheet = null; } },
-  buildpick: d => { const me = human(), i = +d.i; if (!roomOK(me, i)) return; me.builds.shift(); me.rooms[i] = 1; log(`${me.name} richtet ein Zimmer ein und bezieht es${occupy(me, i, -1)}.`); U.sheet = null; },
+  buildpick: d => { const me = human(), i = +d.i; if (!roomOK(me, i)) return; me.builds.shift(); placeTile(me, i); log(`${me.name} richtet ein Zimmer ein und bezieht es${occupy(me, i, -1)}.`); U.sheet = null; },
   splaypick: d => { const me = human(), dd = me.staffPlays[0], c = hire(me, +d.id, dd); if (c !== false) { me.staffPlays.shift(); log(`${me.name} spielt ${STAFF[+d.id].n} aus (${c} K).`); U.sheet = null; } },
   d3pick: d => { const me = human(), sh = U.sheet, id = +d.id; me.hand.push(id); const c = hire(me, id, sh.d); if (c === false) { me.hand.pop(); return; } log(`${me.name} spielt ${STAFF[id].n} aus (${c} K).`); S.staffDeck.push(...sh.ids.filter(x => x !== id)); U.sheet = null; },
   d3none: () => { S.staffDeck.push(...U.sheet.ids); U.sheet = null; },
