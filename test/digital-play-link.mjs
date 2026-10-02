@@ -62,7 +62,7 @@ for (const [name, href] of [["Three Sisters", "three-sisters/"], ["Rebel Princes
   await page.locator(`text=${name}`).first().click();
   await page.waitForTimeout(800);
   const l = page.locator("a:has-text('Im Browser spielen')");
-  if ((await l.count()) !== 1 || (await l.getAttribute("href")) !== href) { console.log(`FEHLER: Link bei ${name}`); fehler++; }
+  if ((await l.count()) !== 1 || !(await l.getAttribute("href")).startsWith(href + "?v=")) { console.log(`FEHLER: Link bei ${name}`); fehler++; }
   await page.locator('[aria-label="Zurück"]').first().click();
   await page.waitForTimeout(500);
 }
