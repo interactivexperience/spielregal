@@ -97,6 +97,9 @@ der Partie im Menü (☰), nicht in der Kopfzeile. **Langes Drücken** (≈0,45 
 Infos zu bekommen“); neue Spielelemente bekommen einen erklärenden `data-info`-Text. Textauswahl ist in den Spielen abgeschaltet (iOS-Lupe/Menü
 beim langen Drücken), außer in Eingabefeldern. Die Ansage („Du bist dran …“) steht kompakt in der
 Kopfzeile und bleibt beim Scrollen sichtbar (Prinzessinnenball: Ansage in der festen Handleiste).
+Landgut: Handkarten liegen als Fächer fest im Footer (leicht überlappend und gedreht wie echte Handkarten);
+antippen = Großansicht mit den passenden Sonnenfeldern (inkl. Münzkosten), „Einsetzen“ per Knopf oder Wisch nach oben
+(setzt die Arbeitskraft und wählt die Karte im Spielfenster vor). Im Lernspiel ist der Fächer ausgeblendet.
 
 Jedes Spiel hat einen eigenen Smoke-Test in `test/` (`gah-smoke.mjs`,
 `rebel-princess-smoke.mjs`, `three-sisters-smoke.mjs`, `countryside-smoke.mjs`); nach Änderungen an einem Spiel

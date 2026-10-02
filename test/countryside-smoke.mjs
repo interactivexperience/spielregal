@@ -68,7 +68,7 @@ async function playUi(label, bots) {
   await page.click("text=Landgut übernehmen");
   await page.waitForSelector(".sheet");
   await page.click("[data-a=fast]").catch(() => {});
-  let acts = 0, asks = 0, guard = 0, shot = false;
+  let acts = 0, asks = 0, guard = 0, shot = false, zooms = 0, swipes = 0;
   while (guard++ < 3000) {
     if (await page.locator("text=Neue Partie").count()) break;
     const sheet = page.locator(".sheet");
@@ -93,12 +93,25 @@ async function playUi(label, bots) {
       if (await sheet.locator("[data-a=askskip]").count()) { await sheet.locator("[data-a=askskip]").click({ force: true }); continue; }
       fail("Unbekannter Dialog " + t); break;
     }
+    if (await page.locator(".zoom").count()) { await page.click(".zoom [data-a=zback]"); continue; }
     if (await page.locator("[data-a=askopen]").count()) { await page.locator("[data-a=askopen]").first().click({ force: true }); continue; }
     if (await page.locator("[data-a=endday]").count()) {
       acts++;
+      // Handkarten-Fächer im Footer: ab und zu eine Karte groß ansehen und per Wisch nach oben einsetzen
+      const hc = page.locator(".hcard");
+      if (acts % 3 === 1 && (await hc.count())) {
+        await hc.last().click(); zooms++;
+        if (await page.locator(".zoom .zopt").count()) {
+          const z = await page.locator(".zcard").boundingBox();
+          await page.mouse.move(z.x + z.width / 2, z.y + z.height / 2); await page.mouse.down();
+          await page.mouse.move(z.x + z.width / 2, z.y + z.height / 2 - 120, { steps: 5 }); await page.mouse.up();
+          swipes++;
+        }
+        continue;
+      }
       const live = page.locator(".fld.live");
       const n = await live.count();
-      if (n && acts % 4 !== 0) { await live.nth(acts % n).click({ force: true }); }
+      if (n && acts % 4 !== 0) { const f = live.nth(acts % n); await f.evaluate((e) => e.scrollIntoView({ block: "center" })); await f.click({ force: true }); }
       else await page.click("[data-a=endday]", { force: true });
       if (!shot && shots && acts === 6) { await page.waitForTimeout(200); await page.screenshot({ path: `${shots}/lg-2-game-${label}.png`, fullPage: true }); shot = true; }
       continue;
@@ -106,7 +119,8 @@ async function playUi(label, bots) {
     await page.waitForTimeout(80);
   }
   if (!(await page.locator("text=Neue Partie").count())) fail(`UI-Partie ${label} nicht beendet (guard ${guard}, Aktionen ${acts})`);
-  console.log(`UI-Partie ${label}: ${acts} Züge, ${asks} Dialoge.`);
+  console.log(`UI-Partie ${label}: ${acts} Züge, ${asks} Dialoge, ${zooms}× Karte groß, ${swipes}× eingesetzt per Wisch.`);
+  if (!zooms) fail(`${label}: Handkarten-Fächer nie benutzt`);
   if (shots) await page.screenshot({ path: `${shots}/lg-4-end-${label}.png`, fullPage: true });
   await page.click("[data-a=newgame]");
 }
