@@ -9,79 +9,85 @@
 <title>Landgut</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+/* App-Stil (Owner-Referenzen „App Style für Landgut“): warmer Greige-Grund, weiße und pastellige
+   Karten mit großen Radien, geometrische Grotesk (Outfit), gelbe Pill-Knöpfe, tiefes Lila für „du bist dran“ */
 :root{
-  --sky:#C9DAE3; --sky2:#F4EAD5; --paper:#F4EAD5; --card:#FFFAF0; --ink:#4A4038; --muted:#8A7E72; --line:#E6DDCF;
-  --wiese:#8FA66A; --haus:#D27C6E; --stall:#6E8FA8; --acker:#D2A644; --garten:#B5607A;
-  --rose:#B94A35; --gold:#E0B03E; --leaf:#6F7D45; --wood:#C98B57;
+  --bg:#ECE7E2; --sky:#D6E4F2; --sky2:#F5F1EC; --paper:#F5F1EC; --card:#FFFFFF; --soft:#F5F1EC; --ink:#1F1A17; --muted:#857C74; --line:#E4DDD5;
+  --wiese:#7C9A4A; --haus:#D9735F; --stall:#5B86B5; --acker:#E2A21E; --garten:#8C74D6;
+  --rose:#E8641C; --gold:#FDBA2C; --gold-d:#E8A10E; --leaf:#7C9A4A; --wood:#C98B57; --plum:#4B3A6E;
+  --p-pink:#F6D6D1; --p-lav:#E3DCFB; --p-sage:#DFE8CF; --p-sky:#D6E4F2; --p-sun:#FCE7B0; --p-sand:#DDD3C7;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
-body{background:#F1E6D0;color:var(--ink);font:15px/1.45 "Nunito",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior-y:contain;overflow-x:hidden}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 "Outfit",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior-y:contain;overflow-x:hidden}
 #app{position:relative}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
-.hand{font-family:"Kalam","Comic Sans MS",cursive;font-weight:700;letter-spacing:-.2px}
+.hand{font-family:"Outfit",system-ui,sans-serif;font-weight:700;letter-spacing:-.6px}
 .wrap{max-width:560px;margin:0 auto;padding:0 16px 150px;overflow-x:clip}
 .ill{display:block;width:100%;height:100%;overflow:visible}
-.start{padding-top:8px;text-align:center}
-.start h1{font-size:clamp(46px,14vw,66px);line-height:.9;margin:6px 0 4px;color:var(--rose)}
-.sub{font-size:13.5px;color:var(--muted);margin:0 0 14px}
-.hero{width:100%;max-width:460px;margin:0 auto;aspect-ratio:360/240;border-radius:26px;overflow:hidden;box-shadow:0 10px 24px rgba(74,64,56,.12)}
-.panel{background:rgba(255,253,248,.9);border-radius:22px;padding:16px;text-align:left;margin:14px 0;box-shadow:0 4px 14px rgba(74,64,56,.08)}
-.label{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:1.1px;color:var(--muted);margin:0 0 6px}
-.input{width:100%;font:inherit;font-size:16px;padding:11px 14px;border:0;border-radius:14px;background:#EADCC2;color:var(--ink)}
+.start{padding-top:8px;text-align:left}
+.start h1{font-size:clamp(56px,18vw,84px);line-height:.88;margin:18px 0 6px;color:var(--ink);font-weight:800;letter-spacing:-2.5px}
+.sub{font-size:15px;color:var(--muted);margin:0 0 16px;max-width:30em}
+.hero{width:100%;margin:0 auto;aspect-ratio:360/240;border-radius:28px;overflow:hidden}
+.panel{background:var(--card);border-radius:28px;padding:18px;text-align:left;margin:16px 0}
+.label{font-size:13px;font-weight:600;color:var(--muted);margin:0 0 8px}
+.input{width:100%;font:inherit;font-size:16px;padding:13px 16px;border:0;border-radius:18px;background:var(--soft);color:var(--ink)}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
-.chip{border-radius:999px;padding:8px 14px;background:#EADCC2;font-weight:800;color:var(--ink)}
-.chip.on{background:var(--rose);color:#fff}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 20px;border-radius:999px;background:var(--rose);color:#fff;font-weight:800;font-size:16px;box-shadow:0 4px 0 #7E2F20}
-.btn:active{transform:translateY(2px);box-shadow:0 2px 0 #7E2F20}
-.btn.white{background:var(--card);color:var(--ink);box-shadow:0 4px 0 var(--line)}
-.btn.green{background:var(--leaf);box-shadow:0 4px 0 #4B5530}
-.btn:disabled{opacity:.4;box-shadow:none}
+.chip{border-radius:999px;min-width:48px;padding:10px 14px;background:var(--soft);font-weight:600;color:var(--ink)}
+.chip.on{background:var(--gold);color:var(--ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:54px;padding:12px 22px;border-radius:999px;background:var(--gold);color:var(--ink);font-weight:600;font-size:17px;transition:transform .1s}
+.btn:active{transform:scale(.98)}
+.btn.white{background:var(--card);color:var(--ink)}
+.btn.green{background:var(--plum);color:#fff}
+.btn:disabled{opacity:.4}
 .btn.wide{width:100%}
-.btn.sm{min-height:36px;padding:6px 14px;font-size:14px}
-.link{text-decoration:underline;text-decoration-color:var(--rose);text-decoration-thickness:2px;text-underline-offset:4px;font-weight:800}
-.note{font-size:12.5px;color:var(--muted);background:#EADCC2;border-radius:12px;padding:7px 10px;margin-top:8px}
-.top{position:sticky;top:0;z-index:30;background:rgba(241,230,208,.94);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:calc(6px + env(safe-area-inset-top)) 0 6px;box-shadow:0 2px 10px rgba(74,64,56,.08)}
+.btn.sm{min-height:38px;padding:6px 16px;font-size:14px}
+.link{text-decoration:underline;text-decoration-color:var(--gold);text-decoration-thickness:3px;text-underline-offset:5px;font-weight:600}
+.note{font-size:13px;color:var(--muted);background:var(--soft);border-radius:16px;padding:9px 12px;margin-top:10px}
+.top{position:sticky;top:0;z-index:30;background:rgba(236,231,226,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:calc(8px + env(safe-area-inset-top)) 0 8px}
 .top .row{max-width:560px;margin:0 auto;padding:0 16px;display:flex;align-items:center;gap:10px}
-.round{font-size:22px;line-height:1;white-space:nowrap;color:var(--rose)}
-.round small{font-family:"Nunito";font-weight:700;font-size:11px;color:var(--muted);display:block;margin-top:2px}
-.icobtn{width:40px;height:40px;border-radius:50%;background:var(--card);font-weight:800;font-size:17px;flex:none;display:grid;place-items:center;box-shadow:0 2px 6px rgba(74,64,56,.12)}
-.icobtn.leave{width:auto;padding:0 12px 0 10px;border-radius:999px;display:flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap}
-.backlink{display:block;text-align:left;margin:4px 0 2px;font-weight:800;font-size:13.5px;color:inherit;text-decoration:none;opacity:.75}
+.round{font-size:19px;line-height:1;white-space:nowrap;color:var(--ink)}
+.round small{font-family:"Outfit",system-ui,sans-serif;font-weight:500;font-size:11.5px;color:var(--muted);display:block;margin-top:3px;letter-spacing:0}
+.icobtn{width:40px;height:40px;border-radius:50%;background:var(--card);font-weight:700;font-size:17px;flex:none;display:grid;place-items:center}
+.icobtn.leave{width:auto;padding:0 12px 0 10px;border-radius:999px;display:flex;align-items:center;gap:5px;font-size:13px;font-weight:600;white-space:nowrap}
+@media (max-width:430px){.round{font-size:16px}.round small{display:none}.top .row{gap:7px}}
+.backlink{display:block;text-align:left;margin:4px 0 2px;font-weight:600;font-size:13.5px;color:inherit;text-decoration:none;opacity:.75}
 .players{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;padding:2px}
 .players::-webkit-scrollbar{display:none}
-.pchip{flex:none;display:flex;align-items:center;gap:6px;border-radius:999px;background:var(--card);padding:3px 10px 3px 3px;text-align:left;box-shadow:0 2px 6px rgba(74,64,56,.1)}
-.pchip.cur{background:#FBE6B5}
-.pchip .av{width:32px;height:32px;border-radius:50%;overflow:hidden;flex:none}
-.pchip .nm{font-size:12px;font-weight:800;max-width:84px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
-.pchip .st{font-size:11px;font-weight:700;color:var(--muted)}
-.sec{margin:20px 0 0}
-.sech{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 8px}
-.sech h2{font-size:26px;margin:0;line-height:1;color:var(--rose)}
-.sech .hint{font-size:12px;color:var(--muted);text-align:right}
-.banner{margin:14px 0 0;border-radius:20px;padding:10px 12px;background:var(--card);display:flex;gap:10px;align-items:center;box-shadow:0 3px 10px rgba(74,64,56,.08)}
-.banner.mine{background:#FFF3D6}
-.banner .face{width:44px;height:44px;flex:none;border-radius:50%;overflow:hidden;background:#E4EFE8}
-.banner b{display:block}
-.banner .small{font-size:12.5px;color:var(--muted)}
+.pchip{flex:none;display:flex;align-items:center;gap:6px;border-radius:999px;background:var(--card);padding:3px 12px 3px 3px;text-align:left}
+.pchip.cur{background:var(--gold)}
+.pchip .av{width:34px;height:34px;border-radius:50%;overflow:hidden;flex:none}
+.pchip .nm{font-size:12.5px;font-weight:600;max-width:84px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.pchip .st{font-size:11px;font-weight:500;color:var(--muted)}
+.pchip.cur .st{color:var(--ink)}
+.sec{margin:26px 0 0}
+.sech{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 10px}
+.sech h2{font-size:24px;margin:0;line-height:1;color:var(--ink)}
+.sech .hint{font-size:13px;color:var(--muted);text-align:right}
+.banner{margin:14px 0 0;border-radius:24px;padding:12px 14px;background:var(--card);display:flex;gap:12px;align-items:center}
+.banner.mine{background:var(--plum);color:#fff}
+.banner.mine .small{color:rgba(255,255,255,.75)}
+.banner .face{width:46px;height:46px;flex:none;border-radius:50%;overflow:hidden;background:var(--p-sun)}
+.banner b{display:block;font-weight:600;font-size:16px}
+.banner .small{font-size:13px;color:var(--muted)}
 /* Siegpunktleiste */
-.vptrack{position:relative;height:40px;border-radius:14px;overflow:hidden;background:linear-gradient(90deg,#F3E4EA,#EAD3DC);box-shadow:inset 0 0 0 1px #E2CCD5}
-.vptrack .tick{position:absolute;top:0;bottom:0;border-left:1px solid rgba(162,58,90,.18);font-size:9px;color:var(--rose);padding-left:2px}
+.vptrack{position:relative;height:44px;border-radius:999px;overflow:hidden;background:var(--card)}
+.vptrack .tick{position:absolute;top:0;bottom:0;border-left:1px solid var(--line);font-size:9.5px;color:var(--muted);padding:3px 0 0 3px}
 .vptrack .pm{position:absolute;top:13px;width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transform:translateX(-50%)}
 /* Karten */
-.pc{display:flex;flex-direction:column;justify-content:flex-start;position:relative;width:104px;flex:none;border-radius:12px;background:#fff;padding:4px;box-shadow:0 3px 8px rgba(74,64,56,.16);text-align:left}
-.pc .art{height:76px;border-radius:9px;overflow:hidden;background:#EEF4F1}
+.pc{display:flex;flex-direction:column;justify-content:flex-start;position:relative;width:104px;flex:none;border-radius:18px;background:#fff;padding:5px;text-align:left}
+.pc .art{height:76px;border-radius:14px;overflow:hidden;background:#EEF4F1}
 .pc .sun{position:absolute;left:2px;top:2px;width:24px;height:24px}
 .pc .ty{position:absolute;left:6px;top:28px;width:18px;height:18px;border-radius:5px;display:grid;place-items:center}
-.pc .nm{font-size:11.5px;font-weight:800;margin:3px 2px 0;line-height:1.1}
+.pc .nm{font-size:12px;font-weight:600;margin:3px 2px 0;line-height:1.1}
 .pc .fx{font-size:9.6px;line-height:1.15;color:var(--muted);margin:1px 2px 0;min-height:22px}
 .pc .gr{position:absolute;right:6px;top:6px;width:18px;height:18px}
 .pc .bk{position:absolute;right:6px;bottom:30px;display:flex;gap:1px}
-.pc.sel{outline:3px solid var(--rose);outline-offset:2px}
+.pc.sel{outline:3px solid var(--ink);outline-offset:2px}
 .pc.dim{opacity:.4}
-.pc.ok{box-shadow:0 0 0 2.5px var(--leaf),0 3px 8px rgba(74,64,56,.16)}
+.pc.ok{box-shadow:0 0 0 3px var(--gold)}
 .pc.sm{width:78px}.pc.sm .art{height:52px}.pc.sm .fx{display:none}.pc.sm .nm{font-size:10.5px}
 .row-scroll{display:flex;gap:8px;overflow-x:auto;padding:6px 2px 10px;scrollbar-width:none}
 .row-scroll::-webkit-scrollbar{display:none}
@@ -90,85 +96,90 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .ring .pc{width:auto}
 /* Gebiete */
 .terrs{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
-.terr{min-width:0;border-radius:18px;padding:8px;background:var(--card);box-shadow:0 3px 10px rgba(74,64,56,.08)}
+.terr{min-width:0;border-radius:24px;padding:10px;background:var(--card)}
 .terr .th{display:flex;align-items:center;gap:8px}
-.terr .th .tart{width:66px;height:44px;border-radius:10px;overflow:hidden;flex:none}
-.terr .th b{font-size:14px}
+.terr .th .tart{width:66px;height:46px;border-radius:14px;overflow:hidden;flex:none}
+.terr .th b{font-size:15px;font-weight:600}
 .terr .th small{display:block;font-size:11.5px;color:var(--muted);line-height:1.2}
 .terr .slots{display:flex;gap:6px;overflow-x:auto;padding:8px 2px 2px;scrollbar-width:none}
-.terr .slot{width:78px;height:96px;border-radius:12px;border:2px dashed var(--line);flex:none}
-.terr.can{box-shadow:0 0 0 3px var(--leaf)}
-.terr .ord{font-size:12px;border-radius:10px;padding:5px 8px;margin-top:6px;background:#F7F1E6}
-.terr .ord.done{background:#E4EFD9;text-decoration:line-through;color:var(--muted)}
+.terr .slot{width:78px;height:96px;border-radius:16px;border:2px dashed rgba(31,26,23,.18);flex:none}
+.terr.can{box-shadow:0 0 0 3px var(--gold)}
+.terr .ord{font-size:12.5px;border-radius:14px;padding:6px 10px;margin-top:8px;background:rgba(255,255,255,.7)}
+.terr .ord.done{background:rgba(255,255,255,.4);text-decoration:line-through;color:var(--muted)}
 .tybadge{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;color:#fff;font-size:11px;font-weight:800;vertical-align:middle}
 /* Vorrat */
 .stock{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.gd{display:inline-flex;align-items:center;gap:3px;background:var(--card);border-radius:999px;padding:2px 8px 2px 3px;font-weight:800;font-size:13px;box-shadow:0 1px 4px rgba(74,64,56,.1)}
+.gd{display:inline-flex;align-items:center;gap:3px;background:var(--card);border-radius:999px;padding:3px 10px 3px 4px;font-weight:600;font-size:13.5px}
 .gd svg{width:22px;height:22px}
 /* Arbeitsplan */
-.board{border-radius:18px;padding:10px;background:linear-gradient(180deg,#E7B98A,#D9A06C);box-shadow:inset 0 0 0 2px rgba(255,255,255,.25),0 4px 12px rgba(74,64,56,.15)}
-.board .bank{display:flex;gap:6px;align-items:center;margin-bottom:8px;font-size:12px;font-weight:800;color:#5B3B22}
+.board{border-radius:28px;padding:12px;background:var(--p-sun)}
+.board .bank{display:flex;gap:6px;align-items:center;margin-bottom:10px;font-size:13px;font-weight:600;color:var(--ink)}
 .board .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
-.fld{position:relative;border-radius:12px;background:#F7E3C8;padding:7px 8px 7px 34px;text-align:left;font-size:11.5px;line-height:1.2;min-height:52px;box-shadow:0 2px 0 rgba(91,59,34,.25)}
-.fld b{display:block;font-size:12.5px}
+.fld{position:relative;border-radius:18px;background:#fff;padding:9px 9px 9px 36px;text-align:left;font-size:11.5px;line-height:1.2;min-height:56px;color:var(--muted)}
+.fld b{display:block;font-size:13px;font-weight:600;color:var(--ink)}
 .fld .wk{position:absolute;left:6px;top:50%;transform:translateY(-50%);width:22px;height:26px}
-.fld.live{background:#FFF6E6;box-shadow:0 0 0 2.5px var(--leaf),0 2px 0 rgba(91,59,34,.25)}
+.fld.live{background:#fff;box-shadow:0 0 0 3px var(--plum)}
 .fld.used{opacity:.7}
-.fld.locked{background:#D9B48C;color:#6B4A2E}
+.fld.locked{background:rgba(255,255,255,.45);color:#8A7550}
 .fld .mk{position:absolute;right:6px;top:6px;display:flex;gap:3px}
 .fld .mk i{width:12px;height:12px;border-radius:50%;display:block;box-shadow:0 1px 2px rgba(0,0,0,.25)}
 .fld.mkt{padding-left:10px}
 /* Aufträge */
 .orders{display:grid;gap:8px;grid-template-columns:minmax(0,1fr)}
-.otile{border-radius:16px;background:linear-gradient(180deg,#F2F7EC,#E3EED7);padding:8px 10px;box-shadow:0 2px 8px rgba(74,64,56,.08)}
+.otile{border-radius:24px;background:var(--p-lav);padding:12px}
 .otile .oh{display:flex;justify-content:space-between;gap:8px;font-size:13px}
-.otile .oh b{color:#4C6B3A}
+.otile .oh b{color:var(--ink);font-weight:600}
 .octs{display:flex;gap:6px;margin-top:6px}
-.oct{flex:1;border-radius:10px;background:#fff;padding:4px 2px;text-align:center;font-size:11px;line-height:1.15;position:relative}
-.oct b{display:block;font-size:15px;color:var(--rose)}
-.oct .by{position:absolute;inset:0;border-radius:10px;display:grid;place-items:center;font-size:10px;font-weight:800;color:#fff}
-.bar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(246,241,230,.97);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 -2px 10px rgba(74,64,56,.1);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+.oct{flex:1;border-radius:16px;background:#fff;padding:4px 2px;text-align:center;font-size:11px;line-height:1.15;position:relative}
+.oct b{display:block;font-size:17px;font-weight:700;color:var(--ink)}
+.oct .by{position:absolute;inset:0;border-radius:16px;display:grid;place-items:center;font-size:10px;font-weight:800;color:#fff}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:28px 28px 0 0;box-shadow:0 -6px 24px rgba(31,26,23,.08);padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
 .bar .in{max-width:560px;margin:0 auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .bar .msg{flex:1 1 160px;font-size:12.5px;line-height:1.25}
-.ov{position:fixed;inset:0;z-index:60;background:rgba(60,52,44,.35);display:flex;align-items:flex-end;justify-content:center}
-.sheet{background:var(--paper);width:100%;max-width:560px;max-height:90vh;overflow:auto;border-radius:26px 26px 0 0;padding:14px 16px calc(18px + env(safe-area-inset-bottom));position:relative}
-.sheet h3{font-family:"Kalam",cursive;font-weight:700;font-size:28px;margin:0 0 4px;line-height:1.05;padding-right:48px;color:var(--rose)}
+.ov{position:fixed;inset:0;z-index:60;background:rgba(31,26,23,.35);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--paper);width:100%;max-width:560px;max-height:90vh;overflow:auto;border-radius:32px 32px 0 0;padding:14px 16px calc(18px + env(safe-area-inset-bottom));position:relative}
+.sheet h3{font-family:"Outfit",sans-serif;font-weight:700;font-size:26px;letter-spacing:-.6px;margin:0 0 6px;line-height:1.1;padding-right:52px;color:var(--ink)}
 .sheet .x{position:absolute;right:12px;top:12px}
 .grab{width:44px;height:5px;border-radius:9px;background:var(--ink);opacity:.15;margin:0 auto 10px}
 .opts{display:grid;gap:8px;margin-top:10px}
-.opt{border-radius:16px;background:var(--card);padding:10px 12px;text-align:left;display:flex;gap:10px;align-items:center;box-shadow:0 2px 8px rgba(74,64,56,.08)}
+.opt{border-radius:22px;background:var(--card);padding:12px 14px;text-align:left;display:flex;gap:10px;align-items:center}
 .opt:disabled{opacity:.35}
-.opt b{display:block}
+.opt b{display:block;font-weight:600}
 .opt small{font-size:12px;color:var(--muted)}
-.stepper{display:flex;align-items:center;justify-content:space-between;gap:8px;border-radius:16px;background:var(--card);padding:6px 10px;margin-top:8px}
-.stepper button{width:38px;height:38px;border-radius:50%;background:var(--gold);font-size:20px;font-weight:800}
+.stepper{display:flex;align-items:center;justify-content:space-between;gap:8px;border-radius:22px;background:var(--card);padding:6px 10px;margin-top:8px}
+.stepper button{width:40px;height:40px;border-radius:50%;background:var(--gold);font-size:20px;font-weight:600}
 .stepper button:disabled{opacity:.3}
 .btnrow{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
 .btnrow .btn{flex:1}
 .skip{display:block;margin:14px auto 0;font-size:13px;color:var(--muted);text-decoration:underline}
-.toast{position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top));transform:translateX(-50%);z-index:70;background:var(--rose);color:#fff;padding:9px 16px;border-radius:999px;font-size:13px;max-width:min(92vw,520px)}
-.log{font-size:12.5px;border-radius:18px;background:var(--card);padding:8px 12px;max-height:220px;overflow:auto}
-.log div{padding:4px 0;border-bottom:1px dashed var(--line)}
+.toast{position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top));transform:translateX(-50%);z-index:70;background:var(--ink);color:#fff;padding:9px 16px;border-radius:999px;font-size:13px;max-width:min(92vw,520px)}
+.log{font-size:13px;border-radius:24px;background:var(--card);padding:8px 12px;max-height:220px;overflow:auto}
+.log div{padding:5px 0;border-bottom:1px solid var(--line)}
 .log div:last-child{border:0}
-.rules h4{font-family:"Kalam",cursive;font-size:21px;margin:16px 0 2px;color:var(--rose)}
+.rules h4{font-family:"Outfit",sans-serif;font-weight:700;font-size:19px;margin:18px 0 2px;color:var(--ink)}
 .rules p,.rules li{font-size:14px}
 .rules ul{padding-left:18px;margin:4px 0}
 .score{width:100%;border-collapse:collapse;font-size:13px}
-.score th,.score td{padding:6px 4px;border-bottom:1px dashed var(--line);text-align:right}
+.score th,.score td{padding:7px 4px;border-bottom:1px solid var(--line);text-align:right}
 .score th:first-child,.score td:first-child{text-align:left}
-.score tr.tot td{font-weight:800;font-size:15px;border-bottom:0}
+.score tr.tot td{font-weight:700;font-size:15px;border-bottom:0}
 /* Lernspiel */
-.coach{position:fixed;left:12px;right:12px;bottom:84px;z-index:75;max-width:536px;margin:0 auto;display:flex;gap:10px;align-items:flex-start;background:var(--card);border-radius:22px;box-shadow:0 10px 30px rgba(74,64,56,.22);padding:10px 12px}
+.coach{position:fixed;left:12px;right:12px;bottom:84px;z-index:75;max-width:536px;margin:0 auto;display:flex;gap:12px;align-items:flex-start;background:var(--card);border-radius:28px;box-shadow:0 14px 40px rgba(31,26,23,.2);padding:12px 14px}
 .coach.top{top:calc(10px + env(safe-area-inset-top));bottom:auto!important}
-.coach .cface{width:54px;height:54px;flex:none;border-radius:50%;background:#E4EFE8;overflow:hidden}
+.coach .cface{width:54px;height:54px;flex:none;border-radius:50%;background:var(--p-sun);overflow:hidden}
 .coach .ctext{flex:1;min-width:0}
-.coach .cstep{font-size:10.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1.1px}
+.coach .cstep{font-size:11.5px;font-weight:500;color:var(--muted)}
 .coach p{margin:2px 0 8px;font-size:14px;line-height:1.38}
 .coach .cbtns{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .coach .btn{min-height:38px;padding:6px 16px;font-size:15px}
+.coach .cch{display:block;font-weight:700;font-size:17px;letter-spacing:-.3px;line-height:1.15;margin:1px 0 3px;color:var(--ink)}
+.coach .cwhy{font-size:13px;line-height:1.38;margin:-2px 0 10px;padding:9px 12px;border-radius:18px;background:var(--p-lav)}
+.startbar{position:sticky;top:0;z-index:20;display:flex;justify-content:flex-end;padding:calc(8px + env(safe-area-inset-top)) 0 2px;pointer-events:none}
+.startbar .icobtn{pointer-events:auto;text-decoration:none;color:inherit}
+.coach{max-height:62vh;overflow-y:auto}
 .coach .cquit{font-size:12px;color:var(--muted);text-decoration:underline;margin-left:auto}
-.coach .cwait{font-weight:800;letter-spacing:3px;color:var(--leaf)}
-.tut-hl{outline:4px solid var(--rose)!important;outline-offset:3px;animation:tutp 1.1s ease-in-out infinite;position:relative;z-index:6;border-radius:14px}
+.coach .cwait{font-weight:700;letter-spacing:3px;color:var(--plum)}
+.tut-hl{outline:4px solid var(--plum)!important;outline-offset:3px;animation:tutp 1.1s ease-in-out infinite;position:relative;z-index:6;border-radius:14px}
 @keyframes tutp{50%{outline-color:var(--gold)}}
 </style>
 </head>
@@ -180,12 +191,12 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
       <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="4" result="n"/>
       <feDisplacementMap in="SourceGraphic" in2="n" scale="1.5" xChannelSelector="R" yChannelSelector="G" result="d"/>
       <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="1" seed="9" result="t"/>
-      <feColorMatrix in="t" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.4 2.25" result="m"/>
+      <feColorMatrix in="t" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.3 1.6" result="m"/>
       <feComposite in="d" in2="m" operator="in"/>
     </filter>
     <!-- Kreidekorn über dem ganzen Bild: dunkle und helle Sprenkel -->
     <filter id="tooth" x="0" y="0" width="100%" height="100%">
-      <feTurbulence type="fractalNoise" baseFrequency="1.3" numOctaves="1" seed="21" result="g"/>
+      <feTurbulence type="fractalNoise" baseFrequency="2.2" numOctaves="1" seed="21" result="g"/>
       <feColorMatrix in="g" type="matrix" values="0 0 0 0 .38  0 0 0 0 .3  0 0 0 0 .24  0 0 0 -3.2 1.82" result="dk"/>
       <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="g2"/>
       <feColorMatrix in="g2" type="matrix" values="0 0 0 0 1  0 0 0 0 .98  0 0 0 0 .93  0 0 0 -2.6 1.45" result="lt"/>
@@ -207,7 +218,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 // ---------- Daten ----------
 const TT = ['wiese', 'haus', 'stall', 'acker', 'garten'];
 const TT_N = { wiese: 'Wiese', haus: 'Haus', stall: 'Stall', acker: 'Acker', garten: 'Garten' };
-const TT_C = { wiese: '#8FA66A', haus: '#D27C6E', stall: '#6E8FA8', acker: '#D2A644', garten: '#B5607A' };
+const TT_C = { wiese: '#7C9A4A', haus: '#D9735F', stall: '#5B86B5', acker: '#E2A21E', garten: '#8C74D6' };
+const TT_BG = { wiese: '#DFE8CF', haus: '#F6D6D1', stall: '#D6E4F2', acker: '#FCE7B0', garten: '#E3DCFB' };
 const GOODS = ['kirsche', 'apfel', 'traube', 'wein', 'ei', 'milch', 'wolle', 'brot'];
 const GOOD_N = { kirsche: 'Kirsche', apfel: 'Apfel', traube: 'Traube', wein: 'Wein', ei: 'Ei', milch: 'Milch', wolle: 'Wolle', brot: 'Brot' };
 const GROUP_N = { baum: 'Bäume', blume: 'Blumen', tier: 'Tiere', getreide: 'Getreide', rebe: 'Reben', person: 'Personen', haus: 'Stuben' };
@@ -380,12 +392,18 @@ function meadow(seed, y0, y1, n, sc = 1, opt = {}) {
 }
 const GROUND = { wiese: PAL.sage, haus: '#B9C497', stall: '#9FB596', acker: '#D9BC6E', garten: '#AFC08F' };
 function sky(t) {
-  return `<rect width="100" height="75" fill="${PAL.cream}"/>` + W(`<path d="M-5,40 C15,30 30,32 46,37 C62,42 78,28 105,33 V75 H-5 Z" fill="${PAL.hill1}"/><path d="M-5,47 C20,40 40,44 58,46 C76,48 90,40 105,43 V75 H-5 Z" fill="${PAL.hill2}"/><path d="M-5,57 C24,52 48,57 70,55 C86,54 96,52 105,53 V75 H-5 Z" fill="${GROUND[t] || PAL.sage}"/>`);
+  const g = GROUND[t] || PAL.sage, r = prng(t.length * 13 + t.charCodeAt(0));
+  let far = '';
+  // ferne Bäumchen und Hecken auf den Hügeln
+  for (let i = 0; i < 7; i++) { const x = 4 + i * 15 + r() * 6, y = 30 + Math.sin(x / 14) * 2 + r() * 3; far += `<path d="M${f2(x)},${f2(y + 4)} v2" stroke="#8C9C8E" stroke-width=".7"/><ellipse cx="${f2(x)}" cy="${f2(y + 1.6)}" rx="${f2(1.6 + r())}" ry="${f2(2.4 + r())}" fill="${r() < .5 ? '#93AAB2' : '#A0B4A2'}"/>`; }
+  let blades = '';
+  for (let i = 0; i < 34; i++) { const x = r() * 104 - 2, y = 54 + r() * 20; blades += `<path d="M${f2(x)},${f2(y)} l${f2(r() - .5)},-2.2" stroke="rgba(255,255,255,.35)" stroke-width=".55" stroke-linecap="round"/>`; }
+  return `<rect width="100" height="75" fill="${PAL.cream}"/>` + W(`<path d="M-5,32 C15,22 30,24 46,29 C62,34 78,20 105,25 V75 H-5 Z" fill="${PAL.hill1}"/>${far}<path d="M-5,40 C20,33 40,37 58,39 C76,41 90,33 105,36 V75 H-5 Z" fill="${PAL.hill2}"/><path d="M-5,44 C20,38 40,42 58,43.5 C76,45 90,38 105,40.5 M-5,47.5 C24,42.5 44,46.5 62,47.5 C80,48.5 92,42.5 105,44.5" stroke="rgba(255,255,255,.22)" stroke-width=".7" fill="none"/><path d="M-5,52 C24,47 48,52 70,50 C86,49 96,47 105,48 V75 H-5 Z" fill="${g}"/>${blades}`);
 }
 // dichter Blumen-Hintergrund auf dunklem Petrol (für Personenkarten)
 function floralWall(seed) {
   const r = prng(seed);
-  let s = `<rect width="100" height="75" fill="${PAL.teal}"/>`;
+  let s = '';
   for (let i = 0; i < 34; i++) s += leaf(r() * 106 - 3, r() * 80 - 3, r() * 360, 1 + r() * .4, r() < .5 ? PAL.teal2 : '#4F7A62');
   for (let i = 0; i < 22; i++) {
     const x = r() * 106 - 3, y = r() * 80 - 3, k = r(), c = r();
@@ -393,7 +411,7 @@ function floralWall(seed) {
     else if (k < .7) s += daisy(x, y, 3);
     else s += sprig(x, y, .9, c < .5 ? PAL.blue : PAL.lav);
   }
-  return W(s);
+  return `<rect width="100" height="75" fill="${PAL.teal}"/>` + W(s);
 }
 const eyeC = (x, y, s = 1, c = PAL.ink) => `<path d="M${f2(x - 1.2 * s)},${y} q${f2(1.2 * s)},${f2(1.1 * s)} ${f2(2.4 * s)},0" stroke="${c}" stroke-width="${f2(.7 * s)}" fill="none" stroke-linecap="round"/>`;
 const cheek = (x, y, r) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${PAL.cheek}" opacity=".85"/>`;
@@ -452,49 +470,64 @@ function animal(kind) {
   }
   return '';
 }
-// Personen: Ringelpullover, schmale Hosen oder Röcke, kleine Schuhe, Gegenstand in der Hand
+// Personen wie in den Referenzen: schlanke Erwachsene im Profil (Blick nach rechts),
+// geschlossene Augen, rote Wange, Ohrring; Ringel-, Karo- oder Blümchenmuster; schmale
+// Hosen oder A-Röcke, kleine Schuhe; Gegenstand in der vorgestreckten Hand.
 const PEOPLE = {
   weinbauer: { dress: '#6E4A7E', stripe: '#E9DDF0', pants: '#3F4F6B', hat: 'straw', hair: '#5A3E2E', short: true, prop: 'grapes' },
   gaertnerin: { dress: '#E0B03E', stripe: '#FBF2DC', pants: '#7FA6CF', hair: '#8A5A3A', ear: true, prop: 'can' },
-  bauer: { dress: '#6F7D45', plain: true, pants: '#3F5E58', hat: 'straw', hair: '#3E3A36', short: true, prop: 'fork' },
-  stallbursche: { dress: '#C24A35', plain: true, pants: '#8FB0CF', hat: 'cap', hair: '#C98B57', short: true, prop: 'bucket' },
-  baeckerin: { dress: '#F1E6CF', stripe: '#7E9A5C', skirt: true, pants: '#B9A6D6', hair: '#6B4A3A', ear: true, prop: 'bread' },
+  bauer: { dress: '#6F7D45', plain: true, pants: '#3F5E58', hat: 'straw', hair: '#3E3A36', short: true, prop: 'fork', shoe: '#6B4A35' },
+  stallbursche: { dress: '#C24A35', check: true, pants: '#8FB0CF', hat: 'cap', hair: '#C98B57', short: true, prop: 'bucket' },
+  baeckerin: { dress: '#F1E6CF', stripe: '#7E9A5C', skirt: true, pants: '#B9A6D6', hair: '#6B4A3A', bun: true, ear: true, prop: 'bread' },
   kaeserin: { dress: '#EBA3B0', stripe: '#FBF2DC', pants: '#3F5E58', hat: 'scarf', hair: '#3E3A36', prop: 'cheese' },
-  weberin: { dress: '#B9A6D6', print: true, skirt: true, pants: '#B9A6D6', hair: '#D8D2C8', ear: true, prop: 'yarn' },
+  weberin: { dress: '#B9A6D6', print: true, skirt: true, pants: '#B9A6D6', hair: '#D8D2C8', bun: true, ear: true, prop: 'yarn' },
 };
 const personArt = kind => figureArt(PEOPLE[kind]);
 function figureArt(P, x = 50, s = 1) {
-  const skin = P.skin || '#F2CDB0', top = P.dress, st = P.stripe || PAL.cream, pants = P.pants || '#3F5E58', hair = P.hair || '#5A3E2E';
+  const skin = P.skin || '#F2CDB0', top = P.dress, st = P.stripe || PAL.cream, pants = P.pants || '#3F5E58', hair = P.hair || '#5A3E2E', shoe = P.shoe || '#3E3530';
   const tf = `translate(${f2(x - 50 * s)},${f2(75 - 75 * s)}) scale(${s})`;
-  let b = P.skirt ? `<path d="M45,66 v5 M55,66 v5" stroke="${skin}" stroke-width="2.6"/><path d="M40,56 H60 L63.5,67 H36.5 Z" fill="${pants}"/>`
-    : `<path d="M41.5,56 h8 l-.5,15 h-7 Z M50.5,56 h8 l-.5,15 h-7 Z" fill="${pants}"/>`;
-  b += `<ellipse cx="45" cy="72" rx="4" ry="1.9" fill="#4A3A30"/><ellipse cx="55" cy="72" rx="4" ry="1.9" fill="#4A3A30"/>`;
-  if (!P.short) b += `<path d="M41.5,35 C41,26 46,25.5 50,25.5 C54,25.5 59,26 58.5,35 C58.5,38.5 57.5,40.5 56,41 H44 C42.5,40.5 41.5,38.5 41.5,35 Z" fill="${hair}"/>`;
-  const arm = d => `<path d="${d}" stroke="${top}" stroke-width="4.4" stroke-linecap="round" fill="none"/>` + (P.plain || P.print ? '' : `<path d="${d}" stroke="${st}" stroke-width="4.4" stroke-dasharray="1.3 2.2" fill="none"/>`);
-  b += arm('M41,45.5 C37.5,48 36.8,52 37.2,56.3') + arm('M59,45.5 C62.5,48 63.2,52 62.8,56.3');
-  b += `<rect x="48" y="39" width="4" height="4" fill="${skin}"/><path d="M39,58 V48 C39,44 43,42 46,42 H54 C57,42 61,44 61,48 V58 Z" fill="${top}"/>`;
-  if (P.print) b += [[43, 47], [50, 45.5], [57, 47], [46, 52], [54, 52], [42, 61], [50, 59], [58, 61], [46, 65], [54, 65]].map(([cx, cy]) => `<circle cx="${cx}" cy="${cy}" r="1" fill="${PAL.white}"/><circle cx="${cx}" cy="${cy}" r=".35" fill="${PAL.mustard}"/>`).join('');
-  else if (!P.plain) b += [46.6, 50.2, 53.8].map(y => `<rect x="39" y="${y}" width="22" height="1.6" fill="${st}"/>`).join('');
-  else b += `<path d="M50,43 V58" stroke="rgba(0,0,0,.18)" stroke-width=".8"/><circle cx="50" cy="49" r=".7" fill="rgba(0,0,0,.25)"/><circle cx="50" cy="53" r=".7" fill="rgba(0,0,0,.25)"/>`;
-  b += `<circle cx="37.2" cy="57.4" r="1.9" fill="${skin}"/><circle cx="62.8" cy="57.4" r="1.9" fill="${skin}"/>`;
-  b += `<circle cx="50" cy="34" r="7.5" fill="${skin}"/>`;
-  b += `<path d="M42.4,33 C42.4,27 46.5,26 50,26 C54,26 57.6,27.5 57.6,32 C54.5,30.5 52.5,29.6 50.6,28.3 C49,30.2 46,31.8 42.4,33 Z" fill="${hair}"/>`;
-  if (P.hat === 'straw') b += `<ellipse cx="50" cy="27.6" rx="12" ry="2.6" fill="#E3C27A"/><path d="M44,27.6 C44,21 56,21 56,27.6 Z" fill="#E3C27A"/><path d="M44.2,26 H55.8" stroke="${PAL.poppy}" stroke-width="1.4"/>`;
-  if (P.hat === 'cap') b += `<path d="M42,30 C42,22 58,22 58,30 Z" fill="#5C6E5E"/><path d="M56,29.6 h6.5" stroke="#5C6E5E" stroke-width="2" stroke-linecap="round"/>`;
-  if (P.hat === 'scarf') b += `<path d="M41.6,33.5 C41,23 59,23 58.4,33.5 C55,29 45,29 41.6,33.5 Z" fill="${PAL.mustard}"/>${[[46, 27], [50, 25.8], [54, 27], [44, 30], [56, 30]].map(([cx, cy]) => `<circle cx="${cx}" cy="${cy}" r=".6" fill="${PAL.white}"/>`).join('')}`;
+  const hand = P.prop ? [60.6, 35.2] : [57.2, 42.6];
+  let b = '';
+  // Beine, Schuhe
+  if (P.skirt) b += `<path d="M46.6,58 V70 M52.4,58 V70" stroke="${skin}" stroke-width="2"/><path d="M44.2,41 H55.8 L59.6,60 H40.4 Z" fill="${pants}"/>`;
+  else b += `<path d="M44.2,43 H49.7 L49.2,70.4 H45.6 Z M50.3,43 H55.8 L54.6,70.4 H51 Z" fill="${pants}"/><path d="M49.9,46 V69" stroke="rgba(0,0,0,.12)" stroke-width=".5"/>`;
+  b += `<path d="M45.2,70.2 h4.4 c1.7,0 2.8,.9 2.8,2 v.5 h-7.2 z M50.8,70.2 h4.2 c1.7,0 2.8,.9 2.8,2 v.5 h-7 z" fill="${shoe}"/><path d="M45.2,72.5 h7.2 M50.8,72.5 h7" stroke="${PAL.white}" stroke-width=".5" opacity=".7"/>`;
+  // Arme hinter dem Körper (linker) und Pullover
+  const sleeve = d => `<path d="${d}" stroke="${top}" stroke-width="3.6" stroke-linecap="round" fill="none"/>` + (P.plain || P.print || P.check ? '' : `<path d="${d}" stroke="${st}" stroke-width="3.6" stroke-dasharray="1.2 2" fill="none"/>`);
+  b += sleeve('M45,26.4 C43,30.5 42.6,36.5 43.2,42');
+  if (P.bun) b += `<circle cx="44.6" cy="12.6" r="2.6" fill="${hair}"/>`;
+  b += `<path d="M48.6,20.5 h2.8 v4.4 h-2.8 z" fill="${skin}"/>`;
+  b += `<path d="M45.4,24.6 C47.4,23.6 52.6,23.6 54.6,24.6 C56.4,25.6 56.8,28 56.6,31 L56.2,44 H43.8 L43.4,31 C43.2,28 43.6,25.6 45.4,24.6 Z" fill="${top}"/>`;
+  if (P.print) b += [[46, 28], [52, 27], [49, 33], [54.5, 33.5], [45.5, 38], [51.5, 39], [44, 46], [49, 48.5], [55, 47], [43, 54], [48.5, 56], [54, 53.5], [57, 57.5]].map(([cx, cy]) => `<circle cx="${cx}" cy="${cy}" r=".9" fill="${PAL.white}"/><circle cx="${cx}" cy="${cy}" r=".32" fill="${PAL.mustard}"/>`).join('');
+  else if (P.check) b += [27, 30.5, 34, 37.5, 41].map(y => `<rect x="43.4" y="${y}" width="13.2" height="1.4" fill="rgba(255,255,255,.28)"/>`).join('') + [45.6, 48.6, 51.6, 54.6].map(x => `<rect x="${x}" y="24.4" width="1.4" height="19.6" fill="rgba(0,0,0,.14)"/>`).join('');
+  else if (P.plain) b += `<path d="M50,25.4 V44" stroke="rgba(0,0,0,.18)" stroke-width=".6"/>${[30, 35, 40].map(y => `<circle cx="51" cy="${y}" r=".55" fill="rgba(0,0,0,.28)"/>`).join('')}<path d="M47,24.2 L50,27.2 L53,24.2" stroke="rgba(255,255,255,.35)" stroke-width=".9" fill="none"/>`;
+  else b += [28, 31.6, 35.2, 38.8, 42.2].map(y => `<rect x="43.5" y="${y}" width="13" height="1.5" fill="${st}"/>`).join('');
+  b += `<rect x="43.6" y="42.6" width="12.8" height="1.6" fill="rgba(0,0,0,.1)"/>`;
+  // vorderer Arm
+  b += sleeve(P.prop ? 'M55,26.4 C57.4,29.6 57.8,32.4 57.2,35.2 C58.2,35.3 58.9,35.3 59.4,35.2' : 'M55,26.4 C57,30.5 57.4,36.5 56.8,42');
+  b += `<circle cx="43.3" cy="43" r="1.35" fill="${skin}"/><circle cx="${hand[0]}" cy="${hand[1]}" r="1.35" fill="${skin}"/>`;
+  // Kopf im Profil
+  b += `<ellipse cx="50.2" cy="16.4" rx="4.9" ry="5.5" fill="${skin}"/><path d="M54.6,15.6 q1.9,1.3 .2,2.3 Z" fill="${skin}"/>`;
+  b += P.short ? `<path d="M55,14 C54.6,10 49.4,9.4 46.8,10.8 C44.4,12.2 44.6,16.4 45.6,18.4 C46.4,17.4 47.4,17.2 48.2,16.6 C49.2,15.6 49.4,14 51,13.6 C52.6,13.2 54,14.4 55,14 Z" fill="${hair}"/>`
+    : `<path d="M55,14 C54.6,10 49.4,9.4 46.8,10.8 C44.2,12.4 43.8,16.8 44.2,19.8 C44.5,21.8 45.4,23.4 47.6,23.6 C47.2,21.4 47.4,19.6 48.4,18.2 C49.4,16.8 49.4,14.6 51,13.8 C52.6,13.1 54,14.4 55,14 Z" fill="${hair}"/>`;
+  b += `<ellipse cx="48.9" cy="17.2" rx="1" ry="1.3" fill="${skin}"/>`;
+  if (P.hat === 'straw') b += `<ellipse cx="50.4" cy="11.6" rx="7.4" ry="1.5" fill="#E3C27A"/><path d="M46.2,11.6 C46.2,7.6 54.4,7.6 54.4,11.6 Z" fill="#E3C27A"/><path d="M46.3,10.6 H54.3" stroke="${PAL.poppy}" stroke-width="1.1"/><path d="M44,11.8 h12.8" stroke="#C9A35E" stroke-width=".4"/>`;
+  if (P.hat === 'cap') b += `<path d="M45.4,13 C45.2,8.6 53.8,8.4 54.6,12.6 Z" fill="#5C6E5E"/><path d="M54,12.5 h3.6" stroke="#5C6E5E" stroke-width="1.3" stroke-linecap="round"/>`;
+  if (P.hat === 'scarf') b += `<path d="M44.2,17.4 C43.6,9.6 54,8.4 55.2,13.8 C52.4,12.6 49.4,13 48.2,16.4 C47.4,18.4 46.4,19.6 44.2,17.4 Z" fill="${PAL.mustard}"/><path d="M45,18 l-1.8,2.6 l2.6,-.4 Z" fill="${PAL.mustard}"/>${[[47, 11.6], [50, 10.8], [53, 11.6], [46, 14.6], [49.4, 13.6]].map(([cx, cy]) => `<circle cx="${cx}" cy="${cy}" r=".45" fill="${PAL.white}"/>`).join('')}`;
+  const [hx, hy] = hand;
   const props = {
-    grapes: [3, 3, 2, 1].map((n, ri) => range(n).map(i => `<circle cx="${f2(64 + (i - (n - 1) / 2) * 2.7)}" cy="${59 + ri * 2.4}" r="1.5" fill="#6E4A8A"/>`).join('')).join('') + `<path d="M63,57.5 l1,1.4" stroke="${PAL.olive}" stroke-width=".8"/>`,
-    can: `<path d="M61,57 h9 v8 h-9 z" fill="#7FA6CF"/><path d="M70,58.5 l5,-4" stroke="#7FA6CF" stroke-width="1.6"/><path d="M62.5,57 q3.5,-4 7,0" stroke="#5E7F9E" stroke-width="1" fill="none"/>`,
-    fork: `<path d="M64.5,72 V38 M60.5,38 h8 M60.5,38 v-6 M64.5,38 v-6 M68.5,38 v-6" stroke="${PAL.brown}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`,
-    bucket: `<path d="M59,62 h10 l-1.5,9 h-7 z" fill="#9AA6B0"/><path d="M59,62 q5,-7 10,0" stroke="#6E7A84" fill="none"/>`,
-    bread: `<ellipse cx="67" cy="58" rx="7.5" ry="3.8" fill="#C98B57"/><path d="M62.5,57 l2,-2 M66.5,57 l2,-2 M70.5,57 l2,-2" stroke="#8A5A2E" stroke-width="1"/>`,
-    cheese: `<path d="M60,62 l14,-8 v8 z" fill="${PAL.mustard}"/><circle cx="68" cy="60" r="1.2" fill="#C99A2E"/>`,
-    yarn: `<circle cx="66.5" cy="59" r="5.5" fill="${PAL.pink}"/><path d="M61.5,57 q5,3 10,-1 M61.5,61 q5,3 10,-1" stroke="#C26D74" stroke-width="1" fill="none"/>`,
-    bouquet: `<path d="M63,57 l-1,-9 M63,57 l2,-10 M63,57 l4,-8" stroke="${PAL.olive}" stroke-width=".8"/>${poppy(61.5, 47, 2.4)}${daisy(65.5, 46, 2.2)}${poppy(67.5, 49.5, 2, PAL.pink)}`,
+    grapes: [3, 3, 2, 1].map((n, ri) => range(n).map(i => `<circle cx="${f2(hx + 1 + (i - (n - 1) / 2) * 2.2)}" cy="${f2(hy + 2.4 + ri * 2)}" r="1.15" fill="#6E4A8A"/>`).join('')).join('') + leaf(hx + 1, hy + 1, -20, .45, PAL.sage2),
+    can: `<path d="M${hx},${hy - 1} h7 v6 h-7 z" fill="#7FA6CF"/><path d="M${hx + 7},${hy} l4.4,-3.2" stroke="#7FA6CF" stroke-width="1.3" stroke-linecap="round"/><path d="M${hx + 1},${hy - 1} q2.5,-3.4 5,0" stroke="#5E7F9E" stroke-width=".8" fill="none"/>`,
+    fork: `<path d="M${hx + .4},71 V12 M${hx - 2.6},12 h6 M${hx - 2.6},12 v-4.4 M${hx + .4},12 v-4.4 M${hx + 3.4},12 v-4.4" stroke="${PAL.brown}" stroke-width="1.1" fill="none" stroke-linecap="round"/>`,
+    bucket: `<path d="M${hx - 2.8},${hy + 3} h7.2 l-1.1,6.4 h-5 z" fill="#9AA6B0"/><path d="M${hx - 2.8},${hy + 3} q3.6,-4.4 7.2,0" stroke="#6E7A84" stroke-width=".7" fill="none"/>`,
+    bread: `<ellipse cx="${hx + 3}" cy="${hy - .4}" rx="5" ry="2.5" fill="#C98B57"/><path d="M${hx},${hy - 1} l1.4,-1.4 M${hx + 2.6},${hy - 1} l1.4,-1.4 M${hx + 5.2},${hy - 1} l1.4,-1.4" stroke="#8A5A2E" stroke-width=".7"/>`,
+    cheese: `<path d="M${hx - 1},${hy + 1.6} l10,-5.4 v5.4 z" fill="${PAL.mustard}"/><circle cx="${hx + 5}" cy="${hy}" r=".8" fill="#C99A2E"/>`,
+    yarn: `<circle cx="${hx + 3}" cy="${hy - .6}" r="3.6" fill="${PAL.pink}"/><path d="M${hx},${hy - 2} q3,2 6,-.6 M${hx},${hy + .6} q3,2 6,-.6" stroke="#C26D74" stroke-width=".7" fill="none"/><path d="M${hx + 5},${hy + 2} q2,6 -1,12" stroke="${PAL.pink}" stroke-width=".6" fill="none"/>`,
+    bouquet: `<path d="M${hx},${hy} l-1,-8 M${hx},${hy} l1.6,-9 M${hx},${hy} l3.6,-7" stroke="${PAL.olive}" stroke-width=".7"/>${leaf(hx, hy - 3, -110, .5)}${poppy(hx - 1.2, hy - 8.4, 2.1)}${daisy(hx + 1.8, hy - 9.6, 2)}${poppy(hx + 3.8, hy - 7, 1.8, PAL.pink)}`,
   };
   b += props[P.prop] || '';
-  let f = eyeC(47, 34.4, .9) + eyeC(53, 34.4, .9) + cheek(45.4, 37, 1.4) + cheek(54.6, 37, 1.4) + `<path d="M48.9,38.4 q1.1,.9 2.2,0" stroke="#9A4A3A" stroke-width=".7" fill="none" stroke-linecap="round"/>`;
-  if (P.ear) f += `<circle cx="42.6" cy="37.8" r=".9" fill="${PAL.orange}"/><circle cx="57.4" cy="37.8" r=".9" fill="${PAL.orange}"/>`;
+  let f = `<path d="M51.6,16.2 q.9,.8 1.9,0" stroke="${PAL.ink}" stroke-width=".55" fill="none" stroke-linecap="round"/>` + cheek(52.4, 18.4, 1) + `<path d="M53.4,19.9 q.6,.3 1.1,-.1" stroke="#9A4A3A" stroke-width=".5" fill="none" stroke-linecap="round"/>`;
+  if (P.ear) f += `<circle cx="49" cy="19.3" r=".75" fill="${PAL.orange}"/>`;
   return `<g transform="${tf}">${W(b)}${f}</g>`;
 }
 function buildingArt(kind) {
@@ -508,17 +541,17 @@ function cardArt(k) {
   const t = CARDS[k].t;
   const animals = ['schaf', 'kuh', 'huhn', 'hahn', 'pferd', 'esel', 'hund', 'katze'];
   let inner = PEOPLE[k] ? floralWall(k.length * 7 + k.charCodeAt(0)) : sky(t);
-  if (k === 'kirschbaum') inner += tree('kirsche') + W(meadow(3, 64, 72, 9, .8));
-  else if (k === 'apfelbaum') inner += tree('apfel') + W(meadow(4, 64, 72, 9, .8));
-  else if (k === 'eiche') inner += tree(null, true) + W(meadow(6, 64, 72, 9, .8, { kinds: 'ddlb' }));
+  if (k === 'kirschbaum') inner += tree('kirsche') + W(meadow(3, 62, 73, 14, 1));
+  else if (k === 'apfelbaum') inner += tree('apfel') + W(meadow(4, 62, 73, 14, 1));
+  else if (k === 'eiche') inner += tree(null, true) + W(meadow(6, 62, 73, 14, 1, { kinds: 'ddlbp' }));
   else if (k === 'mohn') inner += flowers(PAL.poppy);
   else if (k === 'sonnenblume') inner += flowers(PAL.mustard, true);
   else if (k === 'rebe') inner += vine();
   else if (['weizen', 'roggen', 'mais', 'hafer'].includes(k)) inner += grain(k);
-  else if (animals.includes(k)) inner += animal(k) + W(meadow(k.charCodeAt(1), 66, 74, 8, .7, { kinds: 'pddlb' }));
+  else if (animals.includes(k)) inner += animal(k) + W(meadow(k.charCodeAt(1), 64, 74, 13, .95, { kinds: 'pddlbt' }));
   else if (['kaminstube', 'kelterei'].includes(k)) inner += buildingArt(k);
-  else inner += personArt(k);
-  return (ARTC[k] = `<svg viewBox="0 0 100 75" class="ill" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${inner}<rect width="100" height="75" filter="url(#tooth)" opacity=".3"/></svg>`);
+  else inner += personArt(k) + W(meadow(k.charCodeAt(2) * 3, 60, 73, 10, 1.5, { bottom: 80 }));
+  return (ARTC[k] = `<svg viewBox="0 0 100 75" class="ill" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${inner}<rect width="100" height="75" filter="url(#tooth)" opacity=".16"/></svg>`);
 }
 function terrArt(t) {
   let s = sky(t);
@@ -527,7 +560,7 @@ function terrArt(t) {
   if (t === 'stall') s += W(`<rect x="30" y="34" width="40" height="30" fill="#6E8FA8"/><path d="M26,36 L50,19 L74,36 Z" fill="#4F6E86"/><path d="M43,64 V46 H57 V64 M43,46 L57,64 M57,46 L43,64" stroke="${PAL.white}" stroke-width="1.6" fill="none"/><path d="M8,62 H30 M8,56 H30 M11,52 V66 M20,52 V66" stroke="#C9A27A" stroke-width="1.6"/>`) + W(meadow(7, 64, 72, 10, .8, { kinds: 'ddlb' }));
   if (t === 'acker') s += grain('weizen');
   if (t === 'garten') s += W(`<path d="M30,72 V40 C30,24 70,24 70,40 V72" stroke="${PAL.brown}" stroke-width="2.4" fill="none"/>`) + W([[32, 40], [40, 30], [50, 27], [60, 30], [68, 40], [33, 52], [67, 52]].map(([x, y], i) => leaf(x + 1, y + 1, i * 70, .7) + poppy(x, y, 3.2, i % 2 ? PAL.pink : PAL.tulip, '#A04A5A')).join('')) + W(meadow(9, 60, 72, 12, .9, { kinds: 'tttdl' }));
-  return `<svg viewBox="0 0 100 75" class="ill" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${s}<rect width="100" height="75" filter="url(#tooth)" opacity=".3"/></svg>`;
+  return `<svg viewBox="0 0 100 75" class="ill" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${s}<rect width="100" height="75" filter="url(#tooth)" opacity=".16"/></svg>`;
 }
 function goodSvg(g) {
   const fill = { kirsche: '#C8384F', apfel: '#E06A4A', traube: '#7A4E8C', wein: '#8E2F4A', ei: '#FBF3E2', milch: '#FFFFFF', wolle: '#F1EBDF', brot: '#C98B57' }[g];
@@ -545,7 +578,7 @@ function goodSvg(g) {
   return `<svg viewBox="0 0 24 24" aria-hidden="true">${basket}${top}</svg>`;
 }
 const coinSvg = () => `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#E9C46A"/><circle cx="12" cy="12" r="6" fill="none" stroke="#C99A3A" stroke-width="1.4"/></svg>`;
-const sunSvg = n => `<svg viewBox="0 0 24 24" aria-hidden="true"><g stroke="#E9A53A" stroke-width="1.5">${range(8).map(i => { const a = i * Math.PI / 4; return `<path d="M${12 + Math.cos(a) * 8.5},${12 + Math.sin(a) * 8.5} L${12 + Math.cos(a) * 11},${12 + Math.sin(a) * 11}"/>`; }).join('')}</g><circle cx="12" cy="12" r="7.5" fill="#F7C35A"/><text x="12" y="15.6" text-anchor="middle" font-size="10" font-weight="800" fill="#7A4A1A" font-family="Nunito,sans-serif">${n}</text></svg>`;
+const sunSvg = n => `<svg viewBox="0 0 24 24" aria-hidden="true"><g stroke="#E9A53A" stroke-width="1.5">${range(8).map(i => { const a = i * Math.PI / 4; return `<path d="M${12 + Math.cos(a) * 8.5},${12 + Math.sin(a) * 8.5} L${12 + Math.cos(a) * 11},${12 + Math.sin(a) * 11}"/>`; }).join('')}</g><circle cx="12" cy="12" r="7.5" fill="#F7C35A"/><text x="12" y="15.6" text-anchor="middle" font-size="10" font-weight="800" fill="#7A4A1A" font-family="Outfit,sans-serif">${n}</text></svg>`;
 const workerSvg = col => `<svg viewBox="0 0 22 26" aria-hidden="true"><path d="M11,2 a4.5,4.5 0 1 1 0,9 a4.5,4.5 0 1 1 0,-9 Z M3,24 C3,15 7,12 11,12 C15,12 19,15 19,24 Z" fill="${col}"/></svg>`;
 function heroSvg() {
   const A = { dress: '#E0B03E', stripe: '#FBF2DC', pants: '#7FA6CF', hair: '#6B4A3A', ear: true, prop: 'bouquet' };
@@ -562,7 +595,7 @@ function heroSvg() {
     <g transform="translate(80,80) scale(1.85)">${figureArt(A)}</g>
     <g transform="translate(118,80) scale(1.85)">${figureArt(B)}</g>
     ${W(meadow(77, 196, 236, 30, 3.2, { w: 360, bottom: 250 }))}
-    <rect width="360" height="240" filter="url(#tooth)" opacity=".3"/>
+    <rect width="360" height="240" filter="url(#tooth)" opacity=".16"/>
   </svg>`;
 }
 // ---------- Helfer ----------
@@ -1109,7 +1142,7 @@ function toast(m) { U.toast = m; clearTimeout(toastTimer); toastTimer = setTimeo
 const myAsk = () => S && S.ask && !P(S.ask.pi).bot ? S.ask : null;
 const idle = () => S && S.screen === 'game' && !S.ask && !S.q.length;
 const isMyTurn = () => idle() && !cur().bot;
-function face(p) { return `<svg viewBox="36 20.5 28 28" class="ill">${figureArt(p.look)}</svg>`; }
+function face(p) { return `<svg viewBox="41 6.5 19 19" class="ill">${figureArt(p.look)}</svg>`; }
 function cardHtml(k, o = {}) {
   const c = CARDS[k];
   return `<${o.btn ? 'button' : 'div'} class="pc ${o.cls || ''} ${o.sm ? 'sm' : ''}" ${o.btn ? `data-a="${o.btn}" data-i="${o.i}" data-k="${k}"` : ''}>
@@ -1138,7 +1171,7 @@ function orderTile(ot, ti) {
 function terrHtml(p, tr, ti, o = {}) {
   const T = terrOf(tr.id);
   const can = o.can && o.can(ti);
-  return `<${can ? 'button' : 'div'} class="terr ${can ? 'can' : ''}" ${can ? `data-a="${o.act}" data-i="${ti}"` : ''} style="border-top:5px solid ${TT_C[T.t]};text-align:left;width:100%">
+  return `<${can ? 'button' : 'div'} class="terr ${can ? 'can' : ''}" ${can ? `data-a="${o.act}" data-i="${ti}"` : ''} style="background:${TT_BG[T.t]};text-align:left;width:100%">
     <div class="th"><span class="tart">${terrArt(T.t)}</span><span><b>${TT_N[T.t]}</b><small>${tr.cards.length}/${T.cap} Karten</small></span></div>
     <div class="slots">${tr.cards.map(k => cardHtml(k, { sm: 1 })).join('')}${range(space(tr)).map(() => '<span class="slot"></span>').join('')}</div>
     <div class="ord ${tr.ordDone ? 'done' : ''}">Eigener Auftrag: ${esc(COND_TX[T.cond.k](T.cond))} → <b>${T.vp} SP</b>${!tr.ordDone && condOk(p, T.cond, tr) ? ' ✓ erfüllbar' : ''}</div></${can ? 'button' : 'div'}>`;
@@ -1153,14 +1186,14 @@ function boardHtml(p, live) {
   const other = UNLOCKS.filter(u => !FIELDS.some(f => f.lock === u.k)).map(u => `<div class="fld mkt ${unlocked(p, u.k) ? '' : 'locked'}"><b>${unlocked(p, u.k) ? '✓ ' : ''}${esc(u.tx)}</b>${!unlocked(p, u.k) ? `<span class="mk">${range(p.markers[u.k]).map(() => `<i style="background:${p.mark}"></i>`).join('')}</span>` : ''}</div>`).join('');
   return `<div class="board"><div class="bank">Bank: ${range(workersFree(p)).map(() => `<span style="width:18px;height:22px;display:inline-block">${workerSvg(p.mark)}</span>`).join('') || '–'} · eingesetzt: ${p.placed.length}</div>
     <div class="fields">${FIELDS.map(fld).join('')}</div>
-    <p class="label" style="margin:10px 0 4px;color:#5B3B22">Freischalten (Marker auf Aufträge legen)</p><div class="fields">${other}</div>
-    <p class="label" style="margin:10px 0 4px;color:#5B3B22">Tag beenden: 2 Kräfte = 1 Marktaktion · 3 = Marktaktion + Karte · 4 = 2 verschiedene Marktaktionen</p>
+    <p class="label" style="margin:12px 0 6px">Freischalten (Marker auf Aufträge legen)</p><div class="fields">${other}</div>
+    <p class="label" style="margin:12px 0 6px">Tag beenden: 2 Kräfte = 1 Marktaktion · 3 = Marktaktion + Karte · 4 = 2 verschiedene Marktaktionen</p>
     <div class="fields">${MARKET.map(m => `<div class="fld mkt ${!m.lock || unlocked(p, m.lock) ? '' : 'locked'}"><b>${esc(m.n)}</b>${esc(m.tx)}</div>`).join('')}</div></div>`;
 }
 function viewStart() {
   const saved = load(), st = U.setup, prof = spielregalProfiles();
   return `<div class="wrap start">
-    <a class="backlink" href="../">← Zurück zu Spielregal</a>
+    <div class="startbar"><a class="icobtn leave" href="../" aria-label="Beenden und zurück zu Spielregal"><svg viewBox="0 0 20 20" width="13" height="13" aria-hidden="true"><path d="M4.5 4.5l11 11M15.5 4.5l-11 11" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg><span>Beenden</span></a></div>
     <div class="hero">${heroSvg()}</div>
     <h1 class="hand">Landgut</h1>
     <p class="sub">Dein Traum vom idyllischen Bauernhof: das Kartenspiel nach den Regeln von <i>Countryside / Landgut</i>.</p>
@@ -1190,7 +1223,7 @@ function viewGame() {
   <div class="top"><div class="row">
     <div class="round hand">${S.solo ? `Stapel ${5 - S.soloStacks.length}/5` : S.endTrig ? 'Letzte Züge' : 'Landgut'}<small>${S.solo ? 'Solo' : `Ziel: ${VP_END} SP`}</small></div>
     <div class="players">${chips}</div>
-    ${U.tut ? '' : `<button class="icobtn leave" data-a="leave" aria-label="Speichern und verlassen" title="Speichern &amp; verlassen"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><rect x="4" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/><rect x="11.8" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/></svg><span>Verlassen</span></button>`}
+    ${U.tut ? `<button class="icobtn leave" data-a="tutquit" aria-label="Lernspiel beenden"><svg viewBox="0 0 20 20" width="13" height="13" aria-hidden="true"><path d="M4.5 4.5l11 11M15.5 4.5l-11 11" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg><span>Beenden</span></button>` : `<button class="icobtn leave" data-a="leave" aria-label="Speichern und verlassen" title="Speichern &amp; verlassen"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><rect x="4" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/><rect x="11.8" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/></svg><span>Verlassen</span></button>`}
     <button class="icobtn" data-a="menu" aria-label="Menü">?</button>
   </div></div>
   <div class="wrap">
@@ -1220,7 +1253,7 @@ function viewEnd() {
   const sub = S.solo ? SOLO_CHART.find(([g]) => me.vp >= g)[1] : 'Was für ein Landgut.';
   return `<div class="wrap" style="padding-top:18px;text-align:center">
     <div class="hero" style="aspect-ratio:360/180">${heroSvg()}</div>
-    <h1 class="hand" style="font-size:46px;margin:10px 0 0;color:var(--rose)">${title}</h1>
+    <h1 class="hand" style="font-size:48px;margin:10px 0 0;letter-spacing:-1.5px">${title}</h1>
     <p class="sub">${esc(sub)}</p>
     <div class="panel"><table class="score"><tr><th></th><th>SP</th><th>Münzen</th><th>Karten</th><th>Gebiete</th></tr>
       ${rows.map(r => `<tr><td>${esc(r.name)}</td><td>${r.total}</td><td>${r.coins}</td><td>${estate(S.players[r.i]).length}</td><td>${S.players[r.i].terrs.length}</td></tr>`).join('')}</table>
@@ -1245,7 +1278,7 @@ function askSheet() {
   const sel = U.sel;
   switch (a.t) {
     case 'setupTerr':
-      h += `<p style="font-size:13px">Von jedem Gebietsstapel eines: Behalte 3, die anderen gehen zurück.</p><div class="terrs">${a.opts.map(id => { const T = terrOf(id); return `<button class="terr ${sel.includes(id) ? 'can' : ''}" data-a="tsel" data-i="${id}" style="border-top:5px solid ${TT_C[T.t]};text-align:left;width:100%"><div class="th"><span class="tart">${terrArt(T.t)}</span><span><b>${TT_N[T.t]} · ${T.cap} Plätze</b><small>Auftrag: ${esc(COND_TX[T.cond.k](T.cond))} → ${T.vp} SP</small></span></div></button>`; }).join('')}</div>
+      h += `<p style="font-size:13px">Von jedem Gebietsstapel eines: Behalte 3, die anderen gehen zurück.</p><div class="terrs">${a.opts.map(id => { const T = terrOf(id); return `<button class="terr ${sel.includes(id) ? 'can' : ''}" data-a="tsel" data-i="${id}" style="background:${TT_BG[T.t]};text-align:left;width:100%"><div class="th"><span class="tart">${terrArt(T.t)}</span><span><b>${TT_N[T.t]} · ${T.cap} Plätze</b><small>Auftrag: ${esc(COND_TX[T.cond.k](T.cond))} → ${T.vp} SP</small></span></div></button>`; }).join('')}</div>
         <div class="btnrow"><button class="btn" data-a="askok" ${sel.length === 3 ? '' : 'disabled'}>${sel.length}/3 behalten</button></div>`;
       return sheetWrap(h);
     case 'discardN': case 'discardSun': {
@@ -1279,7 +1312,7 @@ function askSheet() {
         <div class="btnrow"><button class="btn white" data-a="sclear">Zurücksetzen</button><button class="btn" data-a="askok" ${sel.length === 2 ? '' : 'disabled'}>Ziehen</button></div>`;
       return sheetWrap(h);
     case 'terrKeep':
-      h += `<div class="terrs">${a.opts.map(id => { const T = terrOf(id); return `<button class="terr" data-a="askval" data-v="${id}" style="border-top:5px solid ${TT_C[T.t]};text-align:left;width:100%"><div class="th"><span class="tart">${terrArt(T.t)}</span><span><b>${TT_N[T.t]} · ${T.cap} Plätze</b><small>Auftrag: ${esc(COND_TX[T.cond.k](T.cond))} → ${T.vp} SP</small></span></div></button>`; }).join('')}</div>`;
+      h += `<div class="terrs">${a.opts.map(id => { const T = terrOf(id); return `<button class="terr" data-a="askval" data-v="${id}" style="background:${TT_BG[T.t]};text-align:left;width:100%"><div class="th"><span class="tart">${terrArt(T.t)}</span><span><b>${TT_N[T.t]} · ${T.cap} Plätze</b><small>Auftrag: ${esc(COND_TX[T.cond.k](T.cond))} → ${T.vp} SP</small></span></div></button>`; }).join('')}</div>`;
       return sheetWrap(h);
     case 'orders':
       h += `<div class="opts">${a.opts.map((o, i) => `<button class="opt" data-a="askval" data-v="${i}"><span style="font-size:22px;font-weight:800;color:var(--rose);min-width:34px">${o.vp}</span><span><b>${esc(o.tx)}</b><small>${o.kind === 'terr' ? 'Gebietsauftrag' : `Auftragsplättchen, Feld ${o.f + 1}${o.card ? ' · + 1 Karte' : ''}`}</small></span></button>`).join('')}</div><button class="skip" data-a="askskip">Keinen Auftrag erfüllen</button>`;
@@ -1338,7 +1371,7 @@ function rulesHtml() {
   <h4>Spielende</h4>
   <p>Erreicht jemand ${VP_END} Siegpunkte, hat jede Person noch genau zwei Züge. Die meisten Siegpunkte gewinnen, bei Gleichstand die meisten Münzen. <b>Solo:</b> 5 Stapel à 7 Karten. Bei jedem Tagesende wird die Auslage gegen den nächsten Stapel getauscht. Sind alle verbraucht, endet das Spiel mit dem nächsten Tagesende. Werte dein Ergebnis mit der Solo-Tabelle.</p>
   <h4>Unterschiede zum Original</h4>
-  <p style="font-size:13px">Ablauf, Arbeitsfelder, Tag beenden, Marktaktionen, Münzen/Körbe, Sonnenstunden, Aufträge, Freischalten, Spielende und Solomodus folgen der Anleitung von <i>Countryside / Landgut</i>. Die 126 Projekt- und 50 Gebietskarten sind dort nur als Beispiele abgebildet. Deshalb ist der Karteninhalt ein eigener Entwurf nach diesen Beispielen: 27 Kartenarten in 5 Gebieten, 30 Gebiete und 6 Auftragsplättchen. Ebenfalls eigene Annahmen sind das Leistenende bei ${VP_END} Punkten und die Aufteilung der Marker auf dem Arbeitsplan. Die Illustrationen sind eigene Aquarell-Entwürfe.</p></div>`;
+  <p style="font-size:13px">Ablauf, Arbeitsfelder, Tag beenden, Marktaktionen, Münzen/Körbe, Sonnenstunden, Aufträge, Freischalten, Spielende und Solomodus folgen der Anleitung von <i>Countryside / Landgut</i>. Die 126 Projekt- und 50 Gebietskarten sind dort nur als Beispiele abgebildet. Deshalb ist der Karteninhalt ein eigener Entwurf nach diesen Beispielen: 27 Kartenarten in 5 Gebieten, 30 Gebiete und 6 Auftragsplättchen. Ebenfalls eigene Annahmen sind das Leistenende bei ${VP_END} Punkten und die Aufteilung der Marker auf dem Arbeitsplan. Die Illustrationen sind eigene Entwürfe im Gouache-Stil.</p></div>`;
 }
 function viewSheet() {
   const sh = U.sheet;
@@ -1378,7 +1411,7 @@ function tutHtml() {
   const btn = last ? '<button class="btn" data-a="tutend">Echtes Spiel starten</button>'
     : !st.done ? '<button class="btn" data-a="tutnext">Weiter</button>'
     : st.wait ? '<span class="cwait">· · ·</span>' : '';
-  return `<div class="coach" id="coach" role="dialog" aria-live="polite"><div class="cface">${face({ look: { hair: '#D8D2C8', dress: '#E8A0AE', stripe: '#FBF2DC', pants: '#7FA6CF', hat: 'straw', ear: true } })}</div><div class="ctext"><span class="cstep">Lernspiel · ${U.tut.i + 1}/${TUT_STEPS.length}</span><p>${txt}</p><div class="cbtns">${btn}${last ? '' : '<button class="cquit" data-a="tutquit">Lernspiel beenden</button>'}</div></div></div>`;
+  return `<div class="coach" id="coach" role="dialog" aria-live="polite"><div class="cface">${face({ look: { hair: '#D8D2C8', dress: '#E8A0AE', stripe: '#FBF2DC', pants: '#7FA6CF', hat: 'straw', ear: true } })}</div><div class="ctext"><span class="cstep">Lernspiel · ${U.tut.i + 1}/${TUT_STEPS.length}</span>${st.ch ? `<b class="cch">${st.ch}</b>` : ''}<p>${txt}</p>${st.why ? `<p class="cwhy"><b>Warum?</b> ${st.why}</p>` : ''}<div class="cbtns">${btn}${last ? '' : '<button class="cquit" data-a="tutquit">Lernspiel beenden</button>'}</div></div></div>`;
 }
 function tutDecorate() {
   const st = tutStep(), coach = document.getElementById('coach');
@@ -1398,28 +1431,28 @@ function tutDecorate() {
 }
 const TUT_ME = () => S.players[0];
 const TUT_STEPS = [
-  { pos: 'top', text: 'Willkommen auf deinem <b>Landgut</b>! Ich bin Oma Holler. Du spielst Karten in deine Gebiete, sammelst Waren und erfüllst Aufträge. Wir machen ein paar Züge zusammen.' },
-  { sel: '.terrs', text: 'Das sind deine drei <b>Gebiete</b>: Wiese, Garten und Stall. Jedes hat Platz für einige Karten und einen <b>eigenen Auftrag</b>, nur für dich.' },
-  { sel: '.board', text: 'Dein <b>Arbeitsplan</b>. In deinem Zug setzt du eine Arbeitskraft auf ein freies Feld oder beendest den Tag. Gesperrte Felder schaltest du mit erfüllten Aufträgen frei.' },
-  { sel: '[data-a=field][data-k=sun5]', allow: { field: d => d.k === 'sun5' }, done: () => myAsk() && S.ask.t === 'play',
+  { ch: 'Worum es geht', pos: 'top', text: 'Willkommen auf deinem <b>Landgut</b>! Ich bin Oma Holler. <b>Dein Ziel:</b> Siegpunkte (SP), vor allem durch erfüllte <b>Aufträge</b>. Der Kreislauf: <b>Karten nehmen → mit Sonnenstunden in deine Gebiete spielen → Waren sammeln → Aufträge erfüllen</b>. Jeder erfüllte Auftrag schaltet außerdem ein neues Feld frei. Wir machen ein paar Züge zusammen.' },
+  { ch: 'Dein Hof', why: 'Jedes Gebiet hat einen eigenen Auftrag, etwa „ganz gefüllt“ oder „bestimmte Waren abgeben“. Darum sammelst du Karten passend zu deinen Gebieten.', sel: '.terrs', text: 'Das sind deine drei <b>Gebiete</b>: Wiese, Garten und Stall. Jedes hat Platz für einige Karten und einen <b>eigenen Auftrag</b>, nur für dich.' },
+  { ch: 'So läuft ein Zug', why: 'Jede Arbeitskraft ist ein Zug. Sind sie verbraucht, beendest du den Tag und bekommst dafür Marktaktionen – je mehr Kräfte eingesetzt, desto mehr.', sel: '.board', text: 'Dein <b>Arbeitsplan</b>. In deinem Zug setzt du eine Arbeitskraft auf ein freies Feld oder beendest den Tag. Gesperrte Felder schaltest du mit erfüllten Aufträgen frei.' },
+  { ch: 'Zug 1 · Karte spielen', why: 'Karten sind dein Motor: Sie bringen Waren, Münzen oder Fähigkeiten und füllen deine Gebiete für deren Aufträge.', sel: '[data-a=field][data-k=sun5]', allow: { field: d => d.k === 'sun5' }, done: () => myAsk() && S.ask.t === 'play',
     text: 'Spielen wir einen <b>Kirschbaum</b>. Er braucht 5 Sonnenstunden. Tippe auf das Feld „5 Sonnen“.' },
-  { sel: '[data-a=csel][data-k=kirschbaum]', allow: { csel: d => d.k === 'kirschbaum' }, done: () => U.tmp.card === 'kirschbaum', text: 'Wähle den Kirschbaum aus deiner Hand.' },
-  { sel: '[data-a=tplay]', allow: { tplay: true }, done: () => estate(TUT_ME()).includes('kirschbaum'), text: 'Er gehört auf eine <b>Wiese</b>. Tippe auf dein Wiesen-Gebiet.' },
-  { sel: '.stock', wait: false, done: null, text: 'Der Kirschbaum hat sofort eine <b>Kirsche</b> in einen Korb gelegt. Münzen und gefüllte Körbe teilen sich 15 Plätze.' },
-  { wait: true, done: () => isMyTurn(), text: () => `${esc(S.players[1].name)} ist dran …` },
-  { sel: '[data-a=field][data-k=sun2]', allow: { field: d => d.k === 'sun2' }, done: () => myAsk() && S.ask.t === 'play',
+  { ch: 'Zug 1 · Karte spielen', why: 'Die Sonne auf der Karte ist ihr Preis. Das Feld bestimmt, wie viele Sonnenstunden du dafür bekommst.', sel: '[data-a=csel][data-k=kirschbaum]', allow: { csel: d => d.k === 'kirschbaum' }, done: () => U.tmp.card === 'kirschbaum', text: 'Wähle den Kirschbaum aus deiner Hand.' },
+  { ch: 'Zug 1 · Karte spielen', why: 'Jede Karte gehört in ein bestimmtes Gebiet: Bäume auf die Wiese, Reben in den Garten, Tiere in den Stall.', sel: '[data-a=tplay]', allow: { tplay: true }, done: () => estate(TUT_ME()).includes('kirschbaum'), text: 'Er gehört auf eine <b>Wiese</b>. Tippe auf dein Wiesen-Gebiet.' },
+  { ch: 'Zug 1 · Waren', why: 'Waren brauchst du für Aufträge, oder du verkaufst sie für Münzen. Volle Körbe nehmen aber Platz für Münzen weg – zusammen sind es höchstens 15.', sel: '.stock', wait: false, done: null, text: 'Der Kirschbaum hat sofort eine <b>Kirsche</b> in einen Korb gelegt. Münzen und gefüllte Körbe teilen sich 15 Plätze.' },
+  { ch: 'Die anderen sind dran', why: 'Jede Person hat ihren eigenen Plan; nur die Auslage teilt ihr euch. Was andere nehmen, fehlt dir dort.', wait: true, done: () => isMyTurn(), text: () => `${esc(S.players[1].name)} ist dran …` },
+  { ch: 'Zug 2 · Karte spielen', why: 'Fehlende Sonnenstunden mit Münzen zu bezahlen ist erlaubt. So spielst du teure Karten früher, als das Feld eigentlich hergibt.', sel: '[data-a=field][data-k=sun2]', allow: { field: d => d.k === 'sun2' }, done: () => myAsk() && S.ask.t === 'play',
     text: 'Jetzt eine <b>Rebe</b> für 3 Sonnenstunden. Das Feld „2 Sonnen + 2 Karten“ gibt nur 2, die dritte zahlst du mit einer <b>Münze</b>. Danach nimmst du 2 Karten. Tippe auf das Feld.' },
-  { sel: '[data-a=csel][data-k=rebe]', allow: { csel: d => d.k === 'rebe' }, done: () => U.tmp.card === 'rebe', text: 'Wähle die Rebe. Unter der Karte steht: +1 Münze.' },
-  { sel: '[data-a=tplay]', allow: { tplay: true }, done: () => myAsk() && S.ask.t === 'take', text: 'Ab in den Garten!' },
-  { sel: '.sheet [data-a=dsel][data-i="6"]', allow: { dsel: true }, done: () => U.tmp.start != null, text: 'Die Auslage ist ein <b>Kreis</b>: Die letzte und die erste Karte sind benachbart. Tippe die letzte Karte an, du bekommst sie und die erste.' },
-  { sel: '.sheet [data-a=askok]', allow: { askok: true, dsel: true }, done: () => !myAsk(), text: 'Tippe auf „Nehmen“.' },
-  { wait: true, done: () => isMyTurn(), text: () => `${esc(S.players[1].name)} ist dran …` },
-  { sel: '.orders', text: 'Unten auf dem Tisch liegen <b>Aufträge</b>. Wer zuerst erfüllt, bekommt die meisten Punkte. Dafür legst du einen <b>Marker</b> von deinem Arbeitsplan darauf. So schaltest du neue Felder frei.' },
-  { sel: '[data-a=endday]', allow: { endday: true }, done: () => myAsk() && S.ask.t === 'market', text: 'Du hast 2 Arbeitskräfte eingesetzt. Beende den <b>Tag</b>: Sie kommen zurück und du bekommst eine <b>Marktaktion</b>.' },
-  { sel: '.sheet [data-a=askval][data-v=m3]', allow: { askval: d => d.v === 'm3' }, done: () => myAsk() && S.ask.t === 'sell', text: 'Wähle „<b>Waren verkaufen</b>“: Jeder Korb wird zu einer Münze.' },
-  { sel: '.sheet [data-a=sellc][data-g=kirsche][data-d="1"]', allow: { sellc: true }, done: () => U.tmp.sell && U.tmp.sell.kirsche > 0, text: 'Tippe auf <b>+</b> bei der Kirsche.' },
-  { sel: '.sheet [data-a=askok]', allow: { askok: true, sellc: true }, done: () => !myAsk(), text: 'Und jetzt „Verkaufen“.' },
-  { pos: 'top', text: 'Du hast den Ablauf gelernt! Sammle Waren für die Aufträge, fülle deine Gebiete und schalte Felder frei. Erreicht jemand 30 Siegpunkte, hat jede Person noch zwei Züge. Viel Freude auf dem Landgut!' },
+  { ch: 'Zug 2 · Karte spielen', why: 'Viele Karten geben beim Ausspielen etwas sofort. Lies den Text unter der Karte, bevor du wählst.', sel: '[data-a=csel][data-k=rebe]', allow: { csel: d => d.k === 'rebe' }, done: () => U.tmp.card === 'rebe', text: 'Wähle die Rebe. Unter der Karte steht: +1 Münze.' },
+  { ch: 'Zug 2 · Karte spielen', sel: '[data-a=tplay]', allow: { tplay: true }, done: () => myAsk() && S.ask.t === 'take', text: 'Ab in den Garten!' },
+  { ch: 'Zug 2 · Karten nehmen', why: 'Du bekommst immer benachbarte Karten. Suche also Stellen, an denen zwei nützliche Karten nebeneinanderliegen – auch über das Ende hinweg.', sel: '.sheet [data-a=dsel][data-i="6"]', allow: { dsel: true }, done: () => U.tmp.start != null, text: 'Die Auslage ist ein <b>Kreis</b>: Die letzte und die erste Karte sind benachbart. Tippe die letzte Karte an, du bekommst sie und die erste.' },
+  { ch: 'Zug 2 · Karten nehmen', sel: '.sheet [data-a=askok]', allow: { askok: true, dsel: true }, done: () => !myAsk(), text: 'Tippe auf „Nehmen“.' },
+  { ch: 'Die anderen sind dran', wait: true, done: () => isMyTurn(), text: () => `${esc(S.players[1].name)} ist dran …` },
+  { ch: 'Aufträge', why: 'Aufträge sind deine wichtigste Punktequelle. Wer früher erfüllt, bekommt mehr, und jeder Marker, der deinen Plan verlässt, macht dort ein neues Feld frei.', sel: '.orders', text: 'Unten auf dem Tisch liegen <b>Aufträge</b>. Wer zuerst erfüllt, bekommt die meisten Punkte. Dafür legst du einen <b>Marker</b> von deinem Arbeitsplan darauf. So schaltest du neue Felder frei.' },
+  { ch: 'Tag beenden', why: 'Den Tag zu beenden ist kein verlorener Zug: Deine Arbeitskräfte kommen zurück, und du bekommst Marktaktionen. Mit 2 eingesetzten Kräften eine, mit 4 sogar zwei.', sel: '[data-a=endday]', allow: { endday: true }, done: () => myAsk() && S.ask.t === 'market', text: 'Du hast 2 Arbeitskräfte eingesetzt. Beende den <b>Tag</b>: Sie kommen zurück und du bekommst eine <b>Marktaktion</b>.' },
+  { ch: 'Markt', why: 'Münzen ersetzen fehlende Sonnenstunden. So werden Waren, die du gerade nicht brauchst, zu Spielraum für teure Karten.', sel: '.sheet [data-a=askval][data-v=m3]', allow: { askval: d => d.v === 'm3' }, done: () => myAsk() && S.ask.t === 'sell', text: 'Wähle „<b>Waren verkaufen</b>“: Jeder Korb wird zu einer Münze.' },
+  { ch: 'Markt', sel: '.sheet [data-a=sellc][data-g=kirsche][data-d="1"]', allow: { sellc: true }, done: () => U.tmp.sell && U.tmp.sell.kirsche > 0, text: 'Tippe auf <b>+</b> bei der Kirsche.' },
+  { ch: 'Markt', sel: '.sheet [data-a=askok]', allow: { askok: true, sellc: true }, done: () => !myAsk(), text: 'Und jetzt „Verkaufen“.' },
+  { ch: 'Zusammenfassung', pos: 'top', text: 'Du kennst den Ablauf! Merke dir: <b>1.</b> Karten passend zu deinen Gebieten sammeln. <b>2.</b> Mit Sonnenstunden – notfalls mit Münzen – ausspielen. <b>3.</b> Waren für Aufträge sammeln und Aufträge möglichst früh erfüllen. <b>4.</b> Den Tag beenden, wenn deine Kräfte eingesetzt sind. Erreicht jemand 30 SP, hat jede Person noch zwei Züge. Viel Freude auf dem Landgut!' },
 ];
 function tutSetup() {
   U.fast = true;
