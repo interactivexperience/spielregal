@@ -205,15 +205,20 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .box.vp{background:#F6D2C4;color:var(--ink)}
 .box.x.vp{background:var(--tomato);color:#fff}
 .label .lv{float:right;letter-spacing:0;text-transform:none;color:var(--forest)}
-.gbar{position:relative;height:16px;border-radius:99px;background:var(--bg);margin-top:8px}
-.gbar span{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--orange)}
-.gbar i{position:absolute;top:-2px;transform:translateX(-50%);font-style:normal;font-size:13px;color:#D9A92B}
-.gbar i.got{color:var(--forest)}
-.gbar i.cut{color:#8E7CC3;text-decoration:line-through}
+.gbar{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;margin-top:8px}
+.gbar i{height:20px;border-radius:6px;background:linear-gradient(90deg,var(--orange) var(--f),var(--bg) var(--f));font-style:normal;font-size:10px;line-height:1;display:grid;place-items:center;color:#C9A23A;overflow:hidden}
+.gbar i.got{color:#fff}
+.gbar i.cut{color:#8E7CC3;background:repeating-linear-gradient(45deg,rgba(142,124,195,.35) 0 3px,transparent 3px 6px)}
 .pers{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .per{border-radius:18px;background:var(--card);padding:8px 10px;font-size:12.5px}
 .per .pi{width:26px;height:26px;display:inline-block;vertical-align:middle;margin-right:4px}
 .per .box{min-width:20px;font-size:8.5px}
+.box svg{width:13px;height:13px;flex:none}
+.per .boxes{flex-wrap:nowrap;gap:3px}
+.per .box{padding:0 2px;min-width:0;flex:1 1 0}
+.per .box.hv{flex:none}
+.box{display:inline-flex;align-items:center;justify-content:center;gap:1px}
+.note svg{width:15px;height:15px;vertical-align:-3px}
 .apis{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
 .apis .rh{font-size:12px}
 .apis .rh svg{width:20px;height:20px}
@@ -443,7 +448,14 @@ const EFFECT_N = {
   'fruit:raspberry': 'Himbeer-Aktion', 'fruit:peach': 'Pfirsich-Aktion', compost1: '+1 Kompost', compost2: '+2 Kompost', irisAdj: 'ab jetzt: Würfel beim Pflanzen/Gießen ±1 gratis',
   apiary2: '2 Bienenstock-Aktionen', goods2: '+2 Waren', shed: '1 Schuppenaktion', yard1: '1 Hofaktion', yard2: '2 Hofaktionen', vp3: '3 SP am Ende', yard3: '3 Hofaktionen', pw2: '2× pflanzen/gießen, Zonen frei',
 };
-const EFFECT_S = { yard: 'Hof', peach2: 'Pf+2', plantAny: '🌱', 'fruit:apple': 'Apf', 'fruit:blackberry': 'Bro', 'fruit:raspberry': 'Him', 'fruit:peach': 'Pfi', compost1: '+1K', compost2: '+2K', irisAdj: '±1', apiary2: '2🐝', goods2: '+2W', shed: 'Sch', yard1: 'Hof', yard2: '2Hof', vp3: '3', yard3: '3Hof', pw2: '2🌱' };
+// Kurzsymbole auf dem Bogen: kleine Bilder statt Buchstaben-Kürzel (lazy, weil icon() Farbkonstanten braucht)
+const EFFECT_S_TX = { yard: 'Hof', plantAny: '🌱', irisAdj: '±1', vp3: '3', yard1: 'Hof', yard2: '2 Hof', yard3: '3 Hof', pw2: '2🌱' };
+function effS(k) {
+  if (!k) return '';
+  if (k in EFFECT_S_TX) return EFFECT_S_TX[k];
+  if (k.startsWith('fruit:')) return icon(k.slice(6));
+  return { peach2: `${icon('peach')}+2`, compost1: `+1${icon('kompost')}`, compost2: `+2${icon('kompost')}`, apiary2: `2${icon('bienen')}`, goods2: `+2${icon('waren')}`, shed: icon('schuppen') }[k] || '';
+}
 // Bienenstock: erst der Hauptstock, danach drei Abschnitte in beliebiger Reihenfolge
 const HIVE = ['', 'yard1', '', 'yard2', ''];
 const WAX_GOODS = [2, 4, 4], WAX_VP = [2, 2, 5], HONEY_VP = [5, 5, 8];
@@ -824,17 +836,23 @@ function taskTitle(t) {
 function perOpts(p, only) {
   return FLOWERS.filter(f => (!only || f === only) && p.per[f].n < p.per[f].cap).map(f => {
     const e = PER[f].box[p.per[f].n];
-    return { o: 'per:' + f, ic: f, label: `${FLOWER_N[f]} ${p.per[f].n + 1}/${PER_LEN}`, sub: p.per[f].n + 1 === PER_LEN ? `vollendet: ${PER[f].vp === 'yard' ? '1 SP je Hof-Ernte' : PER[f].vp + ' SP'}` : e ? EFFECT_N[e] : 'kein Bonus', apply: q => perAction(q, f) };
+    return { o: 'per:' + f, ic: f, label: `${FLOWER_N[f]} ${p.per[f].n + 1}/${PER_LEN}`, sub: p.per[f].n + 1 === PER_LEN ? `vollendet: ${PER[f].vp === 'yard' ? '1 SP je Hof-Ernte' : PER[f].vp + ' SP'}` : e ? `Dieses Kästchen: ${EFFECT_N[e]}` : `Dieses Kästchen: kein Bonus – ein Schritt zur fertigen Staude (${PER[f].vp === 'yard' ? '1 SP je Hof-Ernte' : PER[f].vp + ' SP'}).`, apply: q => perAction(q, f) };
   });
 }
+const FRUIT_GAIN = { apple: '3 SP am Ende', blackberry: '2 SP am Ende', peach: '1 Gießaktion in einer Zone deiner Wahl', raspberry: '+3 Waren' };
+function yardSub(p, f) {
+  const n = p.yard[f.k].n;
+  if (f.steps[n] !== 'h') return 'Dieses Kästchen: Wachstum, noch keine Ernte – die nächste ist dann eine Ernte.';
+  return `Dieses Kästchen: Ernte → ${FRUIT_GAIN[f.k]}${f.k === 'raspberry' && RASP_VP[n + 1] ? ` und ${RASP_VP[n + 1]} SP` : ''}.`;
+}
 function yardOpts(p, only) {
-  return FRUITS.filter(f => (!only || f.k === only) && p.yard[f.k].n < p.yard[f.k].cap).map(f => ({ o: 'yard:' + f.k, ic: f.k, label: `${f.n} ${p.yard[f.k].n + 1}/${f.len}`, sub: f.tx, apply: q => yardAction(q, f.k) }));
+  return FRUITS.filter(f => (!only || f.k === only) && p.yard[f.k].n < p.yard[f.k].cap).map(f => ({ o: 'yard:' + f.k, ic: f.k, label: `${f.n} ${p.yard[f.k].n + 1}/${f.len}`, sub: yardSub(p, f), apply: q => yardAction(q, f.k) }));
 }
 function apiaryOpts(p) {
-  if (p.hive < HIVE.length) return [{ o: 'api:hive', ic: 'bienen', label: `Hauptstock ${p.hive + 1}/${HIVE.length}`, sub: HIVE[p.hive] ? EFFECT_N[HIVE[p.hive]] : 'kein Bonus', apply: q => apiaryAction(q, 'hive') }];
+  if (p.hive < HIVE.length) return [{ o: 'api:hive', ic: 'bienen', label: `Hauptstock ${p.hive + 1}/${HIVE.length}`, sub: HIVE[p.hive] ? `Dieses Kästchen: ${EFFECT_N[HIVE[p.hive]]}` : 'Dieses Kästchen: kein Bonus. Erst wenn der Hauptstock voll ist, kannst du Wachs, Honig und Ableger nutzen.', apply: q => apiaryAction(q, 'hive') }];
   return ['wax', 'honey', 'split'].filter(s => p.api[s].n < p.api[s].cap).map(s => {
     const n = p.api[s].n, hi = apiHarv(p, s);
-    const sub = API_STEPS[s][n] !== 'h' ? 'Wachstum (noch keine Ernte)' : s === 'wax' ? `+${WAX_GOODS[hi]} Waren, ${WAX_VP[hi]} SP` : s === 'honey' ? `${HONEY_VP[hi]} SP` : EFFECT_N[SPLIT[n]];
+    const sub = API_STEPS[s][n] !== 'h' ? 'Dieses Kästchen: Wachstum, noch keine Ernte' : s === 'wax' ? `+${WAX_GOODS[hi]} Waren, ${WAX_VP[hi]} SP` : s === 'honey' ? `${HONEY_VP[hi]} SP` : EFFECT_N[SPLIT[n]];
     return { o: 'api:' + s, ic: s, label: `${API_N[s]} ${n + 1}/${p.api[s].cap}`, sub, apply: q => apiaryAction(q, s) };
   });
 }
@@ -1137,14 +1155,15 @@ function sheetHtml(p, hlZone = -1) {
    <div class="res" style="margin-top:10px">
     <div class="rrow"><div class="rh">${icon('kompost')}Kompost<span class="v">${p.compost}</span></div><div style="font-size:11.5px;margin-top:3px">Beim Pflanzen/Gießen: je Kompost Würfelwert ±1 (6 und 1 sind Nachbarn)${irisFree(p) ? ' · Iris: ±1 gratis' : ''}.${shedDone(p, 'shovel') ? ' Spaten: 3 Kompost = 1 Bonusaktion.' : ''}</div>${shedDone(p, 'shovel') && p.compost >= 3 && p === human() && S.screen === 'game' ? '<button class="chip on" style="margin-top:6px" data-a="shovel">Spaten nutzen (−3 Kompost)</button>' : ''}</div>
     <div class="rrow goods"><div class="rh">${icon('waren')}Waren<span class="v">${p.goods}</span></div>
-      <div class="gbar"><span style="width:${(p.goods / GOODS_MAX * 100).toFixed(1)}%"></span>${STARS.map((s, i) => `<i class="${p.starX.includes(i) ? 'cut' : s <= p.goods ? 'got' : ''}" style="left:${(s / GOODS_MAX * 100).toFixed(1)}%">★</i>`).join('')}</div>
-      <div style="font-size:11.5px;margin-top:3px">Sterne = Bonusaktion${nextStar >= 0 ? ` (nächster bei ${STARS[nextStar]})` : ''} · Markt jetzt: ${market[1].map(a => MARKET_N[a]).join(' + ')}</div></div>
+      <div class="gbar">${STARS.map((s, i) => { const f = Math.max(0, Math.min(5, p.goods - (s - 5))) * 20, cut = p.starX.includes(i); return `<i class="${cut ? 'cut' : s <= p.goods ? 'got' : ''}" style="--f:${f}%" data-info="${esc(`Waren ${s - 4}–${s}: ${cut ? 'Stern gestrichen, hier gibt es keine Bonusaktion mehr.' : s <= p.goods ? 'Stern erreicht, Bonusaktion bekommen.' : `Bei ${s} Waren gibt es eine Bonusaktion.`}`)}">★</i>`; }).join('')}</div>
+      <div style="font-size:11.5px;margin-top:3px">Jedes Feld = 5 Waren, voll = ★ Bonusaktion${nextStar >= 0 ? ` (nächster bei ${STARS[nextStar]})` : ''} · Markt jetzt: ${market[1].map(a => MARKET_N[a]).join(' + ')}</div></div>
    </div>
    <p class="label" style="margin-top:14px">Stauden <span class="lv">${sc.per} SP</span></p>
-   <div class="pers">${FLOWERS.map(f => { const st = p.per[f]; return `<div class="per"><span class="pi">${icon(f)}</span><b>${FLOWER_N[f]}</b>${boxRow(st.n, st.cap, PER_LEN, i => i === PER_LEN - 1 ? (PER[f].vp === 'yard' ? 'H' : PER[f].vp) : EFFECT_S[PER[f].box[i]] || '', i => i === PER_LEN - 1 ? 'vp' : PER[f].box[i] ? 't' : '', i => perInfo(f, i))}</div>`; }).join('')}</div>
+   <p class="note" style="margin:0 0 8px">Symbole: Obst = 1 Aktion bei dieser Obstsorte · +1/+2 ${icon('kompost')} Kompost · +2 ${icon('waren')} Waren · ${icon('schuppen')} Schuppenaktion · Hof = Hofaktion · 🌱 = Pflanzaktion · ±1 = Würfel gratis verschieben · rote Zahl = SP, wenn die Staude fertig ist (H bei der Tulpe: 1 SP je Hof-Ernte). <b>Lange drücken</b> zeigt die Details.</p>
+   <div class="pers">${FLOWERS.map(f => { const st = p.per[f]; return `<div class="per"><span class="pi">${icon(f)}</span><b>${FLOWER_N[f]}</b>${boxRow(st.n, st.cap, PER_LEN, i => i === PER_LEN - 1 ? (PER[f].vp === 'yard' ? 'H' : PER[f].vp) : effS(PER[f].box[i]) || '', i => i === PER_LEN - 1 ? 'vp' : PER[f].box[i] ? 't' : '', i => perInfo(f, i))}</div>`; }).join('')}</div>
    <p class="label" style="margin-top:14px">Bienenstock <span class="lv">${sc.api} SP</span></p>
-   <div class="rrow"><div class="rh">${icon('bienen')}Hauptstock</div>${boxRow(p.hive, HIVE.length, HIVE.length, i => EFFECT_S[HIVE[i]] || '', i => HIVE[i] ? 't' : '', i => HIVE[i] ? `Beim Ausfüllen: ${EFFECT_N[HIVE[i]]}` : 'Hauptstock: erst ganz füllen, dann Wachs, Honig oder Ableger.')}
-     <div class="apis">${['wax', 'honey', 'split'].map(s => `<div><div class="rh">${icon(s)}${API_N[s]}</div>${boxRow(p.api[s].n, p.api[s].cap, 4, i => { const st = API_STEPS[s]; if (st[i] !== 'h') return ''; const hi = [...st.slice(0, i)].filter(c => c === 'h').length; return s === 'wax' ? `${WAX_GOODS[hi]}W` : s === 'honey' ? HONEY_VP[hi] : EFFECT_S[SPLIT[i]]; }, i => API_STEPS[s][i] === 'h' ? 'hv t' : 'gr', i => { const st = API_STEPS[s]; if (st[i] !== 'h') return 'Wachstum: nur ein Schritt weiter, noch keine Ernte.'; const hi = [...st.slice(0, i)].filter(c => c === 'h').length; return s === 'wax' ? `Wachs-Ernte: ${WAX_GOODS[hi]} Waren, am Ende ${WAX_VP[hi]} SP` : s === 'honey' ? `Honig-Ernte: am Ende ${HONEY_VP[hi]} SP` : `Ableger: ${EFFECT_N[SPLIT[i]]}`; })}</div>`).join('')}</div>
+   <div class="rrow"><div class="rh">${icon('bienen')}Hauptstock</div>${boxRow(p.hive, HIVE.length, HIVE.length, i => effS(HIVE[i]) || '', i => HIVE[i] ? 't' : '', i => HIVE[i] ? `Beim Ausfüllen: ${EFFECT_N[HIVE[i]]}` : 'Hauptstock: erst ganz füllen, dann Wachs, Honig oder Ableger.')}
+     <div class="apis">${['wax', 'honey', 'split'].map(s => `<div><div class="rh">${icon(s)}${API_N[s]}</div>${boxRow(p.api[s].n, p.api[s].cap, 4, i => { const st = API_STEPS[s]; if (st[i] !== 'h') return ''; const hi = [...st.slice(0, i)].filter(c => c === 'h').length; return s === 'wax' ? `${WAX_GOODS[hi]}W` : s === 'honey' ? HONEY_VP[hi] : effS(SPLIT[i]); }, i => API_STEPS[s][i] === 'h' ? 'hv t' : 'gr', i => { const st = API_STEPS[s]; if (st[i] !== 'h') return 'Wachstum: nur ein Schritt weiter, noch keine Ernte.'; const hi = [...st.slice(0, i)].filter(c => c === 'h').length; return s === 'wax' ? `Wachs-Ernte: ${WAX_GOODS[hi]} Waren, am Ende ${WAX_VP[hi]} SP` : s === 'honey' ? `Honig-Ernte: am Ende ${HONEY_VP[hi]} SP` : `Ableger: ${EFFECT_N[SPLIT[i]]}`; })}</div>`).join('')}</div>
      <div style="font-size:11.5px;margin-top:4px">Erst den Hauptstock füllen, dann Wachs (Waren, 2/2/5 SP), Honig (5/5/8 SP) oder Ableger (3 SP + Aktionen). Runde Felder sind Ernten, eckige nur Wachstum.</div></div>
    <p class="label" style="margin-top:14px">Hof <span class="lv">${sc.yard} SP</span></p>
    <div class="fruits">${FRUITS.map(f => `<div class="rrow"><div class="rh">${icon(f.k)}${f.n}</div>${boxRow(p.yard[f.k].n, p.yard[f.k].cap, f.len, i => f.k === 'raspberry' && RASP_VP[i + 1] ? RASP_VP[i + 1] : f.steps[i] === 'h' && f.k === 'apple' ? '3' : f.steps[i] === 'h' && f.k === 'blackberry' ? '2' : '', i => (f.steps[i] === 'h' ? 'hv ' : 'gr ') + (f.k === 'raspberry' && RASP_VP[i + 1] ? 't' : ''), i => fruitInfo(f, i))}<div class="tx">${f.tx}</div></div>`).join('')}</div>
@@ -1272,6 +1291,8 @@ function taskSheet() {
     const mul = opts.find(o => o.o === 'mulch');
     if (mul) h += `<div class="opts"><button class="opt" data-a="opt" data-o="mulch">${icon('mulch')}<span><b>${mul.label}</b><small>${mul.sub}</small></span></button></div>`;
   } else {
+    const hint = { ay: 'Wähle <b>eine</b> Leiste und fülle dort das nächste Kästchen aus – im Bienenstock oder bei einer Obstsorte im Hof. Unter jeder Leiste steht, was dir genau dieses Kästchen bringt.', yard: 'Fülle bei einer Obstsorte das nächste Kästchen aus. Darunter steht, was es dir bringt.', apiary: 'Fülle im Bienenstock das nächste Kästchen aus. Darunter steht, was es dir bringt.', per: 'Fülle bei einer Staude das nächste Kästchen aus. Darunter steht, was es dir bringt.', shed: 'Fülle bei einem Schuppen-Gegenstand das nächste Kästchen aus. Ist er fertig, wirkt er den Rest des Spiels.', bonus: 'Bonusaktion: Fülle ein Kästchen bei Stauden, Bienenstock, Hof oder Schuppen aus.' }[t.t];
+    if (hint) h += `<p style="font-size:13px;margin:2px 0 10px">${hint}</p>`;
     h += `<div class="opts">${opts.map(o => `<button class="opt" data-a="opt" data-o="${o.o}">${icon(o.ic)}<span><b>${esc(o.label)}</b><small>${esc(o.sub || '')}</small></span></button>`).join('')}</div>`;
   }
   h += `<button class="skip" data-a="tskip">${opts.length ? 'Aktion verfallen lassen' : 'Nichts möglich – weiter'}</button>`;
