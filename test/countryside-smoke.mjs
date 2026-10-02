@@ -52,7 +52,7 @@ const sim = await page.evaluate(() => {
       if (p.placed.length > 4) bad.push("Arbeitskräfte");
     }
     const cards = S.deck.length + S.discard.length + S.display.length + (S.soloStacks || []).flat().length + S.players.reduce((s, p) => s + p.hand.length + p.terrs.reduce((a, t) => a + t.cards.length, 0), 0);
-    if (cards !== 122) bad.push("Kartenzahl " + cards);
+    if (cards !== 126) bad.push("Kartenzahl " + cards);
     out.push({ n: solo ? "solo" : n, vp: S.players.map((p) => p.vp), guard: r.guard, bad });
   }
   window.__lg.reset();

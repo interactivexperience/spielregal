@@ -237,15 +237,15 @@ const CARDS = {
   kirschbaum: { n: 'Kirschbaum', sun: 5, t: 'wiese', g: 'baum', c: 6, fx: 'Erhalte eine Kirsche je Kirschbaum.' },
   apfelbaum: { n: 'Apfelbaum', sun: 5, t: 'wiese', g: 'baum', c: 6, fx: 'Jeder Apfelbaum erhält einen Apfel.' },
   eiche: { n: 'Eiche', sun: 4, t: 'wiese', g: 'baum', c: 4, fx: 'Erhalte 1 Münze je unterschiedlichem Baum.' },
-  mohn: { n: 'Mohn', sun: 1, t: 'wiese', g: 'blume', c: 5, fx: 'Erhalte 1 Münze.' },
+  mohn: { n: 'Mohn', sun: 1, t: 'wiese', g: 'blume', c: 6, fx: 'Erhalte 1 Münze.' },
   schaf: { n: 'Schaf', sun: 3, t: 'wiese', g: 'tier', c: 5, fx: 'Erhalte eine Wolle.' },
   esel: { n: 'Esel', sun: 2, t: 'wiese', g: 'tier', c: 3, fx: 'Nimm eine Karte aus dem Ablagestapel.' },
   rebe: { n: 'Rebe', sun: 3, t: 'garten', g: 'rebe', c: 8, fx: 'Erhalte eine Traube je Rebe in diesem Gebiet.' },
-  sonnenblume: { n: 'Sonnenblume', sun: 2, t: 'garten', g: 'blume', c: 4, fx: 'Erhalte 2 Münzen.' },
+  sonnenblume: { n: 'Sonnenblume', sun: 2, t: 'garten', g: 'blume', c: 5, fx: 'Erhalte 2 Münzen.' },
   weinbauer: { n: 'Weinbauer', sun: 4, t: 'garten', g: 'person', c: 4, fx: '1 Traube → 3 Wein, beliebig oft.' },
   gaertnerin: { n: 'Gärtnerin', sun: 2, t: 'garten', g: 'person', c: 4, fx: 'Wähle ein Gebiet: jeder Obstbaum und jede Rebe dort erhält einen Korb.' },
   kelterei: { n: 'Kelterei', sun: 7, t: 'garten', g: 'haus', c: 3, fx: '2 Wein → 1 Siegpunkt, beliebig oft.' },
-  weizen: { n: 'Weizen', sun: 2, t: 'acker', g: 'getreide', c: 7, fx: 'Erhalte 1 Münze.' },
+  weizen: { n: 'Weizen', sun: 2, t: 'acker', g: 'getreide', c: 8, fx: 'Erhalte 1 Münze.' },
   roggen: { n: 'Roggen', sun: 3, t: 'acker', g: 'getreide', c: 5, fx: 'Zähle deine Roggen: so viele benachbarte Karten aus der Auslage oder Münzen.' },
   mais: { n: 'Mais', sun: 1, t: 'acker', g: 'getreide', c: 6, fx: 'Nimm eine Karte aus der Auslage.' },
   hafer: { n: 'Hafer', sun: 2, t: 'acker', g: 'getreide', c: 5, fx: 'Jedes Schaf erhält eine Wolle.' },
@@ -255,7 +255,7 @@ const CARDS = {
   hahn: { n: 'Hahn', sun: 3, t: 'stall', g: 'tier', c: 4, fx: 'Jedes Huhn erhält ein Ei.' },
   pferd: { n: 'Pferd', sun: 7, t: 'stall', g: 'tier', c: 3, fx: 'Erhalte 2 Siegpunkte.' },
   stallbursche: { n: 'Stallbursche', sun: 3, t: 'stall', g: 'person', c: 3, fx: 'Stelle eine eingesetzte Arbeitskraft zurück auf die Bank.' },
-  hund: { n: 'Hund', sun: 3, t: 'haus', g: 'tier', c: 4, fx: 'Erfülle einen Auftrag.' },
+  hund: { n: 'Hund', sun: 3, t: 'haus', g: 'tier', c: 5, fx: 'Erfülle einen Auftrag.' },
   katze: { n: 'Katze', sun: 2, t: 'haus', g: 'tier', c: 4, fx: 'Nimm eine Karte aus dem Ablagestapel.' },
   baeckerin: { n: 'Bäckerin', sun: 4, t: 'haus', g: 'person', c: 4, fx: 'Erhalte ein Brot je Weizen und Roggen.' },
   kaeserin: { n: 'Käserin', sun: 4, t: 'haus', g: 'person', c: 3, fx: '1 Milch → 2 Münzen, beliebig oft.' },
@@ -300,6 +300,12 @@ const TERRS = [
   ['acker', 4, { k: 'hafer' }, 4], ['acker', 3, { k: 'give', goods: { brot: 3 } }, 4], ['acker', 4, { k: 'pair', g: 'getreide' }, 3],
   ['garten', 4, { k: 'grp', g: 'rebe', n: 3 }, 5], ['garten', 3, { k: 'give', goods: { wein: 3 } }, 4], ['garten', 5, { k: 'full' }, 5],
   ['garten', 4, { k: 'pair', g: 'blume' }, 3], ['garten', 3, { k: 'noPerson' }, 3], ['garten', 4, { k: 'give', goods: { traube: 2, apfel: 2 } }, 4],
+  // auf 50 Gebiete ergänzt (10 je Gebietsart, wie die 50 Gebietskarten des Originals)
+  ['wiese', 4, { k: 'grp', g: 'baum', n: 3 }, 5], ['wiese', 3, { k: 'give', goods: { wolle: 2, kirsche: 1 } }, 4], ['wiese', 4, { k: 'noPerson' }, 3], ['wiese', 4, { k: 'same3' }, 4],
+  ['haus', 3, { k: 'give', goods: { wolle: 1, brot: 1 } }, 3], ['haus', 4, { k: 'pair', g: 'tier' }, 3], ['haus', 4, { k: 'grp', g: 'person', n: 3 }, 5], ['haus', 5, { k: 'grp', g: 'person', n: 4 }, 6],
+  ['stall', 3, { k: 'give', goods: { wolle: 2, milch: 1 } }, 4], ['stall', 5, { k: 'animals4' }, 6], ['stall', 3, { k: 'pair', g: 'tier' }, 3], ['stall', 4, { k: 'grp', g: 'tier', n: 4 }, 4],
+  ['acker', 3, { k: 'grp', g: 'getreide', n: 3 }, 4], ['acker', 4, { k: 'noPerson' }, 3], ['acker', 3, { k: 'give', goods: { brot: 2 } }, 3], ['acker', 4, { k: 'full' }, 4],
+  ['garten', 5, { k: 'grp', g: 'rebe', n: 4 }, 6], ['garten', 5, { k: 'sun7' }, 6], ['garten', 4, { k: 'same3' }, 4], ['garten', 3, { k: 'give', goods: { wein: 2, traube: 1 } }, 4],
 ].map(([t, cap, cond, vp], i) => ({ id: i, t, cap, cond, vp }));
 // Auftragsplättchen (Position *, **, ***), jeweils Seite A (gestaffelte Bedingung) oder B (gleiche Bedingung)
 const OTILES = [
@@ -1377,7 +1383,7 @@ function rulesHtml() {
   <h4>Spielende</h4>
   <p>Erreicht jemand ${VP_END} Siegpunkte, hat jede Person noch genau zwei Züge. Die meisten Siegpunkte gewinnen, bei Gleichstand die meisten Münzen. <b>Solo:</b> 5 Stapel à 7 Karten. Bei jedem Tagesende wird die Auslage gegen den nächsten Stapel getauscht. Sind alle verbraucht, endet das Spiel mit dem nächsten Tagesende. Werte dein Ergebnis mit der Solo-Tabelle.</p>
   <h4>Unterschiede zum Original</h4>
-  <p style="font-size:13px">Ablauf, Arbeitsfelder, Tag beenden, Marktaktionen, Münzen/Körbe, Sonnenstunden, Aufträge, Freischalten, Spielende und Solomodus folgen der Anleitung von <i>Countryside / Landgut</i>. Die 126 Projekt- und 50 Gebietskarten sind dort nur als Beispiele abgebildet. Deshalb ist der Karteninhalt ein eigener Entwurf nach diesen Beispielen: 27 Kartenarten in 5 Gebieten, 30 Gebiete und 6 Auftragsplättchen. Ebenfalls eigene Annahmen sind das Leistenende bei ${VP_END} Punkten und die Aufteilung der Marker auf dem Arbeitsplan. Die Illustrationen sind eigene Entwürfe im Gouache-Stil.</p></div>`;
+  <p style="font-size:13px">Ablauf, Arbeitsfelder, Tag beenden, Marktaktionen, Münzen/Körbe, Sonnenstunden, Aufträge, Freischalten, Spielende und Solomodus folgen der Anleitung von <i>Countryside / Landgut</i>. Die 126 Projekt- und 50 Gebietskarten sind dort nur als Beispiele abgebildet. Deshalb ist der Karteninhalt ein eigener Entwurf nach diesen Beispielen: 27 Kartenarten in 5 Gebieten mit zusammen 126 Karten (wie im Original), 50 Gebiete (10 je Gebietsart, wie im Original) und 6 Auftragsplättchen. Ebenfalls eigene Annahmen sind das Leistenende bei ${VP_END} Punkten und die Aufteilung der Marker auf dem Arbeitsplan. Die Illustrationen sind eigene Entwürfe im Gouache-Stil.</p></div>`;
 }
 function viewSheet() {
   const sh = U.sheet;
