@@ -395,7 +395,7 @@ const DICE_BY_N = { 1: 4, 2: 4, 3: 5, 4: 6 };
 // Nachbar-Kürbissen sitzt eine Staude – jede Staude kommt zweimal vor.
 const PUMPS = [
   { z: 0, h: 1, g: 1 }, { z: 1, h: 4, g: 3 }, { z: 2, h: 2, g: 1 }, { z: 2, h: 3, g: 2 }, { z: 3, h: 4, g: 3 }, { z: 3, h: 3, g: 3 },
-  { z: 3, h: 1, g: 1 }, { z: 4, h: 2, g: 1 }, { z: 5, h: 4, g: 3 }, { z: 5, h: 3, g: 2 }, { z: 0, h: 4, g: 3 }, { z: 0, h: 3, g: 2 },
+  { z: 3, h: 1, g: 1 }, { z: 4, h: 2, g: 1 }, { z: 5, h: 3, g: 3 }, { z: 5, h: 3, g: 2 }, { z: 0, h: 4, g: 3 }, { z: 0, h: 3, g: 2 },
 ];
 // RING_F[r] liegt zwischen Kürbis r und r+1
 const RING_F = ['iris', 'tulip', 'hyacinth', 'iris', 'daffodil', 'crocus', 'hydrangea', 'tulip', 'hyacinth', 'daffodil', 'crocus', 'hydrangea'];
@@ -425,6 +425,9 @@ const EFFECT_S = { yard: 'Hof', peach2: 'Pf+2', plantAny: '🌱', 'fruit:apple':
 // Bienenstock: erst der Hauptstock, danach drei Abschnitte in beliebiger Reihenfolge
 const HIVE = ['', 'yard1', '', 'yard2', ''];
 const WAX_GOODS = [2, 4, 4], WAX_VP = [2, 2, 5], HONEY_VP = [5, 5, 8];
+// Wachs/Honig von unten: Kreis, Kreis, Quadrat (Wachstum), Kreis – nur Kreise sind Ernten
+const API_STEPS = { wax: 'hhgh', honey: 'hhgh', split: 'hhhh' };
+const apiHarv = (p, s) => [...API_STEPS[s].slice(0, p.api[s].n)].filter(c => c === 'h').length;
 const SPLIT = ['vp3', 'plantAny', 'yard3', 'pw2'];
 const API_N = { wax: 'Wachs', honey: 'Honig', split: 'Ableger' };
 // Hof: Reihen von links nach rechts, jedes Kästchen ist eine Ernte
@@ -432,7 +435,7 @@ const API_N = { wax: 'Wachs', honey: 'Honig', split: 'Ableger' };
 const FRUITS = [
   { k: 'apple', n: 'Äpfel', one: 'Apfel', steps: 'hghhhhh', tx: '3 SP je Apfel; vor der 2. Ernte 1 Wachstum' },
   { k: 'blackberry', n: 'Brombeeren', one: 'Brombeere', steps: 'hhhhhhh', tx: '2 SP je Brombeere' },
-  { k: 'peach', n: 'Pfirsiche', one: 'Pfirsich', steps: 'hghghgh', tx: 'Ernte: 1 Gießaktion, Zone frei; zwischen den Ernten je 1 Wachstum' },
+  { k: 'peach', n: 'Pfirsiche', one: 'Pfirsich', steps: 'ghghghgh', tx: 'jeder Baum: 1 Wachstum, dann Ernte = 1 Gießaktion, Zone frei' },
   { k: 'raspberry', n: 'Himbeeren', one: 'Himbeere', steps: 'hhhhhhhhh', tx: 'Ernte: +3 Waren · 1/2/3 SP nach 3/6/9 Ernten' },
 ];
 FRUITS.forEach(f => { f.len = f.steps.length; });
@@ -581,7 +584,7 @@ function newSheet() {
   return {
     g: ZONES.map(Z => ({ c: new Array(Z.corn).fill(0), b: new Array(Z.beans.length).fill(0), s: new Array(Z.pump.length).fill(0) })),
     per: Object.fromEntries(FLOWERS.map(f => [f, { n: 0, cap: PER_LEN }])),
-    hive: 0, api: { wax: { n: 0, cap: 3 }, honey: { n: 0, cap: 3 }, split: { n: 0, cap: 4 } },
+    hive: 0, api: { wax: { n: 0, cap: 4 }, honey: { n: 0, cap: 4 }, split: { n: 0, cap: 4 } },
     yard: Object.fromEntries(FRUITS.map(f => [f.k, { n: 0, cap: f.len }])),
     shed: Object.fromEntries(SHED.map(s => [s.k, { n: 0, x: false }])),
     goods: 0, starX: [], compost: 1, tasks: [],
@@ -681,7 +684,8 @@ function apiaryAction(p, sec) {
   const st = p.api[sec];
   if (!st || st.n >= st.cap) return false;
   st.n++;
-  if (sec === 'wax') gainGoods(p, WAX_GOODS[st.n - 1]);
+  if (API_STEPS[sec][st.n - 1] !== 'h') return true; // Wachstumsfeld
+  if (sec === 'wax') gainGoods(p, WAX_GOODS[apiHarv(p, 'wax') - 1]);
   if (sec === 'split') effect(p, SPLIT[st.n - 1], 'Ableger');
   return true;
 }
@@ -760,7 +764,7 @@ function endScore(p) {
   });
   const yardItems = FRUITS.reduce((s, f) => s + harvests(p, f.k), 0);
   for (const f of FLOWERS) if (p.per[f].n >= PER_LEN) row.per += PER[f].vp === 'yard' ? Math.min(15, yardItems) : PER[f].vp;
-  row.api = WAX_VP.slice(0, p.api.wax.n).reduce((a, b) => a + b, 0) + HONEY_VP.slice(0, p.api.honey.n).reduce((a, b) => a + b, 0) + (p.api.split.n >= 1 ? 3 : 0);
+  row.api = WAX_VP.slice(0, apiHarv(p, 'wax')).reduce((a, b) => a + b, 0) + HONEY_VP.slice(0, apiHarv(p, 'honey')).reduce((a, b) => a + b, 0) + (p.api.split.n >= 1 ? 3 : 0);
   row.yard = harvests(p, 'apple') * 3 + harvests(p, 'blackberry') * 2 + Object.entries(RASP_VP).reduce((s, [k, v]) => s + (harvests(p, 'raspberry') >= +k ? v : 0), 0);
   for (const it of SHED) if (shedDone(p, it.k)) {
     if (it.k === 'bowl') row.shed += [0, 1, 4, 7, 10][FRUITS.filter(f => harvests(p, f.k) > 0).length];
@@ -807,8 +811,8 @@ function yardOpts(p, only) {
 function apiaryOpts(p) {
   if (p.hive < HIVE.length) return [{ o: 'api:hive', ic: 'bienen', label: `Hauptstock ${p.hive + 1}/${HIVE.length}`, sub: HIVE[p.hive] ? EFFECT_N[HIVE[p.hive]] : 'kein Bonus', apply: q => apiaryAction(q, 'hive') }];
   return ['wax', 'honey', 'split'].filter(s => p.api[s].n < p.api[s].cap).map(s => {
-    const n = p.api[s].n;
-    const sub = s === 'wax' ? `+${WAX_GOODS[n]} Waren, ${WAX_VP[n]} SP` : s === 'honey' ? `${HONEY_VP[n]} SP` : EFFECT_N[SPLIT[n]];
+    const n = p.api[s].n, hi = apiHarv(p, s);
+    const sub = API_STEPS[s][n] !== 'h' ? 'Wachstum (noch keine Ernte)' : s === 'wax' ? `+${WAX_GOODS[hi]} Waren, ${WAX_VP[hi]} SP` : s === 'honey' ? `${HONEY_VP[hi]} SP` : EFFECT_N[SPLIT[n]];
     return { o: 'api:' + s, ic: s, label: `${API_N[s]} ${n + 1}/${p.api[s].cap}`, sub, apply: q => apiaryAction(q, s) };
   });
 }
@@ -1114,8 +1118,8 @@ function sheetHtml(p, hlZone = -1) {
    <div class="pers">${FLOWERS.map(f => { const st = p.per[f]; return `<div class="per"><span class="pi">${icon(f)}</span><b>${FLOWER_N[f]}</b>${boxRow(st.n, st.cap, PER_LEN, i => i === PER_LEN - 1 ? (PER[f].vp === 'yard' ? 'H' : PER[f].vp) : EFFECT_S[PER[f].box[i]] || '', i => i === PER_LEN - 1 ? 'vp' : PER[f].box[i] ? 't' : '')}</div>`; }).join('')}</div>
    <p class="label" style="margin-top:14px">Bienenstock <span class="lv">${sc.api} SP</span></p>
    <div class="rrow"><div class="rh">${icon('bienen')}Hauptstock</div>${boxRow(p.hive, HIVE.length, HIVE.length, i => EFFECT_S[HIVE[i]] || '', i => HIVE[i] ? 't' : '')}
-     <div class="apis">${['wax', 'honey', 'split'].map(s => `<div><div class="rh">${icon(s)}${API_N[s]}</div>${boxRow(p.api[s].n, p.api[s].cap, s === 'split' ? 4 : 3, i => s === 'wax' ? `${WAX_GOODS[i]}W` : s === 'honey' ? HONEY_VP[i] : EFFECT_S[SPLIT[i]], () => 't')}</div>`).join('')}</div>
-     <div style="font-size:11.5px;margin-top:4px">Erst den Hauptstock füllen, dann Wachs (Waren, 2/2/5 SP), Honig (5/5/8 SP) oder Ableger (3 SP + Aktionen).</div></div>
+     <div class="apis">${['wax', 'honey', 'split'].map(s => `<div><div class="rh">${icon(s)}${API_N[s]}</div>${boxRow(p.api[s].n, p.api[s].cap, 4, i => { const st = API_STEPS[s]; if (st[i] !== 'h') return ''; const hi = [...st.slice(0, i)].filter(c => c === 'h').length; return s === 'wax' ? `${WAX_GOODS[hi]}W` : s === 'honey' ? HONEY_VP[hi] : EFFECT_S[SPLIT[i]]; }, i => API_STEPS[s][i] === 'h' ? 'hv t' : 'gr')}</div>`).join('')}</div>
+     <div style="font-size:11.5px;margin-top:4px">Erst den Hauptstock füllen, dann Wachs (Waren, 2/2/5 SP), Honig (5/5/8 SP) oder Ableger (3 SP + Aktionen). Runde Felder sind Ernten, eckige nur Wachstum.</div></div>
    <p class="label" style="margin-top:14px">Hof <span class="lv">${sc.yard} SP</span></p>
    <div class="fruits">${FRUITS.map(f => `<div class="rrow"><div class="rh">${icon(f.k)}${f.n}</div>${boxRow(p.yard[f.k].n, p.yard[f.k].cap, f.len, i => f.k === 'raspberry' && RASP_VP[i + 1] ? RASP_VP[i + 1] : f.steps[i] === 'h' && f.k === 'apple' ? '3' : f.steps[i] === 'h' && f.k === 'blackberry' ? '2' : '', i => (f.steps[i] === 'h' ? 'hv ' : 'gr ') + (f.k === 'raspberry' && RASP_VP[i + 1] ? 't' : ''))}<div class="tx">${f.tx}</div></div>`).join('')}</div>
    <p class="label" style="margin-top:14px">Schuppen <span class="lv">${sc.shed} SP</span></p>
