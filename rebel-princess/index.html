@@ -1453,8 +1453,7 @@ function viewGame() {
   <div class="top"><div class="row">
     <div class="round hand">Nacht ${S.round}/${ROUNDS}<small>Stich ${S.trickNo + 1}</small></div>
     <div class="rule"><b>${esc(r.k)} · ${esc(r.n)}</b>${esc(r.tx)}</div>
-    ${U.tut ? `<button class="icobtn leave" data-a="tutquit" aria-label="Lernspiel beenden"><svg viewBox="0 0 20 20" width="13" height="13" aria-hidden="true"><path d="M4.5 4.5l11 11M15.5 4.5l-11 11" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg><span>Beenden</span></button>` : `<button class="icobtn leave" data-a="leave" aria-label="Speichern und verlassen" title="Speichern &amp; verlassen"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><rect x="4" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/><rect x="11.8" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/></svg><span>Verlassen</span></button>`}
-    <button class="icobtn" data-a="menu" aria-label="Menü">?</button>
+    <button class="icobtn" data-a="menu" aria-label="Menü: Verlassen, Regeln"><svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
   </div></div>
   <div class="wrap">
     <div class="opps">${S.players.map(oppRow).join('')}</div>
@@ -1562,7 +1561,7 @@ function viewSheet() {
   if (sh && sh.type === 'ask') return askSheet();
   if (!sh) return '';
   if (sh.type === 'rules') return sheetWrap(rulesHtml());
-  if (sh.type === 'menu') return sheetWrap(`<h3>Menü</h3><div class="btnrow" style="flex-direction:column">${S && S.screen === 'game' && !S.tut ? '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}<button class="btn white wide" data-a="rules">Spielregeln</button>${S && S.history.length ? '<button class="btn white wide" data-a="scores">Punktestand</button>' : ''}<button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
+  if (sh.type === 'menu') return sheetWrap(`<h3>Menü</h3><div class="btnrow" style="flex-direction:column">${U.tut ? '<button class="btn wide" data-a="tutquit">Lernspiel beenden</button>' : ''}${S && S.screen === 'game' && !S.tut ? '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}<button class="btn white wide" data-a="rules">Spielregeln</button>${S && S.history.length ? '<button class="btn white wide" data-a="scores">Punktestand</button>' : ''}<button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
   if (sh.type === 'scores') return sheetWrap(`<h3>Punktestand</h3>${scoreTable()}`);
   if (sh.type === 'pinfo') { const p = S.players[sh.p], pr = princess(p); return sheetWrap(`<h3>${esc(p.name)}</h3>${pr ? `<div style="display:flex;gap:12px;align-items:center"><div style="width:90px;height:108px;flex:none">${princessArt(pr.k)}</div><div><b>${esc(pr.n)}: ${esc(pr.t)}</b><p style="font-size:13px;margin:4px 0">${esc(pr.tx)}</p><p style="font-size:12px;color:#6b6862">${p.used ? 'in dieser Ballnacht schon genutzt' : 'in dieser Ballnacht noch verfügbar'}</p></div></div>` : ''}<p class="label" style="margin-top:12px">Gewonnene Karten mit Anträgen</p><div style="display:flex;gap:4px;flex-wrap:wrap">${p.won.filter(c => cardPts(c)).map(c => cardHtml(c, '', 'disabled')).join('') || '<span style="font-size:13px">keine</span>'}</div>`); }
   return '';

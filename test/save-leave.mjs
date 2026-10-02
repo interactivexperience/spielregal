@@ -46,7 +46,8 @@ for (const g of GAMES) {
   const before = await page.evaluate((h) => { const S = window[h].state(); return JSON.stringify({ id: S.id, round: S.round }); }, g.hook);
   // offene Auswahl ausblenden (Prinzessinnenball: Rundenkarte mit Abfrage), dann Pause in der Kopfzeile
   if (await page.locator(".ov [data-a=askhide]").count()) await page.click(".ov [data-a=askhide]");
-  await page.click(".top [data-a=leave]");
+  await page.click(".top [data-a=menu]");
+  await page.click(".sheet [data-a=leave]");
   check(await page.locator("[data-a=resume]").count() === 1, `${g.dir}: kein Fortsetzen-Knopf nach Verlassen`);
   check(await page.locator("text=Gespeichert heute").count() === 1, `${g.dir}: Zeitpunkt der Speicherung fehlt`);
   check(await page.locator("text=Partie gespeichert").count() === 1, `${g.dir}: Hinweis nach dem Verlassen fehlt`);

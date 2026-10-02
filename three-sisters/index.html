@@ -1189,8 +1189,7 @@ function viewGame() {
   <div class="top"><div class="row">
     <div class="round hand">Runde ${S.round}/${ROUNDS}<small>${S.phase === 'draft' ? `Wahl ${S.idx + 1}/${S.seq.length}` : 'Rundenende'}</small></div>
     <div class="players">${chips}</div>
-    ${U.tut ? `<button class="icobtn leave" data-a="tutquit" aria-label="Lernspiel beenden"><svg viewBox="0 0 20 20" width="13" height="13" aria-hidden="true"><path d="M4.5 4.5l11 11M15.5 4.5l-11 11" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg><span>Beenden</span></button>` : `<button class="icobtn leave" data-a="leave" aria-label="Speichern und verlassen" title="Speichern &amp; verlassen"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><rect x="4" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/><rect x="11.8" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/></svg><span>Verlassen</span></button>`}
-    <button class="icobtn" data-a="menu" aria-label="Menü">?</button>
+    <button class="icobtn" data-a="menu" aria-label="Menü: Verlassen, Regeln"><svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
   </div><div class="status" aria-label="Dein Vorrat"><span title="Kompost: je 1 verschiebt einen Würfel um ±1">${icon('kompost')}${me.compost} Kompost</span><span title="Warenleiste">${icon('markt')}${me.goods}/${GOODS_MAX} Waren</span><span class="t" title="Punkte, wenn jetzt gewertet würde">★ ${endScore(me).total} Punkte</span></div></div>
   <div class="wrap">
     ${banner}
@@ -1302,7 +1301,7 @@ function viewSheet() {
   const sh = U.sheet; if (!sh) return '';
   switch (sh.type) {
     case 'rules': return sheetWrap(`<div class="rules">${rulesHtml()}</div>`);
-    case 'menu': return sheetWrap(`<h3>Menü</h3><div class="opts">${S && S.screen === 'game' && !S.tut ? '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}<button class="btn white wide" data-a="rules">Spielregeln</button><button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
+    case 'menu': return sheetWrap(`<h3>Menü</h3><div class="opts">${U.tut ? '<button class="btn wide" data-a="tutquit">Lernspiel beenden</button>' : ''}${S && S.screen === 'game' && !S.tut ? '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}<button class="btn white wide" data-a="rules">Spielregeln</button><button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
     case 'opp': { const p = S.players[sh.p]; return sheetWrap(`<h3>${esc(p.name)}</h3><p style="font-size:13px">★ ${endScore(p).total} Punkte</p>${sheetHtml(p)}`); }
     case 'die': return dieSheet();
     case 'task': return taskSheet();
