@@ -49,7 +49,7 @@ const COVERS = {
         <path d="M30,598 H450" fill="none"/>
         ${[[418, 250], [80, 330], [420, 380], [395, 300]].map(([x, y]) => `<path d="M${x},${y - 12} l3.5,8.5 l8.5,3.5 l-8.5,3.5 l-3.5,8.5 l-3.5,-8.5 l-8.5,-3.5 l8.5,-3.5 Z" fill="#1A1A1A" stroke="none"/>`).join('')}</g></svg>
       <div style="position:absolute;left:40px;top:222px;width:316px;height:340px;background:#E27FE0"></div><div style="position:absolute;left:58px;top:162px;width:360px;height:468px"><svg viewBox="0 0 100 130" class="ill">${popify(frogSvg(), "#2BA35A")}</svg></div>
-      <div style="position:absolute;left:40px;top:34px;font-family:'Caveat Brush',cursive;font-size:64px;line-height:.9;letter-spacing:.5px;text-transform:uppercase;color:#1A1A1A;transform:rotate(-2deg);transform-origin:left">Prinzessinnen-<br>ball</div>
+      <div style="position:absolute;left:40px;top:34px;font-family:'Caveat Brush',cursive;font-size:66px;line-height:.9;color:#1A1A1A;transform:rotate(-2deg);transform-origin:left">Prinzessinnen-<br>ball</div>
       <div style="position:absolute;inset:12px;border:4px solid #1A1A1A;border-radius:22px"></div></div>`,
   "countryside": () => `<div style="position:absolute;inset:0;background:${PAL.cream}">
       <svg viewBox="0 0 300 400" style="position:absolute;inset:0;width:100%;height:100%">

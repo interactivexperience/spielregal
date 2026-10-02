@@ -52,6 +52,11 @@ button:disabled{cursor:default}
 /* --- Header --- */
 .top{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:2.5px solid var(--ink);padding:calc(6px + env(safe-area-inset-top)) 0 6px}
 .top .row{max-width:560px;margin:0 auto;padding:0 16px;display:flex;align-items:center;gap:10px}
+.status{max-width:560px;margin:6px auto 0;padding:0 16px;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;align-items:center}
+.status::-webkit-scrollbar{display:none}
+.status>span{flex:none;display:inline-flex;align-items:center;gap:2px;border:2px solid var(--ink);border-radius:10px;background:#fff;padding:1px 7px 1px 3px;font-family:"Space Mono",monospace;font-weight:700;font-size:11.5px;white-space:nowrap}
+.status>span.t{padding-left:7px}
+.status svg{width:17px;height:17px}
 .round{font-size:26px;line-height:1;white-space:nowrap}
 .round small{font-family:"Space Mono",monospace;font-size:11px;color:var(--muted);display:block;margin-top:2px}
 .icobtn{width:40px;height:40px;border:2px solid var(--ink);border-radius:50%;background:#fff;font-weight:800;font-size:18px;flex:none;display:grid;place-items:center}
@@ -258,6 +263,10 @@ button:disabled{cursor:default}
 .coach{max-height:62vh;overflow-y:auto}
 .coach .cquit{font-size:12px;color:var(--muted);text-decoration:underline;margin-left:auto}
 .coach .cwait{font-weight:800;letter-spacing:3px;animation:pulse 1.2s infinite}
+/* Lernspiel-Coach: weißes Blatt mit rotem Versatzschatten, hebt sich von Creme/Gelb ab */
+.coach{background:#fff;border-width:3px;box-shadow:6px 6px 0 var(--red)}
+.coach .cstep{color:var(--red);font-weight:700}
+.coach .cch{font-size:22px}
 .tut-hl{outline:4px solid var(--pink)!important;outline-offset:3px;animation:tutp 1.1s ease-in-out infinite;position:relative;z-index:6;border-radius:12px}
 @keyframes tutp{50%{outline-color:var(--red)}}
 </style>
@@ -1577,6 +1586,10 @@ function kitchenHtml(p, mine) {
   }
   return `<div class="kitchen"><span class="kt">Küche</span>${items}${btn}</div>`;
 }
+function statusHtml(p) {
+  const food = FOODS.map(f => `<span title="Küche">${foodSvg(f)}${p.kitchen[f]}</span>`).join('');
+  return `<div class="status" aria-label="Dein Vorrat"><span class="t" title="Kronen">${p.k} K</span><span class="t" title="Siegpunkte">★ ${p.vp}</span><span class="t" title="Kaiserleiste">♛ ${p.emp}</span>${food}<span class="t" title="Personal auf der Hand (kein Limit)">Hand ${p.hand.length}</span><span class="t" title="vorbereitete freie Zimmer">Zi. ${p.rooms.filter(x => x === 1).length} frei</span></div>`;
+}
 function playerChip(p, i) {
   const isCur = S.screen === 'game' && cur() === p;
   return `<button class="pchip ${isCur ? 'cur' : ''}" data-a="opp" data-p="${i}"><span class="av" style="background:${p.mark}">${head('pl' + i + p.name, p.look)}</span><span><span class="nm">${esc(p.name)}</span><span class="st">★${p.vp} · ${p.k}K · ♛${p.emp}</span></span></button>`;
@@ -1664,7 +1677,7 @@ function viewGame() {
     <div class="players">${S.players.map(playerChip).join('')}</div>
     ${U.tut ? `<button class="icobtn leave" data-a="tutquit" aria-label="Lernspiel beenden"><svg viewBox="0 0 20 20" width="13" height="13" aria-hidden="true"><path d="M4.5 4.5l11 11M15.5 4.5l-11 11" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg><span>Beenden</span></button>` : `<button class="icobtn leave" data-a="leave" aria-label="Speichern und verlassen" title="Speichern &amp; verlassen"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><rect x="4" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/><rect x="11.8" y="3" width="4.2" height="14" rx="1.6" fill="currentColor"/></svg><span>Verlassen</span></button>`}
     <button class="icobtn" data-a="menu" aria-label="Menü und Regeln">?</button>
-  </div></div>
+  </div>${statusHtml(me)}</div>
   <div class="wrap">
     ${banner}
     <section class="sec"><div class="sech"><h2 class="hand">Warteschlange</h2><span class="hint">${canGuest ? 'Antippen, um Gast an deinen Tisch zu holen' : 'max. 1 Gast pro Zug, vor dem Würfel'}</span></div>
@@ -1943,24 +1956,24 @@ const TUT_STEPS = [
   { ch: 'Zug 1 · Schritt 1: Gast holen', why: 'Jeder Tisch ist ein offener Auftrag. Wer am Spielende noch im Café sitzt, kostet dich 5 SP. Hol also nur Gäste, die du auch bedienen kannst.', sel: '.tables', text: 'Er sitzt jetzt an deinem Tisch, du hast Platz für drei. Die Symbole zeigen seine Bestellung. Erst wenn alles serviert ist, zieht er ein.' },
   { ch: 'Zug 1 · Schritt 2: Servieren', why: 'Würfel 1 bringt Strudel und Torte, Würfel 2 Wein und Kaffee. Du wählst den Würfel nach dem, was deine Gäste bestellt haben.', sel: '.act[data-f="1"]', allow: { die: d => d.f === '1' }, done: () => U.sheet && U.sheet.type === 'die',
     text: 'Strudel gibt es mit <b>Würfel 1</b>. Dort liegen 3 Würfel, also Stärke 3. Tippe auf das Feld.' },
-  { ch: 'Zug 1 · Schritt 2: Servieren', why: 'Strudel ist genau das, was der Fiakerkutscher will. Torte bräuchte gerade niemand.', sel: '[data-a=dieok]', allow: { dieok: true }, done: () => S.turn.dieTaken,
+  { ch: 'Zug 1 · Schritt 2: Servieren', why: 'Strudel ist genau das, was der Major will. Torte bräuchte gerade niemand – sie läge nur in der Küche.', sel: '[data-a=dieok]', allow: { dieok: true }, done: () => S.turn.dieTaken,
     text: 'Du bekommst 3 Gerichte und verteilst sie auf Strudel und Torte. Lass es bei <b>3 Strudel</b> und tippe auf „Ausführen“.' },
   { ch: 'Zug 1 · Schritt 2: Servieren', why: 'Was du in diesem Zug bekommst, servierst du sofort und gratis. Später kostet das Servieren aus der Küche 1 Krone.', sel: '.slot.can', allow: { serve: true }, done: () => TUT_ME().rooms[2] === 2,
     text: 'Frisch erhaltene Gerichte servierst du <b>gratis</b>. Tippe die leuchtenden Felder an, bis der Gast alles hat.' },
-  { ch: 'Zug 1 · Schritt 3: Einzug', why: 'Dafür machst du das alles: Beim Einzug gibt es sofort die Belohnung, und bei Spielende zählt jedes bezogene Zimmer noch einmal 1 bis 4 SP.', sel: '.hotel', text: 'Geschafft! Der Gast ist ins <b>rote Zimmer</b> gezogen und hat dir seine Belohnung gegeben: 3 SP und 3 Kronen. Ist eine zusammenhängende Farbgruppe voll belegt, gibt es einen Bonus.' },
+  { ch: 'Zug 1 · Schritt 3: Einzug', why: 'Dafür machst du das alles: Beim Einzug gibt es sofort die Belohnung, und bei Spielende zählt jedes bezogene Zimmer noch einmal 1 bis 4 SP – je höher die Etage, desto mehr.', sel: '.hotel', text: 'Geschafft! Der Gast ist ins <b>rote Zimmer</b> gezogen und hat dir seine Belohnung gegeben: 3 SP und 3 Kronen. Ist eine zusammenhängende Farbgruppe voll belegt, gibt es einen Bonus.' },
   { ch: 'Zug 1 · Reste', why: 'Nichts verfällt: Reste sind Vorrat für den nächsten Gast und sparen dir später einen Würfel.', sel: '.kitchen', text: 'Der übrige Strudel liegt in deiner <b>Küche</b>. Später kannst du für 1 Krone bis zu 3 Gerichte aus der Küche servieren, das ist der Küchenservice.' },
   { ch: 'Zug 1 · Ende', why: 'Pro Zug gibt es nur einen Würfel. Die Reihenfolge läuft hin und zurück, damit niemand dauerhaft zuerst wählt.', sel: '[data-a=endturn]', allow: { endturn: true }, done: () => S.seqIdx === 3 && !cur().bot, wait: true,
     text: 'Mehr geht in diesem Zug nicht. <b>Beende deinen Zug</b>. Danach ist die Gegnerin zweimal dran, denn erst geht es reihum und dann zurück.' },
-  { ch: 'Zug 2', why: 'Achte darauf, was andere nehmen: Weggenommene Würfel fehlen dir, die Aktionen werden schwächer.', text: () => `${esc(S.players[1].name)} hat zweimal die 4 genommen: Kronen und Kaiserschritte. Jetzt bist du wieder dran, mit deinem <b>zweiten Zug</b> dieser Runde.` },
+  { ch: 'Zug 2', why: 'Im zweiten Zug wählst du aus dem, was übrig ist. Nimm darum im ersten Zug, was am knappsten ist – die zweite Wahl ist oft ein Kompromiss.', text: () => `${esc(S.players[1].name)} hat zweimal die 4 genommen: Kronen und Kaiserschritte. Jetzt bist du wieder dran, mit deinem <b>zweiten Zug</b> dieser Runde.` },
   { ch: 'Zug 2 · Zimmer vorbereiten', why: 'Ein Gast zieht nur in ein <b>vorbereitetes</b> Zimmer seiner Farbe ein. Bereitest du Zimmer vor, bevor er fertig bedient ist, kann er sofort einziehen.', sel: '.act[data-f="3"]', allow: { die: d => d.f === '3' }, done: () => U.sheet && U.sheet.type === 'die',
     text: 'Neue Gäste brauchen freie Zimmer. <b>Würfel 3</b> bereitet Zimmer vor. Tippe auf das Feld.' },
   { ch: 'Zug 2 · Zimmer vorbereiten', why: 'Untere Etagen sind billig, obere bringen am Ende mehr SP. Bereite die Farben vor, die deine nächsten Gäste wollen.', sel: '.sheet .room.ok', allow: { rsel: true }, done: () => U.sheet && U.sheet.sel && U.sheet.sel.length > 0,
     text: 'Zimmer kosten je nach Stockwerk 0 bis 3 Kronen. Sie liegen im Erdgeschoss oder grenzen an ein bestehendes Zimmer. Wähle ein leuchtendes Zimmer.' },
-  { ch: 'Zug 2 · Zimmer vorbereiten', why: 'Die Stärke sagt, wie viele Zimmer du vorbereiten darfst.', sel: '[data-a=dieok]', allow: { dieok: true, rsel: true }, done: () => S.turn.dieTaken,
+  { ch: 'Zug 2 · Zimmer vorbereiten', why: 'Mehrere Zimmer auf einmal sparen dir spätere Züge: Ein vorbereitetes Zimmer wartet, bis ein passender Gast fertig bedient ist.', sel: '[data-a=dieok]', allow: { dieok: true, rsel: true }, done: () => S.turn.dieTaken,
     text: 'Bei Stärke 2 dürftest du noch ein zweites wählen. Tippe auf „Ausführen“.' },
   { ch: 'Nebenbei: der Kaiser', why: 'Wer den Kaiser ignoriert, bekommt bei den Wertungen Strafen. Ein paar Schritte rechtzeitig vor Runde 3, 5 und 7 genügen.', sel: '.emp', text: 'Der <b>Kaiser</b> wertet nach Runde 3, 5 und 7. Du bekommst Punkte nach deinem Feld auf der Kaiserleiste und gehst dann 3, 5 bzw. 7 zurück. Stehst du danach auf 3 oder mehr, gibt es einen Bonus, auf 0 eine Strafe. Schritte gibt es mit Würfel 4 und über gelbe Gäste.' },
   { ch: 'Nebenbei: Personal', why: 'Personal ist dein Motor: Früh ausgespielt, hilft es dir in jeder weiteren Runde.', sel: '.staffrow', text: 'Dein <b>Personal</b> spielst du mit Würfel 5 aus. Jeder Würfel auf dem Feld macht die Karte 1 Krone billiger. Manche helfen sofort, manche dauerhaft, manche am Rundenende oder erst bei der Schlussabrechnung.' },
-  { ch: 'Nebenbei: Politik', why: 'Politikziele sind ein Wettrennen. Sie zeigen dir, welche Zimmer oder welches Personal sich zusätzlich lohnen.', sel: '.pol', text: '<b>Politik</b>: Wer ein Ziel zuerst erfüllt, bekommt die meisten Punkte.' },
+  { ch: 'Nebenbei: Politik', why: 'Sie zeigen dir, welche Zimmer oder welches Personal sich zusätzlich lohnen – plane deinen Hotelausbau auf eines der Ziele hin.', sel: '.pol', text: 'Unten liegen drei <b>Politikziele</b>, zum Beispiel bestimmte Zimmer oder Personal. Wer ein Ziel zuerst erfüllt, bekommt die meisten Punkte, wer später nachzieht, weniger.' },
   { ch: 'Profi-Tipps', why: 'So kommst du an eine Aktion, auch wenn die passenden Würfel schon weg sind.', sel: '.act[data-f="6"]', text: 'Noch ein Tipp: Die <b>6 ist ein Joker</b>. Für 1 Krone führst du damit jede andere Aktion aus. Mit der 4 teilst du die Stärke auf Kronen und Kaiserschritte auf. Und einmal pro Zug kannst du eine Aktion für <b>1 Krone verstärken</b>.' },
   { ch: 'Zusammenfassung', text: 'Das war das Wichtigste! Jede Runde gilt: <b>1.</b> Gäste holen, deren Bestellung zu den Würfeln passt. <b>2.</b> Servieren. <b>3.</b> Passende Zimmer vorbereiten. <b>4.</b> Einzüge kassieren. Nebenbei: den Kaiser vor jeder Wertung versorgen und Personal ausspielen. Viel Erfolg, Frau Direktorin oder Herr Direktor!' },
 ];
