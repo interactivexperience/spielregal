@@ -120,6 +120,12 @@ Drei Schwestern soll **immersiv** sein (Owner: Listenauswahl „lieblos und glei
 statt Liste; Effekte nach jedem Neuzeichnen per Zustandsvergleich (`fxSnap`/`fxAfter`): Stempel für neue Kästchen,
 Pflanz-Plopp, Ernte-Glöckchen mit fliegenden Waren/Punkten, Würfel rollen herein, genommene Würfel fliegen zur
 Person, Edith hüpft; synthetische Töne (WebAudio, `SND`) mit Schalter im Menü; `prefers-reduced-motion` respektiert.
+Drei-Schwestern-Kopf: Titel „Drei Schwestern.“, Runde als dunkle Pille in der Vorratsleiste; Mitspieler-Pillen zeigen die
+Würfelwahlen der Runde als Punkte (gefüllt = gewählt) statt einer Reihenfolge-Zeile. Das Aktionsrondell ist ein echter
+Kreis (7 Felder im Uhrzeigersinn, Pfeile, goldene Nadel oben), das Ereignis der Runde steht in der Mitte, darunter die
+Ereignisleiste 1–8; der gemeinsam genutzte niedrigste Würfel trägt die Marke „alle“. Erklärungen stehen nicht als grauer
+Text daneben, sondern hinter einem i-Knopf (`data-a="info"`, Antippen = Info-Blase) bzw. langem Drücken. Legenden sind
+Symbol-Chips mit einem Wort (`lgChip`), Details per langem Drücken statt verkürzter Fließtexte.
 
 Jedes Spiel hat einen eigenen Smoke-Test in `test/` (`gah-smoke.mjs`,
 `rebel-princess-smoke.mjs`, `three-sisters-smoke.mjs`, `countryside-smoke.mjs`); nach Änderungen an einem Spiel

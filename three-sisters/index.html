@@ -308,6 +308,53 @@ input,textarea{-webkit-user-select:text;user-select:text}
 /* Ansage ohne Band dahinter: Kasten selbst deckend, damit er lesbar bleibt */
 .top .tbanner .banner{background:var(--card)}
 .top .tbanner .banner.mine{background:var(--dusk)}
+/* Kopf: Name und Punkte eng beieinander, Würfelwahlen als Punkte */
+.pchip{padding:3px 15px 3px 3px}
+.pchip .tx{display:flex;flex-direction:column;gap:0;line-height:1.1}
+.pchip .st{display:flex;align-items:center;gap:5px;line-height:1.1}
+.pchip .pk{display:inline-flex;gap:3px}
+.pchip .pk i{width:6px;height:6px;border-radius:50%;box-shadow:inset 0 0 0 1.5px currentColor;opacity:.7}
+.pchip .pk i.on{background:currentColor;opacity:1}
+.status span.rd{background:var(--navy);color:var(--cream)}
+.ibtn{width:22px;height:22px;border-radius:50%;background:var(--card);color:var(--muted);font:700 12px/22px Georgia,serif;font-style:italic;text-align:center;padding:0;flex:none;align-self:center}
+.sech:has(.ibtn){justify-content:flex-start}
+/* Rondell als Kreis: 7 Felder im Uhrzeigersinn, Ereignis in der Mitte */
+.rondel{display:block;position:relative;aspect-ratio:1;width:100%;max-width:400px;margin:4px auto 0}
+.rondel .ring{position:absolute;inset:0;width:100%;height:100%}
+.rondel .ring circle{fill:none;stroke:var(--line);stroke-width:1.1;stroke-dasharray:1.5 2.2}
+.rondel .ring path{fill:none;stroke:var(--muted);stroke-width:.9;stroke-linecap:round;stroke-linejoin:round;opacity:.8}
+.rondel .space{position:absolute;width:25.5%;min-height:25.5%;transform:translate(-50%,-50%);border-radius:30px;padding:7px 4px 6px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
+.rondel .space .sic{width:28px;height:26px}
+.rondel .space .sn{font-size:9.5px;min-height:0;line-height:1.1}
+.rondel .dice{gap:3px;margin-top:4px}
+.rondel .die{width:25px;height:25px;position:relative}
+.rondel .space .edm{left:-10px;top:-18px}
+.die.all{outline:2.5px solid var(--navy);outline-offset:1px;border-radius:7px}
+.die .allb{position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);background:var(--navy);color:var(--cream);font-size:8.5px;font-weight:700;border-radius:99px;padding:0 4px;line-height:12px}
+.rcenter{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:40%;text-align:center;display:flex;flex-direction:column;align-items:center;line-height:1.15;color:var(--navy)}
+.rcenter svg{width:40px;height:40px}
+.rcenter small{font-size:10px;color:var(--muted);margin-top:2px}
+.rcenter b{font-size:14px}
+.rcenter span{font-size:10.5px;color:var(--muted)}
+.evtrack{display:flex;align-items:center;gap:4px;margin-top:10px;background:var(--card);border-radius:18px;padding:7px 10px;overflow-x:auto;scrollbar-width:none}
+.evtrack .lab{font-size:11px;font-weight:700;color:var(--muted);margin-right:4px}
+.evtrack .ev{flex:none;display:flex;flex-direction:column;align-items:center;width:30px;border-radius:12px;padding:3px 0 2px;opacity:.6}
+.evtrack .ev svg{width:22px;height:22px}
+.evtrack .ev i{font-style:normal;font-size:9.5px;font-weight:700;color:var(--muted)}
+.evtrack .ev.now{background:var(--yellow);opacity:1}
+.evtrack .ev.done{opacity:.25}
+/* Legenden: Symbol + kurzes Ergebnis, Details per langem Drücken */
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
+.legend .lg{display:inline-flex;align-items:center;gap:5px;background:var(--card);border-radius:99px;padding:3px 10px 3px 6px;font-size:12px;font-weight:600;color:var(--navy)}
+.legend .lg svg{width:16px;height:16px}
+.legend .lgb{display:inline-flex;flex-direction:column-reverse;gap:1.5px}
+.legend .lgb.h{flex-direction:row}
+.legend .lgb i{width:7px;height:7px;border-radius:50%}
+.legend .lgb.c i{background:#F2B33D}.legend .lgb.b i{background:#5BA35A}.legend .lgb.s i{background:#F07A2A}
+.legend .hvc{width:12px;height:12px;border-radius:50%;background:#FFF0C4;outline:2px dotted #C0563F;outline-offset:1px}
+.legend .box{min-width:18px;height:18px;font-size:9px}
+.legend .vp{color:var(--tomato);font-weight:800}
+.rrow .sub{font-size:12px;margin-top:3px;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -460,8 +507,10 @@ const RONDEL = [
   { k: 'market' },
 ];
 const RONDEL_N = { ay: 'Bienenstock oder Hof', pw: 'Pflanzen oder Gießen', shed: 'Schuppenzeit', cg: '1 Kompost & 4 Waren', market: 'Bauernmarkt' };
+const RONDEL_S = { ay: 'Bienen oder Hof', pw: 'Pflanzen oder Gießen', shed: 'Schuppen', cg: 'Kompost + Waren', market: 'Markt' };
+const EVENT_INFO = { shed: 'Am Rundenende macht jede Person 1 Schuppenaktion.', rain: 'Am Rundenende regnet es: In den Zonen 1–6 wird für alle gegossen.', market: 'Am Rundenende ist Bauernmarkt: Je nach Warenstand bekommt jede Person Aktionen aus der Markttabelle.' };
+const RONDEL_HELP = () => 'Die Würfel liegen nach Augenzahl aufsteigend im Uhrzeigersinn, beginnend beim Feld mit Edith; gleiche Augenzahlen teilen sich ein Feld. Ein Würfel bringt zwei Aktionen: Die Augenzahl wählt die Gartenzone, das Feld die Rondellaktion.' + (S && S.solo ? ' Solo: Du und Edith wählt abwechselnd; deine zweite Wahl muss der niedrigste übrige Würfel sein.' : ' Wenn alle gewählt haben, nutzen alle gemeinsam den niedrigsten übrigen Würfel (Markierung „alle“).') + ' Danach folgt das Ereignis in der Mitte.';
 const RONDEL_BG = { ay: '#E8DCC0', pw: '#D5DDCF', shed: '#CFD9E4', cg: '#E3D2C6', market: '#E3D3DA' };
-const RING = [1, 2, 3, 4, 0, 6, 5]; // Anzeige wie das Brett: oben 4 Felder, unten 3 (im Uhrzeigersinn)
 const DICE_BY_N = { 1: 4, 2: 4, 3: 5, 4: 6 };
 // Gartenzonen wie auf dem Bogen: jeder Mais (4 Kästchen) hat eine Bohne (2 Kästchen) daneben.
 // Die Kürbisse liegen als Ring am Gartenrand (im Uhrzeigersinn ab Zone 1 oben), zwischen je zwei
@@ -1204,18 +1253,19 @@ const boxRow = (n, cap, len, lab = () => '', cls = () => '', info = () => '', lv
 const RONDEL_INFO = { pw: 'Pflanzen oder Gießen: Nach der Gartenaktion deines Würfels pflanzt oder gießt du noch einmal in derselben Zone.', ay: 'Bienenstock oder Hof: 1 Feld im Bienenstock (erst Hauptstock, dann Wachs, Honig oder Ableger) oder 1 Feld bei einer Obstsorte im Hof.', shed: 'Schuppenzeit: 1 Kästchen bei einem Schuppen-Gegenstand ausfüllen. Fertige Gegenstände helfen den Rest des Spiels und bringen SP.', cg: '1 Kompost & 4 Waren: +1 Kompost (verschiebt einen Würfel um ±1) und 4 Schritte auf der Warenleiste.', market: 'Bauernmarkt: Je höher dein Warenstand, desto mehr Aktionen gibt es (Stauden, Hof, Kompost, Bonus).' };
 const perInfo = (f, i) => i === PER_LEN - 1 ? `${FLOWER_N[f]} fertig: ${PER[f].vp === 'yard' ? 'am Ende 1 SP je Hof-Ernte (höchstens 15)' : PER[f].vp + ' SP am Ende'}` : PER[f].box[i] ? `Beim Ausfüllen: ${EFFECT_N[PER[f].box[i]]}` : '';
 const fruitInfo = (f, i) => f.steps[i] === 'h' ? `Ernte: ${f.tx}` : 'Wachstum: nur ein Schritt weiter, noch keine Ernte.';
+const lgChip = (sym, tx, info) => `<span class="lg" data-info="${esc(info)}">${sym}${tx ? `<span>${tx}</span>` : ''}</span>`;
 function sheetHtml(p, hlZone = -1) {
   const sc = endScore(p);
   const market = MARKET.find(([g]) => p.goods >= g);
   const nextStar = STARS.findIndex((s, i) => s > p.goods && !p.starX.includes(i));
   return `
    <div class="garden">${range(6).map(z => zoneHtml(p, z, { hl: z === hlZone })).join('')}</div>
-   <p class="note" style="margin-top:8px">Mais (4 hoch) 3 SP · Bohne (2 hoch) 1 SP, erst pflanzbar, wenn ihr Mais 2 hoch ist · Kürbis bringt bei Ernte Waren. Die Kürbisse bilden einen Ring um den Garten (Zone 1 → 2 → 3 → 4 → 5 → 6): Sind zwei Nachbarn geerntet, löst die Staude dazwischen aus (Symbol rechts neben dem Kürbis = Staude zum nächsten im Ring).</p>
+   <div class="legend">${lgChip('<span class="lgb c"><i></i><i></i><i></i><i></i></span>', '3 ★', 'Mais: 4 Kästchen hoch. Ist er ganz gewachsen, bringt er am Ende 3 SP.')}${lgChip('<span class="lgb b"><i></i><i></i></span>', '1 ★', 'Bohne: 2 Kästchen hoch, bringt 1 SP. Pflanzen darfst du sie erst, wenn der Mais daneben 2 hoch ist.')}${lgChip('<span class="lgb h s"><i></i><i></i><i></i></span>', icon('waren'), 'Kürbis: Bei der Ernte (letztes Kästchen) bekommst du Waren; die kleine orange Zahl nennt wie viele.')}${lgChip(icon('tulip'), 'zwischen 2 Kürbissen', 'Die Kürbisse bilden einen Ring um den Garten (Zone 1 → 2 → … → 6 → 1). Sind zwei Nachbar-Kürbisse geerntet, löst die Staude dazwischen aus. Das Blumensymbol rechts neben einem Kürbis ist die Staude zum nächsten Kürbis im Ring.')}${lgChip('<span class="hvc"></span>', 'Ernte', 'Gepunkteter Rand = das Erntekästchen einer Pflanze.')}</div>
    <div class="res" style="margin-top:10px">
-    <div class="rrow"><div class="rh">${icon('kompost')}Kompost<span class="v">${p.compost}</span></div><div style="font-size:11.5px;margin-top:3px">Beim Pflanzen/Gießen: je Kompost Würfelwert ±1 (6 und 1 sind Nachbarn)${irisFree(p) ? ' · Iris: ±1 gratis' : ''}.${shedDone(p, 'shovel') ? ' Spaten: 3 Kompost = 1 Bonusaktion.' : ''}</div>${shedDone(p, 'shovel') && p.compost >= 3 && p === human() && S.screen === 'game' ? '<button class="chip on" style="margin-top:6px" data-a="shovel">Spaten nutzen (−3 Kompost)</button>' : ''}</div>
-    <div class="rrow goods"><div class="rh">${icon('waren')}Waren<span class="v">${p.goods}</span></div>
+    <div class="rrow" data-info="${esc(`Kompost: Beim Pflanzen oder Gießen darfst du je Kompost den Würfelwert um 1 erhöhen oder senken (6 und 1 sind Nachbarn). So arbeitest du in einer anderen Zone als die Augenzahl.${irisFree(p) ? ' Deine Iris ist fertig: 1 Verschiebung pro Aktion ist gratis.' : ''}${shedDone(p, 'shovel') ? ' Spaten: 3 Kompost abgeben = 1 Bonusaktion.' : ''}`)}"><div class="rh">${icon('kompost')}Kompost<span class="v">${p.compost}</span></div><div class="sub">Verschiebt einen Würfel um 1 → andere Zone${irisFree(p) ? ' · Iris: 1× gratis' : ''}${shedDone(p, 'shovel') ? ' · Spaten: 3 = Bonus' : ''}</div>${shedDone(p, 'shovel') && p.compost >= 3 && p === human() && S.screen === 'game' ? '<button class="chip on" style="margin-top:6px" data-a="shovel">Spaten nutzen (−3 Kompost)</button>' : ''}</div>
+    <div class="rrow goods" data-info="${esc(`Waren: Die Leiste hat ${STARS.length} Felder zu je 5 Waren. Ist ein Feld voll, bekommst du sofort eine Bonusaktion (★). Beim Bauernmarkt richtet sich die Zahl der Aktionen nach deinem Warenstand; jetzt: ${market[1].map(a => MARKET_N[a]).join(' + ')}.`)}"><div class="rh">${icon('waren')}Waren<span class="v">${p.goods}</span></div>
       <div class="gbar">${STARS.map((s, i) => { const f = Math.max(0, Math.min(5, p.goods - (s - 5))) * 20, cut = p.starX.includes(i); return `<i class="${cut ? 'cut' : s <= p.goods ? 'got' : ''}" style="--f:${f}%" data-info="${esc(`Waren ${s - 4}–${s}: ${cut ? 'Stern gestrichen, hier gibt es keine Bonusaktion mehr.' : s <= p.goods ? 'Stern erreicht, Bonusaktion bekommen.' : `Bei ${s} Waren gibt es eine Bonusaktion.`}`)}">★</i>`; }).join('')}</div>
-      <div style="font-size:11.5px;margin-top:3px">Jedes Feld = 5 Waren, voll = ★ Bonusaktion${nextStar >= 0 ? ` (nächster bei ${STARS[nextStar]})` : ''} · Markt jetzt: ${market[1].map(a => MARKET_N[a]).join(' + ')}</div></div>
+      <div class="sub">${nextStar >= 0 ? `Nächster ★ Bonus bei ${STARS[nextStar]} Waren` : 'Alle Sterne erreicht'} · Markt: ${market[1].length} ${market[1].length === 1 ? 'Aktion' : 'Aktionen'}</div></div>
    </div>
    ${tracksHtml(p)}`;
 }
@@ -1229,12 +1279,12 @@ function tracksHtml(p, pk = null) {
   const tip = key => pk && pk[key] ? `<span class="tip">✎ ${esc(String(pk[key].sub || '').replace(/^Dieses Kästchen: /, ''))}</span>` : '';
   const has = pre => !pk || Object.keys(pk).some(k => k.startsWith(pre));
   return `${has('per:') ? `   <p class="label" style="margin-top:14px">Stauden <span class="lv">${sc.per} SP</span></p>
-   <p class="note" style="margin:0 0 8px">Symbole: Obst = 1 Aktion bei dieser Obstsorte · +1/+2 ${icon('kompost')} Kompost · +2 ${icon('waren')} Waren · ${icon('schuppen')} Schuppenaktion · Hof = Hofaktion · 🌱 = Pflanzaktion · ±1 = Würfel gratis verschieben · rote Zahl = SP, wenn die Staude fertig ist (H bei der Tulpe: 1 SP je Hof-Ernte). <b>Lange drücken</b> zeigt die Details.</p>
+   <div class="legend" style="margin:0 0 8px">${lgChip(['apple', 'blackberry', 'raspberry', 'peach'].map(icon).join(''), 'Obst-Aktion', 'Obstsymbol: 1 Aktion bei genau dieser Obstsorte im Hof. Pfirsich +2: ab jetzt bringt jede Pfirsich-Ernte 2 Waren mehr.')}${lgChip(icon('kompost'), 'Kompost', '+1 oder +2 Kompost.')}${lgChip(icon('waren'), 'Waren', '+2 Waren auf der Warenleiste.')}${lgChip(icon('schuppen'), 'Schuppen', '1 Schuppenaktion.')}${lgChip('<span class="box t">Hof</span>', 'Hofaktion', '1 Hofaktion bei einer Obstsorte deiner Wahl.')}${lgChip('🌱', 'Pflanzen', 'Pflanzaktion in einer Zone deiner Wahl.')}${lgChip(icon('bienen'), 'Bienen', '2 Bienenstock-Aktionen.')}${lgChip('<span class="box t">±1</span>', 'gratis', 'Ab jetzt darfst du beim Pflanzen/Gießen einen Würfel 1× gratis um 1 verschieben.')}${lgChip('<span class="box vp">3</span>', 'am Ende', 'Rote Zahl: so viele SP, wenn die Staude fertig ist. H bei der Tulpe: 1 SP je Hof-Ernte.')}</div>
    <div class="pers">${FLOWERS.map(f => { const st = p.per[f]; return `<div class="per ${rc('per:' + f)}"><span class="pi">${icon(f)}</span><b>${FLOWER_N[f]}</b>${tip('per:' + f)}${boxRow(st.n, st.cap, PER_LEN, i => i === PER_LEN - 1 ? (PER[f].vp === 'yard' ? 'H' : PER[f].vp) : effS(PER[f].box[i]) || '', i => i === PER_LEN - 1 ? 'vp' : PER[f].box[i] ? 't' : '', i => perInfo(f, i), L('per:' + f, st.n), R8('per:' + f))}</div>`; }).join('')}</div>
 ` : ''}${has('api:') ? `   <p class="label" style="margin-top:14px">Bienenstock <span class="lv">${sc.api} SP</span></p>
    <div class="rrow"><div class="${rc('api:hive')}"><div class="rh">${icon('bienen')}Hauptstock${tip('api:hive')}</div>${boxRow(p.hive, HIVE.length, HIVE.length, i => effS(HIVE[i]) || '', i => HIVE[i] ? 't' : '', i => HIVE[i] ? `Beim Ausfüllen: ${EFFECT_N[HIVE[i]]}` : 'Hauptstock: erst ganz füllen, dann Wachs, Honig oder Ableger.', L('api:hive', p.hive), R8('api:hive'))}</div>
      <div class="apis">${['wax', 'honey', 'split'].map(s => `<div class="${rc('api:' + s)}"><div class="rh">${icon(s)}${API_N[s]}${tip('api:' + s)}</div>${boxRow(p.api[s].n, p.api[s].cap, 4, i => { const st = API_STEPS[s]; if (st[i] !== 'h') return ''; const hi = [...st.slice(0, i)].filter(c => c === 'h').length; return s === 'wax' ? `${WAX_GOODS[hi]}W` : s === 'honey' ? HONEY_VP[hi] : effS(SPLIT[i]); }, i => API_STEPS[s][i] === 'h' ? 'hv t' : 'gr', i => { const st = API_STEPS[s]; if (st[i] !== 'h') return 'Wachstum: nur ein Schritt weiter, noch keine Ernte.'; const hi = [...st.slice(0, i)].filter(c => c === 'h').length; return s === 'wax' ? `Wachs-Ernte: ${WAX_GOODS[hi]} Waren, am Ende ${WAX_VP[hi]} SP` : s === 'honey' ? `Honig-Ernte: am Ende ${HONEY_VP[hi]} SP` : `Ableger: ${EFFECT_N[SPLIT[i]]}`; }, L('api:' + s, p.api[s].n), R8('api:' + s))}</div>`).join('')}</div>
-     <div style="font-size:11.5px;margin-top:4px">Erst den Hauptstock füllen, dann Wachs (Waren, 2/2/5 SP), Honig (5/5/8 SP) oder Ableger (3 SP + Aktionen). Runde Felder sind Ernten, eckige nur Wachstum.</div></div>
+     <div class="legend">${lgChip('<span class="box hv t"></span>', 'Ernte', 'Runde Felder sind Ernten: Wachs bringt Waren und SP, Honig SP, Ableger Aktionen.')}${lgChip('<span class="box"></span>', 'Wachstum', 'Eckige Felder sind nur Wachstum: ein Schritt weiter, noch keine Ernte.')}${lgChip(icon('bienen'), 'zuerst', 'Erst den Hauptstock ganz füllen, dann Wachs (Waren, 2/2/5 SP), Honig (5/5/8 SP) oder Ableger (3 SP + Aktionen) in beliebiger Reihenfolge.')}</div></div>
 ` : ''}${has('yard:') ? `   <p class="label" style="margin-top:14px">Hof <span class="lv">${sc.yard} SP</span></p>
    <div class="fruits">${FRUITS.map(f => `<div class="rrow ${rc('yard:' + f.k)}"><div class="rh">${icon(f.k)}${f.n}${tip('yard:' + f.k)}</div>${boxRow(p.yard[f.k].n, p.yard[f.k].cap, f.len, i => f.k === 'raspberry' && RASP_VP[i + 1] ? RASP_VP[i + 1] : f.steps[i] === 'h' && f.k === 'apple' ? '3' : f.steps[i] === 'h' && f.k === 'blackberry' ? '2' : '', i => (f.steps[i] === 'h' ? 'hv ' : 'gr ') + (f.k === 'raspberry' && RASP_VP[i + 1] ? 't' : ''), i => fruitInfo(f, i), L('yard:' + f.k, p.yard[f.k].n), R8('yard:' + f.k))}<div class="tx">${f.tx}</div></div>`).join('')}</div>
 ` : ''}${has('shed:') ? `   <p class="label" style="margin-top:14px">Schuppen <span class="lv">${sc.shed} SP</span></p>
@@ -1275,28 +1325,33 @@ function viewGame() {
     banner = `<div data-a="go" class="banner"><div><b>Rundenende</b><span class="small">${esc(S.log[0] || '')}</span></div></div>`;
   }
   const live = isMyPick(), ok = live ? pickable() : [];
+  const shared = S.phase === 'shared' && S.shared ? (S.dice.find(d => d.by === null && d.v === S.shared.v && d.space === S.shared.space) || S.dice.find(d => d.v === S.shared.v && d.space === S.shared.space)) : null;
   const space = si => {
     const ds = S.dice.filter(d => d.space === si), R = RONDEL[si];
-    return `<div class="space grainy ${si === S.pawn ? 'edith' : ''}" style="background:${RONDEL_BG[R.k]}" data-info="${esc(RONDEL_INFO[R.k] + (R.pin ? ' Goldene Nadel: Hier startet Farmerin Edith.' : '') + ' Die Augenzahl eines Würfels hier bestimmt die Gartenzone.')}">${si === S.pawn ? `<span class="edm">${gardener('edith', EDITH.look)}</span>` : ''}${R.pin ? '<span class="pin" title="goldene Nadel">📌</span>' : ''}<div class="sic">${icon(R.k === 'shed' ? (R.tool === 'A' ? 'shears' : 'mower') : R.k === 'market' ? 'markt' : R.k)}</div><div class="sn">${RONDEL_N[R.k]}</div>
-      <div class="dice">${ds.map(d => `<button class="die ${d.by !== null ? 'taken' : live && ok.includes(d) ? 'live' : ''}" data-a="die" data-i="${d.i}" ${live && ok.includes(d) ? '' : 'disabled'} aria-label="Würfel ${d.v}" data-info="Würfel ${d.v}: Gartenaktion in Zone ${d.v}, danach „${RONDEL_N[R.k]}“.${d.by !== null ? ' Schon vergeben.' : ''}">${dieSvg(d.v, dieFill(d))}</button>`).join('') || '<span style="font-size:11px;color:#7A6D61">–</span>'}</div></div>`;
+    const a = si * 2 * Math.PI / RONDEL.length, pos = `left:${(50 + 37 * Math.sin(a)).toFixed(2)}%;top:${(50 - 37 * Math.cos(a)).toFixed(2)}%`;
+    return `<div class="space grainy ${si === S.pawn ? 'edith' : ''}" style="background:${RONDEL_BG[R.k]};${pos}" data-info="${esc(RONDEL_INFO[R.k] + (R.pin ? ' Goldene Nadel: Hier startet Farmerin Edith.' : '') + ' Die Augenzahl eines Würfels hier bestimmt die Gartenzone.')}">${si === S.pawn ? `<span class="edm">${gardener('edith', EDITH.look)}</span>` : ''}${R.pin ? '<span class="pin" title="goldene Nadel">📌</span>' : ''}<div class="sic">${icon(R.k === 'shed' ? (R.tool === 'A' ? 'shears' : 'mower') : R.k === 'market' ? 'markt' : R.k)}</div><div class="sn">${RONDEL_S[R.k]}</div>
+      <div class="dice">${ds.map(d => `<button class="die ${d === shared ? 'all' : d.by !== null ? 'taken' : live && ok.includes(d) ? 'live' : ''}" data-a="die" data-i="${d.i}" ${live && ok.includes(d) ? '' : 'disabled'} aria-label="Würfel ${d.v}" data-info="Würfel ${d.v}: Gartenaktion in Zone ${d.v}, danach „${RONDEL_N[R.k]}“.${d.by !== null ? ' Schon vergeben.' : ''}${d === shared ? ' Diesen niedrigsten übrigen Würfel nutzen jetzt alle.' : ''}">${dieSvg(d.v, dieFill(d))}${d === shared ? '<span class="allb">alle</span>' : ''}</button>`).join('')}</div></div>`;
   };
-  const who = i => i === -1 ? 'Edith' : !S.players[i].bot ? 'Du' : esc(S.players[i].name.split(' ').slice(-1)[0]);
-  const soloNote = k => !S.solo ? '' : k === 2 ? ' · niedrigster Würfel' : k === 3 ? ' · letzter Würfel' : '';
-  const order = S.seq.map((pi, k) => `${k ? '<i>→</i>' : ''}<span class="${k === S.idx && S.phase === 'draft' ? 'now' : k < S.idx || S.phase !== 'draft' ? 'done' : ''}">${who(pi)}${soloNote(k)}</span>`).join('') + (S.solo ? '' : `<i>→</i><span class="${S.phase === 'shared' ? 'now' : ''}">alle: niedrigster Würfel</span>`);
-  const chips = S.players.map((pl, i) => `<button class="pchip ${S.phase === 'draft' && cur() === pl ? 'cur' : ''}" data-a="opp" data-p="${i}"><span class="av" style="background:${pl.mark}">${avatar(pl)}</span><span><span class="nm">${esc(pl.name)}</span><span class="st">★${endScore(pl).total}</span></span></button>`).join('')
-    + (S.solo ? `<span class="pchip ${othersTurn() ? 'cur' : ''}"><span class="av" style="background:${EDITH.mark}">${edithHead()}</span><span><span class="nm">Edith</span><span class="st">streicht</span></span></span>` : '');
+  // Würfelwahlen dieser Runde als Punkte am Profil: gefüllt = schon gewählt
+  const picks = pi => { const ks = S.seq.map((x, k) => x === pi ? k : -1).filter(k => k >= 0); return ks.length ? `<span class="pk">${ks.map(k => `<i class="${k < S.idx || S.phase !== 'draft' ? 'on' : ''}"></i>`).join('')}</span>` : ''; };
+  const pickInfo = pi => { const n = S.seq.filter(x => x === pi).length; return n ? ` Punkte: ${n === 1 ? 'eine Würfelwahl' : n + ' Würfelwahlen'} in dieser Runde, gefüllt = schon gewählt.` : ''; };
+  const chips = S.players.map((pl, i) => `<button class="pchip ${S.phase === 'draft' && cur() === pl ? 'cur' : ''}" data-a="opp" data-p="${i}" data-info="${esc(`${pl.name}: ${endScore(pl).total} Punkte, wenn jetzt gewertet würde.${pickInfo(i)} Antippen zeigt den Garten.`)}"><span class="av" style="background:${pl.mark}">${avatar(pl)}</span><span class="tx"><span class="nm">${esc(pl.name)}</span><span class="st">★${endScore(pl).total}${picks(i)}</span></span></button>`).join('')
+    + (S.solo ? `<span class="pchip ${othersTurn() ? 'cur' : ''}" data-info="Farmerin Edith sammelt keine Punkte: Mit jedem Würfel streicht sie Kästchen auf deinem Bogen.${pickInfo(-1)}"><span class="av" style="background:${EDITH.mark}">${edithHead()}</span><span class="tx"><span class="nm">Edith</span><span class="st">streicht${picks(-1)}</span></span></span>` : '');
+  const evIc = e => icon(e === 'rain' ? 'regen' : e === 'shed' ? 'schuppen' : 'markt');
+  const sc = endScore(me);
   return `
   <div class="top"><div class="thead"><div class="row">
-    <div class="round hand">Runde ${S.round}/${ROUNDS}<small>${S.phase === 'draft' ? `Wahl ${S.idx + 1}/${S.seq.length}` : 'Rundenende'}</small></div>
+    <div class="round hand">Drei Schwestern.</div>
     <span style="flex:1"></span>
     <button class="icobtn" data-a="menu" aria-label="Menü: Verlassen, Regeln"><svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
   </div><div class="row prow"><div class="players">${chips}</div>
-  </div><div class="status" aria-label="Dein Vorrat"><span title="Kompost: je 1 verschiebt einen Würfel um ±1">${icon('kompost')}${me.compost} Kompost</span><span title="Warenleiste">${icon('markt')}${me.goods}/${GOODS_MAX} Waren</span><span class="t" title="Punkte, wenn jetzt gewertet würde">★ ${endScore(me).total} Punkte</span></div></div><div class="tbanner">${banner}</div></div>
+  </div><div class="status" aria-label="Dein Vorrat"><span class="t rd" data-info="${esc(`Runde ${S.round} von ${ROUNDS}. Ereignis am Ende dieser Runde: ${EVENT_N[S.event]}.`)}">Runde ${S.round}/${ROUNDS}</span><span class="sc" data-info="${esc(`Kompost (${me.compost}): Beim Pflanzen oder Gießen darfst du je Kompost den Würfelwert um 1 verschieben (6 und 1 sind Nachbarn) und so in einer anderen Zone arbeiten.`)}">${icon('kompost')}${me.compost} Kompost</span><span class="sg" data-info="${esc(`Waren (${me.goods} von ${GOODS_MAX}): Je volle 5 Waren erreichst du einen Stern = sofort eine Bonusaktion. Beim Bauernmarkt gilt: je mehr Waren, desto mehr Aktionen.`)}">${icon('markt')}${me.goods} Waren</span><span class="t ss" data-info="${esc(`Punkte, wenn jetzt gewertet würde: Garten ${sc.garden}, Stauden ${sc.per}, Bienenstock ${sc.api}, Hof ${sc.yard}, Schuppen ${sc.shed}.`)}">★ ${sc.total}</span></div></div><div class="tbanner">${banner}</div></div>
   <div class="wrap">
-    <section class="sec"><div class="sech"><h2 class="hand">Aktionsrondell</h2><span class="hint">Würfelgruppen aufsteigend ab Edith im Uhrzeigersinn</span></div>
-      <div class="rondel">${RING.map(space).join('')}</div>
-      <div class="order">Reihenfolge: ${order}</div>
-      <div class="evt"><div>${icon(S.event === 'rain' ? 'regen' : S.event === 'shed' ? 'schuppen' : 'markt')}<span><b>Ereignis Runde ${S.round}</b><br>${EVENT_N[S.event]}</span></div><div class="track">${EVENTS.map((e, i) => `<span class="${i + 1 === S.round ? 'now' : i + 1 < S.round ? 'done' : ''}" title="${EVENT_N[e]}">${icon(e === 'rain' ? 'regen' : e === 'shed' ? 'schuppen' : 'markt')}</span>`).join('')}</div></div>
+    <section class="sec"><div class="sech"><h2 class="hand" data-info="${esc(RONDEL_HELP())}">Aktionsrondell</h2><button class="ibtn" data-a="info" data-info="${esc(RONDEL_HELP())}" aria-label="Erklärung zum Rondell">i</button></div>
+      <div class="rondel"><svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="37"/>${range(RONDEL.length).map(i => { const a = (i + .5) * 360 / RONDEL.length; return `<path d="M-1.6,-1.8 L1.4,0 L-1.6,1.8" transform="rotate(${a} 50 50) translate(50 13)"/>`; }).join('')}</svg>
+        <div class="rcenter" data-info="${esc(`Ereignis der Runde ${S.round}: ${EVENT_INFO[S.event]}`)}">${evIc(S.event)}<small>Rundenende</small><b>${EVENT_N[S.event].split(':')[0]}</b><span>${EVENT_N[S.event].split(':')[1].trim()}</span></div>
+        ${range(RONDEL.length).map(space).join('')}</div>
+      <div class="evtrack" data-info="Ereignisse der Saison: Am Ende jeder Runde passiert für alle das Ereignis dieser Runde. Gelb = jetzt, blass = vorbei."><span class="lab">Ereignisse</span>${EVENTS.map((e, i) => `<span class="ev ${i + 1 === S.round ? 'now' : i + 1 < S.round ? 'done' : ''}" data-info="${esc(`Runde ${i + 1}: ${EVENT_N[e]}`)}">${evIc(e)}<i>${i + 1}</i></span>`).join('')}</div>
     </section>
     <section class="sec"><div class="sech"><h2 class="hand">Dein Garten</h2></div>${sheetHtml(me)}</section>
     <section class="sec"><div class="sech"><h2 class="hand">Chronik</h2><button class="link" data-a="logtoggle" style="font-size:12px">${U.logOpen ? 'weniger' : 'alles'}</button></div>
@@ -1571,7 +1626,7 @@ function fxAfter(before) {
   if (!cur) return;
   const rollIn = () => { document.querySelectorAll('.die').forEach((d, n) => { if (RM) return; d.style.animationDelay = (n * 60) + 'ms'; d.classList.add('roll'); }); SND.play('rattle'); };
   if (!prev || prev.id !== cur.id) { rollIn(); return; } // Partie beginnt oder wird fortgesetzt
-  const chips = document.querySelectorAll('.status > span'), chipCompost = chips[0], chipGoods = chips[1], chipScore = chips[2];
+  const chipCompost = document.querySelector('.status .sc'), chipGoods = document.querySelector('.status .sg'), chipScore = document.querySelector('.status .ss');
   let src = null, delay = 0;
   // Leisten: neu ausgefüllte Kästchen bekommen einen Stempel
   for (const key in cur.rows) {
@@ -1726,6 +1781,11 @@ const H = {
     timer = setTimeout(() => {
       if (!el.isConnected) return;
       shown = true;
+      showInfo(el);
+    }, 450);
+  }, true);
+  window.showInfo = el => {
+      hide();
       const b = document.createElement('div');
       b.id = 'lpinfo'; b.className = 'lpinfo'; b.setAttribute('role', 'tooltip'); b.textContent = infoOf(el);
       document.body.appendChild(b);
@@ -1734,8 +1794,7 @@ const H = {
       let y = r.top - bh - 10; if (y < 8) y = Math.min(r.bottom + 10, innerHeight - bh - 8);
       b.style.left = x + 'px'; b.style.top = y + 'px';
       if (navigator.vibrate) navigator.vibrate(12);
-    }, 450);
-  }, true);
+  };
   const cancel = () => clearTimeout(timer);
   document.addEventListener('pointerup', cancel, true);
   document.addEventListener('pointercancel', cancel, true);
@@ -1752,6 +1811,7 @@ document.addEventListener('click', e => {
   if (el.dataset.a === 'ovclose' && e.target.closest('[data-stop]')) return;
   if (el.disabled) return;
   if (U.tut && S && !tutAllowed(el.dataset.a, el.dataset)) { toast('Folge dem markierten Hinweis im Lernspiel.'); render(); return; }
+  if (el.dataset.a === 'info') { showInfo(el); return; }
   const fn = H[el.dataset.a]; if (!fn) return;
   fn(el.dataset); render();
 });
