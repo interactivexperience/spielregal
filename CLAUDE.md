@@ -94,7 +94,9 @@ deutlich von den Spielelementen abheben (je Spiel im eigenen Stil).
 Mitspieler-Chips stehen in einer eigenen Zeile unter der Überschrift; Verlassen/Beenden liegt während
 der Partie im Menü (☰), nicht in der Kopfzeile. **Langes Drücken** (≈0,45 s) auf ein Element mit
 `data-info` (oder `title`) zeigt eine Info-Blase (Owner-Wunsch „länger auf Elemente klicken, um mehr
-Infos zu bekommen“); neue Spielelemente bekommen einen erklärenden `data-info`-Text.
+Infos zu bekommen“); neue Spielelemente bekommen einen erklärenden `data-info`-Text. Textauswahl ist in den Spielen abgeschaltet (iOS-Lupe/Menü
+beim langen Drücken), außer in Eingabefeldern. Die Ansage („Du bist dran …“) steht kompakt in der
+Kopfzeile und bleibt beim Scrollen sichtbar (Prinzessinnenball: Ansage in der festen Handleiste).
 
 Jedes Spiel hat einen eigenen Smoke-Test in `test/` (`gah-smoke.mjs`,
 `rebel-princess-smoke.mjs`, `three-sisters-smoke.mjs`, `countryside-smoke.mjs`); nach Änderungen an einem Spiel
