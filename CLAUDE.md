@@ -97,8 +97,8 @@ der Partie im Menü (☰), nicht in der Kopfzeile. **Langes Drücken** (≈0,45 
 Infos zu bekommen“); neue Spielelemente bekommen einen erklärenden `data-info`-Text. Textauswahl ist in den Spielen abgeschaltet (iOS-Lupe/Menü
 beim langen Drücken), außer in Eingabefeldern. Die Ansage („Du bist dran …“) steht kompakt in der
 Kopfzeile und bleibt beim Scrollen sichtbar (Prinzessinnenball: Ansage in der festen Handleiste).
-Landgut: Handkarten liegen als Fächer fest im Footer (leicht überlappend und gedreht wie echte Handkarten);
-antippen = Großansicht mit den passenden Sonnenfeldern (inkl. Münzkosten), „Einsetzen“ per Knopf oder Wisch nach oben
+Landgut: Handkarten liegen als enger, gewölbter Fächer fest im Footer (Owner-Vorbild: digitales „Root“);
+antippen = Karte schwebt groß über dem sichtbaren Spielfeld, darunter Sonnenfelder als Knöpfe (inkl. Münzkosten), Einsetzen per Knopf oder Wisch nach oben
 (setzt die Arbeitskraft und wählt die Karte im Spielfenster vor). Im Lernspiel ist der Fächer ausgeblendet.
 Drei Schwestern soll **immersiv** sein (Owner: Listenauswahl „lieblos und gleichförmig“): Leisten-Auswahl
 (Stauden, Bienenstock, Hof, Schuppen) direkt auf dem Bogen – das nächste Kästchen leuchtet, ✎-Zeile nennt die Belohnung –
