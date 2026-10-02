@@ -93,20 +93,17 @@ async function playUi(label, bots) {
       if (await sheet.locator("[data-a=askskip]").count()) { await sheet.locator("[data-a=askskip]").click({ force: true }); continue; }
       fail("Unbekannter Dialog " + t); break;
     }
-    if (await page.locator(".zoom").count()) { await page.click(".zoom [data-a=zback]"); continue; }
     if (await page.locator("[data-a=askopen]").count()) { await page.locator("[data-a=askopen]").first().click({ force: true }); continue; }
     if (await page.locator("[data-a=endday]").count()) {
       acts++;
-      // Handkarten-Fächer im Footer: ab und zu eine Karte groß ansehen und per Wisch nach oben einsetzen
-      const hc = page.locator(".hcard");
+      // Kartenhand: antippen (Vorschau), gedrückt am Fächer entlangfahren, nach oben wischen = einsetzen
+      const hc = page.locator(".hcard:not(.dim)");
       if (acts % 3 === 1 && (await hc.count())) {
-        await hc.last().click(); zooms++;
-        if (await page.locator(".zoom .zopt").count()) {
-          const z = await page.locator(".zcard").boundingBox();
-          await page.mouse.move(z.x + z.width / 2, z.y + z.height / 2); await page.mouse.down();
-          await page.mouse.move(z.x + z.width / 2, z.y + z.height / 2 - 120, { steps: 5 }); await page.mouse.up();
-          swipes++;
-        }
+        const c = await hc.last().boundingBox();
+        await page.mouse.move(c.x + c.width - 14, c.y + 16); await page.mouse.down(); await page.waitForTimeout(300);
+        if (await page.locator(".hprev").count()) zooms++;
+        await page.mouse.move(c.x + c.width - 14, c.y - 130, { steps: 6 }); await page.mouse.up(); await page.waitForTimeout(350);
+        swipes++;
         continue;
       }
       const live = page.locator(".fld.live");

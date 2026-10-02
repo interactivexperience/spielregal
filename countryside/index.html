@@ -29,7 +29,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .script{font-family:"Caveat","Segoe Print","Comic Sans MS",cursive;font-weight:700;color:var(--rose)}
 .tagline{font-size:clamp(30px,9vw,40px);line-height:1;margin:2px 0 10px;transform:rotate(-2deg);transform-origin:left;display:inline-block}
 .tagline svg{display:block;width:100%;height:12px;margin-top:-2px}
-.wrap{max-width:560px;margin:0 auto;padding:0 16px 250px;overflow-x:clip}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px 230px;overflow-x:clip}
 .ill{display:block;width:100%;height:100%;overflow:visible}
 .start{padding-top:8px;text-align:left}
 .start h1{font-size:clamp(56px,18vw,84px);line-height:.9;margin:18px 0 2px;color:var(--ink);font-weight:800;letter-spacing:-2.5px}
@@ -220,34 +220,28 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .top{background:rgba(236,231,226,.6);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3)}
 .top .banner{background:rgba(255,255,255,.7)}
 .top .banner.mine{background:rgba(75,58,110,.86)}
-/* Handkarten als Fächer fest im Footer (Owner-Vorbild: digitales „Root“ – enger Fächer unten Mitte,
-   gewählte Karte schwebt groß über dem Spielfeld, das sichtbar bleibt) */
-.bar{overflow:visible;padding-bottom:0}
-.hfan{position:relative;height:100px;max-width:560px;margin:-22px auto 0}
-.hcard{position:absolute;left:50%;bottom:-6px;width:92px;padding:0;background:none;transform:translateX(calc(var(--x) - 50%)) rotate(var(--r));transform-origin:50% 170%;transition:transform .2s cubic-bezier(.3,1.3,.5,1);touch-action:none}
-.hcard .pc{width:92px;box-shadow:-3px 2px 8px rgba(31,26,23,.28);border:1.5px solid rgba(31,26,23,.08)}
+/* Kartenhand (Owner-Vorbild: digitales „Root“): enger, gewölbter Fächer, der über den Footer-Rand ragt;
+   Vorschau schwebt groß ohne Hintergrund über dem Spielfeld */
+.bar{overflow:visible}
+.hfan{position:relative;height:104px;max-width:560px;margin:-78px auto 6px;clip-path:inset(-400px -60px 0 -60px);touch-action:none}
+.hcard{position:absolute;left:50%;bottom:-34px;width:92px;transform:translateX(calc(var(--x) - 50%)) rotate(var(--r));transform-origin:50% 170%;transition:transform .2s cubic-bezier(.3,1.3,.5,1);touch-action:none;cursor:grab;-webkit-user-select:none;user-select:none}
+.hcard .pc{width:92px;box-shadow:-3px 2px 10px rgba(31,26,23,.3);border:1.5px solid rgba(31,26,23,.08);pointer-events:none}
 .hcard .pc .art{height:60px}.hcard .pc .fx{display:none}.hcard .pc .nm{font-size:11px}
 .hcard .pc .sun{width:24px;height:24px}.hcard .pc .ty{top:26px;width:16px;height:16px}
 .hcard.dim .pc{filter:saturate(.35) brightness(.96)}
-.hcard:active,.hcard.up{transform:translateX(calc(var(--x) - 50%)) translateY(-26px) rotate(var(--r))}
-.hcard.up{z-index:50!important}
-.hfan .none{position:absolute;inset:0;display:grid;place-items:center;font-size:13px;color:var(--muted)}
-.zoom{position:fixed;inset:0;z-index:60;background:radial-gradient(ellipse at 50% 45%,rgba(31,26,23,.08),rgba(31,26,23,.42));display:flex;align-items:center;justify-content:center;padding:calc(20px + env(safe-area-inset-top)) 16px 130px;animation:zfade .18s ease both}
-@keyframes zfade{from{opacity:0}}
-.zin{width:100%;max-width:360px;text-align:center;max-height:100%;overflow-y:auto;scrollbar-width:none}
-.zcard{display:inline-block;touch-action:none;margin:0 auto;animation:zpop .32s cubic-bezier(.3,1.5,.5,1) both}
-@keyframes zpop{from{transform:translateY(160px) scale(.45) rotate(-6deg);opacity:0}}
-.zcard .pc{width:236px;padding:8px;border-radius:24px;box-shadow:0 22px 50px rgba(31,26,23,.45),0 0 0 1.5px rgba(31,26,23,.08)}
-.zcard .pc .art{height:172px;border-radius:18px}.zcard .pc .nm{font-size:21px;margin-top:8px}.zcard .pc .fx{font-size:14.5px;line-height:1.3;color:var(--ink);min-height:0}
-.zcard .pc .sun{width:46px;height:46px}.zcard .pc .ty{top:54px;left:12px;width:26px;height:26px;border-radius:8px}.zcard .pc .ty svg{width:18px;height:18px}
-.zin .zhint{font-size:12px;color:#fff;margin:12px 0 8px;text-shadow:0 1px 4px rgba(0,0,0,.45);font-weight:600}
-.zin .zopts{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-.zin .zopt{display:flex;flex-direction:column;align-items:center;gap:1px;background:#fff;border-radius:999px;padding:8px 16px;font-weight:700;font-size:13.5px;box-shadow:0 6px 16px rgba(31,26,23,.25)}
-.zin .zopt.best{background:var(--gold)}
-.zin .zopt small{font-weight:500;color:var(--muted);font-size:11px}.zin .zopt.best small{color:var(--ink)}
-.zin .zopt .zn{font-weight:500;font-size:11px;color:var(--muted)}
-.zin .zwhy{font-size:13px;background:#fff;border-radius:18px;padding:10px 14px;text-align:left;box-shadow:0 6px 16px rgba(31,26,23,.25)}
-.zin .zback{margin-top:12px;background:rgba(255,255,255,.9);border-radius:999px;padding:7px 16px;font-size:13px;font-weight:600;box-shadow:0 4px 12px rgba(31,26,23,.2)}
+.hcard.up{transform:translateX(calc(var(--x) - 50%)) translateY(-22px) rotate(var(--r));z-index:50!important}
+.hcard.drag{transition:none;z-index:60!important}
+.hfan .none{position:absolute;left:0;right:0;bottom:40px;text-align:center;font-size:13px;color:var(--muted)}
+.hprev{position:fixed;left:50%;top:calc(46% - 40px);z-index:65;transform:translate(-50%,-50%);pointer-events:none;text-align:center}
+.hprev.in{animation:hpin .2s cubic-bezier(.3,1.4,.5,1) both}
+@keyframes hpin{from{opacity:0;transform:translate(-50%,-38%) scale(.85)}}
+.hprev .hpc .pc{width:236px;padding:8px;border-radius:24px;box-shadow:0 24px 60px rgba(31,26,23,.45),0 0 0 1.5px rgba(31,26,23,.08);transition:transform .15s}
+.hprev .hpc .pc .art{height:172px;border-radius:18px}.hprev .hpc .pc .nm{font-size:21px;margin-top:8px}.hprev .hpc .pc .fx{font-size:14.5px;line-height:1.3;color:var(--ink);min-height:0}
+.hprev .hpc .pc .sun{width:46px;height:46px}.hprev .hpc .pc .ty{top:54px;left:12px;width:26px;height:26px;border-radius:8px}.hprev .hpc .pc .ty svg{width:18px;height:18px}
+.hprev .hph{display:inline-block;margin-top:12px;background:var(--plum);color:#fff;border-radius:999px;padding:7px 14px;font-size:12.5px;font-weight:600;box-shadow:0 8px 20px rgba(31,26,23,.3);max-width:300px}
+.hprev .hph.no{background:#fff;color:var(--ink)}
+.hprev.go .hph{background:var(--gold);color:var(--ink)}
+.hprev.go .hpc .pc{transform:translateY(-10px) scale(1.03)}
 </style>
 </head>
 <body>
@@ -1320,9 +1314,9 @@ function viewGame() {
     <section class="sec"><div class="sech"><h2 class="hand">Chronik</h2><button class="link" data-a="logtoggle" style="font-size:12px">${U.logOpen ? 'weniger' : 'alles'}</button></div>
       <div class="log">${S.log.slice(0, U.logOpen ? 90 : 6).map(l => `<div>${esc(l)}</div>`).join('')}</div></section>
   </div>
-  <div class="bar"><div class="in">${myAsk() ? `<div class="msg">${esc(askTitle(S.ask))}</div><button class="btn" data-a="askopen">Auswählen</button>`
+  <div class="bar">${U.tut ? '' : handFan(me)}<div class="in">${myAsk() ? `<div class="msg">${esc(askTitle(S.ask))}</div><button class="btn" data-a="askopen">Auswählen</button>`
     : mine ? `<div class="msg">${workersFree(me)} ${workersFree(me) === 1 ? 'Arbeitskraft' : 'Arbeitskräfte'} auf der Bank.</div><button class="btn ${forcedEndDay(me) ? '' : 'white'}" data-a="endday">Tag beenden</button>`
-    : `<div class="msg"><b>${esc(p.name)}</b> ist dran …</div><button class="btn white" data-a="fast">${U.fast ? 'Normal' : 'Schneller'}</button>`}</div>${U.tut ? '' : handFan(me)}</div>`;
+    : `<div class="msg"><b>${esc(p.name)}</b> ist dran …</div><button class="btn white" data-a="fast">${U.fast ? 'Normal' : 'Schneller'}</button>`}</div></div>`;
 }
 // Handkarten-Fächer im Footer: antippen = groß ansehen, nach oben wischen = einsetzen
 function handFan(me) {
@@ -1330,7 +1324,7 @@ function handFan(me) {
   if (!n) return '<div class="hfan"><span class="none">Keine Handkarten</span></div>';
   const W = Math.min(window.innerWidth || 390, 560) - 40;
   const step = n > 1 ? Math.min(40, (W - 120) / (n - 1)) : 0, rot = n > 1 ? Math.min(3.5, 18 / (n - 1)) : 0;
-  return `<div class="hfan">${me.hand.map((k, i) => { const o = i - (n - 1) / 2; return `<button class="hcard ${canPlace(me, k) ? '' : 'dim'} ${U.zoom && U.zoom.i === i ? 'up' : ''}" data-a="hzoom" data-i="${i}" data-swipe="hand" style="--x:${(o * step).toFixed(1)}px;--r:${(o * rot).toFixed(1)}deg;z-index:${i + 1}" aria-label="${esc(CARDS[k].n)} ansehen">${cardHtml(k)}</button>`; }).join('')}</div>`;
+  return `<div class="hfan" aria-label="Handkarten: antippen oder gedrückt halten zum Ansehen, nach oben wischen zum Einsetzen">${me.hand.map((k, i) => { const o = i - (n - 1) / 2; return `<div class="hcard ${canPlace(me, k) ? '' : 'dim'}" data-i="${i}" role="button" aria-label="${esc(CARDS[k].n)}" style="--x:${(o * step).toFixed(1)}px;--r:${(o * rot).toFixed(1)}deg;z-index:${i + 1}">${cardHtml(k)}</div>`; }).join('')}</div>`;
 }
 // Wege, eine Handkarte jetzt einzusetzen (Sonnenfelder, ggf. mit Münzen bzw. Abwurf)
 function playRoutes(p, k) {
@@ -1354,17 +1348,6 @@ function playRoutes(p, k) {
   out.sort((x, y) => x.pay - y.pay || (y.f === 'sun2') - (x.f === 'sun2'));
   if (!out.length) return { why: `Sie braucht ${c.sun} Sonnenstunden. Kein freies Feld reicht dafür, auch nicht mit deinen ${p.coins} Münzen.`, out };
   return { out };
-}
-function zoomHtml() {
-  const me = human(), k = me.hand[U.zoom.i];
-  if (!k) { U.zoom = null; return ''; }
-  const r = playRoutes(me, k);
-  const opts = r.out.map((o, i) => `<button class="zopt ${i ? '' : 'best'}" data-a="hplay" data-f="${o.f}"><span>${esc(o.label)}</span><small>${o.pay ? `+${o.pay} Münze${o.pay > 1 ? 'n' : ''}` : 'passt genau'}${o.note ? ` · ${esc(o.note)}` : ''}</small></button>`).join('');
-  return `<div class="zoom" data-a="zclose"><div class="zin" data-stop="1">
-    <div class="zcard" data-swipe="zoom">${cardHtml(k)}</div>
-    <p class="zhint">${r.out.length ? '↑ Nach oben wischen oder ein Feld antippen' : 'Gerade nicht einsetzbar'}</p>
-    ${r.out.length ? `<div class="zopts">${opts}</div>` : `<div class="zwhy">${esc(r.why)}</div>`}
-    <button class="zback" data-a="zback">Zurück zur Hand</button></div></div>`;
 }
 function viewEnd() {
   const rows = S.final.map((r, i) => Object.assign({ i }, r)).sort((a, b) => b.total - a.total || b.coins - a.coins);
@@ -1521,7 +1504,7 @@ function tutCheck() {
   }
 }
 function tutAllowed(a, d) {
-  if (['tutnext', 'tutend', 'tutquit', 'hzoom', 'zclose', 'zback'].includes(a)) return true;
+  if (a === 'tutnext' || a === 'tutend' || a === 'tutquit') return true;
   const st = tutStep(), al = st && st.allow;
   if (!al || !(a in al)) return false;
   return al[a] === true || !!al[a](d);
@@ -1610,10 +1593,10 @@ function render() {
   const nmi = document.getElementById('nm'); if (nmi) U.setup.name = nmi.value;
   let h = !S || S.screen !== 'game' && S.screen !== 'end' ? viewStart() : S.screen === 'end' ? viewEnd() : viewGame();
   h += viewSheet();
-  if (U.zoom && S && S.screen === 'game') h += zoomHtml();
   if (U.toast) h += `<div class="toast">${esc(U.toast)}</div>`;
   if (U.tut) h += tutHtml();
   $app.innerHTML = h;
+  if (HP.el) { const me = S && S.screen === 'game' && human(); if (!me || U.tut || HP.i >= me.hand.length) previewHide(); else document.querySelectorAll('.hfan .hcard').forEach(c => c.classList.toggle('up', +c.dataset.i === HP.i)); }
   if (U.tut) tutDecorate();
   save();
   pump();
@@ -1657,17 +1640,6 @@ const H = {
   hsel: d => { const i = +d.i, k = U.sel.indexOf(i); const a = S.ask; const max = a.t === 'discardN' ? a.n : 99; if (k >= 0) U.sel.splice(k, 1); else if (U.sel.length < max) U.sel.push(i); },
   dsel: d => { U.tmp.start = +d.i; },
   csel: d => { U.tmp.card = d.k; },
-  hzoom: d => { U.zoom = { i: +d.i }; },
-  zclose: () => { U.zoom = null; },
-  zback: () => { U.zoom = null; },
-  hplay: d => {
-    const me = human(), k = U.zoom && me.hand[U.zoom.i]; U.zoom = null;
-    if (!k) return;
-    if (d.f === 'ask') { U.tmp.card = k; U.sheet = null; return; }
-    if (!isMyTurn()) return;
-    const f = FIELDS.find(x => x.k === d.f); if (!f || !canUseField(me, f)) return;
-    resetTmp(); U.pendingCard = k; placeWorker(S.cur, d.f);
-  },
   tplay: d => { reply({ k: U.tmp.card, ti: +d.i }); },
   ssel: d => { if (U.sel.length < 2) U.sel.push(d.t); },
   sclear: () => { U.sel = []; },
@@ -1692,6 +1664,7 @@ const H = {
   const infoOf = el => el.getAttribute('data-info') || el.getAttribute('title') || '';
   document.addEventListener('pointerdown', e => {
     hide(); shown = false; clearTimeout(timer);
+    if (e.target.closest && e.target.closest('.hfan')) return; // Handkarten: eigene Vorschau statt Info-Blase
     let el = e.target.closest && e.target.closest('[data-info],[title]');
     // gesperrte Knöpfe bekommen keine Ereignisse: geometrisch suchen
     let best = null, area = Infinity;
@@ -1731,27 +1704,76 @@ document.addEventListener('click', e => {
   const fn = H[el.dataset.a]; if (!fn) return;
   fn(el.dataset); render();
 });
-// Wisch nach oben auf einer Handkarte (Fächer oder Großansicht) = einsetzen
+// Kartenhand (Vorbild „Root“): antippen = groß ansehen, gedrückt halten und am Fächer entlangfahren =
+// jeweils die Karte unter dem Finger groß, nach oben wischen = einsetzen (über das günstigste Sonnenfeld).
+function playCard(k) {
+  const me = human(), r = playRoutes(me, k), o = r.out[0];
+  if (!o) return false;
+  if (o.f === 'ask') { U.tmp.card = k; U.sheet = null; return true; }
+  const f = FIELDS.find(x => x.k === o.f);
+  if (!isMyTurn() || !f || !canUseField(me, f)) return false;
+  resetTmp(); U.pendingCard = k; placeWorker(S.cur, o.f);
+  return true;
+}
+const HP = { el: null, i: -1, sticky: false };
+function previewShow(i, sticky) {
+  const me = S && human(), k = me && me.hand[i];
+  if (!k) return previewHide();
+  document.querySelectorAll('.hfan .hcard').forEach(c => c.classList.toggle('up', +c.dataset.i === i));
+  HP.sticky = sticky;
+  if (HP.i === i && HP.el) return;
+  HP.i = i;
+  const r = playRoutes(me, k), o = r.out[0];
+  const hint = o ? `↑ wischen: ${o.f === 'ask' ? 'jetzt spielen' : esc(o.label)} · ${o.pay ? `+${o.pay} Münze${o.pay > 1 ? 'n' : ''}` : 'passt genau'}${o.note ? ` · ${esc(o.note)}` : ''}` : esc(r.why);
+  if (!HP.el) { HP.el = document.createElement('div'); HP.el.className = 'hprev'; document.body.appendChild(HP.el); }
+  HP.el.innerHTML = `<div class="hpc">${cardHtml(k)}</div><div class="hph ${o ? '' : 'no'}">${hint}</div>`;
+  HP.el.classList.remove('in'); void HP.el.offsetWidth; HP.el.classList.add('in');
+}
+function previewHide() {
+  if (HP.el) { HP.el.remove(); HP.el = null; }
+  HP.i = -1; HP.sticky = false;
+  document.querySelectorAll('.hfan .hcard.up').forEach(c => c.classList.remove('up'));
+}
 (function () {
-  let el = null, sx = 0, sy = 0, swiped = false;
-  document.addEventListener('pointerdown', e => { swiped = false; el = e.target.closest && e.target.closest('[data-swipe]'); if (el) { sx = e.clientX; sy = e.clientY; } }, true);
-  document.addEventListener('pointerup', e => {
-    if (!el) return;
-    const t = el, dx = e.clientX - sx, dy = e.clientY - sy; el = null;
-    if (dy > -50 || Math.abs(dx) > 70 || !S || S.screen !== 'game') return;
-    swiped = true;
-    const me = human(), i = t.dataset.swipe === 'hand' ? +t.dataset.i : U.zoom ? U.zoom.i : -1;
-    const k = me.hand[i]; if (!k) return;
-    const r = playRoutes(me, k);
-    U.zoom = { i };
-    if (r.out.length) {
-      if (U.tut && !tutAllowed('hplay', { f: r.out[0].f })) toast('Folge dem markierten Hinweis im Lernspiel.');
-      else H.hplay({ f: r.out[0].f });
-    }
-    render();
+  let g = null; // laufende Geste
+  const cardAt = x => { let best = null, d = 1e9; document.querySelectorAll('.hfan .hcard').forEach(c => { const r = c.getBoundingClientRect(), m = r.left + r.width / 2, dd = Math.abs(x - m); if (dd < d) { d = dd; best = c; } }); return best; };
+  document.addEventListener('pointerdown', e => {
+    const c = e.target.closest && e.target.closest('.hfan .hcard');
+    if (!c) { if (HP.sticky && !(e.target.closest && e.target.closest('.hprev'))) previewHide(); return; }
+    if (U.tut) return;
+    e.preventDefault();
+    g = { c, i: +c.dataset.i, x0: e.clientX, y0: e.clientY, mode: 'tap', t: setTimeout(() => { if (g && g.mode === 'tap') { g.mode = 'hold'; previewShow(g.i, false); } }, 260) };
+    try { c.closest('.hfan').setPointerCapture(e.pointerId); } catch (err) { }
   }, true);
-  document.addEventListener('pointercancel', () => { el = null; }, true);
-  document.addEventListener('click', e => { if (swiped) { swiped = false; e.preventDefault(); e.stopPropagation(); } }, true);
+  document.addEventListener('pointermove', e => {
+    if (!g) return;
+    const dx = e.clientX - g.x0, dy = e.clientY - g.y0;
+    if (g.mode !== 'drag' && dy < -14 && Math.abs(dy) > Math.abs(dx) * 1.2) { g.mode = 'drag'; clearTimeout(g.t); previewShow(g.i, false); g.c.classList.add('drag'); }
+    if (g.mode === 'drag') { const k = Math.max(0, Math.min(1, -dy / 140)); g.c.style.transform = `translateX(calc(var(--x) - 50%)) translate(${dx * .4}px, ${dy}px) rotate(calc(var(--r) * ${1 - k})) scale(${1 + k * .25})`; if (HP.el) HP.el.classList.toggle('go', -dy > 80); return; }
+    if (g.mode === 'tap' && Math.abs(dx) > 10) { g.mode = 'hold'; clearTimeout(g.t); }
+    if (g.mode === 'hold') { const c = cardAt(e.clientX); if (c) { g.c = c; g.i = +c.dataset.i; previewShow(g.i, false); } }
+  }, true);
+  const end = e => {
+    if (!g) return;
+    const G = g; g = null; clearTimeout(G.t);
+    const dy = e.clientY - G.y0;
+    if (G.mode === 'drag') {
+      const k = S && human() && human().hand[G.i];
+      if (-dy > 80 && k && playRoutes(human(), k).out.length) {
+        G.c.style.transition = 'transform .22s ease-in, opacity .22s'; G.c.style.transform += ' translateY(-140px)'; G.c.style.opacity = '0';
+        setTimeout(() => { previewHide(); if (!playCard(k)) toast('Gerade nicht einsetzbar.'); render(); }, 200);
+        return;
+      }
+      G.c.classList.remove('drag'); G.c.style.transform = '';
+      if (k && -dy > 80) { previewShow(G.i, true); G.c.animate([{ transform: 'translateX(calc(var(--x) - 50%)) translateX(-6px) rotate(var(--r))' }, { transform: 'translateX(calc(var(--x) - 50%)) translateX(6px) rotate(var(--r))' }, { transform: 'translateX(calc(var(--x) - 50%)) rotate(var(--r))' }], { duration: 220 }); }
+      else previewHide();
+      return;
+    }
+    if (G.mode === 'tap') { if (HP.sticky && HP.i === G.i) previewHide(); else previewShow(G.i, true); return; }
+    previewHide(); // gedrückt halten beendet: Vorschau weg
+  };
+  document.addEventListener('pointerup', end, true);
+  document.addEventListener('pointercancel', end, true);
 })();
 window.__lg = {
   simulate(n, seed, solo) {
