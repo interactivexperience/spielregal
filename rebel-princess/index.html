@@ -1578,7 +1578,7 @@ function viewSheet() {
   if (sh && sh.type === 'ask') return askSheet();
   if (!sh) return '';
   if (sh.type === 'rules') return sheetWrap(rulesHtml());
-  if (sh.type === 'menu') return sheetWrap(`<h3>Menü</h3><div class="btnrow" style="flex-direction:column">${U.tut ? '<button class="btn wide" data-a="tutquit">Lernspiel beenden</button>' : ''}${S && S.screen === 'game' && !S.tut ? '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}<button class="btn white wide" data-a="rules">Spielregeln</button>${S && S.history.length ? '<button class="btn white wide" data-a="scores">Punktestand</button>' : ''}<button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
+  if (sh.type === 'menu') return sheetWrap(`<h3>Menü</h3><div class="btnrow" style="flex-direction:column">${U.tut ? '<button class="btn wide" data-a="tutquit">Lernspiel beenden</button>' : ''}${S && S.screen === 'game' && !S.tut ? '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}<button class="btn white wide" data-a="rules">Spielregeln</button>${S && S.history.length ? '<button class="btn white wide" data-a="scores">Punktestand</button>' : ''}<button class="btn white wide" data-a="reload">Neueste Version laden</button><button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
   if (sh.type === 'scores') return sheetWrap(`<h3>Punktestand</h3>${scoreTable()}`);
   if (sh.type === 'pinfo') { const p = S.players[sh.p], pr = princess(p); return sheetWrap(`<h3>${esc(p.name)}</h3>${pr ? `<div style="display:flex;gap:12px;align-items:center"><div style="width:90px;height:108px;flex:none">${princessArt(pr.k)}</div><div><b>${esc(pr.n)}: ${esc(pr.t)}</b><p style="font-size:13px;margin:4px 0">${esc(pr.tx)}</p><p style="font-size:12px;color:#6b6862">${p.used ? 'in dieser Ballnacht schon genutzt' : 'in dieser Ballnacht noch verfügbar'}</p></div></div>` : ''}<p class="label" style="margin-top:12px">Gewonnene Karten mit Anträgen</p><div style="display:flex;gap:4px;flex-wrap:wrap">${p.won.filter(c => cardPts(c)).map(c => cardHtml(c, '', 'disabled')).join('') || '<span style="font-size:13px">keine</span>'}</div>`); }
   return '';
@@ -1739,6 +1739,8 @@ const H = {
   // Pflicht-Auswahl beim Spielstart verlassen: Partie verwerfen, zurück zum Startbildschirm
   setupcancel: () => { clearSave(); S = null; U.sheet = null; window.scrollTo(0, 0); },
   go: () => { if (U.tut) return goTo('.tut-hl'); const t = goTarget(); if (typeof t === 'function') t(); else goTo(t); },
+  // Spiel neu laden (Cache umgehen); der Spielstand ist gespeichert und wird danach fortgesetzt
+  reload: () => { try { save(); } catch (e) { } location.replace(location.pathname + '?v=' + Date.now() + '&resume=1'); },
   restart: () => { if (confirm('Laufende Partie wirklich abbrechen?')) { clearSave(); S = null; U.sheet = null; } },
   newgame: () => { clearSave(); S = null; U.sheet = null; },
   close: () => { U.sheet = null; if (S && S.ask && S.ask.kind === 'rot') { S.ask = null; } },
@@ -1861,6 +1863,8 @@ window.__rp = {
   deck: n => deckFor(n),
   reset: () => { S = null; U.sheet = null; clearSave(); render(); },
 };
+// Nach „Neueste Version laden“ die gespeicherte Partie direkt fortsetzen
+if (new URLSearchParams(location.search).has('resume')) { try { const sv = load(); if (sv && sv.screen === 'game') H.resume(); } catch (e) { } history.replaceState(null, '', location.pathname); }
 render();
 </script>
 </body>

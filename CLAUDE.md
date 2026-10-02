@@ -99,6 +99,10 @@ beim langen Drücken), außer in Eingabefeldern. Die Ansage („Du bist dran …
 Kopfzeile und bleibt beim Scrollen sichtbar (Prinzessinnenball: Ansage in der festen Handleiste).
 Ansage und Nachricht im Footer sind antippbar (`data-a="go"`, `goTarget`/`goTo`): Scrollen zur passenden Stelle mit
 kurzem Aufblitzen bzw. Öffnen der offenen Auswahl; im Lernspiel springt es zum markierten Element.
+Menü aller Spiele: „Neueste Version laden“ (lädt die Spielseite am Cache vorbei neu und setzt die gespeicherte Partie
+automatisch fort, `?resume=1`). Landgut: Auswahlfenster am Griff nach unten ziehen oder Pfeil = einklappen (weiche
+Animation), eingeklappt als Mini-Vorschau unten rechts; Siegpunktleiste als Wiesenpfad mit Köpfen; Ablagestapel
+per Antippen einsehbar; Auftragsplättchen zeigen statt Sternen/Seite „Je Feld mehr nötig“ (A) bzw. „Gleiche Bedingung“ (B).
 Landgut-Kartenhand (Owner-Vorbild: digitales „Root“): enger, gewölbter Fächer als eigene Ebene direkt hinter dem Footer
 (ragt über dessen Rand, keine eigene „Tasche“);
 antippen = Karte groß (ohne Hintergrund/Dialog, schwebt über dem Spielfeld), gedrückt halten und am Fächer entlangfahren =

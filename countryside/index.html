@@ -78,10 +78,16 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .banner b{display:block;font-weight:600;font-size:16px}
 .banner .small{font-size:13px;color:var(--muted)}
 /* Siegpunktleiste */
-.vptrack{height:44px;border-radius:999px;background:var(--card);padding:0 20px}
+.vptrack{height:58px;border-radius:28px;background:linear-gradient(#C9DAE3 0 30%,#A9B98C 30% 100%);padding:0 22px;position:relative;overflow:hidden}
 .vptrack .vt{position:relative;height:100%}
-.vptrack .tick{position:absolute;top:0;bottom:0;border-left:1px solid var(--line);font-size:9.5px;color:var(--muted);padding:3px 0 0 3px;white-space:nowrap}
-.vptrack .pm{position:absolute;top:13px;width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transform:translateX(-50%)}
+.vptrack .path{position:absolute;left:-22px;right:-22px;top:34px;height:10px;border-radius:9px;background:#E9DCC0;opacity:.9}
+.vptrack .tick{position:absolute;top:24px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;font-size:9.5px;color:#4A5A3A;border:0;padding:0}
+.vptrack .tick svg{width:14px;height:14px}
+.vptrack .tick b{font-family:"Fraunces",Georgia,serif;font-size:10px;line-height:1;margin-top:1px}
+.vptrack .tick.goal svg{width:20px;height:20px;margin-top:-4px}
+.vptrack .tick.goal b{color:var(--rose)}
+.vptrack .pm{position:absolute;top:3px;width:24px;height:24px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 5px rgba(31,26,23,.3);overflow:hidden;margin-left:-12px;transition:left .5s cubic-bezier(.3,1.3,.5,1)}
+.vptrack .pm svg{width:100%;height:100%}
 /* Karten */
 .pc{display:flex;flex-direction:column;justify-content:flex-start;position:relative;width:104px;flex:none;border-radius:18px;background:#fff;padding:5px;text-align:left}
 .pc .art{height:76px;border-radius:14px;overflow:hidden;background:#EEF4F1}
@@ -141,6 +147,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .otile{border-radius:24px;background:var(--p-lav);padding:12px}
 .otile .oh{display:flex;justify-content:space-between;gap:8px;font-size:13px}
 .otile .oh b{color:var(--ink);font-weight:600}
+.otile .oh span{font-weight:600;color:var(--ink)}
+.otile .oh .kind{flex:none;font-size:10.5px;font-weight:600;color:var(--plum);background:#fff;border-radius:99px;padding:2px 8px;align-self:flex-start}
 .octs{display:flex;gap:6px;margin-top:6px}
 .oct{flex:1;border-radius:16px;background:#fff;padding:4px 2px;text-align:center;font-size:11px;line-height:1.15;position:relative}
 .oct b{display:block;font-family:"Fraunces",Georgia,serif;font-size:18px;font-weight:700;color:var(--ink)}
@@ -255,6 +263,22 @@ input,textarea{-webkit-user-select:text;user-select:text}
 /* Ansage ohne Band dahinter: Kasten selbst deckend, damit er lesbar bleibt */
 .top .tbanner .banner{background:#fff}
 .top .tbanner .banner.mine{background:var(--plum)}
+.grabzone{margin:-14px -16px 2px;padding:12px 0 10px;touch-action:none;cursor:grab}
+.grabzone .grab{margin:0 auto;width:52px;height:6px;opacity:.25}
+.sheet .icobtn.collapse{color:var(--ink)}
+.ov.enter{animation:ovin .22s ease both}
+@keyframes ovin{from{background:rgba(31,26,23,0)}}
+.sheet.enter{animation:shup .24s cubic-bezier(.2,.9,.3,1) both}
+@keyframes shup{from{transform:translateY(48px);opacity:0}}
+.mini{position:fixed;right:12px;bottom:calc(var(--barh, 80px) + 70px);z-index:45;display:flex;align-items:center;gap:8px;background:var(--plum);color:#fff;border-radius:22px;padding:8px 10px 8px 14px;box-shadow:0 10px 26px rgba(31,26,23,.35);max-width:78vw;text-align:left;animation:miniin .3s cubic-bezier(.3,1.4,.5,1) both}
+@keyframes miniin{from{transform:translateY(30px) scale(.8);opacity:0}}
+.mini .mt b{display:block;font-size:13px;line-height:1.2}
+.mini .mt small{font-size:11px;opacity:.75}
+.mini .mc{display:flex}
+.mini .mcard{width:30px;height:38px;border-radius:7px;overflow:hidden;border:2px solid #fff;margin-left:-8px;background:#fff}
+.mini .mcard:first-child{margin-left:0}
+.mini .mcard svg{width:100%;height:100%}
+.mini .mup{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.18);transform:rotate(180deg)}
 </style>
 </head>
 <body>
@@ -1246,14 +1270,21 @@ function statusHtml(p) {
   return `<div class="status" aria-label="Dein Vorrat"><span class="gd" title="Münzen (bezahlen fehlende Sonnenstunden)">${coinSvg()}${p.coins}</span>${goods}<span class="gd" title="leere Körbe">🧺 ${freeBaskets(p)}</span><span class="gd wk" title="Arbeitskräfte auf der Bank"><span style="display:inline-flex">${workerSvg(p.mark)}</span>${workersFree(p)}/4</span><span class="gd ${p.hand.length >= HAND_MAX ? 'warn' : ''}" title="Handkarten (Limit ${HAND_MAX} am Zugende)">🂠 ${p.hand.length}/${HAND_MAX}</span></div>`;
 }
 function vpTrack() {
+  // Siegpunkte als Wiesenpfad: Gouache-Wiese, Blume an jedem 5. Feld, Zaun am Ziel, Spielende als kleine Köpfe
   const max = Math.max(VP_END + 4, ...S.players.map(p => p.vp + 1));
-  const ticks = range(Math.floor(max / 5) + 1).filter(i => S.solo || i * 5 !== VP_END).map(i => `<span class="tick" style="left:${(i * 5 / max * 100).toFixed(1)}%">${i * 5}</span>`).join('');
-  const end = S.solo ? '' : `<span class="tick" style="left:${(VP_END / max * 100).toFixed(1)}%;border-left:2px solid var(--rose);font-weight:800">${VP_END} Ende</span>`;
-  return `<div class="vptrack"><div class="vt">${ticks}${end}${S.players.map((p, i) => `<span class="pm" style="left:${(Math.min(p.vp, max) / max * 100).toFixed(1)}%;background:${p.mark};top:${10 + i * 4}px" title="${esc(p.name)}: ${p.vp}"></span>`).join('')}</div></div>`;
+  const X = v => (Math.min(v, max) / max * 100).toFixed(1);
+  const fl = ['#D9735F', '#E2A21E', '#8C74D6', '#5B86B5', '#F2EFE6'];
+  const ticks = range(Math.floor(max / 5) + 1).filter(i => S.solo || i * 5 !== VP_END).map(i => `<span class="tick" style="left:${X(i * 5)}%"><svg viewBox="0 0 16 16"><g fill="${fl[i % fl.length]}">${range(5).map(k => `<circle cx="${8 + Math.cos(k * 1.257) * 4}" cy="${8 + Math.sin(k * 1.257) * 4}" r="3"/>`).join('')}</g><circle cx="8" cy="8" r="2.2" fill="#E2A21E"/></svg><b>${i * 5}</b></span>`).join('');
+  const end = S.solo ? '' : `<span class="tick goal" style="left:${X(VP_END)}%"><svg viewBox="0 0 22 22"><path d="M3,20 V8 M10,20 V6 M17,20 V8 M1,11 H21 M1,16 H21" stroke="#8A6A4A" stroke-width="2.2" stroke-linecap="round"/></svg><b>${VP_END}</b></span>`;
+  const seen = {};
+  const pm = S.players.map(p => { const n = seen[p.vp] = (seen[p.vp] || 0) + 1; return `<span class="pm" style="left:${X(p.vp)}%;transform:translateX(${(n - 1) * 12}px);background:${p.mark}" data-info="${esc(p.name)}: ${p.vp} SP">${face(p)}</span>`; }).join('');
+  return `<div class="vptrack" data-info="Siegpunktleiste: Wer zuerst ${VP_END} SP erreicht, löst das Spielende aus."><div class="vt"><span class="path"></span>${ticks}${end}${pm}</div></div>`;
 }
 function orderTile(ot, ti) {
   const side = OTILES[ot.ti][ot.side];
-  return `<div class="otile"><div class="oh"><b>${'★'.repeat(OTILES[ot.ti].pos)} · Seite ${ot.side}</b><span>${esc(side.tx)}</span></div>
+  const kind = ot.side === 'A' ? 'Je Feld mehr nötig' : 'Gleiche Bedingung';
+  const info = ot.side === 'A' ? 'A-Auftrag: dieselbe Bedingung, aber je Feld unterschiedlich oft (Zahl mit ×). Mehr Aufwand = mehr SP.' : 'B-Auftrag: für alle vier Felder dieselbe Bedingung. Wer früher erfüllt, nimmt das wertvollere Feld.';
+  return `<div class="otile" data-info="${esc(info + ' Jeden Auftrag darfst du nur einmal erfüllen; dabei legst du einen Marker von deinem Arbeitsplan auf das Feld.')}"><div class="oh"><span>${esc(side.tx)}</span><b class="kind">${kind}</b></div>
     <div class="octs">${side.f.map((f, fi) => { const by = ot.by[fi]; return `<div class="oct"><b>${f.vp}</b>${ot.side === 'A' ? esc(f.cond.n + (f.cond.k === 'pay' ? ' Mz.' : '×')) : (f.card ? '+ Karte' : '&nbsp;')}${by !== null ? `<span class="by" style="background:${P(by).mark}">${esc(P(by).name.split(' ')[0])}</span>` : ''}</div>`; }).join('')}</div></div>`;
 }
 function terrHtml(p, tr, ti, o = {}) {
@@ -1317,7 +1348,7 @@ function viewGame() {
   </div>${statusHtml(me)}</div><div class="tbanner">${banner}</div></div>
   <div class="wrap">
     <section class="sec">${vpTrack()}</section>
-    <section class="sec"><div class="sech"><h2 class="hand">Auslage</h2><span class="hint">${S.deck.length} im Stapel · ${S.discard.length} abgelegt</span></div>
+    <section class="sec"><div class="sech"><h2 class="hand">Auslage</h2><span class="hint">${S.deck.length} im Stapel · <button class="link" data-a="discview" style="font-size:inherit">${S.discard.length} abgelegt</button></span></div>
       <div class="ring">${S.display.map((k, i) => cardHtml(k)).join('')}</div></section>
     <section class="sec"><div class="sech"><h2 class="hand">Aufträge</h2><span class="hint">Jeden Auftrag nur einmal</span></div><div class="orders">${S.otiles.map(orderTile).join('')}</div></section>
     <section class="sec"><div class="sech"><h2 class="hand">Dein Landgut</h2></div>
@@ -1379,7 +1410,17 @@ function viewEnd() {
     <p><button class="link" data-a="opp" data-p="${S.players.indexOf(me)}">Mein Landgut ansehen</button></p>
   </div>`;
 }
-function sheetWrap(inner, closable = true) { return `<div class="ov" ${closable ? 'data-a="ovclose"' : ''}><div class="sheet" data-stop="1"><div class="grab"></div>${closable ? '<button class="icobtn x" data-a="close" aria-label="Schließen">✕</button>' : ''}${inner}</div></div>`; }
+// Fenster: am Griff nach unten ziehen = ein-/zuklappen; offene Auswahl wird nur eingeklappt (Mini-Vorschau unten rechts)
+const CHEV = '<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function sheetWrap(inner, closable = true) {
+  const coll = closable && myAsk() && (!U.sheet || U.sheet.type === 'ask');
+  return `<div class="ov" ${closable ? 'data-a="ovclose"' : ''}><div class="sheet" data-stop="1">${closable ? '<div class="grabzone"><div class="grab"></div></div>' : '<div class="grab"></div>'}${closable ? `<button class="icobtn x ${coll ? 'collapse' : ''}" data-a="close" aria-label="${coll ? 'Einklappen' : 'Schließen'}">${coll ? CHEV : '✕'}</button>` : ''}${inner}</div></div>`;
+}
+function miniAsk() {
+  const a = myAsk(); if (!a || !U.sheet || U.sheet.type !== 'hidden') return '';
+  const cards = a.t === 'play' ? (U.tmp.card ? [U.tmp.card] : a.opts.slice(0, 3)) : a.t === 'take' ? [] : [];
+  return `<button class="mini" data-a="askopen" aria-label="Auswahl wieder öffnen"><span class="mt"><b>${esc(askTitle(a))}</b><small>antippen zum Öffnen</small></span>${cards.length ? `<span class="mc">${cards.map(k => `<span class="mcard">${cardArt(k)}</span>`).join('')}</span>` : ''}<span class="mup">${CHEV}</span></button>`;
+}
 function askTitle(a) {
   return {
     setupTerr: 'Wähle 3 Startgebiete', discardN: a.why || 'Karten abwerfen', take: a.why || 'Karten nehmen', play: `Karte spielen (${a.sun} Sonnenstunden)`, discardSun: 'Karten für Sonnenstunden abwerfen',
@@ -1495,7 +1536,8 @@ function viewSheet() {
   if (myAsk() && (!sh || sh.type === 'ask')) return askSheet();
   if (!sh) return '';
   if (sh.type === 'rules') return sheetWrap(rulesHtml());
-  if (sh.type === 'menu') return sheetWrap(`<h3>Menü</h3><div class="btnrow" style="flex-direction:column">${U.tut ? '<button class="btn wide" data-a="tutquit">Lernspiel beenden</button>' : ''}${S && S.screen === 'game' && !S.tut ? '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}<button class="btn white wide" data-a="rules">Spielregeln</button><button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
+  if (sh.type === 'menu') return sheetWrap(`<h3>Menü</h3><div class="btnrow" style="flex-direction:column">${U.tut ? '<button class="btn wide" data-a="tutquit">Lernspiel beenden</button>' : ''}${S && S.screen === 'game' && !S.tut ? '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}<button class="btn white wide" data-a="rules">Spielregeln</button><button class="btn white wide" data-a="reload">Neueste Version laden</button><button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
+  if (sh.type === 'disc') return sheetWrap(`<h3>Ablagestapel</h3><p style="font-size:13px">${S.discard.length} Karten, die oberste zuerst. Esel, Katze und eine Freischaltung holen Karten von hier zurück.</p><div class="gridc">${S.discard.slice().reverse().map(k => cardHtml(k)).join('') || '<p class="note">Noch leer.</p>'}</div>`);
   if (sh.type === 'opp') { const p = P(sh.p); return sheetWrap(`<h3>${esc(p.name)}</h3><p style="font-size:13px">★ ${p.vp} SP · ${p.hand.length} Handkarten</p>${goodsHtml(p)}<div class="terrs" style="margin-top:10px">${p.terrs.map((tr, ti) => terrHtml(p, tr, ti)).join('')}</div>`); }
   return '';
 }
@@ -1620,7 +1662,10 @@ function render() {
   h += viewSheet();
   if (U.toast) h += `<div class="toast">${esc(U.toast)}</div>`;
   if (U.tut) h += tutHtml();
+  const hadSheet = !!document.querySelector('.ov .sheet');
+  if (S && S.screen === 'game') h += miniAsk();
   $app.innerHTML = h;
+  if (!hadSheet) { const sh = document.querySelector('.ov .sheet'); if (sh) { sh.classList.add('enter'); sh.parentElement.classList.add('enter'); } }
   { const bar = document.querySelector('.bar'); if (bar) document.documentElement.style.setProperty('--barh', bar.offsetHeight + 'px'); }
   if (HP.el) { const me = S && S.screen === 'game' && human(); if (!me || U.tut || HP.i >= me.hand.length) previewHide(); else document.querySelectorAll('.hfan .hcard').forEach(c => c.classList.toggle('up', +c.dataset.i === HP.i)); }
   if (U.tut) tutDecorate();
@@ -1654,6 +1699,9 @@ const H = {
   rules: () => { U.sheet = { type: 'rules' }; },
   menu: () => { U.sheet = { type: 'menu' }; },
   go: () => { if (U.tut) return goTo('.tut-hl'); const t = goTarget(); if (typeof t === 'function') t(); else goTo(t); },
+  discview: () => { U.sheet = { type: 'disc' }; },
+  // Spiel neu laden (Cache umgehen); der Spielstand ist gespeichert und wird danach fortgesetzt
+  reload: () => { try { save(); } catch (e) { } location.replace(location.pathname + '?v=' + Date.now() + '&resume=1'); },
   restart: () => { if (confirm('Laufende Partie wirklich abbrechen?')) { clearSave(); S = null; U.sheet = null; } },
   newgame: () => { clearSave(); S = null; U.sheet = null; },
   close: () => { U.sheet = myAsk() ? { type: 'hidden' } : null; }, ovclose: () => { U.sheet = myAsk() ? { type: 'hidden' } : null; },
@@ -1802,6 +1850,49 @@ function previewHide() {
   document.addEventListener('pointerup', end, true);
   document.addEventListener('pointercancel', end, true);
 })();
+// Fenster am Griff nach unten ziehen (folgt dem Finger) oder Pfeil antippen: weich wegschieben, dann ein-/zuklappen
+(function () {
+  let d = null;
+  const dismiss = (sh, ov) => {
+    sh.style.transition = 'transform .24s cubic-bezier(.4,0,1,1)'; sh.style.transform = 'translateY(105%)';
+    if (ov) { ov.style.transition = 'background .24s'; ov.style.background = 'rgba(31,26,23,0)'; }
+    setTimeout(() => { H.close(); render(); }, 220);
+  };
+  document.addEventListener('pointerdown', e => {
+    const z = e.target.closest && e.target.closest('.sheet .grabzone');
+    if (!z) return;
+    const sh = z.closest('.sheet');
+    d = { sh, ov: sh.parentElement, y0: e.clientY, t0: performance.now(), dy: 0 };
+    sh.style.transition = 'none';
+    try { z.setPointerCapture(e.pointerId); } catch (err) { }
+  }, true);
+  document.addEventListener('pointermove', e => {
+    if (!d) return;
+    d.dy = Math.max(0, e.clientY - d.y0);
+    d.sh.style.transform = `translateY(${d.dy}px)`;
+    d.ov.style.background = `rgba(31,26,23,${(.35 * Math.max(0, 1 - d.dy / 400)).toFixed(3)})`;
+  }, true);
+  const up = () => {
+    if (!d) return;
+    const D = d; d = null;
+    const v = D.dy / Math.max(1, performance.now() - D.t0);
+    if (D.dy > 90 || (D.dy > 24 && v > .6)) return dismiss(D.sh, D.ov);
+    D.sh.style.transition = 'transform .25s cubic-bezier(.3,1.3,.5,1)'; D.sh.style.transform = '';
+    D.ov.style.transition = 'background .25s'; D.ov.style.background = '';
+  };
+  document.addEventListener('pointerup', up, true);
+  document.addEventListener('pointercancel', up, true);
+  // Pfeil/✕ und Tippen neben das Fenster: ebenfalls weich wegschieben statt hart verschwinden
+  document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('.sheet [data-a=close], .ov[data-a=ovclose]');
+    if (!b || (b.matches('.ov') && e.target.closest('[data-stop]'))) return;
+    if (U.tut) return;
+    const ov = b.closest('.ov'), sh = ov && ov.querySelector('.sheet');
+    if (!sh) return;
+    e.stopPropagation(); e.preventDefault();
+    dismiss(sh, ov);
+  }, true);
+})();
 window.__lg = {
   simulate(n, seed, solo) {
     if (solo) {
@@ -1817,6 +1908,8 @@ window.__lg = {
   cap: id => TERRS[id].cap,
   reset: () => { S = null; U.sheet = null; clearSave(); render(); },
 };
+// Nach „Neueste Version laden“ die gespeicherte Partie direkt fortsetzen
+if (new URLSearchParams(location.search).has('resume')) { try { const sv = load(); if (sv && sv.screen === 'game') H.resume(); } catch (e) { } history.replaceState(null, '', location.pathname); }
 render();
 </script>
 </body>

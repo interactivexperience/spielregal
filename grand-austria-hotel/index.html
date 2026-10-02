@@ -1789,7 +1789,7 @@ function viewSheet() {
   const me = S && human();
   switch (sh.type) {
     case 'rules': return sheetWrap(rulesHtml(), 'rules');
-    case 'menu': return sheetWrap(`<h3>Menü</h3><div class="btnrow" style="flex-direction:column">${U.tut ? '<button class="btn wide" data-a="tutquit">Lernspiel beenden</button>' : ''}${S && S.screen === 'game' && !S.tut ? '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}<button class="btn white wide" data-a="rules">Spielregeln</button><button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
+    case 'menu': return sheetWrap(`<h3>Menü</h3><div class="btnrow" style="flex-direction:column">${U.tut ? '<button class="btn wide" data-a="tutquit">Lernspiel beenden</button>' : ''}${S && S.screen === 'game' && !S.tut ? '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}<button class="btn white wide" data-a="rules">Spielregeln</button><button class="btn white wide" data-a="reload">Neueste Version laden</button><button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
     case 'opp': {
       const p = S.players[sh.p];
       return sheetWrap(`<h3>${esc(p.name)}</h3><p style="font-size:13px">★ ${p.vp} SP · ${p.k} Kronen · Kaiser ${p.emp} · ${p.staff.length} Personal</p>
@@ -2114,6 +2114,8 @@ const H = {
   // Pflicht-Auswahl beim Spielstart verlassen: Partie verwerfen, zurück zum Startbildschirm
   setupcancel: () => { clearSave(); S = null; U.sheet = null; window.scrollTo(0, 0); },
   go: () => { if (U.tut) return goTo('.tut-hl'); const t = goTarget(); if (typeof t === 'function') t(); else goTo(t); },
+  // Spiel neu laden (Cache umgehen); der Spielstand ist gespeichert und wird danach fortgesetzt
+  reload: () => { try { save(); } catch (e) { } location.replace(location.pathname + '?v=' + Date.now() + '&resume=1'); },
   restart: () => { if (confirm('Laufende Partie wirklich abbrechen?')) { clearSave(); S = null; U.sheet = null; } },
   newgame: () => { clearSave(); S = null; U.sheet = null; },
   showboard: () => { U.sheet = { type: 'board' }; },
@@ -2260,6 +2262,8 @@ window.__ghw = {
 S = null;
 const saved = load();
 if (saved && saved.screen === 'game') { /* Fortsetzen-Button auf dem Startbildschirm */ }
+// Nach „Neueste Version laden“ die gespeicherte Partie direkt fortsetzen
+if (new URLSearchParams(location.search).has('resume')) { try { const sv = load(); if (sv && sv.screen === 'game') H.resume(); } catch (e) { } history.replaceState(null, '', location.pathname); }
 render();
 </script>
 </body>
