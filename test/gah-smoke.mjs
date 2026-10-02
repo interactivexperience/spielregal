@@ -76,7 +76,16 @@ for (const n of [2, 3, 4, "L0", "L1", "L2"]) {
 }
 
 // --- Menschliche Partie per Klick ---
+async function setupSheets() {
+  // Personal-Draft (Mehrpersonenspiel) und Startzimmer wählen (Spielaufbau Schritt 10 und 12)
+  for (let i = 0; i < 6 && (await page.locator(".sheet [data-a=dpick]").count()); i++) { await page.locator(".sheet [data-a=dpick]").first().click(); await page.waitForTimeout(80); }
+  if (await page.locator("[data-a=rpok]").count()) {
+    for (const i of [0, 1, 2]) await page.locator(`.sheet [data-a=rpsel][data-i="${i}"]`).click({ force: true });
+    await page.click("[data-a=rpok]");
+  }
+}
 async function playUi(label) {
+  await setupSheets();
   await page.waitForSelector(".board");
   await page.click("[data-a=fast]").catch(() => {});
   let myTurns = 0, guests = 0, served = 0, guard = 0, shot2 = false;
@@ -113,6 +122,7 @@ async function playUi(label) {
       if (await page.locator("[data-a=buyservice]").count()) await page.click("[data-a=buyservice]");
       served++;
     }
+    for (let i = 0; i < 3 && (await page.locator("[data-a=checkin]").count()); i++) { await page.locator("[data-a=checkin]").first().click(); await page.locator(".sheet .room.ok").first().click({ force: true }); }
     if (await page.locator("[data-a=freerooms]").count()) {
       await page.click("[data-a=freerooms]");
       if (await page.locator(".sheet .room.ok").count()) { await page.locator(".sheet .room.ok").first().click({ force: true }); await page.click("[data-a=frok]"); }

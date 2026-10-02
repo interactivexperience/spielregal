@@ -108,6 +108,7 @@ button:disabled{cursor:default}
 .rew{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
 .tok{display:inline-flex;align-items:center;gap:2px;font-family:"Space Mono",monospace;font-weight:700;font-size:12px;line-height:1}
 .tok svg{width:17px;height:17px}
+.waiting.in{background:var(--green,#1F8A4D);border:2px solid var(--ink);cursor:pointer;font-size:11.5px}
 .waiting{position:absolute;inset:auto 6px 6px 6px;background:var(--ink);color:var(--cream);font-size:11px;font-weight:700;border-radius:8px;padding:3px 6px;text-align:center}
 
 /* --- tables --- */
@@ -348,36 +349,68 @@ for (let i = 0; i < 20; i++) {
 // flip weiteres Zimmer beziehen, staff Personal ausspielen (Rabatte, 99 = gratis), draw Karten ziehen,
 // draw3 3 ziehen und 1 ausspielen (Rabatt), guest Gast gratis aus der Reihe, gizia Zusatzaktion.
 // Bestellung, Farbe und Siegpunkte stehen nur auf den Kartenbildern (nicht im Regelheft) und sind geschätzt.
+// Gäste 49–104 (+117, 118 der deutschen Ausgabe): Farbe, Siegpunkte und Belohnung nach der Kartenliste
+// „Staff & Guest Cards by number“ (BGG) bzw. dem Anhang des Regelhefts. Die Bestellung (Speisen/Getränke)
+// steht nur auf den Kartenbildern und ist geschätzt; Farbe/SP von 117 und 118 ebenfalls.
 const GUEST_DEF = [
-  [49, 'Hofgärtner', 'r', { roomLow: 1 }], [50, 'Notar', 'b', { draw: 1, roomPaid: [0] }],
-  [51, 'Marktfrau vom Naschmarkt', 'r', { food: { s: 1 } }], [52, 'Fiakerkutscher', 'r', { food: { s: 1 }, k: 2 }, 'ss'],
-  [53, 'Leutnant der Garde', 'y', { food: { k: 1 }, e: 2 }], [54, 'Tabaktrafikant', 'r', { foodAny: 1, k: 2 }],
-  [55, 'Kaffeehausliterat', 'b', { draw: 2 }], [56, 'Kammersängerin', 'b', { food: { c: 1 }, staff: [3] }],
-  [57, 'Zuckerlfabrikant', 'r', { roomPaid: [1, 1] }], [58, 'Reisende Familie', 'g', { flip: 1 }],
-  [59, 'Malerin der Secession', 'b', { food: { c: 1 }, staff: [2] }], [60, 'Börsenmakler', 'r', { food: { k: 1 }, k: 3 }],
-  [61, 'Maler', 'y', { roomPaid: [1, 0] }], [62, 'Opernsängerin', 'y', { guest: 1, e: 3 }],
-  [63, 'Sommerfrischler', 'g', { guest: 1 }], [64, 'Herzogin', 'b', { staff: [1] }],
-  [65, 'Schachmeister', 'g', {}, null, 3], [66, 'Landgraf', 'b', { staff: [1], roomPaid: [0] }],
-  [67, 'Walzerkomponist', 'b', { draw: 2, e: 2 }], [68, 'Prinzessin', 'y', { e: 3 }],
-  [69, 'Bankier von der Ringstraße', 'r', { k: 3 }], [70, 'Hofdame', 'y', { staff: [1], e: 3 }],
-  [71, 'Freiherr', 'b', { room: 1 }], [72, 'Prinz', 'g', { flip: 1 }],
-  [73, 'Graf', 'b', { staff: [1, 1] }], [74, 'Hutmacherin', 'r', { k: 1 }],
-  [75, 'Philosophin', 'b', { draw3: 3 }], [76, 'Herzog', 'b', { draw3: 99 }],
-  [77, 'Heuriger-Wirt aus Grinzing', 'r', { k: 1 }], [78, 'Bergsteigerin', 'g', { guest: 1 }],
-  [79, 'Rittmeister', 'y', { k: 1, e: 1 }], [80, 'Professor', 'g', { guest: 1 }],
-  [81, 'General', 'r', { food: { w: 1 }, k: 3 }], [82, 'Zirkusdirektor', 'g', { flip: 1 }],
-  [83, 'Juwelier', 'r', { k: 5 }], [84, 'Ballonfahrer', 'g', { k: 3, guest: 1 }],
-  [85, 'Kaufmann aus Triest', 'r', { k: 3 }], [86, 'Dichterin', 'b', { staff: [3] }],
-  [87, 'Weltreisender', 'g', { k: 3, guest: 2 }], [88, 'Architekt', 'y', { room: 2 }],
-  [89, 'Kunsthändlerin', 'r', { k: 4 }], [90, 'Operettentenor', 'r', { food: { w: 1 }, k: 3 }],
-  [91, 'Burgschauspieler', 'b', { draw: 3 }], [92, 'Frau Hofrätin', 'r', { k: 1 }],
-  [93, 'Herr Horsa', 'y', { e: 1 }], [94, 'M. Ingalls', 'b', { staff: [1] }],
-  [95, 'Kammerherr', 'y', { e: 2 }], [96, 'Herr Oundo', 'b', { staff: [3] }],
-  [97, 'E. Gizia', 'g', { gizia: 1 }], [98, 'M. Polo', 'r', { k: 4 }],
-  [99, 'Cramersopholus', 'b', { draw: 1, e: 2 }], [100, 'Fürstin', 'y', { e: 3, flip: 1 }],
-  [101, 'Diplomat aus Paris', 'y', { e: 3, guest: 1 }], [102, 'Botschafterin', 'g', { e: 1, flip: 1 }],
-  [103, 'Durgoing', 'b', { draw: 2 }], [104, 'Hofkapellmeister', 'b', { staff: [99] }],
-  [117, 'Mag. Ferdinand', 'y', { e: 3 }], [118, 'Herr Moras', 'g', { guest: 1 }],
+  [49, 'Bildhauer', 'y', { roomLow: 1 }, null, 0],
+  [50, 'Musiker', 'y', { draw: 1, roomPaid: [0] }, null, 0],
+  [51, 'Komponist', 'y', { food: { s: 1 } }, null, 1],
+  [52, 'Schneider', 'y', { food: { s: 1 }, k: 2 }, null, 0],
+  [53, 'Tänzerin', 'y', { food: { k: 1 }, e: 2 }, null, 0],
+  [54, 'Porträtmaler', 'y', { foodAny: 1, k: 2 }, null, 0],
+  [55, 'Fotograf', 'y', { draw: 2 }, null, 7],
+  [56, 'Sängerin', 'y', { food: { c: 1 }, staff: [3] }, null, 0],
+  [57, 'Architekt', 'y', { roomPaid: [1, 1] }, null, 1],
+  [58, 'Schauspielerin', 'y', { flip: 1 }, null, 7],
+  [59, 'Dichter', 'y', { food: { c: 1 }, staff: [2] }, null, 5],
+  [60, 'Schmuckdesignerin', 'y', { food: { k: 1 }, k: 3 }, null, 5],
+  [61, 'Maler', 'y', { roomPaid: [1, 0] }, null, 2],
+  [62, 'Opernsängerin', 'y', { guest: 1, e: 3 }, null, 4],
+  [63, 'Dame', 'b', { guest: 1 }, null, 0],
+  [64, 'Herzogin', 'b', { staff: [1] }, null, 0],
+  [65, 'Reichsritter', 'b', {}, null, 3],
+  [66, 'Landgraf', 'b', { staff: [1], roomPaid: [0] }, null, 3],
+  [67, 'Landesherr', 'b', { draw: 2, e: 2 }, null, 2],
+  [68, 'Prinzessin', 'b', { e: 3 }, null, 4],
+  [69, 'Gräfin', 'b', { k: 3 }, null, 7],
+  [70, 'Kurfürst', 'b', { staff: [1], e: 3 }, null, 1],
+  [71, 'Freiherr', 'b', { room: 1 }, null, 4],
+  [72, 'Prinz', 'b', { flip: 1 }, null, 7],
+  [73, 'Graf', 'b', { staff: [1, 1] }, null, 4],
+  [74, 'Fürst', 'b', { k: 1 }, null, 10],
+  [75, 'Baronin', 'b', { draw3: 3 }, null, 5],
+  [76, 'Herzog', 'b', { draw3: 99 }, null, 4],
+  [77, 'Apotheker', 'r', { k: 1 }, null, 1],
+  [78, 'Postrat', 'r', { guest: 1 }, null, 0],
+  [79, 'Geheimrat', 'r', { k: 1, e: 1 }, null, 0],
+  [80, 'Professor emeritus', 'r', { guest: 1 }, null, 4],
+  [81, 'General', 'r', { food: { w: 1 }, k: 3 }, null, 0],
+  [82, 'Oberrat', 'r', { flip: 1 }, null, 7],
+  [83, 'Kommerzialrat', 'r', { k: 5 }, null, 0],
+  [84, 'Hofrat', 'r', { k: 3, guest: 1 }, null, 2],
+  [85, 'Major', 'r', { k: 3 }, 'ss', 3],
+  [86, 'Veterinärrat', 'r', { staff: [3] }, null, 3],
+  [87, 'Medizinalrat', 'r', { k: 3, guest: 2 }, null, 3],
+  [88, 'Prokurator', 'r', { room: 2 }, null, 0],
+  [89, 'Statthalter', 'r', { k: 4 }, null, 5],
+  [90, 'Oberjustizrat', 'r', { food: { w: 1 }, k: 3 }, null, 7],
+  [91, 'Tezcatlipoca', 'g', { draw: 3 }, null, 0],
+  [92, 'Kapitän Goldhaken', 'g', { k: 1 }, null, 0],
+  [93, 'Herr Horsa', 'g', { e: 1 }, null, 0],
+  [94, 'M. Ingalls', 'g', { staff: [1] }, null, 0],
+  [95, 'Herr Boydell', 'g', { e: 2 }, null, 2],
+  [96, 'Herr Oundo', 'g', { staff: [3] }, null, 0],
+  [97, 'E. Gizia', 'g', { gizia: 1 }, null, 4],
+  [98, 'M. Polo', 'g', { k: 4 }, null, 0],
+  [99, 'Cramersopholus', 'g', { draw: 1, e: 2 }, null, 5],
+  [100, 'Bauer Franz', 'g', { flip: 1, e: 3 }, null, 4],
+  [101, 'Bruder Uwe', 'g', { guest: 1, e: 3 }, null, 3],
+  [102, 'Dirigent', 'g', { flip: 1, e: 1 }, null, 0],
+  [103, 'Durgoing', 'g', { draw: 2 }, null, 4],
+  [104, 'MacLeod', 'g', { staff: [99] }, null, 2],
+  [117, 'Mag. Ferdinand', 'g', { e: 3 }, null, 2],
+  [118, 'Herr Moras', 'g', { guest: 1 }, null, 2]
 ];
 function rewValue(r) {
   let w = (r.k || 0) + (r.e || 0) * 1.2 + (r.foodAny || 0) * 1.5 + (r.room || 0) * 3 + (r.roomLow || 0) * 2.5 + (r.flip || 0) * 4 + (r.draw || 0) * 1.5 + (r.guest || 0) * 2.5 + (r.gizia || 0) * 4;
@@ -391,65 +424,65 @@ const OLD_LOOKS = [{ hat: 'bowler', must: 1, body: '#161616' }, { hair: 'bun', p
 // Gäste: [Name, Zimmerfarbe, Bestellung, Belohnung inkl. SP, Aussehen, Kartennummer]
 const GUESTS = GUEST_DEF.map(([nr, name, col, rew, order, vp], i) => {
   const r = prng('order' + nr), w = rewValue(rew);
-  const len = order ? order.length : w < 2.5 ? 2 : w < 5 ? 3 : 4;
+  const tot = w + (vp || 0);
+  const len = order ? order.length : tot < 3.5 ? 2 : tot < 7.5 ? 3 : 4;
   const ord = order || Array.from({ length: len }).map(() => FOODS[Math.floor(r() * 4)]).sort((a, b) => FOODS.indexOf(a) - FOODS.indexOf(b)).join('');
-  const pts = vp != null ? vp : Math.max(0, len + 1 - Math.floor(w / 2));
+  const pts = vp;
   return [name, col, ord, Object.assign({ vp: pts }, rew), OLD_LOOKS[i % OLD_LOOKS.length], nr];
 });
 const gi = nr => GUESTS.findIndex(g => g[5] === nr);
 
-// Personal 1–48 mit den Effekten aus dem Anhang des Regelhefts (t: now einmalig, round einmal pro
-// Runde, perm dauerhaft, end Schlusswertung). Kosten stehen nur auf den Kartenbildern und sind geschätzt;
-// Namen, die das Regelheft nicht nennt, sind eigene.
+// Personal 1–48: Effekte aus dem Anhang des Regelhefts, Kosten von den Kartenbildern (Owner-Fotos)
+// bzw. der BGG-Kartenliste (t: now einmalig, round einmal pro Runde, perm dauerhaft, end Schlusswertung).
 const STAFF_DEF = [
-  [1, 'Konditor', 2, 'round', 'r1s', 'Einmal pro Runde: 1 Strudel.'],
-  [2, 'Kellnerin', 2, 'round', 'r1c', 'Einmal pro Runde: 1 Torte.'],
-  [3, 'Kellermeister', 2, 'round', 'r1w', 'Einmal pro Runde: 1 Wein.'],
-  [4, 'Sous Chef', 2, 'round', 'r1k', 'Einmal pro Runde: 1 Kaffee.'],
-  [5, 'Rezeptionistin', 4, 'perm', 'gR', 'Roter Gast zieht ein: +2 Kronen.'],
-  [6, 'Hofberichterstatter', 4, 'perm', 'gB', 'Blauer Gast zieht ein: +1 Kaiserschritt.'],
-  [7, 'Masseurin', 4, 'perm', 'gY', 'Gelber Gast zieht ein: +1 Krone.'],
-  [8, 'Fremdenführer', 4, 'perm', 'gG', 'Grüner Gast zieht ein: +2 SP.'],
-  [9, 'Malermeister', 6, 'perm', 'freeB', 'Blaue Zimmer vorzubereiten kostet nichts.'],
-  [10, 'Tapezierer', 6, 'perm', 'freeR', 'Rote Zimmer vorzubereiten kostet nichts.'],
-  [11, 'Hausmeister', 6, 'perm', 'freeY', 'Gelbe Zimmer vorzubereiten kostet nichts.'],
-  [12, 'Hausdame', 4, 'perm', 'd34vp2', 'Würfel 3 oder 4 genommen: +2 SP.'],
-  [13, 'Kofferträger', 3, 'perm', 'd12s1', 'Würfel 1 oder 2: Aktion einen Würfel stärker.'],
-  [14, 'Handwerker', 4, 'perm', 'd12room', 'Würfel 1 oder 2: zusätzlich ein Zimmer kostenpflichtig vorbereiten.'],
-  [15, 'Buchhalterin', 5, 'perm', 'd4both', 'Würfel 4: je Würfel 1 Krone und 1 Kaiserschritt.'],
-  [16, 'Bankier', 4, 'perm', 'd4vp4', 'Würfel 4 genommen: +4 SP.'],
-  [17, 'Croupier', 3, 'perm', 'd6free', 'Joker (6) kostet nichts und ist einen Würfel stärker.'],
-  [18, 'Garderobenfrau', 5, 'perm', 'd5s2', 'Würfel 5: Aktion zwei Würfel stärker.'],
-  [19, 'Zimmermädchen', 5, 'perm', 'd3vp5', 'Würfel 3 genommen: +5 SP.'],
-  [20, 'Hoflieferant', 3, 'perm', 'd5e2', 'Würfel 5 genommen: +2 Kaiserschritte.'],
-  [21, 'Lieferant', 2, 'now', 'nAll', 'Sofort: 1 Strudel, 1 Torte, 1 Wein, 1 Kaffee.'],
-  [22, 'Personalchefin', 5, 'perm', 'd3staff', 'Würfel 3: zusätzlich eine Personalkarte kostenpflichtig ausspielen.'],
-  [23, 'Kassier', 5, 'perm', 'occK', 'Jedes bezogene Zimmer: +1 Krone.'],
-  [24, 'Oberkellner', 5, 'perm', 'freeService', 'Waren aus der Küche servieren kostet nichts.'],
-  [25, 'Portier', 4, 'perm', 'freeLine', 'Gäste aus der Reihe kosten nichts.'],
-  [26, 'Advokat', 2, 'perm', 'penK', 'Kaiserstrafe für 1 Krone abwenden.'],
-  [27, 'Raumausstatterin', 6, 'end', 'endR', 'Ende: 3 SP je bezogenem roten Zimmer.'],
-  [28, 'Innenarchitekt', 6, 'end', 'endB', 'Ende: 3 SP je bezogenem blauen Zimmer.'],
-  [29, 'Hoteldetektiv', 4, 'end', 'endCopy', 'Ende: Effekt einer Schlusswertungs-Karte aus einem anderen Hotel für dein Hotel nutzen.'],
-  [30, 'Dekorateurin', 6, 'end', 'endY', 'Ende: 3 SP je bezogenem gelben Zimmer.'],
-  [31, 'Stubenmädchen', 6, 'end', 'endRooms', 'Ende: 1 SP je bezogenem Zimmer.'],
-  [32, 'Hoteldirektor', 5, 'end', 'endStaff', 'Ende: 1 SP je ausgespielter Personalkarte (mit dieser).'],
-  [33, 'Chefkoch', 4, 'perm', 'g4vp', 'Gast mit 4 Waren zieht ein: +4 SP.'],
-  [34, 'Baumeister', 5, 'end', 'endTiles', 'Ende: 1 SP je Zimmerplättchen in deinem Hotel.'],
-  [35, 'Page', 4, 'now', 'nFlip', 'Sofort: ein vorbereitetes Zimmer beziehen (umdrehen).'],
+  [1, 'Frühstückskellner', 4, 'round', 'r1s', 'Einmal pro Runde: 1 Strudel.'],
+  [2, 'Kellnerin', 6, 'round', 'r1c', 'Einmal pro Runde: 1 Torte.'],
+  [3, 'Barkeeper', 4, 'round', 'r1w', 'Einmal pro Runde: 1 Wein.'],
+  [4, 'Sous-Chef', 6, 'round', 'r1k', 'Einmal pro Runde: 1 Kaffee.'],
+  [5, 'Hotelpage', 4, 'perm', 'gR', 'Roter Gast zieht ein: +2 Kronen.'],
+  [6, 'Stallbursche', 1, 'perm', 'gB', 'Blauer Gast zieht ein: +1 Kaiserschritt.'],
+  [7, 'Masseurin', 1, 'perm', 'gY', 'Gelber Gast zieht ein: +1 Krone.'],
+  [8, 'Fremdenführer', 2, 'perm', 'gG', 'Grüner Gast zieht ein: +2 SP.'],
+  [9, 'Butler', 5, 'perm', 'freeB', 'Blaue Zimmer vorzubereiten kostet nichts.'],
+  [10, 'Chauffeur', 5, 'perm', 'freeR', 'Rote Zimmer vorzubereiten kostet nichts.'],
+  [11, 'Floristin', 5, 'perm', 'freeY', 'Gelbe Zimmer vorzubereiten kostet nichts.'],
+  [12, 'Hausdame', 2, 'perm', 'd34vp2', 'Würfel 3 oder 4 genommen: +2 SP.'],
+  [13, 'Restaurantleiter', 2, 'perm', 'd12s1', 'Würfel 1 oder 2: eine Ware mehr.'],
+  [14, 'Dekorateur', 2, 'perm', 'd12room', 'Würfel 1 oder 2: zusätzlich ein Zimmer kostenpflichtig vorbereiten.'],
+  [15, 'Schuhputzer', 4, 'perm', 'd4both', 'Würfel 4: je Würfel 1 Krone und 1 Kaiserschritt.'],
+  [16, 'Wäscherin', 2, 'perm', 'd4vp4', 'Würfel 4 genommen: +4 SP.'],
+  [17, 'Küchenhilfe', 3, 'perm', 'd6free', 'Joker (6) kostet nichts und ist einen Würfel stärker.'],
+  [18, 'Kontrolleur', 2, 'perm', 'd5s2', 'Würfel 5: Personal 2 Kronen billiger.'],
+  [19, 'Innenarchitekt', 3, 'perm', 'd3vp5', 'Würfel 3 genommen: +5 SP.'],
+  [20, 'Detektiv', 2, 'perm', 'd5e2', 'Würfel 5 genommen: +2 Kaiserschritte.'],
+  [21, 'Küchenchef', 3, 'now', 'nAll', 'Sofort: 1 Strudel, 1 Torte, 1 Wein, 1 Kaffee.'],
+  [22, 'Personalchef', 3, 'perm', 'd3staff', 'Würfel 3: zusätzlich eine Personalkarte kostenpflichtig ausspielen.'],
+  [23, 'Hausmeister', 5, 'perm', 'occK', 'Jedes bezogene Zimmer: +1 Krone.'],
+  [24, 'Oberkellner', 1, 'perm', 'freeService', 'Waren aus der Küche servieren kostet nichts.'],
+  [25, 'Laufbursche', 6, 'perm', 'freeLine', 'Gäste aus der Reihe kosten nichts.'],
+  [26, 'Tagungsleiterin', 5, 'perm', 'penK', 'Kaiserstrafe für 1 Krone abwenden.'],
+  [27, 'Buchungsleiter', 4, 'end', 'endR', 'Ende: 3 SP je bezogenem roten Zimmer.'],
+  [28, 'Concierge', 4, 'end', 'endB', 'Ende: 3 SP je bezogenem blauen Zimmer.'],
+  [29, 'Sekretärin', 5, 'end', 'endCopy', 'Ende: Schlusswertung einer Personalkarte aus einem anderen Hotel für dein Hotel nutzen.'],
+  [30, 'Empfangschef', 4, 'end', 'endY', 'Ende: 3 SP je bezogenem gelben Zimmer.'],
+  [31, 'Zimmermädchen', 4, 'end', 'endRooms', 'Ende: 1 SP je bezogenem Zimmer.'],
+  [32, 'Assistent der Direktion', 4, 'end', 'endStaff', 'Ende: 2 SP je ausgespielter Personalkarte (mit dieser).'],
+  [33, 'Etagendiener', 5, 'perm', 'g4vp', 'Gast mit 4 Waren zieht ein: +4 SP.'],
+  [34, 'Rezeptionistin', 5, 'end', 'endTiles', 'Ende: 1 SP je Zimmerplättchen in deinem Hotel.'],
+  [35, 'Page', 2, 'now', 'nFlip', 'Sofort: zwei vorbereitete Zimmer beziehen (umdrehen).'],
   [36, 'Sommelier', 2, 'now', 'nW4', 'Sofort: 4 Wein.'],
-  [37, 'Zimmerdame', 5, 'end', 'endGroups', 'Ende: 2 SP je vollständig bezogener Zimmergruppe.'],
-  [38, 'Patissier', 3, 'now', 'nFill', 'Sofort: die Bestellung eines Gastes aus dem Vorrat erfüllen.'],
-  [39, 'Zuckerbäckerin', 2, 'now', 'nC4', 'Sofort: 4 Torten.'],
-  [40, 'Diplomat', 5, 'end', 'endPol', 'Ende: 5 SP je Politikkarte mit deinem Marker.'],
-  [41, 'Kammerdiener', 7, 'end', 'endEmp2', 'Ende: doppelt so viele SP wie deine Position auf der Kaiserleiste.'],
-  [42, 'Hofrat', 4, 'perm', 'bonus5', 'Bonus bei der Kaiserwertung: +5 SP.'],
-  [43, 'Kaffeesieder', 2, 'now', 'nK4', 'Sofort: 4 Kaffee.'],
-  [44, 'Strudelbäcker', 2, 'now', 'nS4', 'Sofort: 4 Strudel.'],
-  [45, 'Zeremonienmeister', 1, 'now', 'nE3', 'Sofort: 3 Kaiserschritte.'],
-  [46, 'Etagenkellner', 6, 'end', 'endFloors', 'Ende: 5 SP je vollständig bezogener Etage.'],
-  [47, 'Liftboy', 6, 'end', 'endCols', 'Ende: 4 SP je vollständig bezogener Spalte.'],
-  [48, 'Concierge', 6, 'end', 'endSets', 'Ende: 4 SP je Set aus rotem, blauem und gelbem bezogenem Zimmer.'],
+  [37, 'Zimmerservice', 3, 'end', 'endGroups', 'Ende: 2 SP je vollständig bezogener Zimmergruppe.'],
+  [38, 'Portier', 5, 'now', 'nFill', 'Sofort: die Bestellung eines Gastes aus dem Vorrat erfüllen.'],
+  [39, 'Konditor', 3, 'now', 'nC4', 'Sofort: 4 Torten.'],
+  [40, 'Marketingleiterin', 2, 'end', 'endPol', 'Ende: 5 SP je Politikkarte mit deinem Marker.'],
+  [41, 'Telefonistin', 3, 'end', 'endEmp2', 'Ende: doppelt so viele SP wie deine Position auf der Kaiserleiste.'],
+  [42, 'Gärtner', 3, 'perm', 'bonus5', 'Bonus bei der Kaiserwertung: +5 SP.'],
+  [43, 'Barista', 3, 'now', 'nK4', 'Sofort: 4 Kaffee.'],
+  [44, 'Speisemeisterin', 2, 'now', 'nS4', 'Sofort: 4 Strudel.'],
+  [45, 'Bademeister', 1, 'now', 'nE3', 'Sofort: 3 Kaiserschritte.'],
+  [46, 'Etagendame', 2, 'end', 'endFloors', 'Ende: 5 SP je vollständig bezogener Etage.'],
+  [47, 'Liftboy', 4, 'end', 'endCols', 'Ende: 5 SP je vollständig bezogener Spalte.'],
+  [48, 'Hoteldirektor', 4, 'end', 'endSets', 'Ende: 4 SP je Set aus rotem, blauem und gelbem bezogenem Zimmer.']
 ];
 const STAFF_LOOKS = [{ hat: 'cap2', must: 1, body: '#E4472E' }, { hat: 'cap2', hair: 'short', body: '#2C47B5' }, { hair: 'bun', pat: 'dots', body: '#161616' }, { hat: 'chef', hair: 'bob', body: '#FFF9EE' }, { hair: 'side', must: 1, body: '#161616' }, { hair: 'curls', body: '#B8692F', pat: 'stripes' }, { hat: 'chef', must: 1, body: '#FFF9EE' }, { hair: 'side', must: 1, body: '#161616', collar: '#FFF9EE' }, { hair: 'bob', glasses: 1, body: '#2C47B5' }, { hat: 'top', body: '#1F8A4D' }, { hair: 'bun', glasses: 1, body: '#F28AA6', pat: 'checks' }, { hat: 'top', must: 1, body: '#E4472E' }, { hat: 'bowler', glasses: 1, body: '#F1B02B' }, { hat: 'cap2', hair: 'short', body: '#E4472E', pat: 'dots' }, { hat: 'cap2', beard: 1, body: '#1F8A4D' }, { hair: 'curls', body: '#161616' }, { hair: 'long', hat: 'flower', body: '#E4472E' }, { hat: 'cap', must: 1, body: '#2C47B5' }, { hat: 'beret', hair: 'bob', body: '#F1B02B', pat: 'dash' }, { hat: 'top', must: 1, glasses: 1, body: '#161616' }];
 const STAFF_PROPS = ['strudel', 'cake', 'bottle', 'cup', 'bell', 'paper', 'coins', 'flag', 'broom', 'broom', 'broom', 'key', 'suitcase', 'broom', 'book', 'coins', 'coins', 'key', 'broom', 'basket', 'basket', 'book', 'coins', 'tray', 'key', 'paper', 'flower', 'flower', 'book', 'flower', 'broom', 'coins', 'cake', 'paper', 'bell', 'bottle', 'key', 'cake', 'cake', 'paper', 'tray', 'paper', 'cup', 'strudel', 'bell', 'tray', 'key', 'key'];
@@ -695,7 +728,7 @@ function heroSvg() {
    <g stroke="#161616" stroke-width="2.6" stroke-linejoin="round">
     <path d="M78,272 V96 H282 V272 Z" fill="#FDE7C8"/>
     <path d="M70,98 L180,40 L290,98 Z" fill="#E4472E"/>
-    <rect x="120" y="58" width="120" height="30" rx="8" fill="#FFF9EE"/>
+    <rect x="100" y="57" width="160" height="32" rx="9" fill="#FFF9EE"/>
     <path d="M180,40 V20" fill="none"/><path d="M180,20 L200,26 L180,32 Z" fill="#F1B02B"/>
     ${win.join('')}
     <path d="M160,272 V250 C160,236 200,236 200,250 V272 Z" fill="#161616"/>
@@ -777,11 +810,17 @@ function newGame(name, nBots, seed, leo) {
   S.players.forEach(p => {
     if (p.automa) return; // Leopold hat kein Geld, keine Waren, keine Hand, keine vorbereiteten Zimmer
     p.k = 10;
-    p.rooms[0] = 1; p.rooms[1] = 1; p.rooms[2] = 1;
+    // Spielaufbau Schritt 12: Zimmer vorbereiten, beginnend unten links, jedes weitere angrenzend, Kosten je Etage.
+    // Bots nehmen die drei kostenlosen unten links; du wählst selbst.
+    if (p.bot) { p.rooms[0] = 1; p.rooms[1] = 1; p.rooms[2] = 1; }
+    else S.roomPick = { sel: [] };
     // Solo: 10 Karten ziehen, 6 davon behalten
     if (S.leo && !p.bot) S.staffPick = { ids: S.staffDeck.splice(0, 10), sel: [] };
     else p.hand = S.staffDeck.splice(0, 6);
   });
+  // Personal-Draft (Regelheft, Spielaufbau Schritt 10): 1 von 6 behalten, Rest nach links, bis jeder 6 hat
+  if (!S.leo && name !== null) S.draft = { packs: S.players.map(p => p.hand), kept: S.players.map(() => []) };
+  if (S.draft) S.players.forEach(p => { p.hand = []; });
   S.line = S.guestDeck.splice(0, 5);
   log(`Das Hotel öffnet! ${S.players.length} Hoteliers, ${ROUNDS} Runden.`);
   // Ersten Gast gratis aus der Reihe wählen, entgegen der Spielreihenfolge
@@ -925,7 +964,8 @@ function checkin(p, t, room) {
   applyRew(p, def[3]);
   log(msg + '.');
 }
-function checkWaiting(p) {
+function checkWaiting(p, force) {
+  if (!p.bot && !U.tut && !force) return; // du wählst das Zimmer selbst (Knopf „Einziehen“), Rest am Zugende
   let moved = true;
   while (moved) {
     moved = false;
@@ -976,7 +1016,7 @@ function hire(p, id, n) {
   if (e === 'nK4') addFood(p, { k: 4 }, where);
   if (e === 'nS4') addFood(p, { s: 4 }, where);
   if (e === 'nE3') addEmp(p, 3);
-  if (e === 'nFlip') p.flips++;
+  if (e === 'nFlip') p.flips += 2;
   if (e === 'nFill') {
     // Bestellung des Gastes mit den meisten offenen Waren aus dem Vorrat erfüllen
     let bt = -1, bm = 0;
@@ -1047,6 +1087,7 @@ function checkPolitics(p) {
 function endTurn() {
   const p = cur();
   if (!p.automa && perkCount(p)) { const fg = p.freeGuest; botFree(p); p.freeGuest = fg; }
+  checkWaiting(p, true);
   for (const f of FOODS) { p.kitchen[f] += p.fresh[f]; p.fresh[f] = 0; }
   p.credits = 0;
   checkWaiting(p);
@@ -1126,13 +1167,13 @@ function endPts(p, e) {
     case 'endB': return 3 * occColor(p, 'b');
     case 'endY': return 3 * occColor(p, 'y');
     case 'endRooms': return p.rooms.filter(x => x === 2).length;
-    case 'endStaff': return p.staff.length;
+    case 'endStaff': return 2 * p.staff.length;
     case 'endTiles': return tiles(p);
     case 'endGroups': return 2 * fullGroups(p);
     case 'endPol': return 5 * S.politics.filter(pc => pc.by.includes(S.players.indexOf(p))).length;
     case 'endEmp2': return 2 * p.emp;
     case 'endFloors': return 5 * fullFloors(p);
-    case 'endCols': return 4 * fullCols(p);
+    case 'endCols': return 5 * fullCols(p);
     case 'endSets': return 4 * Math.min(occColor(p, 'r'), occColor(p, 'b'), occColor(p, 'y'));
     case 'endCopy': {
       const others = S.players.filter(q => q !== p).flatMap(q => q.staff.map(id => STAFF[id].e)).filter(x => x && x.startsWith('end') && x !== 'endCopy');
@@ -1454,7 +1495,7 @@ function clearSave() { try { localStorage.removeItem(KEY); } catch (e) { } }
 // ---------- UI-Helfer ----------
 let toastTimer = null;
 function toast(msg) { U.toast = msg; clearTimeout(toastTimer); toastTimer = setTimeout(() => { U.toast = null; render(); }, 2600); }
-const isMyTurn = () => S && S.screen === 'game' && !cur().bot && !S.roundInfo && !S.staffPick;
+const isMyTurn = () => S && S.screen === 'game' && !cur().bot && !S.roundInfo && !S.staffPick && !S.roomPick && !S.draft;
 function tok(kind, v) {
   const svg = kind === 'vp' ? starSvg() : kind === 'k' ? coinSvg() : kind === 'e' ? crownSvg() : kind === 'room' ? roomSvg() : foodSvg(kind);
   return `<span class="tok">${svg}${v != null ? v : ''}</span>`;
@@ -1494,7 +1535,7 @@ function guestCard(id, opts = {}) {
   return `<${el} class="gcard ${opts.sm ? 'sm' : ''}" ${opts.btn ? `data-a="${opts.btn}" data-s="${opts.slot}"` : ''}>
     <div class="band grainy" style="background:${color}">${tag}<span class="rc">${g[1] === 'g' ? 'jedes' : CN[g[1]]}</span>${guestArt(id)}</div>
     <div class="body"><div class="gn">${esc(g[0])}</div><div class="order">${slots}</div><div class="rew">${rewHtml(g[3])}</div></div>
-    ${opts.waiting ? '<div class="waiting">wartet auf Zimmer</div>' : ''}
+    ${opts.waiting ? (opts.canIn ? `<button class="waiting in" data-a="checkin" data-t="${opts.table}">Einziehen → Zimmer wählen</button>` : '<div class="waiting">wartet auf Zimmer</div>') : ''}
   </${el}>`;
 }
 function staffCard(id, opts = {}) {
@@ -1611,7 +1652,7 @@ function viewGame() {
     return `<button class="act ${live ? 'live' : ''} ${n ? '' : 'empty'}" data-a="die" data-f="${f}" ${live ? '' : 'disabled'}>
       <span class="num">${f}</span>${n ? `<span class="strength">×${n}</span>` : ''}<span class="aic">${actionIcon(f)}</span><span class="an">${ACTIONS[f].n}</span><span class="dice">${dice || '<span style="font-size:11px;color:#6d655a">leer</span>'}</span></button>`;
   }).join('');
-  const tables = me.tables.map((g, t) => g ? guestCard(g.id, { sm: 1, filled: g.filled, table: t, waiting: g.filled.every(Boolean), canServe: mine ? oi => !!serveSource(me, t, oi) : null }) : `<div class="tslot">freier Tisch</div>`).join('');
+  const tables = me.tables.map((g, t) => g ? guestCard(g.id, { sm: 1, filled: g.filled, table: t, waiting: g.filled.every(Boolean), canIn: mine && g.filled.every(Boolean) && me.rooms.some((st, i) => st === 1 && (GUESTS[g.id][1] === 'g' || ROOM_COLOR[i] === GUESTS[g.id][1])), canServe: mine ? oi => !!serveSource(me, t, oi) : null }) : `<div class="tslot">freier Tisch</div>`).join('');
   const nextEmp = EMP_ROUNDS.findIndex(r => r >= S.round);
   const marks = range(EMP_MAX + 1).map(i => {
     const here = S.players.filter(pl => pl.emp === i);
@@ -1692,8 +1733,24 @@ function viewSheet() {
         ${kitchenHtml(p, false)}<div style="margin-top:10px">${hotelGrid(p)}</div>
         ${p.staff.length ? `<p class="label" style="margin-top:12px">Personal</p><div class="staffrow">${p.staff.map(id => staffCard(id)).join('')}</div>` : ''}`);
     }
+    case 'roompick': {
+      const sel = S.roomPick.sel, spent = sel.reduce((s, i) => s + FLOOR_COST[Math.floor(i / 5)], 0);
+      const ok = i => sel.length < 3 && (sel.length ? roomOK(me, i, sel) && !sel.includes(i) : i === 0) && FLOOR_COST[Math.floor(i / 5)] <= me.k - spent;
+      return sheetWrap(`<h3>Hotel einrichten</h3><p style="font-size:13px">Spielaufbau: Bereite <b>3 Zimmer</b> vor. Du beginnst <b>unten links</b>, jedes weitere Zimmer muss an ein vorhandenes grenzen. Zimmer kosten je Etage 0/1/2/3 Kronen (du hast ${me.k}). Wähle Farben, in die deine ersten Gäste einziehen können.</p>
+        ${hotelGrid(me, { ok, sel, act: 'rpsel' })}<p class="note">Ausgewählt ${sel.length}/3 · Kosten ${spent} K</p>
+        <div class="btnrow"><button class="btn white" data-a="rpreset" ${sel.length ? '' : 'disabled'}>Zurücksetzen</button><button class="btn" data-a="rpok" ${sel.length === 3 ? '' : 'disabled'}>Fertig</button></div>`, 'nox');
+    }
+    case 'checkin': {
+      const g = me.tables[sh.t], c = GUESTS[g.id][1];
+      return sheetWrap(`<h3>${esc(GUESTS[g.id][0])} zieht ein</h3><p style="font-size:13px">Wähle ein freies ${c === 'g' ? 'Zimmer beliebiger Farbe' : `<b>${CN[c].toLowerCase()}es</b> Zimmer`}. Höhere Etagen zählen am Ende mehr (1–4 SP); eine vollständig bezogene Farbgruppe bringt sofort ihren Bonus.</p>
+        ${hotelGrid(me, { ok: i => me.rooms[i] === 1 && (c === 'g' || ROOM_COLOR[i] === c), act: 'cipick' })}`);
+    }
+    case 'draft': {
+      const D = S.draft, mi = S.players.indexOf(me), pack = D.packs[mi];
+      return sheetWrap(`<h3>Personal-Draft</h3><p style="font-size:13px">Wähle <b>eine</b> Karte und behalte sie. Den Rest gibst du nach links weiter, von rechts bekommst du den nächsten Stapel – bis jede Person 6 Karten hat. Behalten: ${D.kept[mi].length}/6.</p><div class="staffrow" style="flex-wrap:wrap">${pack.map(id => staffCard(id, { btn: 'dpick' })).join('')}</div>${D.kept[mi].length ? `<p class="label" style="margin-top:10px">Schon behalten</p><div class="staffrow">${D.kept[mi].map(id => staffCard(id)).join('')}</div>` : ''}`, 'nox');
+    }
     case 'staffpick': { const sp = S.staffPick; return sheetWrap(`<h3>Personal wählen</h3><p style="font-size:13px">Solo-Regel: Von 10 gezogenen Personalkarten behältst du <b>6</b> auf der Hand. Die übrigen kommen unter den Stapel.</p><div class="staffrow" style="flex-wrap:wrap">${sp.ids.map(id => staffCard(id, { btn: 'spsel', cls: sp.sel.includes(id) ? 'ok' : '' })).join('')}</div><div class="btnrow"><button class="btn" data-a="spok" ${sp.sel.length === 6 ? '' : 'disabled'}>${sp.sel.length}/6 behalten</button></div>`); }
-    case 'staffinfo': return sheetWrap(`<h3>${esc(STAFF[sh.id].n)}</h3><div style="display:flex;justify-content:center;margin:8px 0">${staffCard(sh.id)}</div><p class="note">Typ „${KIND[STAFF[sh.id].t]}“: ${{ now: 'wirkt einmal sofort beim Einstellen.', perm: 'wirkt dauerhaft ab dem Einstellen.', round: 'wirkt am Ende jeder Runde.', end: 'bringt Punkte bei der Schlussabrechnung.' }[STAFF[sh.id].t]} Einstellen kostet die aufgedruckten Kronen, je weiterem Würfel auf Feld 5 eine Krone weniger.</p>`);
+    case 'staffinfo': return sheetWrap(`<h3>${esc(STAFF[sh.id].n)}</h3><div style="display:flex;justify-content:center;margin:8px 0">${staffCard(sh.id)}</div><p class="note">Typ „${KIND[STAFF[sh.id].t]}“: ${{ now: 'wirkt einmal sofort beim Einstellen.', perm: 'wirkt dauerhaft ab dem Einstellen.', round: 'liefert einmal pro Runde seine Ware (zu Beginn deines ersten Zuges der Runde).', end: 'bringt Punkte bei der Schlussabrechnung.' }[STAFF[sh.id].t]} Einstellen kostet die aufgedruckten Kronen, je weiterem Würfel auf Feld 5 eine Krone weniger.</p>`);
     case 'guest': {
       const id = S.line[sh.slot];
       if (id == null) return '';
@@ -1822,8 +1879,8 @@ function rulesHtml() {
   <h4>Unterschiede zum Original</h4>
   <p style="font-size:13px">Diese Regeln folgen <i>Grand Austria Hotel</i>: die Aktionen samt Joker und Verstärken, Kronen-Obergrenze, Kaiserwertung mit Zurücksetzen, Spielaufbau, U-förmige Zugreihenfolge, Politik und Schlusswertung. Den Ablauf der Solovariante mit Leopold übernimmt das Spiel ebenfalls.</p>
   <p style="font-size:13px">Aus dem Anhang des Regelhefts übernommen: die Effekte aller 48 Personalkarten, die Belohnungen aller Gästekarten (49–104, 117, 118), die 12 Politikkarten (je eine A, B und C pro Partie) und die 12 Kaiserplättchen mit Bonus und Strafe; vom Spielplan die Kaiserleiste (SP je Feld), die Kosten der Gästereihe (3/2/1/0/0 Kronen), der Hotelplan mit seinen 10 Farbgruppen und den aufgedruckten Sofort-Siegpunkten oben rechts (1 bzw. 2 SP) und die Auslastungsboni (Blau 2/5/9/15 SP, Rot 1/3/6/10 Kronen, Gelb 1/3/6/10 Kaiserschritte).</p>
-  <p style="font-size:13px">Was nur auf den Kartenbildern steht, ist geschätzt: Kosten der Personalkarten, Farbe, Bestellung und Siegpunkte der Gäste, die SP-Werte der Politikkarten (15/10/5), die Werte der Personalkarten 46 und 47 (5 bzw. 4 SP) sowie der Inhalt von Leopolds 20 Anweisungskarten. Namen, die das Regelheft nicht nennt, sind eigene. Auch die Illustrationen sind eigene Entwürfe.</p>
-  <p style="font-size:13px">Vereinfacht: nur eine Seite des doppelseitigen Hotelplans, kein Personal-Draft im Mehrpersonenspiel, Gäste ziehen automatisch in ein passendes Zimmer ein, kein Passen; Personal „einmal pro Runde“ liefert seine Ware automatisch zu Beginn deines ersten Zuges der Runde; nicht genutzte Extras setzt das Spiel am Zugende automatisch ein.</p>`;
+  <p style="font-size:13px">Kosten aller Personalkarten sowie Farbe und Siegpunkte aller Gäste stammen von den Kartenbildern (Owner-Fotos und BGG-Kartenliste). Geschätzt sind nur noch: die Bestellungen der Gäste (stehen nur auf den Kartenbildern), die SP-Werte der Politikkarten (15/10/5) und der Inhalt von Leopolds 20 Anweisungskarten. Deutsche Namen, die das Regelheft nicht nennt, sind übersetzt. Die Illustrationen sind eigene Entwürfe.</p>
+  <p style="font-size:13px">Vereinfacht: nur eine Seite des doppelseitigen Hotelplans, kein Passen (Bots passen nie, und das Neuwürfeln würde den Zugfluss am Handy stark verlängern); Personal „einmal pro Runde“ liefert seine Ware automatisch zu Beginn deines ersten Zuges der Runde; nicht genutzte Extras setzt das Spiel am Zugende automatisch ein.</p>`;
 }
 
 // ---------- Render & Events ----------
@@ -1880,7 +1937,7 @@ const TUT_STEPS = [
   { ch: 'Worum es geht', text: 'Willkommen im <b>Grand Hotel Wien</b>! Ich bin der Concierge. <b>Dein Ziel:</b> nach 7 Runden die meisten Siegpunkte (SP). Die meisten SP bringen Gäste, die du bewirtest und in deinem Hotel einziehen lässt. Merke dir den Kreislauf: <b>Gast holen → Bestellung servieren → Zimmer vorbereiten → Gast zieht ein</b>. Wir spielen deine ersten zwei Züge gemeinsam.' },
   { ch: 'So läuft ein Zug', why: 'Pro Zug nimmst du <b>genau einen Würfel</b> und führst seine Aktion aus. Volle Felder sind darum wertvoll – und jeder Würfel, den andere nehmen, schwächt die Aktion für dich.', sel: '.board', text: 'Das ist das <b>Aktionsbrett</b>. Zu Rundenbeginn werden Würfel geworfen und nach Augenzahl sortiert. Jede Zahl ist eine Aktion. Je mehr Würfel auf einem Feld liegen, desto <b>stärker</b> ist sie.' },
   { ch: 'Zug 1 · Schritt 1: Gast holen', why: 'Ohne Gäste keine Punkte. Erst die Bestellung eines Gastes sagt dir, welche Würfel du brauchst.', sel: '.line .gcard[data-s="0"]', allow: { guest: d => d.s === '0' }, done: () => U.sheet && U.sheet.type === 'guest',
-    text: 'Zu Spielbeginn darfst du dir einen <b>Gast gratis</b> aus der Reihe aussuchen. Tippe auf den Fiakerkutscher.' },
+    text: 'Zu Spielbeginn darfst du dir einen <b>Gast gratis</b> aus der Reihe aussuchen. Tippe auf den Major.' },
   { ch: 'Zug 1 · Schritt 1: Gast holen', why: 'Beim Aussuchen zählen zwei Dinge: Passt die Bestellung zu den Würfeln? Und hast du ein Zimmer in seiner Farbe – oder kannst bald eines vorbereiten?', sel: '[data-a=takeguest]', allow: { takeguest: true }, done: () => !!TUT_ME().tables[0],
     text: 'Er bestellt <b>2 Strudel</b> und möchte in ein <b>rotes Zimmer</b>. Unten stehen seine Belohnungen. Hol ihn an deinen Tisch.' },
   { ch: 'Zug 1 · Schritt 1: Gast holen', why: 'Jeder Tisch ist ein offener Auftrag. Wer am Spielende noch im Café sitzt, kostet dich 5 SP. Hol also nur Gäste, die du auch bedienen kannst.', sel: '.tables', text: 'Er sitzt jetzt an deinem Tisch, du hast Platz für drei. Die Symbole zeigen seine Bestellung. Erst wenn alles serviert ist, zieht er ein.' },
@@ -1890,7 +1947,7 @@ const TUT_STEPS = [
     text: 'Du bekommst 3 Gerichte und verteilst sie auf Strudel und Torte. Lass es bei <b>3 Strudel</b> und tippe auf „Ausführen“.' },
   { ch: 'Zug 1 · Schritt 2: Servieren', why: 'Was du in diesem Zug bekommst, servierst du sofort und gratis. Später kostet das Servieren aus der Küche 1 Krone.', sel: '.slot.can', allow: { serve: true }, done: () => TUT_ME().rooms[2] === 2,
     text: 'Frisch erhaltene Gerichte servierst du <b>gratis</b>. Tippe die leuchtenden Felder an, bis der Gast alles hat.' },
-  { ch: 'Zug 1 · Schritt 3: Einzug', why: 'Dafür machst du das alles: Beim Einzug gibt es sofort die Belohnung, und bei Spielende zählt jedes bezogene Zimmer noch einmal 1 bis 4 SP.', sel: '.hotel', text: 'Geschafft! Der Gast ist ins <b>rote Zimmer</b> gezogen und hat dir seine Belohnung gegeben: 2 SP, 2 Kronen und 1 Strudel. Ist eine zusammenhängende Farbgruppe voll belegt, gibt es einen Bonus.' },
+  { ch: 'Zug 1 · Schritt 3: Einzug', why: 'Dafür machst du das alles: Beim Einzug gibt es sofort die Belohnung, und bei Spielende zählt jedes bezogene Zimmer noch einmal 1 bis 4 SP.', sel: '.hotel', text: 'Geschafft! Der Gast ist ins <b>rote Zimmer</b> gezogen und hat dir seine Belohnung gegeben: 3 SP und 3 Kronen. Ist eine zusammenhängende Farbgruppe voll belegt, gibt es einen Bonus.' },
   { ch: 'Zug 1 · Reste', why: 'Nichts verfällt: Reste sind Vorrat für den nächsten Gast und sparen dir später einen Würfel.', sel: '.kitchen', text: 'Der übrige Strudel liegt in deiner <b>Küche</b>. Später kannst du für 1 Krone bis zu 3 Gerichte aus der Küche servieren, das ist der Küchenservice.' },
   { ch: 'Zug 1 · Ende', why: 'Pro Zug gibt es nur einen Würfel. Die Reihenfolge läuft hin und zurück, damit niemand dauerhaft zuerst wählt.', sel: '[data-a=endturn]', allow: { endturn: true }, done: () => S.seqIdx === 3 && !cur().bot, wait: true,
     text: 'Mehr geht in diesem Zug nicht. <b>Beende deinen Zug</b>. Danach ist die Gegnerin zweimal dran, denn erst geht es reihum und dann zurück.' },
@@ -1913,8 +1970,8 @@ function tutSetup() {
   S.screen = 'game'; S.tut = true;
   const me = S.players[0], bot = S.players[1];
   me.tables = [null, null, null]; bot.tables = [null, null, null];
-  me.k = 10; me.freeGuest = 1; bot.freeGuest = 0;
-  S.line = [gi(52), gi(60), gi(68), gi(55), gi(63)];
+  me.k = 10; me.freeGuest = 1; bot.freeGuest = 0; S.roomPick = null; if (S.draft) { S.players.forEach((p, i) => { p.hand = S.draft.packs[i]; }); S.draft = null; } me.rooms[0] = 1; me.rooms[1] = 1; me.rooms[2] = 1;
+  S.line = [gi(85), gi(60), gi(68), gi(55), gi(63)];
   S.guestDeck = S.guestDeck.filter(id => !S.line.includes(id));
   S.dice = [0, 3, 2, 2, 2, 1, 1]; S.rolled = S.dice.slice();
   S.log = ['Lernspiel: eine vorbereitete erste Runde.'];
@@ -1935,7 +1992,9 @@ function render() {
   else if (S.screen === 'end') h = viewEnd();
   else h = viewGame();
   if (S && S.roundInfo && S.screen === 'game' && !U.sheet) U.sheet = { type: 'round' };
-  if (S && S.staffPick && S.screen === 'game') U.sheet = { type: 'staffpick' };
+  if (S && S.draft && S.screen === 'game') U.sheet = { type: 'draft' };
+  else if (S && S.staffPick && S.screen === 'game') U.sheet = { type: 'staffpick' };
+  else if (S && S.roomPick && S.screen === 'game') U.sheet = { type: 'roompick' };
   h += viewSheet();
   if (U.toast) h += `<div class="toast">${esc(U.toast)}</div>`;
   const nm = document.getElementById('nm');
@@ -1948,7 +2007,7 @@ function render() {
 }
 function pump() {
   if (!S || S.screen !== 'game' || U.busy || S.roundInfo) return;
-  if (!cur().bot || S.staffPick) return;
+  if (!cur().bot || S.staffPick || S.roomPick || S.draft) return;
   U.busy = true;
   setTimeout(() => {
     U.busy = false;
@@ -1977,7 +2036,22 @@ const H = {
   newgame: () => { clearSave(); S = null; U.sheet = null; },
   showboard: () => { U.sheet = { type: 'board' }; },
   close: () => { U.sheet = null; },
-  ovclose: () => { if (U.sheet && U.sheet.type !== 'round' && U.sheet.type !== 'staffpick' && U.sheet.type !== 'draw3') U.sheet = null; },
+  ovclose: () => { if (U.sheet && !['round', 'staffpick', 'draw3', 'roompick'].includes(U.sheet.type)) U.sheet = null; },
+  dpick: d => {
+    const D = S.draft, id = +d.id, n = S.players.length;
+    S.players.forEach((p, i) => {
+      const pack = D.packs[i];
+      const pick = p.bot ? pack.slice().sort((a, b) => (staffValue(p, b) - STAFF[b].c * 0.6) - (staffValue(p, a) - STAFF[a].c * 0.6))[0] : id;
+      pack.splice(pack.indexOf(pick), 1); D.kept[i].push(pick);
+    });
+    D.packs = D.packs.map((_, i) => D.packs[(i - 1 + n) % n]); // nach links weitergeben = von rechts erhalten
+    if (!D.packs[0].length) { S.players.forEach((p, i) => { p.hand = D.kept[i]; }); S.draft = null; U.sheet = null; log('Personal-Draft abgeschlossen.'); }
+  },
+  rpsel: d => { const sel = S.roomPick.sel, i = +d.i, k = sel.indexOf(i); if (k >= 0) S.roomPick.sel = sel.slice(0, k); else sel.push(i); },
+  rpreset: () => { S.roomPick.sel = []; },
+  rpok: () => { const me = human(), sel = S.roomPick.sel; if (sel.length !== 3) return; for (const i of sel) { me.k -= FLOOR_COST[Math.floor(i / 5)]; placeTile(me, i); } S.roomPick = null; U.sheet = null; log(`${me.name} richtet die ersten Zimmer ein.`); },
+  checkin: d => { U.sheet = { type: 'checkin', t: +d.t }; },
+  cipick: d => { const me = human(), t = U.sheet.t, g = me.tables[t]; if (!g) return; checkin(me, t, +d.i); U.sheet = null; toast(`${GUESTS[g.id][0]} ist eingezogen.`); },
   opp: d => { U.sheet = { type: 'opp', p: +d.p }; },
   staffinfo: d => { U.sheet = { type: 'staffinfo', id: +d.id }; },
   guest: d => { U.sheet = { type: 'guest', slot: +d.s }; },

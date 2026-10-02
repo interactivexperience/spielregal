@@ -36,6 +36,10 @@ for (const g of GAMES) {
   await page.goto(base + g.dir + "/", { waitUntil: "load" });
   await page.click(`text=${g.start}`);
   await page.waitForSelector(g.ready);
+  if (g.dir === "grand-austria-hotel") {
+    for (let i = 0; i < 6 && (await page.locator(".sheet [data-a=dpick]").count()); i++) { await page.locator(".sheet [data-a=dpick]").first().click(); await page.waitForTimeout(80); }
+    if (await page.locator("[data-a=rpok]").count()) { for (const i of [0, 1, 2]) await page.locator(`.sheet [data-a=rpsel][data-i="${i}"]`).click({ force: true }); await page.click("[data-a=rpok]"); }
+  }
   if (g.dir === "rebel-princess") { await page.locator("[data-a=pick]").first().click(); await page.click("[data-a=pickok]"); }
   if (g.dir === "countryside") await page.click(".sheet [data-a=close]");
   await page.waitForTimeout(400);

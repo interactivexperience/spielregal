@@ -32,7 +32,7 @@ const COVERS = {
   "grand-austria-hotel": () => `<div style="position:absolute;inset:0;background:#F6EBD6">
       <div style="position:absolute;left:0;right:0;top:0;height:300px;background:#E4472E;background-image:radial-gradient(#F28AA6 2.2px,transparent 2.6px);background-size:22px 22px"></div>
       <div style="position:absolute;left:150px;top:34px;width:180px;height:210px">${kaiser()}</div>
-      <div style="position:absolute;left:-10px;right:-10px;bottom:-6px;height:410px">${heroSvg().replace('<rect x="120" y="58" width="120" height="30" rx="8" fill="#FFF9EE"/>', '<rect x="92" y="55" width="176" height="35" rx="9" fill="#FFF9EE"/>').replace('font-size="24" fill="#161616">GRAND HOTEL</text>', 'font-size="25" fill="#161616">Grand Hotel Wien</text>')}</div>
+      <div style="position:absolute;left:-10px;right:-10px;bottom:-6px;height:410px">${heroSvg().replace('<rect x="100" y="57" width="160" height="32" rx="9" fill="#FFF9EE"/>', '<rect x="80" y="55" width="200" height="36" rx="9" fill="#FFF9EE"/>').replace('font-size="24" fill="#161616">GRAND HOTEL</text>', 'font-size="25" fill="#161616">Grand Hotel Wien</text>')}</div>
       <div style="position:absolute;left:30px;top:36px;width:64px;height:64px;transform:rotate(-12deg)">${dieSvg(6)}</div>
       <div style="position:absolute;right:36px;top:150px;width:54px;height:54px;transform:rotate(14deg)">${dieSvg(3)}</div>
       <div style="position:absolute;inset:10px;border:5px solid #161616;border-radius:20px;box-shadow:inset 0 0 0 3px #F6EBD6"></div></div>`,
