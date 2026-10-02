@@ -122,6 +122,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .rrow .rh .v{margin-left:auto;font-size:12px;color:var(--muted)}
 .boxes{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
 .box{min-width:22px;height:22px;border-radius:8px;font-size:9.5px;font-weight:700;display:grid;place-items:center;background:var(--bg);color:var(--muted);padding:0 3px}
+.box.hv{border-radius:50%;min-width:22px;width:22px;padding:0}
 .box.x{background:var(--forest);color:#fff}
 .box.t{background:#FFEFB0;color:var(--ink)}
 .box.x.t{background:var(--mustard);color:var(--ink)}
@@ -367,11 +368,11 @@ const gHead = (seed, o) => gardener(seed, o, '6 -4 88 70');
 
 // ---------- Daten (nach der Anleitung der Harvest Edition) ----------
 // Ablauf, Aktionen, Ereignisse, Markttabelle, Stauden, Bienenstock, Hof,
-// Schuppen und Wertung folgen dem Regelheft. Nicht im Regelheft steht der
-// genaue Aufdruck des Wertungsblocks (Anzahl Pflanzen pro Zone, Kürbishöhen,
-// Kästchen pro Schuppen-Gegenstand, Sterne auf der Warenleiste); diese Werte
-// sind innerhalb der Angaben der Anleitung (3–5 Mais, 3–5 Bohnen, 1–3 Kürbisse
-// je Zone usw.) geschätzt.
+// Schuppen und Wertung folgen dem Regelheft. Der Aufdruck der Wertungsbögen
+// (Pflanzen je Zone, Kürbis-Ring mit Stauden, Hof-Reihen, Schuppen-Kästchen)
+// ist von Fotos der Original-Bögen abgelesen, die der Owner geschickt hat.
+// Unsicher abgelesen: Waren der beiden 2-hohen Kürbisse, die Sterne der
+// Warenleiste (Fotos nicht scharf genug, weiterhin geschätzt).
 const ROUNDS = 8;
 const EVENTS = ['shed', 'rain', 'market', 'rain', 'market', 'shed', 'market', 'rain'];
 const EVENT_N = { shed: 'Schuppen: 1 Schuppenaktion', rain: 'Regen: Zonen 1–6 gießen', market: 'Bauernmarkt: Markttabelle' };
@@ -390,16 +391,18 @@ const RONDEL_N = { ay: 'Bienenstock oder Hof', pw: 'Pflanzen oder Gießen', shed
 const RONDEL_BG = { ay: '#E8DCC0', pw: '#D5DDCF', shed: '#CFD9E4', cg: '#E3D2C6', market: '#E3D3DA' };
 const RING = [0, 1, 2, 3, 7, 6, 5, 4]; // Anzeige als Ring in zwei Reihen
 const DICE_BY_N = { 1: 4, 2: 4, 3: 5, 4: 6 };
-// Gartenzonen: Mais (4 Kästchen), Bohnen (2 Kästchen, rankt am Mais mit diesem Index),
-// Kürbisse [Höhe, Waren] und die Staude zwischen zwei benachbarten Kürbissen
-const ZONES = [
-  { corn: 3, beans: [0, 1, 2], pump: [[1, 1], [2, 2]], between: ['crocus'] },
-  { corn: 3, beans: [0, 1, 1, 2], pump: [[2, 1], [1, 1], [3, 3]], between: ['tulip', 'hydrangea'] },
-  { corn: 4, beans: [0, 1, 3], pump: [[2, 2], [2, 2]], between: ['iris'] },
-  { corn: 4, beans: [0, 1, 2, 3, 3], pump: [[3, 2]], between: [] },
-  { corn: 5, beans: [0, 1, 2, 4], pump: [[1, 1], [4, 3], [2, 2]], between: ['hyacinth', 'daffodil'] },
-  { corn: 5, beans: [0, 1, 2, 3, 4], pump: [[3, 3], [2, 1]], between: ['crocus'] },
+// Gartenzonen wie auf dem Bogen: jeder Mais (4 Kästchen) hat eine Bohne (2 Kästchen) daneben.
+// Die Kürbisse liegen als Ring am Gartenrand (im Uhrzeigersinn ab Zone 1 oben), zwischen je zwei
+// Nachbar-Kürbissen sitzt eine Staude – jede Staude kommt zweimal vor.
+const PUMPS = [
+  { z: 0, h: 1, g: 1 }, { z: 1, h: 4, g: 3 }, { z: 2, h: 2, g: 1 }, { z: 2, h: 3, g: 2 }, { z: 3, h: 4, g: 3 }, { z: 3, h: 3, g: 3 },
+  { z: 3, h: 1, g: 1 }, { z: 4, h: 2, g: 1 }, { z: 5, h: 4, g: 3 }, { z: 5, h: 3, g: 2 }, { z: 0, h: 4, g: 3 }, { z: 0, h: 3, g: 2 },
 ];
+// RING_F[r] liegt zwischen Kürbis r und r+1
+const RING_F = ['iris', 'tulip', 'hyacinth', 'iris', 'daffodil', 'crocus', 'hydrangea', 'tulip', 'hyacinth', 'daffodil', 'crocus', 'hydrangea'];
+const ZONES = [3, 5, 4, 3, 5, 4].map((corn, z) => ({ corn, beans: Array.from({ length: corn }, (_, i) => i), pump: PUMPS.map((P, r) => [P, r]).filter(([P]) => P.z === z).map(([, r]) => r) }));
+const PUMP_LOC = PUMPS.map((P, r) => [P.z, ZONES[P.z].pump.indexOf(r)]);
+const pumpOf = (z, i) => PUMPS[ZONES[z].pump[i]];
 const CORN_H = 4, BEAN_H = 2;
 const CROP_N = { c: 'Mais', b: 'Bohne', s: 'Kürbis' };
 // Stauden: 6 Kästchen von unten nach oben, das oberste zählt bei Vollendung
@@ -426,27 +429,33 @@ const WAX_GOODS = [2, 4, 4], WAX_VP = [2, 2, 5], HONEY_VP = [5, 5, 8];
 const SPLIT = ['vp3', 'plantAny', 'yard3', 'pw2'];
 const API_N = { wax: 'Wachs', honey: 'Honig', split: 'Ableger' };
 // Hof: Reihen von links nach rechts, jedes Kästchen ist eine Ernte
+// steps: g = Wachstum (Quadrat auf dem Bogen), h = Ernte (Kreis)
 const FRUITS = [
-  { k: 'apple', n: 'Äpfel', one: 'Apfel', len: 6, tx: '3 SP je Apfel' },
-  { k: 'blackberry', n: 'Brombeeren', one: 'Brombeere', len: 7, tx: '2 SP je Brombeere' },
-  { k: 'peach', n: 'Pfirsiche', one: 'Pfirsich', len: 4, tx: 'Ernte: 1 Gießaktion, Zone frei' },
-  { k: 'raspberry', n: 'Himbeeren', one: 'Himbeere', len: 9, tx: 'Ernte: +3 Waren · 1/2/3 SP' },
+  { k: 'apple', n: 'Äpfel', one: 'Apfel', steps: 'ghghhhhh', tx: '3 SP je Apfel-Ernte; die ersten beiden Bäume brauchen je 1 Wachstum' },
+  { k: 'blackberry', n: 'Brombeeren', one: 'Brombeere', steps: 'hhhhhhh', tx: '2 SP je Brombeere' },
+  { k: 'peach', n: 'Pfirsiche', one: 'Pfirsich', steps: 'ghghghgh', tx: 'jeder Baum: 1 Wachstum, dann Ernte = 1 Gießaktion, Zone frei' },
+  { k: 'raspberry', n: 'Himbeeren', one: 'Himbeere', steps: 'hhhhhhhhh', tx: 'Ernte: +3 Waren · 1/2/5 SP nach 3/6/9 Ernten' },
 ];
-const RASP_VP = { 3: 1, 6: 2, 9: 3 };
+FRUITS.forEach(f => { f.len = f.steps.length; });
+const RASP_VP = { 3: 1, 6: 2, 9: 5 };
+const harvests = (p, k) => [...FRUITS.find(f => f.k === k).steps.slice(0, Math.max(0, p.yard[k].n))].filter(c => c === 'h').length;
 // Schuppen: Satz A (Schere) und B (Mäher) entsprechen den Listen von Farmerin Edith
 const SHED = [
-  { k: 'jars', n: 'Einmachgläser', len: 2, vp: 1, set: 'A', tx: 'Brombeer-Ernte: +1 Ware.' },
-  { k: 'piesafe', n: 'Kuchenschrank', len: 3, vp: 3, set: 'A', tx: 'Apfel- oder Pfirsich-Ernte: +1 Ware.' },
+  { k: 'jars', n: 'Einmachgläser', len: 1, vp: 1, set: 'A', tx: 'Brombeer-Ernte: +1 Ware.' },
+  { k: 'piesafe', n: 'Kuchenschrank', len: 2, vp: 3, set: 'A', tx: 'Apfel- oder Pfirsich-Ernte: +1 Ware.' },
   { k: 'shovel', n: 'Spaten', len: 2, vp: 1, set: 'A', tx: 'Jederzeit: 3 Kompost für 1 Bonusaktion.' },
   { k: 'bowl', n: 'Obstschale', len: 3, vp: 0, set: 'A', tx: '1/4/7/10 SP für 1/2/3/4 Obstsorten.' },
-  { k: 'barrel', n: 'Regentonne', len: 3, vp: 2, set: 'A', tx: 'Nach jedem Regen: 1 Gießaktion, Zone frei.' },
+  { k: 'barrel', n: 'Regentonne', len: 2, vp: 2, set: 'A', tx: 'Nach jedem Regen: 1 Gießaktion, Zone frei.' },
   { k: 'dish', n: 'Auflaufform', len: 2, vp: 0, set: 'A', tx: '1 SP je 2 geerntete Bohnen.' },
   { k: 'labels', n: 'Schicke Etiketten', len: 3, vp: 2, set: 'B', tx: 'Bauernmarkt: +1 Staudenaktion.' },
   { k: 'hivetool', n: 'Stockmeißel', len: 3, vp: 2, set: 'B', tx: 'Krokus-Aktion: +1 Bienenstock-Aktion.' },
-  { k: 'pitchfork', n: 'Heugabel', len: 2, vp: 1, set: 'B', tx: 'Hortensien-Aktion: +1 Kompost.' },
-  { k: 'trimmer', n: 'Rasentrimmer', len: 4, vp: 6, set: 'B', tx: '6 SP.' },
+  { k: 'pitchfork', n: 'Heugabel', len: 1, vp: 1, set: 'B', tx: 'Hortensien-Aktion: +1 Kompost.' },
+  { k: 'trimmer', n: 'Rasentrimmer', len: 4, vp: 6, set: 'B', tx: 'Kein Effekt.' },
   { k: 'wheelbarrow', n: 'Schubkarre', len: 3, vp: 3, set: 'B', tx: 'Jede Schuppenaktion: +1 Ware.' },
-  { k: 'mulch', n: 'Mulch', len: 2, vp: 1, set: 'B', tx: 'Rondellaktion gegen 1 Staudenaktion tauschen.' },
+  { k: 'mulch', n: 'Mulch', len: 2, vp: 0, set: 'B', tx: 'Statt der Rondellaktion 2 Staudenaktionen.' },
+  { k: 'tractor', n: 'Neuer Traktor', len: 6, vp: 15, set: '', tx: 'Kein Effekt.' },
+  { k: 'carving', n: 'Schnitzset', len: 4, vp: 0, set: '', tx: 'Am Ende 1 SP je geerntetem Kürbis in deiner längsten Kürbis-Kette im Ring.' },
+  { k: 'spreader', n: 'Sämaschine', len: 4, vp: 2, set: '', tx: 'Beim Pflanzen: 1 Pflanze mehr (bis zu 3).' },
 ];
 const SHED_BY = k => SHED.find(s => s.k === k);
 // Warenleiste: Sterne bringen eine Bonusaktion; Markttabelle nach Warenstand
@@ -524,6 +533,9 @@ function icon(k) {
     case 'pitchfork': return w(`<path d="M16,30 V14" stroke="${C.brown}" stroke-width="3" stroke-linecap="round"/><path d="M8,14 H24 M8,14 V3 M16,14 V3 M24,14 V3" stroke="#8FA3B8" stroke-width="2.6" stroke-linecap="round" fill="none"/>`);
     case 'trimmer': return w(`<path d="M6,4 L22,24" stroke="${C.teal}" stroke-width="3" stroke-linecap="round"/><rect x="2" y="3" width="10" height="6" rx="2" fill="${C.orange}"/><circle cx="24" cy="26" r="5" fill="#8FA3B8"/>` + P.blade(10, 31, 7, -2, C.leaf) + P.blade(16, 31, 6, 2, C.leaf));
     case 'wheelbarrow': return icon('karre');
+    case 'tractor': return w(`<rect x="6" y="10" width="14" height="10" rx="2" fill="${C.sage}"/><path d="M14,10 V5 H20 V10" fill="none" stroke="${C.dark}" stroke-width="2"/><circle cx="23" cy="22" r="6" fill="${C.dark}"/><circle cx="23" cy="22" r="2.4" fill="${C.sage}"/><circle cx="8" cy="24" r="4" fill="${C.dark}"/>`);
+    case 'carving': return w(P.pumpkin(16, 18, 11) + `<path d="M11,16 l2,-2 l2,2 M17,16 l2,-2 l2,2 M11,21 q5,4 10,0" fill="none" stroke="${shade(C.orange, 0.55)}" stroke-width="1.6" stroke-linecap="round"/>`);
+    case 'spreader': return w(`<path d="M5,12 H22 L19,22 H8 Z" fill="${C.tomato}"/><circle cx="9" cy="25" r="3" fill="${C.dark}"/><circle cx="19" cy="25" r="3" fill="${C.dark}"/><path d="M22,12 L28,4" stroke="${C.dark}" stroke-width="2" stroke-linecap="round"/>${[[10, 8], [14, 6], [18, 8]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.4" fill="${C.mustard}"/>`).join('')}`);
     case 'mulch': return w(`<path d="M2,28 C4,18 10,14 16,14 C22,14 28,18 30,28 Z" fill="${C.brown}"/><path d="M6,22 L12,19 M14,25 L21,21 M20,18 L26,22 M9,26 L15,27" stroke="${C.mustard}" stroke-width="2" stroke-linecap="round"/>`);
     case 'pw': return w(P.leaf(10, 26, 11, -70, C.leaf) + P.leaf(10, 26, 10, -120, C.forest) + `<path d="M16,10 H27 V22 C27,23 26,24 25,24 H18 C17,24 16,23 16,22 Z" fill="${C.teal}"/><path d="M27,13 L31,9" stroke="${C.teal}" stroke-width="2.4" stroke-linecap="round"/><circle cx="7" cy="6" r="1.4" fill="${C.blue}"/><circle cx="11" cy="9" r="1.4" fill="${C.blue}"/>`);
     case 'cg': return w(`<path d="M1,29 C2,22 7,19 11,19 C15,19 20,22 21,29 Z" fill="${C.brown}"/><circle cx="20" cy="9" r="4" fill="${C.orange}"/><circle cx="27" cy="11" r="3.4" fill="${C.tomato}"/><path d="M14,13 H31 L29,24 H16 Z" fill="#D9A066"/>`);
@@ -595,11 +607,11 @@ function newSheet() {
   };
 }
 const shedDone = (p, k) => p.shed[k].n >= SHED_BY(k).len;
-const cropMax = (z, k, i) => k === 'c' ? CORN_H : k === 'b' ? BEAN_H : ZONES[z].pump[i][0];
-const cropName = (k, i, z) => k === 's' ? `Kürbis (${ZONES[z].pump[i][1]} Waren)` : CROP_N[k];
+const cropMax = (z, k, i) => k === 'c' ? CORN_H : k === 'b' ? BEAN_H : pumpOf(z, i).h;
+const cropName = (k, i, z) => k === 's' ? `Kürbis (${pumpOf(z, i).g} Waren)` : CROP_N[k];
 const isSolo = () => S && S.solo;
 function newGame(name, nBots, seed, solo) {
-  S = { v: 2, id: 'ts-' + Date.now().toString(36) + '-' + ((seed >>> 0) % 1679616).toString(36), rng: seed | 0, round: 1, players: [], log: [], final: null, recorded: false, screen: 'game', pawn: 0, solo: !!solo };
+  S = { v: SAVE_V, id: 'ts-' + Date.now().toString(36) + '-' + ((seed >>> 0) % 1679616).toString(36), rng: seed | 0, round: 1, players: [], log: [], final: null, recorded: false, screen: 'game', pawn: 0, solo: !!solo };
   const mk = (nm, bot, look, mark) => Object.assign({ name: nm, bot, look, mark }, newSheet());
   if (name !== null) S.players.push(mk(name || 'Du', false, { plant: 'blumen', pants: '#5BA35A', pat: 'stripes', moth: 1 }, MARKS[0]));
   if (!solo) {
@@ -672,6 +684,7 @@ function yardAction(p, k) {
   const st = p.yard[k];
   if (st.n >= st.cap) return false;
   st.n++;
+  if (FRUITS.find(f => f.k === k).steps[st.n - 1] !== 'h') return true; // nur Wachstum
   if (k === 'apple' && shedDone(p, 'piesafe')) gainGoods(p, 1);
   if (k === 'blackberry' && shedDone(p, 'jars')) gainGoods(p, 1);
   if (k === 'raspberry') gainGoods(p, 3);
@@ -725,17 +738,26 @@ function growCrop(p, z, k, i) {
   const zo = p.g[z];
   zo[k][i]++;
   if (zo[k][i] === cropMax(z, k, i) && k === 's') {
-    gainGoods(p, ZONES[z].pump[i][1]);
-    for (const j of [i - 1, i]) {
-      const a = j, b = j + 1;
-      if (a < 0 || b >= zo.s.length) continue;
-      if (zo.s[a] === cropMax(z, 's', a) && zo.s[b] === cropMax(z, 's', b)) front(p, { t: 'per', f: ZONES[z].between[a], src: 'Kürbis-Paar' });
-    }
+    gainGoods(p, pumpOf(z, i).g);
+    const r = ZONES[z].pump[i], n = PUMPS.length;
+    // Staude zwischen zwei geernteten Nachbar-Kürbissen im Ring (auch über Zonengrenzen)
+    if (pumpDone(p, (r + n - 1) % n)) front(p, { t: 'per', f: RING_F[(r + n - 1) % n], src: 'Kürbis-Paar' });
+    if (pumpDone(p, (r + 1) % n)) front(p, { t: 'per', f: RING_F[r], src: 'Kürbis-Paar' });
   }
 }
+function pumpDone(p, r) { const [z, i] = PUMP_LOC[r]; return p.g[z].s[i] === PUMPS[r].h; }
+// längste Kette geernteter Nachbar-Kürbisse im Ring (Schnitzset)
+function pumpChain(p) {
+  const n = PUMPS.length, d = range(n).map(r => pumpDone(p, r));
+  if (d.every(Boolean)) return n;
+  let best = 0, cur = 0;
+  for (let k = 0; k < 2 * n; k++) { cur = d[k % n] ? cur + 1 : 0; best = Math.max(best, Math.min(cur, n)); }
+  return best;
+}
+const plantMax = p => shedDone(p, 'spreader') ? 3 : 2;
 function doPlant(p, z, list) {
   let n = 0;
-  for (const [k, i] of list.slice(0, 2)) if (canPlant(p, z, k, i)) { growCrop(p, z, k, i); n++; }
+  for (const [k, i] of list.slice(0, plantMax(p))) if (canPlant(p, z, k, i)) { growCrop(p, z, k, i); n++; }
   return n;
 }
 function waterCount(p, z) { let n = 0; for (const k of ['c', 'b', 's']) p.g[z][k].forEach((h, i) => { if (h > 0 && h < cropMax(z, k, i)) n++; }); return n; }
@@ -763,12 +785,13 @@ function endScore(p) {
     zo.c.forEach(h => { if (h === CORN_H) row.garden += 3; });
     zo.b.forEach(h => { if (h === BEAN_H) { row.garden += 1; beans++; } });
   });
-  const yardItems = FRUITS.reduce((s, f) => s + p.yard[f.k].n, 0);
+  const yardItems = FRUITS.reduce((s, f) => s + harvests(p, f.k), 0);
   for (const f of FLOWERS) if (p.per[f].n >= PER_LEN) row.per += PER[f].vp === 'yard' ? yardItems : PER[f].vp;
   row.api = WAX_VP.slice(0, p.api.wax.n).reduce((a, b) => a + b, 0) + HONEY_VP.slice(0, p.api.honey.n).reduce((a, b) => a + b, 0) + (p.api.split.n >= 1 ? 3 : 0);
-  row.yard = p.yard.apple.n * 3 + p.yard.blackberry.n * 2 + Object.entries(RASP_VP).reduce((s, [k, v]) => s + (p.yard.raspberry.n >= +k ? v : 0), 0);
+  row.yard = harvests(p, 'apple') * 3 + harvests(p, 'blackberry') * 2 + Object.entries(RASP_VP).reduce((s, [k, v]) => s + (harvests(p, 'raspberry') >= +k ? v : 0), 0);
   for (const it of SHED) if (shedDone(p, it.k)) {
-    if (it.k === 'bowl') row.shed += [0, 1, 4, 7, 10][FRUITS.filter(f => p.yard[f.k].n > 0).length];
+    if (it.k === 'bowl') row.shed += [0, 1, 4, 7, 10][FRUITS.filter(f => harvests(p, f.k) > 0).length];
+    else if (it.k === 'carving') row.shed += pumpChain(p);
     else if (it.k === 'dish') row.shed += Math.floor(beans / 2);
     else row.shed += it.vp;
   }
@@ -849,7 +872,7 @@ function taskOptions(p, t) {
     case 'bonus': out = perOpts(p).concat(apiaryOpts(p), yardOpts(p), shedOpts(p)); break;
     case 'rain': out = [{ o: 'rain', ic: 'regen', label: 'Alle Zonen 1–6 gießen', sub: shedDone(p, 'barrel') ? 'danach Regentonne: 1 Gießaktion' : 'Zone für Zone, von 1 bis 6', apply: q => { for (let z = 0; z < 6; z++) doWater(q, z); if (shedDone(q, 'barrel')) front(q, { t: 'waterAny', src: 'Regentonne' }); } }]; break;
   }
-  if (t.r && shedDone(p, 'mulch') && FLOWERS.some(f => p.per[f].n < p.per[f].cap)) out.push({ o: 'mulch', ic: 'mulch', label: 'Mulch: stattdessen 1 Staudenaktion', sub: 'Rondellaktion verfällt', apply: q => front(q, { t: 'per', src: 'Mulch' }) });
+  if (t.r && shedDone(p, 'mulch') && FLOWERS.some(f => p.per[f].n < p.per[f].cap)) out.push({ o: 'mulch', ic: 'mulch', label: 'Mulch: stattdessen 2 Staudenaktionen', sub: 'Rondellaktion verfällt', apply: q => front(q, { t: 'per', src: 'Mulch' }, { t: 'per', src: 'Mulch' }) });
   return out;
 }
 function resolveTask(p, opt) { const t = p.tasks.shift(); if (opt) opt.apply(p); return t; }
@@ -863,7 +886,7 @@ function potential(p) {
   p.g.forEach((zo, z) => {
     zo.c.forEach((h, i) => { if (h > 0 && h < CORN_H) v += 3 * (0.25 + 0.75 * h / CORN_H) * (0.4 + 0.6 * left) * 0.8; });
     zo.b.forEach((h, i) => { if (h > 0 && h < BEAN_H) v += 0.7; });
-    zo.s.forEach((h, i) => { const H = cropMax(z, 's', i); if (h > 0 && h < H) v += (ZONES[z].pump[i][1] * 0.6 + 1) * (h / H) * left; });
+    zo.s.forEach((h, i) => { const H = cropMax(z, 's', i); if (h > 0 && h < H) v += (pumpOf(z, i).g * 0.6 + 1) * (h / H) * left; });
   });
   v += Math.min(p.compost, 6) * 0.45 * left;
   v += p.goods * 0.12 + (p.goods >= 20 ? 1 : 0) + (p.goods >= 35 ? 1 : 0);
@@ -950,7 +973,7 @@ function edithPick() {
 }
 function edithCrossCrop(p, z) {
   const zo = p.g[z], Z = ZONES[z];
-  const pumps = zo.s.map((h, i) => [h, i]).filter(([h]) => h === 0).sort((a, b) => Z.pump[b[1]][0] - Z.pump[a[1]][0]);
+  const pumps = zo.s.map((h, i) => [h, i]).filter(([h]) => h === 0).sort((a, b) => pumpOf(z, b[1]).h - pumpOf(z, a[1]).h);
   if (pumps.length) { zo.s[pumps[0][1]] = -1; return `streicht einen Kürbis in Zone ${z + 1}`; }
   // Mais: bevorzugt einen, an dem noch keine Bohne wächst; sonst den letzten
   const corn = zo.c.map((h, i) => [h, i]).filter(([h]) => h === 0);
@@ -1063,7 +1086,7 @@ function recordPlay() {
 }
 function spielregalProfiles() { try { return (JSON.parse(localStorage.getItem('spielregal:players') || '[]') || []).filter(p => p && p.name).map(p => p.name); } catch (e) { return []; } }
 const KEY = 'drei-schwestern-v1';
-const SAVE_V = 2; // v2: Regeln der Harvest Edition, ältere Stände sind nicht kompatibel
+const SAVE_V = 3; // v3: Bögen nach Fotos der Original-Bögen (Kürbis-Ring, Hof, Schuppen), ältere Stände sind nicht kompatibel
 // Speichern & Verlassen: Der Spielstand wird ohnehin nach jeder Aktion
 // gespeichert; „verlassen“ führt zurück zum Startbildschirm, von dem aus die
 // Partie mit „Fortsetzen“ weiterläuft.
@@ -1091,13 +1114,13 @@ function stalk(p, z, k, i, o = {}) {
   const sel = o.sel && o.sel.some(([a, b]) => a === k && b === i);
   const cells = range(H).map(j => `<span class="cell ${j === H - 1 ? 'h' : ''} ${h === -1 ? 'cut' : j < h ? 'x ' + k : sel && j === 0 ? 'n' : ''}"></span>`).join('');
   const can = o.pick && canPlant(p, z, k, i);
-  const lab = k === 's' ? `<span class="pg">${ZONES[z].pump[i][1]}</span>` : '';
+  const lab = k === 's' ? `<span class="pg">${pumpOf(z, i).g}</span>` : '';
   return can ? `<button class="stk ${k} can ${sel ? 'on' : ''}" data-a="pk" data-k="${k}" data-i="${i}" aria-label="${cropName(k, i, z)} pflanzen">${cells}${lab}</button>` : `<span class="stk ${k}">${cells}${lab}</span>`;
 }
 function zoneHtml(p, z, o = {}) {
   const Z = ZONES[z];
   const plants = range(Z.corn).map(ci => `<span class="pair">${stalk(p, z, 'c', ci, o)}${Z.beans.map((c, bi) => c === ci ? stalk(p, z, 'b', bi, o) : '').join('')}</span>`).join('');
-  const pumps = Z.pump.map((pp, i) => stalk(p, z, 's', i, o) + (i < Z.between.length ? `<span class="bt" title="${FLOWER_N[Z.between[i]]}">${icon(Z.between[i])}</span>` : '')).join('');
+  const pumps = Z.pump.map((r, i) => stalk(p, z, 's', i, o) + `<span class="bt" title="${FLOWER_N[RING_F[r]]} – zwischen diesem Kürbis und dem nächsten im Ring (Zone ${PUMPS[(r + 1) % PUMPS.length].z + 1})">${icon(RING_F[r])}</span>`).join('');
   return `<div class="zone grainy ${o.hl ? 'hl' : ''} ${o.big ? 'big' : ''}" data-z="${z}"><span class="zn">${zoneNum(z)}</span><div class="plants">${plants}</div><div class="pumps">${pumps}</div></div>`;
 }
 const boxRow = (n, cap, len, lab = () => '', cls = () => '') => `<div class="boxes">${range(len).map(i => `<span class="box ${i < n ? 'x' : i >= cap ? 'cut' : ''} ${cls(i)}">${lab(i)}</span>`).join('')}</div>`;
@@ -1107,7 +1130,7 @@ function sheetHtml(p, hlZone = -1) {
   const nextStar = STARS.findIndex((s, i) => s > p.goods && !p.starX.includes(i));
   return `
    <div class="garden">${range(6).map(z => zoneHtml(p, z, { hl: z === hlZone })).join('')}</div>
-   <p class="note" style="margin-top:8px">Mais (4 hoch) 3 SP · Bohne (2 hoch) 1 SP, erst pflanzbar, wenn ihr Mais 2 hoch ist · Kürbis bringt bei Ernte Waren; zwei geerntete Nachbar-Kürbisse lösen die Staude dazwischen aus.</p>
+   <p class="note" style="margin-top:8px">Mais (4 hoch) 3 SP · Bohne (2 hoch) 1 SP, erst pflanzbar, wenn ihr Mais 2 hoch ist · Kürbis bringt bei Ernte Waren. Die Kürbisse bilden einen Ring um den Garten (Zone 1 → 2 → 3 → 4 → 5 → 6): Sind zwei Nachbarn geerntet, löst die Staude dazwischen aus (Symbol rechts neben dem Kürbis = Staude zum nächsten im Ring).</p>
    <div class="res" style="margin-top:10px">
     <div class="rrow"><div class="rh">${icon('kompost')}Kompost<span class="v">${p.compost}</span></div><div style="font-size:11.5px;margin-top:3px">Beim Pflanzen/Gießen: je Kompost Würfelwert ±1 (6 und 1 sind Nachbarn)${irisFree(p) ? ' · Iris: ±1 gratis' : ''}.${shedDone(p, 'shovel') ? ' Spaten: 3 Kompost = 1 Bonusaktion.' : ''}</div>${shedDone(p, 'shovel') && p.compost >= 3 && p === human() && S.screen === 'game' ? '<button class="chip on" style="margin-top:6px" data-a="shovel">Spaten nutzen (−3 Kompost)</button>' : ''}</div>
     <div class="rrow goods"><div class="rh">${icon('waren')}Waren<span class="v">${p.goods}</span></div>
@@ -1121,7 +1144,7 @@ function sheetHtml(p, hlZone = -1) {
      <div class="apis">${['wax', 'honey', 'split'].map(s => `<div><div class="rh">${icon(s)}${API_N[s]}</div>${boxRow(p.api[s].n, p.api[s].cap, s === 'split' ? 4 : 3, i => s === 'wax' ? `${WAX_GOODS[i]}W` : s === 'honey' ? HONEY_VP[i] : EFFECT_S[SPLIT[i]], () => 't')}</div>`).join('')}</div>
      <div style="font-size:11.5px;margin-top:4px">Erst den Hauptstock füllen, dann Wachs (Waren, 2/2/5 SP), Honig (5/5/8 SP) oder Ableger (3 SP + Aktionen).</div></div>
    <p class="label" style="margin-top:14px">Hof <span class="lv">${sc.yard} SP</span></p>
-   <div class="fruits">${FRUITS.map(f => `<div class="rrow"><div class="rh">${icon(f.k)}${f.n}</div>${boxRow(p.yard[f.k].n, p.yard[f.k].cap, f.len, i => f.k === 'raspberry' && RASP_VP[i + 1] ? RASP_VP[i + 1] : '', i => f.k === 'raspberry' && RASP_VP[i + 1] ? 't' : '')}<div class="tx">${f.tx}</div></div>`).join('')}</div>
+   <div class="fruits">${FRUITS.map(f => `<div class="rrow"><div class="rh">${icon(f.k)}${f.n}</div>${boxRow(p.yard[f.k].n, p.yard[f.k].cap, f.len, i => f.k === 'raspberry' && RASP_VP[i + 1] ? RASP_VP[i + 1] : f.steps[i] === 'h' && f.k === 'apple' ? '3' : f.steps[i] === 'h' && f.k === 'blackberry' ? '2' : '', i => (f.steps[i] === 'h' ? 'hv ' : 'gr ') + (f.k === 'raspberry' && RASP_VP[i + 1] ? 't' : ''))}<div class="tx">${f.tx}</div></div>`).join('')}</div>
    <p class="label" style="margin-top:14px">Schuppen <span class="lv">${sc.shed} SP</span></p>
    <div class="tools">${SHED.map(it => { const st = p.shed[it.k]; return `<div class="rrow tool ${shedDone(p, it.k) ? 'done' : ''} ${st.x ? 'gone' : ''}"><div class="rh">${icon(it.k)}${it.n}</div>${boxRow(st.n, st.x ? st.n : it.len, it.len, i => i === it.len - 1 && it.vp ? it.vp : '', i => i === it.len - 1 ? 't' : '')}<div class="tx">${esc(it.tx)}${it.vp ? ` ${it.vp} SP.` : ''}</div></div>`; }).join('')}</div>`;
 }
@@ -1235,8 +1258,8 @@ function taskSheet() {
     } else {
       const sel = U.sel || [];
       const nW = waterCount(me, z), canP = mode !== 'water' && plantables(me, z).length > 0;
-      h += `<p style="font-size:13px">${mode !== 'water' ? 'Pflanzen: tippe bis zu 2 leere Pflanzen an (unterstes Kästchen). ' : ''}${mode !== 'plant' ? 'Gießen: jede gepflanzte Pflanze der Zone wächst um 1.' : ''}</p>
-        ${zoneHtml(me, z, { big: 1, pick: mode !== 'water' && sel.length < 2 ? 1 : 0, sel })}
+      h += `<p style="font-size:13px">${mode !== 'water' ? `Pflanzen: tippe bis zu ${plantMax(me)} leere Pflanzen an (unterstes Kästchen). ` : ''}${mode !== 'plant' ? 'Gießen: jede gepflanzte Pflanze der Zone wächst um 1.' : ''}</p>
+        ${zoneHtml(me, z, { big: 1, pick: mode !== 'water' && sel.length < plantMax(me) ? 1 : 0, sel })}
         ${sel.length ? `<p class="note">Ausgewählt: ${sel.map(([k, i]) => cropName(k, i, z)).join(', ')} <button class="link" data-a="unsel">zurücksetzen</button></p>` : ''}
         <div class="btnrow">${mode !== 'plant' ? `<button class="btn white" data-a="water" ${nW ? '' : 'disabled'}>Gießen (+${nW})</button>` : ''}${mode !== 'water' ? `<button class="btn green" data-a="plant" ${sel.length ? '' : 'disabled'}>Pflanzen (${sel.length})</button>` : ''}</div>
         ${!fixed ? '<button class="skip" data-a="zback">andere Zone wählen</button>' : ''}${!canP && mode === 'plant' ? '<p class="note">Hier ist nichts mehr pflanzbar.</p>' : ''}`;
@@ -1273,13 +1296,13 @@ function rulesHtml() {
   <h4>3. Ereignisphase</h4>
   <p>Je Runde: Schuppen, Regen, Markt, Regen, Markt, Schuppen, Markt, Regen. Regen gießt alle Zonen von 1 bis 6.</p>
   <h4>Ernten &amp; Wertung</h4>
-  <ul><li>Mais 3 SP, Bohne 1 SP, Kürbis bringt sofort Waren. Zwei geerntete Nachbar-Kürbisse lösen die Staude dazwischen aus.</li>
+  <ul><li>Mais 3 SP, Bohne 1 SP, Kürbis bringt sofort Waren. Die 12 Kürbisse bilden einen Ring um den Garten; sind zwei Nachbarn im Ring geerntet, löst die Staude dazwischen eine Staudenaktion aus.</li>
   <li><b>Stauden</b> geben Boni beim Ausfüllen und Punkte, wenn vollendet. <b>Sterne</b> auf der Warenleiste bringen eine Bonusaktion (Staude, Bienenstock, Hof oder Schuppen).</li>
   <li><b>Bienenstock:</b> Wachs 2/2/5, Honig 5/5/8, Ableger 3 SP. <b>Hof:</b> Apfel 3, Brombeere 2, Himbeeren 1/2/3 SP. <b>Schuppen:</b> Punkte fertiger Gegenstände.</li></ul>
   <h4>Solo gegen Farmerin Edith</h4>
   <p>Du und Edith nehmt abwechselnd je zwei Würfel (ungerade Runden beginnst du). Die Startperson muss als zweiten Würfel den niedrigsten übrigen nehmen. Edith streicht zuerst eine ungepflanzte Pflanze in der Zone ihres Würfels (Kürbisse, dann Mais, dann Bohnen), dann je nach Feld: noch eine Pflanze, einen Schuppen-Gegenstand, einen Stern der Warenleiste, ein Feld im Bienenstock oder Hof oder das oberste Feld einer Staude. Ereignisse betreffen nur dich.</p>
   <h4>Unterschiede zum Original</h4>
-  <p style="font-size:13px">Ablauf, Aktionen, Ereignisse, Markttabelle, Stauden-Boni, Bienenstock, Hof, Schuppen-Gegenstände, Wertung und der Solomodus mit Edith folgen der Anleitung der Harvest Edition. Den genauen Aufdruck des Wertungsblocks nennt die Anleitung nicht. Geschätzt sind daher: die Zahl der Pflanzen pro Zone (im Rahmen 3–5 Mais, 3–5 Bohnen, 1–3 Kürbisse), Kürbishöhen und -waren, die Lage der Stauden zwischen den Kürbissen, die Kästchen pro Schuppen-Gegenstand, die Sterne der Warenleiste, die Boni im Hauptstock und die Lage der Rondellfelder. Im Solomodus wählt Edith den Mais automatisch. Illustrationen sind eigene Entwürfe.</p>`;
+  <p style="font-size:13px">Ablauf, Aktionen, Ereignisse, Markttabelle, Stauden-Boni, Bienenstock, Hof, Schuppen-Gegenstände, Wertung und der Solomodus mit Edith folgen der Anleitung der Harvest Edition. Den Aufdruck der Wertungsbögen nennt die Anleitung nicht; er ist von Fotos der Original-Bögen abgelesen: Pflanzen je Zone (3/5/4/3/5/4 Mais, je eine Bohne), der Ring aus 12 Kürbissen mit den Stauden dazwischen, die Hof-Reihen (Äpfel und Pfirsiche mit Wachstumsfeldern) und die Schuppen-Gegenstände samt Traktor, Schnitzset und Sämaschine. Weiterhin geschätzt: die Waren der beiden 2-hohen Kürbisse, die Sterne der Warenleiste, die Boni im Hauptstock und die Lage der Rondellfelder. Im Solomodus wählt Edith den Mais automatisch. Illustrationen sind eigene Entwürfe.</p>`;
 }
 function viewSheet() {
   const sh = U.sheet; if (!sh) return '';
@@ -1362,7 +1385,7 @@ const TUT_STEPS = [
     text: 'Zwei Würfel sind übrig. Den <b>niedrigsten</b>, eine 1 auf „Bienenstock oder Hof“, nutzen jetzt <b>alle</b>. Tippe auf „Ausführen“.' },
   { ch: 'Runde 1 · Gemeinsamer Würfel', sel: '[data-a=takedie]', allow: { takedie: true }, done: isTask('garden'), text: 'Tippe auf „Nutzen“: Zone 1 und Bienenstock oder Hof.' },
   { ch: 'Runde 1 · Kürbisse', why: 'Kleine Kürbisse werden schnell geerntet, große bringen mehr. Paare gleich großer Kürbisse helfen außerdem bei den Stauden.', sel: '[data-a=pk][data-k="s"][data-i="0"]', allow: { pk: d => d.k === 's' && d.i === '0' }, done: () => (U.sel || []).length >= 1,
-    text: 'Pflanze die beiden <b>Kürbisse</b>. Der linke ist nur 1 Kästchen hoch, er wird sofort geerntet.' },
+    text: 'Pflanze zwei <b>Kürbisse</b>. Der erste ist nur 1 Kästchen hoch, er wird sofort geerntet.' },
   { ch: 'Runde 1 · Kürbisse', sel: '[data-a=pk][data-k="s"][data-i="1"]', allow: { pk: d => d.k === 's' && d.i === '1' }, done: () => (U.sel || []).length >= 2, text: 'Und den zweiten Kürbis.' },
   { ch: 'Runde 1 · Kürbisse', sel: '[data-a=plant]', allow: { plant: true }, done: isTask('ay'), text: 'Tippe auf „Pflanzen“.' },
   { ch: 'Runde 1 · Waren', why: 'Waren treiben deine Warenleiste an: Sterne bringen Bonusaktionen, und der Bauernmarkt belohnt einen hohen Stand.', sel: '.opt[data-o="yard:raspberry"]', allow: { opt: d => d.o === 'yard:raspberry' }, done: isTask('shed'),
@@ -1455,7 +1478,7 @@ const H = {
   task: () => { if (myTasks()) U.sheet = { type: 'task' }; },
   zsel: d => { U.zone = +d.z; U.sel = []; },
   zback: () => { U.zone = null; U.sel = []; },
-  pk: d => { U.sel = U.sel || []; if (U.sel.length < 2) U.sel.push([d.k, +d.i]); },
+  pk: d => { U.sel = U.sel || []; if (U.sel.length < plantMax(human())) U.sel.push([d.k, +d.i]); },
   unsel: () => { U.sel = []; },
   plant: () => { const me = human(), z = gardenZone(), sel = U.sel || []; resolveTask(me, { apply: q => doPlant(q, z, sel) }); log(`${me.name} pflanzt in Zone ${z + 1}: ${sel.map(([k, i]) => cropName(k, i, z)).join(', ')}.`); afterHumanTask(); },
   water: () => { const me = human(), z = gardenZone(); resolveTask(me, { apply: q => doWater(q, z) }); log(`${me.name} gießt Zone ${z + 1}.`); afterHumanTask(); },
