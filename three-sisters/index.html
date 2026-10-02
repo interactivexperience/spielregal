@@ -34,9 +34,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .start{padding-top:8px;text-align:left}
 .start h1{font-size:clamp(40px,12vw,56px);line-height:.95;margin:0 0 6px;color:var(--navy);letter-spacing:-2px}
 .sub{font-size:13.5px;color:var(--muted);margin:0 0 14px}
-.hero{width:100%;margin:0 auto;aspect-ratio:360/420;border-radius:32px;overflow:hidden;position:relative}
-.hero .htxt{position:absolute;left:24px;right:24px;top:26px}
-.hero .htxt p{margin:0;font-size:12.5px;color:rgba(43,50,69,.8);letter-spacing:.2px}
+.hero{width:100%;margin:0 auto;aspect-ratio:360/300;border-radius:32px;overflow:hidden;background:#F8ECE1}
+.start h1{margin-top:18px}
 .panel{background:var(--card);border-radius:28px;padding:18px;text-align:left;margin:14px 0}
 .label{font-size:12.5px;font-weight:500;color:var(--muted);margin:0 0 8px}
 .input{width:100%;font:inherit;font-size:16px;padding:11px 14px;border:0;border-radius:14px;background:var(--bg);color:var(--ink);outline:2px solid transparent}
@@ -81,7 +80,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .banner b{display:block}
 .banner .small{font-size:12.5px;color:var(--muted)}
 /* Gartenmarkt */
-.rondel{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.rondel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .space{border-radius:24px;padding:8px 6px;text-align:center;min-height:124px;position:relative}
 .space .sic{width:44px;height:40px;margin:0 auto}
 .space .sn{font-size:11.5px;font-weight:700;line-height:1.15;min-height:26px;color:var(--ink)}
@@ -370,26 +369,26 @@ const gHead = (seed, o) => gardener(seed, o, '6 -4 88 70');
 // Ablauf, Aktionen, Ereignisse, Markttabelle, Stauden, Bienenstock, Hof,
 // Schuppen und Wertung folgen dem Regelheft. Der Aufdruck der Wertungsbögen
 // (Pflanzen je Zone, Kürbis-Ring mit Stauden, Hof-Reihen, Schuppen-Kästchen)
-// ist von Fotos der Original-Bögen abgelesen, die der Owner geschickt hat.
-// Unsicher abgelesen: Waren der beiden 2-hohen Kürbisse, die Sterne der
-// Warenleiste (Fotos nicht scharf genug, weiterhin geschätzt).
+// ist von der Bogen-Abbildung auf der Materialseite (S. 2) des Regelhefts der
+// Harvest Edition abgelesen; die Fotos des Owners zeigen teils eine ältere
+// Bogen-Version (Traktor 15, Mulch 2), maßgeblich ist das Regelheft.
 const ROUNDS = 8;
 const EVENTS = ['shed', 'rain', 'market', 'rain', 'market', 'shed', 'market', 'rain'];
 const EVENT_N = { shed: 'Schuppen: 1 Schuppenaktion', rain: 'Regen: Zonen 1–6 gießen', market: 'Bauernmarkt: Markttabelle' };
-// Aktionsrondell im Uhrzeigersinn; Feld 0 trägt die goldene Nadel (Start von Farmerin Edith)
+// Aktionsrondell im Uhrzeigersinn (7 Felder wie auf dem Spielbrett, Beispiel S. 4 des Regelhefts);
+// Feld 0 trägt die goldene Nadel (Start von Farmerin Edith)
 const RONDEL = [
   { k: 'ay', pin: 1, blue: 'apiary' },
   { k: 'pw' },
   { k: 'shed', tool: 'A' },
   { k: 'cg' },
   { k: 'ay', blue: 'yard' },
-  { k: 'market' },
   { k: 'shed', tool: 'B' },
-  { k: 'pw' },
+  { k: 'market' },
 ];
 const RONDEL_N = { ay: 'Bienenstock oder Hof', pw: 'Pflanzen oder Gießen', shed: 'Schuppenzeit', cg: '1 Kompost & 4 Waren', market: 'Bauernmarkt' };
 const RONDEL_BG = { ay: '#E8DCC0', pw: '#D5DDCF', shed: '#CFD9E4', cg: '#E3D2C6', market: '#E3D3DA' };
-const RING = [0, 1, 2, 3, 7, 6, 5, 4]; // Anzeige als Ring in zwei Reihen
+const RING = [1, 2, 3, 4, 0, 6, 5]; // Anzeige wie das Brett: oben 4 Felder, unten 3 (im Uhrzeigersinn)
 const DICE_BY_N = { 1: 4, 2: 4, 3: 5, 4: 6 };
 // Gartenzonen wie auf dem Bogen: jeder Mais (4 Kästchen) hat eine Bohne (2 Kästchen) daneben.
 // Die Kürbisse liegen als Ring am Gartenrand (im Uhrzeigersinn ab Zone 1 oben), zwischen je zwei
@@ -424,20 +423,20 @@ const EFFECT_N = {
 };
 const EFFECT_S = { yard: 'Hof', peach2: 'Pf+2', plantAny: '🌱', 'fruit:apple': 'Apf', 'fruit:blackberry': 'Bro', 'fruit:raspberry': 'Him', 'fruit:peach': 'Pfi', compost1: '+1K', compost2: '+2K', irisAdj: '±1', apiary2: '2🐝', goods2: '+2W', shed: 'Sch', yard1: 'Hof', yard2: '2Hof', vp3: '3', yard3: '3Hof', pw2: '2🌱' };
 // Bienenstock: erst der Hauptstock, danach drei Abschnitte in beliebiger Reihenfolge
-const HIVE = ['', 'yard1', '', 'yard1', 'yard2'];
+const HIVE = ['', 'yard1', '', 'yard2', ''];
 const WAX_GOODS = [2, 4, 4], WAX_VP = [2, 2, 5], HONEY_VP = [5, 5, 8];
 const SPLIT = ['vp3', 'plantAny', 'yard3', 'pw2'];
 const API_N = { wax: 'Wachs', honey: 'Honig', split: 'Ableger' };
 // Hof: Reihen von links nach rechts, jedes Kästchen ist eine Ernte
 // steps: g = Wachstum (Quadrat auf dem Bogen), h = Ernte (Kreis)
 const FRUITS = [
-  { k: 'apple', n: 'Äpfel', one: 'Apfel', steps: 'ghghhhhh', tx: '3 SP je Apfel-Ernte; die ersten beiden Bäume brauchen je 1 Wachstum' },
+  { k: 'apple', n: 'Äpfel', one: 'Apfel', steps: 'hghhhhh', tx: '3 SP je Apfel; vor der 2. Ernte 1 Wachstum' },
   { k: 'blackberry', n: 'Brombeeren', one: 'Brombeere', steps: 'hhhhhhh', tx: '2 SP je Brombeere' },
-  { k: 'peach', n: 'Pfirsiche', one: 'Pfirsich', steps: 'ghghghgh', tx: 'jeder Baum: 1 Wachstum, dann Ernte = 1 Gießaktion, Zone frei' },
-  { k: 'raspberry', n: 'Himbeeren', one: 'Himbeere', steps: 'hhhhhhhhh', tx: 'Ernte: +3 Waren · 1/2/5 SP nach 3/6/9 Ernten' },
+  { k: 'peach', n: 'Pfirsiche', one: 'Pfirsich', steps: 'hghghgh', tx: 'Ernte: 1 Gießaktion, Zone frei; zwischen den Ernten je 1 Wachstum' },
+  { k: 'raspberry', n: 'Himbeeren', one: 'Himbeere', steps: 'hhhhhhhhh', tx: 'Ernte: +3 Waren · 1/2/3 SP nach 3/6/9 Ernten' },
 ];
 FRUITS.forEach(f => { f.len = f.steps.length; });
-const RASP_VP = { 3: 1, 6: 2, 9: 5 };
+const RASP_VP = { 3: 1, 6: 2, 9: 3 };
 const harvests = (p, k) => [...FRUITS.find(f => f.k === k).steps.slice(0, Math.max(0, p.yard[k].n))].filter(c => c === 'h').length;
 // Schuppen: Satz A (Schere) und B (Mäher) entsprechen den Listen von Farmerin Edith
 const SHED = [
@@ -447,23 +446,23 @@ const SHED = [
   { k: 'bowl', n: 'Obstschale', len: 3, vp: 0, set: 'A', tx: '1/4/7/10 SP für 1/2/3/4 Obstsorten.' },
   { k: 'barrel', n: 'Regentonne', len: 2, vp: 2, set: 'A', tx: 'Nach jedem Regen: 1 Gießaktion, Zone frei.' },
   { k: 'dish', n: 'Auflaufform', len: 2, vp: 0, set: 'A', tx: '1 SP je 2 geerntete Bohnen.' },
-  { k: 'labels', n: 'Schicke Etiketten', len: 3, vp: 2, set: 'B', tx: 'Bauernmarkt: +1 Staudenaktion.' },
+  { k: 'labels', n: 'Schicke Etiketten', len: 4, vp: 2, set: 'B', tx: 'Bauernmarkt: +1 Staudenaktion.' },
   { k: 'hivetool', n: 'Stockmeißel', len: 3, vp: 2, set: 'B', tx: 'Krokus-Aktion: +1 Bienenstock-Aktion.' },
   { k: 'pitchfork', n: 'Heugabel', len: 1, vp: 1, set: 'B', tx: 'Hortensien-Aktion: +1 Kompost.' },
-  { k: 'trimmer', n: 'Rasentrimmer', len: 4, vp: 6, set: 'B', tx: 'Kein Effekt.' },
-  { k: 'wheelbarrow', n: 'Schubkarre', len: 3, vp: 3, set: 'B', tx: 'Jede Schuppenaktion: +1 Ware.' },
-  { k: 'mulch', n: 'Mulch', len: 2, vp: 0, set: 'B', tx: 'Statt der Rondellaktion 2 Staudenaktionen.' },
-  { k: 'tractor', n: 'Neuer Traktor', len: 6, vp: 15, set: '', tx: 'Kein Effekt.' },
-  { k: 'carving', n: 'Schnitzset', len: 4, vp: 0, set: '', tx: 'Am Ende 1 SP je geerntetem Kürbis in deiner längsten Kürbis-Kette im Ring.' },
+  { k: 'trimmer', n: 'Rasentrimmer', len: 3, vp: 6, set: 'B', tx: 'Kein Effekt.' },
+  { k: 'wheelbarrow', n: 'Schubkarre', len: 2, vp: 3, set: 'B', tx: 'Jede Schuppenaktion: +1 Ware.' },
+  { k: 'mulch', n: 'Mulch', len: 1, vp: 1, set: 'B', tx: 'Rondellaktion verfallen lassen, dafür 1 Staudenaktion.' },
+  { k: 'tractor', n: 'Glänzender neuer Traktor', len: 6, vp: 18, set: '', tx: 'Kein Effekt.' },
+  { k: 'carving', n: 'Kürbis-Schnitzset', len: 3, vp: 0, set: '', tx: 'Am Ende 1 SP je geerntetem Kürbis.' },
   { k: 'spreader', n: 'Sämaschine', len: 4, vp: 2, set: '', tx: 'Beim Pflanzen: 1 Pflanze mehr (bis zu 3).' },
 ];
 const SHED_BY = k => SHED.find(s => s.k === k);
 // Warenleiste: Sterne bringen eine Bonusaktion; Markttabelle nach Warenstand
-const GOODS_MAX = 80;
-const STARS = [6, 12, 18, 25, 32, 40, 48, 56, 64, 72];
+const GOODS_MAX = 120;
+const STARS = Array.from({ length: 24 }, (_, i) => (i + 1) * 5); // Stern auf jedem 5. Feld (Bogen: 15 Felder je Zeile)
 const MARKET = [[70, ['per', 'per', 'bonus']], [50, ['per', 'per', 'yard']], [35, ['per', 'per', 'compost']], [20, ['per', 'yard']], [4, ['per', 'compost']], [0, ['compost']]];
 const MARKET_N = { per: 'Staude', yard: 'Hof', compost: 'Kompost', bonus: 'Bonus' };
-const COMPOST_MAX = 20;
+const COMPOST_MAX = 40;
 const SOLO_CHART = [[150, 'Du bekommst deine eigene TV-Show!'], [125, 'Dein Gartenbuch ist ein Bestseller!'], [100, 'Du bist eine Internet-berühmte Garten-Bloggerin!'], [80, 'Landesmeisterin im Gärtnern!'], [60, 'Deine Künste bringen dir ein blaues Band!'], [40, 'Du bist bereit für die Kreismesse!'], [0, 'Nächstes Mal klappt es besser!']];
 const BOT_NAMES = [
   ['Tante Rübe', { plant: 'tulpe', pants: '#F07A2A', pat: 'dots' }],
@@ -553,24 +552,6 @@ function dieSvg(v, fill = '#FFFBF5') {
   return `<svg viewBox="0 0 24 25" aria-label="Würfel ${v}"><rect x="2" y="3.5" width="20" height="20" rx="6" fill="${shade(fill === '#FFFBF5' ? '#EAD9C8' : fill, 0.85)}"/><rect x="2" y="2" width="20" height="20" rx="6" fill="${fill}"/>${Pp[v].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2" fill="${pip}"/>`).join('')}</svg>`;
 }
 function zoneNum(z) { const cols = [C.tomato, C.leaf, C.mustard, C.blue, C.rose, C.forest]; return `<svg viewBox="0 0 26 26" class="ill"><circle cx="13" cy="13" r="12" fill="${cols[z]}"/><text x="13" y="18" text-anchor="middle" font-family="Fredoka,sans-serif" font-weight="700" font-size="15" fill="#fff">${z + 1}</text></svg>`; }
-// Startbild im App-Stil: gedeckte Farbbänder, flache geometrische Scheune, kleine Gärtnerinnen am Horizont
-function bandsSvg() {
-  const bands = [[0, 64, '#7FA3C6'], [64, 124, '#88AACA'], [124, 176, '#95B1CC'], [176, 216, '#A6B9CC'], [216, 246, '#B9C3CD'], [246, 264, '#CAC5C6'], [264, 280, '#DCC6BB']];
-  const field = [[288, 300, '#5E6E9A'], [300, 308, '#A496AB'], [308, 322, '#6C7BA6'], [322, 330, '#B7AABD'], [330, 346, '#7584AD'], [346, 356, '#C2B7C5'], [356, 420, '#8A7867']];
-  const fig = (o, x, w) => gardener('band' + o.plant, o).replace('<svg viewBox="0 0 100 130" class="ill"', `<svg viewBox="0 0 100 130" x="${x}" y="${286 - w * 1.24}" width="${w}" height="${w * 1.3}" overflow="visible"`);
-  const corn = x => `<rect x="${x - 1.2}" y="306" width="2.4" height="44" fill="#4B3C33"/><path d="M${x},318 l-9,-6 l0,4 Z M${x},330 l9,-6 l0,4 Z M${x},340 l-8,-5 l0,4 Z" fill="#4B3C33"/><rect x="${x - 2.4}" y="300" width="4.8" height="9" fill="#E0B04A"/>`;
-  return `<svg viewBox="0 0 360 420" class="ill" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Illustration: flache Landschaft in Farbbändern mit roter Scheune, Maisstauden und drei kleinen Gärtnerinnen am Horizont">
-    ${bands.map(([a, b, c]) => `<rect x="0" y="${a}" width="360" height="${b - a}" fill="${c}"/>`).join('')}
-    <rect x="0" y="280" width="360" height="8" fill="#2B3245"/>
-    ${field.map(([a, b, c]) => `<rect x="0" y="${a}" width="360" height="${b - a}" fill="${c}"/>`).join('')}
-    <rect x="208" y="246" width="42" height="36" fill="#A8382F"/>
-    <path d="M250,246 L278,226 L306,246 V282 H250 Z" fill="#2A1E1E"/>
-    <path d="M208,246 L236,226 L278,226 L250,246 Z" fill="#E5C9BC"/>
-    <rect x="72" y="268" width="26" height="14" fill="#3B3F55"/><path d="M72,268 L85,259 L98,268 Z" fill="#C9B8A6"/>
-    ${fig({ plant: 'mais', pants: '#E0B04A', pat: 'stripes', pose: 0 }, 128, 22)}${fig({ plant: 'bohne', pants: '#5E6E9A', pat: 'stripes', pose: 1 }, 150, 24)}${fig({ plant: 'kuerbis', pants: '#A8382F', pat: 'dots', pose: 0 }, 174, 22)}
-    ${[34, 48, 62, 300, 314, 328].map(corn).join('')}
-  </svg>`;
-}
 function heroSvg() {
   const fig = (o, x, y, w) => gardener('hero' + o.plant, o).replace('<svg viewBox="0 0 100 130" class="ill"', `<svg viewBox="0 0 100 130" x="${x}" y="${y}" width="${w}" height="${w * 1.3}" overflow="visible"`);
   const dots = (cx, cy, rx, ry, col, n, seed) => { const r = prng(seed); let s = ''; for (let i = 0; i < n; i++) { const a = r() * Math.PI * 2, d = Math.sqrt(r()); s += `<circle cx="${(cx + Math.cos(a) * rx * d).toFixed(1)}" cy="${(cy + Math.sin(a) * ry * d).toFixed(1)}" r="${2.6 + r() * 1.6}" fill="${col}"/>`; } return s; };
@@ -746,14 +727,6 @@ function growCrop(p, z, k, i) {
   }
 }
 function pumpDone(p, r) { const [z, i] = PUMP_LOC[r]; return p.g[z].s[i] === PUMPS[r].h; }
-// längste Kette geernteter Nachbar-Kürbisse im Ring (Schnitzset)
-function pumpChain(p) {
-  const n = PUMPS.length, d = range(n).map(r => pumpDone(p, r));
-  if (d.every(Boolean)) return n;
-  let best = 0, cur = 0;
-  for (let k = 0; k < 2 * n; k++) { cur = d[k % n] ? cur + 1 : 0; best = Math.max(best, Math.min(cur, n)); }
-  return best;
-}
 const plantMax = p => shedDone(p, 'spreader') ? 3 : 2;
 function doPlant(p, z, list) {
   let n = 0;
@@ -786,12 +759,12 @@ function endScore(p) {
     zo.b.forEach(h => { if (h === BEAN_H) { row.garden += 1; beans++; } });
   });
   const yardItems = FRUITS.reduce((s, f) => s + harvests(p, f.k), 0);
-  for (const f of FLOWERS) if (p.per[f].n >= PER_LEN) row.per += PER[f].vp === 'yard' ? yardItems : PER[f].vp;
+  for (const f of FLOWERS) if (p.per[f].n >= PER_LEN) row.per += PER[f].vp === 'yard' ? Math.min(15, yardItems) : PER[f].vp;
   row.api = WAX_VP.slice(0, p.api.wax.n).reduce((a, b) => a + b, 0) + HONEY_VP.slice(0, p.api.honey.n).reduce((a, b) => a + b, 0) + (p.api.split.n >= 1 ? 3 : 0);
   row.yard = harvests(p, 'apple') * 3 + harvests(p, 'blackberry') * 2 + Object.entries(RASP_VP).reduce((s, [k, v]) => s + (harvests(p, 'raspberry') >= +k ? v : 0), 0);
   for (const it of SHED) if (shedDone(p, it.k)) {
     if (it.k === 'bowl') row.shed += [0, 1, 4, 7, 10][FRUITS.filter(f => harvests(p, f.k) > 0).length];
-    else if (it.k === 'carving') row.shed += pumpChain(p);
+    else if (it.k === 'carving') row.shed += range(PUMPS.length).filter(r => pumpDone(p, r)).length;
     else if (it.k === 'dish') row.shed += Math.floor(beans / 2);
     else row.shed += it.vp;
   }
@@ -872,7 +845,7 @@ function taskOptions(p, t) {
     case 'bonus': out = perOpts(p).concat(apiaryOpts(p), yardOpts(p), shedOpts(p)); break;
     case 'rain': out = [{ o: 'rain', ic: 'regen', label: 'Alle Zonen 1–6 gießen', sub: shedDone(p, 'barrel') ? 'danach Regentonne: 1 Gießaktion' : 'Zone für Zone, von 1 bis 6', apply: q => { for (let z = 0; z < 6; z++) doWater(q, z); if (shedDone(q, 'barrel')) front(q, { t: 'waterAny', src: 'Regentonne' }); } }]; break;
   }
-  if (t.r && shedDone(p, 'mulch') && FLOWERS.some(f => p.per[f].n < p.per[f].cap)) out.push({ o: 'mulch', ic: 'mulch', label: 'Mulch: stattdessen 2 Staudenaktionen', sub: 'Rondellaktion verfällt', apply: q => front(q, { t: 'per', src: 'Mulch' }, { t: 'per', src: 'Mulch' }) });
+  if (t.r && shedDone(p, 'mulch') && FLOWERS.some(f => p.per[f].n < p.per[f].cap)) out.push({ o: 'mulch', ic: 'mulch', label: 'Mulch: stattdessen 1 Staudenaktion', sub: 'Rondellaktion verfällt', apply: q => front(q, { t: 'per', src: 'Mulch' }) });
   return out;
 }
 function resolveTask(p, opt) { const t = p.tasks.shift(); if (opt) opt.apply(p); return t; }
@@ -1086,7 +1059,7 @@ function recordPlay() {
 }
 function spielregalProfiles() { try { return (JSON.parse(localStorage.getItem('spielregal:players') || '[]') || []).filter(p => p && p.name).map(p => p.name); } catch (e) { return []; } }
 const KEY = 'drei-schwestern-v1';
-const SAVE_V = 3; // v3: Bögen nach Fotos der Original-Bögen (Kürbis-Ring, Hof, Schuppen), ältere Stände sind nicht kompatibel
+const SAVE_V = 4; // v4: Bögen nach der Abbildung im Regelheft (Kürbis-Ring, Hof, Schuppen, Warenleiste), ältere Stände sind nicht kompatibel
 // Speichern & Verlassen: Der Spielstand wird ohnehin nach jeder Aktion
 // gespeichert; „verlassen“ führt zurück zum Startbildschirm, von dem aus die
 // Partie mit „Fortsetzen“ weiterläuft.
@@ -1152,8 +1125,9 @@ function viewStart() {
   const saved = load(); const st = U.setup; const prof = spielregalProfiles();
   return `<div class="wrap start">
     <div class="startbar"><a class="icobtn leave" href="../" aria-label="Beenden und zurück zu Spielregal"><svg viewBox="0 0 20 20" width="13" height="13" aria-hidden="true"><path d="M4.5 4.5l11 11M15.5 4.5l-11 11" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg><span>Beenden</span></a></div>
-    <div class="hero">${bandsSvg()}<div class="htxt"><h1 class="hand">Drei Schwestern.</h1><p>8 Runden · Harvest Edition · Roll &amp; Write</p></div></div>
-    <p class="sub" style="margin-top:14px">Mais, Bohnen &amp; Kürbis: das Roll &amp; Write nach den Regeln von <i>Three Sisters</i> (Harvest Edition).</p>
+    <div class="hero">${heroSvg()}</div>
+    <h1 class="hand">Drei Schwestern.</h1>
+    <p class="sub">8 Runden · Harvest Edition · Roll &amp; Write<br>Mais, Bohnen &amp; Kürbis: das Roll &amp; Write nach den Regeln von <i>Three Sisters</i> (Harvest Edition).</p>
     ${saved && saved.screen === 'game' ? `<button class="btn blue wide" data-a="resume">Partie fortsetzen · Runde ${saved.round}/${ROUNDS}</button><p style="margin:6px 0 0;font-size:12.5px;opacity:.75">${saved.savedAt ? `Gespeichert ${savedLabel(saved)} · ` : ''}<button class="link" data-a="discard" style="font-size:12.5px">verwerfen</button></p>` : ''}
     <div class="panel">
       <p class="label">Dein Name</p>
@@ -1302,7 +1276,7 @@ function rulesHtml() {
   <h4>Solo gegen Farmerin Edith</h4>
   <p>Du und Edith nehmt abwechselnd je zwei Würfel (ungerade Runden beginnst du). Die Startperson muss als zweiten Würfel den niedrigsten übrigen nehmen. Edith streicht zuerst eine ungepflanzte Pflanze in der Zone ihres Würfels (Kürbisse, dann Mais, dann Bohnen), dann je nach Feld: noch eine Pflanze, einen Schuppen-Gegenstand, einen Stern der Warenleiste, ein Feld im Bienenstock oder Hof oder das oberste Feld einer Staude. Ereignisse betreffen nur dich.</p>
   <h4>Unterschiede zum Original</h4>
-  <p style="font-size:13px">Ablauf, Aktionen, Ereignisse, Markttabelle, Stauden-Boni, Bienenstock, Hof, Schuppen-Gegenstände, Wertung und der Solomodus mit Edith folgen der Anleitung der Harvest Edition. Den Aufdruck der Wertungsbögen nennt die Anleitung nicht; er ist von Fotos der Original-Bögen abgelesen: Pflanzen je Zone (3/5/4/3/5/4 Mais, je eine Bohne), der Ring aus 12 Kürbissen mit den Stauden dazwischen, die Hof-Reihen (Äpfel und Pfirsiche mit Wachstumsfeldern) und die Schuppen-Gegenstände samt Traktor, Schnitzset und Sämaschine. Weiterhin geschätzt: die Waren der beiden 2-hohen Kürbisse, die Sterne der Warenleiste, die Boni im Hauptstock und die Lage der Rondellfelder. Im Solomodus wählt Edith den Mais automatisch. Illustrationen sind eigene Entwürfe.</p>`;
+  <p style="font-size:13px">Ablauf, Aktionen, Ereignisse, Markttabelle, Stauden-Boni, Bienenstock, Hof, Schuppen-Gegenstände, Wertung und der Solomodus mit Edith folgen der Anleitung der Harvest Edition. Den Aufdruck der Wertungsbögen nennt die Anleitung nicht; er ist von Fotos der Original-Bögen abgelesen: Pflanzen je Zone (3/5/4/3/5/4 Mais, je eine Bohne), der Ring aus 12 Kürbissen mit den Stauden dazwischen, die Hof-Reihen (Äpfel und Pfirsiche mit Wachstumsfeldern), die Schuppen-Gegenstände samt Traktor, Schnitzset und Sämaschine, die Warenleiste (120 Felder, Stern auf jedem 5.) und 40 Kompostfelder – abgelesen von der Bogen-Abbildung im Regelheft. Das Rondell hat wie das Spielbrett 7 Felder. Im Solomodus wählt Edith den Mais automatisch. Illustrationen sind eigene Entwürfe.</p>`;
 }
 function viewSheet() {
   const sh = U.sheet; if (!sh) return '';

@@ -32,20 +32,24 @@ const COVERS = {
   "grand-austria-hotel": () => `<div style="position:absolute;inset:0;background:#F6EBD6">
       <div style="position:absolute;left:0;right:0;top:0;height:300px;background:#E4472E;background-image:radial-gradient(#F28AA6 2.2px,transparent 2.6px);background-size:22px 22px"></div>
       <div style="position:absolute;left:150px;top:34px;width:180px;height:210px">${kaiser()}</div>
-      <div style="position:absolute;left:-10px;right:-10px;bottom:-6px;height:410px">${heroSvg()}</div>
+      <div style="position:absolute;left:-10px;right:-10px;bottom:-6px;height:410px">${heroSvg().replace('<rect x="120" y="58" width="120" height="30" rx="8" fill="#FFF9EE"/>', '<rect x="92" y="55" width="176" height="35" rx="9" fill="#FFF9EE"/>').replace('font-size="24" fill="#161616">GRAND HOTEL</text>', 'font-size="25" fill="#161616">Grand Hotel Wien</text>')}</div>
       <div style="position:absolute;left:30px;top:36px;width:64px;height:64px;transform:rotate(-12deg)">${dieSvg(6)}</div>
       <div style="position:absolute;right:36px;top:150px;width:54px;height:54px;transform:rotate(14deg)">${dieSvg(3)}</div>
-      <div style="position:absolute;left:20px;right:20px;bottom:36px;text-align:center"><span style="display:inline-block;transform:rotate(-3deg);background:#F6EBD6;border:4px solid #161616;border-radius:14px;box-shadow:6px 6px 0 #161616;padding:4px 18px 8px;font-family:'Caveat Brush',cursive;font-size:52px;line-height:1;color:#161616;white-space:nowrap">Grand Hotel Wien</span></div>
       <div style="position:absolute;inset:10px;border:5px solid #161616;border-radius:20px;box-shadow:inset 0 0 0 3px #F6EBD6"></div></div>`,
-  "three-sisters": () => `<div style="position:absolute;inset:0;background:#7FA3C6">${bandsSvg()}
-      <div style="position:absolute;left:36px;top:42px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:66px;line-height:.95;letter-spacing:-2.6px;color:#2B3245">Drei<br>Schwestern.</div>
-      <div style="position:absolute;left:38px;top:186px;font-family:'DM Sans',sans-serif;font-weight:500;font-size:17px;color:rgba(43,50,69,.8)">Harvest Edition · Roll &amp; Write</div></div>`,
+  "three-sisters": () => `<div style="position:absolute;inset:0;background:#F8ECE1">
+      <svg viewBox="0 0 480 640" style="position:absolute;inset:0;width:100%;height:100%"><g filter="url(#riso)">
+        <circle cx="400" cy="214" r="58" fill="#FFD84D"/><circle cx="56" cy="250" r="26" fill="#F4A6B8"/>
+        <path d="M-20,330 C80,260 160,300 240,280 C330,254 400,290 500,264 V640 H-20 Z" fill="#DDEBC4"/></g>
+        ${P.moth(300, 250, 2, C.mustard)}${P.moth(170, 236, 1.6, C.sky)}</svg>
+      <div style="position:absolute;left:-50px;right:-50px;bottom:-8px;height:430px">${heroSvg()}</div>
+      <div style="position:absolute;left:34px;top:34px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:62px;line-height:.95;letter-spacing:-2.4px;color:#2B3245">Drei<br>Schwestern.</div>
+      <div style="position:absolute;left:36px;top:166px;font-family:'DM Sans',sans-serif;font-weight:500;font-size:16px;color:rgba(43,50,69,.75)">Harvest Edition · Roll &amp; Write</div></div>`,
   "rebel-princess": () => `<div style="position:absolute;inset:0;background:#F8EEDC">
       <svg viewBox="0 0 480 640" style="position:absolute;inset:0;width:100%;height:100%"><g filter="url(#crayon)" stroke="#1A1A1A" stroke-width="3">
         <path d="M30,598 H450" fill="none"/>
         ${[[418, 250], [80, 330], [420, 380], [395, 300]].map(([x, y]) => `<path d="M${x},${y - 12} l3.5,8.5 l8.5,3.5 l-8.5,3.5 l-3.5,8.5 l-3.5,-8.5 l-8.5,-3.5 l8.5,-3.5 Z" fill="#1A1A1A" stroke="none"/>`).join('')}</g></svg>
       <div style="position:absolute;left:40px;top:222px;width:316px;height:340px;background:#E27FE0"></div><div style="position:absolute;left:58px;top:162px;width:360px;height:468px"><svg viewBox="0 0 100 130" class="ill">${popify(frogSvg(), "#2BA35A")}</svg></div>
-      <div style="position:absolute;left:40px;top:38px;font-family:Anton,Impact,sans-serif;font-size:66px;line-height:.95;letter-spacing:.5px;text-transform:uppercase;color:#1A1A1A">Prinzessinnen-<br>ball</div>
+      <div style="position:absolute;left:40px;top:34px;font-family:'Caveat Brush',cursive;font-size:64px;line-height:.9;letter-spacing:.5px;text-transform:uppercase;color:#1A1A1A;transform:rotate(-2deg);transform-origin:left">Prinzessinnen-<br>ball</div>
       <div style="position:absolute;inset:12px;border:4px solid #1A1A1A;border-radius:22px"></div></div>`,
   "countryside": () => `<div style="position:absolute;inset:0;background:${PAL.cream}">
       <svg viewBox="0 0 300 400" style="position:absolute;inset:0;width:100%;height:100%">
@@ -76,7 +80,7 @@ for (const [dir, fn] of Object.entries(COVERS)) {
     const d = document.createElement("div");
     d.id = "cover";
     d.style.cssText = `position:fixed;left:0;top:0;width:${w}px;height:${h}px;z-index:99999;overflow:hidden`;
-    d.innerHTML = html + "<style>#cover text{display:none}</style>";
+    d.innerHTML = html;
     document.body.appendChild(d);
   }, [fn.toString(), W, H]);
   await page.evaluate(() => document.fonts.ready);
