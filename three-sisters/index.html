@@ -281,6 +281,21 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .top{background:rgba(233,230,232,.6);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3)}
 .top .banner{background:rgba(247,245,246,.72)}
 .top .banner.mine{background:rgba(142,169,200,.8)}
+.pickhint{font-size:13px;margin:2px 0 10px}
+.bogen{background:var(--bg);border-radius:22px;padding:2px 10px 12px;margin:0 -6px}
+.box.live{background:#fff;color:var(--navy);box-shadow:0 0 0 2.5px var(--navy);animation:boxpulse 1.2s ease-in-out infinite;cursor:pointer;position:relative;z-index:1}
+@keyframes boxpulse{50%{box-shadow:0 0 0 2.5px var(--navy),0 0 0 6px rgba(127,163,198,.55)}}
+.nopick{opacity:.38;filter:grayscale(.7)}
+.pick > .rh, .per.pick b{color:var(--navy)}
+.bogen .rh{flex-wrap:wrap;row-gap:0}
+.tip{display:block;flex-basis:100%;font-size:11px;font-weight:600;line-height:1.3;color:#5E6E9A;margin:1px 0 0}
+.stamp{animation:stamp .45s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes stamp{0%{transform:scale(2) rotate(-16deg);opacity:0}55%{opacity:1}100%{transform:none;opacity:1}}
+.die.roll{animation:roll .65s cubic-bezier(.3,1.4,.5,1) both}
+@keyframes roll{0%{transform:translate(-26px,-40px) rotate(-220deg) scale(.5);opacity:0}100%{transform:none;opacity:1}}
+.flyer{position:fixed;z-index:300;width:30px;height:30px;pointer-events:none}
+.flyer svg{width:100%;height:100%}
+@media (prefers-reduced-motion: reduce){.stamp,.die.roll,.box.live{animation:none}}
 </style>
 </head>
 <body>
@@ -872,7 +887,7 @@ function perOpts(p, only) {
 const FRUIT_GAIN = { apple: '3 SP am Ende', blackberry: '2 SP am Ende', peach: '1 Gießaktion in einer Zone deiner Wahl', raspberry: '+3 Waren' };
 function yardSub(p, f) {
   const n = p.yard[f.k].n;
-  if (f.steps[n] !== 'h') return 'Dieses Kästchen: Wachstum, noch keine Ernte – die nächste ist dann eine Ernte.';
+  if (f.steps[n] !== 'h') return 'Dieses Kästchen: Wachstum, danach Ernte';
   return `Dieses Kästchen: Ernte → ${FRUIT_GAIN[f.k]}${f.k === 'raspberry' && RASP_VP[n + 1] ? ` und ${RASP_VP[n + 1]} SP` : ''}.`;
 }
 function yardOpts(p, only) {
@@ -1161,8 +1176,9 @@ function stalk(p, z, k, i, o = {}) {
   const sel = o.sel && o.sel.some(([a, b]) => a === k && b === i);
   const cells = range(H).map(j => `<span class="cell ${j === H - 1 ? 'h' : ''} ${h === -1 ? 'cut' : j < h ? 'x ' + k : sel && j === 0 ? 'n' : ''}"></span>`).join('');
   const can = o.pick && canPlant(p, z, k, i);
+  const sk = p === human() ? ` data-sk="${z}|${k}|${i}"` : '';
   const lab = k === 's' ? `<span class="pg">${pumpOf(z, i).g}</span>` : '';
-  return can ? `<button class="stk ${k} can ${sel ? 'on' : ''}" data-a="pk" data-k="${k}" data-i="${i}" aria-label="${cropName(k, i, z)} pflanzen">${cells}${lab}</button>` : `<span class="stk ${k}">${cells}${lab}</span>`;
+  return can ? `<button class="stk ${k} can ${sel ? 'on' : ''}"${sk} data-a="pk" data-k="${k}" data-i="${i}" aria-label="${cropName(k, i, z)} pflanzen">${cells}${lab}</button>` : `<span class="stk ${k}"${sk}>${cells}${lab}</span>`;
 }
 function zoneHtml(p, z, o = {}) {
   const Z = ZONES[z];
@@ -1170,7 +1186,8 @@ function zoneHtml(p, z, o = {}) {
   const pumps = Z.pump.map((r, i) => stalk(p, z, 's', i, o) + `<span class="bt" title="${FLOWER_N[RING_F[r]]} – zwischen diesem Kürbis und dem nächsten im Ring (Zone ${PUMPS[(r + 1) % PUMPS.length].z + 1})">${icon(RING_F[r])}</span>`).join('');
   return `<div class="zone grainy ${o.hl ? 'hl' : ''} ${o.big ? 'big' : ''}" data-z="${z}" data-info="Zone ${z + 1}: Würfel mit ${z + 1} Augen arbeiten hier. Pflanzen füllt das unterste Kästchen von bis zu 2 Pflanzen, Gießen lässt alle gepflanzten wachsen. Mais 4 hoch (3 SP), Bohne 2 hoch (1 SP, erst wenn ihr Mais 2 hoch ist), Kürbisse unten bringen Waren."><span class="zn">${zoneNum(z)}</span><div class="plants">${plants}</div><div class="pumps">${pumps}</div></div>`;
 }
-const boxRow = (n, cap, len, lab = () => '', cls = () => '', info = () => '') => `<div class="boxes">${range(len).map(i => { const t = info(i); return `<span class="box ${i < n ? 'x' : i >= cap ? 'cut' : ''} ${cls(i)}"${t ? ` data-info="${esc(t)}"` : ''}>${lab(i)}</span>`; }).join('')}</div>`;
+// lv = [Index, Optionsschlüssel]: dieses Kästchen ist direkt antippbar (Auswahl auf dem Bogen)
+const boxRow = (n, cap, len, lab = () => '', cls = () => '', info = () => '', lv = null, rk = '') => `<div class="boxes"${rk ? ` data-rk="${rk}"` : ''}>${range(len).map(i => { const t = info(i); return lv && lv[0] === i ? `<button class="box live ${cls(i)}" data-a="opt" data-o="${lv[1]}"${t ? ` data-info="${esc(t)}"` : ''} aria-label="Dieses Kästchen ausfüllen">${lab(i)}</button>` : `<span class="box ${i < n ? 'x' : i >= cap ? 'cut' : ''} ${cls(i)}"${t ? ` data-info="${esc(t)}"` : ''}>${lab(i)}</span>`; }).join('')}</div>`;
 // Texte für langes Drücken
 const RONDEL_INFO = { pw: 'Pflanzen oder Gießen: Nach der Gartenaktion deines Würfels pflanzt oder gießt du noch einmal in derselben Zone.', ay: 'Bienenstock oder Hof: 1 Feld im Bienenstock (erst Hauptstock, dann Wachs, Honig oder Ableger) oder 1 Feld bei einer Obstsorte im Hof.', shed: 'Schuppenzeit: 1 Kästchen bei einem Schuppen-Gegenstand ausfüllen. Fertige Gegenstände helfen den Rest des Spiels und bringen SP.', cg: '1 Kompost & 4 Waren: +1 Kompost (verschiebt einen Würfel um ±1) und 4 Schritte auf der Warenleiste.', market: 'Bauernmarkt: Je höher dein Warenstand, desto mehr Aktionen gibt es (Stauden, Hof, Kompost, Bonus).' };
 const perInfo = (f, i) => i === PER_LEN - 1 ? `${FLOWER_N[f]} fertig: ${PER[f].vp === 'yard' ? 'am Ende 1 SP je Hof-Ernte (höchstens 15)' : PER[f].vp + ' SP am Ende'}` : PER[f].box[i] ? `Beim Ausfüllen: ${EFFECT_N[PER[f].box[i]]}` : '';
@@ -1188,17 +1205,28 @@ function sheetHtml(p, hlZone = -1) {
       <div class="gbar">${STARS.map((s, i) => { const f = Math.max(0, Math.min(5, p.goods - (s - 5))) * 20, cut = p.starX.includes(i); return `<i class="${cut ? 'cut' : s <= p.goods ? 'got' : ''}" style="--f:${f}%" data-info="${esc(`Waren ${s - 4}–${s}: ${cut ? 'Stern gestrichen, hier gibt es keine Bonusaktion mehr.' : s <= p.goods ? 'Stern erreicht, Bonusaktion bekommen.' : `Bei ${s} Waren gibt es eine Bonusaktion.`}`)}">★</i>`; }).join('')}</div>
       <div style="font-size:11.5px;margin-top:3px">Jedes Feld = 5 Waren, voll = ★ Bonusaktion${nextStar >= 0 ? ` (nächster bei ${STARS[nextStar]})` : ''} · Markt jetzt: ${market[1].map(a => MARKET_N[a]).join(' + ')}</div></div>
    </div>
-   <p class="label" style="margin-top:14px">Stauden <span class="lv">${sc.per} SP</span></p>
+   ${tracksHtml(p)}`;
+}
+// Leisten des Bogens (Stauden, Bienenstock, Hof, Schuppen). Mit pk (Optionsschlüssel → Option) wird daraus
+// die Auswahl direkt auf dem Bogen: das nächste Kästchen jeder wählbaren Leiste leuchtet und ist antippbar.
+function tracksHtml(p, pk = null) {
+  const sc = endScore(p);
+  const L = (key, at) => pk && pk[key] ? [at, key] : null;
+  const R8 = key => p === human() ? key : ''; // Zeilenschlüssel für Stempel-Effekte (nur eigener Bogen)
+  const rc = key => !pk ? '' : pk[key] ? 'pick' : 'nopick';
+  const tip = key => pk && pk[key] ? `<span class="tip">✎ ${esc(String(pk[key].sub || '').replace(/^Dieses Kästchen: /, ''))}</span>` : '';
+  const has = pre => !pk || Object.keys(pk).some(k => k.startsWith(pre));
+  return `${has('per:') ? `   <p class="label" style="margin-top:14px">Stauden <span class="lv">${sc.per} SP</span></p>
    <p class="note" style="margin:0 0 8px">Symbole: Obst = 1 Aktion bei dieser Obstsorte · +1/+2 ${icon('kompost')} Kompost · +2 ${icon('waren')} Waren · ${icon('schuppen')} Schuppenaktion · Hof = Hofaktion · 🌱 = Pflanzaktion · ±1 = Würfel gratis verschieben · rote Zahl = SP, wenn die Staude fertig ist (H bei der Tulpe: 1 SP je Hof-Ernte). <b>Lange drücken</b> zeigt die Details.</p>
-   <div class="pers">${FLOWERS.map(f => { const st = p.per[f]; return `<div class="per"><span class="pi">${icon(f)}</span><b>${FLOWER_N[f]}</b>${boxRow(st.n, st.cap, PER_LEN, i => i === PER_LEN - 1 ? (PER[f].vp === 'yard' ? 'H' : PER[f].vp) : effS(PER[f].box[i]) || '', i => i === PER_LEN - 1 ? 'vp' : PER[f].box[i] ? 't' : '', i => perInfo(f, i))}</div>`; }).join('')}</div>
-   <p class="label" style="margin-top:14px">Bienenstock <span class="lv">${sc.api} SP</span></p>
-   <div class="rrow"><div class="rh">${icon('bienen')}Hauptstock</div>${boxRow(p.hive, HIVE.length, HIVE.length, i => effS(HIVE[i]) || '', i => HIVE[i] ? 't' : '', i => HIVE[i] ? `Beim Ausfüllen: ${EFFECT_N[HIVE[i]]}` : 'Hauptstock: erst ganz füllen, dann Wachs, Honig oder Ableger.')}
-     <div class="apis">${['wax', 'honey', 'split'].map(s => `<div><div class="rh">${icon(s)}${API_N[s]}</div>${boxRow(p.api[s].n, p.api[s].cap, 4, i => { const st = API_STEPS[s]; if (st[i] !== 'h') return ''; const hi = [...st.slice(0, i)].filter(c => c === 'h').length; return s === 'wax' ? `${WAX_GOODS[hi]}W` : s === 'honey' ? HONEY_VP[hi] : effS(SPLIT[i]); }, i => API_STEPS[s][i] === 'h' ? 'hv t' : 'gr', i => { const st = API_STEPS[s]; if (st[i] !== 'h') return 'Wachstum: nur ein Schritt weiter, noch keine Ernte.'; const hi = [...st.slice(0, i)].filter(c => c === 'h').length; return s === 'wax' ? `Wachs-Ernte: ${WAX_GOODS[hi]} Waren, am Ende ${WAX_VP[hi]} SP` : s === 'honey' ? `Honig-Ernte: am Ende ${HONEY_VP[hi]} SP` : `Ableger: ${EFFECT_N[SPLIT[i]]}`; })}</div>`).join('')}</div>
+   <div class="pers">${FLOWERS.map(f => { const st = p.per[f]; return `<div class="per ${rc('per:' + f)}"><span class="pi">${icon(f)}</span><b>${FLOWER_N[f]}</b>${tip('per:' + f)}${boxRow(st.n, st.cap, PER_LEN, i => i === PER_LEN - 1 ? (PER[f].vp === 'yard' ? 'H' : PER[f].vp) : effS(PER[f].box[i]) || '', i => i === PER_LEN - 1 ? 'vp' : PER[f].box[i] ? 't' : '', i => perInfo(f, i), L('per:' + f, st.n), R8('per:' + f))}</div>`; }).join('')}</div>
+` : ''}${has('api:') ? `   <p class="label" style="margin-top:14px">Bienenstock <span class="lv">${sc.api} SP</span></p>
+   <div class="rrow"><div class="${rc('api:hive')}"><div class="rh">${icon('bienen')}Hauptstock${tip('api:hive')}</div>${boxRow(p.hive, HIVE.length, HIVE.length, i => effS(HIVE[i]) || '', i => HIVE[i] ? 't' : '', i => HIVE[i] ? `Beim Ausfüllen: ${EFFECT_N[HIVE[i]]}` : 'Hauptstock: erst ganz füllen, dann Wachs, Honig oder Ableger.', L('api:hive', p.hive), R8('api:hive'))}</div>
+     <div class="apis">${['wax', 'honey', 'split'].map(s => `<div class="${rc('api:' + s)}"><div class="rh">${icon(s)}${API_N[s]}${tip('api:' + s)}</div>${boxRow(p.api[s].n, p.api[s].cap, 4, i => { const st = API_STEPS[s]; if (st[i] !== 'h') return ''; const hi = [...st.slice(0, i)].filter(c => c === 'h').length; return s === 'wax' ? `${WAX_GOODS[hi]}W` : s === 'honey' ? HONEY_VP[hi] : effS(SPLIT[i]); }, i => API_STEPS[s][i] === 'h' ? 'hv t' : 'gr', i => { const st = API_STEPS[s]; if (st[i] !== 'h') return 'Wachstum: nur ein Schritt weiter, noch keine Ernte.'; const hi = [...st.slice(0, i)].filter(c => c === 'h').length; return s === 'wax' ? `Wachs-Ernte: ${WAX_GOODS[hi]} Waren, am Ende ${WAX_VP[hi]} SP` : s === 'honey' ? `Honig-Ernte: am Ende ${HONEY_VP[hi]} SP` : `Ableger: ${EFFECT_N[SPLIT[i]]}`; }, L('api:' + s, p.api[s].n), R8('api:' + s))}</div>`).join('')}</div>
      <div style="font-size:11.5px;margin-top:4px">Erst den Hauptstock füllen, dann Wachs (Waren, 2/2/5 SP), Honig (5/5/8 SP) oder Ableger (3 SP + Aktionen). Runde Felder sind Ernten, eckige nur Wachstum.</div></div>
-   <p class="label" style="margin-top:14px">Hof <span class="lv">${sc.yard} SP</span></p>
-   <div class="fruits">${FRUITS.map(f => `<div class="rrow"><div class="rh">${icon(f.k)}${f.n}</div>${boxRow(p.yard[f.k].n, p.yard[f.k].cap, f.len, i => f.k === 'raspberry' && RASP_VP[i + 1] ? RASP_VP[i + 1] : f.steps[i] === 'h' && f.k === 'apple' ? '3' : f.steps[i] === 'h' && f.k === 'blackberry' ? '2' : '', i => (f.steps[i] === 'h' ? 'hv ' : 'gr ') + (f.k === 'raspberry' && RASP_VP[i + 1] ? 't' : ''), i => fruitInfo(f, i))}<div class="tx">${f.tx}</div></div>`).join('')}</div>
-   <p class="label" style="margin-top:14px">Schuppen <span class="lv">${sc.shed} SP</span></p>
-   <div class="tools">${SHED.map(it => { const st = p.shed[it.k]; return `<div class="rrow tool ${shedDone(p, it.k) ? 'done' : ''} ${st.x ? 'gone' : ''}"><div class="rh">${icon(it.k)}${it.n}</div>${boxRow(st.n, st.x ? st.n : it.len, it.len, i => i === it.len - 1 && it.vp ? it.vp : '', i => i === it.len - 1 ? 't' : '', i => i === it.len - 1 ? `${it.n} fertig: ${it.tx}${it.vp ? ` ${it.vp} SP.` : ''}` : `${it.n}: ${it.len} Kästchen bis fertig.`)}<div class="tx">${esc(it.tx)}${it.vp ? ` ${it.vp} SP.` : ''}</div></div>`; }).join('')}</div>`;
+` : ''}${has('yard:') ? `   <p class="label" style="margin-top:14px">Hof <span class="lv">${sc.yard} SP</span></p>
+   <div class="fruits">${FRUITS.map(f => `<div class="rrow ${rc('yard:' + f.k)}"><div class="rh">${icon(f.k)}${f.n}${tip('yard:' + f.k)}</div>${boxRow(p.yard[f.k].n, p.yard[f.k].cap, f.len, i => f.k === 'raspberry' && RASP_VP[i + 1] ? RASP_VP[i + 1] : f.steps[i] === 'h' && f.k === 'apple' ? '3' : f.steps[i] === 'h' && f.k === 'blackberry' ? '2' : '', i => (f.steps[i] === 'h' ? 'hv ' : 'gr ') + (f.k === 'raspberry' && RASP_VP[i + 1] ? 't' : ''), i => fruitInfo(f, i), L('yard:' + f.k, p.yard[f.k].n), R8('yard:' + f.k))}<div class="tx">${f.tx}</div></div>`).join('')}</div>
+` : ''}${has('shed:') ? `   <p class="label" style="margin-top:14px">Schuppen <span class="lv">${sc.shed} SP</span></p>
+   <div class="tools">${SHED.map(it => { const st = p.shed[it.k]; return `<div class="rrow tool ${shedDone(p, it.k) ? 'done' : ''} ${st.x ? 'gone' : ''} ${rc('shed:' + it.k)}"><div class="rh">${icon(it.k)}${it.n}${tip('shed:' + it.k)}</div>${boxRow(st.n, st.x ? st.n : it.len, it.len, i => i === it.len - 1 && it.vp ? it.vp : '', i => i === it.len - 1 ? 't' : '', i => i === it.len - 1 ? `${it.n} fertig: ${it.tx}${it.vp ? ` ${it.vp} SP.` : ''}` : `${it.n}: ${it.len} Kästchen bis fertig.`, L('shed:' + it.k, st.n), R8('shed:' + it.k))}<div class="tx">${esc(it.tx)}${it.vp ? ` ${it.vp} SP.` : ''}</div></div>`; }).join('')}</div>` : ''}`;
 }
 function viewStart() {
   const saved = load(); const st = U.setup; const prof = spielregalProfiles();
@@ -1320,11 +1348,10 @@ function taskSheet() {
     const mul = opts.find(o => o.o === 'mulch');
     if (mul) h += `<div class="opts"><button class="opt" data-a="opt" data-o="mulch">${icon('mulch')}<span><b>${mul.label}</b><small>${mul.sub}</small></span></button></div>`;
   } else {
-    const hint = { ay: 'Wähle <b>eine</b> Leiste und fülle dort das nächste Kästchen aus – im Bienenstock oder bei einer Obstsorte im Hof. Unter jeder Leiste steht, was dir genau dieses Kästchen bringt.', yard: 'Fülle bei einer Obstsorte das nächste Kästchen aus. Darunter steht, was es dir bringt.', apiary: 'Fülle im Bienenstock das nächste Kästchen aus. Darunter steht, was es dir bringt.', per: 'Fülle bei einer Staude das nächste Kästchen aus. Darunter steht, was es dir bringt.', shed: 'Fülle bei einem Schuppen-Gegenstand das nächste Kästchen aus. Ist er fertig, wirkt er den Rest des Spiels.', bonus: 'Bonusaktion: Fülle ein Kästchen bei Stauden, Bienenstock, Hof oder Schuppen aus.' }[t.t];
-    if (hint) h += `<p style="font-size:13px;margin:2px 0 10px">${hint}</p>`;
-    h += `<div class="opts">${opts.map(o => `<button class="opt" data-a="opt" data-o="${o.o}">${icon(o.ic)}<span><b>${esc(o.label)}</b><small>${esc(o.sub || '')}</small></span></button>`).join('')}</div>`;
-    const done = doneOpts(me, t);
-    if (done.length) h += `<p class="label" style="margin-top:14px">Schon fertig</p><div class="opts">${done.map(o => `<div class="opt off" aria-disabled="true">${icon(o.ic)}<span><b>${esc(o.label)}</b><small>${esc(o.sub)}</small></span></div>`).join('')}</div>`;
+    const hint = { ay: 'Fülle auf deinem Bogen <b>ein</b> leuchtendes Kästchen aus – im Bienenstock oder bei einer Obstsorte im Hof.', yard: 'Fülle bei einer Obstsorte das leuchtende Kästchen aus.', apiary: 'Fülle im Bienenstock ein leuchtendes Kästchen aus.', per: 'Fülle bei einer Staude das leuchtende Kästchen aus.', shed: 'Fülle bei einem Schuppen-Gegenstand das leuchtende Kästchen aus. Fertige Gegenstände wirken den Rest des Spiels.', bonus: 'Bonusaktion: Fülle irgendwo auf deinem Bogen ein leuchtendes Kästchen aus.' }[t.t];
+    const track = opts.filter(o => /^(per|api|yard|shed):/.test(o.o)), other = opts.filter(o => !track.includes(o));
+    if (track.length) h += `<p class="pickhint">✎ ${hint || 'Tippe ein leuchtendes Kästchen an.'} Das Etikett neben der Leiste sagt, was es dir bringt.</p><div class="bogen">${tracksHtml(me, Object.fromEntries(track.map(o => [o.o, o])))}</div>`;
+    if (other.length) h += `<div class="opts">${other.map(o => `<button class="opt" data-a="opt" data-o="${o.o}">${icon(o.ic)}<span><b>${esc(o.label)}</b><small>${esc(o.sub || '')}</small></span></button>`).join('')}</div>`;
   }
   h += `<button class="skip" data-a="tskip">${opts.length ? 'Aktion verfallen lassen' : 'Nichts möglich – weiter'}</button>`;
   return sheetWrap(h);
@@ -1365,7 +1392,7 @@ function viewSheet() {
   const sh = U.sheet; if (!sh) return '';
   switch (sh.type) {
     case 'rules': return sheetWrap(`<div class="rules">${rulesHtml()}</div>`);
-    case 'menu': return sheetWrap(`<h3>Menü</h3><div class="opts">${U.tut ? '<button class="btn wide" data-a="tutquit">Lernspiel beenden</button>' : ''}${S && S.screen === 'game' && !S.tut ? '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}<button class="btn white wide" data-a="rules">Spielregeln</button><button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
+    case 'menu': return sheetWrap(`<h3>Menü</h3><div class="opts">${U.tut ? '<button class="btn wide" data-a="tutquit">Lernspiel beenden</button>' : ''}${S && S.screen === 'game' && !S.tut ? '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}<button class="btn white wide" data-a="rules">Spielregeln</button><button class="btn white wide" data-a="sound">Töne: ${SND.on ? 'an' : 'aus'}</button><button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
     case 'opp': { const p = S.players[sh.p]; return sheetWrap(`<h3>${esc(p.name)}</h3><p style="font-size:13px">★ ${endScore(p).total} Punkte</p>${sheetHtml(p)}`); }
     case 'die': return dieSheet();
     case 'task': return taskSheet();
@@ -1445,9 +1472,9 @@ const TUT_STEPS = [
     text: 'Pflanze zwei <b>Kürbisse</b>. Der erste ist nur 1 Kästchen hoch, er wird sofort geerntet.' },
   { ch: 'Runde 1 · Kürbisse', sel: '[data-a=pk][data-k="s"][data-i="1"]', allow: { pk: d => d.k === 's' && d.i === '1' }, done: () => (U.sel || []).length >= 2, text: 'Und den zweiten Kürbis.' },
   { ch: 'Runde 1 · Kürbisse', sel: '[data-a=plant]', allow: { plant: true }, done: isTask('ay'), text: 'Tippe auf „Pflanzen“.' },
-  { ch: 'Runde 1 · Waren', why: 'Bienenstock und Hof sind dein Warenmotor: Sie bringen Waren auch dann, wenn die Augenzahl für deinen Garten gerade nicht passt.', sel: '.opt[data-o="yard:raspberry"]', allow: { opt: d => d.o === 'yard:raspberry' }, done: isTask('shed'),
+  { ch: 'Runde 1 · Waren', why: 'Bienenstock und Hof sind dein Warenmotor: Sie bringen Waren auch dann, wenn die Augenzahl für deinen Garten gerade nicht passt.', sel: '[data-a=opt][data-o="yard:raspberry"]', allow: { opt: d => d.o === 'yard:raspberry' }, done: isTask('shed'),
     text: 'Der Kürbis brachte <b>1 Ware</b>. Jetzt Bienenstock oder Hof: Nimm eine <b>Himbeere</b>, sie bringt sofort 3 Waren.' },
-  { ch: 'Rundenende · Ereignis', why: 'Schuppen-Gegenstände arbeiten den Rest des Spiels für dich. Je früher sie fertig sind, desto mehr bringen sie.', sel: '.opt[data-o="shed:barrel"]', allow: { opt: d => d.o === 'shed:barrel' }, done: () => !TUT_ME().tasks.length,
+  { ch: 'Rundenende · Ereignis', why: 'Schuppen-Gegenstände arbeiten den Rest des Spiels für dich. Je früher sie fertig sind, desto mehr bringen sie.', sel: '[data-a=opt][data-o="shed:barrel"]', allow: { opt: d => d.o === 'shed:barrel' }, done: () => !TUT_ME().tasks.length,
     text: 'Zum Rundenende das <b>Ereignis</b>: In Runde 1 gibt es eine Schuppenaktion. Beginne die <b>Regentonne</b>. Fertig gießt sie nach jedem Regen extra.' },
   { ch: 'Nebenbei: Waren', why: 'Bonusaktionen sind Gratis-Züge. Wer die Warenleiste vernachlässigt, verschenkt sie.', sel: '.goods', text: '<b>Waren</b> füllen die Warenleiste – deinen Stand siehst du immer oben neben dem Kompost. Erreichst du einen <b>Stern</b>, gibt es eine Bonusaktion. Und dein Warenstand bestimmt, was du auf dem <b>Bauernmarkt</b> bekommst.' },
   { ch: 'Nebenbei: Stauden', why: 'Stauden sind ein zweiter Weg zu Punkten, der nicht vom Würfelglück im Garten abhängt.', sel: '.pers', text: '<b>Stauden</b> füllst du über den Markt, Sterne und Kürbis-Paare. Jedes Feld kann einen Bonus geben, die vollendete Staude bringt Punkte.' },
@@ -1470,6 +1497,113 @@ function tutBot() {
   takeDie(p, d.i, 0); botTasks(p); afterPick();
 }
 
+
+// ---------- Atmosphäre: Stempel, Wachsen & Ernten, lebendiges Rondell, Töne ----------
+// Nach jedem Neuzeichnen wird der eigene Bogen mit dem vorherigen Stand verglichen; daraus entstehen
+// die Effekte. Rein kosmetisch: Spielstand und Regeln bleiben unberührt.
+const RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const SND = (() => {
+  let ctx = null, on = true; const last = {};
+  try { on = localStorage.getItem('ts-sound') !== 'off'; } catch (e) { }
+  const ac = () => { if (!ctx) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; ctx = new C(); } if (ctx.state === 'suspended') ctx.resume(); return ctx; };
+  document.addEventListener('pointerdown', () => { if (on) ac(); }, true); // iOS: Ton erst nach Berührung
+  const noise = (c, dur) => { const b = c.createBuffer(1, Math.ceil(c.sampleRate * dur), c.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; const n = c.createBufferSource(); n.buffer = b; return n; };
+  const env = (g, t, a, peak, dec) => { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + a + dec); };
+  const S_ = {
+    rattle(c, t) { for (let k = 0; k < 6; k++) { const n = noise(c, .05), f = c.createBiquadFilter(), g = c.createGain(); f.type = 'bandpass'; f.frequency.value = 1700 + Math.random() * 1700; f.Q.value = 3; n.connect(f).connect(g).connect(c.destination); const tt = t + k * .05 + Math.random() * .02; env(g, tt, .003, .22, .04); n.start(tt); n.stop(tt + .06); } },
+    pencil(c, t) { const n = noise(c, .18), f = c.createBiquadFilter(), g = c.createGain(); f.type = 'highpass'; f.frequency.value = 3200; n.connect(f).connect(g).connect(c.destination); env(g, t, .015, .07, .14); n.start(t); n.stop(t + .18); },
+    plop(c, t) { const o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(620, t); o.frequency.exponentialRampToValueAtTime(170, t + .13); o.connect(g).connect(c.destination); env(g, t, .005, .22, .14); o.start(t); o.stop(t + .18); },
+    bell(c, t) { [1320, 1980, 2640].forEach((fq, k) => { const o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.value = fq; o.connect(g).connect(c.destination); env(g, t, .004, [.16, .07, .035][k], .7); o.start(t); o.stop(t + .75); }); },
+    click(c, t) { const o = c.createOscillator(), g = c.createGain(); o.type = 'triangle'; o.frequency.value = 950; o.connect(g).connect(c.destination); env(g, t, .002, .14, .05); o.start(t); o.stop(t + .07); },
+  };
+  return {
+    get on() { return on; },
+    toggle() { on = !on; try { localStorage.setItem('ts-sound', on ? 'on' : 'off'); } catch (e) { } if (on) ac(); },
+    play(name, delay = 0) { if (!on) return; const now = performance.now(); if (last[name] && now - last[name] < 70) return; last[name] = now; const c = ctx; if (!c || c.state !== 'running') return; try { S_[name](c, c.currentTime + delay / 1000); } catch (e) { } },
+  };
+})();
+function fxSnap() {
+  if (!S || S.screen !== 'game' || !human()) return null;
+  const me = human(), rows = {}, stk = {};
+  FLOWERS.forEach(f => { rows['per:' + f] = me.per[f].n; });
+  rows['api:hive'] = me.hive; ['wax', 'honey', 'split'].forEach(s => { rows['api:' + s] = me.api[s].n; });
+  FRUITS.forEach(f => { rows['yard:' + f.k] = me.yard[f.k].n; });
+  SHED.forEach(it => { rows['shed:' + it.k] = me.shed[it.k].n; });
+  me.g.forEach((Z, z) => ['c', 'b', 's'].forEach(k => Z[k].forEach((h, i) => { stk[`${z}|${k}|${i}`] = h; })));
+  return { id: S.id, rows, stk, goods: me.goods, compost: me.compost, score: endScore(me).total, round: S.round, pawn: S.pawn, dice: S.dice.map(d => ({ v: d.v, by: d.by })) };
+}
+function fxBefore() {
+  const pawn = document.querySelector('.space .edm');
+  const dice = {}; document.querySelectorAll('.die[data-i]').forEach(d => { dice[d.dataset.i] = d.getBoundingClientRect(); });
+  return { pawn: pawn && pawn.getBoundingClientRect(), dice };
+}
+function fly(html, from, toEl, delay = 0) {
+  if (RM || !from || !toEl) return;
+  const t = toEl.getBoundingClientRect(), d = document.createElement('div');
+  d.className = 'flyer'; d.innerHTML = html; document.body.appendChild(d);
+  const x0 = from.left + from.width / 2, y0 = from.top + from.height / 2, dx = t.left + t.width / 2 - x0, dy = t.top + t.height / 2 - y0;
+  d.style.left = x0 + 'px'; d.style.top = y0 + 'px';
+  const a = d.animate([
+    { transform: 'translate(-50%,-50%) scale(.6)', opacity: 0 },
+    { transform: `translate(calc(-50% + ${dx * .4}px), calc(-50% + ${dy * .4 - 70}px)) scale(1.35)`, opacity: 1, offset: .4 },
+    { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(.55)`, opacity: .3 },
+  ], { duration: 820, delay, easing: 'cubic-bezier(.35,0,.25,1)', fill: 'both' });
+  a.onfinish = () => { d.remove(); if (toEl.isConnected) toEl.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.18)' }, { transform: 'scale(1)' }], { duration: 260 }); };
+}
+function stampEls(els, delay0 = 0) {
+  els.forEach((el, k) => { if (RM) return; el.classList.remove('stamp'); void el.offsetWidth; el.style.animationDelay = (delay0 + k * 90) + 'ms'; el.classList.add('stamp'); });
+}
+function fxAfter(before) {
+  const prev = U.fxSnap, cur = fxSnap();
+  U.fxSnap = cur;
+  if (!cur) return;
+  const rollIn = () => { document.querySelectorAll('.die').forEach((d, n) => { if (RM) return; d.style.animationDelay = (n * 60) + 'ms'; d.classList.add('roll'); }); SND.play('rattle'); };
+  if (!prev || prev.id !== cur.id) { rollIn(); return; } // Partie beginnt oder wird fortgesetzt
+  const chips = document.querySelectorAll('.status > span'), chipCompost = chips[0], chipGoods = chips[1], chipScore = chips[2];
+  let src = null, delay = 0;
+  // Leisten: neu ausgefüllte Kästchen bekommen einen Stempel
+  for (const key in cur.rows) {
+    const a = prev.rows[key], b = cur.rows[key];
+    if (!(b > a)) continue;
+    document.querySelectorAll(`[data-rk="${key}"]`).forEach(c => { const bx = [...c.children].slice(a, b); stampEls(bx, delay); if (bx.length && c.offsetParent) src = bx[bx.length - 1].getBoundingClientRect(); });
+    delay += 120; SND.play('pencil');
+  }
+  // Garten: pflanzen (unterstes Kästchen), wachsen, ernten (oberstes Kästchen)
+  let planted = false, harvested = [];
+  for (const key in cur.stk) {
+    const a = prev.stk[key], b = cur.stk[key];
+    if (!(b > a) || a < 0) continue;
+    const [z, k, i] = key.split('|'), H = cropMax(+z, k, +i);
+    if (a === 0) planted = true;
+    document.querySelectorAll(`[data-sk="${key}"]`).forEach(c => { const cells = [...c.querySelectorAll('.cell')].slice(a, b); stampEls(cells, delay); if (b >= H && cells.length && c.offsetParent) harvested.push({ k, r: cells[cells.length - 1].getBoundingClientRect() }); });
+  }
+  if (planted) SND.play('plop');
+  else if (Object.keys(cur.stk).some(k => cur.stk[k] > prev.stk[k])) SND.play('pencil');
+  if (harvested.length) { SND.play('bell', 120); harvested.slice(0, 4).forEach((h, n) => fly(h.k === 's' ? icon('waren') : icon(h.k), h.r, h.k === 's' ? chipGoods : chipScore, 150 + n * 120)); }
+  // Vorräte: Waren und Kompost fliegen in die Vorratsleiste
+  const from = src || (harvested[0] && harvested[0].r) || { left: innerWidth / 2 - 10, top: innerHeight * .55, width: 20, height: 20 };
+  if (cur.goods > prev.goods && !harvested.some(h => h.k === 's')) for (let n = 0; n < Math.min(4, cur.goods - prev.goods); n++) fly(icon('waren'), from, chipGoods, 100 + n * 90);
+  if (cur.compost > prev.compost) for (let n = 0; n < Math.min(3, cur.compost - prev.compost); n++) fly(icon('kompost'), from, chipCompost, 100 + n * 90);
+  if (cur.score > prev.score && !harvested.length && chipScore && !RM) chipScore.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.18)' }, { transform: 'scale(1)' }], { duration: 300, delay: 300 });
+  // Rondell: neue Runde = Würfel rollen herein
+  if (cur.round !== prev.round || cur.dice.length !== prev.dice.length || cur.dice.some((d, i) => d.by === null && prev.dice[i] && prev.dice[i].v !== d.v)) {
+    rollIn();
+  } else {
+    // genommene Würfel wandern zu der Person, die sie genommen hat
+    const pchips = document.querySelectorAll('.players .pchip');
+    cur.dice.forEach((d, i) => {
+      const p0 = prev.dice[i]; if (!p0 || p0.by !== null || d.by === null) return;
+      const to = d.by === -1 ? pchips[pchips.length - 1] : pchips[d.by];
+      const r = before.dice[i]; if (r) fly(dieSvg(d.v, '#F7F5F6'), r, to);
+      SND.play('click');
+    });
+  }
+  // Edith läuft zum nächsten Feld
+  if (cur.pawn !== prev.pawn && before.pawn && !RM) {
+    const el = document.querySelector('.space .edm');
+    if (el) { const r = el.getBoundingClientRect(), dx = before.pawn.left - r.left, dy = before.pawn.top - r.top; el.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: `translate(${dx / 2}px, ${dy / 2 - 26}px)`, offset: .5 }, { transform: 'none' }], { duration: 650, easing: 'ease-in-out' }); }
+  }
+}
 const $app = document.getElementById('app');
 function render() {
   if (U.tut) tutCheck();
@@ -1479,7 +1613,9 @@ function render() {
   h += viewSheet();
   if (U.toast) h += `<div class="toast">${esc(U.toast)}</div>`;
   if (U.tut) h += tutHtml();
+  const fxb = fxBefore();
   $app.innerHTML = h;
+  fxAfter(fxb);
   if (U.tut) tutDecorate();
   save();
   pump();
@@ -1517,6 +1653,7 @@ const H = {
   resume: () => { S = load(); U.sheet = null; },
   rules: () => { U.sheet = { type: 'rules' }; },
   menu: () => { U.sheet = { type: 'menu' }; },
+  sound: () => { SND.toggle(); if (SND.on) SND.play('bell'); },
   restart: () => { if (confirm('Laufende Partie wirklich abbrechen?')) { clearSave(); S = null; U.sheet = null; } },
   newgame: () => { clearSave(); S = null; U.sheet = null; },
   close: () => { U.sheet = null; },

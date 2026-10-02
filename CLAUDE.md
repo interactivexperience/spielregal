@@ -100,6 +100,11 @@ Kopfzeile und bleibt beim Scrollen sichtbar (Prinzessinnenball: Ansage in der fe
 Landgut: Handkarten liegen als Fächer fest im Footer (leicht überlappend und gedreht wie echte Handkarten);
 antippen = Großansicht mit den passenden Sonnenfeldern (inkl. Münzkosten), „Einsetzen“ per Knopf oder Wisch nach oben
 (setzt die Arbeitskraft und wählt die Karte im Spielfenster vor). Im Lernspiel ist der Fächer ausgeblendet.
+Drei Schwestern soll **immersiv** sein (Owner: Listenauswahl „lieblos und gleichförmig“): Leisten-Auswahl
+(Stauden, Bienenstock, Hof, Schuppen) direkt auf dem Bogen – das nächste Kästchen leuchtet, ✎-Zeile nennt die Belohnung –
+statt Liste; Effekte nach jedem Neuzeichnen per Zustandsvergleich (`fxSnap`/`fxAfter`): Stempel für neue Kästchen,
+Pflanz-Plopp, Ernte-Glöckchen mit fliegenden Waren/Punkten, Würfel rollen herein, genommene Würfel fliegen zur
+Person, Edith hüpft; synthetische Töne (WebAudio, `SND`) mit Schalter im Menü; `prefers-reduced-motion` respektiert.
 
 Jedes Spiel hat einen eigenen Smoke-Test in `test/` (`gah-smoke.mjs`,
 `rebel-princess-smoke.mjs`, `three-sisters-smoke.mjs`, `countryside-smoke.mjs`); nach Änderungen an einem Spiel

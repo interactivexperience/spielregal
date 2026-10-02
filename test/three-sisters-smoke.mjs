@@ -84,7 +84,7 @@ async function playUi(label, expectPicks) {
       await page.click("[data-a=plant]"); continue;
     }
     if (await page.locator("[data-a=water]:not([disabled])").count()) { await page.click("[data-a=water]"); continue; }
-    const o = page.locator(".sheet .opt:not(.off)");
+    const o = page.locator(".sheet [data-a=opt]");
     if (await o.count()) { await o.nth(tasks % (await o.count())).click(); continue; }
     await page.click("[data-a=tskip]");
   }
