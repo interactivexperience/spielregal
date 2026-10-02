@@ -109,6 +109,12 @@ antippen = Karte groß (ohne Hintergrund/Dialog, schwebt über dem Spielfeld), g
 jeweils die Karte unter dem Finger groß, nach oben wischen (Karte folgt dem Finger) = einsetzen über das günstigste
 Sonnenfeld; das gewählte Feld steht während der Geste unter der großen Karte. Keine Knöpfe (Owner: „unschön“); ein
 anderes Feld wählt man über den Arbeitsplan. Auf Handkarten keine Info-Blase. Im Lernspiel ist der Fächer ausgeblendet.
+Landgut-Arbeitsplan: jedes Aktionsfeld trägt eine kleine Illustration (`FIELD_ART`/`MARKET_ART`); der Markt ist als eigener
+Marktstand abgesetzt (Cremefläche mit gestreifter Markise, gestrichelte Felder, „nur beim Tag beenden“). Arbeitskräfte sind
+kleine Bäuerinnen mit Strohhut und Ringelshirt in der Spielerfarbe (`workerSvg`). Ist keine Arbeitskraft mehr frei oder passt
+kein Feld, sagen Ansage und Fußleiste „Jetzt den Tag beenden“ statt Optionen anzubieten. **Zug rückgängig** (↶ in der
+Fußleiste und im Menü): Schnappschüsse vor Feld/Karte/Antwort/Tag beenden; der Stapel verfällt, sobald verdeckte Infos
+aufgedeckt werden (Nachziehstapel oder Gebietsstapel schrumpft) oder ein Bot dran ist; im Lernspiel aus.
 Drei Schwestern soll **immersiv** sein (Owner: Listenauswahl „lieblos und gleichförmig“): Leisten-Auswahl
 (Stauden, Bienenstock, Hof, Schuppen) direkt auf dem Bogen – das nächste Kästchen leuchtet, ✎-Zeile nennt die Belohnung –
 statt Liste; Effekte nach jedem Neuzeichnen per Zustandsvergleich (`fxSnap`/`fxAfter`): Stempel für neue Kästchen,
