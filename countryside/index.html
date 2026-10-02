@@ -78,8 +78,9 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .banner b{display:block;font-weight:600;font-size:16px}
 .banner .small{font-size:13px;color:var(--muted)}
 /* Siegpunktleiste */
-.vptrack{position:relative;height:44px;border-radius:999px;overflow:hidden;background:var(--card)}
-.vptrack .tick{position:absolute;top:0;bottom:0;border-left:1px solid var(--line);font-size:9.5px;color:var(--muted);padding:3px 0 0 3px}
+.vptrack{height:44px;border-radius:999px;background:var(--card);padding:0 20px}
+.vptrack .vt{position:relative;height:100%}
+.vptrack .tick{position:absolute;top:0;bottom:0;border-left:1px solid var(--line);font-size:9.5px;color:var(--muted);padding:3px 0 0 3px;white-space:nowrap}
 .vptrack .pm{position:absolute;top:13px;width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transform:translateX(-50%)}
 /* Karten */
 .pc{display:flex;flex-direction:column;justify-content:flex-start;position:relative;width:104px;flex:none;border-radius:18px;background:#fff;padding:5px;text-align:left}
@@ -215,6 +216,10 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .start .startbar{position:absolute;left:0;right:0;top:0;max-width:560px;margin:0 auto;padding:calc(8px + env(safe-area-inset-top)) 16px 0}
 .start .hero{width:auto;max-width:none;margin:0 -16px;border-radius:0 0 28px 28px}
 .start{position:relative}
+/* Feste Kopfzeile mit Ansage durchscheinend: der Inhalt dahinter bleibt erkennbar */
+.top{background:rgba(236,231,226,.6);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3)}
+.top .banner{background:rgba(255,255,255,.7)}
+.top .banner.mine{background:rgba(75,58,110,.86)}
 </style>
 </head>
 <body>
@@ -1209,7 +1214,7 @@ function vpTrack() {
   const max = Math.max(VP_END + 4, ...S.players.map(p => p.vp + 1));
   const ticks = range(Math.floor(max / 5) + 1).filter(i => S.solo || i * 5 !== VP_END).map(i => `<span class="tick" style="left:${(i * 5 / max * 100).toFixed(1)}%">${i * 5}</span>`).join('');
   const end = S.solo ? '' : `<span class="tick" style="left:${(VP_END / max * 100).toFixed(1)}%;border-left:2px solid var(--rose);font-weight:800">${VP_END} Ende</span>`;
-  return `<div class="vptrack">${ticks}${end}${S.players.map((p, i) => `<span class="pm" style="left:${(Math.min(p.vp, max) / max * 100).toFixed(1)}%;background:${p.mark};top:${10 + i * 4}px" title="${esc(p.name)}: ${p.vp}"></span>`).join('')}</div>`;
+  return `<div class="vptrack"><div class="vt">${ticks}${end}${S.players.map((p, i) => `<span class="pm" style="left:${(Math.min(p.vp, max) / max * 100).toFixed(1)}%;background:${p.mark};top:${10 + i * 4}px" title="${esc(p.name)}: ${p.vp}"></span>`).join('')}</div></div>`;
 }
 function orderTile(ot, ti) {
   const side = OTILES[ot.ti][ot.side];
