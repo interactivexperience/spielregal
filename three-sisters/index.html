@@ -296,6 +296,10 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .flyer{position:fixed;z-index:300;width:30px;height:30px;pointer-events:none}
 .flyer svg{width:100%;height:100%}
 @media (prefers-reduced-motion: reduce){.stamp,.die.roll,.box.live{animation:none}}
+/* Ansage antippbar: springt zur passenden Stelle */
+[data-a=go]{cursor:pointer}
+.goflash{animation:goflash 1.2s ease-out;border-radius:24px}
+@keyframes goflash{0%,40%{box-shadow:0 0 0 4px var(--navy)}100%{box-shadow:0 0 0 0 rgba(43,50,69,0)}}
 </style>
 </head>
 <body>
@@ -1254,13 +1258,13 @@ function viewGame() {
   const me = human(); const p = cur();
   let banner;
   if (myTasks()) {
-    banner = `<div class="banner mine"><span class="face">${avatar(me)}</span><div style="flex:1"><b>${esc(taskTitle(me.tasks[0]))}</b><span class="small">${me.tasks.length > 1 ? `danach noch ${me.tasks.length - 1} Aktion${me.tasks.length > 2 ? 'en' : ''}` : 'letzte Aktion'}</span></div><button class="btn green" data-a="task">Los</button></div>`;
+    banner = `<div data-a="go" class="banner mine"><span class="face">${avatar(me)}</span><div style="flex:1"><b>${esc(taskTitle(me.tasks[0]))}</b><span class="small">${me.tasks.length > 1 ? `danach noch ${me.tasks.length - 1} Aktion${me.tasks.length > 2 ? 'en' : ''}` : 'letzte Aktion'}</span></div><button class="btn green" data-a="task">Los</button></div>`;
   } else if (isMyPick()) {
-    banner = `<div class="banner mine"><span class="face">${avatar(me)}</span><div><b>Du bist dran: nimm einen Würfel</b><span class="small">${forcedLowest() ? 'Als Startspielerin musst du jetzt den niedrigsten übrigen Würfel nehmen.' : 'Augenzahl = Gartenzone, Feld = Rondellaktion.'}</span></div></div>`;
+    banner = `<div data-a="go" class="banner mine"><span class="face">${avatar(me)}</span><div><b>Du bist dran: nimm einen Würfel</b><span class="small">${forcedLowest() ? 'Als Startspielerin musst du jetzt den niedrigsten übrigen Würfel nehmen.' : 'Augenzahl = Gartenzone, Feld = Rondellaktion.'}</span></div></div>`;
   } else if (othersTurn()) {
-    banner = `<div class="banner"><span class="face">${p ? avatar(p) : edithHead()}</span><div><b>${esc(p ? p.name : EDITH.name)} wählt …</b><span class="small">${esc(S.log[0] || '')}</span></div></div>`;
+    banner = `<div data-a="go" class="banner"><span class="face">${p ? avatar(p) : edithHead()}</span><div><b>${esc(p ? p.name : EDITH.name)} wählt …</b><span class="small">${esc(S.log[0] || '')}</span></div></div>`;
   } else {
-    banner = `<div class="banner"><div><b>Rundenende</b><span class="small">${esc(S.log[0] || '')}</span></div></div>`;
+    banner = `<div data-a="go" class="banner"><div><b>Rundenende</b><span class="small">${esc(S.log[0] || '')}</span></div></div>`;
   }
   const live = isMyPick(), ok = live ? pickable() : [];
   const space = si => {
@@ -1290,7 +1294,7 @@ function viewGame() {
     <section class="sec"><div class="sech"><h2 class="hand">Chronik</h2><button class="link" data-a="logtoggle" style="font-size:12px">${U.logOpen ? 'weniger' : 'alles'}</button></div>
       <div class="log">${S.log.slice(0, U.logOpen ? 80 : 6).map(l => `<div>${esc(l)}</div>`).join('')}</div></section>
   </div>
-  <div class="bar"><div class="in">${myTasks() ? `<div class="msg">${esc(taskTitle(me.tasks[0]))}</div><button class="btn green" data-a="task">Ausführen</button>` : isMyPick() ? `<div class="msg">Tippe einen leuchtenden Würfel im Rondell an.</div>` : `<div class="msg"><b>${esc(othersTurn() ? (p ? p.name : EDITH.name) : 'Alle')}</b> ${othersTurn() ? 'wählt …' : 'sind fertig.'}</div><button class="btn white" data-a="fast">${U.fast ? 'Normal' : 'Schneller'}</button>`}</div></div>`;
+  <div class="bar"><div class="in">${myTasks() ? `<div class="msg" data-a="go">${esc(taskTitle(me.tasks[0]))}</div><button class="btn green" data-a="task">Ausführen</button>` : isMyPick() ? `<div class="msg" data-a="go">Tippe einen leuchtenden Würfel im Rondell an.</div>` : `<div class="msg" data-a="go"><b>${esc(othersTurn() ? (p ? p.name : EDITH.name) : 'Alle')}</b> ${othersTurn() ? 'wählt …' : 'sind fertig.'}</div><button class="btn white" data-a="fast">${U.fast ? 'Normal' : 'Schneller'}</button>`}</div></div>`;
 }
 function viewEnd() {
   const rows = S.final.map((r, i) => Object.assign({ i }, r)).sort((a, b) => b.total - a.total || b.garden - a.garden);
@@ -1416,7 +1420,7 @@ function tutCheck() {
   }
 }
 function tutAllowed(a, d) {
-  if (a === 'tutnext' || a === 'tutend' || a === 'tutquit') return true;
+  if (a === 'tutnext' || a === 'tutend' || a === 'tutquit' || a === 'go') return true;
   const st = tutStep(), al = st && st.allow;
   if (!al || !(a in al)) return false;
   return al[a] === true || !!al[a](d);
@@ -1604,6 +1608,19 @@ function fxAfter(before) {
     if (el) { const r = el.getBoundingClientRect(), dx = before.pawn.left - r.left, dy = before.pawn.top - r.top; el.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: `translate(${dx / 2}px, ${dy / 2 - 26}px)`, offset: .5 }, { transform: 'none' }], { duration: 650, easing: 'ease-in-out' }); }
   }
 }
+// Ansage antippen: zur passenden Stelle der Seite scrollen (bzw. offene Auswahl öffnen)
+function goTarget() {
+  if (myTasks()) return () => { U.sheet = { type: 'task' }; };
+  return '.rondel';
+}
+function goTo(sel) {
+  setTimeout(() => {
+    const el = document.querySelector(sel); if (!el) return;
+    const top = document.querySelector('.top'), off = (top ? top.getBoundingClientRect().bottom : 0) + 12;
+    window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - off), behavior: 'smooth' });
+    el.classList.remove('goflash'); void el.offsetWidth; el.classList.add('goflash'); setTimeout(() => el.classList.remove('goflash'), 1300);
+  }, 30);
+}
 const $app = document.getElementById('app');
 function render() {
   if (U.tut) tutCheck();
@@ -1654,6 +1671,7 @@ const H = {
   rules: () => { U.sheet = { type: 'rules' }; },
   menu: () => { U.sheet = { type: 'menu' }; },
   sound: () => { SND.toggle(); if (SND.on) SND.play('bell'); },
+  go: () => { if (U.tut) return goTo('.tut-hl'); const t = goTarget(); if (typeof t === 'function') t(); else goTo(t); },
   restart: () => { if (confirm('Laufende Partie wirklich abbrechen?')) { clearSave(); S = null; U.sheet = null; } },
   newgame: () => { clearSave(); S = null; U.sheet = null; },
   close: () => { U.sheet = null; },

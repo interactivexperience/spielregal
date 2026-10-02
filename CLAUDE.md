@@ -97,7 +97,10 @@ der Partie im Menü (☰), nicht in der Kopfzeile. **Langes Drücken** (≈0,45 
 Infos zu bekommen“); neue Spielelemente bekommen einen erklärenden `data-info`-Text. Textauswahl ist in den Spielen abgeschaltet (iOS-Lupe/Menü
 beim langen Drücken), außer in Eingabefeldern. Die Ansage („Du bist dran …“) steht kompakt in der
 Kopfzeile und bleibt beim Scrollen sichtbar (Prinzessinnenball: Ansage in der festen Handleiste).
-Landgut-Kartenhand (Owner-Vorbild: digitales „Root“): enger, gewölbter Fächer, der über den Footer-Rand ragt;
+Ansage und Nachricht im Footer sind antippbar (`data-a="go"`, `goTarget`/`goTo`): Scrollen zur passenden Stelle mit
+kurzem Aufblitzen bzw. Öffnen der offenen Auswahl; im Lernspiel springt es zum markierten Element.
+Landgut-Kartenhand (Owner-Vorbild: digitales „Root“): enger, gewölbter Fächer als eigene Ebene direkt hinter dem Footer
+(ragt über dessen Rand, keine eigene „Tasche“);
 antippen = Karte groß (ohne Hintergrund/Dialog, schwebt über dem Spielfeld), gedrückt halten und am Fächer entlangfahren =
 jeweils die Karte unter dem Finger groß, nach oben wischen (Karte folgt dem Finger) = einsetzen über das günstigste
 Sonnenfeld; das gewählte Feld steht während der Geste unter der großen Karte. Keine Knöpfe (Owner: „unschön“); ein

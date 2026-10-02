@@ -224,8 +224,8 @@ input,textarea{-webkit-user-select:text;user-select:text}
    Vorschau schwebt groß ohne Hintergrund über dem Spielfeld */
 .bar{overflow:visible;padding-top:8px;padding-bottom:max(8px, calc(env(safe-area-inset-bottom) - 12px))}
 .bar .btn{min-height:42px}
-.hfan{position:relative;height:104px;max-width:560px;margin:-92px auto 2px;clip-path:inset(-400px -60px 0 -60px);touch-action:none}
-.hcard{position:absolute;left:50%;bottom:-34px;width:92px;transform:translateX(calc(var(--x) - 50%)) rotate(var(--r));transform-origin:50% 170%;transition:transform .2s cubic-bezier(.3,1.3,.5,1);touch-action:none;cursor:grab;-webkit-user-select:none;user-select:none}
+.hfan{position:fixed;left:0;right:0;bottom:calc(var(--barh, 80px) - 46px);height:104px;max-width:560px;margin:0 auto;z-index:39;pointer-events:none;touch-action:none}
+.hcard{position:absolute;left:50%;bottom:0;pointer-events:auto;width:92px;transform:translateX(calc(var(--x) - 50%)) rotate(var(--r));transform-origin:50% 170%;transition:transform .2s cubic-bezier(.3,1.3,.5,1);touch-action:none;cursor:grab;-webkit-user-select:none;user-select:none}
 .hcard .pc{width:92px;box-shadow:-3px 2px 10px rgba(31,26,23,.3);border:1.5px solid rgba(31,26,23,.08);pointer-events:none}
 .hcard .pc .art{height:60px}.hcard .pc .fx{display:none}.hcard .pc .nm{font-size:11px}
 .hcard .pc .sun{width:24px;height:24px}.hcard .pc .ty{top:26px;width:16px;height:16px}
@@ -243,6 +243,10 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .hprev .hph.no{background:#fff;color:var(--ink)}
 .hprev.go .hph{background:var(--gold);color:var(--ink)}
 .hprev.go .hpc .pc{transform:translateY(-10px) scale(1.03)}
+/* Ansage antippbar: springt zur passenden Stelle */
+[data-a=go]{cursor:pointer}
+.goflash{animation:goflash 1.2s ease-out}
+@keyframes goflash{0%,40%{box-shadow:0 0 0 4px var(--plum)}100%{box-shadow:0 0 0 0 rgba(75,58,110,0)}}
 </style>
 </head>
 <body>
@@ -1292,9 +1296,9 @@ function viewGame() {
   const me = human(), p = cur();
   const mine = isMyTurn();
   let banner;
-  if (myAsk()) banner = `<div class="banner mine"><span class="face">${face(me)}</span><div style="flex:1"><b>${esc(askTitle(S.ask))}</b><span class="small">Wähle im Fenster.</span></div><button class="btn sm" data-a="askopen">Öffnen</button></div>`;
-  else if (mine) banner = `<div class="banner mine"><span class="face">${face(me)}</span><div><b>Du bist dran</b><span class="small">Setze eine Arbeitskraft auf ein lila umrandetes Feld oder beende den Tag.</span></div></div>`;
-  else banner = `<div class="banner"><span class="face">${face(p)}</span><div><b>${esc(p.name)} ist dran …</b><span class="small">${esc(S.log[0] || '')}</span></div></div>`;
+  if (myAsk()) banner = `<div data-a="go" class="banner mine"><span class="face">${face(me)}</span><div style="flex:1"><b>${esc(askTitle(S.ask))}</b><span class="small">Wähle im Fenster.</span></div><button class="btn sm" data-a="askopen">Öffnen</button></div>`;
+  else if (mine) banner = `<div data-a="go" class="banner mine"><span class="face">${face(me)}</span><div><b>Du bist dran</b><span class="small">Setze eine Arbeitskraft auf ein lila umrandetes Feld oder beende den Tag.</span></div></div>`;
+  else banner = `<div data-a="go" class="banner"><span class="face">${face(p)}</span><div><b>${esc(p.name)} ist dran …</b><span class="small">${esc(S.log[0] || '')}</span></div></div>`;
   const chips = S.players.map((pl, i) => `<button class="pchip ${S.cur === i ? 'cur' : ''}" data-a="opp" data-p="${i}"><span class="av" style="background:${pl.mark}">${face(pl)}</span><span><span class="nm">${esc(pl.name)}</span><span class="st">★${pl.vp} · ${pl.coins} Mz.</span></span></button>`).join('');
   return `
   <div class="top"><div class="row">
@@ -1315,9 +1319,9 @@ function viewGame() {
     <section class="sec"><div class="sech"><h2 class="hand">Chronik</h2><button class="link" data-a="logtoggle" style="font-size:12px">${U.logOpen ? 'weniger' : 'alles'}</button></div>
       <div class="log">${S.log.slice(0, U.logOpen ? 90 : 6).map(l => `<div>${esc(l)}</div>`).join('')}</div></section>
   </div>
-  <div class="bar">${U.tut ? '' : handFan(me)}<div class="in">${myAsk() ? `<div class="msg">${esc(askTitle(S.ask))}</div><button class="btn" data-a="askopen">Auswählen</button>`
-    : mine ? `<div class="msg">${workersFree(me)} ${workersFree(me) === 1 ? 'Arbeitskraft' : 'Arbeitskräfte'} auf der Bank.</div><button class="btn ${forcedEndDay(me) ? '' : 'white'}" data-a="endday">Tag beenden</button>`
-    : `<div class="msg"><b>${esc(p.name)}</b> ist dran …</div><button class="btn white" data-a="fast">${U.fast ? 'Normal' : 'Schneller'}</button>`}</div></div>`;
+  ${U.tut ? '' : handFan(me)}<div class="bar"><div class="in">${myAsk() ? `<div class="msg" data-a="go">${esc(askTitle(S.ask))}</div><button class="btn" data-a="askopen">Auswählen</button>`
+    : mine ? `<div class="msg" data-a="go">${workersFree(me)} ${workersFree(me) === 1 ? 'Arbeitskraft' : 'Arbeitskräfte'} auf der Bank.</div><button class="btn ${forcedEndDay(me) ? '' : 'white'}" data-a="endday">Tag beenden</button>`
+    : `<div class="msg" data-a="go"><b>${esc(p.name)}</b> ist dran …</div><button class="btn white" data-a="fast">${U.fast ? 'Normal' : 'Schneller'}</button>`}</div></div>`;
 }
 // Handkarten-Fächer im Footer: antippen = groß ansehen, nach oben wischen = einsetzen
 function handFan(me) {
@@ -1505,7 +1509,7 @@ function tutCheck() {
   }
 }
 function tutAllowed(a, d) {
-  if (a === 'tutnext' || a === 'tutend' || a === 'tutquit') return true;
+  if (a === 'tutnext' || a === 'tutend' || a === 'tutquit' || a === 'go') return true;
   const st = tutStep(), al = st && st.allow;
   if (!al || !(a in al)) return false;
   return al[a] === true || !!al[a](d);
@@ -1586,6 +1590,19 @@ function tutBot() {
   endDay(pi);
 }
 
+// Ansage antippen: zur passenden Stelle der Seite scrollen (bzw. offene Auswahl öffnen)
+function goTarget() {
+  if (myAsk()) return () => { U.sheet = { type: 'ask' }; };
+  return '.board';
+}
+function goTo(sel) {
+  setTimeout(() => {
+    const el = document.querySelector(sel); if (!el) return;
+    const top = document.querySelector('.top'), off = (top ? top.getBoundingClientRect().bottom : 0) + 12;
+    window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - off), behavior: 'smooth' });
+    el.classList.remove('goflash'); void el.offsetWidth; el.classList.add('goflash'); setTimeout(() => el.classList.remove('goflash'), 1300);
+  }, 30);
+}
 const $app = document.getElementById('app');
 function render() {
   if (U.tut) tutCheck();
@@ -1597,6 +1614,7 @@ function render() {
   if (U.toast) h += `<div class="toast">${esc(U.toast)}</div>`;
   if (U.tut) h += tutHtml();
   $app.innerHTML = h;
+  { const bar = document.querySelector('.bar'); if (bar) document.documentElement.style.setProperty('--barh', bar.offsetHeight + 'px'); }
   if (HP.el) { const me = S && S.screen === 'game' && human(); if (!me || U.tut || HP.i >= me.hand.length) previewHide(); else document.querySelectorAll('.hfan .hcard').forEach(c => c.classList.toggle('up', +c.dataset.i === HP.i)); }
   if (U.tut) tutDecorate();
   save();
@@ -1628,6 +1646,7 @@ const H = {
   resume: () => { S = load(); U.sheet = null; resetTmp(); },
   rules: () => { U.sheet = { type: 'rules' }; },
   menu: () => { U.sheet = { type: 'menu' }; },
+  go: () => { if (U.tut) return goTo('.tut-hl'); const t = goTarget(); if (typeof t === 'function') t(); else goTo(t); },
   restart: () => { if (confirm('Laufende Partie wirklich abbrechen?')) { clearSave(); S = null; U.sheet = null; } },
   newgame: () => { clearSave(); S = null; U.sheet = null; },
   close: () => { U.sheet = myAsk() ? { type: 'hidden' } : null; }, ovclose: () => { U.sheet = myAsk() ? { type: 'hidden' } : null; },

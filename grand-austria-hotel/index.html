@@ -295,6 +295,10 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .top{background:rgba(247,240,227,.66);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .top .banner{background:rgba(255,249,238,.8)}
 .top .banner.mine{background:rgba(255,233,168,.86)}
+/* Ansage antippbar: springt zur passenden Stelle */
+[data-a=go]{cursor:pointer}
+.goflash{animation:goflash 1.2s ease-out}
+@keyframes goflash{0%,40%{box-shadow:0 0 0 4px var(--red)}100%{box-shadow:0 0 0 0 rgba(228,71,46,0)}}
 </style>
 </head>
 <body>
@@ -1676,10 +1680,10 @@ function viewGame() {
   let banner, perks = '';
   if (mine) {
     const msg = !S.turn.dieTaken ? (S.turn.guestTaken ? 'Jetzt einen Würfel vom Aktionsbrett nehmen.' : 'Hol dir optional einen Gast, dann nimm einen Würfel.') : 'Serviere Gerichte (gelb leuchtende Felder antippen) und beende deinen Zug.';
-    banner = `<div class="banner mine"><span class="face">${head('pl' + mi + me.name, me.look)}</span><div><b>Du bist am Zug · Zug ${S.seqIdx < S.players.length ? 1 : 2} von 2</b><span class="small">${msg}</span>${stepsHtml()}</div></div>`;
+    banner = `<div data-a="go" class="banner mine"><span class="face">${head('pl' + mi + me.name, me.look)}</span><div><b>Du bist am Zug · Zug ${S.seqIdx < S.players.length ? 1 : 2} von 2</b><span class="small">${msg}</span>${stepsHtml()}</div></div>`;
   } else {
     const pi = S.players.indexOf(p);
-    banner = `<div class="banner"><span class="face">${head('pl' + pi + p.name, p.look)}</span><div><b>${esc(p.name)} ist am Zug …</b><span class="small">${esc(S.log[0] || '')}</span></div></div>`;
+    banner = `<div data-a="go" class="banner"><span class="face">${head('pl' + pi + p.name, p.look)}</span><div><b>${esc(p.name)} ist am Zug …</b><span class="small">${esc(S.log[0] || '')}</span></div></div>`;
   }
   if (mine && (perkCount(me) > 0 || me.freeGuest > 0)) {
     const it = [];
@@ -1741,8 +1745,8 @@ function viewGame() {
       <div class="log">${S.log.slice(0, U.logOpen ? 80 : 6).map(l => `<div>${esc(l)}</div>`).join('')}</div></section>
   </div>
   <div class="bar"><div class="in">
-    ${mine ? `<div class="msg">${S.turn.dieTaken ? 'Fertig serviert?' : 'Wähle einen Würfel auf dem Aktionsbrett.'}</div><button class="btn ${S.turn.dieTaken ? 'red' : 'white'}" data-a="endturn" ${S.turn.dieTaken ? '' : 'disabled'}>Zug beenden</button>`
-      : `<div class="msg"><b>${esc(p.name)}</b> denkt nach …</div><button class="btn white" data-a="fast">Schneller</button>`}
+    ${mine ? `<div class="msg" data-a="go">${S.turn.dieTaken ? 'Fertig serviert?' : 'Wähle einen Würfel auf dem Aktionsbrett.'}</div><button class="btn ${S.turn.dieTaken ? 'red' : 'white'}" data-a="endturn" ${S.turn.dieTaken ? '' : 'disabled'}>Zug beenden</button>`
+      : `<div class="msg" data-a="go"><b>${esc(p.name)}</b> denkt nach …</div><button class="btn white" data-a="fast">Schneller</button>`}
   </div></div>`;
 }
 function viewEnd() {
@@ -1952,7 +1956,7 @@ function tutCheck() {
   }
 }
 function tutAllowed(a, d) {
-  if (a === 'tutnext' || a === 'tutend' || a === 'tutquit') return true;
+  if (a === 'tutnext' || a === 'tutend' || a === 'tutquit' || a === 'go') return true;
   const st = tutStep(), al = st && st.allow;
   if (!al || !(a in al)) return false;
   return al[a] === true || !!al[a](d);
@@ -2036,6 +2040,21 @@ function tutBot() {
   endTurn();
 }
 
+// Ansage antippen: zur passenden Stelle der Seite scrollen (bzw. offene Auswahl öffnen)
+function goTarget() {
+  if (!isMyTurn()) return '.board';
+  const me = human();
+  if (!S.turn.dieTaken) return (me.freeGuest > 0 || (!S.turn.guestTaken && me.tables.includes(null))) ? '.line' : '.board';
+  return '.tables';
+}
+function goTo(sel) {
+  setTimeout(() => {
+    const el = document.querySelector(sel); if (!el) return;
+    const top = document.querySelector('.top'), off = (top ? top.getBoundingClientRect().bottom : 0) + 12;
+    window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - off), behavior: 'smooth' });
+    el.classList.remove('goflash'); void el.offsetWidth; el.classList.add('goflash'); setTimeout(() => el.classList.remove('goflash'), 1300);
+  }, 30);
+}
 const $app = document.getElementById('app');
 function render() {
   if (U.tut) tutCheck();
@@ -2086,6 +2105,7 @@ const H = {
   menu: () => { U.sheet = { type: 'menu' }; },
   // Pflicht-Auswahl beim Spielstart verlassen: Partie verwerfen, zurück zum Startbildschirm
   setupcancel: () => { clearSave(); S = null; U.sheet = null; window.scrollTo(0, 0); },
+  go: () => { if (U.tut) return goTo('.tut-hl'); const t = goTarget(); if (typeof t === 'function') t(); else goTo(t); },
   restart: () => { if (confirm('Laufende Partie wirklich abbrechen?')) { clearSave(); S = null; U.sheet = null; } },
   newgame: () => { clearSave(); S = null; U.sheet = null; },
   showboard: () => { U.sheet = { type: 'board' }; },
