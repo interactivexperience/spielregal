@@ -309,6 +309,17 @@ input,textarea{-webkit-user-select:text;user-select:text}
 /* Ansage ohne Band dahinter: Kasten selbst deckend, damit er lesbar bleibt */
 .top .tbanner .banner{background:var(--cream)}
 .top .tbanner .banner.mine{background:#FFE9A8}
+/* Personal wählen: zentriertes 3er-Raster, gewählte Karten deutlich markiert */
+.staffgrid{display:flex;flex-wrap:wrap;justify-content:center;gap:12px 8px;padding:6px 0 12px}
+.staffgrid .scard{width:calc((100% - 16px) / 3);position:relative;transition:transform .12s}
+.staffgrid .scard .sn{font-size:15.5px;overflow-wrap:anywhere;hyphens:auto}
+.staffgrid .scard .tx{font-size:11px}
+.scard.ok{outline:none;transform:translateY(-3px);box-shadow:3px 5px 0 var(--green);border-color:var(--green)}
+.scard.ok::after{content:"✓ behalten";display:block;margin-top:auto;background:var(--green);color:#fff;font-family:"Space Mono",monospace;font-size:10px;font-weight:700;text-align:center;padding:3px 0;border-top:2.5px solid var(--ink)}
+.staffgrid .scard.no{opacity:.45}
+.sheet .btnrow.stick{position:sticky;bottom:calc(-18px - env(safe-area-inset-bottom));background:var(--paper);margin:0 -16px;padding:10px 16px calc(12px + env(safe-area-inset-bottom));border-top:2px solid var(--ink);z-index:5}
+/* Schließen-Knopf bleibt beim Scrollen im Fenster sichtbar */
+.sheet .icobtn.x{position:sticky;top:0;float:right;right:auto;margin:-2px -4px 4px 10px;z-index:6}
 </style>
 </head>
 <body>
@@ -1815,7 +1826,7 @@ function viewSheet() {
       const D = S.draft, mi = S.players.indexOf(me), pack = D.packs[mi];
       return sheetWrap(`<h3>Personal-Draft</h3><p style="font-size:13px">Wähle <b>eine</b> Karte und behalte sie. Den Rest gibst du nach links weiter, von rechts bekommst du den nächsten Stapel – bis jede Person 6 Karten hat. Behalten: ${D.kept[mi].length}/6.</p><div class="staffrow" style="flex-wrap:wrap">${pack.map(id => staffCard(id, { btn: 'dpick' })).join('')}</div>${D.kept[mi].length ? `<p class="label" style="margin-top:10px">Schon behalten</p><div class="staffrow">${D.kept[mi].map(id => staffCard(id)).join('')}</div>` : ''}<button class="link setupcancel" data-a="setupcancel" style="display:block;margin:14px auto 0;font-size:13px;opacity:.75">Abbrechen – zurück zum Start</button>`, 'nox');
     }
-    case 'staffpick': { const sp = S.staffPick; return sheetWrap(`<h3>Personal wählen</h3><p style="font-size:13px">Solo-Regel: Von 10 gezogenen Personalkarten behältst du <b>6</b> auf der Hand. Die übrigen kommen unter den Stapel.</p><div class="staffrow" style="flex-wrap:wrap">${sp.ids.map(id => staffCard(id, { btn: 'spsel', cls: sp.sel.includes(id) ? 'ok' : '' })).join('')}</div><div class="btnrow"><button class="btn" data-a="spok" ${sp.sel.length === 6 ? '' : 'disabled'}>${sp.sel.length}/6 behalten</button></div><button class="link setupcancel" data-a="setupcancel" style="display:block;margin:14px auto 0;font-size:13px;opacity:.75">Abbrechen – zurück zum Start</button>`); }
+    case 'staffpick': { const sp = S.staffPick; return sheetWrap(`<h3>Personal wählen</h3><p style="font-size:13px">Solo-Regel: Von 10 gezogenen Personalkarten behältst du <b>6</b> auf der Hand. Die übrigen kommen unter den Stapel.</p><div class="staffgrid">${sp.ids.map(id => staffCard(id, { btn: 'spsel', cls: sp.sel.includes(id) ? 'ok' : sp.sel.length >= 6 ? 'no' : '' })).join('')}</div><div class="btnrow stick"><button class="btn" data-a="spok" ${sp.sel.length === 6 ? '' : 'disabled'}>${sp.sel.length === 6 ? '6 behalten – weiter' : `${sp.sel.length} von 6 gewählt`}</button></div><button class="link setupcancel" data-a="setupcancel" style="display:block;margin:14px auto 0;font-size:13px;opacity:.75">Abbrechen – zurück zum Start</button>`); }
     case 'staffinfo': return sheetWrap(`<h3>${esc(STAFF[sh.id].n)}</h3><div style="display:flex;justify-content:center;margin:8px 0">${staffCard(sh.id)}</div><p class="note">Typ „${KIND[STAFF[sh.id].t]}“: ${{ now: 'wirkt einmal sofort beim Einstellen.', perm: 'wirkt dauerhaft ab dem Einstellen.', round: 'liefert einmal pro Runde seine Ware (zu Beginn deines ersten Zuges der Runde).', end: 'bringt Punkte bei der Schlussabrechnung.' }[STAFF[sh.id].t]} Einstellen kostet die aufgedruckten Kronen, je weiterem Würfel auf Feld 5 eine Krone weniger.</p>`);
     case 'guest': {
       const id = S.line[sh.slot];
