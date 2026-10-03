@@ -1792,6 +1792,16 @@ document.addEventListener('touchend', () => { if (pTouch) pTouchEnd = Date.now()
 document.addEventListener('touchcancel', () => { pTouch = false; }, { passive: true, capture: true });
 addEventListener('resize', () => pageSync(true));
 const pdots = () => `<div class="pdots" role="tablist">${PAGES.map((pg, i) => `<button class="pd ${U.page === i ? 'on' : ''}" role="tab" data-a="page" data-p="${i}" aria-label="Seite ${pg}" data-info="${pg}"><i></i></button>`).join('')}</div>`;
+// Automatischer Seitenwechsel bei einem neuen Zugschritt (Drei Schwestern: Würfel nehmen → Rondell, eigene Gartenaktionen → Garten); nie im Lernspiel
+const AUTO_KEY = () => `${isMyPick()}|${!!myTasks()}`;
+const AUTO_PAGE = () => isMyPick() ? 0 : myTasks() ? 1 : null;
+function autoPage() {
+  if (!S || S.screen !== 'game' || U.tut || !pagesEl()) { U.autoKey = null; return; }
+  const k = AUTO_KEY(); if (k === U.autoKey) return;
+  const first = U.autoKey == null; U.autoKey = k;
+  const t = AUTO_PAGE();
+  if (!first && t != null && t !== U.page) setTimeout(() => { if (pagesEl() && !pTouch) pageGo(t, true); }, 250);
+}
 function goTarget() {
   if (myTasks()) return () => { U.sheet = { type: 'task' }; };
   return '.rondel';
@@ -1841,6 +1851,7 @@ function render() {
   document.documentElement.classList.toggle('tutmode', !!U.tut);
   { const b = document.querySelector('.top .tbanner'); if (b) document.documentElement.style.setProperty('--bnh', b.offsetHeight + 'px'); }
   pageSync(true);
+  autoPage();
   stickBtns();
   fxAfter(fxb);
   if (U.tut) tutDecorate();
