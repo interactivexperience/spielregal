@@ -9036,11 +9036,14 @@ function App() {
       <div
         className="shrink-0 glass-strong border-b border-rim/10 flex items-center justify-center overflow-hidden"
         style={{
-          paddingTop: "max(0.75rem, env(safe-area-inset-top))",
           // Der Balken erscheint nur noch auf der Ideen-Seite. Auf allen
           // anderen Tabs traegt die Seite ihren Titel selbst, ein zweiter
-          // beim Scrollen war doppelt.
-          height: titleCollapsed && tab === "recommendations" ? "calc(2.75rem + max(0.75rem, env(safe-area-inset-top)))" : "max(0.75rem, env(safe-area-inset-top))",
+          // beim Scrollen war doppelt. Sonst nimmt er keinen Platz ein: der
+          // obere Abstand liegt im Scrollbereich, damit der Inhalt bis unter
+          // die Statusleiste durchlaeuft statt an einem festen Farbstreifen
+          // abgeschnitten zu werden.
+          paddingTop: titleCollapsed && tab === "recommendations" ? "max(0.75rem, env(safe-area-inset-top))" : 0,
+          height: titleCollapsed && tab === "recommendations" ? "calc(2.75rem + max(0.75rem, env(safe-area-inset-top)))" : 0,
           opacity: titleCollapsed && tab === "recommendations" ? 1 : 0,
           transition: "height 0.25s ease, opacity 0.2s ease",
         }}
@@ -9057,6 +9060,7 @@ function App() {
         ref={(el) => { scrollElRef.current = el; ptr.ref.current = el; }}
         className="flex-1 overflow-y-auto min-h-0 relative"
         onScroll={(e) => setTitleCollapsed(e.currentTarget.scrollTop > 36)}
+        style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}
         {...ptr.handlers}
       >
         {ptr.anzeige}
