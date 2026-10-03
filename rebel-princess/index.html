@@ -185,7 +185,8 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .sheet{scroll-padding-top:56px;scroll-padding-bottom:96px}
 .sheet .stick{position:sticky;bottom:calc(-18px - env(safe-area-inset-bottom));background:var(--paper);margin-left:-16px;margin-right:-16px;margin-bottom:0;padding:10px 16px calc(12px + env(safe-area-inset-bottom));border-top:2px solid var(--ink);z-index:5}
 /* beim Scrollen kompakter Kopf */
-.top.scr [data-a=menu]{display:none}
+.top [data-a=menu]{transition:opacity .2s ease,transform .25s cubic-bezier(.2,.8,.2,1)}
+.top.scr [data-a=menu]{opacity:0;transform:scale(.6);pointer-events:none}
 </style>
 </head>
 <body>
@@ -1712,7 +1713,7 @@ function scrSync() { if (U.tut) SCR.on = false; const t = document.querySelector
 addEventListener('scroll', () => {
   const t = document.querySelector('.top:not(.coach)'); if (!t) return;
   if (U.tut) { if (SCR.on) { SCR.on = false; t.classList.remove('scr'); } return; } // im Lernspiel bleibt der Kopf ruhig
-  if (!SCR.on && scrollY > 90) { const h0 = t.offsetHeight; SCR.on = true; t.classList.add('scr'); const d = h0 - t.offsetHeight; if (d > 0) scrollBy(0, -d); }
+  if (!SCR.on && scrollY > 90) { SCR.on = true; t.classList.add('scr'); }
   else if (SCR.on && scrollY < 12) { SCR.on = false; t.classList.remove('scr'); }
 }, { passive: true });
 const HERO_TOP = '#F6B48F';

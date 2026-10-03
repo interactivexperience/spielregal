@@ -109,6 +109,9 @@ Startbildschirme: Die App läuft bewusst mit undurchsichtiger iOS-Statusleiste (
 „black-translucent“ macht die Webview auf dem 14 Pro zu kurz) – Bilder können daher nicht unter die Statusleiste. Stattdessen
 setzt jedes Spiel auf dem Startbildschirm `html`-Hintergrund und theme-color auf die obere Bildfarbe (`HERO_TOP`), damit iOS
 den Streifen hinter der Statusleiste passend einfärbt.
+Mikro-Interaktionen weich statt sprunghaft (Owner): Seitenpunkte folgen dem Finger live (`dotsLive`), die Ansage schrumpft
+beim Scrollen in einen eigenen Sprechblasen-Knopf (`bubMake`, `.bnub`), Titelzeile/Menü/Runden-Pille klappen per Transition
+(keine Scroll-Kompensation mehr), Seitenhöhe gleitet; `prefers-reduced-motion` respektiert.
 Menü aller Spiele: „Neueste Version laden“ (lädt die Spielseite am Cache vorbei neu und setzt die gespeicherte Partie
 automatisch fort, `?resume=1`). Landgut: Auswahlfenster am Griff nach unten ziehen oder Pfeil = einklappen (weiche
 Animation), eingeklappt als Mini-Vorschau unten rechts; Siegpunktleiste als Wiesenpfad mit Köpfen; Ablagestapel

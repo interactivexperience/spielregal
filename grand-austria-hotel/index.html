@@ -324,9 +324,10 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .sheet{scroll-padding-top:56px;scroll-padding-bottom:96px}
 .sheet .stick{position:sticky;bottom:calc(-18px - env(safe-area-inset-bottom));background:var(--paper);margin-left:-16px;margin-right:-16px;margin-bottom:0;padding:10px 16px calc(12px + env(safe-area-inset-bottom));border-top:2px solid var(--ink);z-index:5}
 /* beim Scrollen kompakter Kopf */
-.top.scr .thead>.row:first-child{display:none}
-.status .rdp{display:none}
-.top.scr .status .rdp{display:inline-flex;background:var(--ink);color:var(--cream)}
+.thead>.row:first-child{max-height:90px;overflow:hidden;transition:max-height .3s cubic-bezier(.2,.8,.2,1),opacity .2s ease}
+.top.scr .thead>.row:first-child{max-height:0;opacity:0}
+.status .rdp{display:inline-flex!important;max-width:0;opacity:0;overflow:hidden;white-space:nowrap;transition:max-width .3s cubic-bezier(.2,.8,.2,1),opacity .2s ease}
+.top.scr .status .rdp{max-width:70px;opacity:1}
 /* Drei Seiten zum Wischen */
 .pages{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;align-items:flex-start;margin-top:calc(var(--bnh, 70px) + 2px)}
 .pages::-webkit-scrollbar{display:none}
@@ -339,9 +340,6 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .pdots .pd.hasact:not(.on) i{background:#E4472E}
 /* Ansage schwebt unter dem Kopf; beim Scrollen nur Sprechblase mit Kopf */
 .top .tbanner{position:absolute;left:0;right:0;top:100%}
-.top.scr:not(.peek) .tbanner .banner{display:inline-flex;width:auto;padding:4px;border-radius:50% 50% 50% 6px}
-.top.scr:not(.peek) .tbanner .banner>:not(.face){display:none}
-.top.scr:not(.peek) .tbanner .banner .face{width:38px;height:38px;margin:0}
 /* Dach mit Auslastungsboni */
 .roofw{position:relative;height:86px;margin-bottom:-3px}
 .roofw .roof{position:absolute;inset:0;width:100%;height:100%}
@@ -358,6 +356,18 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .top.scr .status .rdp{background:none!important;color:var(--ink)!important;font-weight:700}
 /* Lernspiel: Platz unter jeder Seite, damit markierte Elemente über den Coach scrollen können */
 .tutmode .page .wrap{padding-bottom:58vh}
+/* Weiche Mikro-Interaktionen: Ansage schrumpft in die Sprechblase, Punkte folgen live, Seitenhöhe gleitet */
+.top .tbanner .banner{transition:opacity .22s ease,transform .32s cubic-bezier(.2,.8,.2,1),visibility 0s linear 0s;transform-origin:30px 24px}
+.top.scr:not(.peek) .tbanner .banner{opacity:0;transform:scale(.2);visibility:hidden;transition:opacity .22s ease,transform .32s cubic-bezier(.2,.8,.2,1),visibility 0s linear .32s}
+.top.scr:not(.peek) .tbanner .banner *{pointer-events:none!important}
+.bnub{position:absolute;left:16px;top:8px;width:46px;height:46px;padding:4px;border:0;border-radius:50% 50% 50% 6px;background:var(--card,#fff);box-shadow:0 4px 14px rgba(31,26,23,.22);display:grid;place-items:center;overflow:hidden;opacity:0;transform:scale(.5);transform-origin:20% 20%;pointer-events:none;transition:opacity .22s ease .06s,transform .32s cubic-bezier(.3,1.4,.5,1) .06s;z-index:5}
+.bnub>*{width:38px;height:38px;border-radius:50%;overflow:hidden;display:block}
+.top.scr:not(.peek) .bnub{opacity:1;transform:none;pointer-events:auto}
+.pdots .pd i{transition:background .2s ease}
+.pages{transition:height .32s cubic-bezier(.2,.8,.2,1)}
+@media (prefers-reduced-motion:reduce){.top .tbanner .banner,.bnub,.pages{transition:none}}
+.bnub.mine{background:#FFE9A8}
+.bnub{border:2px solid var(--ink)}
 </style>
 </head>
 <body>
@@ -2131,8 +2141,20 @@ function pageGo(i, smooth) {
   pageSync(false);
 }
 let pScrollT = 0, pTouch = false, pTouchEnd = 0;
+// Seitenpunkte folgen dem Finger live: Breite je nach Scrollposition zwischen zwei Seiten
+function dotsLive(pg) {
+  const x = pg.scrollLeft / (pg.clientWidth || 1);
+  document.querySelectorAll('.pdots .pd i').forEach((d, i) => { const k = Math.max(0, 1 - Math.abs(x - i)); d.style.width = (6 + 12 * k).toFixed(1) + 'px'; d.style.opacity = (0.55 + 0.45 * k).toFixed(2); });
+}
+// Ansage als Sprechblase: eigener Kopf-Knopf, in den die Ansage weich hineinschrumpft
+function bubMake() {
+  const tb = document.querySelector('.top .tbanner'); if (!tb || tb.querySelector('.bnub')) return;
+  const b = tb.querySelector('.banner'), f = b && b.querySelector('.face'); if (!f) return;
+  tb.insertAdjacentHTML('beforeend', `<button class="bnub ${b.classList.contains('mine') ? 'mine' : ''}" data-a="bnub" aria-label="Ansage zeigen">${f.innerHTML}</button>`);
+}
 document.addEventListener('scroll', e => {
   const pg = e.target; if (!pg.classList || !pg.classList.contains('pages')) return;
+  dotsLive(pg);
   if (Date.now() - (U.progScroll || 0) < 60) return;
   pScrollT = Date.now();
   clearTimeout(pg._t);
@@ -2183,7 +2205,7 @@ function scrSync() { if (U.tut) SCR.on = false; const t = document.querySelector
 addEventListener('scroll', () => {
   const t = document.querySelector('.top:not(.coach)'); if (!t) return;
   if (U.tut) { if (SCR.on) { SCR.on = false; t.classList.remove('scr'); } return; } // im Lernspiel bleibt der Kopf ruhig
-  if (!SCR.on && scrollY > 90) { const h0 = t.offsetHeight; SCR.on = true; t.classList.add('scr'); const d = h0 - t.offsetHeight; if (d > 0) scrollBy(0, -d); }
+  if (!SCR.on && scrollY > 90) { SCR.on = true; t.classList.add('scr'); }
   else if (SCR.on && scrollY < 12) { SCR.on = false; t.classList.remove('scr'); }
 }, { passive: true });
 const HERO_TOP = '#EEE6D8';
@@ -2214,6 +2236,7 @@ function render() {
   document.documentElement.classList.toggle('tutmode', !!U.tut);
   { const b = document.querySelector('.top .tbanner'); if (b) document.documentElement.style.setProperty('--bnh', b.offsetHeight + 'px'); }
   pageSync(true);
+  bubMake();
   autoPage();
   stickBtns();
   if (U.tut) tutDecorate();
@@ -2372,7 +2395,7 @@ document.addEventListener('click', e => {
   if (el.disabled) return;
   if (U.tut && S && !tutAllowed(el.dataset.a, el.dataset)) { toast('Folge dem markierten Hinweis im Lernspiel.'); render(); return; }
   if (el.dataset.a === 'page') { pageGo(+el.dataset.p, true); return; }
-  if (el.closest('.top.scr:not(.peek) .banner')) { const t = document.querySelector('.top:not(.coach)'); t.classList.add('peek'); clearTimeout(U.peekT); U.peekT = setTimeout(() => t.classList.remove('peek'), 5000); return; }
+  if (el.dataset.a === 'bnub' || el.closest('.top.scr:not(.peek) .banner')) { const t = document.querySelector('.top:not(.coach)'); t.classList.add('peek'); clearTimeout(U.peekT); U.peekT = setTimeout(() => t.classList.remove('peek'), 5000); return; }
   const fn = H[el.dataset.a]; if (!fn) return;
   fn(el.dataset); render();
 });
