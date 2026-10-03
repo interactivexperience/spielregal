@@ -151,7 +151,7 @@ Automatischer Seitenwechsel bei neuem Zugschritt (`autoPage`, nicht im Lernspiel
 der Würfelwahl → Hotel; Drei Schwestern Würfel nehmen → Rondell, eigene Gartenaktionen → Garten; Landgut zu Beginn deines Zugs → Arbeitsplan.
 In Drei Schwestern und Grand Hotel wird die Ansage beim Scrollen ebenfalls zur Sprechblase mit Kopf (`.top.scr`, Antippen
 klappt sie kurz auf). Die Vorräte unter den Personenpillen stehen in allen Spielen ohne Pillen (Platz sparen). Grand Hotel:
-Das Dach des Hotelplans zeigt wie im Original die Auslastungsboni je Farbe (Gruppengröße als Kästchen → Kronen/SP/Kaiser).
+Das Dach des Hotelplans zeigt wie im Original die vollen Auslastungsboni-Tabellen je Farbe für Gruppengröße 1–4 (Blau → Kronen 2/5/9/15, Rot → SP 1/3/6/10, Gelb → Kaiser 1/3/6/10; nach Foto des Owner-Spielplans).
 Landgut ist auf **drei Wischseiten** verteilt (`.pages`, Scroll-Snap): Auslage & Aufträge · Mein Hof (Siegpunktpfad,
 Gebiete, Chronik) · Arbeitsplan; Seitenwahl nur als drei kleine Punkte oben im Footer (`.pdots`, Owner: „nur als 3 kleine Indikatoren“; lila Punkt
 am Arbeitsplan, wenn du dran bist), Kopf kompakt (Spieler-Pillen + Menü in einer Zeile), Ziel 30 SP bzw. Solo-Stapel als
