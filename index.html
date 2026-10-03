@@ -5277,7 +5277,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
 }
 
 /* ---------------- DASHBOARD ---------------- */
-const DEFAULT_DASHBOARD_ORDER = ["browsergames", "month", "records", "bestof", "wishlist", "lent", "topRated", "dust", "digital"];
+const DEFAULT_DASHBOARD_ORDER = ["tip", "year", "taste", "browsergames", "month", "records", "bestof", "wishlist", "lent", "topRated", "dust", "digital"];
 
 function DashboardReorderScreen({ order, sections, labels, hiddenSections = [], onToggleHidden, onSave, onClose }) {
   const [items, setItems] = useState(order.filter((key) => sections[key]));
@@ -5288,8 +5288,13 @@ function DashboardReorderScreen({ order, sections, labels, hiddenSections = [], 
 
   const toggleHidden = (key) => {
     haptic(6);
-    setHidden((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
+    setHidden((prev) => {
+      const next = prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key];
+      onToggleHidden && onToggleHidden(next); // sofort wirksam, nicht erst bei „Fertig“
+      return next;
+    });
   };
+  const finish = () => { onSave(items); onToggleHidden && onToggleHidden(hidden); };
 
   const moveItem = (from, to) => {
     setItems((prev) => {
@@ -5324,12 +5329,13 @@ function DashboardReorderScreen({ order, sections, labels, hiddenSections = [], 
     setDraggingKey(null);
   };
 
-  return (
-    <div className="fixed inset-0 z-[80] bg-bg flex flex-col">
+  // Per Portal direkt in <body>: sonst verschiebt ein transformierter Eltern-Container das Vollbild-Fenster
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 z-[80] bg-bg flex flex-col" style={{ height: "var(--app-height, 100dvh)" }}>
       <div className="shrink-0 px-5 flex items-center justify-between" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))", paddingBottom: "1rem" }}>
-        <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg text-ink" aria-label="Abbrechen"><ChevronLeft size={22} /></button>
+        <button onClick={finish} className="w-10 h-10 flex items-center justify-center rounded-full border border-line bg-bg text-ink" aria-label="Zurück (speichert)"><ChevronLeft size={22} /></button>
         <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Sektionen</h2>
-        <button onClick={() => { onSave(items); onToggleHidden && onToggleHidden(hidden); }} className="text-accent text-sm font-medium px-2 py-1">Fertig</button>
+        <button onClick={finish} className="text-accent text-sm font-medium px-2 py-1">Fertig</button>
       </div>
       <p className="shrink-0 text-xs text-dim px-5 pt-3 pb-1">Ziehen zum Sortieren, Auge zum Ausblenden.</p>
       <div className="flex-1 overflow-y-auto p-4 space-y-2" style={{ touchAction: draggingKey ? "none" : "auto" }}>
@@ -5367,7 +5373,7 @@ function DashboardReorderScreen({ order, sections, labels, hiddenSections = [], 
         })}
       </div>
     </div>
-  );
+  , document.body);
 }
 
 function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorder, hiddenSections = [], onToggleHidden, onSearch, aiWorkerUrl }) {
@@ -5509,7 +5515,10 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
     const weekMs = 7 * 24 * 60 * 60 * 1000;
     const yearKey = new Date().getFullYear();
 
-    const needsWeekly = !weeklyTip || !weeklyTip.gameId || (now - weeklyTip.generatedAt) > weekMs || weeklyTip.fingerprint !== playsFingerprint;
+    // Neuer Tipp je Kalenderwoche (Montag) – oder sobald das empfohlene Spiel gespielt wurde
+    const weekKey = (t) => { const d = new Date(t); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.getTime(); };
+    const tipPlayed = weeklyTip && weeklyTip.gameId && plays.some((p) => p.gameId === weeklyTip.gameId && p.date && new Date(p.date).getTime() >= (weeklyTip.generatedAt - 864e5));
+    const needsWeekly = !weeklyTip || !weeklyTip.gameId || weekKey(now) !== weekKey(weeklyTip.generatedAt) || (now - weeklyTip.generatedAt) > weekMs || tipPlayed;
     const needsYearly = !yearlyInsight || yearlyInsight.year !== yearKey || yearlyInsight.fingerprint !== playsFingerprint;
     if (!needsWeekly && !needsYearly) return;
 
@@ -5533,6 +5542,10 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             candidates = [...ownedGames].sort((a, b) => (playCounts[a.id] || 0) - (playCounts[b.id] || 0)).slice(0, 8);
           }
           candidates.sort((a, b) => (playCounts[a.id] || 0) - (playCounts[b.id] || 0));
+          // Zuletzt empfohlene Spiele auslassen, damit der Tipp wirklich wechselt
+          let tipHistory = []; try { tipHistory = JSON.parse(localStorage.getItem("spielregal:weeklyTipHistory") || "[]"); } catch {}
+          const fresh = candidates.filter((g) => !tipHistory.includes(g.id));
+          if (fresh.length) candidates = fresh;
 
           if (candidates.length > 0) {
             const describeCandidate = (g) => {
@@ -5560,6 +5573,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             const val = { gameId: picked.id, gameName: picked.name, image: pickedImage, reason, generatedAt: now, fingerprint: playsFingerprint };
             setWeeklyTip(val);
             localStorage.setItem("spielregal:weeklyTip", JSON.stringify(val));
+            try { localStorage.setItem("spielregal:weeklyTipHistory", JSON.stringify([picked.id, ...tipHistory.filter((id) => id !== picked.id)].slice(0, 8))); } catch {}
           }
         }
         if (needsYearly) {
@@ -5838,14 +5852,139 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
         </div>
       </div>
     ),
+    tip: (weeklyTip || tipLoading) && (
+      <div>
+          {!weeklyTip && tipLoading && (
+            <div className="border-t border-line pt-5">
+              <p className="text-[10px] font-semibold text-accent uppercase tracking-[0.16em] mb-2.5 flex items-center gap-1.5"><Sparkles size={12} /> Tipp der Woche</p>
+              <div className="flex gap-3">
+                <div className="w-24 h-24 rounded-2xl bg-surface border border-line shrink-0" />
+                <div className="flex-1 min-w-0 pt-1 space-y-2">
+                  <div className="h-5 w-2/3 rounded bg-surface" />
+                  <div className="h-3 w-full rounded bg-surface" />
+                  <div className="h-3 w-5/6 rounded bg-surface" />
+                </div>
+              </div>
+            </div>
+          )}
+          {weeklyTip && (() => {
+            // Live-Spiel nur für die Navigation beim Antippen — Cover/Name
+            // selbst kommen direkt aus dem Tipp, damit die Karte nicht kurz
+            // verschwindet, während games (Firebase) gerade neu lädt.
+            const tipGame = games.find((g) => g.id === weeklyTip.gameId);
+            // saleStatus explizit ausblenden — Cover greyscaled sonst
+            // "zum Verkauf"/"verkauft"-Spiele, was hier (Empfehlung fürs
+            // eigene Spielen) fehl am Platz wirkt.
+            const coverGame = tipGame ? { ...tipGame, saleStatus: null } : { name: weeklyTip.gameName, image: weeklyTip.image };
+            // Kurzer Text bleibt immer ganz sichtbar -- nur ab einer gewissen
+            // Laenge lohnt sich das Einklappen ueberhaupt.
+            const reasonNeedsToggle = (weeklyTip.reason || "").length > 90;
+            const cardBody = (
+              <div className="flex gap-3">
+                <div className="w-24 shrink-0">
+                  <Cover game={coverGame} size="lg" className="!rounded-2xl" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-display text-xl leading-tight tracking-[-0.02em] text-ink">{weeklyTip.gameName}</p>
+                  <p className={`text-dim text-[13px] font-body leading-relaxed mt-1.5 ${!tipExpanded && reasonNeedsToggle ? "line-clamp-2" : ""}`}>{weeklyTip.reason}</p>
+                  {reasonNeedsToggle && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); haptic(6); setTipExpanded((v) => !v); }}
+                      className="text-accent text-[12px] font-medium mt-1"
+                    >
+                      {tipExpanded ? "Weniger" : "Mehr anzeigen"}
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+            return (
+              <div className="border-t border-line pt-5">
+                <p className="text-[10px] font-semibold text-accent uppercase tracking-[0.16em] mb-2.5 flex items-center gap-1.5"><Sparkles size={12} /> Tipp der Woche</p>
+                {tipGame ? (
+                  <div onClick={() => onView(tipGame)} className="w-full text-left cursor-pointer">{cardBody}</div>
+                ) : (
+                  <div className="w-full">{cardBody}</div>
+                )}
+              </div>
+            );
+          })()}
+      </div>
+    ),
+    year: yearlyInsight && (
+      <div>
+          {yearlyInsight && (() => {
+            // Dieselbe Jahres-Filterung wie beim Generieren des Textes (siehe
+            // oben) -- hier nur fuers Anzeigen, nicht erneut gespeichert.
+            const yearPlays = plays.filter((p) => p.date && new Date(p.date).getFullYear() === yearlyInsight.year);
+            const yearPlayCounts = {};
+            yearPlays.forEach((p) => { yearPlayCounts[p.gameId] = (yearPlayCounts[p.gameId] || 0) + 1; });
+            const topEntry = Object.entries(yearPlayCounts).sort((a, b) => b[1] - a[1])[0];
+            const topGame = topEntry ? findGame(topEntry[0]) : null;
+            return (
+              <div className="border-t border-line pt-5">
+                <p className="text-[10px] font-semibold text-accent uppercase tracking-[0.16em] mb-2.5 flex items-center gap-1.5"><Sparkles size={12} /> Dein Spieljahr {yearlyInsight.year}</p>
+                <div className="rounded-2xl border border-accent/25 bg-accent/[0.06] p-4">
+                  {(yearPlays.length > 0 || topGame) && (
+                    <div className="flex items-center gap-3 mb-3">
+                      {topGame && (
+                        <button onClick={() => onView(topGame)} className="shrink-0">
+                          <Cover game={topGame} size="md" className="!rounded-xl" />
+                        </button>
+                      )}
+                      <div className="min-w-0">
+                        <p className="font-display text-3xl tracking-[-0.03em] text-ink leading-none">{yearPlays.length}</p>
+                        <p className="text-dim text-xs font-body mt-1">{yearPlays.length === 1 ? "Partie" : "Partien"} in {yearlyInsight.year}</p>
+                      </div>
+                    </div>
+                  )}
+                  <TextWithGameLinks text={yearlyInsight.text} games={games} onView={onView} color="rgb(var(--accent))" />
+                </div>
+              </div>
+            );
+          })()}
+      </div>
+    ),
+    taste: (tasteProfile.length > 0 && (
+        <div className="border-t border-line pt-5">
+          <p className="text-[10px] font-semibold text-accent uppercase tracking-[0.16em] mb-3 flex items-center gap-1.5"><Sparkles size={13} /> Dein Geschmack</p>
+          {(() => {
+            const TopIcon = tagIcon(tasteProfile[0][0]);
+            return (
+              <div className="mb-1">
+                <div className="min-w-0">
+                  <p className="text-ink font-display text-2xl tracking-[-0.025em] leading-tight truncate">{tasteProfile[0][0]}</p>
+                  <p className="text-dim text-xs font-body mt-1">Dein Lieblingsthema · {tasteProfile[0][1]}× bei deinen 8+-Bewertungen</p>
+                </div>
+              </div>
+            );
+          })()}
+          {tasteProfile.length > 1 && (
+            <>
+            <div className="flex flex-wrap gap-x-5 mt-5">
+              {tasteProfile.slice(1).map(([tag, weight]) => {
+                const TIcon = tagIcon(tag);
+                return (
+                  <span key={tag} className="flex items-center gap-2 flex-[1_1_42%] min-w-0 py-2 border-b border-line text-[13px] text-ink font-body">
+                    <TIcon size={13} className="shrink-0 text-dim" />
+                    <span className="truncate">{tag}</span>
+                    <b className="ml-auto font-medium text-dim">{weight}</b>
+                  </span>
+                );
+              })}
+            </div>
+            </>
+          )}
+        </div>
+      )),
   };
   const baseOrder = sectionOrder && sectionOrder.length ? sectionOrder : DEFAULT_DASHBOARD_ORDER;
   // Gespeicherte Reihenfolgen von vor dem Abschnitt kennen ihn nicht → vorne einsortieren
-  const order = baseOrder.includes("browsergames") ? baseOrder : ["browsergames", ...baseOrder];
+  const order = [...["tip", "year", "taste", "browsergames"].filter((k) => !baseOrder.includes(k)), ...baseOrder];
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const sortMenuClose = useSheetClose(() => setSortMenuOpen(false));
   const [reorderScreenOpen, setReorderScreenOpen] = useState(false);
-  const SECTION_LABELS = { browsergames: "Digital spielen", month: "Spiel des Monats", records: "Rekorde", wishlist: "Wunschliste", lent: "Verliehene Spiele", topRated: "Top 10 Spiele", dust: "Staubfänger", digital: "Digital vs. Physisch", bestof: "Best of" };
+  const SECTION_LABELS = { tip: "Tipp der Woche", year: "Dein Spieljahr", taste: "Dein Geschmack", browsergames: "Digital spielen", month: "Spiel des Monats", records: "Rekorde", wishlist: "Wunschliste", lent: "Verliehene Spiele", topRated: "Top 10 Spiele", dust: "Staubfänger", digital: "Digital vs. Physisch", bestof: "Best of" };
   const PRESETS = [
     { key: "default", label: "Standard", icon: ListChecks, order: DEFAULT_DASHBOARD_ORDER },
     { key: "activity", label: "Nach Aktivität", icon: Sparkles, order: ["browsergames", "month", "dust", "topRated", "records", "bestof", "wishlist", "digital"] },
@@ -5932,127 +6071,6 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
             </p>
             <button onClick={statInfoClose.requestClose} className="w-full h-11 mt-4 rounded-[14px] bg-surface border border-line text-ink text-sm font-medium">Verstanden</button>
           </div>
-        </div>
-      )}
-      {(weeklyTip || yearlyInsight || tipLoading) && (
-        <div className="space-y-3">
-          {!weeklyTip && tipLoading && (
-            <div className="border-t border-line pt-5">
-              <p className="text-[10px] font-semibold text-accent uppercase tracking-[0.16em] mb-2.5 flex items-center gap-1.5"><Sparkles size={12} /> Tipp der Woche</p>
-              <div className="flex gap-3">
-                <div className="w-24 h-24 rounded-2xl bg-surface border border-line shrink-0" />
-                <div className="flex-1 min-w-0 pt-1 space-y-2">
-                  <div className="h-5 w-2/3 rounded bg-surface" />
-                  <div className="h-3 w-full rounded bg-surface" />
-                  <div className="h-3 w-5/6 rounded bg-surface" />
-                </div>
-              </div>
-            </div>
-          )}
-          {weeklyTip && (() => {
-            // Live-Spiel nur für die Navigation beim Antippen — Cover/Name
-            // selbst kommen direkt aus dem Tipp, damit die Karte nicht kurz
-            // verschwindet, während games (Firebase) gerade neu lädt.
-            const tipGame = games.find((g) => g.id === weeklyTip.gameId);
-            // saleStatus explizit ausblenden — Cover greyscaled sonst
-            // "zum Verkauf"/"verkauft"-Spiele, was hier (Empfehlung fürs
-            // eigene Spielen) fehl am Platz wirkt.
-            const coverGame = tipGame ? { ...tipGame, saleStatus: null } : { name: weeklyTip.gameName, image: weeklyTip.image };
-            // Kurzer Text bleibt immer ganz sichtbar -- nur ab einer gewissen
-            // Laenge lohnt sich das Einklappen ueberhaupt.
-            const reasonNeedsToggle = (weeklyTip.reason || "").length > 90;
-            const cardBody = (
-              <div className="flex gap-3">
-                <div className="w-24 shrink-0">
-                  <Cover game={coverGame} size="lg" className="!rounded-2xl" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-display text-xl leading-tight tracking-[-0.02em] text-ink">{weeklyTip.gameName}</p>
-                  <p className={`text-dim text-[13px] font-body leading-relaxed mt-1.5 ${!tipExpanded && reasonNeedsToggle ? "line-clamp-2" : ""}`}>{weeklyTip.reason}</p>
-                  {reasonNeedsToggle && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); haptic(6); setTipExpanded((v) => !v); }}
-                      className="text-accent text-[12px] font-medium mt-1"
-                    >
-                      {tipExpanded ? "Weniger" : "Mehr anzeigen"}
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-            return (
-              <div className="border-t border-line pt-5">
-                <p className="text-[10px] font-semibold text-accent uppercase tracking-[0.16em] mb-2.5 flex items-center gap-1.5"><Sparkles size={12} /> Tipp der Woche</p>
-                {tipGame ? (
-                  <div onClick={() => onView(tipGame)} className="w-full text-left cursor-pointer">{cardBody}</div>
-                ) : (
-                  <div className="w-full">{cardBody}</div>
-                )}
-              </div>
-            );
-          })()}
-          {yearlyInsight && (() => {
-            // Dieselbe Jahres-Filterung wie beim Generieren des Textes (siehe
-            // oben) -- hier nur fuers Anzeigen, nicht erneut gespeichert.
-            const yearPlays = plays.filter((p) => p.date && new Date(p.date).getFullYear() === yearlyInsight.year);
-            const yearPlayCounts = {};
-            yearPlays.forEach((p) => { yearPlayCounts[p.gameId] = (yearPlayCounts[p.gameId] || 0) + 1; });
-            const topEntry = Object.entries(yearPlayCounts).sort((a, b) => b[1] - a[1])[0];
-            const topGame = topEntry ? findGame(topEntry[0]) : null;
-            return (
-              <div className="border-t border-line pt-5">
-                <p className="text-[10px] font-semibold text-accent uppercase tracking-[0.16em] mb-2.5 flex items-center gap-1.5"><Sparkles size={12} /> Dein Spieljahr {yearlyInsight.year}</p>
-                <div className="rounded-2xl border border-accent/25 bg-accent/[0.06] p-4">
-                  {(yearPlays.length > 0 || topGame) && (
-                    <div className="flex items-center gap-3 mb-3">
-                      {topGame && (
-                        <button onClick={() => onView(topGame)} className="shrink-0">
-                          <Cover game={topGame} size="md" className="!rounded-xl" />
-                        </button>
-                      )}
-                      <div className="min-w-0">
-                        <p className="font-display text-3xl tracking-[-0.03em] text-ink leading-none">{yearPlays.length}</p>
-                        <p className="text-dim text-xs font-body mt-1">{yearPlays.length === 1 ? "Partie" : "Partien"} in {yearlyInsight.year}</p>
-                      </div>
-                    </div>
-                  )}
-                  <TextWithGameLinks text={yearlyInsight.text} games={games} onView={onView} color="rgb(var(--accent))" />
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      )}
-      {tasteProfile.length > 0 && (
-        <div className="border-t border-line pt-5">
-          <p className="text-[10px] font-semibold text-accent uppercase tracking-[0.16em] mb-3 flex items-center gap-1.5"><Sparkles size={13} /> Dein Geschmack</p>
-          {(() => {
-            const TopIcon = tagIcon(tasteProfile[0][0]);
-            return (
-              <div className="mb-1">
-                <div className="min-w-0">
-                  <p className="text-ink font-display text-2xl tracking-[-0.025em] leading-tight truncate">{tasteProfile[0][0]}</p>
-                  <p className="text-dim text-xs font-body mt-1">Dein Lieblingsthema · {tasteProfile[0][1]}× bei deinen 8+-Bewertungen</p>
-                </div>
-              </div>
-            );
-          })()}
-          {tasteProfile.length > 1 && (
-            <>
-            <div className="flex flex-wrap gap-x-5 mt-5">
-              {tasteProfile.slice(1).map(([tag, weight]) => {
-                const TIcon = tagIcon(tag);
-                return (
-                  <span key={tag} className="flex items-center gap-2 flex-[1_1_42%] min-w-0 py-2 border-b border-line text-[13px] text-ink font-body">
-                    <TIcon size={13} className="shrink-0 text-dim" />
-                    <span className="truncate">{tag}</span>
-                    <b className="ml-auto font-medium text-dim">{weight}</b>
-                  </span>
-                );
-              })}
-            </div>
-            </>
-          )}
         </div>
       )}
       {order.filter((key) => !hiddenSections.includes(key)).map((key) => sections[key] || null)}
