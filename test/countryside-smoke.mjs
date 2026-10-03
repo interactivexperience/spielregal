@@ -68,7 +68,7 @@ async function playUi(label, bots) {
   await page.click("text=Landgut übernehmen");
   await page.waitForSelector(".sheet");
   await page.click("[data-a=fast]").catch(() => {});
-  let acts = 0, asks = 0, guard = 0, shot = false, zooms = 0, swipes = 0;
+  let acts = 0, asks = 0, mk = 0, guard = 0, shot = false, zooms = 0, swipes = 0;
   while (guard++ < 3000) {
     if (await page.locator("text=Neue Partie").count()) break;
     const sheet = page.locator(".sheet");
@@ -93,6 +93,8 @@ async function playUi(label, bots) {
       if (await sheet.locator("[data-a=askskip]").count()) { await sheet.locator("[data-a=askskip]").click({ force: true }); continue; }
       fail("Unbekannter Dialog " + t); break;
     }
+    const mkt = page.locator(".market [data-a=askval]:not([disabled])");
+    if (await mkt.count()) { mk++; await mkt.nth(mk % (await mkt.count())).click({ force: true }); continue; }
     if (await page.locator("[data-a=askopen]").count()) { await page.locator("[data-a=askopen]").first().click({ force: true }); continue; }
     if (await page.locator("[data-a=endday]").count()) {
       acts++;
@@ -116,8 +118,9 @@ async function playUi(label, bots) {
     await page.waitForTimeout(80);
   }
   if (!(await page.locator("text=Neue Partie").count())) fail(`UI-Partie ${label} nicht beendet (guard ${guard}, Aktionen ${acts})`);
-  console.log(`UI-Partie ${label}: ${acts} Züge, ${asks} Dialoge, ${zooms}× Karte groß, ${swipes}× eingesetzt per Wisch.`);
+  console.log(`UI-Partie ${label}: ${acts} Züge, ${asks} Dialoge, ${mk}× Markt direkt, ${zooms}× Karte groß, ${swipes}× eingesetzt per Wisch.`);
   if (!zooms) fail(`${label}: Handkarten-Fächer nie benutzt`);
+  if (!mk) fail(`${label}: Marktaktion nie direkt am Markt gewählt`);
   if (shots) await page.screenshot({ path: `${shots}/lg-4-end-${label}.png`, fullPage: true });
   await page.click("[data-a=newgame]");
 }

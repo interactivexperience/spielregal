@@ -310,6 +310,11 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .market .mhead b{font-family:"Fraunces",Georgia,serif;font-size:18px}
 .market .msub{margin:2px 0 8px;font-size:11.5px;color:var(--muted)}
 .market .fld.mkt{background:#fff;border:1.5px dashed #E4C9A8}
+.market .fld.mkt.live{border:1.5px solid transparent;box-shadow:0 0 0 3px var(--plum);color:var(--muted)}
+.market .fld.mkt.live:active{transform:scale(.97)}
+.market .fld.mkt.off{opacity:.5}
+.market .fld.mkt.used{opacity:1;background:#E8F0DC;border-color:#7C9A4A}
+.mdone{position:absolute;right:8px;top:8px;font-size:10.5px;font-weight:700;color:#4E6B2A;background:#fff;border-radius:999px;padding:2px 7px}
 /* Drei Seiten zum Wischen */
 .ptabs{display:flex;gap:3px;background:var(--card);border-radius:999px;padding:3px;flex:1;min-width:0}
 .ptabs .pt{flex:1;min-width:0;border-radius:999px;padding:8px 4px;font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
@@ -1099,7 +1104,7 @@ const APPLY = {
   choice: (st, v) => { CHOICE[st.fn](P(st.pi), v, st); },
   fromDiscard: (st, k) => { const p = P(st.pi), i = S.discard.lastIndexOf(k); if (i >= 0) { S.discard.splice(i, 1); p.hand.push(k); log(`${p.name} nimmt ${CARDS[k].n} aus dem Ablagestapel.`); } },
   worker: (st, f) => { const p = P(st.pi); p.placed = p.placed.filter(x => x !== f); log(`${p.name} holt eine Arbeitskraft zurück auf die Bank.`); },
-  market: (st, k) => { const p = P(st.pi); doMarket(p, st.pi, k); if (st.left > 1) sub({ t: 'market', pi: st.pi, left: st.left - 1, exclude: (st.exclude || []).concat([k]) }); },
+  market: (st, k) => { const p = P(st.pi), n0 = S.q.length; doMarket(p, st.pi, k); if (st.left > 1) S.q.splice(1 + S.q.length - n0, 0, { t: 'market', pi: st.pi, left: st.left - 1, exclude: (st.exclude || []).concat([k]) }); }, // zweite Marktaktion erst, wenn die erste ganz ausgeführt ist
   sell: (st, amounts) => { const p = P(st.pi); let n = 0; GOODS.forEach(g => { const a = clamp((amounts || {})[g] | 0, 0, p.goods[g]); p.goods[g] -= a; p.coins += a; n += a; }); if (n) log(`${p.name} verkauft ${n} Waren für ${n} Münzen.`); },
   repeat: (st, k) => { const p = P(st.pi); const ti = p.terrs.findIndex(t => t.cards.includes(k)); log(`${p.name} wiederholt den Effekt von ${CARDS[k].n}.`); sub({ t: 'effect', pi: st.pi, k, ti }); },
 };
@@ -1510,12 +1515,13 @@ function boardHtml(p, live) {
     return `<button class="fld ${open ? '' : 'locked'} ${ok ? 'live' : ''} ${placed(f) ? 'used' : ''}" data-a="field" data-k="${f.k}" ${ok ? '' : 'disabled'} data-info="${esc(fieldInfo(p, f))}">${placed(f) ? `<span class="wk on ${U.wkNew === f.k ? 'drop' : ''}">${workerSvg(p.mark)}</span>` : ''}${!open ? tokens(p, p.markers[f.lock]) : ''}<span class="fart">${!open ? lockSvg() : ''}${FIELD_ART[f.k] ? FIELD_ART[f.k]() : ''}</span><b>${esc(f.n)}</b>${esc(f.tx)}</button>`;
   };
   const other = UNLOCKS.filter(u => !FIELDS.some(f => f.lock === u.k) && !MARKET.some(m => m.lock === u.k)).map(u => { const op = unlocked(p, u.k), [tag, n] = UNLOCK_N[u.k]; return `<div class="fld unl ${op ? 'open' : 'locked'}" data-info="${esc(u.tx + (op ? ' Freigeschaltet.' : lockInfo(u.k)))}">${!op ? tokens(p, p.markers[u.k]) : ''}<span class="fart">${!op ? lockSvg() : ''}${UNLOCK_ART[u.k]()}</span><span class="tag">${op ? '✓ frei' : tag}</span><b>${esc(n)}</b></div>`; }).join('');
+  const mk = myAsk() && S.ask.t === 'market' && S.ask.pi === S.players.indexOf(p) ? S.ask : null;
   const mw = n => `<span class="mw">${range(n).map(() => workerSvg(p.mark)).join('')}</span>`;
   return `<div class="board"><div class="bank">Bank: ${range(workersFree(p)).map(() => `<span style="width:18px;height:22px;display:inline-block">${workerSvg(p.mark)}</span>`).join('') || '–'} · eingesetzt: ${p.placed.length}</div>
     <div class="fields">${FIELDS.map(fld).join('')}</div>
     <div class="market"><svg class="awn" viewBox="0 0 360 44" preserveAspectRatio="none" aria-hidden="true">${range(18).map(i => `<rect x="${i * 20}" y="0" width="20" height="30" fill="${i % 2 ? '#FBF3E4' : '#D9735F'}"/><ellipse cx="${i * 20 + 10}" cy="30" rx="10" ry="9" fill="${i % 2 ? '#FBF3E4' : '#D9735F'}"/>`).join('')}<rect x="0" y="0" width="360" height="5" fill="#B85A47"/></svg>
-      <div class="msign"><b>Markt</b><small>beim Tag beenden</small></div>
-      <div class="fields">${MARKET.map(m => { const op = !m.lock || unlocked(p, m.lock); return `<div class="fld mkt ${op ? '' : 'locked'}" data-info="${esc(m.n + ': ' + m.tx + (op ? '' : lockInfo(m.lock)))}">${!op ? tokens(p, p.markers[m.lock]) : ''}<span class="fart">${!op ? lockSvg() : ''}${MARKET_ART[m.k] ? MARKET_ART[m.k]() : ''}</span><b>${esc(m.n)}</b>${esc(m.tx)}</div>`; }).join('')}</div>
+      <div class="msign"><b>Markt</b><small>${mk ? (mk.left > 1 ? `wähle ${mk.left} verschiedene` : 'wähle eine Aktion') : 'beim Tag beenden'}</small></div>
+      <div class="fields">${MARKET.map(m => { const op = !m.lock || unlocked(p, m.lock), done = mk && (mk.exclude || []).includes(m.k), ok = mk && mk.opts.includes(m.k); const inner = `${done ? '<span class="mdone">✓ gewählt</span>' : ''}${!op ? tokens(p, p.markers[m.lock]) : ''}<span class="fart">${!op ? lockSvg() : ''}${MARKET_ART[m.k] ? MARKET_ART[m.k]() : ''}</span><b>${esc(m.n)}</b>${esc(m.tx)}`, info = esc(m.n + ': ' + m.tx + (op ? '' : lockInfo(m.lock))); return mk ? `<button class="fld mkt ${op ? '' : 'locked'} ${ok ? 'live' : 'off'} ${done ? 'used' : ''}" data-a="askval" data-v="${m.k}" ${ok ? '' : 'disabled'} data-info="${info}">${inner}</button>` : `<div class="fld mkt ${op ? '' : 'locked'}" data-info="${info}">${inner}</div>`; }).join('')}</div>
       <div class="mkr" data-info="Marktkräfte: Wie viele Arbeitskräfte du beim Tag beenden eingesetzt hattest, bestimmt die Marktaktionen: 2 = eine, 3 = eine und eine Karte aus der Auslage, 4 = zwei verschiedene.">Marktkräfte ${mw(2)} 1 · ${mw(3)} 1 + Karte · ${mw(4)} 2</div></div>
     <div class="unlh"><h3>Freischalten</h3><p>${tokens(p, 1)} Pro erfülltem Auftrag nimmst du einen Marker von einem gesperrten Feld. Ist keiner mehr da, ist es frei.</p></div>
     <div class="fields">${other}</div></div>`;
@@ -1546,7 +1552,9 @@ function viewGame() {
   const me = human(), p = cur();
   const mine = isMyTurn();
   let banner;
-  if (myAsk()) banner = `<div data-a="go" class="banner mine"><span class="face">${face(me)}</span><div style="flex:1"><b>${esc(askTitle(S.ask))}</b><span class="small">Wähle im Fenster.</span></div><button class="btn sm" data-a="askopen">Öffnen</button></div>`;
+  const mkAsk = myAsk() && S.ask.t === 'market';
+  if (mkAsk) banner = `<div data-a="go" class="banner mine"><span class="face">${face(me)}</span><div><b>${S.ask.left > 1 ? `Wähle ${S.ask.left} Marktaktionen` : 'Wähle eine Marktaktion'}</b><span class="small">Tippe auf dem Markt ein umrandetes Feld an.</span></div></div>`;
+  else if (myAsk()) banner = `<div data-a="go" class="banner mine"><span class="face">${face(me)}</span><div style="flex:1"><b>${esc(askTitle(S.ask))}</b><span class="small">Wähle im Fenster.</span></div><button class="btn sm" data-a="askopen">Öffnen</button></div>`;
   else if (mine) banner = forcedEndDay(me)
     ? `<div data-a="go" class="banner mine"><span class="face">${face(me)}</span><div><b>Tag beenden</b><span class="small">${workersFree(me) ? 'Kein freies Feld passt mehr' : 'Alle Arbeitskräfte sind eingesetzt'} – beende jetzt den Tag und nimm deine Marktaktionen.</span></div></div>`
     : `<div data-a="go" class="banner mine"><span class="face">${face(me)}</span><div><b>Du bist dran</b><span class="small">Setze eine Arbeitskraft auf ein lila umrandetes Feld oder beende den Tag.</span></div></div>`;
@@ -1569,7 +1577,8 @@ function viewGame() {
     </div></div><div class="page"><div class="wrap">
     <section class="sec"><div class="sech"><h2 class="hand">Arbeitsplan</h2></div>${boardHtml(me, mine)}</section>
   </div></div></div>
-  ${U.tut ? '' : handFan(me)}<div class="bar"><div class="pdots" role="tablist">${PAGES.map((pg, i) => `<button class="pd ${U.page === i ? 'on' : ''} ${i === 2 && mine && !myAsk() ? 'act' : ''}" role="tab" data-a="page" data-p="${i}" aria-selected="${U.page === i}" aria-label="Seite ${pg}" data-info="${pg}"><i></i></button>`).join('')}</div><div class="in">${U.undo.length && (mine || myAsk()) ? `<button class="icobtn undo" data-a="undo" aria-label="Zug rückgängig" data-info="Zug rückgängig: geht im eigenen Zug, bis eine verdeckte Karte oder ein Gebiet aufgedeckt wird."><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M7.5 4.5 3.5 8.5l4 4M4 8.5h7.5a4.5 4.5 0 0 1 0 9H9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : ''}${myAsk() ? `<div class="msg" data-a="go">${esc(askTitle(S.ask))}</div><button class="btn" data-a="askopen">Auswählen</button>`
+  ${U.tut || mkAsk ? '' : handFan(me)}<div class="bar"><div class="pdots" role="tablist">${PAGES.map((pg, i) => `<button class="pd ${U.page === i ? 'on' : ''} ${i === 2 && (mine && !myAsk() || mkAsk) ? 'act' : ''}" role="tab" data-a="page" data-p="${i}" aria-selected="${U.page === i}" aria-label="Seite ${pg}" data-info="${pg}"><i></i></button>`).join('')}</div><div class="in">${U.undo.length && (mine || myAsk()) ? `<button class="icobtn undo" data-a="undo" aria-label="Zug rückgängig" data-info="Zug rückgängig: geht im eigenen Zug, bis eine verdeckte Karte oder ein Gebiet aufgedeckt wird."><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M7.5 4.5 3.5 8.5l4 4M4 8.5h7.5a4.5 4.5 0 0 1 0 9H9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : ''}${mkAsk ? `<div class="msg" data-a="go"><b>Markt:</b> ${S.ask.left > 1 ? `noch ${S.ask.left} Aktionen` : 'eine Aktion'} wählen.</div><button class="btn" data-a="go">Zum Markt</button>`
+    : myAsk() ? `<div class="msg" data-a="go">${esc(askTitle(S.ask))}</div><button class="btn" data-a="askopen">Auswählen</button>`
     : mine ? (forcedEndDay(me) ? `<div class="msg" data-a="go"><b>Jetzt den Tag beenden</b> – ${workersFree(me) ? 'kein freies Feld passt mehr' : 'alle Arbeitskräfte sind eingesetzt'}.</div><button class="btn" data-a="endday">Tag beenden</button>`
       : `<div class="msg" data-a="go">${workersFree(me)} ${workersFree(me) === 1 ? 'Arbeitskraft' : 'Arbeitskräfte'} auf der Bank.</div><button class="btn white" data-a="endday">Tag beenden</button>`)
     : `<div class="msg" data-a="go"><b>${esc(p.name)}</b> ist dran …</div><button class="btn white" data-a="fast">${U.fast ? 'Normal' : 'Schneller'}</button>`}</div></div>`;
@@ -1761,6 +1770,7 @@ function rulesHtml() {
 }
 function viewSheet() {
   const sh = U.sheet;
+  if (myAsk() && S.ask.t === 'market' && (!sh || sh.type === 'ask' || sh.type === 'hidden')) return '';
   if (myAsk() && (!sh || sh.type === 'ask')) return askSheet();
   if (!sh) return '';
   if (sh.type === 'rules') return sheetWrap(rulesHtml());
@@ -1836,7 +1846,7 @@ const TUT_STEPS = [
   { ch: 'Die anderen sind dran', wait: true, done: () => isMyTurn(), text: () => `${esc(S.players[1].name)} ist dran …` },
   { ch: 'Aufträge', why: 'Aufträge sind deine wichtigste Punktequelle. Wer früher erfüllt, bekommt mehr, und jeder Marker, der deinen Plan verlässt, macht dort ein neues Feld frei.', sel: '.orders', text: 'Unten auf dem Tisch liegen <b>Aufträge</b>. Wer zuerst erfüllt, bekommt die meisten Punkte. Dafür legst du einen <b>Marker</b> von deinem Arbeitsplan darauf. So schaltest du neue Felder frei.' },
   { ch: 'Tag beenden', why: 'Den Tag zu beenden ist kein verlorener Zug: Deine Arbeitskräfte kommen zurück, und du bekommst Marktaktionen. Mit 2 eingesetzten Kräften eine, mit 4 sogar zwei.', sel: '[data-a=endday]', allow: { endday: true }, done: () => myAsk() && S.ask.t === 'market', text: 'Du hast 2 Arbeitskräfte eingesetzt. Beende den <b>Tag</b>: Sie kommen zurück und du bekommst eine <b>Marktaktion</b>.' },
-  { ch: 'Markt', why: 'Münzen ersetzen fehlende Sonnenstunden. So werden Waren, die du gerade nicht brauchst, zu Spielraum für teure Karten.', sel: '.sheet [data-a=askval][data-v=m3]', allow: { askval: d => d.v === 'm3' }, done: () => myAsk() && S.ask.t === 'sell', text: 'Wähle „<b>Waren verkaufen</b>“: Jeder Korb wird zu einer Münze.' },
+  { ch: 'Markt', why: 'Münzen ersetzen fehlende Sonnenstunden. So werden Waren, die du gerade nicht brauchst, zu Spielraum für teure Karten.', sel: '.market [data-a=askval][data-v=m3]', allow: { askval: d => d.v === 'm3' }, done: () => myAsk() && S.ask.t === 'sell', text: 'Deine Marktaktion wählst du direkt am <b>Markt</b>. Tippe „<b>Waren verkaufen</b>“ an: Jeder Korb wird zu einer Münze.' },
   { ch: 'Markt', sel: '.sheet [data-a=sellc][data-g=kirsche][data-d="1"]', allow: { sellc: true }, done: () => U.tmp.sell && U.tmp.sell.kirsche > 0, text: 'Tippe auf <b>+</b> bei der Kirsche.' },
   { ch: 'Markt', sel: '.sheet [data-a=askok]', allow: { askok: true, sellc: true }, done: () => !myAsk(), text: 'Und jetzt „Verkaufen“.' },
   { ch: 'Zusammenfassung', pos: 'top', text: 'Du kennst den Ablauf! Merke dir: <b>1.</b> Karten passend zu deinen Gebieten sammeln. <b>2.</b> Mit Sonnenstunden – notfalls mit Münzen – ausspielen. <b>3.</b> Waren für Aufträge sammeln und Aufträge möglichst früh erfüllen. <b>4.</b> Den Tag beenden, wenn deine Kräfte eingesetzt sind. Am Zugende darfst du höchstens 12 Handkarten haben. Erreicht jemand 30 SP, hat jede Person noch zwei Züge. Viel Freude auf dem Landgut!' },
@@ -1869,16 +1879,19 @@ function tutBot() {
 
 // Ansage antippen: zur passenden Stelle der Seite scrollen (bzw. offene Auswahl öffnen)
 // Automatischer Seitenwechsel: zu Beginn deines Zugs zum Arbeitsplan; nie im Lernspiel
-const AUTO_KEY = () => `${isMyTurn()}`;
-const AUTO_PAGE = () => isMyTurn() ? 2 : null;
+const mkAsked = () => !!(myAsk() && S.ask.t === 'market');
+const AUTO_KEY = () => `${isMyTurn()}|${mkAsked()}`;
+const AUTO_PAGE = () => isMyTurn() || mkAsked() ? 2 : null;
 function autoPage() {
   if (!S || S.screen !== 'game' || U.tut || !pagesEl()) { U.autoKey = null; return; }
   const k = AUTO_KEY(); if (k === U.autoKey) return;
   const first = U.autoKey == null; U.autoKey = k;
   const t = AUTO_PAGE();
+  if (!first && mkAsked()) { setTimeout(() => { if (pagesEl() && !pTouch) goTo('.market'); }, 250); return; }
   if (!first && t != null && t !== U.page) setTimeout(() => { if (pagesEl() && !pTouch) pageGo(t, true); }, 250);
 }
 function goTarget() {
+  if (myAsk() && S.ask.t === 'market') return '.market';
   if (myAsk()) return () => { U.sheet = { type: 'ask' }; };
   return '.board';
 }

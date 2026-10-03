@@ -123,7 +123,7 @@ jeweils die Karte unter dem Finger groß, nach oben wischen (Karte folgt dem Fin
 Sonnenfeld; das gewählte Feld steht während der Geste unter der großen Karte. Keine Knöpfe (Owner: „unschön“); ein
 anderes Feld wählt man über den Arbeitsplan. Auf Handkarten keine Info-Blase. Im Lernspiel ist der Fächer ausgeblendet.
 Landgut-Arbeitsplan: jedes Aktionsfeld trägt eine kleine Illustration (`FIELD_ART`/`MARKET_ART`); der Markt ist als eigener
-Marktstand abgesetzt (Cremefläche mit gestreifter Markise, gestrichelte Felder, „nur beim Tag beenden“). Arbeitskräfte sind
+Marktstand abgesetzt (Cremefläche mit gestreifter Markise, gestrichelte Felder, „nur beim Tag beenden“). Marktaktionen wählt man **direkt am Markt** (Owner: „nicht vom Modal“): beim Tag beenden springt die Seite zum Markt, wählbare Felder sind lila umrandet, bereits gewählte grün mit „✓ gewählt“, Handfächer solange ausgeblendet; die zweite Marktaktion kommt erst, wenn die erste ganz ausgeführt ist. Arbeitskräfte sind
 kleine Bäuerinnen mit Strohhut und Ringelshirt in der Spielerfarbe (`workerSvg`); eingesetzt liegen sie oben rechts
 auf dem Feld und ragen darüber hinaus (wie Edith in Drei Schwestern), ohne Text zu verdecken, mit kurzer Fall-Animation.
 Der Handfächer schaut deutlich über den Footer-Rand (Owner: „höher rausschauen“). Ist keine Arbeitskraft mehr frei oder passt
