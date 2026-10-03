@@ -340,16 +340,18 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .pdots .pd.hasact:not(.on) i{background:#E4472E}
 /* Ansage schwebt unter dem Kopf; beim Scrollen nur Sprechblase mit Kopf */
 .top .tbanner{position:absolute;left:0;right:0;top:100%}
-/* Dach mit Auslastungsboni */
-.roofw{position:relative;height:86px;margin-bottom:-3px}
+/* Dach mit Auslastungsboni: drei zweizeilige Tabellen wie auf dem Original-Hotelplan */
+.roofw{position:relative;height:104px;margin-bottom:-3px}
 .roofw .roof{position:absolute;inset:0;width:100%;height:100%}
 .roofw .rname{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:#FFF9EE;border:2px solid var(--ink);border-radius:7px;padding:0 10px;font-family:"Caveat Brush",cursive;font-size:16px;line-height:20px;white-space:nowrap}
-.roofw .rtabs{position:absolute;left:4%;right:4%;bottom:6px;display:flex;justify-content:center;gap:4px}
-.roofw .rt{display:flex;gap:3px;background:#FFF9EE;border:2px solid var(--ink);border-radius:8px;padding:2px 4px;min-width:0}
-.roofw .rg{display:flex;flex-direction:column;align-items:center;gap:1px}
-.roofw .rq{display:flex;gap:1px}.roofw .rq i{width:5px;height:5px;border:1px solid var(--ink);display:block}
-.roofw .rq i.qr{background:var(--red)}.roofw .rq i.qb{background:var(--blue)}.roofw .rq i.qy{background:#F1B02B}
-.roofw .rg b{font-family:"Space Mono",monospace;font-size:9px;line-height:1;letter-spacing:-.3px}
+.roofw .rtabs{position:absolute;left:3%;right:3%;bottom:7px;display:flex;justify-content:center;gap:5px}
+.roofw .rt{display:grid;grid-template-columns:14px repeat(4,1fr);align-items:center;justify-items:center;row-gap:1px;column-gap:1px;flex:1 1 0;max-width:118px;background:#FFF9EE;border:2px solid var(--ink);border-radius:8px;padding:3px 5px 3px 4px;font-family:"Space Mono",monospace;line-height:1.05}
+.roofw .rq{width:10px;height:10px;border:1.5px solid var(--ink);display:block}
+.roofw .rq.qr{background:var(--red)}.roofw .rq.qb{background:var(--blue)}.roofw .rq.qy{background:#F1B02B}
+.roofw .rn{font-size:9.5px;color:#6b665d}
+.roofw .ru{font-size:11px}
+.roofw .rv{font-size:12px;font-weight:700}
+.roofw .rt>*:nth-child(n+6){border-top:1.5px dashed rgba(22,22,22,.35);padding-top:1px;width:100%;text-align:center}
 /* Vorräte ohne Pillen (Platz sparen) */
 .status{gap:12px}
 .status span,.status span.t{background:none!important;border:0!important;box-shadow:none!important;padding:0!important}
@@ -368,6 +370,9 @@ input,textarea{-webkit-user-select:text;user-select:text}
 @media (prefers-reduced-motion:reduce){.top .tbanner .banner,.bnub,.pages{transition:none}}
 .bnub.mine{background:#FFE9A8}
 .bnub{border:2px solid var(--ink)}
+/* Beenden-Knopf liegt über allen Elementen des Startbildschirms */
+.start .startbar{z-index:90!important}
+.start .startbar .icobtn{position:relative;z-index:91}
 </style>
 </head>
 <body>
@@ -849,12 +854,13 @@ function heroSvg() {
   <g filter="url(#wob)" stroke="#161616" stroke-width="2.4"><path d="M196,282 C196,266 268,266 268,282 C268,294 196,294 196,282 Z" fill="#C9772E"/><path d="M210,272 l4,16 M226,270 l4,19 M242,270 l4,19 M256,272 l3,15" fill="none" stroke-width="1.8"/></g>
  </svg>`;
 }
-// Dach des Hotelplans wie im Original: Name und die Auslastungsboni je Farbe (Gruppengröße → Belohnung)
+// Dach des Hotelplans wie im Original: Name und je Farbe eine zweizeilige Tabelle (oben Gruppengröße 1–4, unten Belohnung)
 function roofSvg(name) {
   const unit = { r: '★', b: 'K', y: '♛' }, nm = { r: 'Rot → Siegpunkte', b: 'Blau → Kronen', y: 'Gelb → Kaiserschritte' };
-  const sizes = () => [1, 2, 3, 4]; // wie auf dem Original-Dach: volle Tabelle je Farbe
-  const tab = c => `<span class="rt" data-info="${esc(`Auslastungsbonus ${nm[c]}: Sind alle Zimmer einer zusammenhängenden ${nm[c].split(' ')[0].toLowerCase()}en Gruppe belegt, gibt es ${sizes(c).map(n => `${n} Zimmer = ${GROUP_BONUS[c][n]} ${unit[c]}`).join(', ')}.`)}">${sizes(c).map(n => `<span class="rg"><span class="rq">${`<i class="q${c}"></i>`.repeat(n)}</span><b>${GROUP_BONUS[c][n]}${unit[c]}</b></span>`).join('')}</span>`;
-  return `<div class="roofw"><svg viewBox="0 0 300 86" class="roof" preserveAspectRatio="none" aria-hidden="true"><g filter="url(#wob)" stroke="#161616" stroke-width="2.4" stroke-linejoin="round"><path d="M4,84 L34,6 L266,6 L296,84 Z" fill="#E4472E"/><path d="M34,6 L266,6" stroke-width="3"/></g></svg>
+  const tab = c => `<div class="rt" data-info="${esc(`Auslastungsbonus ${nm[c]}: Sind alle Zimmer einer zusammenhängenden Gruppe dieser Farbe belegt, gibt es je nach Gruppengröße ${[1, 2, 3, 4].map(n => `${n} Zimmer = ${GROUP_BONUS[c][n]} ${unit[c]}`).join(', ')}.`)}">
+      <i class="rq q${c}"></i>${[1, 2, 3, 4].map(n => `<span class="rn">${n}</span>`).join('')}
+      <b class="ru u${c}">${unit[c]}</b>${[1, 2, 3, 4].map(n => `<b class="rv">${GROUP_BONUS[c][n]}</b>`).join('')}</div>`;
+  return `<div class="roofw"><svg viewBox="0 0 300 100" class="roof" preserveAspectRatio="none" aria-hidden="true"><g filter="url(#wob)" stroke="#161616" stroke-width="2.4" stroke-linejoin="round"><path d="M4,98 L30,6 L270,6 L296,98 Z" fill="#E4472E"/></g></svg>
     <span class="rname">${esc(name)}</span><div class="rtabs">${['b', 'r', 'y'].map(tab).join('')}</div></div>`;
 }
 
