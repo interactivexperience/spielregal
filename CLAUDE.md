@@ -130,7 +130,9 @@ Ereignisleiste 1–8; der gemeinsam genutzte niedrigste Würfel trägt die Marke
 Text daneben, sondern hinter einem i-Knopf (`data-a="info"`, Antippen = Info-Blase) bzw. langem Drücken. Legenden sind
 Symbol-Chips mit einem Wort (`lgChip`), Details per langem Drücken statt verkürzter Fließtexte. Jeder Bogen-Abschnitt (Garten, Stauden,
 Bienenstock, Hof, Schuppen) beginnt mit einem großflächigen Riso-Bildstreifen (`scene`/`sceneHead`, Titel + SP darauf)
-wie die Illustrationen des echten Bogens; Gartenzonen zeigen Erdreihen (`.zbg`). Owner: weniger „technisch“, Lesbarkeit
+wie die Illustrationen des echten Bogens; Gartenzonen zeigen Erdreihen (`.zbg`), zarte Riso-Pflanzen hinter jeder Kästchenspalte (`PLANT_BG`: Mais-Halm,
+Bohne an der Stange, Kürbisranke) und kleine Gartendetails in leeren Ecken (`.zdeco`). Legenden ohne Pillen; Warenleiste
+mit Zwischenschritten je Ware und „Noch X bis zum nächsten ★“. Owner: weniger „technisch“, Lesbarkeit
 und Bedienung haben aber Vorrang – Kästchen und Knöpfe bleiben unverändert.
 Landgut ist auf **drei Wischseiten** verteilt (`.pages`, Scroll-Snap): Auslage & Aufträge · Mein Hof (Siegpunktpfad,
 Gebiete, Chronik) · Arbeitsplan; Seitenwahl nur als drei kleine Punkte oben im Footer (`.pdots`, Owner: „nur als 3 kleine Indikatoren“; lila Punkt

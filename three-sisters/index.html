@@ -363,6 +363,23 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .scene .scap span{align-self:flex-start;font-size:12px;font-weight:700;background:rgba(255,255,255,.75);border-radius:99px;padding:2px 9px}
 .zone .zbg{position:absolute;inset:0;width:100%;height:100%;border-radius:inherit;pointer-events:none}
 .zone .plants,.zone .pumps{position:relative}
+/* Pflanzen hinter den Kästchen, Gartendetails */
+.stk .pl{position:absolute;pointer-events:none;opacity:.42;z-index:0}
+.stk.c .pl{left:50%;bottom:-3px;width:30px;height:64px;transform:translateX(-50%)}
+.stk.b .pl{left:50%;bottom:-2px;width:22px;height:36px;transform:translateX(-50%)}
+.stk.s .pl{left:-3px;right:-3px;top:50%;width:calc(100% + 6px);height:16px;transform:translateY(-50%)}
+.stk .plf{position:absolute;left:-9px;top:-11px;width:15px;height:14px;opacity:.5;pointer-events:none;z-index:0}
+.stk .cell{z-index:1}
+.stk.can .pl{opacity:.6}
+.zone .zdeco{position:absolute;right:8px;bottom:6px;width:56px;height:28px;opacity:.6;pointer-events:none}
+.zone.big .zdeco{width:80px;height:40px}
+/* Legende ohne Pillen */
+.legend{gap:6px 14px}
+.legend .lg{background:none;padding:0;border-radius:0}
+/* Warenleiste mit Zwischenschritten (je 1 Ware) */
+.gbar i{position:relative}
+.gbar i::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(20% - 1px),rgba(43,50,69,.1) calc(20% - 1px) 20%);pointer-events:none}
+.gbar i.cut::after{display:none}
 </style>
 </head>
 <body>
@@ -1240,6 +1257,12 @@ function toast(m) { U.toast = m; clearTimeout(toastTimer); toastTimer = setTimeo
 function avatar(p) { const i = S.players.indexOf(p); return gHead('pl' + i + p.name, p.look); }
 const edithHead = () => gHead('edith', EDITH.look);
 // Eine Pflanze als Kästchen-Säule, unten beginnend; das oberste ist die Ernte
+// zarte Riso-Pflanzen hinter den Kästchen: Mais als Halm mit Blättern, Bohne an der Stange, Kürbis als Ranke
+const PLANT_BG = {
+  c: `<svg class="pl" viewBox="0 0 30 64" aria-hidden="true"><path d="M15,64 C15.5,44 14.5,22 15,5" stroke="${C.forest}" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M15,50 C9,49 4,45 1,36 C7,40 11,43 15,46Z M15,38 C21,37 26,32 29,24 C23,28 19,31 15,34Z M15,26 C10,25 6,21 3,13 C8,17 12,20 15,22Z" fill="${C.leaf}"/><path d="M15,6 l-4,-5 M15,6 l0,-6 M15,6 l4,-5" stroke="${C.mustard}" stroke-width="1.6" stroke-linecap="round"/></svg>`,
+  b: `<svg class="pl" viewBox="0 0 22 36" aria-hidden="true"><path d="M11,36 L11,1" stroke="${shade(C.brown, 1.2)}" stroke-width="1.6"/><path d="M11,34 C4,30 18,24 11,19 C4,14 18,9 11,3" stroke="${C.forest}" stroke-width="1.4" fill="none"/><path d="M11,27 C15,24 20,25 21,29 C17,30 13,30 11,27Z M11,13 C7,10 2,11 1,15 C5,16 9,16 11,13Z" fill="${C.sage}"/></svg>`,
+  s: `<svg class="pl" viewBox="0 0 60 22" preserveAspectRatio="none" aria-hidden="true"><path d="M0,14 C10,6 18,20 30,12 C40,6 48,18 60,10" stroke="${C.leaf}" stroke-width="1.6" fill="none" vector-effect="non-scaling-stroke"/></svg><svg class="plf" viewBox="0 0 20 18" aria-hidden="true"><path d="M10,17 C2,16 0,9 3,4 C5,7 7,6 8,2 C11,5 13,4 15,1 C18,6 19,12 10,17Z" fill="${C.leaf}"/><path d="M10,16 L9,6" stroke="${C.forest}" stroke-width="1"/></svg>`,
+};
 function stalk(p, z, k, i, o = {}) {
   const h = p.g[z][k][i], H = cropMax(z, k, i);
   const sel = o.sel && o.sel.some(([a, b]) => a === k && b === i);
@@ -1247,13 +1270,14 @@ function stalk(p, z, k, i, o = {}) {
   const can = o.pick && canPlant(p, z, k, i);
   const sk = p === human() ? ` data-sk="${z}|${k}|${i}"` : '';
   const lab = k === 's' ? `<span class="pg">${pumpOf(z, i).g}</span>` : '';
-  return can ? `<button class="stk ${k} can ${sel ? 'on' : ''}"${sk} data-a="pk" data-k="${k}" data-i="${i}" aria-label="${cropName(k, i, z)} pflanzen">${cells}${lab}</button>` : `<span class="stk ${k}"${sk}>${cells}${lab}</span>`;
+  const pl = PLANT_BG[k] || '';
+  return can ? `<button class="stk ${k} can ${sel ? 'on' : ''}"${sk} data-a="pk" data-k="${k}" data-i="${i}" aria-label="${cropName(k, i, z)} pflanzen">${pl}${cells}${lab}</button>` : `<span class="stk ${k}"${sk}>${pl}${cells}${lab}</span>`;
 }
 function zoneHtml(p, z, o = {}) {
   const Z = ZONES[z];
   const plants = range(Z.corn).map(ci => `<span class="pair">${stalk(p, z, 'c', ci, o)}${Z.beans.map((c, bi) => c === ci ? stalk(p, z, 'b', bi, o) : '').join('')}</span>`).join('');
   const pumps = Z.pump.map((r, i) => stalk(p, z, 's', i, o) + `<span class="bt" title="${FLOWER_N[RING_F[r]]} – zwischen diesem Kürbis und dem nächsten im Ring (Zone ${PUMPS[(r + 1) % PUMPS.length].z + 1})">${icon(RING_F[r])}</span>`).join('');
-  return `<div class="zone grainy ${o.hl ? 'hl' : ''} ${o.big ? 'big' : ''}" data-z="${z}" data-info="Zone ${z + 1}: Würfel mit ${z + 1} Augen arbeiten hier. Pflanzen füllt das unterste Kästchen von bis zu 2 Pflanzen, Gießen lässt alle gepflanzten wachsen. Mais 4 hoch (3 SP), Bohne 2 hoch (1 SP, erst wenn ihr Mais 2 hoch ist), Kürbisse unten bringen Waren."><svg class="zbg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0,100 L0,58 C30,50 70,54 100,48 L100,100 Z" fill="rgba(160,103,74,.13)"/><path d="M6,70 C35,64 65,66 94,62 M6,82 C35,76 65,78 94,74 M6,94 C35,88 65,90 94,86" stroke="rgba(160,103,74,.22)" stroke-width="1.4" fill="none" vector-effect="non-scaling-stroke" stroke-linecap="round"/></svg><span class="zn">${zoneNum(z)}</span><div class="plants">${plants}</div><div class="pumps">${pumps}</div></div>`;
+  return `<div class="zone grainy ${o.hl ? 'hl' : ''} ${o.big ? 'big' : ''}" data-z="${z}" data-info="Zone ${z + 1}: Würfel mit ${z + 1} Augen arbeiten hier. Pflanzen füllt das unterste Kästchen von bis zu 2 Pflanzen, Gießen lässt alle gepflanzten wachsen. Mais 4 hoch (3 SP), Bohne 2 hoch (1 SP, erst wenn ihr Mais 2 hoch ist), Kürbisse unten bringen Waren."><svg class="zbg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0,100 L0,58 C30,50 70,54 100,48 L100,100 Z" fill="rgba(160,103,74,.13)"/><path d="M6,70 C35,64 65,66 94,62 M6,82 C35,76 65,78 94,74 M6,94 C35,88 65,90 94,86" stroke="rgba(160,103,74,.22)" stroke-width="1.4" fill="none" vector-effect="non-scaling-stroke" stroke-linecap="round"/></svg><svg class="zdeco" viewBox="0 0 60 30" aria-hidden="true">${z % 3 === 0 ? `<path d="M6,30 C6,22 4,18 2,16 M10,30 C10,22 12,17 15,14 M8,30 C8,20 8,16 8,12" stroke="${C.leaf}" stroke-width="1.6" fill="none" stroke-linecap="round"/>${P.daisy(46, 18, 6)}<path d="M46,30 L46,22" stroke="${C.forest}" stroke-width="1.4"/>` : z % 3 === 1 ? `<path d="M30,28 C26,20 36,16 40,22 C44,28 36,30 30,28Z" fill="${shade(C.brown, 1.3)}"/><path d="M33,24 C34,21 38,21 38,24 C38,26 35,26 35,24" stroke="${shade(C.brown, 0.85)}" stroke-width="1.1" fill="none"/><path d="M28,28 C24,29 22,28 21,26 M22,26 l-2,-4 M23,26 l0,-4" stroke="${shade(C.brown, 1.1)}" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M50,30 C50,24 48,20 46,18 M54,30 C54,24 56,20 58,18" stroke="${C.sage}" stroke-width="1.6" fill="none" stroke-linecap="round"/>` : `<path d="M8,30 C8,24 6,20 4,18 M12,30 C12,24 14,20 16,18" stroke="${C.sage}" stroke-width="1.6" fill="none" stroke-linecap="round"/>${P.tulip(46, 24, .9, C.coral)}<path d="M46,30 L46,24" stroke="${C.forest}" stroke-width="1.3"/>`}</svg><span class="zn">${zoneNum(z)}</span><div class="plants">${plants}</div><div class="pumps">${pumps}</div></div>`;
 }
 // lv = [Index, Optionsschlüssel]: dieses Kästchen ist direkt antippbar (Auswahl auf dem Bogen)
 const boxRow = (n, cap, len, lab = () => '', cls = () => '', info = () => '', lv = null, rk = '') => `<div class="boxes"${rk ? ` data-rk="${rk}"` : ''}>${range(len).map(i => { const t = info(i); return lv && lv[0] === i ? `<button class="box live ${cls(i)}" data-a="opt" data-o="${lv[1]}"${t ? ` data-info="${esc(t)}"` : ''} aria-label="Dieses Kästchen ausfüllen">${lab(i)}</button>` : `<span class="box ${i < n ? 'x' : i >= cap ? 'cut' : ''} ${cls(i)}"${t ? ` data-info="${esc(t)}"` : ''}>${lab(i)}</span>`; }).join('')}</div>`;
@@ -1295,7 +1319,7 @@ function sheetHtml(p, hlZone = -1) {
     <div class="rrow" data-info="${esc(`Kompost: Beim Pflanzen oder Gießen darfst du je Kompost den Würfelwert um 1 erhöhen oder senken (6 und 1 sind Nachbarn). So arbeitest du in einer anderen Zone als die Augenzahl.${irisFree(p) ? ' Deine Iris ist fertig: 1 Verschiebung pro Aktion ist gratis.' : ''}${shedDone(p, 'shovel') ? ' Spaten: 3 Kompost abgeben = 1 Bonusaktion.' : ''}`)}"><div class="rh">${icon('kompost')}Kompost<span class="v">${p.compost}</span></div><div class="sub">Verschiebt einen Würfel um 1 → andere Zone${irisFree(p) ? ' · Iris: 1× gratis' : ''}${shedDone(p, 'shovel') ? ' · Spaten: 3 = Bonus' : ''}</div>${shedDone(p, 'shovel') && p.compost >= 3 && p === human() && S.screen === 'game' ? '<button class="chip on" style="margin-top:6px" data-a="shovel">Spaten nutzen (−3 Kompost)</button>' : ''}</div>
     <div class="rrow goods" data-info="${esc(`Waren: Die Leiste hat ${STARS.length} Felder zu je 5 Waren. Ist ein Feld voll, bekommst du sofort eine Bonusaktion (★). Beim Bauernmarkt richtet sich die Zahl der Aktionen nach deinem Warenstand; jetzt: ${market[1].map(a => MARKET_N[a]).join(' + ')}.`)}"><div class="rh">${icon('waren')}Waren<span class="v">${p.goods}</span></div>
       <div class="gbar">${STARS.map((s, i) => { const f = Math.max(0, Math.min(5, p.goods - (s - 5))) * 20, cut = p.starX.includes(i); return `<i class="${cut ? 'cut' : s <= p.goods ? 'got' : ''}" style="--f:${f}%" data-info="${esc(`Waren ${s - 4}–${s}: ${cut ? 'Stern gestrichen, hier gibt es keine Bonusaktion mehr.' : s <= p.goods ? 'Stern erreicht, Bonusaktion bekommen.' : `Bei ${s} Waren gibt es eine Bonusaktion.`}`)}">★</i>`; }).join('')}</div>
-      <div class="sub">${nextStar >= 0 ? `Nächster ★ Bonus bei ${STARS[nextStar]} Waren` : 'Alle Sterne erreicht'} · Markt: ${market[1].length} ${market[1].length === 1 ? 'Aktion' : 'Aktionen'}</div></div>
+      <div class="sub">${nextStar >= 0 ? `Noch <b>${STARS[nextStar] - p.goods}</b> bis zum nächsten ★` : 'Alle Sterne erreicht'} · Markt: ${market[1].length} ${market[1].length === 1 ? 'Aktion' : 'Aktionen'}</div></div>
    </div>
    ${tracksHtml(p)}`;
 }
