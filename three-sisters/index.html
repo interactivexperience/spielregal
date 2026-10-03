@@ -387,6 +387,27 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .sheet .stick{position:sticky;bottom:calc(-18px - env(safe-area-inset-bottom));background:var(--bg);margin-left:-16px;margin-right:-16px;margin-bottom:0;padding:10px 16px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -6px 14px rgba(43,50,69,.08);z-index:5}
 /* beim Scrollen kompakter Kopf */
 .top.scr .thead>.row:first-child{display:none}
+/* Drei Seiten zum Wischen */
+.pages{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;align-items:flex-start;margin-top:calc(var(--bnh, 70px) + 2px)}
+.pages::-webkit-scrollbar{display:none}
+.pages>.page{flex:0 0 100%;min-width:0;scroll-snap-align:start;scroll-snap-stop:always}
+.bar{padding-top:16px!important}
+.pdots{position:absolute;left:50%;top:3px;transform:translateX(-50%);display:flex;gap:2px}
+.pdots .pd{width:26px;height:14px;display:grid;place-items:center;padding:0;background:none;border:0}
+.pdots .pd i{width:6px;height:6px;border-radius:99px;background:#C9C3CB;transition:width .2s,background .2s}
+.pdots .pd.on i{width:18px;background:var(--navy)}
+.pdots .pd.hasact:not(.on) i{background:#7FA3C6}
+/* Ansage schwebt unter dem Kopf; beim Scrollen nur Sprechblase mit Kopf */
+.top .tbanner{position:absolute;left:0;right:0;top:100%}
+.top.scr:not(.peek) .tbanner .banner{display:inline-flex;width:auto;padding:4px;border-radius:50% 50% 50% 6px}
+.top.scr:not(.peek) .tbanner .banner>:not(.face){display:none}
+.top.scr:not(.peek) .tbanner .banner .face{width:38px;height:38px;margin:0}
+/* Vorräte ohne Pillen (Platz sparen) */
+.status{gap:12px}
+.status span,.status span.t{background:none!important;padding:0!important}
+.status span.rd{color:var(--navy);font-weight:800}
+/* Lernspiel: Platz unter jeder Seite, damit markierte Elemente über den Coach scrollen können */
+.tutmode .page .wrap{padding-bottom:58vh}
 </style>
 </head>
 <body>
@@ -638,7 +659,7 @@ const MARKS = ['#F2B33D', '#9CC3EC', '#F09A86', '#F4A6B8'];
 
 // ---------- Zufall & Helfer ----------
 let S = null;
-const U = { sheet: null, toast: null, busy: false, setup: { name: '', bots: 2 }, fast: false, sel: null, zone: null, adj: 0, logOpen: false };
+const U = { page: 0, sheet: null, toast: null, busy: false, setup: { name: '', bots: 2 }, fast: false, sel: null, zone: null, adj: 0, logOpen: false };
 function rnd() { S.rng = (S.rng + 0x6D2B79F5) | 0; let t = Math.imul(S.rng ^ (S.rng >>> 15), 1 | S.rng); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 const range = n => Array.from({ length: n }, (_, i) => i);
@@ -1314,7 +1335,8 @@ function scene(kind) {
 }
 const sceneHead = (kind, title, sp) => `<div class="scene" style="background:${SCENE_BG[kind]}">${scene(kind)}<div class="scap"><b>${title}</b>${sp != null ? `<span>${sp} SP</span>` : ''}</div></div>`;
 const lgChip = (sym, tx, info) => `<span class="lg" data-info="${esc(info)}">${sym}${tx ? `<span>${tx}</span>` : ''}</span>`;
-function sheetHtml(p, hlZone = -1) {
+function sheetHtml(p, hlZone = -1) { return gardenHtml(p, hlZone) + tracksHtml(p); }
+function gardenHtml(p, hlZone = -1) {
   const sc = endScore(p);
   const market = MARKET.find(([g]) => p.goods >= g);
   const nextStar = STARS.findIndex((s, i) => s > p.goods && !p.starX.includes(i));
@@ -1327,8 +1349,7 @@ function sheetHtml(p, hlZone = -1) {
     <div class="rrow goods" data-info="${esc(`Waren: Die Leiste hat ${STARS.length} Felder zu je 5 Waren. Ist ein Feld voll, bekommst du sofort eine Bonusaktion (★). Beim Bauernmarkt richtet sich die Zahl der Aktionen nach deinem Warenstand; jetzt: ${market[1].map(a => MARKET_N[a]).join(' + ')}.`)}"><div class="rh">${icon('waren')}Waren<span class="v">${p.goods}</span></div>
       <div class="gbar">${STARS.map((s, i) => { const f = Math.max(0, Math.min(5, p.goods - (s - 5))) * 20, cut = p.starX.includes(i); return `<i class="${cut ? 'cut' : s <= p.goods ? 'got' : ''}" style="--f:${f}%" data-info="${esc(`Waren ${s - 4}–${s}: ${cut ? 'Stern gestrichen, hier gibt es keine Bonusaktion mehr.' : s <= p.goods ? 'Stern erreicht, Bonusaktion bekommen.' : `Bei ${s} Waren gibt es eine Bonusaktion.`}`)}">★</i>`; }).join('')}</div>
       <div class="sub">${nextStar >= 0 ? `Noch <b>${STARS[nextStar] - p.goods}</b> bis zum nächsten ★` : 'Alle Sterne erreicht'} · Markt: ${market[1].length} ${market[1].length === 1 ? 'Aktion' : 'Aktionen'}</div></div>
-   </div>
-   ${tracksHtml(p)}`;
+   </div>`;
 }
 // Leisten des Bogens (Stauden, Bienenstock, Hof, Schuppen). Mit pk (Optionsschlüssel → Option) wird daraus
 // die Auswahl direkt auf dem Bogen: das nächste Kästchen jeder wählbaren Leiste leuchtet und ist antippbar.
@@ -1407,18 +1428,21 @@ function viewGame() {
     <button class="icobtn" data-a="menu" aria-label="Menü: Verlassen, Regeln"><svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
   </div><div class="row prow"><div class="players">${chips}</div>
   </div><div class="status" aria-label="Dein Vorrat"><span class="t rd" data-info="${esc(`Runde ${S.round} von ${ROUNDS}. Ereignis am Ende dieser Runde: ${EVENT_N[S.event]}.`)}">Runde ${S.round}/${ROUNDS}</span><span class="sc" data-info="${esc(`Kompost (${me.compost}): Beim Pflanzen oder Gießen darfst du je Kompost den Würfelwert um 1 verschieben (6 und 1 sind Nachbarn) und so in einer anderen Zone arbeiten.`)}">${icon('kompost')}${me.compost} Kompost</span><span class="sg" data-info="${esc(`Waren (${me.goods} von ${GOODS_MAX}): Je volle 5 Waren erreichst du einen Stern = sofort eine Bonusaktion. Beim Bauernmarkt gilt: je mehr Waren, desto mehr Aktionen.`)}">${icon('markt')}${me.goods} Waren</span><span class="t ss" data-info="${esc(`Punkte, wenn jetzt gewertet würde: Garten ${sc.garden}, Stauden ${sc.per}, Bienenstock ${sc.api}, Hof ${sc.yard}, Schuppen ${sc.shed}.`)}">★ ${sc.total}</span></div></div><div class="tbanner">${banner}</div></div>
-  <div class="wrap">
+  <div class="pages"><div class="page"><div class="wrap">
     <section class="sec"><div class="sech"><h2 class="hand" data-info="${esc(RONDEL_HELP())}">Aktionsrondell</h2><button class="ibtn" data-a="info" data-info="${esc(RONDEL_HELP())}" aria-label="Erklärung zum Rondell">i</button></div>
       <div class="rondel"><span class="trk" aria-hidden="true"></span>
         <div class="rcenter" data-info="${esc(`Ereignis der Runde ${S.round}: ${EVENT_INFO[S.event]}`)}">${evIc(S.event)}<small>Rundenende</small><b>${EVENT_N[S.event].split(':')[0]}</b><span>${EVENT_N[S.event].split(':')[1].trim()}</span></div>
         ${range(RONDEL.length).map(space).join('')}</div>
       <div class="evtrack" data-info="Ereignisse der Saison: Am Ende jeder Runde passiert für alle das Ereignis dieser Runde. Gelb = jetzt, blass = vorbei."><span class="lab">Ereignisse</span>${EVENTS.map((e, i) => `<span class="ev ${i + 1 === S.round ? 'now' : i + 1 < S.round ? 'done' : ''}" data-info="${esc(`Runde ${i + 1}: ${EVENT_N[e]}`)}">${evIc(e)}<i>${i + 1}</i></span>`).join('')}</div>
     </section>
-    <section class="sec">${sheetHtml(me)}</section>
+    </div></div><div class="page"><div class="wrap">
+    <section class="sec">${gardenHtml(me)}</section>
+    </div></div><div class="page"><div class="wrap">
+    <section class="sec">${tracksHtml(me)}</section>
     <section class="sec"><div class="sech"><h2 class="hand">Chronik</h2><button class="link" data-a="logtoggle" style="font-size:12px">${U.logOpen ? 'weniger' : 'alles'}</button></div>
       <div class="log">${S.log.slice(0, U.logOpen ? 80 : 6).map(l => `<div>${esc(l)}</div>`).join('')}</div></section>
-  </div>
-  <div class="bar"><div class="in">${myTasks() ? `<div class="msg" data-a="go">${esc(taskTitle(me.tasks[0]))}</div><button class="btn green" data-a="task">Ausführen</button>` : isMyPick() ? `<div class="msg" data-a="go">Tippe einen leuchtenden Würfel im Rondell an.</div>` : `<div class="msg" data-a="go"><b>${esc(othersTurn() ? (p ? p.name : EDITH.name) : 'Alle')}</b> ${othersTurn() ? 'wählt …' : 'sind fertig.'}</div><button class="btn white" data-a="fast">${U.fast ? 'Normal' : 'Schneller'}</button>`}</div></div>`;
+  </div></div></div>
+  <div class="bar">${pdots()}<div class="in">${myTasks() ? `<div class="msg" data-a="go">${esc(taskTitle(me.tasks[0]))}</div><button class="btn green" data-a="task">Ausführen</button>` : isMyPick() ? `<div class="msg" data-a="go">Tippe einen leuchtenden Würfel im Rondell an.</div>` : `<div class="msg" data-a="go"><b>${esc(othersTurn() ? (p ? p.name : EDITH.name) : 'Alle')}</b> ${othersTurn() ? 'wählt …' : 'sind fertig.'}</div><button class="btn white" data-a="fast">${U.fast ? 'Normal' : 'Schneller'}</button>`}</div></div>`;
 }
 function viewEnd() {
   const rows = S.final.map((r, i) => Object.assign({ i }, r)).sort((a, b) => b.total - a.total || b.garden - a.garden);
@@ -1562,7 +1586,7 @@ function tutDecorate() {
   const st = tutStep(), coach = document.getElementById('coach');
   if (!st || !coach) return;
   const el = st.sel ? document.querySelector(st.sel) : null;
-  if (el) el.classList.add('tut-hl');
+  if (el) { el.classList.add('tut-hl'); const pi = pageOf(el); if (pi >= 0 && pi !== U.page) pageGo(pi, false); }
   const bottomBox = document.querySelector('.bar, .handsec');
   const inBottom = el && el.closest('.bar, .handsec');
   const top = st.pos ? st.pos === 'top' : (!!U.sheet || !!inBottom);
@@ -1572,7 +1596,7 @@ function tutDecorate() {
   if (el && U.tut.scrolled !== key) {
     U.tut.scrolled = key;
     if (inBottom) el.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
-    else if (!el.closest('.top')) el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
+    else if (!el.closest('.top')) el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
   }
 }
 const tutFace = () => edithHead();
@@ -1733,6 +1757,41 @@ function fxAfter(before) {
   }
 }
 // Ansage antippen: zur passenden Stelle der Seite scrollen (bzw. offene Auswahl öffnen)
+const PAGES = ['Rondell', 'Garten', 'Bogen'];
+const ACT_SEL = '.die.live';
+// Drei Seiten zum Wischen; die aktive Seite bestimmt die Höhe, Punkte im Footer zeigen Seite und Handlungsbedarf
+const pagesEl = () => document.querySelector('.pages');
+function pageSync(instant) {
+  const pg = pagesEl(); if (!pg) return;
+  const w = pg.clientWidth || 1, kids = pg.children;
+  if (instant && Math.abs(pg.scrollLeft - U.page * w) > 1) { U.progScroll = Date.now(); pg.scrollLeft = U.page * w; }
+  if (pg.scrollTop) pg.scrollTop = 0;
+  const a = kids[U.page]; if (a) pg.style.height = a.offsetHeight + 'px';
+  const act = new Set([...document.querySelectorAll(ACT_SEL)].map(pageOf));
+  document.querySelectorAll('.pdots .pd').forEach((t, i) => { t.classList.toggle('on', i === U.page); t.classList.toggle('hasact', act.has(i)); t.setAttribute('aria-selected', i === U.page); });
+}
+function pageOf(el) { const pg = el && el.closest && el.closest('.page'); return pg ? [...pg.parentElement.children].indexOf(pg) : -1; }
+function pageGo(i, smooth) {
+  const pg = pagesEl(); if (!pg || i < 0) return;
+  const top = document.querySelector('.top:not(.coach)'), y0 = pg.getBoundingClientRect().top + window.scrollY - (top ? top.getBoundingClientRect().height : 0) - 8;
+  if (i !== U.page && window.scrollY > y0) window.scrollTo({ top: Math.max(0, y0) });
+  U.page = i;
+  if (smooth) pg.scrollTo({ left: i * pg.clientWidth, behavior: 'smooth' }); else pageSync(true);
+  pageSync(false);
+}
+let pScrollT = 0, pTouch = false, pTouchEnd = 0;
+document.addEventListener('scroll', e => {
+  const pg = e.target; if (!pg.classList || !pg.classList.contains('pages')) return;
+  if (Date.now() - (U.progScroll || 0) < 60) return;
+  pScrollT = Date.now();
+  clearTimeout(pg._t);
+  pg._t = setTimeout(() => { const i = Math.round(pg.scrollLeft / (pg.clientWidth || 1)); if (i !== U.page) pageGo(i, false); else pageSync(false); if (U.rpend) render(); }, 110);
+}, true);
+document.addEventListener('touchstart', e => { if (e.target.closest && e.target.closest('.pages')) pTouch = true; }, { passive: true, capture: true });
+document.addEventListener('touchend', () => { if (pTouch) pTouchEnd = Date.now(); pTouch = false; }, { passive: true, capture: true });
+document.addEventListener('touchcancel', () => { pTouch = false; }, { passive: true, capture: true });
+addEventListener('resize', () => pageSync(true));
+const pdots = () => `<div class="pdots" role="tablist">${PAGES.map((pg, i) => `<button class="pd ${U.page === i ? 'on' : ''}" role="tab" data-a="page" data-p="${i}" aria-label="Seite ${pg}" data-info="${pg}"><i></i></button>`).join('')}</div>`;
 function goTarget() {
   if (myTasks()) return () => { U.sheet = { type: 'task' }; };
   return '.rondel';
@@ -1740,7 +1799,8 @@ function goTarget() {
 function goTo(sel) {
   setTimeout(() => {
     const el = document.querySelector(sel); if (!el) return;
-    const top = document.querySelector('.top'), off = (top ? top.getBoundingClientRect().bottom : 0) + 12;
+    const pi = pageOf(el); if (pi >= 0 && pi !== U.page) pageGo(pi, false);
+    const top = document.querySelector('.top .tbanner') || document.querySelector('.top'), off = (top ? Math.min(top.getBoundingClientRect().bottom, 300) : 0) + 12;
     window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - off), behavior: 'smooth' });
     el.classList.remove('goflash'); void el.offsetWidth; el.classList.add('goflash'); setTimeout(() => el.classList.remove('goflash'), 1300);
   }, 30);
@@ -1764,6 +1824,10 @@ addEventListener('scroll', () => {
   else if (SCR.on && scrollY < 12) { SCR.on = false; t.classList.remove('scr'); }
 }, { passive: true });
 function render() {
+  // nicht mitten im Wischen zwischen den Seiten neu zeichnen
+  const now = Date.now(), swiping = pTouch || (now - pScrollT < 140 && now - pTouchEnd < 700);
+  if (S && S.screen === 'game' && pagesEl() && swiping && now - (U.rpSince || now) < 800) { if (!U.rpend) U.rpSince = now; U.rpend = true; clearTimeout(U.rpT); U.rpT = setTimeout(render, 180); return; }
+  U.rpend = false; U.rpSince = 0;
   if (U.tut) tutCheck();
   const nm = document.getElementById('nm'); if (nm) U.setup.name = nm.value;
   let h = !S || !S.screen || S.screen === 'start' ? viewStart() : S.screen === 'end' ? viewEnd() : viewGame();
@@ -1774,6 +1838,9 @@ function render() {
   const fxb = fxBefore();
   $app.innerHTML = h;
   scrSync();
+  document.documentElement.classList.toggle('tutmode', !!U.tut);
+  { const b = document.querySelector('.top .tbanner'); if (b) document.documentElement.style.setProperty('--bnh', b.offsetHeight + 'px'); }
+  pageSync(true);
   stickBtns();
   fxAfter(fxb);
   if (U.tut) tutDecorate();
@@ -1803,14 +1870,14 @@ function gardenZone() { const t = human().tasks[0]; return t.t === 'garden' || t
 const H = {
   leave: () => { if (!S || S.tut) return; save(); S = null; U.sheet = null; window.scrollTo(0, 0); toast('Partie gespeichert. Mit „Partie fortsetzen“ geht es weiter.'); },
   discard: () => { if (confirm('Gespeicherte Partie wirklich verwerfen?')) clearSave(); },
-  tutorial: () => { const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : U.setup.name; U.sheet = null; tutSetup(); U.tut = { i: 0 }; window.scrollTo(0, 0); },
+  tutorial: () => { U.page = 0; const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : U.setup.name; U.sheet = null; tutSetup(); U.tut = { i: 0 }; window.scrollTo(0, 0); },
   tutnext: () => { if (U.tut) U.tut.i = Math.min(U.tut.i + 1, TUT_STEPS.length - 1); },
   tutend: () => { U.tut = null; U.sheet = null; U.fast = false; S = null; window.scrollTo(0, 0); },
   tutquit: () => { U.tut = null; U.sheet = null; U.fast = false; S = null; window.scrollTo(0, 0); },
   bots: d => { U.setup.bots = +d.n; },
   pickname: d => { U.setup.name = d.n; const nm = document.getElementById('nm'); if (nm) nm.value = d.n; },
-  start: () => { const sv = load(); if (sv && sv.screen === 'game' && !confirm(`Es gibt eine gespeicherte Partie (Runde ${sv.round || 1}). Neue Partie starten und die gespeicherte verwerfen?`)) return; const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : ''; newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0, U.setup.bots === 0); window.scrollTo(0, 0); },
-  resume: () => { S = load(); U.sheet = null; },
+  start: () => { U.page = 0; const sv = load(); if (sv && sv.screen === 'game' && !confirm(`Es gibt eine gespeicherte Partie (Runde ${sv.round || 1}). Neue Partie starten und die gespeicherte verwerfen?`)) return; const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : ''; newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0, U.setup.bots === 0); window.scrollTo(0, 0); },
+  resume: () => { U.page = 0; S = load(); U.sheet = null; },
   rules: () => { U.sheet = { type: 'rules' }; },
   menu: () => { U.sheet = { type: 'menu' }; },
   sound: () => { SND.toggle(); if (SND.on) SND.play('bell'); },
@@ -1892,6 +1959,8 @@ document.addEventListener('click', e => {
   if (el.disabled) return;
   if (U.tut && S && !tutAllowed(el.dataset.a, el.dataset)) { toast('Folge dem markierten Hinweis im Lernspiel.'); render(); return; }
   if (el.dataset.a === 'info') { showInfo(el); return; }
+  if (el.dataset.a === 'page') { pageGo(+el.dataset.p, true); return; }
+  if (el.closest('.top.scr:not(.peek) .banner')) { const t = document.querySelector('.top:not(.coach)'); t.classList.add('peek'); clearTimeout(U.peekT); U.peekT = setTimeout(() => t.classList.remove('peek'), 5000); return; }
   const fn = H[el.dataset.a]; if (!fn) return;
   fn(el.dataset); render();
 });

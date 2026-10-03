@@ -140,6 +140,12 @@ wie die Illustrationen des echten Bogens; Gartenzonen zeigen Erdreihen (`.zbg`),
 Bohne an der Stange, Kürbisranke) und kleine Gartendetails in leeren Ecken (`.zdeco`). Legenden ohne Pillen; Warenleiste
 mit Zwischenschritten je Ware und „Noch X bis zum nächsten ★“. Owner: weniger „technisch“, Lesbarkeit
 und Bedienung haben aber Vorrang – Kästchen und Knöpfe bleiben unverändert.
+**Drei Wischseiten auch in Drei Schwestern** (Rondell · Garten · Bogen mit Chronik) **und Grand Hotel Wien** (Brett:
+Extras, Warteschlange, Aktionsbrett · Hotel: Tische, Küche, Hotel · Wien: Personal, Kaiser, Politik, Chronik) – gleiche
+Technik wie Landgut (`.pages`, `.pdots` im Footer, Punkt in Spielfarbe markiert die Seite mit offener Aktion `ACT_SEL`).
+In Drei Schwestern und Grand Hotel wird die Ansage beim Scrollen ebenfalls zur Sprechblase mit Kopf (`.top.scr`, Antippen
+klappt sie kurz auf). Die Vorräte unter den Personenpillen stehen in allen Spielen ohne Pillen (Platz sparen). Grand Hotel:
+Das Dach des Hotelplans zeigt wie im Original die Auslastungsboni je Farbe (Gruppengröße als Kästchen → Kronen/SP/Kaiser).
 Landgut ist auf **drei Wischseiten** verteilt (`.pages`, Scroll-Snap): Auslage & Aufträge · Mein Hof (Siegpunktpfad,
 Gebiete, Chronik) · Arbeitsplan; Seitenwahl nur als drei kleine Punkte oben im Footer (`.pdots`, Owner: „nur als 3 kleine Indikatoren“; lila Punkt
 am Arbeitsplan, wenn du dran bist), Kopf kompakt (Spieler-Pillen + Menü in einer Zeile), Ziel 30 SP bzw. Solo-Stapel als
