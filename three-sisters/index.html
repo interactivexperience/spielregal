@@ -382,6 +382,9 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .gbar i.cut::after{display:none}
 /* Schließen-Knopf bleibt beim Scrollen im Fenster sichtbar */
 .sheet .icobtn.x{position:sticky;top:0;float:right;right:auto;margin:-2px -4px 4px 10px;z-index:6}
+/* feste Knopfzeile unten im Fenster */
+.sheet{scroll-padding-top:56px;scroll-padding-bottom:96px}
+.sheet .stick{position:sticky;bottom:calc(-18px - env(safe-area-inset-bottom));background:var(--bg);margin-left:-16px;margin-right:-16px;margin-bottom:0;padding:10px 16px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -6px 14px rgba(43,50,69,.08);z-index:5}
 </style>
 </head>
 <body>
@@ -1741,6 +1744,14 @@ function goTo(sel) {
   }, 30);
 }
 const $app = document.getElementById('app');
+// Aktionsknöpfe eines langen Auswahlfensters bleiben unten sichtbar (letzte Knopfzeile)
+function stickBtns() {
+  document.querySelectorAll('.ov .sheet').forEach(sh => {
+    if (sh.scrollHeight <= sh.clientHeight + 4) return;
+    const c = [...sh.children].filter(e => e.matches('.btnrow')).pop();
+    if (c && !c.querySelector('[data-a=leave]')) c.classList.add('stick');
+  });
+}
 function render() {
   if (U.tut) tutCheck();
   const nm = document.getElementById('nm'); if (nm) U.setup.name = nm.value;
@@ -1751,6 +1762,7 @@ function render() {
   if (U.tut) h += tutHtml();
   const fxb = fxBefore();
   $app.innerHTML = h;
+  stickBtns();
   fxAfter(fxb);
   if (U.tut) tutDecorate();
   save();

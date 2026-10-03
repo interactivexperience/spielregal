@@ -317,9 +317,12 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .scard.ok{outline:none;transform:translateY(-3px);box-shadow:3px 5px 0 var(--green);border-color:var(--green)}
 .scard.ok::after{content:"✓ behalten";display:block;margin-top:auto;background:var(--green);color:#fff;font-family:"Space Mono",monospace;font-size:10px;font-weight:700;text-align:center;padding:3px 0;border-top:2.5px solid var(--ink)}
 .staffgrid .scard.no{opacity:.45}
-.sheet .btnrow.stick{position:sticky;bottom:calc(-18px - env(safe-area-inset-bottom));background:var(--paper);margin:0 -16px;padding:10px 16px calc(12px + env(safe-area-inset-bottom));border-top:2px solid var(--ink);z-index:5}
+.sheet .btnrow.stick-old{position:sticky;bottom:calc(-18px - env(safe-area-inset-bottom));background:var(--paper);margin:0 -16px;padding:10px 16px calc(12px + env(safe-area-inset-bottom));border-top:2px solid var(--ink);z-index:5}
 /* Schließen-Knopf bleibt beim Scrollen im Fenster sichtbar */
 .sheet .icobtn.x{position:sticky;top:0;float:right;right:auto;margin:-2px -4px 4px 10px;z-index:6}
+/* feste Knopfzeile unten im Fenster */
+.sheet{scroll-padding-top:56px;scroll-padding-bottom:96px}
+.sheet .stick{position:sticky;bottom:calc(-18px - env(safe-area-inset-bottom));background:var(--paper);margin-left:-16px;margin-right:-16px;margin-bottom:0;padding:10px 16px calc(12px + env(safe-area-inset-bottom));border-top:2px solid var(--ink);z-index:5}
 </style>
 </head>
 <body>
@@ -2077,6 +2080,14 @@ function goTo(sel) {
   }, 30);
 }
 const $app = document.getElementById('app');
+// Aktionsknöpfe eines langen Auswahlfensters bleiben unten sichtbar (letzte Knopfzeile)
+function stickBtns() {
+  document.querySelectorAll('.ov .sheet').forEach(sh => {
+    if (sh.scrollHeight <= sh.clientHeight + 4) return;
+    const c = [...sh.children].filter(e => e.matches('.btnrow')).pop();
+    if (c && !c.querySelector('[data-a=leave]')) c.classList.add('stick');
+  });
+}
 function render() {
   if (U.tut) tutCheck();
   let h;
@@ -2093,6 +2104,7 @@ function render() {
   if (nm) U.setup.name = nm.value;
   if (U.tut) h += tutHtml();
   $app.innerHTML = h;
+  stickBtns();
   if (U.tut) tutDecorate();
   save();
   pump();
