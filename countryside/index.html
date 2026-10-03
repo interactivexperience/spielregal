@@ -365,6 +365,65 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .ig.give::after{content:"−";background:#D9735F}
 .ig.give{opacity:.85}
 .fart .arr{font-weight:800;font-size:13px;color:var(--muted);margin:0 5px 0 6px}
+/* Arbeitsplan ohne eigenen Rahmen (eigene Seite); nur der Markt hält mit seinem Dach zusammen */
+.board{background:none;padding:0;border-radius:0}
+.board .bank{margin:0 2px 10px}
+.fld.locked{background:rgba(255,255,255,.42);border:1.5px dashed rgba(31,26,23,.22);color:#8A7F74}
+.fld.locked b{color:#6E655C}
+.fld.locked .fart>:not(.lk):not(.mk){opacity:.5;filter:grayscale(.5)}
+.fld .lk{width:12px;height:14px;color:#8A7F74;margin-right:5px;flex:none}
+.fld .mk{position:absolute;right:-5px;top:-8px;display:flex;gap:2px;z-index:2}
+.fld .mk i,.unlh .mk i{width:17px;height:17px;border-radius:50%;display:block;box-shadow:0 0 0 2px #fff,0 2px 4px rgba(0,0,0,.3)}
+.unlh .mk{display:inline-flex;vertical-align:-4px;margin-right:4px}
+.unlh{margin:26px 2px 8px}
+.unlh h3{font-family:"Fraunces",Georgia,serif;font-size:20px;margin:0 0 4px}
+.unlh p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.35}
+.fld.unl{min-height:0}
+.fld.unl .tag{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--plum);margin-bottom:1px}
+.fld.unl.open{background:#E8F0DC;border:0}
+.fld.unl.open .tag{color:#5E7E3A}
+.spb{display:inline-flex;align-items:center;gap:1px;font-weight:800;font-size:12px;color:#4B3A6E;background:#E3DCFB;border-radius:99px;padding:1px 6px 1px 5px;margin-right:6px}
+.spb svg{width:10px!important;height:10px!important}
+.pile{width:20px!important;height:19px!important}
+/* Markt: Markise ragt über den Kasten, Schild in der Mitte */
+.market{margin-top:48px;padding:40px 10px 10px;overflow:visible;border-radius:0 0 22px 22px}
+.market .awn{position:absolute;left:-12px;right:-12px;top:-22px;width:calc(100% + 24px);height:46px;filter:drop-shadow(0 4px 3px rgba(31,26,23,.15))}
+.market .msign{position:absolute;left:50%;top:-38px;transform:translateX(-50%);background:#FFF8EC;border-radius:12px;padding:5px 18px 6px;text-align:center;box-shadow:0 4px 10px rgba(31,26,23,.2);line-height:1}
+.market .msign b{display:block;font-family:"Fraunces",Georgia,serif;font-size:22px}
+.market .msign small{font-size:10.5px;color:var(--muted)}
+.market .mkr{margin:10px 2px 2px;font-size:11px;color:var(--muted);display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.market .mw{display:inline-flex}.market .mw svg{width:9px;height:12px;margin-right:-1px}
+/* Aufträge: angeheftete Zettel mit Preis-Rosetten */
+.otile{position:relative;background:#FFF9EE;border-radius:14px;padding:14px 12px 10px;box-shadow:0 2px 0 rgba(31,26,23,.06)}
+.otile .pin{position:absolute;left:50%;top:-6px;width:12px;height:12px;border-radius:50%;background:#D9735F;box-shadow:0 2px 3px rgba(0,0,0,.25)}
+.otile .oh{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;font-size:13.5px}
+.otile .octs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-top:8px}
+.otile .oct{position:relative;display:flex;flex-direction:column;align-items:center;background:none;border-radius:14px;padding:4px 0 2px;min-height:0}
+.otile .oct .ros{width:42px;height:54px}
+.otile .oct small{font-size:12px;font-weight:700;color:var(--ink);margin-top:-2px}
+.otile .oct .bon{position:absolute;right:6px;top:2px}.otile .oct .bon svg{width:13px;height:17px}
+.otile .oct.next{background:#F4ECDD}
+.otile .oct.taken .ros{opacity:.35;filter:grayscale(.6)}
+.otile .oct .by{position:absolute;left:50%;top:13px;transform:translateX(-50%);width:20px;height:20px;border-radius:50%;box-shadow:0 0 0 2px #fff,0 2px 4px rgba(0,0,0,.3);font-size:0;padding:0}
+.otile .okind{margin:6px 0 0;font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.otile .okind svg{width:11px;height:14px}
+.otile.done{background:#E8F0DC}
+.stamp{flex:none;font-size:11px;font-weight:800;color:#3F6B2A;background:#fff;border:1.5px solid #7C9A4A;border-radius:99px;padding:1px 8px;transform:rotate(-3deg);display:inline-block}
+.terr .ord.done{background:#E8F0DC;text-decoration:none;color:var(--ink)}
+.terr .ord .stamp{margin-right:6px}
+.terr .ord .can{color:#5E7E3A;font-weight:700}
+/* Ablagestapel-Link mit Bild */
+.link.disc{display:inline-flex;align-items:center;gap:4px}
+.link.disc .pile{width:18px!important;height:17px!important}
+/* schmalere Kartenradien, proportional zur großen Karte */
+.pc{border-radius:11px}.pc .art{border-radius:8px}
+.pc.sm{border-radius:9px}.pc.sm .art{border-radius:6px}
+.hcard .pc{border-radius:10px}
+/* Hinweis unter der großen Karte: keine Knopffarben */
+.hprev .hph{background:rgba(31,26,23,.86);color:#fff}
+.hprev.drag .hph{background:rgba(31,26,23,.7)}
+.hprev.go .hph{background:#2E5652;color:#fff}
+.hprev .hph.no{background:#fff;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -1374,10 +1433,12 @@ function vpTrack() {
 }
 function orderTile(ot, ti) {
   const side = OTILES[ot.ti][ot.side];
-  const kind = ot.side === 'A' ? 'Je Feld mehr nötig' : 'Gleiche Bedingung';
-  const info = ot.side === 'A' ? 'A-Auftrag: dieselbe Bedingung, aber je Feld unterschiedlich oft (Zahl mit ×). Mehr Aufwand = mehr SP.' : 'B-Auftrag: für alle vier Felder dieselbe Bedingung. Wer früher erfüllt, nimmt das wertvollere Feld.';
-  return `<div class="otile" data-info="${esc(info + ' Jeden Auftrag darfst du nur einmal erfüllen; dabei legst du einen Marker von deinem Arbeitsplan auf das Feld.')}"><div class="oh"><span>${esc(side.tx)}</span><b class="kind">${kind}</b></div>
-    <div class="octs">${side.f.map((f, fi) => { const by = ot.by[fi]; return `<div class="oct"><b>${f.vp}</b>${ot.side === 'A' ? esc(f.cond.n + (f.cond.k === 'pay' ? ' Mz.' : '×')) : (f.card ? '+ Karte' : '&nbsp;')}${by !== null ? `<span class="by" style="background:${P(by).mark}">${esc(P(by).name.split(' ')[0])}</span>` : ''}</div>`; }).join('')}</div></div>`;
+  const kind = ot.side === 'A' ? 'Je Stufe mehr nötig' : 'Gleiche Bedingung';
+  const info = ot.side === 'A' ? 'A-Auftrag: dieselbe Bedingung, je Stufe unterschiedlich oft (Zahl mit ×). Mehr Aufwand = mehr SP.' : 'B-Auftrag: für alle Stufen dieselbe Bedingung. Wer früher erfüllt, nimmt die wertvollere Rosette.';
+  const me = S.players.indexOf(human()), mine = ot.by.includes(me), next = ot.by.findIndex(b => b === null);
+  return `<div class="otile ${mine ? 'done' : ''}" data-info="${esc(info + ' Jeden Auftrag darfst du nur einmal erfüllen; dabei legst du einen Marker von deinem Arbeitsplan auf die Rosette.')}"><i class="pin"></i><div class="oh"><b>${esc(side.tx)}</b>${mine ? '<span class="stamp">✓ erfüllt</span>' : ''}</div>
+    <div class="octs">${side.f.map((f, fi) => { const by = ot.by[fi]; return `<div class="oct ${by !== null ? 'taken' : ''} ${fi === next && !mine ? 'next' : ''}">${rosette(f.vp, ROS_C[fi % 4])}<small>${ot.side === 'A' ? esc(f.cond.n + (f.cond.k === 'pay' ? ' Mz.' : '×')) : '&nbsp;'}</small>${f.card ? `<span class="bon">${IG('get', miniCard(0))}</span>` : ''}${by !== null ? `<span class="by" style="background:${P(by).mark}" title="${esc(P(by).name)}"></span>` : ''}</div>`; }).join('')}</div>
+    <p class="okind">${kind}${side.f.some(f => f.card) ? ` · ${IG('get', miniCard(0))} = zusätzlich eine Karte` : ''}</p></div>`;
 }
 function terrHtml(p, tr, ti, o = {}) {
   const T = terrOf(tr.id);
@@ -1385,10 +1446,18 @@ function terrHtml(p, tr, ti, o = {}) {
   return `<${can ? 'button' : 'div'} class="terr ${can ? 'can' : ''}" ${can ? `data-a="${o.act}" data-i="${ti}"` : ''} style="background:${TT_BG[T.t]};text-align:left;width:100%">
     <div class="th"><span class="tart">${terrArt(T.t)}</span><span><b>${TT_N[T.t]}</b><small>${tr.cards.length}/${T.cap} Karten</small></span></div>
     <div class="slots">${tr.cards.map(k => cardHtml(k, { sm: 1 })).join('')}${range(space(tr)).map(() => '<span class="slot"></span>').join('')}</div>
-    <div class="ord ${tr.ordDone ? 'done' : ''}">Eigener Auftrag: ${esc(COND_TX[T.cond.k](T.cond))} → <b>${T.vp} SP</b>${!tr.ordDone && condOk(p, T.cond, tr) ? ' ✓ erfüllbar' : ''}</div></${can ? 'button' : 'div'}>`;
+    <div class="ord ${tr.ordDone ? 'done' : ''}">${tr.ordDone ? '<span class="stamp">✓ erfüllt</span>' : ''}${esc(COND_TX[T.cond.k](T.cond))} → <b>${T.vp} SP</b>${!tr.ordDone && condOk(p, T.cond, tr) ? ' · <span class="can">jetzt erfüllbar</span>' : ''}</div></${can ? 'button' : 'div'}>`;
 }
 // kleine Bilder für die Aktionsfelder (Sonnenstunden, Karten, Münzen, Gebiet, Auftrag)
 const miniCard = (rot = 0) => `<svg viewBox="0 0 18 24" style="transform:rotate(${rot}deg)" aria-hidden="true"><rect x="1" y="1" width="16" height="22" rx="3" fill="#fff" stroke="#C9B9A6" stroke-width="1.2"/><rect x="3" y="3" width="12" height="9" rx="2" fill="#A9B98C"/><circle cx="12" cy="5.5" r="1.6" fill="#E9A53A"/></svg>`;
+const pileSvg = () => `<svg viewBox="0 0 26 24" class="pile" aria-hidden="true"><rect x="7" y="2" width="14" height="19" rx="2.5" fill="#E9E1D6" transform="rotate(12 14 12)"/><rect x="6" y="2.5" width="14" height="19" rx="2.5" fill="#F3EDE4" stroke="#C9B9A6" stroke-width="1" transform="rotate(-6 13 12)"/><rect x="5" y="3" width="14" height="19" rx="2.5" fill="#fff" stroke="#C9B9A6" stroke-width="1.1"/><rect x="7" y="5" width="10" height="7" rx="1.5" fill="#A9B98C"/></svg>`;
+const spBadge = n => `<span class="spb">+${n}<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6,0.8 7.6,4.3 11.3,4.6 8.5,7.1 9.4,10.8 6,8.9 2.6,10.8 3.5,7.1 0.7,4.6 4.4,4.3Z" fill="currentColor"/></svg></span>`;
+const lockSvg = () => `<svg viewBox="0 0 14 16" class="lk" aria-hidden="true"><path d="M3.5,7 V5 a3.5,3.5 0 0 1 7,0 V7" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="1.5" y="7" width="11" height="8" rx="2" fill="currentColor"/></svg>`;
+// Marker als Spielsteine auf einem gesperrten Feld (jeder erfüllte Auftrag nimmt einen weg)
+const tokens = (p, n) => `<span class="mk">${range(n).map(() => `<i style="background:${p.mark}"></i>`).join('')}</span>`;
+const ROS_C = ['#E2A21E', '#5B86B5', '#D9735F', '#7C9A4A'];
+// Preis-Rosette wie auf der Landwirtschaftsschau
+const rosette = (vp, col) => `<svg viewBox="0 0 44 56" class="ros" aria-hidden="true"><path d="M13,30 L7,54 L14,50 L18,55 L23,33Z" fill="${col}" opacity=".85"/><path d="M31,30 L37,54 L30,50 L26,55 L21,33Z" fill="${col}" opacity=".7"/>${range(14).map(i => { const a = i * Math.PI / 7; return `<circle cx="${(22 + Math.cos(a) * 15).toFixed(1)}" cy="${(21 + Math.sin(a) * 15).toFixed(1)}" r="5" fill="${col}"/>`; }).join('')}<circle cx="22" cy="21" r="14.5" fill="${col}"/><circle cx="22" cy="21" r="11" fill="#FFF8EC"/><text x="22" y="26.5" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-weight="800" font-size="15" fill="#1F1A17">${vp}</text></svg>`;
 // Bildsprache: Sonne = Karte ausspielen; grünes + = du bekommst; rotes − = du gibst ab; → = wird zu
 const IG = (kind, html) => `<span class="ig ${kind}">${html}</span>`;
 const ARR = '<span class="arr">→</span>';
@@ -1402,20 +1471,32 @@ const FIELD_ART = {
   sun32: () => sunSvg(3) + sunSvg(2),
   coin3: () => IG('get', coinSvg() + `<span class="plus">3</span>`) + sunSvg(3),
 };
+const UNLOCK_ART = {
+  u3: () => sunSvg(5) + ARR + IG('get', coinSvg()),
+  u4: () => spBadge(1) + IG('get', `<span class="ta">${terrArt('acker')}</span>`),
+  u5: () => spBadge(1) + IG('get', pileSvg() + pileSvg()),
+  u6: () => spBadge(1) + IG('get', [-12, -4, 4, 12].map(miniCard).join('')),
+};
+const UNLOCK_N = { u3: ['Dauerhaft', 'Sonne übrig = +1 Münze'], u4: ['Sofort', '+1 SP und ein neues Gebiet'], u5: ['Sofort', '+1 SP, 2 Karten vom Ablagestapel'], u6: ['Sofort', '+1 SP, 4 Karten aus der Auslage'] };
 const MARKET_ART = { m1: () => IG('get', miniCard(-6)), m2: () => IG('give', miniCard(-10) + miniCard(0) + miniCard(10)) + ARR + IG('get', coinSvg() + `<span class="plus">3</span>`), m3: () => IG('give', `<span class="plus">🧺</span>`) + ARR + IG('get', coinSvg()), m4: () => IG('give', miniCard(-8)) + `<span class="plus">⇄</span>` + IG('get', miniCard(8)), m5: () => `<span class="plus">↻</span>` + miniCard(0), m6: () => FIELD_ART.order2().slice(0, FIELD_ART.order2().length / 2) };
 function boardHtml(p, live) {
   const placed = f => p.placed.includes(f.k);
+  const lockInfo = (k) => ` Gesperrt: Hier liegen noch ${p.markers[k]} Marker. Für jeden erfüllten Auftrag nimmst du einen Marker von einem gesperrten Feld deiner Wahl; liegt keiner mehr, ist es frei.`;
   const fld = f => {
     const open = !f.lock || unlocked(p, f.lock);
     const ok = live && canUseField(p, f);
-    return `<button class="fld ${open ? '' : 'locked'} ${ok ? 'live' : ''} ${placed(f) ? 'used' : ''}" data-a="field" data-k="${f.k}" ${ok ? '' : 'disabled'} data-info="${esc(fieldInfo(p, f))}">${placed(f) ? `<span class="wk on ${U.wkNew === f.k ? 'drop' : ''}">${workerSvg(p.mark)}</span>` : ''}<span class="fart">${FIELD_ART[f.k] ? FIELD_ART[f.k]() : ''}</span><b>${esc(f.n)}</b>${esc(f.tx)}${!open ? `<span class="mk">${range(p.markers[f.lock]).map(() => `<i style="background:${p.mark}"></i>`).join('')}</span>` : ''}</button>`;
+    return `<button class="fld ${open ? '' : 'locked'} ${ok ? 'live' : ''} ${placed(f) ? 'used' : ''}" data-a="field" data-k="${f.k}" ${ok ? '' : 'disabled'} data-info="${esc(fieldInfo(p, f))}">${placed(f) ? `<span class="wk on ${U.wkNew === f.k ? 'drop' : ''}">${workerSvg(p.mark)}</span>` : ''}${!open ? tokens(p, p.markers[f.lock]) : ''}<span class="fart">${!open ? lockSvg() : ''}${FIELD_ART[f.k] ? FIELD_ART[f.k]() : ''}</span><b>${esc(f.n)}</b>${esc(f.tx)}</button>`;
   };
-  const other = UNLOCKS.filter(u => !FIELDS.some(f => f.lock === u.k)).map(u => `<div class="fld mkt ${unlocked(p, u.k) ? '' : 'locked'}"><b>${unlocked(p, u.k) ? '✓ ' : ''}${esc(u.tx)}</b>${!unlocked(p, u.k) ? `<span class="mk">${range(p.markers[u.k]).map(() => `<i style="background:${p.mark}"></i>`).join('')}</span>` : ''}</div>`).join('');
+  const other = UNLOCKS.filter(u => !FIELDS.some(f => f.lock === u.k) && !MARKET.some(m => m.lock === u.k)).map(u => { const op = unlocked(p, u.k), [tag, n] = UNLOCK_N[u.k]; return `<div class="fld unl ${op ? 'open' : 'locked'}" data-info="${esc(u.tx + (op ? ' Freigeschaltet.' : lockInfo(u.k)))}">${!op ? tokens(p, p.markers[u.k]) : ''}<span class="fart">${!op ? lockSvg() : ''}${UNLOCK_ART[u.k]()}</span><span class="tag">${op ? '✓ frei' : tag}</span><b>${esc(n)}</b></div>`; }).join('');
+  const mw = n => `<span class="mw">${range(n).map(() => workerSvg(p.mark)).join('')}</span>`;
   return `<div class="board"><div class="bank">Bank: ${range(workersFree(p)).map(() => `<span style="width:18px;height:22px;display:inline-block">${workerSvg(p.mark)}</span>`).join('') || '–'} · eingesetzt: ${p.placed.length}</div>
     <div class="fields">${FIELDS.map(fld).join('')}</div>
-    <p class="label" style="margin:12px 0 6px">Freischalten (Marker auf Aufträge legen)</p><div class="fields">${other}</div>
-    <div class="market"><div class="awn"></div><p class="mhead"><b>Markt</b> · nur beim Tag beenden</p><p class="msub">2 eingesetzte Kräfte = 1 Marktaktion · 3 = Marktaktion + Karte · 4 = 2 verschiedene Marktaktionen</p>
-    <div class="fields">${MARKET.map(m => `<div class="fld mkt ${!m.lock || unlocked(p, m.lock) ? '' : 'locked'}"><span class="fart">${MARKET_ART[m.k] ? MARKET_ART[m.k]() : ''}</span><b>${esc(m.n)}</b>${esc(m.tx)}</div>`).join('')}</div></div></div>`;
+    <div class="market"><svg class="awn" viewBox="0 0 360 44" preserveAspectRatio="none" aria-hidden="true">${range(18).map(i => `<rect x="${i * 20}" y="0" width="20" height="30" fill="${i % 2 ? '#FBF3E4' : '#D9735F'}"/><ellipse cx="${i * 20 + 10}" cy="30" rx="10" ry="9" fill="${i % 2 ? '#FBF3E4' : '#D9735F'}"/>`).join('')}<rect x="0" y="0" width="360" height="5" fill="#B85A47"/></svg>
+      <div class="msign"><b>Markt</b><small>beim Tag beenden</small></div>
+      <div class="fields">${MARKET.map(m => { const op = !m.lock || unlocked(p, m.lock); return `<div class="fld mkt ${op ? '' : 'locked'}" data-info="${esc(m.n + ': ' + m.tx + (op ? '' : lockInfo(m.lock)))}">${!op ? tokens(p, p.markers[m.lock]) : ''}<span class="fart">${!op ? lockSvg() : ''}${MARKET_ART[m.k] ? MARKET_ART[m.k]() : ''}</span><b>${esc(m.n)}</b>${esc(m.tx)}</div>`; }).join('')}</div>
+      <div class="mkr" data-info="Marktkräfte: Wie viele Arbeitskräfte du beim Tag beenden eingesetzt hattest, bestimmt die Marktaktionen: 2 = eine, 3 = eine und eine Karte aus der Auslage, 4 = zwei verschiedene.">Marktkräfte ${mw(2)} 1 · ${mw(3)} 1 + Karte · ${mw(4)} 2</div></div>
+    <div class="unlh"><h3>Freischalten</h3><p>${tokens(p, 1)} Pro erfülltem Auftrag nimmst du einen Marker von einem gesperrten Feld. Ist keiner mehr da, ist es frei.</p></div>
+    <div class="fields">${other}</div></div>`;
 }
 function viewStart() {
   const saved = load(), st = U.setup, prof = spielregalProfiles();
@@ -1454,7 +1535,7 @@ function viewGame() {
     <button class="icobtn" data-a="menu" aria-label="Menü: Verlassen, Regeln"><svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
   </div>${statusHtml(me, `<span class="gd goal" data-info="${esc(S.solo ? `Solo: Auslage-Stapel ${5 - S.soloStacks.length} von 5. Ist der letzte Stapel aufgebraucht, endet die Partie.` : S.endTrig ? 'Jemand hat das Ziel erreicht: Jede Person hat noch genau zwei Züge.' : `Wer zuerst ${VP_END} SP erreicht, löst das Spielende aus; danach hat jede Person noch zwei Züge.`)}">${S.solo ? `Stapel ${5 - S.soloStacks.length}/5` : S.endTrig ? 'Letzte Züge' : `Ziel ${VP_END} SP`}</span>`)}</div><div class="tbanner">${banner}</div></div>
   <div class="pages"><div class="page"><div class="wrap">
-    <section class="sec"><div class="sech"><h2 class="hand">Auslage</h2><span class="hint">${S.deck.length} im Stapel · <button class="link" data-a="discview" style="font-size:inherit">${S.discard.length} abgelegt</button></span></div>
+    <section class="sec"><div class="sech"><h2 class="hand">Auslage</h2><span class="hint">${S.deck.length} im Stapel · <button class="link disc" data-a="discview" style="font-size:inherit">${pileSvg()}${S.discard.length} abgelegt</button></span></div>
       <div class="ring">${S.display.map((k, i) => cardHtml(k)).join('')}</div></section>
     <section class="sec"><div class="sech"><h2 class="hand">Aufträge</h2><span class="hint">Jeden Auftrag nur einmal</span></div><div class="orders">${S.otiles.map(orderTile).join('')}</div></section>
     </div></div><div class="page"><div class="wrap">
@@ -1661,7 +1742,7 @@ function viewSheet() {
   if (myAsk() && (!sh || sh.type === 'ask')) return askSheet();
   if (!sh) return '';
   if (sh.type === 'rules') return sheetWrap(rulesHtml());
-  if (sh.type === 'menu') return sheetWrap(`<h3>Menü</h3><div class="btnrow" style="flex-direction:column">${U.tut ? '<button class="btn wide" data-a="tutquit">Lernspiel beenden</button>' : ''}${S && S.screen === 'game' && !S.tut ? (U.undo.length ? '<button class="btn white wide" data-a="undo">Zug rückgängig</button>' : '') + '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}<button class="btn white wide" data-a="rules">Spielregeln</button><button class="btn white wide" data-a="reload">Neueste Version laden</button><button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
+  if (sh.type === 'menu') return sheetWrap(`<h3>Menü</h3><div class="btnrow" style="flex-direction:column">${U.tut ? '<button class="btn wide" data-a="tutquit">Lernspiel beenden</button>' : ''}${S && S.screen === 'game' && !S.tut ? (U.undo.length ? '<button class="btn white wide" data-a="undo">Zug rückgängig</button>' : '') + '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}<button class="btn white wide" data-a="rules">Spielregeln</button><button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div><p style="text-align:center;margin:22px 0 4px"><button class="link" data-a="reload" style="font-size:13px">Neueste Version laden</button></p>`);
   if (sh.type === 'disc') return sheetWrap(`<h3>Ablagestapel</h3><p style="font-size:13px">${S.discard.length} Karten, die oberste zuerst. Esel, Katze und eine Freischaltung holen Karten von hier zurück.</p><div class="gridc">${S.discard.slice().reverse().map(k => cardHtml(k)).join('') || '<p class="note">Noch leer.</p>'}</div>`);
   if (sh.type === 'opp') { const p = P(sh.p); return sheetWrap(`<h3>${esc(p.name)}</h3><p style="font-size:13px">★ ${p.vp} SP · ${p.hand.length} Handkarten</p>${goodsHtml(p)}<div class="terrs" style="margin-top:10px">${p.terrs.map((tr, ti) => terrHtml(p, tr, ti)).join('')}</div>`); }
   return '';
@@ -1770,6 +1851,15 @@ function goTarget() {
   return '.board';
 }
 // Ansage: oben ganz, beim Scrollen nur noch als Sprechblase mit dem Kopf (antippen = kurz ganz zeigen)
+// Karten einer Reihe gleich hoch (nach der längsten)
+function eqCards() {
+  document.querySelectorAll('.hfan, .ring, .gridc').forEach(box => {
+    const cs = box.querySelectorAll('.pc'); if (cs.length < 2) return;
+    cs.forEach(c => { c.style.minHeight = ''; });
+    const h = Math.max(...[...cs].map(c => c.offsetHeight));
+    cs.forEach(c => { c.style.minHeight = h + 'px'; });
+  });
+}
 function bubbleSync() {
   const t = document.querySelector('.top'), b = document.querySelector('.top .tbanner');
   if (!t || !b) return;
@@ -1838,6 +1928,7 @@ function render() {
   $app.innerHTML = h;
   if (U.wkNew && document.querySelector('.wk.drop')) U.wkNew = null;
   bubbleSync();
+  eqCards();
   if (!hadSheet) { const sh = document.querySelector('.ov .sheet'); if (sh) { sh.classList.add('enter'); sh.parentElement.classList.add('enter'); } }
   { const bar = document.querySelector('.bar'); if (bar) document.documentElement.style.setProperty('--barh', bar.offsetHeight + 'px'); }
   pageSync(true);
@@ -1985,14 +2076,24 @@ function previewShow(i, sticky) {
   if (HP.i === i && HP.el) return;
   HP.i = i;
   const r = playRoutes(me, k), o = r.out[0];
-  const hint = o ? `↑ wischen: ${o.f === 'ask' ? 'jetzt spielen' : esc(o.label)} · ${o.pay ? `+${o.pay} Münze${o.pay > 1 ? 'n' : ''}` : 'passt genau'}${o.note ? ` · ${esc(o.note)}` : ''}` : esc(r.why);
+  HP.o = o; HP.why = r.why; HP.go = false;
   if (!HP.el) { HP.el = document.createElement('div'); HP.el.className = 'hprev'; document.body.appendChild(HP.el); }
-  HP.el.innerHTML = `<div class="hpc">${cardHtml(k)}</div><div class="hph ${o ? '' : 'no'}">${hint}</div>`;
+  HP.el.innerHTML = `<div class="hpc">${cardHtml(k)}</div><div class="hph ${o ? '' : 'no'}"></div>`;
+  hintSet();
   HP.el.classList.remove('in'); void HP.el.offsetWidth; HP.el.classList.add('in');
+}
+// Hinweis unter der großen Karte: sagt je nach Geste, was als Nächstes passiert
+function hintSet() {
+  const h = HP.el && HP.el.querySelector('.hph'); if (!h) return;
+  const o = HP.o;
+  if (!o) { h.textContent = HP.why || ''; return; }
+  const where = o.f === 'ask' ? 'jetzt spielen' : o.label, pay = o.pay ? `+${o.pay} Münze${o.pay > 1 ? 'n' : ''}` : 'passt genau';
+  h.textContent = HP.go ? `Loslassen = einsetzen: ${where} · ${pay}` : HP.drag ? `Weiter nach oben ziehen … ${where}` : `↑ Nach oben wischen zum Einsetzen · ${where} · ${pay}${o.note ? ` · ${o.note}` : ''}`;
+  HP.el.classList.toggle('drag', !!HP.drag && !HP.go);
 }
 function previewHide() {
   if (HP.el) { HP.el.remove(); HP.el = null; }
-  HP.i = -1; HP.sticky = false;
+  HP.i = -1; HP.sticky = false; HP.drag = false; HP.go = false;
   document.querySelectorAll('.hfan .hcard.up').forEach(c => c.classList.remove('up'));
 }
 (function () {
@@ -2010,7 +2111,7 @@ function previewHide() {
     if (!g) return;
     const dx = e.clientX - g.x0, dy = e.clientY - g.y0;
     if (g.mode !== 'drag' && dy < -14 && Math.abs(dy) > Math.abs(dx) * 1.2) { g.mode = 'drag'; clearTimeout(g.t); previewShow(g.i, false); g.c.classList.add('drag'); }
-    if (g.mode === 'drag') { const k = Math.max(0, Math.min(1, -dy / 140)); g.c.style.transform = `translateX(calc(var(--x) - 50%)) translate(${dx * .4}px, ${dy}px) rotate(calc(var(--r) * ${1 - k})) scale(${1 + k * .25})`; if (HP.el) HP.el.classList.toggle('go', -dy > 80); return; }
+    if (g.mode === 'drag') { const k = Math.max(0, Math.min(1, -dy / 140)); g.c.style.transform = `translateX(calc(var(--x) - 50%)) translate(${dx * .4}px, ${dy}px) rotate(calc(var(--r) * ${1 - k})) scale(${1 + k * .25})`; if (HP.el) { const go = -dy > 80; if (go !== HP.go || !HP.drag) { HP.go = go; HP.drag = true; HP.el.classList.toggle('go', go); hintSet(); } } return; }
     if (g.mode === 'tap' && Math.abs(dx) > 10) { g.mode = 'hold'; clearTimeout(g.t); }
     if (g.mode === 'hold') { const c = cardAt(e.clientX); if (c) { g.c = c; g.i = +c.dataset.i; previewShow(g.i, false); } }
   }, true);
@@ -2026,6 +2127,7 @@ function previewHide() {
         return;
       }
       G.c.classList.remove('drag'); G.c.style.transform = '';
+      HP.drag = false; HP.go = false; if (HP.el) HP.el.classList.remove('go'); hintSet();
       if (k && -dy > 80) { previewShow(G.i, true); G.c.animate([{ transform: 'translateX(calc(var(--x) - 50%)) translateX(-6px) rotate(var(--r))' }, { transform: 'translateX(calc(var(--x) - 50%)) translateX(6px) rotate(var(--r))' }, { transform: 'translateX(calc(var(--x) - 50%)) rotate(var(--r))' }], { duration: 220 }); }
       else previewHide();
       return;

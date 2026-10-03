@@ -137,7 +137,16 @@ Gebiete, Chronik) · Arbeitsplan; Seitenwahl nur als drei kleine Punkte oben im 
 am Arbeitsplan, wenn du dran bist), Kopf kompakt (Spieler-Pillen + Menü in einer Zeile), Ziel 30 SP bzw. Solo-Stapel als
 dunkle Pille in der Vorratsleiste. Die Ansage schwebt kompakt unter dem Kopf und wird beim Scrollen zur Sprechblase mit
 nur dem Kopf der Person (`.top.bub`; Antippen klappt sie kurz auf). Bildsprache im Arbeitsplan/Markt: Sonne = Karte
-ausspielen, grünes + = bekommen, rotes − = abgeben, → = wird zu (`IG`/`ARR`); Abwerfen darf nie wie Ziehen aussehen. `goTo` und der Lernspiel-Coach wechseln automatisch auf die
+ausspielen, grünes + = bekommen, rotes − = abgeben, → = wird zu (`IG`/`ARR`); Abwerfen darf nie wie Ziehen aussehen. Arbeitsplan-Seite ohne eigenen Rahmen; nur der Markt
+ist ein Kasten mit überstehender gestreifter Markise und Schild „Markt“, darunter klein die Marktkräfte (2/3/4 Figuren →
+Aktionen). Gesperrte Felder (Arbeitsplan, Markt, „Freischalten“ am Ende) sind gestrichelt mit Schloss, die Marker liegen
+als Spielsteine in Spielerfarbe darauf; ein einziger Satz unter „Freischalten“ erklärt das Wegnehmen pro erfülltem
+Auftrag (keine doppelten Infos – Owner: „nur wenn wirklich wichtig oder nötig für den Spielfluss“). Gemeinsame Aufträge
+sind angeheftete Zettel mit Preis-Rosetten je Stufe (Bonus-Karte als grünes +, nächste freie Stufe hinterlegt, belegte
+Stufe mit Spielstein); von dir erfüllte Aufträge und eigene Gebietsaufträge sind grün mit Stempel „✓ erfüllt“.
+Ablagestapel-Link mit Stapel-Bild. Karten einer Reihe sind gleich hoch (`eqCards`), Kartenradien schmal (11/8 px).
+Hinweis unter der großen Handkarte in neutralem Dunkel (nie Knopffarben), Text je Geste: wischen → „Weiter nach oben
+ziehen …“ → „Loslassen = einsetzen“ (Petrol). Menü: „Neueste Version laden“ als Textlink ganz unten mit Abstand. `goTo` und der Lernspiel-Coach wechseln automatisch auf die
 Seite des Ziels; während des Wischens wird nicht neu gezeichnet (`render` wartet). Kopfzeilen (`.thead`) sind in allen
 Spielen deckend in der Seitenfarbe, ohne milchigen Blur (Owner: „kein milchiger Hintergrund“).
 
