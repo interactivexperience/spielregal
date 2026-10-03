@@ -1833,6 +1833,7 @@ addEventListener('scroll', () => {
   if (!SCR.on && scrollY > 90) { const h0 = t.offsetHeight; SCR.on = true; t.classList.add('scr'); const d = h0 - t.offsetHeight; if (d > 0) scrollBy(0, -d); }
   else if (SCR.on && scrollY < 12) { SCR.on = false; t.classList.remove('scr'); }
 }, { passive: true });
+const HERO_TOP = '#F8ECE1';
 function render() {
   // nicht mitten im Wischen zwischen den Seiten neu zeichnen
   const now = Date.now(), swiping = pTouch || (now - pScrollT < 140 && now - pTouchEnd < 700);
@@ -1847,6 +1848,9 @@ function render() {
   if (U.tut) h += tutHtml();
   const fxb = fxBefore();
   $app.innerHTML = h;
+  // iOS malt den Streifen hinter der Statusleiste in der Seiten-Hintergrundfarbe: auf dem Startbildschirm
+  // die obere Bildfarbe, damit das Startbild optisch bis an den oberen Rand reicht
+  { const onStart = !S || (S.screen !== 'game' && S.screen !== 'end'); document.documentElement.style.backgroundColor = onStart ? HERO_TOP : ''; const tc = document.querySelector('meta[name="theme-color"]'); if (tc) { if (!tc.dataset.base) tc.dataset.base = tc.content; tc.content = onStart ? HERO_TOP : tc.dataset.base; } }
   scrSync();
   document.documentElement.classList.toggle('tutmode', !!U.tut);
   { const b = document.querySelector('.top .tbanner'); if (b) document.documentElement.style.setProperty('--bnh', b.offsetHeight + 'px'); }
