@@ -314,6 +314,10 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .market .fld.mkt.live:active{transform:scale(.97)}
 .market .fld.mkt.off{opacity:.5}
 .market .fld.mkt.used{opacity:1;background:#E8F0DC;border-color:#7C9A4A}
+.fld.locked.mpick{box-shadow:0 0 0 3px var(--plum);border:1.5px solid transparent;background:#fff;opacity:1}
+.fld.mpick:active{transform:scale(.97)}
+.mpk{display:flex;align-items:center;gap:4px;width:fit-content;margin-top:6px;font-size:11px;font-weight:700;color:#fff;background:var(--plum);border-radius:999px;padding:2px 9px 2px 3px;white-space:nowrap}
+.mpk .tok,.mpk>span{position:static!important}
 .mdone{position:absolute;right:8px;top:8px;font-size:10.5px;font-weight:700;color:#4E6B2A;background:#fff;border-radius:999px;padding:2px 7px}
 /* Drei Seiten zum Wischen */
 .ptabs{display:flex;gap:3px;background:var(--card);border-radius:999px;padding:3px;flex:1;min-width:0}
@@ -1511,19 +1515,23 @@ const MARKET_ART = { m1: () => IG('get', miniCard(-6)), m2: () => IG('give', min
 function boardHtml(p, live) {
   const placed = f => p.placed.includes(f.k);
   const lockInfo = (k) => ` Gesperrt: Hier liegen noch ${p.markers[k]} Marker. Für jeden erfüllten Auftrag nimmst du einen Marker von einem gesperrten Feld deiner Wahl; liegt keiner mehr, ist es frei.`;
+  const mk = myAsk() && S.ask.t === 'market' && S.ask.pi === S.players.indexOf(p) ? S.ask : null;
+  // Marker nehmen direkt auf dem Plan: wählbare gesperrte Felder sind umrandet und antippbar
+  const mkr = myAsk() && S.ask.t === 'marker' && S.ask.pi === S.players.indexOf(p) ? S.ask : null;
+  const pick = k => !!(mkr && k && mkr.opts.includes(k));
+  const pkTag = k => pick(k) ? `<span class="mpk">${tokens(p, 1)}−1 → ${p.markers[k] === 1 ? 'frei!' : `noch ${p.markers[k] - 1}`}</span>` : '';
   const fld = f => {
     const open = !f.lock || unlocked(p, f.lock);
-    const ok = live && canUseField(p, f);
-    return `<button class="fld ${open ? '' : 'locked'} ${ok ? 'live' : ''} ${placed(f) ? 'used' : ''}" data-a="field" data-k="${f.k}" ${ok ? '' : 'disabled'} data-info="${esc(fieldInfo(p, f))}">${placed(f) ? `<span class="wk on ${U.wkNew === f.k ? 'drop' : ''}">${workerSvg(p.mark)}</span>` : ''}${!open ? tokens(p, p.markers[f.lock]) : ''}<span class="fart">${!open ? lockSvg() : ''}${FIELD_ART[f.k] ? FIELD_ART[f.k]() : ''}</span><b>${esc(f.n)}</b>${esc(f.tx)}</button>`;
+    const pk = !open && pick(f.lock), ok = live && !myAsk() && canUseField(p, f);
+    return `<button class="fld ${open ? '' : 'locked'} ${ok ? 'live' : ''} ${pk ? 'mpick' : ''} ${placed(f) ? 'used' : ''}" data-a="${pk ? 'askval' : 'field'}" data-k="${f.k}" ${pk ? `data-v="${f.lock}"` : ''} ${ok || pk ? '' : 'disabled'} data-info="${esc(fieldInfo(p, f))}">${placed(f) ? `<span class="wk on ${U.wkNew === f.k ? 'drop' : ''}">${workerSvg(p.mark)}</span>` : ''}${!open ? tokens(p, p.markers[f.lock]) : ''}<span class="fart">${!open ? lockSvg() : ''}${FIELD_ART[f.k] ? FIELD_ART[f.k]() : ''}</span><b>${esc(f.n)}</b>${esc(f.tx)}${pk ? pkTag(f.lock) : ''}</button>`;
   };
-  const other = UNLOCKS.filter(u => !FIELDS.some(f => f.lock === u.k) && !MARKET.some(m => m.lock === u.k)).map(u => { const op = unlocked(p, u.k), [tag, n] = UNLOCK_N[u.k]; return `<div class="fld unl ${op ? 'open' : 'locked'}" data-info="${esc(u.tx + (op ? ' Freigeschaltet.' : lockInfo(u.k)))}">${!op ? tokens(p, p.markers[u.k]) : ''}<span class="fart">${!op ? lockSvg() : ''}${UNLOCK_ART[u.k]()}</span><span class="tag">${op ? '✓ frei' : tag}</span><b>${esc(n)}</b></div>`; }).join('');
-  const mk = myAsk() && S.ask.t === 'market' && S.ask.pi === S.players.indexOf(p) ? S.ask : null;
+  const other = UNLOCKS.filter(u => !FIELDS.some(f => f.lock === u.k) && !MARKET.some(m => m.lock === u.k)).map(u => { const op = unlocked(p, u.k), [tag, n] = UNLOCK_N[u.k]; const pk = !op && pick(u.k), el = pk ? 'button' : 'div'; return `<${el} class="fld unl ${op ? 'open' : 'locked'} ${pk ? 'mpick' : ''}" ${pk ? `data-a="askval" data-v="${u.k}"` : ''} data-info="${esc(u.tx + (op ? ' Freigeschaltet.' : lockInfo(u.k)))}">${!op ? tokens(p, p.markers[u.k]) : ''}<span class="fart">${!op ? lockSvg() : ''}${UNLOCK_ART[u.k]()}</span><span class="tag">${op ? '✓ frei' : tag}</span><b>${esc(n)}</b>${pkTag(u.k)}</${el}>`; }).join('');
   const mw = n => `<span class="mw">${range(n).map(() => workerSvg(p.mark)).join('')}</span>`;
   return `<div class="board"><div class="bank">Bank: ${range(workersFree(p)).map(() => `<span style="width:18px;height:22px;display:inline-block">${workerSvg(p.mark)}</span>`).join('') || '–'} · eingesetzt: ${p.placed.length}</div>
     <div class="fields">${FIELDS.map(fld).join('')}</div>
     <div class="market"><svg class="awn" viewBox="0 0 360 44" preserveAspectRatio="none" aria-hidden="true">${range(18).map(i => `<rect x="${i * 20}" y="0" width="20" height="30" fill="${i % 2 ? '#FBF3E4' : '#D9735F'}"/><ellipse cx="${i * 20 + 10}" cy="30" rx="10" ry="9" fill="${i % 2 ? '#FBF3E4' : '#D9735F'}"/>`).join('')}<rect x="0" y="0" width="360" height="5" fill="#B85A47"/></svg>
       <div class="msign"><b>Markt</b><small>${mk ? (mk.left > 1 ? `wähle ${mk.left} verschiedene` : 'wähle eine Aktion') : 'beim Tag beenden'}</small></div>
-      <div class="fields">${MARKET.map(m => { const op = !m.lock || unlocked(p, m.lock), done = mk && (mk.exclude || []).includes(m.k), ok = mk && mk.opts.includes(m.k); const inner = `${done ? '<span class="mdone">✓ gewählt</span>' : ''}${!op ? tokens(p, p.markers[m.lock]) : ''}<span class="fart">${!op ? lockSvg() : ''}${MARKET_ART[m.k] ? MARKET_ART[m.k]() : ''}</span><b>${esc(m.n)}</b>${esc(m.tx)}`, info = esc(m.n + ': ' + m.tx + (op ? '' : lockInfo(m.lock))); return mk ? `<button class="fld mkt ${op ? '' : 'locked'} ${ok ? 'live' : 'off'} ${done ? 'used' : ''}" data-a="askval" data-v="${m.k}" ${ok ? '' : 'disabled'} data-info="${info}">${inner}</button>` : `<div class="fld mkt ${op ? '' : 'locked'}" data-info="${info}">${inner}</div>`; }).join('')}</div>
+      <div class="fields">${MARKET.map(m => { const op = !m.lock || unlocked(p, m.lock), done = mk && (mk.exclude || []).includes(m.k), ok = mk && mk.opts.includes(m.k); const inner = `${done ? '<span class="mdone">✓ gewählt</span>' : ''}${!op ? tokens(p, p.markers[m.lock]) : ''}<span class="fart">${!op ? lockSvg() : ''}${MARKET_ART[m.k] ? MARKET_ART[m.k]() : ''}</span><b>${esc(m.n)}</b>${esc(m.tx)}`, info = esc(m.n + ': ' + m.tx + (op ? '' : lockInfo(m.lock))); return mk ? `<button class="fld mkt ${op ? '' : 'locked'} ${ok ? 'live' : 'off'} ${done ? 'used' : ''}" data-a="askval" data-v="${m.k}" ${ok ? '' : 'disabled'} data-info="${info}">${inner}</button>` : pick(m.lock) && !op ? `<button class="fld mkt locked mpick" data-a="askval" data-v="${m.lock}" data-info="${info}">${inner}${pkTag(m.lock)}</button>` : `<div class="fld mkt ${op ? '' : 'locked'}" data-info="${info}">${inner}</div>`; }).join('')}</div>
       <div class="mkr" data-info="Marktkräfte: Wie viele Arbeitskräfte du beim Tag beenden eingesetzt hattest, bestimmt die Marktaktionen: 2 = eine, 3 = eine und eine Karte aus der Auslage, 4 = zwei verschiedene.">Marktkräfte ${mw(2)} 1 · ${mw(3)} 1 + Karte · ${mw(4)} 2</div></div>
     <div class="unlh"><h3>Freischalten</h3><p>${tokens(p, 1)} Pro erfülltem Auftrag nimmst du einen Marker von einem gesperrten Feld. Ist keiner mehr da, ist es frei.</p></div>
     <div class="fields">${other}</div></div>`;
@@ -1554,8 +1562,9 @@ function viewGame() {
   const me = human(), p = cur();
   const mine = isMyTurn();
   let banner;
-  const mkAsk = myAsk() && S.ask.t === 'market';
-  if (mkAsk) banner = `<div data-a="go" class="banner mine"><span class="face">${face(me)}</span><div><b>${S.ask.left > 1 ? `Wähle ${S.ask.left} Marktaktionen` : 'Wähle eine Marktaktion'}</b><span class="small">Tippe auf dem Markt ein umrandetes Feld an.</span></div></div>`;
+  const mkAsk = myAsk() && S.ask.t === 'market', mrAsk = myAsk() && S.ask.t === 'marker';
+  if (mrAsk) banner = `<div data-a="go" class="banner mine"><span class="face">${face(me)}</span><div><b>Nimm einen Marker vom Arbeitsplan</b><span class="small">Tippe ein umrandetes gesperrtes Feld an. Liegt dort keiner mehr, ist es frei.</span></div></div>`;
+  else if (mkAsk) banner = `<div data-a="go" class="banner mine"><span class="face">${face(me)}</span><div><b>${S.ask.left > 1 ? `Wähle ${S.ask.left} Marktaktionen` : 'Wähle eine Marktaktion'}</b><span class="small">Tippe auf dem Markt ein umrandetes Feld an.</span></div></div>`;
   else if (myAsk()) banner = `<div data-a="go" class="banner mine"><span class="face">${face(me)}</span><div style="flex:1"><b>${esc(askTitle(S.ask))}</b><span class="small">Wähle im Fenster.</span></div><button class="btn sm" data-a="askopen">Öffnen</button></div>`;
   else if (mine) banner = forcedEndDay(me)
     ? `<div data-a="go" class="banner mine"><span class="face">${face(me)}</span><div><b>Tag beenden</b><span class="small">${workersFree(me) ? 'Kein freies Feld passt mehr' : 'Alle Arbeitskräfte sind eingesetzt'} – beende jetzt den Tag und nimm deine Marktaktionen.</span></div></div>`
@@ -1579,7 +1588,8 @@ function viewGame() {
     </div></div><div class="page"><div class="wrap">
     <section class="sec"><div class="sech"><h2 class="hand">Arbeitsplan</h2></div>${boardHtml(me, mine)}</section>
   </div></div></div>
-  ${U.tut || mkAsk ? '' : handFan(me)}<div class="bar"><div class="pdots" role="tablist">${PAGES.map((pg, i) => `<button class="pd ${U.page === i ? 'on' : ''} ${i === 2 && (mine && !myAsk() || mkAsk) ? 'act' : ''}" role="tab" data-a="page" data-p="${i}" aria-selected="${U.page === i}" aria-label="Seite ${pg}" data-info="${pg}"><i></i></button>`).join('')}</div><div class="in">${U.undo.length && (mine || myAsk()) ? `<button class="icobtn undo" data-a="undo" aria-label="Zug rückgängig" data-info="Zug rückgängig: geht im eigenen Zug, bis eine verdeckte Karte oder ein Gebiet aufgedeckt wird."><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M7.5 4.5 3.5 8.5l4 4M4 8.5h7.5a4.5 4.5 0 0 1 0 9H9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : ''}${mkAsk ? `<div class="msg" data-a="go"><b>Markt:</b> ${S.ask.left > 1 ? `noch ${S.ask.left} Aktionen` : 'eine Aktion'} wählen.</div><button class="btn" data-a="go">Zum Markt</button>`
+  ${U.tut || mkAsk || mrAsk ? '' : handFan(me)}<div class="bar"><div class="pdots" role="tablist">${PAGES.map((pg, i) => `<button class="pd ${U.page === i ? 'on' : ''} ${i === 2 && (mine && !myAsk() || mkAsk || mrAsk) ? 'act' : ''}" role="tab" data-a="page" data-p="${i}" aria-selected="${U.page === i}" aria-label="Seite ${pg}" data-info="${pg}"><i></i></button>`).join('')}</div><div class="in">${U.undo.length && (mine || myAsk()) ? `<button class="icobtn undo" data-a="undo" aria-label="Zug rückgängig" data-info="Zug rückgängig: geht im eigenen Zug, bis eine verdeckte Karte oder ein Gebiet aufgedeckt wird."><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M7.5 4.5 3.5 8.5l4 4M4 8.5h7.5a4.5 4.5 0 0 1 0 9H9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : ''}${mrAsk ? `<div class="msg" data-a="go"><b>Marker</b> nehmen.</div><button class="btn" data-a="go">Zum Plan</button>`
+    : mkAsk ? `<div class="msg" data-a="go"><b>Markt:</b> ${S.ask.left > 1 ? `noch ${S.ask.left} Aktionen` : 'eine Aktion'} wählen.</div><button class="btn" data-a="go">Zum Markt</button>`
     : myAsk() ? `<div class="msg" data-a="go">${esc(askTitle(S.ask))}</div><button class="btn" data-a="askopen">Auswählen</button>`
     : mine ? (forcedEndDay(me) ? `<div class="msg" data-a="go"><b>Jetzt den Tag beenden</b> – ${workersFree(me) ? 'kein freies Feld passt mehr' : 'alle Arbeitskräfte sind eingesetzt'}.</div><button class="btn" data-a="endday">Tag beenden</button>`
       : `<div class="msg" data-a="go">${workersFree(me)} ${workersFree(me) === 1 ? 'Arbeitskraft' : 'Arbeitskräfte'} auf der Bank.</div><button class="btn white" data-a="endday">Tag beenden</button>`)
@@ -1772,7 +1782,7 @@ function rulesHtml() {
 }
 function viewSheet() {
   const sh = U.sheet;
-  if (myAsk() && S.ask.t === 'market' && (!sh || sh.type === 'ask' || sh.type === 'hidden')) return '';
+  if (myAsk() && ['market', 'marker'].includes(S.ask.t) && (!sh || sh.type === 'ask' || sh.type === 'hidden')) return '';
   if (myAsk() && (!sh || sh.type === 'ask')) return askSheet();
   if (!sh) return '';
   if (sh.type === 'rules') return sheetWrap(rulesHtml());
@@ -1882,18 +1892,20 @@ function tutBot() {
 // Ansage antippen: zur passenden Stelle der Seite scrollen (bzw. offene Auswahl öffnen)
 // Automatischer Seitenwechsel: zu Beginn deines Zugs zum Arbeitsplan; nie im Lernspiel
 const mkAsked = () => !!(myAsk() && S.ask.t === 'market');
-const AUTO_KEY = () => `${isMyTurn()}|${mkAsked()}`;
-const AUTO_PAGE = () => isMyTurn() || mkAsked() ? 2 : null;
+const mrAsked = () => !!(myAsk() && S.ask.t === 'marker');
+const AUTO_KEY = () => `${isMyTurn()}|${mkAsked()}|${mrAsked()}`;
+const AUTO_PAGE = () => isMyTurn() || mkAsked() || mrAsked() ? 2 : null;
 function autoPage() {
   if (!S || S.screen !== 'game' || U.tut || !pagesEl()) { U.autoKey = null; return; }
   const k = AUTO_KEY(); if (k === U.autoKey) return;
   const first = U.autoKey == null; U.autoKey = k;
   const t = AUTO_PAGE();
-  if (!first && mkAsked()) { setTimeout(() => { if (pagesEl() && !pTouch) goTo('.market'); }, 250); return; }
+  if (!first && (mkAsked() || mrAsked())) { setTimeout(() => { if (pagesEl() && !pTouch) goTo(mkAsked() ? '.market' : '.fld.mpick'); }, 250); return; }
   if (!first && t != null && t !== U.page) setTimeout(() => { if (pagesEl() && !pTouch) pageGo(t, true); }, 250);
 }
 function goTarget() {
   if (myAsk() && S.ask.t === 'market') return '.market';
+  if (myAsk() && S.ask.t === 'marker') return '.fld.mpick';
   if (myAsk()) return () => { U.sheet = { type: 'ask' }; };
   return '.board';
 }
