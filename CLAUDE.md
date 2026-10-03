@@ -102,6 +102,9 @@ kurzem Aufblitzen bzw. Öffnen der offenen Auswahl; im Lernspiel springt es zum 
 In allen Auswahlfenstern bleibt der Schließen-Knopf beim Scrollen oben sichtbar (sticky), und die letzte
 Knopfzeile (`.btnrow`, z. B. „Nehmen“, „Bestätigen“) steht unten fest, sobald das Fenster scrollt (`stickBtns`). Grand Hotel Wien „Personal wählen“:
 zentriertes 3er-Raster, gewählte Karten angehoben mit grünem Rand und Band „✓ behalten“, Zählerknopf unten fest.
+Beim Scrollen (ab ~90 px, `.top.scr`) entfällt das Menü und eine überflüssige Titelzeile: Drei Schwestern blendet
+„Drei Schwestern.“ samt Menü aus, Grand Hotel die Rundenzeile (Runde rückt als Pille „R x/7“ in die Vorratsleiste),
+Landgut und Prinzessinnenball nur das Menü (Nacht/Stich/Regel bleiben). Oben angekommen erscheint alles wieder.
 Menü aller Spiele: „Neueste Version laden“ (lädt die Spielseite am Cache vorbei neu und setzt die gespeicherte Partie
 automatisch fort, `?resume=1`). Landgut: Auswahlfenster am Griff nach unten ziehen oder Pfeil = einklappen (weiche
 Animation), eingeklappt als Mini-Vorschau unten rechts; Siegpunktleiste als Wiesenpfad mit Köpfen; Ablagestapel

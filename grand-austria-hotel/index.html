@@ -323,6 +323,10 @@ input,textarea{-webkit-user-select:text;user-select:text}
 /* feste Knopfzeile unten im Fenster */
 .sheet{scroll-padding-top:56px;scroll-padding-bottom:96px}
 .sheet .stick{position:sticky;bottom:calc(-18px - env(safe-area-inset-bottom));background:var(--paper);margin-left:-16px;margin-right:-16px;margin-bottom:0;padding:10px 16px calc(12px + env(safe-area-inset-bottom));border-top:2px solid var(--ink);z-index:5}
+/* beim Scrollen kompakter Kopf */
+.top.scr .thead>.row:first-child{display:none}
+.status .rdp{display:none}
+.top.scr .status .rdp{display:inline-flex;background:var(--ink);color:var(--cream)}
 </style>
 </head>
 <body>
@@ -1655,7 +1659,7 @@ function kitchenHtml(p, mine) {
 }
 function statusHtml(p) {
   const food = FOODS.map(f => `<span title="Küche">${foodSvg(f)}${p.kitchen[f]}</span>`).join('');
-  return `<div class="status" aria-label="Dein Vorrat"><span class="t" title="Kronen">${p.k} K</span><span class="t" title="Siegpunkte">★ ${p.vp}</span><span class="t" title="Kaiserleiste">♛ ${p.emp}</span>${food}<span class="t" title="Personal auf der Hand (kein Limit)">Hand ${p.hand.length}</span><span class="t" title="vorbereitete freie Zimmer">Zi. ${p.rooms.filter(x => x === 1).length} frei</span></div>`;
+  return `<div class="status" aria-label="Dein Vorrat"><span class="t rdp" title="Runde">R ${S.round}/${ROUNDS}</span><span class="t" title="Kronen">${p.k} K</span><span class="t" title="Siegpunkte">★ ${p.vp}</span><span class="t" title="Kaiserleiste">♛ ${p.emp}</span>${food}<span class="t" title="Personal auf der Hand (kein Limit)">Hand ${p.hand.length}</span><span class="t" title="vorbereitete freie Zimmer">Zi. ${p.rooms.filter(x => x === 1).length} frei</span></div>`;
 }
 function playerChip(p, i) {
   const isCur = S.screen === 'game' && cur() === p;
@@ -2088,6 +2092,15 @@ function stickBtns() {
     if (c && !c.querySelector('[data-a=leave]')) c.classList.add('stick');
   });
 }
+// Beim Scrollen: Menü und überflüssige Kopfzeile ausblenden (Owner: „beim Scrollen brauchen wir das Menü nicht“)
+const SCR = { on: false };
+function scrSync() { if (U.tut) SCR.on = false; const t = document.querySelector('.top:not(.coach)'); if (t) t.classList.toggle('scr', SCR.on); }
+addEventListener('scroll', () => {
+  const t = document.querySelector('.top:not(.coach)'); if (!t) return;
+  if (U.tut) { if (SCR.on) { SCR.on = false; t.classList.remove('scr'); } return; } // im Lernspiel bleibt der Kopf ruhig
+  if (!SCR.on && scrollY > 90) { const h0 = t.offsetHeight; SCR.on = true; t.classList.add('scr'); const d = h0 - t.offsetHeight; if (d > 0) scrollBy(0, -d); }
+  else if (SCR.on && scrollY < 12) { SCR.on = false; t.classList.remove('scr'); }
+}, { passive: true });
 function render() {
   if (U.tut) tutCheck();
   let h;
@@ -2104,6 +2117,7 @@ function render() {
   if (nm) U.setup.name = nm.value;
   if (U.tut) h += tutHtml();
   $app.innerHTML = h;
+  scrSync();
   stickBtns();
   if (U.tut) tutDecorate();
   save();

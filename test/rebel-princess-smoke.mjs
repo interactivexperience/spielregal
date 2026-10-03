@@ -112,7 +112,7 @@ async function playUi(label, setup) {
   if (!(await page.locator("text=Neue Partie").count())) fail(`UI-Partie ${label} nicht beendet (guard ${guard})`);
   console.log(`UI-Partie ${label}: ${plays} Karten gespielt, ${asks} Dialoge, ${powers}× Fähigkeit.`);
   if (shots) await page.screenshot({ path: `${shots}/rp-4-end-${label}.png`, fullPage: true });
-  await page.click("[data-a=newgame]");
+  await page.locator("[data-a=newgame]").evaluate((e) => e.scrollIntoView({ block: "center" })); await page.locator("[data-a=newgame]").click({ force: true });
 }
 await playUi("erste", async () => { await page.click("[data-a=mode][data-m=first]"); });
 // Zweite Partie: Rundenkarten mit vielen Dialogen erzwingen

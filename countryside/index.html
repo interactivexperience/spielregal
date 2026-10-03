@@ -429,6 +429,8 @@ input,textarea{-webkit-user-select:text;user-select:text}
 /* feste Knopfzeile unten im Fenster */
 .sheet{scroll-padding-top:56px;scroll-padding-bottom:96px}
 .sheet .stick{position:sticky;bottom:calc(-18px - env(safe-area-inset-bottom));background:var(--paper);margin-left:-16px;margin-right:-16px;margin-bottom:0;padding:10px 16px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -6px 14px rgba(31,26,23,.08);z-index:5}
+/* beim Scrollen kompakter Kopf */
+.top.scr .prow [data-a=menu]{display:none}
 </style>
 </head>
 <body>
@@ -1922,6 +1924,15 @@ function stickBtns() {
     if (c && !c.querySelector('[data-a=leave]')) c.classList.add('stick');
   });
 }
+// Beim Scrollen: Menü und überflüssige Kopfzeile ausblenden (Owner: „beim Scrollen brauchen wir das Menü nicht“)
+const SCR = { on: false };
+function scrSync() { if (U.tut) SCR.on = false; const t = document.querySelector('.top:not(.coach)'); if (t) t.classList.toggle('scr', SCR.on); }
+addEventListener('scroll', () => {
+  const t = document.querySelector('.top:not(.coach)'); if (!t) return;
+  if (U.tut) { if (SCR.on) { SCR.on = false; t.classList.remove('scr'); } return; } // im Lernspiel bleibt der Kopf ruhig
+  if (!SCR.on && scrollY > 90) { const h0 = t.offsetHeight; SCR.on = true; t.classList.add('scr'); const d = h0 - t.offsetHeight; if (d > 0) scrollBy(0, -d); }
+  else if (SCR.on && scrollY < 12) { SCR.on = false; t.classList.remove('scr'); }
+}, { passive: true });
 function render() {
   // nicht mitten im Wischen zwischen den Seiten neu zeichnen
   const now = Date.now(), swiping = pTouch || (now - pScrollT < 140 && now - pTouchEnd < 700);
@@ -1939,6 +1950,7 @@ function render() {
   if (S && S.screen === 'game') h += miniAsk();
   undoCheck();
   $app.innerHTML = h;
+  scrSync();
   stickBtns();
   if (U.wkNew && document.querySelector('.wk.drop')) U.wkNew = null;
   bubbleSync();
