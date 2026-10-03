@@ -144,7 +144,7 @@ und Bedienung haben aber Vorrang – Kästchen und Knöpfe bleiben unverändert.
 Extras, Warteschlange, Aktionsbrett · Hotel: Tische, Küche, Hotel · Wien: Personal, Kaiser, Politik, Chronik) – gleiche
 Technik wie Landgut (`.pages`, `.pdots` im Footer, Punkt in Spielfarbe markiert die Seite mit offener Aktion `ACT_SEL`).
 Automatischer Seitenwechsel bei neuem Zugschritt (`autoPage`, nicht im Lernspiel): Grand Hotel Zugbeginn → Brett, nach
-der Würfelwahl → Hotel; Drei Schwestern Würfel nehmen → Rondell, eigene Gartenaktionen → Garten.
+der Würfelwahl → Hotel; Drei Schwestern Würfel nehmen → Rondell, eigene Gartenaktionen → Garten; Landgut zu Beginn deines Zugs → Arbeitsplan.
 In Drei Schwestern und Grand Hotel wird die Ansage beim Scrollen ebenfalls zur Sprechblase mit Kopf (`.top.scr`, Antippen
 klappt sie kurz auf). Die Vorräte unter den Personenpillen stehen in allen Spielen ohne Pillen (Platz sparen). Grand Hotel:
 Das Dach des Hotelplans zeigt wie im Original die Auslastungsboni je Farbe (Gruppengröße als Kästchen → Kronen/SP/Kaiser).

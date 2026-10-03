@@ -1857,6 +1857,16 @@ function tutBot() {
 }
 
 // Ansage antippen: zur passenden Stelle der Seite scrollen (bzw. offene Auswahl öffnen)
+// Automatischer Seitenwechsel: zu Beginn deines Zugs zum Arbeitsplan; nie im Lernspiel
+const AUTO_KEY = () => `${isMyTurn()}`;
+const AUTO_PAGE = () => isMyTurn() ? 2 : null;
+function autoPage() {
+  if (!S || S.screen !== 'game' || U.tut || !pagesEl()) { U.autoKey = null; return; }
+  const k = AUTO_KEY(); if (k === U.autoKey) return;
+  const first = U.autoKey == null; U.autoKey = k;
+  const t = AUTO_PAGE();
+  if (!first && t != null && t !== U.page) setTimeout(() => { if (pagesEl() && !pTouch) pageGo(t, true); }, 250);
+}
 function goTarget() {
   if (myAsk()) return () => { U.sheet = { type: 'ask' }; };
   return '.board';
@@ -1962,6 +1972,7 @@ function render() {
   if (!hadSheet) { const sh = document.querySelector('.ov .sheet'); if (sh) { sh.classList.add('enter'); sh.parentElement.classList.add('enter'); } }
   { const bar = document.querySelector('.bar'); if (bar) document.documentElement.style.setProperty('--barh', bar.offsetHeight + 'px'); }
   pageSync(true);
+  autoPage();
   if (HP.el) { const me = S && S.screen === 'game' && human(); if (!me || U.tut || HP.i >= me.hand.length) previewHide(); else document.querySelectorAll('.hfan .hcard').forEach(c => c.classList.toggle('up', +c.dataset.i === HP.i)); }
   if (U.tut) tutDecorate();
   save();
