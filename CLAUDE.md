@@ -133,8 +133,11 @@ Bienenstock, Hof, Schuppen) beginnt mit einem großflächigen Riso-Bildstreifen 
 wie die Illustrationen des echten Bogens; Gartenzonen zeigen Erdreihen (`.zbg`). Owner: weniger „technisch“, Lesbarkeit
 und Bedienung haben aber Vorrang – Kästchen und Knöpfe bleiben unverändert.
 Landgut ist auf **drei Wischseiten** verteilt (`.pages`, Scroll-Snap): Auslage & Aufträge · Mein Hof (Siegpunktpfad,
-Gebiete, Chronik) · Arbeitsplan; Reiter im Kopf statt Titel (lila Punkt am Arbeitsplan, wenn du dran bist), Ziel 30 SP
-bzw. Solo-Stapel als dunkle Pille in der Vorratsleiste. `goTo` und der Lernspiel-Coach wechseln automatisch auf die
+Gebiete, Chronik) · Arbeitsplan; Seitenwahl nur als drei kleine Punkte oben im Footer (`.pdots`, Owner: „nur als 3 kleine Indikatoren“; lila Punkt
+am Arbeitsplan, wenn du dran bist), Kopf kompakt (Spieler-Pillen + Menü in einer Zeile), Ziel 30 SP bzw. Solo-Stapel als
+dunkle Pille in der Vorratsleiste. Die Ansage schwebt kompakt unter dem Kopf und wird beim Scrollen zur Sprechblase mit
+nur dem Kopf der Person (`.top.bub`; Antippen klappt sie kurz auf). Bildsprache im Arbeitsplan/Markt: Sonne = Karte
+ausspielen, grünes + = bekommen, rotes − = abgeben, → = wird zu (`IG`/`ARR`); Abwerfen darf nie wie Ziehen aussehen. `goTo` und der Lernspiel-Coach wechseln automatisch auf die
 Seite des Ziels; während des Wischens wird nicht neu gezeichnet (`render` wartet). Kopfzeilen (`.thead`) sind in allen
 Spielen deckend in der Seitenfarbe, ohne milchigen Blur (Owner: „kein milchiger Hintergrund“).
 

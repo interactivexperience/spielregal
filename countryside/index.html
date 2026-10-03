@@ -273,7 +273,9 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .ov.enter{animation:ovin .22s ease both}
 @keyframes ovin{from{background:rgba(31,26,23,0)}}
 .sheet.enter{animation:shup .24s cubic-bezier(.2,.9,.3,1) both}
-@keyframes shup{from{transform:translateY(48px);opacity:0}}
+/* Aufzoomen vom unteren Rand: die Unterkante bleibt im Bild, Knöpfe ganz unten sind sofort erreichbar */
+.sheet.enter{transform-origin:50% 100%}
+@keyframes shup{from{transform:scale(.94);opacity:0}}
 .mini{position:fixed;right:12px;bottom:calc(var(--barh, 80px) + 70px);z-index:45;display:flex;align-items:center;gap:8px;background:var(--plum);color:#fff;border-radius:22px;padding:8px 10px 8px 14px;box-shadow:0 10px 26px rgba(31,26,23,.35);max-width:78vw;text-align:left;animation:miniin .3s cubic-bezier(.3,1.4,.5,1) both}
 @keyframes miniin{from{transform:translateY(30px) scale(.8);opacity:0}}
 .mini .mt b{display:block;font-size:13px;line-height:1.2}
@@ -328,6 +330,41 @@ input,textarea{-webkit-user-select:text;user-select:text}
 @media (prefers-reduced-motion:reduce){.fld .wk.drop{animation:none}}
 .fld.used{opacity:1;background:#FFFBF0}
 .fld.used b,.fld.used .fart{opacity:.75}
+/* Kopf kompakt: Spieler + Menü in einer Zeile */
+.top .thead{padding-top:calc(6px + env(safe-area-inset-top))!important;padding-bottom:6px!important}
+.prow .players{padding:1px}
+.pchip{padding:2px 11px 2px 2px;gap:6px}
+.pchip .av{width:28px;height:28px}
+.pchip>span:last-child{display:flex;flex-direction:column;line-height:1.1}
+.pchip .nm{font-size:12px}
+.pchip .st{font-size:10.5px}
+.prow .icobtn{width:36px;height:36px}
+.status{margin-top:5px}
+/* Ansage: kompakt; beim Scrollen nur Sprechblase mit Kopf */
+.top .tbanner{position:absolute;left:0;right:0;top:100%}
+.top .tbanner .banner{margin-top:8px;padding:8px 12px;gap:10px;border-radius:20px;transition:padding .2s,border-radius .2s}
+.top .banner .face{width:30px;height:30px}
+.top .banner b{font-size:13.5px}
+.top .banner .small{font-size:11.5px}
+.pages{margin-top:calc(var(--bnh, 70px) + 2px)}
+.top.bub:not(.peek) .tbanner .banner{display:inline-flex;width:auto;padding:4px;border-radius:50% 50% 50% 6px;box-shadow:0 4px 14px rgba(31,26,23,.22)}
+.top.bub:not(.peek) .tbanner .banner>:not(.face){display:none}
+.top.bub:not(.peek) .tbanner .banner .face{width:38px;height:38px}
+.top.bub:not(.peek) .tbanner .banner.mine .face{box-shadow:0 0 0 2px #fff}
+/* Seitenpunkte im Footer */
+.bar{padding-top:16px}
+.pdots{position:absolute;left:50%;top:2px;transform:translateX(-50%);display:flex;gap:2px}
+.pdots .pd{width:26px;height:16px;display:grid;place-items:center;padding:0}
+.pdots .pd i{width:6px;height:6px;border-radius:99px;background:#CFC6BC;transition:width .2s,background .2s;position:relative}
+.pdots .pd.on i{width:18px;background:var(--ink)}
+.pdots .pd.act:not(.on) i{background:#8C74D6}
+/* Bekommen / Abgeben */
+.ig{position:relative;display:inline-flex;align-items:center}
+.ig::after{position:absolute;right:-5px;bottom:-4px;width:12px;height:12px;border-radius:50%;color:#fff;font:800 10px/12px "Outfit",system-ui,sans-serif;text-align:center;box-shadow:0 0 0 1.5px #fff}
+.ig.get::after{content:"+";background:#5E9E4A}
+.ig.give::after{content:"−";background:#D9735F}
+.ig.give{opacity:.85}
+.fart .arr{font-weight:800;font-size:13px;color:var(--muted);margin:0 5px 0 6px}
 </style>
 </head>
 <body>
@@ -1352,17 +1389,20 @@ function terrHtml(p, tr, ti, o = {}) {
 }
 // kleine Bilder für die Aktionsfelder (Sonnenstunden, Karten, Münzen, Gebiet, Auftrag)
 const miniCard = (rot = 0) => `<svg viewBox="0 0 18 24" style="transform:rotate(${rot}deg)" aria-hidden="true"><rect x="1" y="1" width="16" height="22" rx="3" fill="#fff" stroke="#C9B9A6" stroke-width="1.2"/><rect x="3" y="3" width="12" height="9" rx="2" fill="#A9B98C"/><circle cx="12" cy="5.5" r="1.6" fill="#E9A53A"/></svg>`;
+// Bildsprache: Sonne = Karte ausspielen; grünes + = du bekommst; rotes − = du gibst ab; → = wird zu
+const IG = (kind, html) => `<span class="ig ${kind}">${html}</span>`;
+const ARR = '<span class="arr">→</span>';
 const FIELD_ART = {
-  take4: () => [-14, -5, 5, 14].map(miniCard).join(''),
-  sun2: () => sunSvg(2) + miniCard(-6) + miniCard(6),
+  take4: () => IG('get', [-14, -5, 5, 14].map(miniCard).join('')),
+  sun2: () => sunSvg(2) + IG('get', miniCard(-6) + miniCard(6)),
   sun5: () => sunSvg(5),
-  sun3: () => sunSvg(3) + `<span class="plus">+</span>` + miniCard(-8),
+  sun3: () => sunSvg(3) + `<span class="plus">+</span>` + IG('give', miniCard(-8)) + ARR + IG('get', sunSvg(1)),
   terr: () => `<span class="ta">${terrArt('wiese')}</span>`,
   order2: () => `<svg viewBox="0 0 26 24" aria-hidden="true"><rect x="2" y="3" width="22" height="18" rx="4" fill="#E3DCFB"/><path d="M7,12 l4,4 l8,-9" fill="none" stroke="#4B3A6E" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`.repeat(2),
   sun32: () => sunSvg(3) + sunSvg(2),
-  coin3: () => coinSvg() + `<span class="plus">3</span>` + sunSvg(3),
+  coin3: () => IG('get', coinSvg() + `<span class="plus">3</span>`) + sunSvg(3),
 };
-const MARKET_ART = { m1: () => miniCard(-6), m2: () => miniCard(-8) + miniCard(8) + coinSvg(), m3: () => `<span class="plus">🧺</span>` + coinSvg(), m4: () => miniCard(-10) + `<span class="plus">⇄</span>` + miniCard(10), m5: () => `<span class="plus">↻</span>` + miniCard(0), m6: () => FIELD_ART.order2().slice(0, FIELD_ART.order2().length / 2) };
+const MARKET_ART = { m1: () => IG('get', miniCard(-6)), m2: () => IG('give', miniCard(-10) + miniCard(0) + miniCard(10)) + ARR + IG('get', coinSvg() + `<span class="plus">3</span>`), m3: () => IG('give', `<span class="plus">🧺</span>`) + ARR + IG('get', coinSvg()), m4: () => IG('give', miniCard(-8)) + `<span class="plus">⇄</span>` + IG('get', miniCard(8)), m5: () => `<span class="plus">↻</span>` + miniCard(0), m6: () => FIELD_ART.order2().slice(0, FIELD_ART.order2().length / 2) };
 function boardHtml(p, live) {
   const placed = f => p.placed.includes(f.k);
   const fld = f => {
@@ -1410,10 +1450,8 @@ function viewGame() {
   else banner = `<div data-a="go" class="banner"><span class="face">${face(p)}</span><div><b>${esc(p.name)} ist dran …</b><span class="small">${esc(S.log[0] || '')}</span></div></div>`;
   const chips = S.players.map((pl, i) => `<button class="pchip ${S.cur === i ? 'cur' : ''}" data-a="opp" data-p="${i}"><span class="av" style="background:${pl.mark}">${face(pl)}</span><span><span class="nm">${esc(pl.name)}</span><span class="st">★${pl.vp} · ${pl.coins} Mz.</span></span></button>`).join('');
   return `
-  <div class="top"><div class="thead"><div class="row">
-    <div class="ptabs" role="tablist">${PAGES.map((pg, i) => `<button class="pt ${U.page === i ? 'on' : ''} ${i === 2 && mine && !myAsk() ? 'act' : ''}" role="tab" data-a="page" data-p="${i}" aria-selected="${U.page === i}">${pg}</button>`).join('')}</div>
+  <div class="top"><div class="thead"><div class="row prow"><div class="players">${chips}</div>
     <button class="icobtn" data-a="menu" aria-label="Menü: Verlassen, Regeln"><svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
-  </div><div class="row prow"><div class="players">${chips}</div>
   </div>${statusHtml(me, `<span class="gd goal" data-info="${esc(S.solo ? `Solo: Auslage-Stapel ${5 - S.soloStacks.length} von 5. Ist der letzte Stapel aufgebraucht, endet die Partie.` : S.endTrig ? 'Jemand hat das Ziel erreicht: Jede Person hat noch genau zwei Züge.' : `Wer zuerst ${VP_END} SP erreicht, löst das Spielende aus; danach hat jede Person noch zwei Züge.`)}">${S.solo ? `Stapel ${5 - S.soloStacks.length}/5` : S.endTrig ? 'Letzte Züge' : `Ziel ${VP_END} SP`}</span>`)}</div><div class="tbanner">${banner}</div></div>
   <div class="pages"><div class="page"><div class="wrap">
     <section class="sec"><div class="sech"><h2 class="hand">Auslage</h2><span class="hint">${S.deck.length} im Stapel · <button class="link" data-a="discview" style="font-size:inherit">${S.discard.length} abgelegt</button></span></div>
@@ -1428,7 +1466,7 @@ function viewGame() {
     </div></div><div class="page"><div class="wrap">
     <section class="sec"><div class="sech"><h2 class="hand">Arbeitsplan</h2></div>${boardHtml(me, mine)}</section>
   </div></div></div>
-  ${U.tut ? '' : handFan(me)}<div class="bar"><div class="in">${U.undo.length && (mine || myAsk()) ? `<button class="icobtn undo" data-a="undo" aria-label="Zug rückgängig" data-info="Zug rückgängig: geht im eigenen Zug, bis eine verdeckte Karte oder ein Gebiet aufgedeckt wird."><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M7.5 4.5 3.5 8.5l4 4M4 8.5h7.5a4.5 4.5 0 0 1 0 9H9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : ''}${myAsk() ? `<div class="msg" data-a="go">${esc(askTitle(S.ask))}</div><button class="btn" data-a="askopen">Auswählen</button>`
+  ${U.tut ? '' : handFan(me)}<div class="bar"><div class="pdots" role="tablist">${PAGES.map((pg, i) => `<button class="pd ${U.page === i ? 'on' : ''} ${i === 2 && mine && !myAsk() ? 'act' : ''}" role="tab" data-a="page" data-p="${i}" aria-selected="${U.page === i}" aria-label="Seite ${pg}" data-info="${pg}"><i></i></button>`).join('')}</div><div class="in">${U.undo.length && (mine || myAsk()) ? `<button class="icobtn undo" data-a="undo" aria-label="Zug rückgängig" data-info="Zug rückgängig: geht im eigenen Zug, bis eine verdeckte Karte oder ein Gebiet aufgedeckt wird."><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M7.5 4.5 3.5 8.5l4 4M4 8.5h7.5a4.5 4.5 0 0 1 0 9H9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : ''}${myAsk() ? `<div class="msg" data-a="go">${esc(askTitle(S.ask))}</div><button class="btn" data-a="askopen">Auswählen</button>`
     : mine ? (forcedEndDay(me) ? `<div class="msg" data-a="go"><b>Jetzt den Tag beenden</b> – ${workersFree(me) ? 'kein freies Feld passt mehr' : 'alle Arbeitskräfte sind eingesetzt'}.</div><button class="btn" data-a="endday">Tag beenden</button>`
       : `<div class="msg" data-a="go">${workersFree(me)} ${workersFree(me) === 1 ? 'Arbeitskraft' : 'Arbeitskräfte'} auf der Bank.</div><button class="btn white" data-a="endday">Tag beenden</button>`)
     : `<div class="msg" data-a="go"><b>${esc(p.name)}</b> ist dran …</div><button class="btn white" data-a="fast">${U.fast ? 'Normal' : 'Schneller'}</button>`}</div></div>`;
@@ -1731,6 +1769,15 @@ function goTarget() {
   if (myAsk()) return () => { U.sheet = { type: 'ask' }; };
   return '.board';
 }
+// Ansage: oben ganz, beim Scrollen nur noch als Sprechblase mit dem Kopf (antippen = kurz ganz zeigen)
+function bubbleSync() {
+  const t = document.querySelector('.top'), b = document.querySelector('.top .tbanner');
+  if (!t || !b) return;
+  document.documentElement.style.setProperty('--bnh', b.offsetHeight + 'px');
+  t.classList.toggle('bub', window.scrollY > 40);
+}
+let bubY = 0;
+addEventListener('scroll', () => { const t = document.querySelector('.top'); if (!t) return; t.classList.toggle('bub', window.scrollY > 40); if (t.classList.contains('peek') && Math.abs(window.scrollY - bubY) > 30) t.classList.remove('peek'); }, { passive: true });
 // Drei Seiten (Auslage & Aufträge · Mein Hof · Arbeitsplan) zum Wischen; die aktive Seite bestimmt die Höhe
 const pagesEl = () => document.querySelector('.pages');
 function pageSync(instant) {
@@ -1739,7 +1786,7 @@ function pageSync(instant) {
   if (instant && Math.abs(pg.scrollLeft - U.page * w) > 1) { U.progScroll = Date.now(); pg.scrollLeft = U.page * w; }
   if (pg.scrollTop) pg.scrollTop = 0;
   const a = kids[U.page]; if (a) pg.style.height = a.offsetHeight + 'px';
-  document.querySelectorAll('.ptabs .pt').forEach((t, i) => { t.classList.toggle('on', i === U.page); t.setAttribute('aria-selected', i === U.page); });
+  document.querySelectorAll('.pdots .pd').forEach((t, i) => { t.classList.toggle('on', i === U.page); t.setAttribute('aria-selected', i === U.page); });
 }
 function pageOf(el) { const pg = el && el.closest('.page'); return pg ? [...pg.parentElement.children].indexOf(pg) : -1; }
 function pageGo(i, smooth) {
@@ -1750,7 +1797,7 @@ function pageGo(i, smooth) {
   if (smooth) pg.scrollTo({ left: i * pg.clientWidth, behavior: 'smooth' }); else pageSync(true);
   pageSync(false);
 }
-let pScrollT = 0, pTouch = false;
+let pScrollT = 0, pTouch = false, pTouchEnd = 0;
 document.addEventListener('scroll', e => {
   const pg = e.target; if (!pg.classList || !pg.classList.contains('pages')) return;
   if (Date.now() - (U.progScroll || 0) < 60) return;
@@ -1759,14 +1806,14 @@ document.addEventListener('scroll', e => {
   pg._t = setTimeout(() => { const i = Math.round(pg.scrollLeft / (pg.clientWidth || 1)); if (i !== U.page) { pageGo(i, false); } else pageSync(false); if (U.rpend) render(); }, 110);
 }, true);
 document.addEventListener('touchstart', e => { if (e.target.closest && e.target.closest('.pages')) pTouch = true; }, { passive: true, capture: true });
-document.addEventListener('touchend', () => { pTouch = false; }, { passive: true, capture: true });
+document.addEventListener('touchend', () => { if (pTouch) pTouchEnd = Date.now(); pTouch = false; }, { passive: true, capture: true });
 document.addEventListener('touchcancel', () => { pTouch = false; }, { passive: true, capture: true });
 addEventListener('resize', () => pageSync(true));
 function goTo(sel) {
   setTimeout(() => {
     const el = document.querySelector(sel); if (!el) return;
     const pi = pageOf(el); if (pi >= 0 && pi !== U.page) pageGo(pi, false);
-    const top = document.querySelector('.top'), off = (top ? top.getBoundingClientRect().bottom : 0) + 12;
+    const top = document.querySelector('.top .tbanner') || document.querySelector('.top'), off = (top ? Math.min(top.getBoundingClientRect().bottom, 260) : 0) + 12;
     window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - off), behavior: 'smooth' });
     el.classList.remove('goflash'); void el.offsetWidth; el.classList.add('goflash'); setTimeout(() => el.classList.remove('goflash'), 1300);
   }, 30);
@@ -1774,8 +1821,9 @@ function goTo(sel) {
 const $app = document.getElementById('app');
 function render() {
   // nicht mitten im Wischen zwischen den Seiten neu zeichnen
-  if (S && S.screen === 'game' && pagesEl() && (pTouch || Date.now() - pScrollT < 140)) { U.rpend = true; clearTimeout(U.rpT); U.rpT = setTimeout(render, 180); return; }
-  U.rpend = false;
+  const now = Date.now(), swiping = pTouch || (now - pScrollT < 140 && now - pTouchEnd < 700);
+  if (S && S.screen === 'game' && pagesEl() && swiping && now - (U.rpSince || now) < 800) { if (!U.rpend) U.rpSince = now; U.rpend = true; clearTimeout(U.rpT); U.rpT = setTimeout(render, 180); return; }
+  U.rpend = false; U.rpSince = 0;
   if (U.tut) tutCheck();
   // neue Frage: ein zuvor weggeklicktes Fenster wieder öffnen
   if (S && S.ask !== U.lastAsk) { U.lastAsk = S.ask; if (U.sheet && U.sheet.type === 'hidden') U.sheet = null; }
@@ -1789,6 +1837,7 @@ function render() {
   undoCheck();
   $app.innerHTML = h;
   if (U.wkNew && document.querySelector('.wk.drop')) U.wkNew = null;
+  bubbleSync();
   if (!hadSheet) { const sh = document.querySelector('.ov .sheet'); if (sh) { sh.classList.add('enter'); sh.parentElement.classList.add('enter'); } }
   { const bar = document.querySelector('.bar'); if (bar) document.documentElement.style.setProperty('--barh', bar.offsetHeight + 'px'); }
   pageSync(true);
@@ -1912,6 +1961,7 @@ document.addEventListener('click', e => {
   if (el.disabled) return;
   if (U.tut && S && !tutAllowed(el.dataset.a, el.dataset)) { toast('Folge dem markierten Hinweis im Lernspiel.'); render(); return; }
   if (el.dataset.a === 'page') { pageGo(+el.dataset.p, true); return; }
+  if (el.closest('.top.bub:not(.peek) .banner')) { const t = document.querySelector('.top'); t.classList.add('peek'); bubY = window.scrollY; clearTimeout(U.peekT); U.peekT = setTimeout(() => t.classList.remove('peek'), 5000); return; }
   const fn = H[el.dataset.a]; if (!fn) return;
   fn(el.dataset); render();
 });
