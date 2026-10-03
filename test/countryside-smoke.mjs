@@ -82,7 +82,7 @@ async function playUi(label, bots) {
   await page.click("[data-a=close]", { force: true });
   await page.waitForTimeout(500);
   await page.evaluate(() => { U.fast = true; });
-  let acts = 0, asks = 0, mk = 0, mr = 0, guard = 0, shot = false, zooms = 0, swipes = 0;
+  let acts = 0, asks = 0, mk = 0, mr = 0, dp = 0, guard = 0, shot = false, zooms = 0, swipes = 0;
   while (guard++ < 3000) {
     if (await page.locator("text=Neue Partie").count()) break;
     const sheet = page.locator(".sheet");
@@ -106,6 +106,14 @@ async function playUi(label, bots) {
       if (await v.count()) { await v.nth(asks % (await v.count())).click({ force: true }); continue; }
       if (await sheet.locator("[data-a=askskip]").count()) { await sheet.locator("[data-a=askskip]").click({ force: true }); continue; }
       fail("Unbekannter Dialog " + t); break;
+    }
+    const dpk = page.locator(".dpick");
+    if (await dpk.count()) {
+      dp++;
+      const dt = await page.evaluate(() => window.__lg.state().ask && window.__lg.state().ask.t);
+      if (dt === "orders" && dp % 4 === 0) await page.click(".bar [data-a=askskip]", { force: true });
+      else await dpk.nth(dp % (await dpk.count())).click({ force: true });
+      continue;
     }
     const mrk = page.locator(".fld.mpick");
     if (await mrk.count()) { mr++; await mrk.nth(mr % (await mrk.count())).click({ force: true }); continue; }
@@ -134,7 +142,7 @@ async function playUi(label, bots) {
     await page.waitForTimeout(80);
   }
   if (!(await page.locator("text=Neue Partie").count())) fail(`UI-Partie ${label} nicht beendet (guard ${guard}, Aktionen ${acts})`);
-  console.log(`UI-Partie ${label}: ${acts} Züge, ${asks} Dialoge, ${mk}× Markt direkt, ${mr}× Marker direkt, ${zooms}× Karte groß, ${swipes}× eingesetzt per Wisch.`);
+  console.log(`UI-Partie ${label}: ${acts} Züge, ${asks} Dialoge, ${mk}× Markt direkt, ${mr}× Marker direkt, ${dp}× Auftrag/Gebiet/Arbeitskraft direkt, ${zooms}× Karte groß, ${swipes}× eingesetzt per Wisch.`);
   if (!zooms) fail(`${label}: Handkarten-Fächer nie benutzt`);
   if (!mk) fail(`${label}: Marktaktion nie direkt am Markt gewählt`);
   if (shots) await page.screenshot({ path: `${shots}/lg-4-end-${label}.png`, fullPage: true });

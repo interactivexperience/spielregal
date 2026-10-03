@@ -318,6 +318,11 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .fld.mpick:active{transform:scale(.97)}
 .mpk{display:flex;align-items:center;gap:4px;width:fit-content;margin-top:6px;font-size:11px;font-weight:700;color:#fff;background:var(--plum);border-radius:999px;padding:2px 9px 2px 3px;white-space:nowrap}
 .mpk .tok,.mpk>span{position:static!important}
+.dpick{box-shadow:0 0 0 3px var(--plum)!important;cursor:pointer}
+.dpick:active{transform:scale(.97)}
+.otile .oct.dpick{background:#fff}
+.terr .ord.dpick{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;width:100%;text-align:left;background:#fff;color:var(--ink)}
+.dtag{margin-left:auto;font-size:11px;font-weight:700;color:#fff;background:var(--plum);border-radius:999px;padding:2px 9px}
 .mdone{position:absolute;right:8px;top:8px;font-size:10.5px;font-weight:700;color:#4E6B2A;background:#fff;border-radius:999px;padding:2px 7px}
 /* Drei Seiten zum Wischen */
 .ptabs{display:flex;gap:3px;background:var(--card);border-radius:999px;padding:3px;flex:1;min-width:0}
@@ -1470,16 +1475,17 @@ function orderTile(ot, ti) {
   const info = ot.side === 'A' ? 'A-Auftrag: dieselbe Bedingung, je Stufe unterschiedlich oft (Zahl mit ×). Mehr Aufwand = mehr SP.' : 'B-Auftrag: für alle Stufen dieselbe Bedingung. Wer früher erfüllt, nimmt die wertvollere Rosette.';
   const me = S.players.indexOf(human()), mine = ot.by.includes(me), next = ot.by.findIndex(b => b === null);
   return `<div class="otile ${mine ? 'done' : ''}" data-info="${esc(info + ' Jeden Auftrag darfst du nur einmal erfüllen; dabei legst du einen Marker von deinem Arbeitsplan auf die Rosette.')}"><i class="pin"></i><div class="oh"><b>${esc(side.tx)}</b>${mine ? '<span class="stamp">✓ erfüllt</span>' : ''}</div>
-    <div class="octs">${side.f.map((f, fi) => { const by = ot.by[fi]; return `<div class="oct ${by !== null ? 'taken' : ''} ${fi === next && !mine ? 'next' : ''}">${rosette(f.vp, ROS_C[fi % 4])}<small>${ot.side === 'A' ? esc(f.cond.n + (f.cond.k === 'pay' ? ' Mz.' : '×')) : '&nbsp;'}</small>${f.card ? `<span class="bon">${IG('get', miniCard(0))}</span>` : ''}${by !== null ? `<span class="by" style="background:${P(by).mark}" title="${esc(P(by).name)}"></span>` : ''}</div>`; }).join('')}</div>
+    <div class="octs">${side.f.map((f, fi) => { const by = ot.by[fi], oi = myAsk() && S.ask.t === 'orders' ? S.ask.opts.findIndex(x => x.kind === 'tile' && x.i === ti && x.f === fi) : -1, el = oi >= 0 ? 'button' : 'div'; return `<${el} class="oct ${by !== null ? 'taken' : ''} ${fi === next && !mine ? 'next' : ''} ${oi >= 0 ? 'dpick' : ''}" ${oi >= 0 ? `data-a="askval" data-v="${oi}"` : ''}>${rosette(f.vp, ROS_C[fi % 4])}<small>${ot.side === 'A' ? esc(f.cond.n + (f.cond.k === 'pay' ? ' Mz.' : '×')) : '&nbsp;'}</small>${f.card ? `<span class="bon">${IG('get', miniCard(0))}</span>` : ''}${by !== null ? `<span class="by" style="background:${P(by).mark}" title="${esc(P(by).name)}"></span>` : ''}</${el}>`; }).join('')}</div>
     <p class="okind">${kind}${side.f.some(f => f.card) ? ` · ${IG('get', miniCard(0))} = zusätzlich eine Karte` : ''}</p></div>`;
 }
 function terrHtml(p, tr, ti, o = {}) {
   const T = terrOf(tr.id);
   const can = o.can && o.can(ti);
-  return `<${can ? 'button' : 'div'} class="terr ${can ? 'can' : ''}" ${can ? `data-a="${o.act}" data-i="${ti}"` : ''} style="background:${TT_BG[T.t]};text-align:left;width:100%">
+  const oi = !can && tr && myAsk() && S.ask.t === 'orders' && S.players[S.ask.pi] === p ? S.ask.opts.findIndex(x => x.kind === 'terr' && x.ti === ti) : -1;
+  return `<${can ? 'button' : 'div'} class="terr ${can ? 'can' : ''} ${o.cls || ''}" ${can ? `data-a="${o.act}" data-i="${ti}"` : ''} style="background:${TT_BG[T.t]};text-align:left;width:100%">
     <div class="th"><span class="tart">${terrArt(T.t)}</span><span><b>${TT_N[T.t]}</b><small>${tr.cards.length}/${T.cap} Karten</small></span></div>
     <div class="slots">${tr.cards.map(k => cardHtml(k, { sm: 1 })).join('')}${range(space(tr)).map(() => '<span class="slot"></span>').join('')}</div>
-    <div class="ord ${tr.ordDone ? 'done' : ''}">${tr.ordDone ? '<span class="stamp">✓ erfüllt</span>' : ''}${esc(COND_TX[T.cond.k](T.cond))} → <b>${T.vp} SP</b>${!tr.ordDone && condOk(p, T.cond, tr) ? ' · <span class="can">jetzt erfüllbar</span>' : ''}</div></${can ? 'button' : 'div'}>`;
+    ${oi >= 0 ? `<button class="ord dpick" data-a="askval" data-v="${oi}">${esc(COND_TX[T.cond.k](T.cond))} → <b>${T.vp} SP</b><span class="dtag">Jetzt erfüllen</span></button>` : `<div class="ord ${tr.ordDone ? 'done' : ''}">${tr.ordDone ? '<span class="stamp">✓ erfüllt</span>' : ''}${esc(COND_TX[T.cond.k](T.cond))} → <b>${T.vp} SP</b>${!tr.ordDone && condOk(p, T.cond, tr) ? ' · <span class="can">jetzt erfüllbar</span>' : ''}</div>`}</${can ? 'button' : 'div'}>`;
 }
 // kleine Bilder für die Aktionsfelder (Sonnenstunden, Karten, Münzen, Gebiet, Auftrag)
 const miniCard = (rot = 0) => `<svg viewBox="0 0 18 24" style="transform:rotate(${rot}deg)" aria-hidden="true"><rect x="1" y="1" width="16" height="22" rx="3" fill="#fff" stroke="#C9B9A6" stroke-width="1.2"/><rect x="3" y="3" width="12" height="9" rx="2" fill="#A9B98C"/><circle cx="12" cy="5.5" r="1.6" fill="#E9A53A"/></svg>`;
@@ -1519,11 +1525,13 @@ function boardHtml(p, live) {
   // Marker nehmen direkt auf dem Plan: wählbare gesperrte Felder sind umrandet und antippbar
   const mkr = myAsk() && S.ask.t === 'marker' && S.ask.pi === S.players.indexOf(p) ? S.ask : null;
   const pick = k => !!(mkr && k && mkr.opts.includes(k));
+  const wkr = myAsk() && S.ask.t === 'worker' && S.ask.pi === S.players.indexOf(p) ? S.ask : null;
   const pkTag = k => pick(k) ? `<span class="mpk">${tokens(p, 1)}−1 → ${p.markers[k] === 1 ? 'frei!' : `noch ${p.markers[k] - 1}`}</span>` : '';
   const fld = f => {
     const open = !f.lock || unlocked(p, f.lock);
+    const wk = !!(wkr && wkr.opts.includes(f.k));
     const pk = !open && pick(f.lock), ok = live && !myAsk() && canUseField(p, f);
-    return `<button class="fld ${open ? '' : 'locked'} ${ok ? 'live' : ''} ${pk ? 'mpick' : ''} ${placed(f) ? 'used' : ''}" data-a="${pk ? 'askval' : 'field'}" data-k="${f.k}" ${pk ? `data-v="${f.lock}"` : ''} ${ok || pk ? '' : 'disabled'} data-info="${esc(fieldInfo(p, f))}">${placed(f) ? `<span class="wk on ${U.wkNew === f.k ? 'drop' : ''}">${workerSvg(p.mark)}</span>` : ''}${!open ? tokens(p, p.markers[f.lock]) : ''}<span class="fart">${!open ? lockSvg() : ''}${FIELD_ART[f.k] ? FIELD_ART[f.k]() : ''}</span><b>${esc(f.n)}</b>${esc(f.tx)}${pk ? pkTag(f.lock) : ''}</button>`;
+    return `<button class="fld ${open ? '' : 'locked'} ${ok ? 'live' : ''} ${pk ? 'mpick' : ''} ${wk ? 'dpick' : ''} ${placed(f) ? 'used' : ''}" data-a="${pk || wk ? 'askval' : 'field'}" data-k="${f.k}" ${pk ? `data-v="${f.lock}"` : wk ? `data-v="${f.k}"` : ''} ${ok || pk || wk ? '' : 'disabled'} data-info="${esc(fieldInfo(p, f))}">${placed(f) ? `<span class="wk on ${U.wkNew === f.k ? 'drop' : ''}">${workerSvg(p.mark)}</span>` : ''}${!open ? tokens(p, p.markers[f.lock]) : ''}<span class="fart">${!open ? lockSvg() : ''}${FIELD_ART[f.k] ? FIELD_ART[f.k]() : ''}</span><b>${esc(f.n)}</b>${esc(f.tx)}${pk ? pkTag(f.lock) : ''}${wk ? '<span class="mpk">↩ zurückholen</span>' : ''}</button>`;
   };
   const other = UNLOCKS.filter(u => !FIELDS.some(f => f.lock === u.k) && !MARKET.some(m => m.lock === u.k)).map(u => { const op = unlocked(p, u.k), [tag, n] = UNLOCK_N[u.k]; const pk = !op && pick(u.k), el = pk ? 'button' : 'div'; return `<${el} class="fld unl ${op ? 'open' : 'locked'} ${pk ? 'mpick' : ''}" ${pk ? `data-a="askval" data-v="${u.k}"` : ''} data-info="${esc(u.tx + (op ? ' Freigeschaltet.' : lockInfo(u.k)))}">${!op ? tokens(p, p.markers[u.k]) : ''}<span class="fart">${!op ? lockSvg() : ''}${UNLOCK_ART[u.k]()}</span><span class="tag">${op ? '✓ frei' : tag}</span><b>${esc(n)}</b>${pkTag(u.k)}</${el}>`; }).join('');
   const mw = n => `<span class="mw">${range(n).map(() => workerSvg(p.mark)).join('')}</span>`;
@@ -1562,8 +1570,13 @@ function viewGame() {
   const me = human(), p = cur();
   const mine = isMyTurn();
   let banner;
-  const mkAsk = myAsk() && S.ask.t === 'market', mrAsk = myAsk() && S.ask.t === 'marker';
-  if (mrAsk) banner = `<div data-a="go" class="banner mine"><span class="face">${face(me)}</span><div><b>Nimm einen Marker vom Arbeitsplan</b><span class="small">Tippe ein umrandetes gesperrtes Feld an. Liegt dort keiner mehr, ist es frei.</span></div></div>`;
+  const mkAsk = myAsk() && S.ask.t === 'market', mrAsk = myAsk() && S.ask.t === 'marker', dt = dirT();
+  const ordPg = dt === 'orders' ? [...new Set(S.ask.opts.map(o => o.kind === 'tile' ? 0 : 1))] : [];
+  const dirBan = (b, sm) => `<div data-a="go" class="banner mine"><span class="face">${face(me)}</span><div><b>${b}</b><span class="small">${sm}</span></div></div>`;
+  if (dt === 'orders') banner = dirBan(S.ask.n > 1 ? 'Erfülle bis zu zwei Aufträge' : 'Erfülle einen Auftrag', `Tippe ${ordPg.length > 1 ? 'eine umrandete Rosette (Auslage) oder einen Gebietsauftrag (Mein Hof)' : ordPg[0] === 0 ? 'eine umrandete Rosette bei den Aufträgen' : 'einen umrandeten Gebietsauftrag auf „Mein Hof“'} an.`);
+  else if (dt === 'terrSel') banner = dirBan('Gärtnerin: Wähle ein Gebiet', 'Tippe auf „Mein Hof“ ein Gebiet an. Jeder Kirschbaum, Apfelbaum und jede Rebe dort bringt eine Ware.');
+  else if (dt === 'worker') banner = dirBan('Hol eine Arbeitskraft zurück', 'Tippe auf dem Arbeitsplan eine eingesetzte Bäuerin an. Sie kommt zurück auf die Bank.');
+  else if (mrAsk) banner = `<div data-a="go" class="banner mine"><span class="face">${face(me)}</span><div><b>Nimm einen Marker vom Arbeitsplan</b><span class="small">Tippe ein umrandetes gesperrtes Feld an. Liegt dort keiner mehr, ist es frei.</span></div></div>`;
   else if (mkAsk) banner = `<div data-a="go" class="banner mine"><span class="face">${face(me)}</span><div><b>${S.ask.left > 1 ? `Wähle ${S.ask.left} Marktaktionen` : 'Wähle eine Marktaktion'}</b><span class="small">Tippe auf dem Markt ein umrandetes Feld an.</span></div></div>`;
   else if (myAsk()) banner = `<div data-a="go" class="banner mine"><span class="face">${face(me)}</span><div style="flex:1"><b>${esc(askTitle(S.ask))}</b><span class="small">Wähle im Fenster.</span></div><button class="btn sm" data-a="askopen">Öffnen</button></div>`;
   else if (mine) banner = forcedEndDay(me)
@@ -1582,13 +1595,16 @@ function viewGame() {
     </div></div><div class="page"><div class="wrap">
     <section class="sec">${vpTrack()}</section>
     <section class="sec"><div class="sech"><h2 class="hand">Dein Landgut</h2></div>
-      <div class="terrs">${me.terrs.map((tr, ti) => terrHtml(me, tr, ti)).join('')}</div></section>
+      <div class="terrs">${me.terrs.map((tr, ti) => dt === 'terrSel' ? terrHtml(me, tr, ti, { can: () => true, act: 'askval', cls: 'dpick' }).replace(`data-i="${ti}"`, `data-v="${ti}"`) : terrHtml(me, tr, ti)).join('')}</div></section>
     <section class="sec"><div class="sech"><h2 class="hand">Chronik</h2><button class="link" data-a="logtoggle" style="font-size:12px">${U.logOpen ? 'weniger' : 'alles'}</button></div>
       <div class="log">${S.log.slice(0, U.logOpen ? 90 : 6).map(l => `<div>${esc(l)}</div>`).join('')}</div></section>
     </div></div><div class="page"><div class="wrap">
     <section class="sec"><div class="sech"><h2 class="hand">Arbeitsplan</h2></div>${boardHtml(me, mine)}</section>
   </div></div></div>
-  ${U.tut || mkAsk || mrAsk ? '' : handFan(me)}<div class="bar"><div class="pdots" role="tablist">${PAGES.map((pg, i) => `<button class="pd ${U.page === i ? 'on' : ''} ${i === 2 && (mine && !myAsk() || mkAsk || mrAsk) ? 'act' : ''}" role="tab" data-a="page" data-p="${i}" aria-selected="${U.page === i}" aria-label="Seite ${pg}" data-info="${pg}"><i></i></button>`).join('')}</div><div class="in">${U.undo.length && (mine || myAsk()) ? `<button class="icobtn undo" data-a="undo" aria-label="Zug rückgängig" data-info="Zug rückgängig: geht im eigenen Zug, bis eine verdeckte Karte oder ein Gebiet aufgedeckt wird."><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M7.5 4.5 3.5 8.5l4 4M4 8.5h7.5a4.5 4.5 0 0 1 0 9H9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : ''}${mrAsk ? `<div class="msg" data-a="go"><b>Marker</b> nehmen.</div><button class="btn" data-a="go">Zum Plan</button>`
+  ${U.tut || dt ? '' : handFan(me)}<div class="bar"><div class="pdots" role="tablist">${PAGES.map((pg, i) => `<button class="pd ${U.page === i ? 'on' : ''} ${(i === 2 && (mine && !myAsk() || ['market', 'marker', 'worker'].includes(dt))) || (i === 1 && dt === 'terrSel') || ordPg.includes(i) ? 'act' : ''}" role="tab" data-a="page" data-p="${i}" aria-selected="${U.page === i}" aria-label="Seite ${pg}" data-info="${pg}"><i></i></button>`).join('')}</div><div class="in">${U.undo.length && (mine || myAsk()) ? `<button class="icobtn undo" data-a="undo" aria-label="Zug rückgängig" data-info="Zug rückgängig: geht im eigenen Zug, bis eine verdeckte Karte oder ein Gebiet aufgedeckt wird."><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M7.5 4.5 3.5 8.5l4 4M4 8.5h7.5a4.5 4.5 0 0 1 0 9H9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : ''}${mrAsk ? `<div class="msg" data-a="go"><b>Marker</b> nehmen.</div><button class="btn" data-a="go">Zum Plan</button>`
+    : dt === 'orders' ? `<div class="msg" data-a="go"><b>Auftrag</b> antippen.</div><button class="btn white" data-a="askskip">Keinen</button>`
+    : dt === 'terrSel' ? `<div class="msg" data-a="go"><b>Gebiet</b> antippen.</div><button class="btn" data-a="go">Zum Hof</button>`
+    : dt === 'worker' ? `<div class="msg" data-a="go"><b>Bäuerin</b> antippen.</div><button class="btn" data-a="go">Zum Plan</button>`
     : mkAsk ? `<div class="msg" data-a="go"><b>Markt:</b> ${S.ask.left > 1 ? `noch ${S.ask.left} Aktionen` : 'eine Aktion'} wählen.</div><button class="btn" data-a="go">Zum Markt</button>`
     : myAsk() ? `<div class="msg" data-a="go">${esc(askTitle(S.ask))}</div><button class="btn" data-a="askopen">Auswählen</button>`
     : mine ? (forcedEndDay(me) ? `<div class="msg" data-a="go"><b>Jetzt den Tag beenden</b> – ${workersFree(me) ? 'kein freies Feld passt mehr' : 'alle Arbeitskräfte sind eingesetzt'}.</div><button class="btn" data-a="endday">Tag beenden</button>`
@@ -1782,7 +1798,7 @@ function rulesHtml() {
 }
 function viewSheet() {
   const sh = U.sheet;
-  if (myAsk() && ['market', 'marker'].includes(S.ask.t) && (!sh || sh.type === 'ask' || sh.type === 'hidden')) return '';
+  if (dirT() && (!sh || sh.type === 'ask' || sh.type === 'hidden')) return '';
   if (myAsk() && (!sh || sh.type === 'ask')) return askSheet();
   if (!sh) return '';
   if (sh.type === 'rules') return sheetWrap(rulesHtml());
@@ -1891,21 +1907,22 @@ function tutBot() {
 
 // Ansage antippen: zur passenden Stelle der Seite scrollen (bzw. offene Auswahl öffnen)
 // Automatischer Seitenwechsel: zu Beginn deines Zugs zum Arbeitsplan; nie im Lernspiel
-const mkAsked = () => !!(myAsk() && S.ask.t === 'market');
-const mrAsked = () => !!(myAsk() && S.ask.t === 'marker');
-const AUTO_KEY = () => `${isMyTurn()}|${mkAsked()}|${mrAsked()}`;
-const AUTO_PAGE = () => isMyTurn() || mkAsked() || mrAsked() ? 2 : null;
+const AUTO_KEY = () => `${isMyTurn()}|${dirT()}`;
+const AUTO_PAGE = () => isMyTurn() ? 2 : null;
 function autoPage() {
   if (!S || S.screen !== 'game' || U.tut || !pagesEl()) { U.autoKey = null; return; }
   const k = AUTO_KEY(); if (k === U.autoKey) return;
   const first = U.autoKey == null; U.autoKey = k;
   const t = AUTO_PAGE();
-  if (!first && (mkAsked() || mrAsked())) { setTimeout(() => { if (pagesEl() && !pTouch) goTo(mkAsked() ? '.market' : '.fld.mpick'); }, 250); return; }
+  if (!first && dirT()) { setTimeout(() => { if (pagesEl() && !pTouch) goTo(dirSel()); }, 250); return; }
   if (!first && t != null && t !== U.page) setTimeout(() => { if (pagesEl() && !pTouch) pageGo(t, true); }, 250);
 }
+// Auswahlen direkt auf dem Spielfeld statt im Fenster (Owner: „nicht vom Modal“)
+const DIRECT = ['market', 'marker', 'orders', 'terrSel', 'worker'];
+const dirT = () => myAsk() && DIRECT.includes(S.ask.t) ? S.ask.t : '';
+const dirSel = () => ({ market: '.market', marker: '.fld.mpick' }[dirT()] || '.dpick');
 function goTarget() {
-  if (myAsk() && S.ask.t === 'market') return '.market';
-  if (myAsk() && S.ask.t === 'marker') return '.fld.mpick';
+  if (dirT()) return dirSel();
   if (myAsk()) return () => { U.sheet = { type: 'ask' }; };
   return '.board';
 }
