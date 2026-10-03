@@ -111,7 +111,7 @@ await b.close();
 // Quelltext-Pruefung statt UI-Klickpfad: dieselbe Zeile wie bei den beiden
 // oben live bewiesenen Stellen.
 const source = readFileSync(path.join(repoRoot, "index.html"), "utf8");
-const dashboardReorderFn = source.slice(source.indexOf("function DashboardReorderScreen("), source.indexOf("function DashboardReorderScreen(") + 4000);
+const dashboardReorderFn = source.slice(source.indexOf("function DashboardReorderScreen("), source.indexOf("function DashboardReorderScreen(") + 7000);
 console.log("Dashboard-Sektionen-Screen: Griff-Quelltext hat touchAction none:",
   /className="text-dim p-2 -mr-2"\s*\n\s*style=\{\{ touchAction: "none" \}\}/.test(dashboardReorderFn));
 
