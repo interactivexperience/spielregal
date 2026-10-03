@@ -113,7 +113,7 @@ Mikro-Interaktionen weich statt sprunghaft (Owner): Seitenpunkte folgen dem Fing
 beim Scrollen in einen eigenen Sprechblasen-Knopf (`bubMake`, `.bnub`), Titelzeile/Menü/Runden-Pille klappen per Transition
 (keine Scroll-Kompensation mehr), Seitenhöhe gleitet; `prefers-reduced-motion` respektiert.
 Menü aller Spiele: „Neueste Version laden“ (lädt die Spielseite am Cache vorbei neu und setzt die gespeicherte Partie
-automatisch fort, `?resume=1`). Landgut: Auswahlfenster am Griff nach unten ziehen oder Pfeil = einklappen (weiche
+automatisch fort, `?resume=1`). Dort auch „Mitspieler-Tempo: normal/schnell“ (`fastPref`, gespeichert unter `spielregal:botFast`, gilt für alle Spiele) – kein „Schneller“-Knopf in der Fußleiste, weil er nur während der kurzen Bot-Züge erschien und verschwand, bevor man tippen konnte (Owner). Landgut: Auswahlfenster am Griff nach unten ziehen oder Pfeil = einklappen (weiche
 Animation), eingeklappt als Mini-Vorschau unten rechts; Siegpunktleiste als Wiesenpfad mit Köpfen; Ablagestapel
 per Antippen einsehbar; Auftragsplättchen zeigen statt Sternen/Seite „Je Feld mehr nötig“ (A) bzw. „Gleiche Bedingung“ (B).
 Landgut-Kartenhand (Owner-Vorbild: digitales „Root“): enger, gewölbter Fächer als eigene Ebene direkt hinter dem Footer

@@ -96,7 +96,7 @@ async function playUi(label, expectPicks) {
 await page.click("text=2 Bots");
 await page.click("text=Garten anlegen");
 await page.waitForSelector(".rondel");
-await page.click("[data-a=fast]").catch(() => {});
+await page.evaluate(() => { U.fast = true; });
 if (shots) await page.screenshot({ path: `${shots}/ts-2-game.png`, fullPage: true });
 await playUi("2 Bots", 16);
 const inbox = await page.evaluate(() => JSON.parse(localStorage.getItem("spielregal:inbox:plays") || "[]"));
@@ -107,7 +107,7 @@ await page.click("[data-a=newgame]");
 await page.click("text=Solo gegen Edith");
 await page.click("text=Garten anlegen");
 await page.waitForSelector(".rondel");
-await page.click("[data-a=fast]").catch(() => {});
+await page.evaluate(() => { U.fast = true; });
 await playUi("Solo", 16);
 const inbox2 = await page.evaluate(() => JSON.parse(localStorage.getItem("spielregal:inbox:plays") || "[]"));
 const solo = inbox2.find((e) => e.solo);

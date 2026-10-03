@@ -457,7 +457,9 @@ const BOT_NAMES = [
 
 // ---------- Zufall & Helfer ----------
 let S = null;
-const U = { sheet: null, toast: null, busy: false, setup: { name: '', bots: 3, mode: 'random', exp: true }, sel: [], power: null, fast: false };
+// Mitspieler-Tempo: Einstellung im Menü, gilt für alle Spiele und bleibt gespeichert
+const fastPref = () => { try { return localStorage.getItem('spielregal:botFast') === '1'; } catch { return false; } };
+const U = { sheet: null, toast: null, busy: false, setup: { name: '', bots: 3, mode: 'random', exp: true }, sel: [], power: null, fast: fastPref() };
 function rnd() { S.rng = (S.rng + 0x6D2B79F5) | 0; let t = Math.imul(S.rng ^ (S.rng >>> 15), 1 | S.rng); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 const range = n => Array.from({ length: n }, (_, i) => i);
@@ -1463,10 +1465,10 @@ function viewGame() {
     action += `<button class="btn" data-a="play" ${U.sel[0] && lg.includes(U.sel[0]) ? '' : 'disabled'}>Ausspielen</button>`;
   } else if (S.phase === 'collect') {
     msg = `${esc(nm(trickWinner()))} gewinnt den Stich …`;
-    action = `<button class="btn white" data-a="fast">${U.fast ? 'Normal' : 'Schneller'}</button>`;
+    action = ``;
   } else {
     msg = S.phase === 'play' ? `${esc(cur().name)} spielt …` : '…';
-    action = `<button class="btn white" data-a="fast">${U.fast ? 'Normal' : 'Schneller'}</button>`;
+    action = ``;
   }
   const lateNote = me.late ? `<p class="note" style="margin:6px 0 0">Beiseite für den letzten Stich: ${cardName(me.late)}</p>` : me.aside.length ? `<p class="note" style="margin:6px 0 0">Beiseite: ${me.aside.length} Karten (${S.rule === 'm' ? 'spielst du danach' : 'gehen an die rechte Nachbarin'})</p>` : me.bid ? `<p class="note" style="margin:6px 0 0">Dein geheimes Gebot: ${val(me.bid)} Stich${val(me.bid) === 1 ? '' : 'e'}</p>` : '';
   const handCards = me.hand.length ? me.hand : me.late ? [me.late] : [];
@@ -1589,7 +1591,7 @@ function viewSheet() {
   if (sh && sh.type === 'ask') return askSheet();
   if (!sh) return '';
   if (sh.type === 'rules') return sheetWrap(rulesHtml());
-  if (sh.type === 'menu') return sheetWrap(`<h3>Menü</h3><div class="btnrow" style="flex-direction:column">${U.tut ? '<button class="btn wide" data-a="tutquit">Lernspiel beenden</button>' : ''}${S && S.screen === 'game' && !S.tut ? '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}<button class="btn white wide" data-a="rules">Spielregeln</button>${S && S.history.length ? '<button class="btn white wide" data-a="scores">Punktestand</button>' : ''}<button class="btn white wide" data-a="reload">Neueste Version laden</button><button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
+  if (sh.type === 'menu') return sheetWrap(`<h3>Menü</h3><div class="btnrow" style="flex-direction:column">${U.tut ? '<button class="btn wide" data-a="tutquit">Lernspiel beenden</button>' : ''}${S && S.screen === 'game' && !S.tut ? '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}${S && S.screen === 'game' && !U.tut ? `<button class="btn white wide" data-a="fast" data-info="Wie schnell die Mitspieler am Zug sind. Bleibt für alle Spiele gespeichert.">Mitspieler-Tempo: ${U.fast ? 'schnell' : 'normal'}</button>` : ''}<button class="btn white wide" data-a="rules">Spielregeln</button>${S && S.history.length ? '<button class="btn white wide" data-a="scores">Punktestand</button>' : ''}<button class="btn white wide" data-a="reload">Neueste Version laden</button><button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
   if (sh.type === 'scores') return sheetWrap(`<h3>Punktestand</h3>${scoreTable()}`);
   if (sh.type === 'pinfo') { const p = S.players[sh.p], pr = princess(p); return sheetWrap(`<h3>${esc(p.name)}</h3>${pr ? `<div style="display:flex;gap:12px;align-items:center"><div style="width:90px;height:108px;flex:none">${princessArt(pr.k)}</div><div><b>${esc(pr.n)}: ${esc(pr.t)}</b><p style="font-size:13px;margin:4px 0">${esc(pr.tx)}</p><p style="font-size:12px;color:#6b6862">${p.used ? 'in dieser Ballnacht schon genutzt' : 'in dieser Ballnacht noch verfügbar'}</p></div></div>` : ''}<p class="label" style="margin-top:12px">Gewonnene Karten mit Anträgen</p><div style="display:flex;gap:4px;flex-wrap:wrap">${p.won.filter(c => cardPts(c)).map(c => cardHtml(c, '', 'disabled')).join('') || '<span style="font-size:13px">keine</span>'}</div>`); }
   return '';
@@ -1759,8 +1761,8 @@ const H = {
   discard: () => { if (confirm('Gespeicherte Partie wirklich verwerfen?')) clearSave(); },
   tutorial: () => { const nmi = document.getElementById('nm'); U.setup.name = nmi ? nmi.value.trim() : U.setup.name; U.sheet = null; resetSel(); tutSetup(); U.tut = { i: 0 }; window.scrollTo(0, 0); },
   tutnext: () => { if (U.tut) U.tut.i = Math.min(U.tut.i + 1, TUT_STEPS.length - 1); },
-  tutend: () => { U.tut = null; U.sheet = null; U.fast = false; S = null; window.scrollTo(0, 0); },
-  tutquit: () => { U.tut = null; U.sheet = null; U.fast = false; S = null; window.scrollTo(0, 0); },
+  tutend: () => { U.tut = null; U.sheet = null; U.fast = fastPref(); S = null; window.scrollTo(0, 0); },
+  tutquit: () => { U.tut = null; U.sheet = null; U.fast = fastPref(); S = null; window.scrollTo(0, 0); },
   bots: d => { U.setup.bots = +d.n; },
   mode: d => { U.setup.mode = d.m; },
   exp: () => { U.setup.exp = !U.setup.exp; },
@@ -1782,7 +1784,7 @@ const H = {
   pinfo: d => { U.sheet = { type: 'pinfo', p: +d.p }; },
   pick: d => { U.pick = d.k; },
   pickok: () => { human().princess = U.pick; S.princessChoice = null; S.phase = 'ready'; startRound(); },
-  fast: () => { U.fast = !U.fast; },
+  fast: () => { U.fast = !U.fast; try { localStorage.setItem('spielregal:botFast', U.fast ? '1' : '0'); } catch {} },
   power: () => { const k = princess(human()).k; U.power = U.power ? null : k; if (U.sel[0] && !legal(human(), U.power).includes(U.sel[0])) U.sel = []; },
   card: d => {
     const c = d.c, a = myAsk();

@@ -87,7 +87,7 @@ async function setupSheets() {
 async function playUi(label) {
   await setupSheets();
   await page.waitForSelector(".board");
-  await page.click("[data-a=fast]").catch(() => {});
+  await page.evaluate(() => { U.fast = true; });
   let myTurns = 0, guests = 0, served = 0, guard = 0, shot2 = false;
   while (guard++ < 500) {
     if (await page.locator("text=Neue Partie").count()) break;

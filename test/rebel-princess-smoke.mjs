@@ -72,7 +72,7 @@ async function playUi(label, setup) {
   await page.click(`[data-a=pick][data-k=${ks[label.length % 2]}]`);
   if (shots) await page.screenshot({ path: `${shots}/rp-2-princess-${label}.png` });
   await page.click("[data-a=pickok]");
-  await page.click("[data-a=fast]").catch(() => {});
+  await page.evaluate(() => { U.fast = true; });
   let plays = 0, asks = 0, powers = 0, guard = 0, shot = false;
   while (guard++ < 4000) {
     if (await page.locator("text=Neue Partie").count()) break;

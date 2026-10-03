@@ -671,7 +671,9 @@ const MARKS = ['#F2B33D', '#9CC3EC', '#F09A86', '#F4A6B8'];
 
 // ---------- Zufall & Helfer ----------
 let S = null;
-const U = { page: 0, sheet: null, toast: null, busy: false, setup: { name: '', bots: 2 }, fast: false, sel: null, zone: null, adj: 0, logOpen: false };
+// Mitspieler-Tempo: Einstellung im Menü, gilt für alle Spiele und bleibt gespeichert
+const fastPref = () => { try { return localStorage.getItem('spielregal:botFast') === '1'; } catch { return false; } };
+const U = { page: 0, sheet: null, toast: null, busy: false, setup: { name: '', bots: 2 }, fast: fastPref(), sel: null, zone: null, adj: 0, logOpen: false };
 function rnd() { S.rng = (S.rng + 0x6D2B79F5) | 0; let t = Math.imul(S.rng ^ (S.rng >>> 15), 1 | S.rng); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 const range = n => Array.from({ length: n }, (_, i) => i);
@@ -1454,7 +1456,7 @@ function viewGame() {
     <section class="sec"><div class="sech"><h2 class="hand">Chronik</h2><button class="link" data-a="logtoggle" style="font-size:12px">${U.logOpen ? 'weniger' : 'alles'}</button></div>
       <div class="log">${S.log.slice(0, U.logOpen ? 80 : 6).map(l => `<div>${esc(l)}</div>`).join('')}</div></section>
   </div></div></div>
-  <div class="bar">${pdots()}<div class="in">${myTasks() ? `<div class="msg" data-a="go">${esc(taskTitle(me.tasks[0]))}</div><button class="btn green" data-a="task">Ausführen</button>` : isMyPick() ? `<div class="msg" data-a="go">Tippe einen leuchtenden Würfel im Rondell an.</div>` : `<div class="msg" data-a="go"><b>${esc(othersTurn() ? (p ? p.name : EDITH.name) : 'Alle')}</b> ${othersTurn() ? 'wählt …' : 'sind fertig.'}</div><button class="btn white" data-a="fast">${U.fast ? 'Normal' : 'Schneller'}</button>`}</div></div>`;
+  <div class="bar">${pdots()}<div class="in">${myTasks() ? `<div class="msg" data-a="go">${esc(taskTitle(me.tasks[0]))}</div><button class="btn green" data-a="task">Ausführen</button>` : isMyPick() ? `<div class="msg" data-a="go">Tippe einen leuchtenden Würfel im Rondell an.</div>` : `<div class="msg" data-a="go"><b>${esc(othersTurn() ? (p ? p.name : EDITH.name) : 'Alle')}</b> ${othersTurn() ? 'wählt …' : 'sind fertig.'}</div>`}</div></div>`;
 }
 function viewEnd() {
   const rows = S.final.map((r, i) => Object.assign({ i }, r)).sort((a, b) => b.total - a.total || b.garden - a.garden);
@@ -1556,7 +1558,7 @@ function viewSheet() {
   const sh = U.sheet; if (!sh) return '';
   switch (sh.type) {
     case 'rules': return sheetWrap(`<div class="rules">${rulesHtml()}</div>`);
-    case 'menu': return sheetWrap(`<h3>Menü</h3><div class="opts">${U.tut ? '<button class="btn wide" data-a="tutquit">Lernspiel beenden</button>' : ''}${S && S.screen === 'game' && !S.tut ? '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}<button class="btn white wide" data-a="rules">Spielregeln</button><button class="btn white wide" data-a="sound">Töne: ${SND.on ? 'an' : 'aus'}</button><button class="btn white wide" data-a="reload">Neueste Version laden</button><button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
+    case 'menu': return sheetWrap(`<h3>Menü</h3><div class="opts">${U.tut ? '<button class="btn wide" data-a="tutquit">Lernspiel beenden</button>' : ''}${S && S.screen === 'game' && !S.tut ? '<button class="btn wide" data-a="leave">Speichern &amp; verlassen</button><a class="btn white wide" href="../" style="text-decoration:none">Speichern &amp; zum Spielregal</a>' : ''}${S && S.screen === 'game' && !U.tut ? `<button class="btn white wide" data-a="fast" data-info="Wie schnell die Mitspieler am Zug sind. Bleibt für alle Spiele gespeichert.">Mitspieler-Tempo: ${U.fast ? 'schnell' : 'normal'}</button>` : ''}<button class="btn white wide" data-a="rules">Spielregeln</button><button class="btn white wide" data-a="sound">Töne: ${SND.on ? 'an' : 'aus'}</button><button class="btn white wide" data-a="reload">Neueste Version laden</button><button class="btn white wide" data-a="restart">Partie abbrechen &amp; neu starten</button></div>`);
     case 'opp': { const p = S.players[sh.p]; return sheetWrap(`<h3>${esc(p.name)}</h3><p style="font-size:13px">★ ${endScore(p).total} Punkte</p>${sheetHtml(p)}`); }
     case 'die': return dieSheet();
     case 'task': return taskSheet();
@@ -1912,8 +1914,8 @@ const H = {
   discard: () => { if (confirm('Gespeicherte Partie wirklich verwerfen?')) clearSave(); },
   tutorial: () => { U.page = 0; const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : U.setup.name; U.sheet = null; tutSetup(); U.tut = { i: 0 }; window.scrollTo(0, 0); },
   tutnext: () => { if (U.tut) U.tut.i = Math.min(U.tut.i + 1, TUT_STEPS.length - 1); },
-  tutend: () => { U.tut = null; U.sheet = null; U.fast = false; S = null; window.scrollTo(0, 0); },
-  tutquit: () => { U.tut = null; U.sheet = null; U.fast = false; S = null; window.scrollTo(0, 0); },
+  tutend: () => { U.tut = null; U.sheet = null; U.fast = fastPref(); S = null; window.scrollTo(0, 0); },
+  tutquit: () => { U.tut = null; U.sheet = null; U.fast = fastPref(); S = null; window.scrollTo(0, 0); },
   bots: d => { U.setup.bots = +d.n; },
   pickname: d => { U.setup.name = d.n; const nm = document.getElementById('nm'); if (nm) nm.value = d.n; },
   start: () => { U.page = 0; const sv = load(); if (sv && sv.screen === 'game' && !confirm(`Es gibt eine gespeicherte Partie (Runde ${sv.round || 1}). Neue Partie starten und die gespeicherte verwerfen?`)) return; const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : ''; newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0, U.setup.bots === 0); window.scrollTo(0, 0); },
@@ -1930,7 +1932,7 @@ const H = {
   ovclose: () => { U.sheet = null; },
   opp: d => { U.sheet = { type: 'opp', p: +d.p }; },
   logtoggle: () => { U.logOpen = !U.logOpen; },
-  fast: () => { U.fast = !U.fast; },
+  fast: () => { U.fast = !U.fast; try { localStorage.setItem('spielregal:botFast', U.fast ? '1' : '0'); } catch {} },
   die: d => { if (isMyPick()) { U.adj = 0; U.sheet = { type: 'die', i: +d.i }; } },
   adj: d => { U.adj = (U.adj || 0) + +d.d; },
   takedie: () => {
