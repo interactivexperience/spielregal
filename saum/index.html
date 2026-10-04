@@ -84,22 +84,30 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .card .art{position:absolute;inset:0;z-index:-1;background:var(--saum-soft);background-size:cover;background-position:center top}
 .card .art::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(59,35,18,.6),rgba(59,35,18,0) 55%)}
 .card .ttl{display:block;padding:0 10px 6px;font:700 19px/1.02 var(--f-display);color:#FCF7EE;text-shadow:0 1px 8px rgba(59,35,18,.45)}
-.card .cost{position:absolute;top:8px;right:8px;display:flex;align-items:center;gap:3px;font:600 11px/1 var(--f-body);color:#3B2312;background:rgba(252,247,238,.92);border-radius:99px;padding:4px 8px}
-.card .side{position:absolute;top:8px;left:8px;width:8px;height:8px;border-radius:50%;background:var(--stadt);box-shadow:0 0 0 2px rgba(252,247,238,.9)}
-.card.W .side{background:var(--wild)}
+.card .side{position:absolute;top:9px;left:9px;display:flex;gap:3px}
+.card .side i{width:11px;height:11px;border-radius:3px;background:var(--stadt);box-shadow:0 0 0 2px rgba(252,247,238,.9)}
+.card.W .side i{background:var(--wild)}
 .card .body{display:flex;flex-direction:column;gap:3px;margin:0 5px 5px;padding:7px 8px 8px;border-radius:calc(var(--r) - 4px);background:color-mix(in srgb,var(--paper) 94%,transparent)}
-.card .ln{display:grid;grid-template-columns:12px 1fr;align-items:center;font-size:11px;line-height:1.25}
-.card .ln.up{border-top:1px dashed var(--line);padding-top:4px;margin-top:1px}
-.card .rl{display:flex;flex-wrap:wrap;align-items:center;gap:1px;font-variant-numeric:tabular-nums}
-.card .rl b{font-weight:700;font-size:11.5px;margin-right:1px}
-.ic{width:15px;height:15px;flex:none;vertical-align:middle}
-.card .arr{color:var(--muted);margin:0 2px;font-size:10px}
-.card .mx{color:var(--muted);font-size:9.5px;margin-left:3px}
-.card .sl{color:var(--muted);margin:0 1px}
-.card .gap{width:8px}
+.card .cost{position:absolute;top:6px;right:6px;line-height:0;filter:drop-shadow(0 1px 3px rgba(59,35,18,.35))}
+.card .cost .tk{width:30px;height:30px}
+.card .ln{display:flex;flex-direction:column;gap:4px}
+.card .rl{display:flex;flex-wrap:wrap;align-items:center;gap:3px}
+.tk{width:22px;height:22px;flex:none;display:block}
+.card .main .tk{width:24px;height:24px}
+.card .stk{display:flex}.card .stk .tk+.tk{margin-left:-9px}
+.card .stk.or .tk+.tk{margin-left:-5px}
+.card .arr{color:var(--ink);font-size:13px;margin:0 1px;opacity:.8}
+.card .pl{font:800 14px/1 var(--f-body);color:var(--ink);margin:0 1px}
+.card .n{font:800 14px/1 var(--f-body);margin-right:2px}
+.card .x2{font:800 14px/1 var(--f-body);color:var(--ink);margin-left:3px}
+.card .wd{font:700 10.5px/1 var(--f-body);color:var(--ink);background:var(--line);border-radius:99px;padding:4px 6px}
+.card .gap{width:4px}
+.card .band{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:6px;margin:2px -8px 0;padding:5px 8px;border-top:1px solid var(--line)}
+.card .band.up{flex-wrap:wrap}
+.card .band.up{background:color-mix(in srgb,var(--saum-soft) 80%,transparent);margin-bottom:-8px;border-radius:0 0 calc(var(--r) - 4px) calc(var(--r) - 4px)}
+.card .band i{flex:none;font-style:normal;font:700 8px/1 var(--f-body);text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
 .card .meta{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);margin-bottom:1px}
-.card .meta .ic{width:12px;height:12px;margin-left:1px}
-.card .meta .w{display:flex;gap:2px}.card .meta .w i{width:6px;height:6px;border-radius:1.5px;background:var(--stadt)}
+.card .meta .card .meta .w{display:flex;gap:2px}.card .meta .w i{width:6px;height:6px;border-radius:1.5px;background:var(--stadt)}
 .card.W .meta .w i{background:var(--wild)}
 /* Info-Blase beim langen Drücken */
 .bubble{position:fixed;z-index:10;max-width:300px;background:var(--ink);color:var(--bg);border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.4;white-space:pre-line;box-shadow:0 18px 40px -16px rgba(36,26,18,.6);pointer-events:none;animation:bub .16s ease-out}
@@ -107,9 +115,6 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 @keyframes bub{from{opacity:0;transform:translateY(4px)}}
 @media (prefers-reduced-motion:reduce){.bubble{animation:none}}
 #app{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-.card .ln i{font-style:normal;font-size:9px;line-height:1.4;color:var(--muted)}
-.card .meta+.ln i{color:var(--stadt)}
-.card.W .meta+.ln i{color:var(--wild)}
 .card.sel{box-shadow:0 0 0 2px var(--saum)}
 .card.off{opacity:.42}
 /* Familienflächen (ohne Illustration) – Töne aus dem Bild */
@@ -417,34 +422,39 @@ const rule=r=>({src:()=>`+${r.n} ${G[r.g]}`,conv:()=>`${G[r.from]} → ${G[r.to]
 const eff=e=>[e.act?'Kette in einer Reihe auslösen'+(e.add?' (startet mit '+Object.entries(e.add).map(([g,n])=>`${n} ${G[g]}`).join(', ')+')':''):'',e.coins?`+${e.coins} Münzen`:'',e.draw?`${e.draw} Karte${e.draw>1?'n':''} ziehen`:'',e.buyDisc?`nächster Kauf ${e.buyDisc} Mz. billiger`:''].filter(Boolean).join(', ');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const ART={muehle:'art/muehle.jpg'};
-// ---------- Icons: kurze Bildregeln auf den Karten, Langtext per langem Drücken ----------
-const IC={
- korn:'<path d="M8 15V6" stroke="#975B1E" stroke-width="1.3"/><g fill="#E8A23D"><ellipse cx="8" cy="3.2" rx="1.4" ry="2.2"/><ellipse cx="6.1" cy="6.2" rx="1.3" ry="2" transform="rotate(-30 6.1 6.2)"/><ellipse cx="9.9" cy="6.2" rx="1.3" ry="2" transform="rotate(30 9.9 6.2)"/><ellipse cx="6.1" cy="9.4" rx="1.3" ry="2" transform="rotate(-30 6.1 9.4)"/><ellipse cx="9.9" cy="9.4" rx="1.3" ry="2" transform="rotate(30 9.9 9.4)"/></g>',
- mehl:'<path d="M4.5 5.5 6 3h4l1.5 2.5 1 7.5a1.5 1.5 0 0 1-1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5z" fill="#F7EEDF" stroke="#B3815B" stroke-width="1.1"/><path d="M5.5 5h5" stroke="#B3815B" stroke-width="1.1"/>',
- brot:'<path d="M2 10.5C2 6.5 4.8 4.5 8 4.5s6 2 6 6c0 1.2-.8 2-2 2H4c-1.2 0-2-.8-2-2z" fill="#CA7E1B"/><path d="M5.5 6.5 6.5 9M8 6v3M10.5 6.5 9.5 9" stroke="#F7C58F" stroke-width="1" stroke-linecap="round"/>',
- holz:'<rect x="2" y="5" width="11" height="6" rx="3" fill="#975B1E"/><ellipse cx="12.5" cy="8" rx="2" ry="3" fill="#F7C58F" stroke="#975B1E"/><circle cx="12.5" cy="8" r=".8" fill="#975B1E"/>',
- brett:'<rect x="1.5" y="4" width="13" height="3.2" rx=".6" fill="#CA7E1B"/><rect x="1.5" y="8.8" width="13" height="3.2" rx=".6" fill="#B3815B"/>',
- moebel:'<path d="M4.5 2v12M4.5 8.5h7v5.5M11.5 8.5V14M4.5 3.5h0" stroke="#663B1A" stroke-width="1.8" stroke-linecap="round" fill="none"/><rect x="4" y="7.5" width="8" height="2" rx=".6" fill="#975B1E"/>',
- bluete:'<g fill="#BCACC4"><circle cx="8" cy="4.2" r="2.6"/><circle cx="11.6" cy="6.8" r="2.6"/><circle cx="10.2" cy="11" r="2.6"/><circle cx="5.8" cy="11" r="2.6"/><circle cx="4.4" cy="6.8" r="2.6"/></g><circle cx="8" cy="8" r="2" fill="#E8A23D"/>',
- honig:'<path d="M4.5 5h7v7.5A1.5 1.5 0 0 1 10 14H6a1.5 1.5 0 0 1-1.5-1.5z" fill="#F9BE63"/><rect x="4" y="2.5" width="8" height="2.5" rx=".8" fill="#975B1E"/><path d="M6 8.5c1 1 3 1 4 0" stroke="#CA7E1B" stroke-width="1" fill="none"/>',
- any:'<rect x="2.5" y="4" width="11" height="9" rx="1.5" fill="#E7D6BD" stroke="#B3815B"/><path d="M2.5 7h11" stroke="#B3815B"/><circle cx="8" cy="10" r="1" fill="#975B1E"/>',
- raw:'<path d="M8 14V8" stroke="#4E5A33" stroke-width="1.4"/><path d="M8 9C8 5.5 5 4 2.5 4.5 2.5 7.5 5 9.5 8 9zM8 8c0-3 2.5-5 5.5-5 0 3-2 5.5-5.5 5z" fill="#6E7650"/>',
- coin:'<circle cx="8" cy="8" r="6.2" fill="#E8A23D"/><circle cx="8" cy="8" r="4.3" fill="none" stroke="#F9BE63" stroke-width="1.1"/>',
- ruhm:'<path d="M8 1.6l1.9 4 4.4.5-3.3 3 .9 4.3L8 11.2l-3.9 2.2.9-4.3-3.3-3 4.4-.5z" fill="#4C7695"/>',
- card:'<rect x="3.5" y="2" width="9" height="12" rx="1.6" fill="#FCF7EE" stroke="#8C6E55" stroke-width="1.1"/><path d="M5.5 5h5" stroke="#BCACC4" stroke-width="1.6"/>',
- chain:'<g fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1.5" y="5.5" width="7" height="5" rx="2.5"/><rect x="7.5" y="5.5" width="7" height="5" rx="2.5"/></g>',
- row:'<g fill="#975B1E"><rect x="1" y="5.5" width="4" height="5" rx="1"/><rect x="11" y="5.5" width="4" height="5" rx="1" fill="#4E5A33"/></g><rect x="6" y="5.5" width="4" height="5" rx="1" fill="#E8A23D"/>',
- flag:'<path d="M4 14V2.5" stroke="currentColor" stroke-width="1.4"/><path d="M4.6 3h8l-2 2.5 2 2.5h-8z" fill="#B5402E"/>',
- cart:'<path d="M1.5 3h2l1.5 7h7.5l1.5-5H4.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="6" cy="12.8" r="1.2" fill="currentColor"/><circle cx="11.5" cy="12.8" r="1.2" fill="currentColor"/>'
+// ---------- Icons: große runde Spielsteine, Zahl im Stein; Langtext per langem Drücken ----------
+// Waren: Farbscheibe + klare Silhouette (W = weiß, D = dunkel)
+const W='#FCF7EE',D='#3B2312';
+const GOODIC={
+ korn:['#E8A23D',`<path d="M12 19.5V8" stroke="${W}" stroke-width="1.8" stroke-linecap="round"/><g fill="${W}"><ellipse cx="12" cy="6" rx="1.9" ry="2.8"/><ellipse cx="9.3" cy="10" rx="1.8" ry="2.6" transform="rotate(-35 9.3 10)"/><ellipse cx="14.7" cy="10" rx="1.8" ry="2.6" transform="rotate(35 14.7 10)"/><ellipse cx="9.3" cy="14.2" rx="1.8" ry="2.6" transform="rotate(-35 9.3 14.2)"/><ellipse cx="14.7" cy="14.2" rx="1.8" ry="2.6" transform="rotate(35 14.7 14.2)"/></g>`],
+ mehl:['#E7D6BD',`<path d="M8 9.5 9.6 6h4.8L16 9.5l1.2 8.3a1.6 1.6 0 0 1-1.6 1.8H8.4a1.6 1.6 0 0 1-1.6-1.8z" fill="${W}" stroke="#975B1E" stroke-width="1.5" stroke-linejoin="round"/><path d="M9.2 8.6h5.6" stroke="#975B1E" stroke-width="1.5"/>`],
+ brot:['#CA7E1B',`<path d="M5 15.2C5 10.6 8.2 8 12 8s7 2.6 7 7.2c0 1.2-.9 2-2 2H7c-1.1 0-2-.8-2-2z" fill="${W}"/><path d="M9 11.2l1.2 2.6M12 10.6v2.9M15 11.2l-1.2 2.6" stroke="#CA7E1B" stroke-width="1.4" stroke-linecap="round"/>`],
+ holz:['#975B1E',`<circle cx="12" cy="12" r="6.3" fill="${W}"/><circle cx="12" cy="12" r="4" fill="none" stroke="#975B1E" stroke-width="1.2"/><circle cx="12" cy="12" r="1.5" fill="#975B1E"/>`],
+ brett:['#B3815B',`<rect x="5.5" y="7" width="13" height="4.2" rx=".8" fill="${W}"/><rect x="5.5" y="12.8" width="13" height="4.2" rx=".8" fill="${W}"/>`],
+ moebel:['#663B1A',`<path d="M8.5 5.5v13M8.5 12h7.5v6.5" stroke="${W}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><rect x="7.4" y="10.6" width="9.6" height="2.6" rx=".8" fill="${W}"/>`],
+ bluete:['#9E8BB0',`<g fill="${W}"><circle cx="12" cy="7.6" r="2.9"/><circle cx="16.2" cy="10.7" r="2.9"/><circle cx="14.6" cy="15.6" r="2.9"/><circle cx="9.4" cy="15.6" r="2.9"/><circle cx="7.8" cy="10.7" r="2.9"/></g><circle cx="12" cy="12" r="2.3" fill="#E8A23D"/>`],
+ honig:['#F9BE63',`<path d="M12 5.5c2.6 3.6 4.6 6.2 4.6 8.7a4.6 4.6 0 0 1-9.2 0c0-2.5 2-5.1 4.6-8.7z" fill="#975B1E"/>`],
+ any:['#E7D6BD',`<text x="12" y="16.5" text-anchor="middle" font-family="Figtree,system-ui,sans-serif" font-weight="800" font-size="12" fill="#975B1E">?</text>`]
 };
-const ic=k=>`<svg class="ic" viewBox="0 0 16 16" aria-hidden="true">${IC[k]}</svg>`;
-const nIc=(n,k)=>`<b>${n}</b>${ic(k)}`;
-const ARR='<span class="arr">→</span>',MAX=m=>`<span class="mx">≤${m}</span>`;
-const gsIc=gs=>gs==='any'?ic('any'):gs.map(g=>ic(g)).join('<span class="sl">/</span>');
-const ruleIc=r=>({src:()=>`+${nIc(r.n,r.g)}`,conv:()=>`${ic(r.from)}${ARR}${ic(r.to)}${MAX(r.max)}`,score:()=>`${ic(r.g)}${ARR}${nIc(r.vp,'ruhm')}${MAX(r.max)}`,
-  sell:()=>`${gsIc(r.gs)}${ARR}${nIc(r.coin,'coin')}${r.vp?'+'+nIc(r.vp,'ruhm'):''}${MAX(r.max)}`,combo:()=>`${ic(r.a)}+${ic(r.b)}${ARR}${nIc(r.vp,'ruhm')}${MAX(r.max)}`,
-  dup:()=>`<b>×2</b>${ic('raw')}${MAX(r.max)}`,vpPer:()=>`+${nIc(r.vp,'ruhm')}<span class="sl">/</span>${ic(r.g)}`,endRows:()=>`${ic('flag')}+${nIc(r.vp,'ruhm')}<span class="sl">/</span>${ic('row')}`}[r.t]());
-const effIc=e=>[e.act?ic('chain')+(e.add?Object.entries(e.add).map(([g,n])=>'+'+nIc(n,g)).join(''):''):'',e.coins?'+'+nIc(e.coins,'coin'):'',e.draw?'+'+nIc(e.draw,'card'):'',e.buyDisc?`${ic('cart')}−${nIc(e.buyDisc,'coin')}`:''].filter(Boolean).join('<span class="gap"></span>');
+const svg24=(inner,cls='tk')=>`<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${inner}</svg>`;
+const tok=g=>{const [bg,gl]=GOODIC[g];return svg24(`<circle cx="12" cy="12" r="11" fill="${bg}" stroke="rgba(59,35,18,.25)" stroke-width="1"/>${gl}`)};
+const stack=(g,n)=>n<=3?`<span class="stk">${Array.from({length:n},()=>tok(g)).join('')}</span>`:`<b class="n">${n}</b>${tok(g)}`;
+const numT=(shape,n,fg)=>svg24(`${shape}<text x="12" y="16.3" text-anchor="middle" font-family="Figtree,system-ui,sans-serif" font-weight="800" font-size="12.5" fill="${fg}">${n}</text>`);
+const coinT=n=>numT(`<circle cx="12" cy="12" r="11" fill="#E8A23D"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#F9BE63" stroke-width="1.2"/>`,n,D);
+const ruhmT=n=>numT(`<path d="M12 1.5l9 3.3v6.6c0 5.4-3.8 9.3-9 11.1-5.2-1.8-9-5.7-9-11.1V4.8z" fill="#4C7695"/>`,n,W);
+const cardT=n=>numT(`<rect x="4.5" y="1.5" width="15" height="21" rx="2.5" fill="${W}" stroke="#8C6E55" stroke-width="1.5"/>`,n,D);
+const ARR='<span class="arr">➜</span>';
+const word=t=>`<span class="wd">${t}</span>`;
+const gsIc=gs=>gs==='any'?tok('any'):`<span class="stk or">${gs.map(tok).join('')}</span>`;
+const ruleIc=r=>({src:()=>`<b class="pl">+</b>${stack(r.g,r.n)}`,
+  conv:()=>`${tok(r.from)}${ARR}${tok(r.to)}`,
+  score:()=>`${tok(r.g)}${ARR}${ruhmT(r.vp)}`,
+  sell:()=>`${gsIc(r.gs)}${ARR}${coinT(r.coin)}${r.vp?ruhmT(r.vp):''}`,
+  combo:()=>`${tok(r.a)}<b class="pl">+</b>${tok(r.b)}${ARR}${ruhmT(r.vp)}`,
+  dup:()=>`<span class="stk">${tok('korn')}${tok('holz')}${tok('bluete')}</span><b class="x2">×2</b>`,
+  vpPer:()=>`${ruhmT(r.vp)}${word('je')}${tok(r.g)}`,
+  endRows:()=>`${word('Ende')}${ruhmT(r.vp)}${word('je Reihe')}`}[r.t]());
+const effIc=e=>[e.act?word('Kette')+(e.add?Object.entries(e.add).map(([g,n])=>stack(g,n)).join(''):''):'',e.coins?coinT(e.coins):'',e.draw?cardT(e.draw):'',e.buyDisc?word('Kauf')+coinT('−'+e.buyDisc):''].filter(Boolean).join('<span class="gap"></span>');
 const RAWN='Rohwaren (Korn, Holz, Blüten)';
 const ruleLong=r=>({src:()=>`bringt ${r.n} ${G[r.g]} in die Kette.`,conv:()=>`tauscht bis zu ${r.max} ${G[r.from]} aus der Kette in ${G[r.to]}.`,
   score:()=>`verbraucht bis zu ${r.max} ${G[r.g]} aus der Kette für je ${r.vp} Ruhm.`,
@@ -459,11 +469,11 @@ function cardInfo(c){const L=[`${c.n} · ${c.side==='S'?'Stadt':'Wildnis'} · ${
   if(c.fam!=='grund'){L.push(`▸ Aktion – einmal ausspielen: ${effLong(c.eff)}`);L.push(`↧ Upgrade – unter ein Plättchen geschoben, wirkt es dort mit: ${c.edge.map(ruleLong).join(' Außerdem ')}`)}
   L.push('Ruhm aus einer nicht gesäumten Reihe wird zu Münzen.');return L.join('\n')}
 function cardHtml(id,o={}){const c=CARDS[id],art=ART[id];return `<button class="card ${c.side} f-${c.fam} ${o.sel?'sel':''} ${o.off?'off':''}" data-a="${o.a||''}" data-i="${o.i??''}" data-info="${esc(cardInfo(c))}">
- <span class="art"${art?` style="background-image:url(${art})"`:''}></span><span class="side" title="${c.side==='S'?'Stadt':'Wildnis'}"></span>${o.price!=null?`<span class="cost" title="Kaufpreis">${o.price}${ic('coin')}</span>`:''}<span class="ttl">${esc(c.n)}</span>
- <span class="body"><span class="meta"><span class="w">${'<i></i>'.repeat(c.w)}</span>${c.fam==='start'?'nicht baubar':''}${c.fam==='grund'?'Start':''}${o.build!=null?`bauen ${o.build}${ic('coin')}`:''}</span>
- <span class="ln"><i>◆</i><span class="rl">${c.tile.map(ruleIc).join('<span class="gap"></span>')}</span></span>
- ${c.fam==='grund'?'':`<span class="ln"><i>▸</i><span class="rl">${effIc(c.eff)}</span></span>
- <span class="ln up"><i>↧</i><span class="rl">${c.edge.map(ruleIc).join('<span class="gap"></span>')}</span></span>`}</span></button>`}
+ <span class="art"${art?` style="background-image:url(${art})"`:''}></span><span class="side" title="${c.side==='S'?'Stadt':'Wildnis'}">${'<i></i>'.repeat(c.w)}</span>${o.price!=null?`<span class="cost" title="Kaufpreis">${coinT(o.price)}</span>`:''}<span class="ttl">${esc(c.n)}</span>
+ <span class="body">${c.fam==='start'?'<span class="meta">Startkarte · nicht baubar</span>':''}
+ <span class="ln main">${c.tile.map(ruleIc).map(x=>`<span class="rl">${x}</span>`).join('')}</span>
+ ${c.fam==='grund'?'':`<span class="ln band"><i>Aktion</i><span class="rl">${effIc(c.eff)}</span></span>
+ <span class="ln band up"><i>Upgrade</i>${c.edge.map(ruleIc).map(x=>`<span class="rl">${x}</span>`).join('')}</span>`}</span></button>`}
 function boardHtml(p,pi,pick){
   return `<div class="board">${p.rows.map((rw,r)=>{
     const cl=closed(rw),tired=rowTired(S,p,r),free=COLS-used(rw);
