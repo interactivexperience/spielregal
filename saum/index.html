@@ -84,12 +84,29 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .card .art{position:absolute;inset:0;z-index:-1;background:var(--saum-soft);background-size:cover;background-position:center top}
 .card .art::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(59,35,18,.6),rgba(59,35,18,0) 55%)}
 .card .ttl{display:block;padding:0 10px 6px;font:700 19px/1.02 var(--f-display);color:#FCF7EE;text-shadow:0 1px 8px rgba(59,35,18,.45)}
-.card .cost{position:absolute;top:8px;right:8px;font:600 11px/1 var(--f-body);color:var(--ink);background:rgba(252,247,238,.92);border-radius:99px;padding:4px 8px}
+.card .cost{position:absolute;top:8px;right:8px;display:flex;align-items:center;gap:3px;font:600 11px/1 var(--f-body);color:#3B2312;background:rgba(252,247,238,.92);border-radius:99px;padding:4px 8px}
 .card .side{position:absolute;top:8px;left:8px;width:8px;height:8px;border-radius:50%;background:var(--stadt);box-shadow:0 0 0 2px rgba(252,247,238,.9)}
 .card.W .side{background:var(--wild)}
 .card .body{display:flex;flex-direction:column;gap:3px;margin:0 5px 5px;padding:7px 8px 8px;border-radius:calc(var(--r) - 4px);background:color-mix(in srgb,var(--paper) 94%,transparent)}
-.card .meta{font-size:10px;color:var(--muted);margin-bottom:1px}
-.card .ln{display:grid;grid-template-columns:12px 1fr;font-size:11px;line-height:1.25}
+.card .ln{display:grid;grid-template-columns:12px 1fr;align-items:center;font-size:11px;line-height:1.25}
+.card .ln.up{border-top:1px dashed var(--line);padding-top:4px;margin-top:1px}
+.card .rl{display:flex;flex-wrap:wrap;align-items:center;gap:1px;font-variant-numeric:tabular-nums}
+.card .rl b{font-weight:700;font-size:11.5px;margin-right:1px}
+.ic{width:15px;height:15px;flex:none;vertical-align:middle}
+.card .arr{color:var(--muted);margin:0 2px;font-size:10px}
+.card .mx{color:var(--muted);font-size:9.5px;margin-left:3px}
+.card .sl{color:var(--muted);margin:0 1px}
+.card .gap{width:8px}
+.card .meta{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);margin-bottom:1px}
+.card .meta .ic{width:12px;height:12px;margin-left:1px}
+.card .meta .w{display:flex;gap:2px}.card .meta .w i{width:6px;height:6px;border-radius:1.5px;background:var(--stadt)}
+.card.W .meta .w i{background:var(--wild)}
+/* Info-Blase beim langen Drücken */
+.bubble{position:fixed;z-index:10;max-width:300px;background:var(--ink);color:var(--bg);border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.4;white-space:pre-line;box-shadow:0 18px 40px -16px rgba(36,26,18,.6);pointer-events:none;animation:bub .16s ease-out}
+.bubble::first-line{font-family:var(--f-display);font-size:17px;font-weight:700}
+@keyframes bub{from{opacity:0;transform:translateY(4px)}}
+@media (prefers-reduced-motion:reduce){.bubble{animation:none}}
+#app{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .card .ln i{font-style:normal;font-size:9px;line-height:1.4;color:var(--muted)}
 .card .meta+.ln i{color:var(--stadt)}
 .card.W .meta+.ln i{color:var(--wild)}
@@ -400,16 +417,57 @@ const rule=r=>({src:()=>`+${r.n} ${G[r.g]}`,conv:()=>`${G[r.from]} → ${G[r.to]
 const eff=e=>[e.act?'Kette in einer Reihe auslösen'+(e.add?' (startet mit '+Object.entries(e.add).map(([g,n])=>`${n} ${G[g]}`).join(', ')+')':''):'',e.coins?`+${e.coins} Münzen`:'',e.draw?`${e.draw} Karte${e.draw>1?'n':''} ziehen`:'',e.buyDisc?`nächster Kauf ${e.buyDisc} Mz. billiger`:''].filter(Boolean).join(', ');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const ART={muehle:'art/muehle.jpg'};
-function cardHtml(id,o={}){const c=CARDS[id],art=ART[id];return `<button class="card ${c.side} f-${c.fam} ${o.sel?'sel':''} ${o.off?'off':''}" data-a="${o.a||''}" data-i="${o.i??''}">
- <span class="art"${art?` style="background-image:url(${art})"`:''}></span><span class="side" title="${c.side==='S'?'Stadt':'Wildnis'}"></span>${o.price!=null?`<span class="cost">${o.price} Mz.</span>`:''}<span class="ttl">${esc(c.n)}</span>
- <span class="body"><span class="meta">${c.w} Feld${c.w>1?'er':''}${c.fam==='start'?' · nicht baubar':''}${c.fam==='grund'?' · Start':''}${o.build!=null?` · bauen ${o.build} Mz.`:''}</span>
- <span class="ln"><i title="Plättchen: wirkt, wenn eine Kette hindurchläuft">◆</i>${esc(c.tile.map(rule).join('; '))}</span>
- ${c.fam==='grund'?'':`<span class="ln"><i title="Aktion: einmal ausspielen">▸</i>${esc(eff(c.eff))}</span>
- <span class="ln"><i title="Upgrade: unter ein Plättchen schieben">↧</i>${esc(c.edge.map(rule).join('; '))}</span>`}</span></button>`}
+// ---------- Icons: kurze Bildregeln auf den Karten, Langtext per langem Drücken ----------
+const IC={
+ korn:'<path d="M8 15V6" stroke="#975B1E" stroke-width="1.3"/><g fill="#E8A23D"><ellipse cx="8" cy="3.2" rx="1.4" ry="2.2"/><ellipse cx="6.1" cy="6.2" rx="1.3" ry="2" transform="rotate(-30 6.1 6.2)"/><ellipse cx="9.9" cy="6.2" rx="1.3" ry="2" transform="rotate(30 9.9 6.2)"/><ellipse cx="6.1" cy="9.4" rx="1.3" ry="2" transform="rotate(-30 6.1 9.4)"/><ellipse cx="9.9" cy="9.4" rx="1.3" ry="2" transform="rotate(30 9.9 9.4)"/></g>',
+ mehl:'<path d="M4.5 5.5 6 3h4l1.5 2.5 1 7.5a1.5 1.5 0 0 1-1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5z" fill="#F7EEDF" stroke="#B3815B" stroke-width="1.1"/><path d="M5.5 5h5" stroke="#B3815B" stroke-width="1.1"/>',
+ brot:'<path d="M2 10.5C2 6.5 4.8 4.5 8 4.5s6 2 6 6c0 1.2-.8 2-2 2H4c-1.2 0-2-.8-2-2z" fill="#CA7E1B"/><path d="M5.5 6.5 6.5 9M8 6v3M10.5 6.5 9.5 9" stroke="#F7C58F" stroke-width="1" stroke-linecap="round"/>',
+ holz:'<rect x="2" y="5" width="11" height="6" rx="3" fill="#975B1E"/><ellipse cx="12.5" cy="8" rx="2" ry="3" fill="#F7C58F" stroke="#975B1E"/><circle cx="12.5" cy="8" r=".8" fill="#975B1E"/>',
+ brett:'<rect x="1.5" y="4" width="13" height="3.2" rx=".6" fill="#CA7E1B"/><rect x="1.5" y="8.8" width="13" height="3.2" rx=".6" fill="#B3815B"/>',
+ moebel:'<path d="M4.5 2v12M4.5 8.5h7v5.5M11.5 8.5V14M4.5 3.5h0" stroke="#663B1A" stroke-width="1.8" stroke-linecap="round" fill="none"/><rect x="4" y="7.5" width="8" height="2" rx=".6" fill="#975B1E"/>',
+ bluete:'<g fill="#BCACC4"><circle cx="8" cy="4.2" r="2.6"/><circle cx="11.6" cy="6.8" r="2.6"/><circle cx="10.2" cy="11" r="2.6"/><circle cx="5.8" cy="11" r="2.6"/><circle cx="4.4" cy="6.8" r="2.6"/></g><circle cx="8" cy="8" r="2" fill="#E8A23D"/>',
+ honig:'<path d="M4.5 5h7v7.5A1.5 1.5 0 0 1 10 14H6a1.5 1.5 0 0 1-1.5-1.5z" fill="#F9BE63"/><rect x="4" y="2.5" width="8" height="2.5" rx=".8" fill="#975B1E"/><path d="M6 8.5c1 1 3 1 4 0" stroke="#CA7E1B" stroke-width="1" fill="none"/>',
+ any:'<rect x="2.5" y="4" width="11" height="9" rx="1.5" fill="#E7D6BD" stroke="#B3815B"/><path d="M2.5 7h11" stroke="#B3815B"/><circle cx="8" cy="10" r="1" fill="#975B1E"/>',
+ raw:'<path d="M8 14V8" stroke="#4E5A33" stroke-width="1.4"/><path d="M8 9C8 5.5 5 4 2.5 4.5 2.5 7.5 5 9.5 8 9zM8 8c0-3 2.5-5 5.5-5 0 3-2 5.5-5.5 5z" fill="#6E7650"/>',
+ coin:'<circle cx="8" cy="8" r="6.2" fill="#E8A23D"/><circle cx="8" cy="8" r="4.3" fill="none" stroke="#F9BE63" stroke-width="1.1"/>',
+ ruhm:'<path d="M8 1.6l1.9 4 4.4.5-3.3 3 .9 4.3L8 11.2l-3.9 2.2.9-4.3-3.3-3 4.4-.5z" fill="#4C7695"/>',
+ card:'<rect x="3.5" y="2" width="9" height="12" rx="1.6" fill="#FCF7EE" stroke="#8C6E55" stroke-width="1.1"/><path d="M5.5 5h5" stroke="#BCACC4" stroke-width="1.6"/>',
+ chain:'<g fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1.5" y="5.5" width="7" height="5" rx="2.5"/><rect x="7.5" y="5.5" width="7" height="5" rx="2.5"/></g>',
+ row:'<g fill="#975B1E"><rect x="1" y="5.5" width="4" height="5" rx="1"/><rect x="11" y="5.5" width="4" height="5" rx="1" fill="#4E5A33"/></g><rect x="6" y="5.5" width="4" height="5" rx="1" fill="#E8A23D"/>',
+ flag:'<path d="M4 14V2.5" stroke="currentColor" stroke-width="1.4"/><path d="M4.6 3h8l-2 2.5 2 2.5h-8z" fill="#B5402E"/>',
+ cart:'<path d="M1.5 3h2l1.5 7h7.5l1.5-5H4.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="6" cy="12.8" r="1.2" fill="currentColor"/><circle cx="11.5" cy="12.8" r="1.2" fill="currentColor"/>'
+};
+const ic=k=>`<svg class="ic" viewBox="0 0 16 16" aria-hidden="true">${IC[k]}</svg>`;
+const nIc=(n,k)=>`<b>${n}</b>${ic(k)}`;
+const ARR='<span class="arr">→</span>',MAX=m=>`<span class="mx">≤${m}</span>`;
+const gsIc=gs=>gs==='any'?ic('any'):gs.map(g=>ic(g)).join('<span class="sl">/</span>');
+const ruleIc=r=>({src:()=>`+${nIc(r.n,r.g)}`,conv:()=>`${ic(r.from)}${ARR}${ic(r.to)}${MAX(r.max)}`,score:()=>`${ic(r.g)}${ARR}${nIc(r.vp,'ruhm')}${MAX(r.max)}`,
+  sell:()=>`${gsIc(r.gs)}${ARR}${nIc(r.coin,'coin')}${r.vp?'+'+nIc(r.vp,'ruhm'):''}${MAX(r.max)}`,combo:()=>`${ic(r.a)}+${ic(r.b)}${ARR}${nIc(r.vp,'ruhm')}${MAX(r.max)}`,
+  dup:()=>`<b>×2</b>${ic('raw')}${MAX(r.max)}`,vpPer:()=>`+${nIc(r.vp,'ruhm')}<span class="sl">/</span>${ic(r.g)}`,endRows:()=>`${ic('flag')}+${nIc(r.vp,'ruhm')}<span class="sl">/</span>${ic('row')}`}[r.t]());
+const effIc=e=>[e.act?ic('chain')+(e.add?Object.entries(e.add).map(([g,n])=>'+'+nIc(n,g)).join(''):''):'',e.coins?'+'+nIc(e.coins,'coin'):'',e.draw?'+'+nIc(e.draw,'card'):'',e.buyDisc?`${ic('cart')}−${nIc(e.buyDisc,'coin')}`:''].filter(Boolean).join('<span class="gap"></span>');
+const RAWN='Rohwaren (Korn, Holz, Blüten)';
+const ruleLong=r=>({src:()=>`bringt ${r.n} ${G[r.g]} in die Kette.`,conv:()=>`tauscht bis zu ${r.max} ${G[r.from]} aus der Kette in ${G[r.to]}.`,
+  score:()=>`verbraucht bis zu ${r.max} ${G[r.g]} aus der Kette für je ${r.vp} Ruhm.`,
+  sell:()=>`verkauft bis zu ${r.max} ${r.gs==='any'?'beliebige Waren':r.gs.map(g=>G[g]).join('/')} aus der Kette für je ${r.coin} Münze${r.coin>1?'n':''}${r.vp?` und ${r.vp} Ruhm`:''}.`,
+  combo:()=>`jedes Paar ${G[r.a]} + ${G[r.b]} aus der Kette bringt ${r.vp} Ruhm (bis ${r.max} Paar${r.max>1?'e':''}).`,
+  dup:()=>`verdoppelt bis zu ${r.max} ${RAWN}: je Sorte, die die Kette trägt, kommt 1 dazu.`,
+  vpPer:()=>`+${r.vp} Ruhm für jedes ${G[r.g]}, das dieses Plättchen in der Kette erzeugt.`,
+  endRows:()=>`bei Spielende +${r.vp} Ruhm für jede gesäumte Reihe.`}[r.t]());
+const effLong=e=>[e.act?'Löst eine Kette in einer deiner Reihen aus'+(e.add?', sie startet mit '+Object.entries(e.add).map(([g,n])=>`${n} ${G[g]}`).join(' und '):'')+'.':'',e.coins?`Du bekommst ${e.coins} Münzen.`:'',e.draw?`Du ziehst ${e.draw} Karte${e.draw>1?'n':''}.`:'',e.buyDisc?`Dein nächster Kauf kostet ${e.buyDisc} Münzen weniger.`:''].filter(Boolean).join(' ');
+function cardInfo(c){const L=[`${c.n} · ${c.side==='S'?'Stadt':'Wildnis'} · ${c.w} Feld${c.w>1?'er':''}`,
+  `◆ Plättchen – wirkt jedes Mal, wenn eine Kette hindurchläuft: ${c.tile.map(ruleLong).join(' Außerdem ')}`];
+  if(c.fam!=='grund'){L.push(`▸ Aktion – einmal ausspielen: ${effLong(c.eff)}`);L.push(`↧ Upgrade – unter ein Plättchen geschoben, wirkt es dort mit: ${c.edge.map(ruleLong).join(' Außerdem ')}`)}
+  L.push('Ruhm aus einer nicht gesäumten Reihe wird zu Münzen.');return L.join('\n')}
+function cardHtml(id,o={}){const c=CARDS[id],art=ART[id];return `<button class="card ${c.side} f-${c.fam} ${o.sel?'sel':''} ${o.off?'off':''}" data-a="${o.a||''}" data-i="${o.i??''}" data-info="${esc(cardInfo(c))}">
+ <span class="art"${art?` style="background-image:url(${art})"`:''}></span><span class="side" title="${c.side==='S'?'Stadt':'Wildnis'}"></span>${o.price!=null?`<span class="cost" title="Kaufpreis">${o.price}${ic('coin')}</span>`:''}<span class="ttl">${esc(c.n)}</span>
+ <span class="body"><span class="meta"><span class="w">${'<i></i>'.repeat(c.w)}</span>${c.fam==='start'?'nicht baubar':''}${c.fam==='grund'?'Start':''}${o.build!=null?`bauen ${o.build}${ic('coin')}`:''}</span>
+ <span class="ln"><i>◆</i><span class="rl">${c.tile.map(ruleIc).join('<span class="gap"></span>')}</span></span>
+ ${c.fam==='grund'?'':`<span class="ln"><i>▸</i><span class="rl">${effIc(c.eff)}</span></span>
+ <span class="ln up"><i>↧</i><span class="rl">${c.edge.map(ruleIc).join('<span class="gap"></span>')}</span></span>`}</span></button>`}
 function boardHtml(p,pi,pick){
   return `<div class="board">${p.rows.map((rw,r)=>{
     const cl=closed(rw),tired=rowTired(S,p,r),free=COLS-used(rw);
-    const tile=(t,sd,ti)=>{const c=CARDS[t.id];const pk=pick&&pick.tiles&&pick.tiles(r,sd,ti);return `<button class="tile ${sd} f-${c.fam} ${ART[t.id]?'has-art':''} ${pk?'pick':''}" style="grid-column:span ${c.w}${ART[t.id]?`;background-image:url(${ART[t.id]})`:''}" data-a="${pk?'tile':'tinfo'}" data-r="${r}" data-sd="${sd}" data-ti="${ti}" data-p="${pi}"><span class="dots" title="Upgrades">${'●'.repeat(t.edges.length)}${'○'.repeat(3-t.edges.length)}</span><b>${esc(c.n)}</b>${c.w>1?`<span class="rl">${esc([...c.tile,...t.edges.map(e=>CARDS[e].edge).flat()].map(rule).slice(0,2).join('; '))}</span>`:''}</button>`};
+    const tile=(t,sd,ti)=>{const c=CARDS[t.id];const pk=pick&&pick.tiles&&pick.tiles(r,sd,ti);return `<button class="tile ${sd} f-${c.fam} ${ART[t.id]?'has-art':''} ${pk?'pick':''}" style="grid-column:span ${c.w}${ART[t.id]?`;background-image:url(${ART[t.id]})`:''}" data-a="${pk?'tile':'tinfo'}" data-info="${esc(cardInfo(c)+(t.edges.length?'\nUntergeschoben: '+t.edges.map(x=>CARDS[x].n+' ('+CARDS[x].edge.map(rule).join('; ')+')').join(', '):''))}" data-r="${r}" data-sd="${sd}" data-ti="${ti}" data-p="${pi}"><span class="dots" title="Upgrades">${'●'.repeat(t.edges.length)}${'○'.repeat(3-t.edges.length)}</span><b>${esc(c.n)}</b>${c.w>1?`<span class="rl">${esc([...c.tile,...t.edges.map(e=>CARDS[e].edge).flat()].map(rule).slice(0,2).join('; '))}</span>`:''}</button>`};
     const pr=pick&&pick.rows&&pick.rows(r);
     return `<div class="row ${pr?'pickrow':''} ${tired?'tired':''}" ${pr?`data-a="row" data-r="${r}"`:''}><span class="edge">Stadt</span>${rw.S.map((t,ti)=>tile(t,'S',ti)).join('')}${Array(free).fill(`<span class="cell" ${pr?`data-a="row" data-r="${r}"`:''}></span>`).join('')}${[...rw.W].reverse().map((t,i)=>tile(t,'W',rw.W.length-1-i)).join('')}<span class="edge">Wald</span></div>
     <div class="rowinfo"><span>Reihe ${r+1}${tired?' · ruht diese Runde':''}</span><span class="${cl?'closed':''}">${cl?'gesäumt ✓ bringt Ruhm':`Stadt ${sideW(rw,'S')} · Wildnis ${sideW(rw,'W')} · frei ${free}`}</span></div>`}).join('')}</div>`}
@@ -513,6 +571,20 @@ function tipText(){
 }
 // ---- Eingaben ----
 function toastLong(t){U.toast=t;render();clearTimeout(U.tt);U.tt=setTimeout(()=>{U.toast=null;render()},4200)}
+// Langes Drücken (≈0,45 s) auf ein Element mit data-info zeigt eine Info-Blase
+let lpT=null,lpFired=false,lpXY=null;
+function hideBubble(){const b=document.querySelector('.bubble');if(b)b.remove()}
+function showBubble(el){hideBubble();const b=document.createElement('div');b.className='bubble';b.textContent=el.dataset.info;document.body.appendChild(b);
+  const r=el.getBoundingClientRect(),bw=b.offsetWidth,bh=b.offsetHeight,vw=innerWidth;
+  let x=Math.min(Math.max(12,r.left+r.width/2-bw/2),vw-bw-12),y=r.top-bh-10;if(y<12)y=Math.min(r.bottom+10,innerHeight-bh-12);
+  b.style.left=x+'px';b.style.top=Math.max(12,y)+'px'}
+document.addEventListener('pointerdown',e=>{hideBubble();const el=e.target.closest('[data-info]');if(!el)return;lpFired=false;lpXY=[e.clientX,e.clientY];
+  clearTimeout(lpT);lpT=setTimeout(()=>{lpFired=true;showBubble(el);if(navigator.vibrate)try{navigator.vibrate(8)}catch(_){}},450)});
+document.addEventListener('pointermove',e=>{if(lpXY&&Math.hypot(e.clientX-lpXY[0],e.clientY-lpXY[1])>10){clearTimeout(lpT);lpXY=null}});
+['pointerup','pointercancel'].forEach(t=>document.addEventListener(t,()=>{clearTimeout(lpT);lpXY=null;if(lpFired)setTimeout(hideBubble,2600)}));
+addEventListener('scroll',()=>{clearTimeout(lpT);hideBubble()},{passive:true});
+document.addEventListener('contextmenu',e=>{if(e.target.closest('[data-info]'))e.preventDefault()});
+document.addEventListener('click',e=>{if(lpFired){lpFired=false;e.stopImmediatePropagation();e.preventDefault()}},true);
 document.addEventListener('click',e=>{
   const el=e.target.closest('[data-a]');if(!el)return;const a=el.dataset.a;
   if(e.target.closest('[data-stop]')&&a==='help-x'&&!e.target.closest('button'))return;
