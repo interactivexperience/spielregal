@@ -1,3 +1,11 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F5F0E4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Saum">
 <title>Saum</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,900&family=Lora:wght@500;600;700&family=DM+Sans:opsz,wght@9..40,400;500;600;700;800&display=swap">
@@ -154,10 +162,13 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .goal{border:1px solid var(--line);border-radius:99px;padding:5px 11px;background:var(--paper);color:var(--muted)}
 /* Startbildschirm */
 .start{position:relative;max-width:520px;margin:-14px auto 0;display:flex;flex-direction:column;gap:16px}
-.start .hero{aspect-ratio:2/3;margin:0 -16px;border-radius:0 0 26px 26px;background:url(art/cover.jpg) center top/cover;box-shadow:0 30px 60px -30px rgba(28,48,43,.6)}
+.start .hero{height:min(150vw,62svh,900px);margin:0 -16px;border-radius:0 0 26px 26px;background:url(art/cover.jpg) center top/cover;box-shadow:0 30px 60px -30px rgba(28,48,43,.6)}
 .start h1{font:900 72px/.9 var(--f-logo);text-transform:uppercase;letter-spacing:.01em;color:var(--logo);margin-top:4px}
 .start .tag{font:600 12px/1.3 var(--f-body);text-transform:uppercase;letter-spacing:.22em;color:var(--teal);margin-top:10px}
 .start p{color:var(--muted);margin:0}
+.sbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.sbtns .btn{padding:15px 12px;font-size:15px;text-align:center}
+.sbtns .wide{grid-column:1/-1}
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .leave{position:absolute;top:16px;right:16px;z-index:2;font:600 12.5px/1 var(--f-body);color:#1C302B;background:rgba(251,248,241,.9);text-decoration:none;border-radius:999px;padding:8px 13px}
 .rules{font-size:14px;color:var(--ink)}
@@ -207,6 +218,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .overlay .intro{max-width:560px;max-height:85vh;overflow:auto}
 .nm>span:last-child{white-space:nowrap}
 </style>
+</head>
+<body>
 <div id="app" lang="de"></div>
 <script>
 // ======================= Regeln (identisch mit sim.mjs, Stand v0.5) =======================
@@ -636,14 +649,14 @@ function goTo(){
   el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');
 }
 const HERO_TOP='#6E7A55';
-function themeFor(onStart){document.documentElement.style.backgroundColor=onStart?HERO_TOP:'';let tc=document.querySelector('meta[name="theme-color"]');if(!tc){tc=document.createElement('meta');tc.name='theme-color';document.head.appendChild(tc);tc.dataset.base='#F5F0E4'}tc.content=onStart?HERO_TOP:tc.dataset.base}
+function themeFor(onStart){document.documentElement.style.backgroundColor=onStart?HERO_TOP:'';let tc=document.querySelector('meta[name="theme-color"]');if(!tc){tc=document.createElement('meta');tc.name='theme-color';tc.content='#F5F0E4';document.head.appendChild(tc)}if(!tc.dataset.base)tc.dataset.base=tc.content;tc.content=onStart?HERO_TOP:tc.dataset.base}
 addEventListener('scroll',()=>{const on=scrollY>90;if(on!==!!U.scr){U.scr=on;const h=document.querySelector('.thead');if(h)h.classList.toggle('scr',on)}},{passive:true});
 function resumeGame(){const sv=load();if(!sv)return;S=sv.S;R=rng(S.seed+S.round*7919+S.log.length);U={phase:sv.U.phase||'land',sel:null,disc:sv.U.disc||0,view:0};if(S.draft){U.phase='draft';runDraft();return}if(S.cur!==0){S.cur=S.players.length-1;nextTurn()}else render()}
 document.addEventListener('saum:resume',resumeGame);
 function render(){
   const app=document.getElementById('app');themeFor(!S);
   if(!S){const sv=load();app.innerHTML=`<div class="start"><a class="leave" href="../" aria-label="Beenden und zurück zu Spielregal">✕ Beenden</a><div class="hero" role="img" aria-label="Saum – Entdecken, Sammeln, Weiterziehen: Blick über Fluss, Stadt und Wald"></div><div class="vh"><h1>Saum</h1><div class="tag">Entdecken · Sammeln · Weiterziehen</div></div><p>Von links wächst deine Stadt, von rechts deine Wildnis. Wo sie sich treffen, entsteht ein Kreislauf – und nur gesäumte Reihen bringen Ruhm. Prototyp, Regeln Stand v0.8.</p>
-   <div style="display:flex;gap:8px;flex-wrap:wrap">${sv?'<button class="btn saum" data-a="resume">Partie fortsetzen</button>':''}<button class="btn" data-a="start" data-n="1">Gegen 1 Bot</button><button class="btn alt" data-a="start" data-n="2">Gegen 2 Bots</button></div></div>`;return}
+   <div class="sbtns">${sv?'<button class="btn saum wide" data-a="resume">Partie fortsetzen</button>':''}<button class="btn" data-a="start" data-n="1">Gegen 1 Bot</button><button class="btn alt" data-a="start" data-n="2">Gegen 2 Bots</button></div></div>`;return}
   if(U.page==null)U.page=1;if(pagesBusy()){U.rpend=true;return}U.rpend=false;autoPage();
   const p=me(),pick=pickFor(),view=U.view||0,vp=S.players[view];
   const winter=S.draft?'Startplättchen-Draft':S.endAt!=null?'Letzte Runde':`Ende: ${ENDM} ★ · voller Plan`;
@@ -768,3 +781,5 @@ function finishTurn(){const p=me();U.undo=[];draw(p,Math.max(0,5-p.hand.length),
 if(new URLSearchParams(location.search).has('resume')){try{if(load())document.dispatchEvent(new CustomEvent('saum:resume'))}catch(_){}history.replaceState(null,'',location.pathname)}
 render();
 </script>
+</body>
+</html>
