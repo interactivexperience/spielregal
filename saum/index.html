@@ -37,22 +37,31 @@ body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--f-body);margin:0
 h1,h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance;letter-spacing:.005em}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offset:2px}
-/* Kopf */
-.top{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.top h1{font-size:30px;font-weight:700}
-.tools{display:flex;gap:6px}
-.ico{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:600 14px/1 var(--f-body);text-decoration:none}
-.status{display:flex;flex-wrap:wrap;gap:4px 0;margin-top:2px;padding-bottom:12px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
-.status span+span::before{content:"·";margin:0 7px;color:var(--line)}
-.status .season{color:var(--ink)}
-.status .winter{color:var(--bad);font-weight:600}
-.opps{display:flex;gap:6px;margin-top:12px;overflow-x:auto;scrollbar-width:none}
-.opp{flex:0 0 auto;display:flex;gap:8px;align-items:baseline;border-radius:99px;padding:6px 13px;font-size:12px;color:var(--muted);background:var(--paper);border:1px solid var(--line);font-variant-numeric:tabular-nums}
+/* Kopf: fest und deckend in der Seitenfarbe (kein Blur), Ansage kompakt, Vorräte immer sichtbar */
+.thead{position:sticky;top:0;z-index:4;background:var(--bg);margin:0 -16px;padding:10px 16px 8px;box-shadow:0 1px 0 var(--line)}
+.hrow{display:flex;align-items:center;gap:10px;min-height:38px}
+.hrow h1{font-size:28px;font-weight:700;flex:none;transition:font-size .2s,opacity .2s}
+.ann{flex:1;min-width:0;text-align:left;font-size:13px;line-height:1.25;color:var(--ink);background:var(--paper);border-radius:99px;padding:7px 12px;box-shadow:inset 0 0 0 1px var(--line);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ann.me{background:var(--saum-soft);box-shadow:inset 0 0 0 1.5px var(--saum)}
+.ann b{font-weight:700}
+.ico{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:600 16px/1 var(--f-body);text-decoration:none;transition:opacity .2s,width .2s,margin .2s}
+.thead.scr .hrow h1{font-size:0;opacity:0}
+.thead.scr .hrow .ico{opacity:0;width:0;margin-left:-10px;border-width:0;pointer-events:none}
+.opps{display:flex;gap:6px;margin-top:8px;overflow-x:auto;scrollbar-width:none}
+.opp{flex:0 0 auto;display:flex;gap:7px;align-items:baseline;border-radius:99px;padding:5px 12px;font-size:12px;color:var(--muted);background:var(--paper);border:1px solid var(--line);font-variant-numeric:tabular-nums}
 .opp b{font-weight:600;color:var(--ink)}
 .opp .sc{font:700 16px/1 var(--f-display);color:var(--ink)}
 .opp.cur{border-color:var(--saum);box-shadow:0 0 0 1px var(--saum)}
 .opp.vis{background:var(--saum-soft)}
-.me-bar{display:flex;gap:18px;margin:16px 0 4px;font-variant-numeric:tabular-nums;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.res{display:flex;align-items:center;gap:12px;margin-top:8px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;overflow-x:auto;scrollbar-width:none;white-space:nowrap}
+.res>span{display:flex;align-items:center;gap:4px}
+.res .tk{width:20px;height:20px}
+.res .rd{margin-left:auto;font-weight:500;color:var(--muted);font-size:12px}
+.res .rd.last{color:var(--bad);font-weight:700}
+.flash{animation:flash 1.1s ease-out}
+@keyframes flash{0%,40%{box-shadow:0 0 0 3px var(--saum);border-radius:var(--r)}100%{box-shadow:0 0 0 0 transparent}}
+@media (prefers-reduced-motion:reduce){.flash{animation:none}.hrow h1,.ico{transition:none}}
+.me-bar{display:flex;gap:18px;margin:14px 0 4px;font-variant-numeric:tabular-nums;flex-wrap:wrap;font-size:13px;color:var(--muted)}
 .me-bar span:first-child{font-family:var(--f-display);font-size:20px;font-weight:700;color:var(--ink);margin-right:auto}
 .phase{margin:12px 0;padding:12px 14px;border-radius:var(--r);background:var(--paper);border:1px solid var(--line);font-size:14px}
 .phase b{font-weight:700}
@@ -139,8 +148,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .goals{display:flex;gap:6px;flex-wrap:wrap;font-size:12px}
 .goal{border:1px solid var(--line);border-radius:99px;padding:5px 11px;background:var(--paper);color:var(--muted)}
 /* Startbildschirm */
-.start{position:relative;max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:16px;padding-top:6px}
-.start .hero{aspect-ratio:2/3;border-radius:22px;background:url(art/muehle.jpg) center/cover;box-shadow:0 30px 60px -30px rgba(59,35,18,.6)}
+.start{position:relative;max-width:520px;margin:-14px auto 0;display:flex;flex-direction:column;gap:16px}
+.start .hero{aspect-ratio:2/3;margin:0 -16px;border-radius:0 0 26px 26px;background:url(art/muehle.jpg) center/cover;box-shadow:0 30px 60px -30px rgba(59,35,18,.6)}
 .start h1{font-size:60px;font-weight:700;line-height:.9;margin-top:4px}
 .start .tag{font:italic 500 22px/1.2 var(--f-display);color:var(--stadt)}
 .start p{color:var(--muted);margin:0}
@@ -157,7 +166,9 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .steps span{font-size:11px;font-weight:600;border-radius:99px;padding:3px 10px;color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
 .steps span.on{background:var(--ink);color:var(--bg);box-shadow:none}
 .steps span.done{color:var(--good)}
-.sheet{width:100%;display:flex;flex-direction:column;gap:10px;max-height:52vh;overflow:auto}
+.sheet{width:100%;display:flex;flex-direction:column;gap:10px;max-height:52vh;overflow:auto;overscroll-behavior:contain}
+.sheet>.sh{position:sticky;top:0;z-index:1;background:var(--paper);padding-bottom:4px}
+.sheet>.opts:last-child{position:sticky;bottom:0;background:var(--paper);padding-top:6px}
 .sh{display:flex;flex-direction:column;gap:2px}.sh b{font:700 19px/1.15 var(--f-display)}.sh span{font-size:13px;color:var(--muted)}
 .grp{border-radius:var(--r);padding:10px;display:flex;flex-direction:column;gap:6px;background:var(--bg)}
 .gl{font-weight:600;font-size:13.5px}.gs{font-size:12.5px;color:var(--muted)}
@@ -168,6 +179,10 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .opt:disabled{opacity:.35;cursor:default}
 .opt[data-hl]{box-shadow:inset 0 0 0 1.5px var(--saum);background:var(--saum-soft)}
 .hint{font-size:13px;color:var(--muted)}
+.menu{display:flex;flex-direction:column;gap:8px}
+.menu .btn{width:100%;text-align:center;text-decoration:none;display:block}
+.menu .link{display:block;margin:18px auto 2px;font-size:13px;color:var(--muted);text-decoration:underline}
+.overlay .intro .xbtn{position:sticky;top:-16px;align-self:flex-end;margin:-6px -8px 0 0;z-index:1}
 .intro{background:var(--paper);border-radius:var(--r);box-shadow:0 0 0 1px var(--line);padding:16px 18px;margin:12px 0;font-size:14px;display:flex;flex-direction:column;gap:8px}
 .intro h2{font-size:24px}.intro ol{margin:0;padding-left:20px}.intro li{margin:4px 0}.intro p{margin:0}
 .overlay{position:fixed;inset:0;background:rgba(36,26,18,.5);display:grid;place-items:center;padding:16px;z-index:8}
@@ -391,7 +406,7 @@ function nextTurn(){
   {const q=S.players[S.cur];if(S.endAt==null&&(meisterCount(q)>=ENDM||planFull(q))){S.endAt=S.cur;say(`${q.bot?q.name+' hat':'Du hast'} ${meisterCount(q)>=ENDM?ENDM+' Meisterstücke':'den Plan voll'} – diese Runde wird zu Ende gespielt, dann ist Schluss.`,true)}}
   S.cur=(S.cur+1)%S.players.length;
   if(S.cur===0){endRound();if(S.over){recordPlay();save();render();return}}
-  if(S.players[S.cur].bot){render();setTimeout(()=>{botTurn(S,S.cur,R);nextTurn()},450)}
+  if(S.players[S.cur].bot){render();setTimeout(()=>{botTurn(S,S.cur,R);nextTurn()},botDelay())}
   else{U={phase:'land',sel:null,disc:0,view:0};save();render()}
 }
 function me(){return S.players[0]}
@@ -402,7 +417,7 @@ function runDraft(){
   if(!S.draft)return;
   if(S.draft.step>=S.draft.order.length){S.draft=null;S.cur=0;U={phase:'land',sel:null,disc:0,view:0};say('Draft beendet. Frühling: Ketten fließen von der Stadt (links) in die Wildnis.',true);save();render();return}
   const qi=draftWho();if(qi===0){save();render();return}
-  render();setTimeout(()=>{draftBot(qi);runDraft()},450);
+  render();setTimeout(()=>{draftBot(qi);runDraft()},botDelay());
 }
 function toast(t){U.toast=t;render();setTimeout(()=>{U.toast=null;render()},1800)}
 function save(){try{localStorage.setItem('saum:save',JSON.stringify({screen:S&&!S.over?'game':'start',S,U:{phase:U.phase,disc:U.disc}}))}catch(e){}}
@@ -512,7 +527,7 @@ function actionsHtml(){
   const tip=`<button class="btn alt" data-a="tip">Tipp</button>`;
   if(U.mode==='tuck'){const c=CARDS[p.hand[sel.i]];return `<div class="sheet"><div class="sh"><b>${esc(c.n)} als Upgrade</b><span>Tippe oben das Plättchen an, das dazubekommt: ${esc(c.edge.map(rule).join('; '))}. Kostet 1 Münze.</span></div><div class="opts"><button class="btn alt" data-a="cancel">Abbrechen</button></div></div>`}
   if(U.phase==='land'){
-    if(!sel)return `${!p.hand.length?'<button class="btn alt" data-a="noland">Ohne Plättchen weiter</button>':''}${tip}<span class="hint">Karte antippen</span>`;
+    if(!sel)return `${!p.hand.length?'<button class="btn alt" data-a="noland">Ohne Plättchen weiter</button>':''}${tip}<span class="hint">Karte aus Hand oder Auslage antippen</span>`;
     const c=sel.src==='m'?CARDS[S.market[sel.i]]:CARDS[p.hand[sel.i]];const cost=sel.src==='m'?mprice(S,sel.i):0;
     const why=c.fam==='start'?'Startkarten sind nicht baubar':p.coins<cost?`zu wenig Münzen (${cost} nötig)`:'';
     const rows=[0,1,2,3].map(r=>{const okr=!why&&canPlace(p.rows[r],c);return opt('build',`Reihe ${r+1}`,okr?`frei ${COLS-used(p.rows[r])}`:'passt nicht',!okr,`data-r="${r}"`)}).join('');
@@ -545,27 +560,58 @@ function introHtml(){return `<div class="intro"><h2>So geht ein Zug</h2><ol>
  <p><b>Ende:</b> Hat jemand <b>6 Meisterstücke</b> (Plättchen mit 3 Upgrades) oder einen <b>vollen Plan</b>, wird die Runde zu Ende gespielt – alle hatten dann gleich viele Züge.</p>
  <p>Unsicher? Der Knopf <b>Tipp</b> zeigt, was ein Bot an deiner Stelle tun würde.</p>
  <button class="btn" data-a="intro-ok">Verstanden</button></div>`}
+// ---------- Kopf: Ansage, Menü, Sprungziele (Spielregal-Konventionen) ----------
+const plain=h=>h.replace(/<[^>]+>/g,'').replace(/&amp;/g,'&');
+function annMine(){return S&&!S.over&&(S.draft?draftWho()===0:S.cur===0)}
+function annShort(){
+  if(S.over)return 'Partie beendet';
+  if(S.draft){const w=draftWho();return w===0?`<b>Du bist dran:</b> Startplättchen wählen`:`${esc(S.players[w].name)} wählt …`}
+  if(S.cur!==0)return `${esc(S.players[S.cur].name)} ist am Zug …`;
+  return `<b>Du bist dran:</b> ${['1 Plättchen','2 Aktion','3 Abschluss'][stepIdx()]}`;
+}
+function annLong(){return plain(phaseText().replace(/<div class="steps">.*?<\/div>/,''))||'Tippen springt zur passenden Stelle.'}
+function menuHtml(){const fast=fastPref();return `<div class="overlay" data-a="menu-x"><div class="intro" data-stop="1"><button class="ico xbtn" data-a="menu-x" aria-label="Schließen">✕</button><h2>Menü</h2><div class="menu">
+  <button class="btn alt" data-a="rules">Spielregeln</button>
+  <button class="btn alt" data-a="fast" data-info="Wie schnell die Mitspieler am Zug sind. Bleibt für alle Spiele gespeichert.">Mitspieler-Tempo: ${fast?'schnell':'normal'}</button>
+  <a class="btn" href="../">Speichern &amp; zum Spielregal</a>
+  <button class="btn alt" data-a="restart">Partie abbrechen &amp; neu starten</button></div>
+  <button class="link" data-a="reload">Neueste Version laden</button></div></div>`}
+const fastPref=()=>{try{return localStorage.getItem('spielregal:botFast')==='1'}catch(_){return false}};
+const botDelay=()=>fastPref()?160:450;
+function goTo(){
+  if(U.sel||U.mode){const a=document.querySelector('.actions');if(a){a.classList.remove('flash');void a.offsetWidth;a.classList.add('flash')}return}
+  const id=S.over?'plan':S.draft?(draftWho()===0?'draft':'plan'):S.cur!==0?'plan':U.phase==='ende'?(U.bought?'hand':'markt'):'hand';
+  const el=document.getElementById(id);if(!el)return;
+  const top=el.getBoundingClientRect().top+scrollY-(document.querySelector('.thead')?.offsetHeight||0)-8;
+  scrollTo({top,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+  el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');
+}
+const HERO_TOP='#BEAFBE';
+function themeFor(onStart){document.documentElement.style.backgroundColor=onStart?HERO_TOP:'';let tc=document.querySelector('meta[name="theme-color"]');if(!tc){tc=document.createElement('meta');tc.name='theme-color';document.head.appendChild(tc);tc.dataset.base='#F7EEDF'}tc.content=onStart?HERO_TOP:tc.dataset.base}
+addEventListener('scroll',()=>{const on=scrollY>90;if(on!==!!U.scr){U.scr=on;const h=document.querySelector('.thead');if(h)h.classList.toggle('scr',on)}},{passive:true});
+function resumeGame(){const sv=load();if(!sv)return;S=sv.S;R=rng(S.seed+S.round*7919+S.log.length);U={phase:sv.U.phase||'land',sel:null,disc:sv.U.disc||0,view:0};if(S.draft){U.phase='draft';runDraft();return}if(S.cur!==0){S.cur=S.players.length-1;nextTurn()}else render()}
+document.addEventListener('saum:resume',resumeGame);
 function render(){
-  const app=document.getElementById('app');
+  const app=document.getElementById('app');themeFor(!S);
   if(!S){const sv=load();app.innerHTML=`<div class="start"><a class="leave" href="../" aria-label="Beenden und zurück zu Spielregal">✕ Beenden</a><div class="hero" role="img" aria-label="Die Mühle von Saum im Abendlicht"></div><div><h1>Saum</h1><div class="tag">Stadt, Wildnis und der Kreislauf dazwischen</div></div><p>Von links wächst deine Stadt, von rechts deine Wildnis. Wo sie sich treffen, entsteht ein Kreislauf – und nur gesäumte Reihen bringen Ruhm. Prototyp, Regeln Stand v0.7.</p>
    <div style="display:flex;gap:8px;flex-wrap:wrap">${sv?'<button class="btn saum" data-a="resume">Partie fortsetzen</button>':''}<button class="btn" data-a="start" data-n="1">Gegen 1 Bot</button><button class="btn alt" data-a="start" data-n="2">Gegen 2 Bots</button></div></div>`;return}
   const p=me(),pick=pickFor(),view=U.view||0,vp=S.players[view];
   const winter=S.draft?'Startplättchen-Draft':S.endAt!=null?'Letzte Runde':`Ende: ${ENDM} ★ · voller Plan`;
   let intro=false;try{intro=!localStorage.getItem('saum:intro')}catch(_){intro=!U.introSeen}if(U.introSeen)intro=false;
   app.innerHTML=`${U.toast?`<div class="toast">${esc(U.toast)}</div>`:''}
-  <div class="top"><h1>Saum</h1><div class="tools"><button class="ico" data-a="help" aria-label="Regeln" data-info="Regeln">?</button><a class="ico" href="../" aria-label="Zurück zu Spielregal (Partie bleibt gespeichert)" data-info="Zurück zu Spielregal – die Partie bleibt gespeichert">✕</a></div></div>
-  <div class="status"><span>Runde ${S.round+1}</span><span class="season">${S.season==='LR'?'Frühling → Wald':'Herbst → Stadt'}</span><span class="${S.endAt!=null?'winter':''}">${winter}</span></div>
-  <div class="opps">${S.players.map((q,i)=>`<button class="opp ${S.cur===i?'cur':''} ${view===i?'vis':''}" data-a="view" data-p="${i}" data-info="${esc(q.name)}: ${finalScore(q)} Ruhm · ${q.coins} Münzen · ${closedCount(q)}/4 Reihen gesäumt · ${meisterCount(q)}/${ENDM} Meisterstücke · ${filledCount(q)}/24 Felder. Antippen zeigt den Plan."><b>${esc(q.name)}</b><span class="sc">${finalScore(q)}</span><span class="dt">${q.coins} Mz · ${closedCount(q)}/4 · ★${meisterCount(q)}</span></button>`).join('')}</div>
+  <div class="thead ${U.scr?'scr':''}"><div class="hrow"><h1>Saum</h1><button class="ann ${annMine()?'me':''}" data-a="go" data-info="${esc(annLong())}">${annShort()}</button><button class="ico" data-a="menu" aria-label="Menü">☰</button></div>
+  <div class="opps">${S.players.map((q,i)=>`<button class="opp ${S.cur===i?'cur':''} ${view===i?'vis':''}" data-a="view" data-p="${i}" data-info="${esc(q.name)}: ${finalScore(q)} Ruhm · ${q.coins} Münzen · ${closedCount(q)}/4 Reihen gesäumt · ${meisterCount(q)}/${ENDM} Meisterstücke · ${filledCount(q)}/24 Felder. Antippen zeigt den Plan."><b>${esc(q.name)}</b><span class="sc">${finalScore(q)}</span></button>`).join('')}</div>
+  <div class="res"><span data-info="Ruhm (Punkte), Stand jetzt inklusive Endwertung">${ruhmT('')}${finalScore(p)}</span><span data-info="Münzen">${coinT('')}${p.coins}</span><span data-info="Handkarten">${cardT('')}${p.hand.length}</span><span data-info="Meisterstücke (Plättchen mit 3 Upgrades). Bei ${ENDM} endet das Spiel.">★ ${meisterCount(p)}/${ENDM}</span><span data-info="Belegte Felder. Bei 24 endet das Spiel.">▦ ${filledCount(p)}/24</span><span class="rd ${S.endAt!=null?'last':''}" data-info="${S.season==='LR'?'Frühling: Ketten laufen von der Stadt (links) zur Wildnis':'Herbst: Ketten laufen von der Wildnis (rechts) zur Stadt'}. ${winter}.">${S.endAt!=null?'Letzte Runde':`R${S.round+1} · ${S.season==='LR'?'Frühling →':'← Herbst'}`}</span></div></div>
   ${intro&&!S.over?introHtml():''}
-  ${S.over?endHtml():`<div class="phase">${phaseText()}</div>`}
-  <div class="me-bar"><span>${view===0?'Dein Plan':esc(vp.name)+'s Plan'}</span><span>Ruhm ${finalScore(vp)}</span><span>Münzen ${vp.coins}</span><span>Hand ${vp.hand.length}</span></div>
+  ${S.over?endHtml():''}
+  <div class="me-bar" id="plan"><span>${view===0?'Dein Plan':esc(vp.name)+'s Plan'}</span>${view===0?'':`<span>Ruhm ${finalScore(vp)}</span><span>Münzen ${vp.coins}</span><span>Hand ${vp.hand.length}</span>`}</div>
   ${boardHtml(vp,view,view===0?pick:null)}
-  ${S.draft?`<div class="sec"><h3>Startplättchen</h3><div class="cards">${S.draft.disp.map((id,i)=>cardHtml(id,{a:'gpick',i,sel:U.sel&&U.sel.src==='g'&&U.sel.i===i,off:draftWho()!==0})).join('')}</div></div>`:''}
-  ${view===0&&!S.over?`<div class="sec"><h3>Deine Hand</h3><div class="cards">${p.hand.map((id,i)=>cardHtml(id,{a:'hand',i,sel:U.sel&&U.sel.src==='h'&&U.sel.i===i,off:S.cur!==0||(U.phase==='ende'&&!upLeft())})).join('')||'<span style="color:var(--muted)">leer</span>'}</div></div>`:''}
-  <div class="sec"><h3>Auslage</h3><div class="cards">${S.market.map((id,i)=>{const pr=Math.max(0,price(S,i)-(U.phase==='ende'?U.disc:0)),bp=mprice(S,i),take=U.phase==='tat'&&U.mode==='take';return cardHtml(id,{a:'market',i,price:pr,build:bp,sel:U.sel&&U.sel.src==='m'&&U.sel.i===i,off:!take&&(!(S.cur===0&&(U.phase==='land'||(U.phase==='ende'&&!U.bought)))||(U.phase==='land'?bp:pr)>p.coins)})}).join('')}</div></div>
+  ${S.draft?`<div class="sec" id="draft"><h3>Startplättchen</h3><div class="cards">${S.draft.disp.map((id,i)=>cardHtml(id,{a:'gpick',i,sel:U.sel&&U.sel.src==='g'&&U.sel.i===i,off:draftWho()!==0})).join('')}</div></div>`:''}
+  ${view===0&&!S.over?`<div class="sec" id="hand"><h3>Deine Hand</h3><div class="cards">${p.hand.map((id,i)=>cardHtml(id,{a:'hand',i,sel:U.sel&&U.sel.src==='h'&&U.sel.i===i,off:S.cur!==0||(U.phase==='ende'&&!upLeft())})).join('')||'<span style="color:var(--muted)">leer</span>'}</div></div>`:''}
+  <div class="sec" id="markt"><h3>Auslage</h3><div class="cards">${S.market.map((id,i)=>{const pr=Math.max(0,price(S,i)-(U.phase==='ende'?U.disc:0)),bp=mprice(S,i),take=U.phase==='tat'&&U.mode==='take';return cardHtml(id,{a:'market',i,price:pr,build:bp,sel:U.sel&&U.sel.src==='m'&&U.sel.i===i,off:!take&&(!(S.cur===0&&(U.phase==='land'||(U.phase==='ende'&&!U.bought)))||(U.phase==='land'?bp:pr)>p.coins)})}).join('')}</div></div>
   <div class="sec"><h3>Jahresziele</h3><div class="goals">${S.goals.map(g=>`<span class="goal">${esc(g.tx)} · ${g.by.length?g.by.map(i=>esc(S.players[i].name)).join(', '):'6/3 Ruhm'} · du ${Math.min(goalProgress(p,g),g.n)}/${g.n}</span>`).join('')}</div></div>
   <div class="sec"><h3>Chronik</h3><div class="log">${S.log.map(l=>`<div class="${l.me?'me':''}">${esc(l.t)}</div>`).join('')}</div></div>
-  ${U.help?`<div class="overlay" data-a="help-x"><div class="intro" data-stop="1">${introHtml().replace('<button class="btn" data-a="intro-ok">Verstanden</button>','<button class="btn" data-a="help-x">Schließen</button>').replace('<div class="intro">','').replace(/<\/div>$/,'')}</div></div>`:''}
+  ${U.help?`<div class="overlay" data-a="help-x"><div class="intro" data-stop="1"><button class="ico xbtn" data-a="help-x" aria-label="Schließen">✕</button>${introHtml().replace('<button class="btn" data-a="intro-ok">Verstanden</button>','<button class="btn" data-a="help-x">Schließen</button>').replace('<div class="intro">','').replace(/<\/div>$/,'')}</div></div>`:''}${U.menu?menuHtml():''}
   <div class="actions"><div class="in">${actionsHtml()}</div></div>`;
 }
 function endHtml(){
@@ -599,13 +645,19 @@ document.addEventListener('contextmenu',e=>{if(e.target.closest('[data-info]'))e
 document.addEventListener('click',e=>{if(lpFired){lpFired=false;e.stopImmediatePropagation();e.preventDefault()}},true);
 document.addEventListener('click',e=>{
   const el=e.target.closest('[data-a]');if(!el)return;const a=el.dataset.a;
-  if(e.target.closest('[data-stop]')&&a==='help-x'&&!e.target.closest('button'))return;
+  if(e.target.closest('[data-stop]')&&(a==='help-x'||a==='menu-x')&&!e.target.closest('button'))return;
   if(a==='start'){newGame(+el.dataset.n);return}
-  if(a==='resume'){const sv=load();S=sv.S;R=rng(S.seed+S.round*7919+S.log.length);U={phase:sv.U.phase||'land',sel:null,disc:sv.U.disc||0,view:0};if(S.draft){U.phase='draft';runDraft();return}if(S.cur!==0){S.cur=S.players.length-1;nextTurn()}else render();return}
+  if(a==='resume'){resumeGame();return}
   if(a==='new'){S=null;try{localStorage.removeItem('saum:save')}catch(_){}render();return}
   if(!S)return;
   if(a==='intro-ok'){U.introSeen=true;try{localStorage.setItem('saum:intro','1')}catch(_){}render();return}
-  if(a==='help'){U.help=true;render();return}
+  if(a==='help'||a==='rules'){U.help=true;U.menu=false;render();return}
+  if(a==='menu'){U.menu=true;render();return}
+  if(a==='menu-x'){U.menu=false;render();return}
+  if(a==='go'){goTo();return}
+  if(a==='fast'){try{localStorage.setItem('spielregal:botFast',fastPref()?'0':'1')}catch(_){}render();return}
+  if(a==='reload'){save();location.replace(location.pathname+'?v='+Date.now()+'&resume=1');return}
+  if(a==='restart'){if(!confirm('Partie abbrechen und eine neue beginnen?'))return;S=null;U={phase:null,sel:null,disc:0,toast:null,view:0};try{localStorage.removeItem('saum:save')}catch(_){}scrollTo(0,0);render();return}
   if(a==='help-x'){U.help=false;render();return}
   if(a==='view'){U.view=+el.dataset.p;render();return}
   if(a==='tinfo'){const q=S.players[+el.dataset.p],t=q.rows[+el.dataset.r][el.dataset.sd][+el.dataset.ti],c=CARDS[t.id];toastLong(`${c.n}: ${[...c.tile,...t.edges.map(x=>CARDS[x].edge).flat()].map(rule).join('; ')}${t.edges.length?` · Upgrades: ${t.edges.map(x=>CARDS[x].n).join(', ')}`:''}`);return}
@@ -644,5 +696,7 @@ function afterTat(disc){U.disc=disc||0;U.sel=null;U.mode=null;U.ups=0;U.bought=f
 function upLeft(){const p=me();return U.ups<UPMAX&&p.hand.length>0&&p.coins>=TUCKCOST&&tilesOf(p).some(t=>t.edges.length<3)}
 function maybeFinish(){if(!upLeft()&&U.bought)finishTurn();else render()}
 function finishTurn(){const p=me();draw(p,Math.max(0,5-p.hand.length),R);U.phase=null;U.sel=null;U.mode=null;nextTurn()}
+// Nach „Neueste Version laden“ die gespeicherte Partie direkt fortsetzen
+if(new URLSearchParams(location.search).has('resume')){try{if(load())document.dispatchEvent(new CustomEvent('saum:resume'))}catch(_){}history.replaceState(null,'',location.pathname)}
 render();
 </script>

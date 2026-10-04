@@ -206,4 +206,8 @@ machen und hierher übernehmen (Anbindung erhalten). Kartenbilder liegen unter `
 `design/art-bible.html` erzeugt, Zuordnung über `ART` je Karten-id; Karten ohne Bild zeigen einen Farbverlauf ihrer Familie).
 Das Cover `saum/cover.jpg` ist das Mühlenbild mit Titel. App-Oberfläche: elegant-minimalistisch, Farben nur aus dem
 Mühlenbild (Tokens in `:root`), Schriften Cormorant Garamond + Figtree.
-Die Spielregal-Konventionen der vier anderen Spiele (Menü, Lernspiel, Wischseiten …) gelten für den Prototyp noch nicht.
+Übernommene Spielregal-Konventionen: fester deckender Kopf (`.thead`) mit kompakter Ansage (`data-a="go"`, Antippen springt zur
+Hand/Auslage, langes Drücken = ausführlicher Text), Mitspieler-Chips in eigener Zeile, eigene Vorräte immer sichtbar (`.res`),
+Menü ☰ (Spielregeln, Mitspieler-Tempo `spielregal:botFast`, Speichern & zum Spielregal, Neustart, „Neueste Version laden“ mit
+`?resume=1`), Einklappen beim Scrollen (`.scr`), Info-Blase per langem Drücken, Textauswahl aus, `HERO_TOP` auf dem Startbildschirm,
+sticky Kopf/Knopfzeile in Auswahlfenstern. Noch nicht übernommen: Wischseiten, Lernspiel, Zug rückgängig.
