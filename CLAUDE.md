@@ -202,6 +202,8 @@ kein Nachbau. Regeln, Simulation und Gestaltung werden im Repo `interactivexperi
 Spielregal-Anbindung (Beenden-Knopf und Link „Spielregal“, Spielstand `saum:save` mit `screen: 'game'` für den
 Dashboard-Hinweis „Partie läuft“, Partie-Meldung über `spielregal:inbox:plays` mit `source: 'saum'`). Der Owner
 hat ausdrücklich entschieden, dass Saum damit öffentlich im Spielregal liegt. Änderungen am Prototyp im Saum-Repo
-machen und hierher übernehmen (Anbindung erhalten). Das Cover `saum/cover.jpg` stammt aus der Mal-Engine
-`design/saum-art.js` des Saum-Repos (Stil: Gouache + Buntstift, Plakat-Aufbau wie die Parks-Karten).
+machen und hierher übernehmen (Anbindung erhalten). Kartenbilder liegen unter `saum/art/` (vom Owner nach den Prompts der Art-Bible
+`design/art-bible.html` erzeugt, Zuordnung über `ART` je Karten-id; Karten ohne Bild zeigen einen Farbverlauf ihrer Familie).
+Das Cover `saum/cover.jpg` ist das Mühlenbild mit Titel. App-Oberfläche: elegant-minimalistisch, Farben nur aus dem
+Mühlenbild (Tokens in `:root`), Schriften Cormorant Garamond + Figtree.
 Die Spielregal-Konventionen der vier anderen Spiele (Menü, Lernspiel, Wischseiten …) gelten für den Prototyp noch nicht.
