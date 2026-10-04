@@ -222,6 +222,9 @@ abgesetzten Band = Upgrade; keine farbigen Kästchen, zweifeldrige Karten tragen
 (`data-big`) öffnet die ganze Karte groß mit Text zu jedem Symbol (`bigHtml`), Antippen schließt. Handkarten als Fächer hinter dem
 Footer (`fanHtml`/`layoutFan`, wie Landgut): nur die obere Hälfte schaut heraus (Name + Aktions-Chips), antippen = wählen,
 lange drücken = ganze Karte; bei offenem Auswahlfenster weicht der Fächer. Rückenwind gilt nur zu zweit.
+Plan ohne Dopplungen: Richtung „← Stadt · Wildnis →“ nur einmal in der Titelzeile, Reihennummer als Plakette, Status als Bild statt
+Text (gesäumte Reihe = gelbe gestrichelte Naht, ruhende Reihe = blass mit ☾, Details per langem Drücken auf Nummer/leeres Feld);
+Plättchen volle Breite im Hochformat 2:3 mit Bild, passiven Symbolen oben, Upgrade-Punkten und Namen unten, Meisterstück = ★ + Goldrand.
 Startseite wie die anderen Spiele (Name mit Spielregal-Profil-Chips, Gegner 1/2 Bots, „Partie beginnen“, „Lernspiel“, „Spielregeln
 lesen“ als Fenster `rulesOverlay`, auch im Menü). Lernspiel (`TUT_STEPS`, Coach Fuchs „Fenn“ im Aubergine-Rahmen mit gelbem Leuchten,
 immer gegenüber dem markierten Element): vorbereiteter Plan, Bäckerei säumt Reihe 1, Kette, Upgrade, Kauf, Zug beenden, Herbst,

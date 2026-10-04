@@ -79,24 +79,34 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .phase{margin:12px 0;padding:12px 14px;border-radius:var(--r);background:var(--paper);border:1px solid var(--line);font-size:14px}
 .phase b{font-weight:700}
 /* Plan */
-.board{display:grid;gap:4px;margin-top:6px}
-.row{display:grid;grid-template-columns:18px repeat(6,minmax(0,1fr)) 18px;gap:4px;align-items:stretch}
-.edge{display:grid;place-items:center;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);writing-mode:vertical-rl}
-.cell{min-height:64px;border-radius:10px;border:1px dashed var(--line)}
-.tile{min-height:64px;border-radius:10px;padding:6px;font-size:11px;line-height:1.15;position:relative;text-align:left;overflow:hidden;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;color:var(--ink);background:var(--paper);box-shadow:inset 0 0 0 1px var(--line)}
+.board{container-type:inline-size;display:grid;gap:9px;margin-top:8px}
+.row{position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:calc((100cqw - 20px) / 6 * 1.5);gap:4px;border-radius:12px}
+.row.closed{outline:2px dashed var(--saum);outline-offset:3px}
+.row.tired .tile{filter:saturate(.45) brightness(1.08);opacity:.7}
+.rn{position:absolute;z-index:2;left:-7px;top:-7px;min-width:19px;height:19px;border-radius:99px;display:grid;place-items:center;font:700 11px/1 var(--f-body);color:var(--bg);background:var(--ink);box-shadow:0 0 0 2px var(--bg)}
+.row.closed .rn{background:var(--saum);color:#1C302B}
+.rz{position:absolute;z-index:2;right:-6px;top:-8px;font-size:13px;line-height:1;background:var(--bg);border-radius:99px;padding:2px 3px;color:var(--muted)}
+.cell{border-radius:9px;border:1px dashed var(--line)}
+.tile{border-radius:9px;padding:5px;font-size:11px;line-height:1.15;position:relative;text-align:left;overflow:hidden;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;color:var(--ink);background:var(--paper);container-type:inline-size}
 .tile.S{box-shadow:inset 0 -3px 0 var(--stadt),inset 0 0 0 1px var(--line)}
 .tile.W{box-shadow:inset 0 -3px 0 var(--wild),inset 0 0 0 1px var(--line)}
+.tile b{display:block;font:700 11.5px/1.05 var(--f-display);hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word;text-shadow:0 1px 6px rgba(20,30,27,.5)}
+.tile .tico{position:absolute;left:4px;top:4px;right:4px;display:flex;flex-wrap:wrap;align-items:center;gap:1px;--k:1}
+.tile .tico .tk{width:min(15px,31cqw);height:min(15px,31cqw)}.tile .tico .stk{display:flex}.tile .tico .stk .tk+.tk{margin-left:-7px}
+.tile .tico .arr{font-size:9px;margin:0 1px;color:#FBF8F1;text-shadow:0 0 3px rgba(0,0,0,.6)}
+.tile .tico .pl,.tile .tico .x2,.tile .tico .n{font:800 10px/1 var(--f-body);color:#FBF8F1;text-shadow:0 0 3px rgba(0,0,0,.6)}
+.tile .tico .wd{font:700 8px/1 var(--f-body);background:rgba(251,248,241,.9);color:#1F2B27;border-radius:99px;padding:2px 4px}
+.tile .tico .gap{width:3px}
+.tile .tico{background:linear-gradient(rgba(20,30,27,.45),rgba(20,30,27,0));margin:-4px;padding:4px 4px 8px;border-radius:9px 9px 0 0}
+.tile .dots{display:flex;gap:2px;margin-bottom:3px;color:var(--saum);font-size:11px;line-height:1}
+.tile .dots i{width:6px;height:6px;border-radius:50%;background:var(--saum)}.tile .dots i.o{background:transparent;box-shadow:inset 0 0 0 1.2px var(--saum)}
+.tile.mst{box-shadow:inset 0 0 0 2px var(--saum)}
+.row.pickrow .cell{border:1.5px solid var(--saum);background:var(--saum-soft)}
+.me-bar .dir{font-size:12px;color:var(--muted)}
 .tile.has-art{color:#FBF8F1;background-size:cover;background-position:center 35%}
 .tile.has-art::before{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(28,48,43,.82),rgba(28,48,43,0) 70%)}
 .tile>*{position:relative}
-.tile b{display:block;font:600 12.5px/1.05 var(--f-display);hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word}
-.tile .rl{color:inherit;opacity:.7;font-size:9.5px;display:block;margin-top:2px}
-.tile .dots{position:absolute;top:5px;right:6px;font-size:7px;letter-spacing:1.5px;color:var(--saum);line-height:1}
 .tile.pick{outline:2px solid var(--saum);outline-offset:1px}
-.rowinfo{font-size:10.5px;color:var(--muted);display:flex;gap:8px;padding:2px 22px 6px;justify-content:space-between}
-.rowinfo .closed{color:var(--stadt);font-weight:600}
-.row.pickrow .cell{border:1px solid var(--saum);background:var(--saum-soft)}
-.row.tired .edge{color:var(--bad)}
 /* Abschnitte */
 .sec{margin-top:22px}
 .sec h3{font-size:19px;margin-bottom:8px}
@@ -620,10 +630,10 @@ function cardHtml(id,o={}){const c=CARDS[id],art=ART[id],g=c.fam==='grund';
 function boardHtml(p,pi,pick){
   return `<div class="board">${p.rows.map((rw,r)=>{
     const cl=closed(rw),tired=rowTired(S,p,r),free=COLS-used(rw);
-    const tile=(t,sd,ti)=>{const c=CARDS[t.id];const pk=pick&&pick.tiles&&pick.tiles(r,sd,ti);return `<button class="tile ${sd} f-${c.fam} ${ART[t.id]?'has-art':''} ${pk?'pick':''}" style="grid-column:span ${c.w}${ART[t.id]?`;background-image:url(${ART[t.id]})`:''}" data-a="${pk?'tile':'tinfo'}" data-id="${t.id}" data-big="${t.id}" data-edges="${t.edges.join(',')}" data-r="${r}" data-sd="${sd}" data-ti="${ti}" data-p="${pi}"><span class="dots" title="Upgrades">${'●'.repeat(t.edges.length)}${'○'.repeat(3-t.edges.length)}</span><b>${esc(c.n)}</b>${c.w>1?`<span class="rl">${esc([...c.tile,...t.edges.map(e=>CARDS[e].edge).flat()].map(rule).slice(0,2).join('; '))}</span>`:''}</button>`};
+    const tile=(t,sd,ti)=>{const c=CARDS[t.id];const pk=pick&&pick.tiles&&pick.tiles(r,sd,ti),m=t.edges.length>=3;return `<button class="tile ${sd} f-${c.fam} ${ART[t.id]?'has-art':''} ${pk?'pick':''} ${m?'mst':''}" style="grid-column:span ${c.w}${ART[t.id]?`;background-image:url(${ART[t.id]})`:''}" data-a="${pk?'tile':'tinfo'}" data-id="${t.id}" data-big="${t.id}" data-edges="${t.edges.join(',')}" data-r="${r}" data-sd="${sd}" data-ti="${ti}" data-p="${pi}"><span class="tico">${c.tile.map(ruleIc).join('<span class="gap"></span>')}</span><span class="dots" aria-label="${t.edges.length} von 3 Upgrades">${m?'★':'<i></i>'.repeat(t.edges.length)+'<i class="o"></i>'.repeat(3-t.edges.length)}</span><b>${esc(c.n)}</b></button>`};
     const pr=pick&&pick.rows&&pick.rows(r);
-    return `<div class="row ${pr?'pickrow':''} ${tired?'tired':''}" ${pr?`data-a="row" data-r="${r}"`:''}><span class="edge">Stadt</span>${rw.S.map((t,ti)=>tile(t,'S',ti)).join('')}${Array(free).fill(`<span class="cell" ${pr?`data-a="row" data-r="${r}"`:''}></span>`).join('')}${[...rw.W].reverse().map((t,i)=>tile(t,'W',rw.W.length-1-i)).join('')}<span class="edge">Wald</span></div>
-    <div class="rowinfo"><span>Reihe ${r+1}${tired?' · ruht diese Runde':''}</span><span class="${cl?'closed':''}">${cl?'gesäumt ✓ bringt Ruhm':`Stadt ${sideW(rw,'S')} · Wildnis ${sideW(rw,'W')} · frei ${free}`}</span></div>`}).join('')}</div>`}
+    const info=`Reihe ${r+1}: Stadt ${sideW(rw,'S')} · Wildnis ${sideW(rw,'W')} · frei ${free}.${cl?' Gesäumt – Ketten laufen durch die ganze Reihe und bringen Ruhm.':' Offen – Ketten laufen nur durch die Seite der Jahreszeit, Ruhm zählt als Münzen.'}${tired?' Ruht diese Runde (gerade aktiviert).':''}`;
+    return `<div class="row ${cl?'closed':''} ${pr?'pickrow':''} ${tired?'tired':''}" ${pr?`data-a="row" data-r="${r}"`:''}><span class="rn" data-info="${esc(info)}">${r+1}</span>${rw.S.map((t,ti)=>tile(t,'S',ti)).join('')}${Array(free).fill(`<span class="cell" ${pr?`data-a="row" data-r="${r}"`:''} data-info="${esc(info)}"></span>`).join('')}${[...rw.W].reverse().map((t,i)=>tile(t,'W',rw.W.length-1-i)).join('')}${tired?'<span class="rz" aria-label="ruht">☾</span>':''}</div>`}).join('')}</div>`}
 const STEPS=['Plättchen','Aktion','Abschluss'];
 function stepIdx(){return {land:0,tat:1,ende:2}[U.phase]??0}
 function phaseText(){
@@ -878,7 +888,7 @@ function render(){
   <div class="res"><span data-info="Ruhm (Punkte), Stand jetzt inklusive Endwertung">${ruhmT('')}${finalScore(p)}</span><span data-info="Münzen">${coinT('')}${p.coins}</span>${!S.over&&!S.draft&&isLast(S,0)?'<span class="rw" data-info="Rückenwind: Du hast gerade am wenigsten Ruhm. Kauf und Bauen aus der Auslage kosten dich 1 Münze weniger – die Preise in der Auslage sind schon verbilligt.">Rückenwind −1</span>':''}<span data-info="Handkarten">${cardT('')}${p.hand.length}</span><span data-info="Meisterstücke (Plättchen mit 3 Upgrades). Bei ${ENDM} endet das Spiel.">★ ${meisterCount(p)}/${ENDM}</span><span data-info="Belegte Felder. Bei 24 endet das Spiel.">▦ ${filledCount(p)}/24</span><span class="rd ${S.endAt!=null?'last':''}" data-info="${S.season==='LR'?'Frühling: Ketten laufen von der Stadt (links) zur Wildnis':'Herbst: Ketten laufen von der Wildnis (rechts) zur Stadt'}. ${winter}.">${S.endAt!=null?'Letzte Runde':`R${S.round+1} · ${S.season==='LR'?'Frühling →':'← Herbst'}`}</span></div></div>
   ${intro&&!S.over?introHtml():''}
   ${S.over?endHtml():''}
-  <div class="pages"><div class="page"><div class="me-bar" id="plan"><span>${view===0?'Dein Plan':esc(vp.name)+'s Plan'}</span>${view===0?'':`<span>Ruhm ${finalScore(vp)}</span><span>Münzen ${vp.coins}</span><span>Hand ${vp.hand.length}</span>`}</div>
+  <div class="pages"><div class="page"><div class="me-bar" id="plan"><span>${view===0?'Dein Plan':esc(vp.name)+'s Plan'}</span><span class="dir" data-info="Stadtplättchen wachsen vom linken Rand, Wildnisplättchen vom rechten. Gesäumte Reihen tragen die gelbe Naht.">← Stadt · Wildnis →</span>${view===0?'':`<span>Ruhm ${finalScore(vp)}</span><span>Münzen ${vp.coins}</span><span>Hand ${vp.hand.length}</span>`}</div>
   ${boardHtml(vp,view,view===0?pick:null)}</div><div class="page">
   ${S.draft?`<div class="sec" id="draft"><h3>Startplättchen</h3><div class="cards">${S.draft.disp.map((id,i)=>cardHtml(id,{a:'gpick',i,sel:U.sel&&U.sel.src==='g'&&U.sel.i===i,off:draftWho()!==0})).join('')}</div></div>`:''}
   <div class="sec" id="markt"><h3>Auslage</h3><div class="cards">${S.market.map((id,i)=>{const pr=Math.max(0,price(S,i,0)-(U.phase==='ende'?U.disc:0)),bp=mprice(S,i,0),take=U.phase==='tat'&&U.mode==='take';return cardHtml(id,{a:'market',i,price:pr,build:bp,sel:U.sel&&U.sel.src==='m'&&U.sel.i===i,off:!take&&(!(S.cur===0&&(U.phase==='land'||(U.phase==='ende'&&!U.bought)))||(U.phase==='land'?bp:pr)>p.coins)})}).join('')}</div></div>
