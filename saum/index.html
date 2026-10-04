@@ -83,29 +83,28 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .card{isolation:isolate;position:relative;aspect-ratio:2/3;border-radius:var(--r);background:var(--paper);text-align:left;display:flex;flex-direction:column;justify-content:flex-end;min-width:0;overflow:hidden;box-shadow:0 1px 0 var(--line),0 0 0 1px var(--line)}
 .card .art{position:absolute;inset:0;z-index:-1;background:var(--saum-soft);background-size:cover;background-position:center top}
 .card .art::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(59,35,18,.6),rgba(59,35,18,0) 55%)}
-.card .ttl{display:block;padding:0 10px 6px;font:700 19px/1.02 var(--f-display);color:#FCF7EE;text-shadow:0 1px 8px rgba(59,35,18,.45)}
 .card .side{position:absolute;top:9px;left:9px;display:flex;gap:3px}
 .card .side i{width:11px;height:11px;border-radius:3px;background:var(--stadt);box-shadow:0 0 0 2px rgba(252,247,238,.9)}
 .card.W .side i{background:var(--wild)}
-.card .body{display:flex;flex-direction:column;gap:3px;margin:0 5px 5px;padding:7px 8px 8px;border-radius:calc(var(--r) - 4px);background:color-mix(in srgb,var(--paper) 94%,transparent)}
 .card .cost{position:absolute;top:6px;right:6px;line-height:0;filter:drop-shadow(0 1px 3px rgba(59,35,18,.35))}
 .card .cost .tk{width:30px;height:30px}
-.card .ln{display:flex;flex-direction:column;gap:4px}
-.card .rl{display:flex;flex-wrap:wrap;align-items:center;gap:3px}
-.tk{width:22px;height:22px;flex:none;display:block}
-.card .main .tk{width:24px;height:24px}
-.card .stk{display:flex}.card .stk .tk+.tk{margin-left:-9px}
-.card .stk.or .tk+.tk{margin-left:-5px}
-.card .arr{color:var(--ink);font-size:13px;margin:0 1px;opacity:.8}
-.card .pl{font:800 14px/1 var(--f-body);color:var(--ink);margin:0 1px}
-.card .n{font:800 14px/1 var(--f-body);margin-right:2px}
-.card .x2{font:800 14px/1 var(--f-body);color:var(--ink);margin-left:3px}
-.card .wd{font:700 10.5px/1 var(--f-body);color:var(--ink);background:var(--line);border-radius:99px;padding:4px 6px}
-.card .gap{width:4px}
-.card .band{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:6px;margin:2px -8px 0;padding:5px 8px;border-top:1px solid var(--line)}
-.card .band.up{flex-wrap:wrap}
-.card .band.up{background:color-mix(in srgb,var(--saum-soft) 80%,transparent);margin-bottom:-8px;border-radius:0 0 calc(var(--r) - 4px) calc(var(--r) - 4px)}
-.card .band i{flex:none;font-style:normal;font:700 8px/1 var(--f-body);text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.card .ttl{position:absolute;left:0;right:0;bottom:calc(33.333% + 2px);padding:0 10px 4px;font:700 19px/1.02 var(--f-display);color:#FCF7EE;text-shadow:0 1px 8px rgba(59,35,18,.45)}
+.card .body{container-type:inline-size;position:absolute;left:5px;right:5px;bottom:5px;height:calc(33.333% - 5px);display:grid;grid-template-columns:1fr 1fr;grid-template-rows:44fr 56fr;overflow:hidden;border-radius:calc(var(--r) - 4px);background:color-mix(in srgb,var(--paper) 95%,transparent)}
+.card .body.solo{grid-template-rows:1fr}
+.card .solo .main{flex-direction:column;justify-content:center;gap:2.5cqw}
+.card .ln{--k:1;display:flex;align-items:center;min-width:0;overflow:hidden}
+.card .main{grid-column:1/-1;padding:0 4.5cqw;gap:0}
+.card .act,.card .up{flex-direction:column;align-items:flex-start;justify-content:center;gap:1.6cqw;padding:0 3cqw 0 4.5cqw;border-top:1px solid var(--line)}
+.card .up{background:color-mix(in srgb,var(--saum-soft) 85%,transparent);border-left:1px solid var(--line);padding-left:3.5cqw}
+.card .ln i{font-style:normal;font:700 4.6cqw/1 var(--f-body);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.card .rl{display:flex;align-items:center;flex-wrap:nowrap;white-space:nowrap}
+.card .tk{width:calc(14cqw * var(--k));height:calc(14cqw * var(--k));flex:none;display:block}
+.card .stk{display:flex}.card .stk .tk+.tk{margin-left:calc(-5.5cqw * var(--k))}
+.card .arr{color:var(--ink);font-size:calc(8cqw * var(--k));margin:0 calc(.6cqw * var(--k));opacity:.8}
+.card .pl,.card .n,.card .x2{font:800 calc(8.5cqw * var(--k))/1 var(--f-body);color:var(--ink);margin:0 calc(.6cqw * var(--k))}
+.card .wd{font:700 calc(6.4cqw * var(--k))/1 var(--f-body);color:var(--ink);background:var(--line);border-radius:99px;padding:calc(2.2cqw * var(--k)) calc(3.4cqw * var(--k));margin-right:calc(1cqw * var(--k))}
+.card .gap{width:calc(4cqw * var(--k));flex:none}
+.tk{width:22px;height:22px;flex:none}
 .card .meta{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);margin-bottom:1px}
 .card .meta .card .meta .w{display:flex;gap:2px}.card .meta .w i{width:6px;height:6px;border-radius:1.5px;background:var(--stadt)}
 .card.W .meta .w i{background:var(--wild)}
@@ -453,7 +452,7 @@ const ruleIc=r=>({src:()=>`<b class="pl">+</b>${stack(r.g,r.n)}`,
   combo:()=>`${tok(r.a)}<b class="pl">+</b>${tok(r.b)}${ARR}${ruhmT(r.vp)}`,
   dup:()=>`<span class="stk">${tok('korn')}${tok('holz')}${tok('bluete')}</span><b class="x2">×2</b>`,
   vpPer:()=>`${ruhmT(r.vp)}${word('je')}${tok(r.g)}`,
-  endRows:()=>`${word('Ende')}${ruhmT(r.vp)}${word('je Reihe')}`}[r.t]());
+  endRows:()=>`${ruhmT(r.vp)}${word('je Reihe')}`}[r.t]());
 const effIc=e=>[e.act?word('Kette')+(e.add?Object.entries(e.add).map(([g,n])=>stack(g,n)).join(''):''):'',e.coins?coinT(e.coins):'',e.draw?cardT(e.draw):'',e.buyDisc?word('Kauf')+coinT('−'+e.buyDisc):''].filter(Boolean).join('<span class="gap"></span>');
 const RAWN='Rohwaren (Korn, Holz, Blüten)';
 const ruleLong=r=>({src:()=>`bringt ${r.n} ${G[r.g]} in die Kette.`,conv:()=>`tauscht bis zu ${r.max} ${G[r.from]} aus der Kette in ${G[r.to]}.`,
@@ -468,12 +467,15 @@ function cardInfo(c){const L=[`${c.n} · ${c.side==='S'?'Stadt':'Wildnis'} · ${
   `◆ Plättchen – wirkt jedes Mal, wenn eine Kette hindurchläuft: ${c.tile.map(ruleLong).join(' Außerdem ')}`];
   if(c.fam!=='grund'){L.push(`▸ Aktion – einmal ausspielen: ${effLong(c.eff)}`);L.push(`↧ Upgrade – unter ein Plättchen geschoben, wirkt es dort mit: ${c.edge.map(ruleLong).join(' Außerdem ')}`)}
   L.push('Ruhm aus einer nicht gesäumten Reihe wird zu Münzen.');return L.join('\n')}
+// Icon-Fläche ist immer genau 1/3 der Karte: zu lange Regeln werden verkleinert statt umbrochen
+function fitK(html,avail,cap=1){const stk=[...html.matchAll(/<span class="stk[^"]*">(.*?)<\/span>/g)].reduce((n,m)=>n+Math.max(0,(m[1].match(/<svg/g)||[]).length-1),0);
+  const words=[...html.matchAll(/<span class="wd">([^<]*)<\/span>/g)].reduce((n,m)=>n+0.45+m[1].length*0.33,0);
+  const u=(html.match(/<svg/g)||[]).length-stk*0.4+words+(html.match(/class="arr"/g)||[]).length*0.6+(html.match(/class="pl"/g)||[]).length*0.45+(html.match(/class="x2"/g)||[]).length*0.8+(html.match(/class="gap"/g)||[]).length*0.3;
+  return ` style="--k:${Math.min(cap,avail/Math.max(u,0.1)).toFixed(3)}">${html}`}
 function cardHtml(id,o={}){const c=CARDS[id],art=ART[id];return `<button class="card ${c.side} f-${c.fam} ${o.sel?'sel':''} ${o.off?'off':''}" data-a="${o.a||''}" data-i="${o.i??''}" data-info="${esc(cardInfo(c))}">
  <span class="art"${art?` style="background-image:url(${art})"`:''}></span><span class="side" title="${c.side==='S'?'Stadt':'Wildnis'}">${'<i></i>'.repeat(c.w)}</span>${o.price!=null?`<span class="cost" title="Kaufpreis">${coinT(o.price)}</span>`:''}<span class="ttl">${esc(c.n)}</span>
- <span class="body">${c.fam==='start'?'<span class="meta">Startkarte · nicht baubar</span>':''}
- <span class="ln main">${c.tile.map(ruleIc).map(x=>`<span class="rl">${x}</span>`).join('')}</span>
- ${c.fam==='grund'?'':`<span class="ln band"><i>Aktion</i><span class="rl">${effIc(c.eff)}</span></span>
- <span class="ln band up"><i>Upgrade</i>${c.edge.map(ruleIc).map(x=>`<span class="rl">${x}</span>`).join('')}</span>`}</span></button>`}
+ <span class="body ${c.fam==='grund'?'solo':''}">${c.fam==='grund'?`<span class="ln main">${c.tile.map(r=>`<span class="rl"${fitK(ruleIc(r),6,c.tile.length>1?1.2:1.45)}</span>`).join('')}</span>`:`<span class="ln main"${fitK(c.tile.map(ruleIc).join('<span class="gap"></span>'),6)}</span>`}
+ ${c.fam==='grund'?'':`<span class="ln act"><i>Aktion</i><span class="rl"${fitK(effIc(c.eff),2.9)}</span></span><span class="ln up"><i>Upgrade</i><span class="rl"${fitK(c.edge.map(ruleIc).join('<span class="gap"></span>'),2.9)}</span></span>`}</span></button>`}
 function boardHtml(p,pi,pick){
   return `<div class="board">${p.rows.map((rw,r)=>{
     const cl=closed(rw),tired=rowTired(S,p,r),free=COLS-used(rw);
