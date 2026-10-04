@@ -174,7 +174,7 @@ Seite des Ziels; während des Wischens wird nicht neu gezeichnet (`render` warte
 Spielen deckend in der Seitenfarbe, ohne milchigen Blur (Owner: „kein milchiger Hintergrund“).
 
 Jedes Spiel hat einen eigenen Smoke-Test in `test/` (`gah-smoke.mjs`,
-`rebel-princess-smoke.mjs`, `three-sisters-smoke.mjs`, `countryside-smoke.mjs`, `saum-smoke.mjs`); nach Änderungen an einem Spiel
+`rebel-princess-smoke.mjs`, `three-sisters-smoke.mjs`, `countryside-smoke.mjs`, `saum-smoke.mjs` + `saum-tutorial.mjs`); nach Änderungen an einem Spiel
 dessen Test laufen lassen, dazu `tutorials.mjs` (spielt die Lernspiele aller vier Spiele durch) und
 `save-leave.mjs` (Speichern & verlassen, Fortsetzen, Rückfrage vor dem Überschreiben), nach Änderungen an `index.html` zusätzlich
 `digital-play-link.mjs`, `digital-play-tracking.mjs` und `dashboard-browser-games.mjs`
@@ -221,4 +221,7 @@ abgesetzten Band = Upgrade; keine farbigen Kästchen, zweifeldrige Karten tragen
 (`data-big`) öffnet die ganze Karte groß mit Text zu jedem Symbol (`bigHtml`), Antippen schließt. Handkarten als Fächer hinter dem
 Footer (`fanHtml`/`layoutFan`, wie Landgut): nur die obere Hälfte schaut heraus (Name + Aktions-Chips), antippen = wählen,
 lange drücken = ganze Karte; bei offenem Auswahlfenster weicht der Fächer. Rückenwind gilt nur zu zweit.
-Noch nicht übernommen: Lernspiel.
+Startseite wie die anderen Spiele (Name mit Spielregal-Profil-Chips, Gegner 1/2 Bots, „Partie beginnen“, „Lernspiel“, „Spielregeln
+lesen“ als Fenster `rulesOverlay`, auch im Menü). Lernspiel (`TUT_STEPS`, Coach Fuchs „Fenn“ im Aubergine-Rahmen mit gelbem Leuchten,
+immer gegenüber dem markierten Element): vorbereiteter Plan, Bäckerei säumt Reihe 1, Kette, Upgrade, Kauf, Zug beenden, Herbst,
+Ziele/Ende; wird weder gespeichert noch gemeldet, kein Zug rückgängig, kein automatischer Seitenwechsel.

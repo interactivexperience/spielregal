@@ -230,6 +230,39 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .fan .card .acts{top:23px;left:5px;gap:3px}
 .fan .card.sel{transform:translateY(-14px)}
 .fan.flash .fc .card{animation:flash 1.1s ease-out}
+/* Startseite wie die anderen Spiele */
+.start .sub{color:var(--muted);margin:0;font-size:15px}
+.start .panel{background:var(--paper);border-radius:20px;padding:14px 16px;box-shadow:0 0 0 1px var(--line);display:flex;flex-direction:column;gap:8px}
+.start .label{margin:4px 0 0;font:700 11px/1 var(--f-body);text-transform:uppercase;letter-spacing:.14em;color:var(--teal)}
+.start .input{font:500 16px/1.2 var(--f-body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 12px;-webkit-user-select:text;user-select:text}
+.start .chips{display:flex;gap:6px;flex-wrap:wrap}
+.start .chip{border-radius:99px;padding:8px 14px;font-weight:600;font-size:14px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--line)}
+.start .chip.on{background:var(--ink);color:var(--bg);box-shadow:none}
+.start .note{margin:0;font-size:12.5px;color:var(--muted)}
+.start .btn.wide{width:100%;padding:15px;font-size:15px;text-align:center}
+.start .center{text-align:center;margin:0}
+.link{color:var(--ink);text-decoration:underline;font-size:14px}
+.start .ver{text-align:center;font-size:11.5px;color:var(--muted);margin:0 0 calc(16px + env(safe-area-inset-bottom,0px))}
+.intro.rules h3{font-size:17px;margin-top:6px}.intro.rules ul,.intro.rules ol{margin:0;padding-left:20px}.intro.rules li{margin:3px 0}
+.intro.rules .pm{width:18px;height:18px;vertical-align:-4px}.rchip{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:5px;background:var(--head);color:#FBF8F1;font-size:9px;vertical-align:1px}
+/* Lernspiel-Coach: Fuchs Fenn, Aubergine-Rahmen mit gelbem Leuchten – hebt sich klar von Karten und Plan ab */
+.coach{position:fixed;left:12px;right:12px;bottom:200px;z-index:7;max-width:536px;margin:0 auto;display:flex;gap:12px;align-items:flex-start;background:var(--paper);border:3px solid var(--head);border-radius:22px;box-shadow:0 0 0 6px color-mix(in srgb,var(--saum) 45%,transparent),0 16px 40px rgba(20,30,27,.3);padding:12px 14px;max-height:56vh;overflow-y:auto}
+.coach.top{top:calc(10px + env(safe-area-inset-top,0px));bottom:auto!important}
+.coach .cface{width:48px;height:48px;flex:none;border-radius:50%;overflow:hidden;box-shadow:0 0 0 3px var(--head)}
+.coach .cface svg{width:100%;height:100%;display:block}
+.coach .ctext{flex:1;min-width:0}
+.coach .cstep{font:700 11px/1.2 var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--head)}
+.coach p{margin:3px 0 8px;font-size:14px;line-height:1.4}
+.coach .cwhy{font-size:13px;padding:8px 11px;border-radius:14px;background:var(--saum-soft)}
+.coach .cwhy b{font-family:var(--f-display);color:var(--head)}
+.coach .cbtns{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.coach .btn{padding:9px 16px}
+.coach .cquit{font-size:12px;color:var(--muted);text-decoration:underline;margin-left:auto}
+.coach .cwait{font-weight:700;letter-spacing:3px;color:var(--head)}
+.tut-hl{outline:4px solid var(--head)!important;outline-offset:3px;animation:tutp 1.1s ease-in-out infinite;border-radius:var(--r)}
+@keyframes tutp{50%{outline-color:var(--saum)}}
+.fan .fc.tut-up{transform:translateY(-34px)!important;z-index:3}
+@media (prefers-reduced-motion:reduce){.tut-hl{animation:none}}
 /* Schritte, Auswahlfenster, Hilfe */
 .steps{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
 .steps span{font-size:11px;font-weight:600;border-radius:99px;padding:3px 10px;color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
@@ -494,12 +527,12 @@ function runDraft(){
   render();setTimeout(()=>{draftBot(qi);runDraft()},botDelay());
 }
 function toast(t){U.toast=t;render();setTimeout(()=>{U.toast=null;render()},1800)}
-function save(){try{localStorage.setItem('saum:save',JSON.stringify({screen:S&&!S.over?'game':'start',S,U:{phase:U.phase,disc:U.disc}}))}catch(e){}}
+function save(){if(S&&S.tut)return;try{localStorage.setItem('saum:save',JSON.stringify({screen:S&&!S.over?'game':'start',S,U:{phase:U.phase,disc:U.disc}}))}catch(e){}}
 // Partie an Spielregal melden (Eingangskorb, wie bei den anderen Browserspielen)
 const INBOX_KEY='spielregal:inbox:plays';
 function localDate(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
-function myName(){try{const p=(JSON.parse(localStorage.getItem('spielregal:players')||'[]')||[]).filter(x=>x&&x.name);return p.length?p[0].name:'Du'}catch(e){return 'Du'}}
-function recordPlay(){if(!S||!S.over||S.recorded)return;const sc=S.players.map(q=>finalScore(q)),best=Math.max(...sc),nm=myName();
+function myName(){if(SETUP.name.trim())return SETUP.name.trim();try{const p=(JSON.parse(localStorage.getItem('spielregal:players')||'[]')||[]).filter(x=>x&&x.name);return p.length?p[0].name:'Du'}catch(e){return 'Du'}}
+function recordPlay(){if(!S||!S.over||S.recorded||S.tut)return;const sc=S.players.map(q=>finalScore(q)),best=Math.max(...sc),nm=myName();
   const entry={id:'saum-'+S.seed,source:'saum',app:'Saum',bggId:'',gameName:'Saum',date:localDate(),human:nm,
     results:S.players.map((q,i)=>({name:q.bot?q.name:nm,bot:!!q.bot,total:sc[i]})),winners:S.players.filter((q,i)=>sc[i]===best).map(q=>q.bot?q.name:nm)};
   try{const inbox=JSON.parse(localStorage.getItem(INBOX_KEY)||'[]');if(!inbox.some(e=>e.id===entry.id))inbox.push(entry);localStorage.setItem(INBOX_KEY,JSON.stringify(inbox));S.recorded=true}catch(e){}}
@@ -586,7 +619,7 @@ function cardHtml(id,o={}){const c=CARDS[id],art=ART[id],g=c.fam==='grund';
 function boardHtml(p,pi,pick){
   return `<div class="board">${p.rows.map((rw,r)=>{
     const cl=closed(rw),tired=rowTired(S,p,r),free=COLS-used(rw);
-    const tile=(t,sd,ti)=>{const c=CARDS[t.id];const pk=pick&&pick.tiles&&pick.tiles(r,sd,ti);return `<button class="tile ${sd} f-${c.fam} ${ART[t.id]?'has-art':''} ${pk?'pick':''}" style="grid-column:span ${c.w}${ART[t.id]?`;background-image:url(${ART[t.id]})`:''}" data-a="${pk?'tile':'tinfo'}" data-big="${t.id}" data-edges="${t.edges.join(',')}" data-r="${r}" data-sd="${sd}" data-ti="${ti}" data-p="${pi}"><span class="dots" title="Upgrades">${'●'.repeat(t.edges.length)}${'○'.repeat(3-t.edges.length)}</span><b>${esc(c.n)}</b>${c.w>1?`<span class="rl">${esc([...c.tile,...t.edges.map(e=>CARDS[e].edge).flat()].map(rule).slice(0,2).join('; '))}</span>`:''}</button>`};
+    const tile=(t,sd,ti)=>{const c=CARDS[t.id];const pk=pick&&pick.tiles&&pick.tiles(r,sd,ti);return `<button class="tile ${sd} f-${c.fam} ${ART[t.id]?'has-art':''} ${pk?'pick':''}" style="grid-column:span ${c.w}${ART[t.id]?`;background-image:url(${ART[t.id]})`:''}" data-a="${pk?'tile':'tinfo'}" data-id="${t.id}" data-big="${t.id}" data-edges="${t.edges.join(',')}" data-r="${r}" data-sd="${sd}" data-ti="${ti}" data-p="${pi}"><span class="dots" title="Upgrades">${'●'.repeat(t.edges.length)}${'○'.repeat(3-t.edges.length)}</span><b>${esc(c.n)}</b>${c.w>1?`<span class="rl">${esc([...c.tile,...t.edges.map(e=>CARDS[e].edge).flat()].map(rule).slice(0,2).join('; '))}</span>`:''}</button>`};
     const pr=pick&&pick.rows&&pick.rows(r);
     return `<div class="row ${pr?'pickrow':''} ${tired?'tired':''}" ${pr?`data-a="row" data-r="${r}"`:''}><span class="edge">Stadt</span>${rw.S.map((t,ti)=>tile(t,'S',ti)).join('')}${Array(free).fill(`<span class="cell" ${pr?`data-a="row" data-r="${r}"`:''}></span>`).join('')}${[...rw.W].reverse().map((t,i)=>tile(t,'W',rw.W.length-1-i)).join('')}<span class="edge">Wald</span></div>
     <div class="rowinfo"><span>Reihe ${r+1}${tired?' · ruht diese Runde':''}</span><span class="${cl?'closed':''}">${cl?'gesäumt ✓ bringt Ruhm':`Stadt ${sideW(rw,'S')} · Wildnis ${sideW(rw,'W')} · frei ${free}`}</span></div>`}).join('')}</div>`}
@@ -669,7 +702,7 @@ addEventListener('resize',()=>layoutFan());
 const PAGES=['Plan','Karten','Ziele & Chronik'];
 if(U.page==null)U.page=1;
 function actPage(){if(!S||S.over)return -1;if(S.draft)return draftWho()===0?1:-1;if(S.cur!==0)return -1;return U.mode==='tuck'?0:1}
-function autoPage(){const k=[S.over,!!S.draft&&draftWho()===0,S.cur,U.phase,U.mode].join('|');if(k===U.apKey)return;U.apKey=k;const ap=actPage();if(ap>=0&&(U.mode==='tuck'||!U.sel))U.page=ap}
+function autoPage(){if(S.tut)return;const k=[S.over,!!S.draft&&draftWho()===0,S.cur,U.phase,U.mode].join('|');if(k===U.apKey)return;U.apKey=k;const ap=actPage();if(ap>=0&&(U.mode==='tuck'||!U.sel))U.page=ap}
 function dotsHtml(){const ap=actPage();return `<div class="pdots" role="tablist">${PAGES.map((t,i)=>`<button class="pd ${i===U.page?'on':''} ${i===ap?'act':''}" data-a="page" data-p="${i}" role="tab" aria-label="${t}" aria-selected="${i===U.page}"><i></i></button>`).join('')}</div>`}
 const pagesEl=()=>document.querySelector('.pages');
 function pageSync(instant){const pg=pagesEl();if(!pg)return;const w=pg.clientWidth||1;
@@ -701,7 +734,7 @@ function annShort(){
 }
 function annLong(){return plain(phaseText().replace(/<div class="steps">.*?<\/div>/,''))||'Tippen springt zur passenden Stelle.'}
 function menuHtml(){const fast=fastPref();return `<div class="overlay" data-a="menu-x"><div class="intro" data-stop="1"><button class="ico xbtn" data-a="menu-x" aria-label="Schließen">✕</button><h2>Menü</h2><div class="menu">
-  ${undoable()?'<button class="btn alt" data-a="undo">Zug rückgängig</button>':''}
+  ${TUT?'<button class="btn" data-a="tutquit">Lernspiel beenden</button>':''}${undoable()?'<button class="btn alt" data-a="undo">Zug rückgängig</button>':''}
   <button class="btn alt" data-a="rules">Spielregeln</button>
   <button class="btn alt" data-a="fast" data-info="Wie schnell die Mitspieler am Zug sind. Bleibt für alle Spiele gespeichert.">Mitspieler-Tempo: ${fast?'schnell':'normal'}</button>
   <a class="btn" href="../">Speichern &amp; zum Spielregal</a>
@@ -722,16 +755,122 @@ function goTo(){
 const HERO_TOP='#6E7A55';
 function themeFor(onStart){document.documentElement.style.backgroundColor=onStart?HERO_TOP:'';let tc=document.querySelector('meta[name="theme-color"]');if(!tc){tc=document.createElement('meta');tc.name='theme-color';tc.content='#F5F0E4';document.head.appendChild(tc)}if(!tc.dataset.base)tc.dataset.base=tc.content;tc.content=onStart?HERO_TOP:tc.dataset.base}
 addEventListener('scroll',()=>{const on=scrollY>90;if(on!==!!U.scr){U.scr=on;const h=document.querySelector('.thead');if(h)h.classList.toggle('scr',on)}},{passive:true});
+// ---------- Startseite (Aufbau wie die anderen Spiele), Spielregeln, Lernspiel ----------
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(_){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(_){}};
+const SETUP={name:lsGet('saum:name')||'',bots:+(lsGet('saum:bots')||1)};
+function profiles(){try{return (JSON.parse(lsGet('spielregal:players')||'[]')||[]).filter(p=>p&&p.name).map(p=>p.name)}catch(_){return []}}
+function startHtml(){const sv=load(),prof=profiles();
+  const sc=sv?sv.S.players.map(q=>finalScore(q)).join(' : '):'';
+  return `<div class="start"><a class="leave" href="../" aria-label="Beenden und zurück zu Spielregal">✕ Beenden</a>
+   <div class="hero" role="img" aria-label="Saum – Entdecken, Sammeln, Weiterziehen: Blick über Fluss, Stadt und Wald"></div><div class="vh"><h1>Saum</h1><div class="tag">Entdecken · Sammeln · Weiterziehen</div></div>
+   <p class="sub">Von links wächst deine Stadt, von rechts deine Wildnis. Wo sie sich treffen, entsteht ein Kreislauf – und nur gesäumte Reihen bringen Ruhm.</p>
+   ${sv?`<button class="btn saum wide" data-a="resume">Partie fortsetzen · ${sc} Ruhm</button>`:''}
+   <div class="panel">
+    <p class="label">Dein Name</p>
+    <input class="input" id="nm" maxlength="30" placeholder="z. B. Mi" value="${esc(SETUP.name)}" autocomplete="off">
+    ${prof.length?`<div class="chips">${prof.slice(0,8).map(n=>`<button class="chip ${SETUP.name===n?'on':''}" data-a="pickname" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div><p class="note">Wähle dein Spielregal-Profil, dann landet die Partie mit deinem Namen in Spielregal.</p>`:''}
+    <p class="label">Gegner</p>
+    <div class="chips">${[1,2].map(n=>`<button class="chip ${SETUP.bots===n?'on':''}" data-a="bots" data-n="${n}">${n} Bot${n>1?'s':''}</button>`).join('')}</div>
+    <p class="note">${SETUP.bots===1?'Zu zweit gilt Rückenwind: Wer hinten liegt, kauft 1 Münze billiger.':'Zu dritt: Ketten, Ziele und Auslage werden enger.'} Spielende bei 6 Meisterstücken oder vollem Plan.</p>
+   </div>
+   <button class="btn wide" data-a="start" data-n="${SETUP.bots}">Partie beginnen</button>
+   <button class="btn alt wide" data-a="tutorial">Lernspiel: Regeln spielend lernen</button>
+   <p class="center"><button class="link" data-a="rules">Spielregeln lesen</button></p>
+   <p class="ver">Prototyp · Regeln Stand v0.8</p></div>`}
+function rulesHtml(){return `<h2>Spielregeln</h2>
+ <p><b>Ziel:</b> Am Ende hat die Person mit dem meisten <b>Ruhm</b> gewonnen. Ruhm gibt es vor allem aus <b>Ketten</b> in gesäumten Reihen.</p>
+ <h3>Dein Plan</h3>
+ <p>4 Reihen mit je 6 Feldern. <b>Stadtkarten</b> wachsen vom linken Rand (Stadttor), <b>Wildniskarten</b> vom rechten Rand (Waldrand). Eine Reihe ist <b>gesäumt</b>, wenn alle 6 Felder belegt sind und beide Seiten mindestens 2 Felder haben.</p>
+ <h3>Die Karten lesen</h3>
+ <ul><li><span class="rchip">▶</span> <b>Aktion</b> (Chips oben links): einmal ausspielen, dann auf den Ablagestapel.</li>
+ <li>${PASS} <b>Plättchen</b> (passiv): Liegt die Karte auf deinem Plan, wirkt diese Zeile jedes Mal, wenn eine Kette hindurchläuft.</li>
+ <li>${UPG} <b>Upgrade</b> (passiv): Unter ein Plättchen geschoben, wirkt diese Zeile dort mit. 3 Upgrades unter einem Plättchen = <b>Meisterstück</b>.</li>
+ <li>Lange auf eine Karte drücken zeigt sie groß mit Text zu jedem Symbol.</li></ul>
+ <h3>Vor dem ersten Zug</h3>
+ <p>Reihum wählt jede Person 2 <b>Startplättchen</b> aus einer offenen Auslage und legt sie sofort auf ihren Plan. Wer zuletzt am Zug ist, wählt zuerst, die zweite Wahl läuft in Gegenrichtung.</p>
+ <h3>Ein Zug in drei Schritten</h3>
+ <ol><li><b>Plättchen:</b> eine Karte wird Teil deines Plans.
+  <ul><li>Aus der <b>Hand bauen: gratis</b> (bezahlt hast du beim Kauf).</li><li>Direkt aus der <b>Auslage bauen:</b> Kaufpreis plus Aufpreis je Platz (+1/+1/+2/+2/+3/+3).</li><li>Als <b>Upgrade</b> unter ein eigenes Plättchen schieben: 1 Münze.</li><li>Oder <b>nicht bauen:</b> Karte ablegen, +1 Münze.</li></ul></li>
+ <li><b>Aktion:</b> eine andere Handkarte ausspielen – oder ausruhen: +2 Münzen <i>oder</i> eine Karte aus der Auslage gratis auf die Hand.</li>
+ <li><b>Abschluss</b> (freiwillig): bis zu 2 Upgrades (je 1 Münze) und 1 Kauf aus der Auslage. Die beiden ältesten Plätze kosten 1 weniger. Gekaufte Karten kommen sofort auf die Hand.</li></ol>
+ <p>Danach ziehst du auf 5 Karten nach. Am Rundenende fällt die älteste Karte der Auslage heraus.</p>
+ <h3>Ketten</h3>
+ <ul><li>Eine Aktion „Kette auslösen“ schickt Waren durch eine deiner Reihen. Jedes Plättchen wirkt einmal: Quellen geben Waren, Werkstätten wandeln um (Korn → Mehl → Brot, Holz → Bretter → Möbel, Blüten → Honig), Abnehmer machen daraus Ruhm oder Münzen.</li>
+ <li><b>Jahreszeit:</b> Im Frühling laufen Ketten von der Stadt nach rechts, im Herbst von der Wildnis nach links. Sie wechselt jede Runde.</li>
+ <li>In einer <b>offenen</b> Reihe läuft die Kette nur durch die Startseite, und erzeugter Ruhm zählt als Münzen. In einer <b>gesäumten</b> Reihe läuft sie durch alles und bringt echten Ruhm.</li>
+ <li><b>Schlange:</b> Ist auch die Reihe darunter gesäumt, fließt der Rest dort in Gegenrichtung weiter.</li>
+ <li>Am Ende der Kette werden übrige Waren verkauft: je 2 Waren 1 Münze.</li>
+ <li><b>Ruhe:</b> Eine aktivierte Reihe darf in der nächsten Runde nicht erneut aktiviert werden.</li></ul>
+ <h3>Jahresziele</h3><p>3 gemeinsame Ziele. Wer eines zuerst erreicht, bekommt 6 Ruhm, die zweite Person 3.</p>
+ <h3>Rückenwind (nur zu zweit)</h3><p>Wer gerade am wenigsten Ruhm hat, kauft und baut aus der Auslage 1 Münze billiger.</p>
+ <h3>Spielende und Wertung</h3>
+ <p>Hat jemand am Ende des Zuges <b>6 Meisterstücke</b> oder einen <b>vollen Plan</b>, wird die Runde zu Ende gespielt. Dann zählen: Ruhm aus Ketten und Zielen, je gesäumter Reihe 2 × die kleinere Seite (Stadt oder Wildnis), je Meisterstück 4, Endwertungen (z. B. Rathaus) und je 4 Münzen 1 Ruhm.</p>`}
+function rulesOverlay(){return `<div class="overlay" data-a="rules-x"><div class="intro rules" data-stop="1"><button class="ico xbtn" data-a="rules-x" aria-label="Schließen">✕</button>${rulesHtml()}<button class="btn" data-a="rules-x">Schließen</button></div></div>`}
+// Lernspiel: vorbereiteter Plan, ein Coach führt Schritt für Schritt; wird weder gespeichert noch gemeldet
+let TUT=null;
+const FOX=`<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="24" fill="#F2A744"/><path d="M10 14l7 5h14l7-5-2 14c-2 8-7 12-12 12s-10-4-12-12z" fill="#D2614F"/><path d="M16 30c2 5 5 8 8 8s6-3 8-8c-3 2-5 3-8 3s-5-1-8-3z" fill="#FBF8F1"/><circle cx="19" cy="26" r="2" fill="#1C302B"/><circle cx="29" cy="26" r="2" fill="#1C302B"/><path d="M22 32h4l-2 2.4z" fill="#1C302B"/></svg>`;
+const tme=()=>S.players[0];
+const handIs=id=>U.sel&&U.sel.src==='h'&&tme().hand[U.sel.i]===id;
+const TUT_STEPS=[
+ {ch:'Willkommen',pos:'top',text:'Hallo, ich bin Fenn, der Fuchs. In <b>Saum</b> wächst von links deine <b>Stadt</b> und von rechts deine <b>Wildnis</b>. Dein Ziel: möglichst viel <b>Ruhm</b> – das blaue Schild oben.'},
+ {ch:'Dein Plan',sel:'#plan',text:'Das ist dein Plan: 4 Reihen mit je 6 Feldern. Stadtplättchen kommen links an, Wildnis rechts. In <b>Reihe 1</b> fehlt nur noch ein Feld.',why:'Gesäumt ist eine Reihe, wenn alle 6 Felder voll sind und beide Seiten mindestens 2 Felder haben. Nur gesäumte Reihen bringen echten Ruhm.'},
+ {ch:'Deine Hand',sel:'#hand',text:'Unten im Fächer liegt deine Hand. Oben links auf jeder Karte siehst du ihre <b>Aktion</b>. Lange drücken zeigt eine Karte groß mit allen Erklärungen.'},
+ {ch:'Zug 1 · Plättchen',sel:'.fan .card[data-id=baeckerei]',allow:{hand:d=>d.id==='baeckerei'},done:()=>handIs('baeckerei')||closed(tme().rows[0]),text:'Ein Zug hat drei Schritte. <b>Schritt 1:</b> Eine Karte wird zum Plättchen. Tippe die <b>Bäckerei</b> an.',why:'Aus der Hand baust du gratis – bezahlt hast du die Karte schon beim Kauf.'},
+ {ch:'Zug 1 · Plättchen',sel:'.actions [data-a=build][data-r="0"]',allow:{build:d=>d.r==='0'},done:()=>closed(tme().rows[0]),text:'Bau sie in <b>Reihe 1</b>. Damit ist die Reihe voll und <b>gesäumt</b>.'},
+ {ch:'Zug 1 · Aktion',sel:'.fan .card[data-id=feldarbeit]',allow:{hand:d=>d.id==='feldarbeit'},done:()=>handIs('feldarbeit')||U.phase==='ende',text:'<b>Schritt 2:</b> eine andere Karte als Aktion ausspielen. Die <b>Feldarbeit</b> löst eine Kette aus – siehst du den Pfeil oben links?'},
+ {ch:'Zug 1 · Kette',sel:'.actions [data-a=act][data-r="0"]',allow:{act:d=>d.r==='0'},done:()=>U.phase==='ende',text:'Wähle <b>Reihe 1</b>. Es ist Frühling: Die Waren laufen von der Stadt (links) nach rechts – und weil die Reihe gesäumt ist, weiter durch die Wildnis.',why:'Jedes Plättchen verarbeitet, was die Kette trägt: Acker gibt Korn, die Mühle macht Mehl, die Bäckerei Brot und Ruhm, die Wildnis Blüten, Honig und Holz.'},
+ {ch:'Die Kette',pos:'top',text:()=>`Geschafft! Die Kette brachte dir <b>${tme().vp} Ruhm</b> und Münzen. Übrige Waren am Ende werden verkauft: je 2 Waren 1 Münze.`,why:'In einer offenen Reihe wäre der Ruhm nur Münzen wert. Darum lohnt es sich, Reihen von beiden Seiten zu säumen.'},
+ {ch:'Zug 1 · Abschluss',sel:'.fan .card[data-id=acker]',allow:{hand:d=>d.id==='acker'},done:()=>handIs('acker')||U.ups>=1,text:'<b>Schritt 3</b> ist freiwillig: bis zu 2 Upgrades und ein Kauf. Tippe den <b>Acker</b> an – wir schieben ihn als Upgrade unter dein Acker-Plättchen.',why:'Ein Upgrade kostet 1 Münze. Seine gelbe Upgrade-Zeile wirkt ab jetzt im Plättchen mit.'},
+ {ch:'Zug 1 · Upgrade',sel:'.actions [data-a=tuckmode]',allow:{tuckmode:true},done:()=>U.mode==='tuck'||U.ups>=1,text:'Tippe „Als Upgrade unterschieben“.'},
+ {ch:'Zug 1 · Upgrade',sel:'.tile[data-id=acker]',allow:{tile:d=>d.r==='0'&&d.sd==='S'&&d.ti==='0'},done:()=>U.ups>=1,text:'Jetzt das <b>Acker-Plättchen</b> in Reihe 1 antippen. Ab sofort bringt es in jeder Kette 1 Korn mehr.',why:'Drei Upgrades unter einem Plättchen machen es zum Meisterstück: 4 Ruhm am Ende – und bei 6 Meisterstücken endet das Spiel.'},
+ {ch:'Zug 1 · Kauf',sel:'#markt .card[data-i="0"]',allow:{market:d=>d.i==='0'},done:()=>(U.sel&&U.sel.src==='m')||U.bought||S.cur!==0,text:'Noch ein <b>Kauf</b>: Tippe die erste Karte der Auslage an.',why:'Die beiden ältesten Karten (vorn) kosten 1 Münze weniger. Gekaufte Karten kommen sofort auf die Hand – später baust du sie gratis.'},
+ {ch:'Zug 1 · Kauf',sel:'.actions [data-a=buy]',allow:{buy:true},done:()=>U.bought||S.cur!==0,text:'Kaufen.'},
+ {ch:'Zug 1 · Ende',sel:'.actions [data-a=endturn]',allow:{endturn:true},done:()=>S.cur!==0||!U.phase,text:'Tippe „Zug beenden“. Du ziehst auf 5 Karten nach.'},
+ {ch:'Mara ist dran',wait:true,done:()=>S.cur===0&&U.phase==='land',text:'Mara ist am Zug …'},
+ {ch:'Jahreszeit',pos:'top',sel:'.res .rd',text:'Neue Runde – jetzt ist <b>Herbst</b>: Ketten laufen von der Wildnis (rechts) nach links. Die Richtung wechselt jede Runde.',why:'Plane deine Reihen von beiden Seiten. Und: Eine Reihe, die du gerade aktiviert hast, ruht in der nächsten Runde.'},
+ {ch:'Ziele und Ende',sel:'#ziele',text:'Auf der dritten Seite: <b>Jahresziele</b> (6 Ruhm für die Erste, 3 für die Zweite) und die Chronik. Das Spiel endet, wenn jemand <b>6 Meisterstücke</b> oder einen <b>vollen Plan</b> hat – die Runde wird zu Ende gespielt.'},
+ {ch:'Das war’s',pos:'top',text:'Merke dir: <b>1.</b> Plättchen bauen und Reihen von beiden Seiten säumen. <b>2.</b> Ketten auslösen – Ruhm gibt es nur in gesäumten Reihen. <b>3.</b> Upgrades machen Plättchen stärker, drei davon ergeben ein Meisterstück. Unsicher? „Tipp“ im Footer zeigt einen Vorschlag.'}
+];
+function tutStep(){return TUT?TUT_STEPS[TUT.i]:null}
+function tutCheck(){let g=0;while(TUT&&g++<20){const st=TUT_STEPS[TUT.i];if(!st.done||!st.done())break;TUT.i++;TUT.scrolled=null}}
+function tutAllowed(a,d){if(['tutnext','tutend','tutquit','go','menu','menu-x','rules','rules-x','help','help-x','page','cancel'].includes(a))return true;const st=tutStep(),al=st&&st.allow;if(!al||!(a in al))return false;return al[a]===true||!!al[a](d)}
+function tutHtml(){const st=tutStep();if(!st)return '';const last=TUT.i===TUT_STEPS.length-1,txt=typeof st.text==='function'?st.text():st.text;
+  const btn=last?'<button class="btn" data-a="tutend">Echtes Spiel starten</button>':!st.done?'<button class="btn" data-a="tutnext">Weiter</button>':st.wait?'<span class="cwait">· · ·</span>':'';
+  return `<div class="coach" id="coach" role="dialog" aria-live="polite"><div class="cface">${FOX}</div><div class="ctext"><span class="cstep">Lernspiel · ${TUT.i+1}/${TUT_STEPS.length} · ${esc(st.ch)}</span><p>${txt}</p>${st.why?`<p class="cwhy"><b>Warum?</b> ${st.why}</p>`:''}<div class="cbtns">${btn}<button class="cquit" data-a="tutquit">Lernspiel beenden</button></div></div></div>`}
+function tutDecorate(){const st=tutStep(),coach=document.getElementById('coach');if(!st||!coach)return;
+  const el=st.sel?document.querySelector(st.sel):null;
+  if(el){el.classList.add('tut-hl');const fc=el.closest('.fc');if(fc)fc.classList.add('tut-up');const pi=pageOf(el);if(pi>=0&&pi!==U.page)pageGo(pi,false)}
+  const low=el&&(el.closest('.actions')||el.closest('.fan'));
+  const key=TUT.i+(U.sel?'s':'')+(U.mode||'');
+  if(el&&TUT.scrolled!==key&&!low&&!el.closest('.thead')){TUT.scrolled=key;el.scrollIntoView({block:'center',behavior:'auto'})}
+  // Coach immer auf die dem markierten Element gegenüberliegende Seite
+  let top;if(st.pos)top=st.pos==='top';else if(low)top=true;else if(el){const r=el.getBoundingClientRect();top=(r.top+r.bottom)/2>innerHeight*.45}else top=!!(U.sel||U.mode);
+  coach.classList.toggle('top',top);
+  if(!top){const a=document.querySelector('.actions'),f=document.querySelector('.fan:not(.hid)');coach.style.bottom=((a?a.offsetHeight:0)+(f?f.offsetHeight*.5:0)+12)+'px'}else coach.style.bottom=''}
+function tutSetup(){const seed=4711;R=rng(seed);
+  S={seed,season:'LR',round:0,winterAt:null,over:false,cur:0,log:[],tut:true,endAt:null,draft:null,
+   players:[newPlayer('Du',false,R),newPlayer('Mara',true,R)],
+   supply:shuffle(MARKET_TYPES.flatMap(c=>Array(COPIES).fill(c.id)),R),market:[],
+   goals:GOALS.filter(g=>['brot','rows','meister'].includes(g.k)).map(g=>({...g,by:[]}))};
+  S.market=['wiese','muehle','hochwald','kontor','teich','laden'];
+  const me=S.players[0],b=S.players[1],T=id=>({id,edges:[]});
+  me.rows[0]={S:[T('acker'),T('muehle')],W:[T('wald'),T('bienenstock'),T('wiese')]};
+  me.rows[2]={S:[T('gutshof')],W:[T('alteeiche')]};
+  me.hand=['baeckerei','feldarbeit','acker','tagelohn','bluetenlese'];me.coins=4;
+  b.rows[0]={S:[T('saegewerk')],W:[T('wald')]};b.rows[1]={S:[T('zunfthaus')],W:[T('lichtung')]};
+  U={phase:'land',sel:null,disc:0,view:0,introSeen:true,page:1};TUT={i:0};
+  say('Lernspiel: ein vorbereiteter Plan.',true);scrollTo(0,0);render()}
+function tutEnd(){TUT=null;S=null;U={phase:null,sel:null,disc:0,toast:null,view:0};scrollTo(0,0);render()}
 function resumeGame(){const sv=load();if(!sv)return;S=sv.S;R=rng(S.seed+S.round*7919+S.log.length);U={phase:sv.U.phase||'land',sel:null,disc:sv.U.disc||0,view:0};if(S.draft){U.phase='draft';runDraft();return}if(S.cur!==0){S.cur=S.players.length-1;nextTurn()}else render()}
 document.addEventListener('saum:resume',resumeGame);
+document.addEventListener('input',e=>{if(e.target.id==='nm'){SETUP.name=e.target.value;lsSet('saum:name',SETUP.name)}});
 function render(){
   const app=document.getElementById('app');themeFor(!S);
-  if(!S){const sv=load();app.innerHTML=`<div class="start"><a class="leave" href="../" aria-label="Beenden und zurück zu Spielregal">✕ Beenden</a><div class="hero" role="img" aria-label="Saum – Entdecken, Sammeln, Weiterziehen: Blick über Fluss, Stadt und Wald"></div><div class="vh"><h1>Saum</h1><div class="tag">Entdecken · Sammeln · Weiterziehen</div></div><p>Von links wächst deine Stadt, von rechts deine Wildnis. Wo sie sich treffen, entsteht ein Kreislauf – und nur gesäumte Reihen bringen Ruhm. Prototyp, Regeln Stand v0.8.</p>
-   <div class="sbtns">${sv?'<button class="btn saum wide" data-a="resume">Partie fortsetzen</button>':''}<button class="btn" data-a="start" data-n="1">Gegen 1 Bot</button><button class="btn alt" data-a="start" data-n="2">Gegen 2 Bots</button></div></div>`;return}
-  if(U.page==null)U.page=1;if(pagesBusy()){U.rpend=true;return}U.rpend=false;autoPage();
+  if(!S){app.innerHTML=startHtml()+(U.rules?rulesOverlay():'');return}
+  if(U.page==null)U.page=1;if(pagesBusy()){U.rpend=true;return}U.rpend=false;if(TUT)tutCheck();autoPage();
   const p=me(),pick=pickFor(),view=U.view||0,vp=S.players[view];
   const winter=S.draft?'Startplättchen-Draft':S.endAt!=null?'Letzte Runde':`Ende: ${ENDM} ★ · voller Plan`;
-  let intro=false;try{intro=!localStorage.getItem('saum:intro')}catch(_){intro=!U.introSeen}if(U.introSeen)intro=false;
+  let intro=false;try{intro=!localStorage.getItem('saum:intro')}catch(_){intro=!U.introSeen}if(U.introSeen||S.tut)intro=false;
   app.innerHTML=`${U.toast?`<div class="toast">${esc(U.toast)}</div>`:''}
   <div class="thead ${U.scr?'scr':''}"><div class="hrow"><h1>Saum</h1><button class="ann ${annMine()?'me':''}" data-a="go" data-info="${esc(annLong())}">${annShort()}</button><button class="ico" data-a="menu" aria-label="Menü">☰</button></div>
   <div class="opps">${S.players.map((q,i)=>`<button class="opp ${S.cur===i?'cur':''} ${view===i?'vis':''}" data-a="view" data-p="${i}" data-info="${esc(q.name)}: ${finalScore(q)} Ruhm · ${q.coins} Münzen · ${closedCount(q)}/4 Reihen gesäumt · ${meisterCount(q)}/${ENDM} Meisterstücke · ${filledCount(q)}/24 Felder. Antippen zeigt den Plan."><b>${esc(q.name)}</b><span class="sc">${finalScore(q)}</span></button>`).join('')}</div>
@@ -745,9 +884,9 @@ function render(){
   </div><div class="page">
   <div class="sec" id="ziele"><h3>Jahresziele</h3><div class="goals">${S.goals.map(g=>`<span class="goal">${esc(g.tx)} · ${g.by.length?g.by.map(i=>esc(S.players[i].name)).join(', '):'6/3 Ruhm'} · du ${Math.min(goalProgress(p,g),g.n)}/${g.n}</span>`).join('')}</div></div>
   <div class="sec"><h3>Chronik</h3><div class="log">${S.log.map(l=>`<div class="${l.me?'me':''}">${esc(l.t)}</div>`).join('')}</div></div></div></div>
-  ${U.help?`<div class="overlay" data-a="help-x"><div class="intro" data-stop="1"><button class="ico xbtn" data-a="help-x" aria-label="Schließen">✕</button>${introHtml().replace('<button class="btn" data-a="intro-ok">Verstanden</button>','<button class="btn" data-a="help-x">Schließen</button>').replace('<div class="intro">','').replace(/<\/div>$/,'')}</div></div>`:''}${U.menu?menuHtml():''}
+  ${U.help?`<div class="overlay" data-a="help-x"><div class="intro" data-stop="1"><button class="ico xbtn" data-a="help-x" aria-label="Schließen">✕</button>${introHtml().replace('<button class="btn" data-a="intro-ok">Verstanden</button>','<button class="btn" data-a="help-x">Schließen</button>').replace('<div class="intro">','').replace(/<\/div>$/,'')}</div></div>`:''}${U.menu?menuHtml():''}${U.rules?rulesOverlay():''}${TUT?tutHtml():''}
   ${fanHtml()}<div class="actions">${S.over?'':dotsHtml()}<div class="in">${actionsHtml()}</div></div>`;
-  pageSync(true);layoutFan();
+  pageSync(true);layoutFan();if(TUT)tutDecorate();
 }
 function endHtml(){
   const rows=S.players.map(q=>({q,d:finalScore(q,true)})).sort((a,b)=>b.d.total-a.d.total);
@@ -781,13 +920,20 @@ document.addEventListener('contextmenu',e=>{if(e.target.closest('[data-info],[da
 document.addEventListener('click',e=>{if(lpFired){lpFired=false;e.stopImmediatePropagation();e.preventDefault()}},true);
 function handleClick(e){
   const el=e.target.closest('[data-a]');if(!el)return;const a=el.dataset.a;
-  if(e.target.closest('[data-stop]')&&(a==='help-x'||a==='menu-x')&&!e.target.closest('button'))return;
-  if(a==='start'){newGame(+el.dataset.n);return}
+  if(TUT&&S&&S.tut&&!tutAllowed(a,el.dataset)){toast('Folge dem markierten Hinweis im Lernspiel.');return}
+  if(e.target.closest('[data-stop]')&&(a==='help-x'||a==='menu-x'||a==='rules-x')&&!e.target.closest('button'))return;
+  if(a==='start'){TUT=null;newGame(+el.dataset.n);return}
+  if(a==='bots'){SETUP.bots=+el.dataset.n;lsSet('saum:bots',SETUP.bots);render();return}
+  if(a==='pickname'){SETUP.name=el.dataset.n;lsSet('saum:name',SETUP.name);render();return}
+  if(a==='rules'||a==='help'){U.rules=true;U.menu=false;render();return}
+  if(a==='rules-x'){U.rules=false;render();return}
+  if(a==='tutorial'){tutSetup();return}
+  if(a==='tutnext'){if(TUT){TUT.i=Math.min(TUT.i+1,TUT_STEPS.length-1);TUT.scrolled=null}render();return}
+  if(a==='tutend'||a==='tutquit'){tutEnd();return}
   if(a==='resume'){resumeGame();return}
   if(a==='new'){S=null;try{localStorage.removeItem('saum:save')}catch(_){}render();return}
   if(!S)return;
   if(a==='intro-ok'){U.introSeen=true;try{localStorage.setItem('saum:intro','1')}catch(_){}render();return}
-  if(a==='help'||a==='rules'){U.help=true;U.menu=false;render();return}
   if(a==='menu'){U.menu=true;render();return}
   if(a==='menu-x'){U.menu=false;render();return}
   if(a==='go'){goTo();return}
@@ -831,7 +977,7 @@ function handleClick(e){
 }
 // Zug rückgängig: Schnappschuss vor jeder eigenen Entscheidung; verfällt, sobald Verdecktes aufgedeckt wird
 // (neue Karte in der Auslage, Karten gezogen) oder der Zug endet.
-function undoable(){return !!(S&&!S.over&&!S.draft&&S.cur===0&&U.phase&&U.undo&&U.undo.length)}
+function undoable(){return !!(S&&!S.tut&&!S.over&&!S.draft&&S.cur===0&&U.phase&&U.undo&&U.undo.length)}
 function doUndo(){if(!undoable())return;const b=U.undo.pop();S=JSON.parse(b.s);Object.assign(U,b.u,{sel:null,mode:null,menu:false});save();render()}
 document.addEventListener('click',e=>{
   const el=e.target.closest('[data-a]');if(el&&el.dataset.a==='undo'){doUndo();return}
