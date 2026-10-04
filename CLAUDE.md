@@ -210,4 +210,5 @@ Mühlenbild (Tokens in `:root`), Schriften Cormorant Garamond + Figtree.
 Hand/Auslage, langes Drücken = ausführlicher Text), Mitspieler-Chips in eigener Zeile, eigene Vorräte immer sichtbar (`.res`),
 Menü ☰ (Spielregeln, Mitspieler-Tempo `spielregal:botFast`, Speichern & zum Spielregal, Neustart, „Neueste Version laden“ mit
 `?resume=1`), Einklappen beim Scrollen (`.scr`), Info-Blase per langem Drücken, Textauswahl aus, `HERO_TOP` auf dem Startbildschirm,
-sticky Kopf/Knopfzeile in Auswahlfenstern. Noch nicht übernommen: Wischseiten, Lernspiel, Zug rückgängig.
+sticky Kopf/Knopfzeile in Auswahlfenstern. Zug rückgängig (↶ in der Fußleiste und im Menü; verfällt, sobald eine neue Karte aufgedeckt oder gezogen wird oder der Zug endet).
+Noch nicht übernommen: Wischseiten, Lernspiel.
