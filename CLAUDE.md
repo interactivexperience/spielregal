@@ -202,8 +202,9 @@ kein Nachbau. Regeln, Simulation und Gestaltung werden im Repo `interactivexperi
 Spielregal-Anbindung (Beenden-Knopf und Link „Spielregal“, Spielstand `saum:save` mit `screen: 'game'` für den
 Dashboard-Hinweis „Partie läuft“, Partie-Meldung über `spielregal:inbox:plays` mit `source: 'saum'`). Der Owner
 hat ausdrücklich entschieden, dass Saum damit öffentlich im Spielregal liegt. Änderungen am Prototyp im Saum-Repo
-machen und hierher übernehmen (Anbindung erhalten). Kartenbilder liegen unter `saum/art/` (vom Owner nach den Prompts der Art-Bible
-`design/art-bible.html` erzeugt, Zuordnung über `ART` je Karten-id; Karten ohne Bild zeigen einen Farbverlauf ihrer Familie).
+machen und hierher übernehmen (Anbindung erhalten). Kartenbilder: Landschafts-Serie des Owners (36 Motive, eines je Karte) unter `saum/art/land/NN-name.jpg`, Zuordnung über
+`ART` je Karten-id (Stadt = Dörfer/Felder, Wildnis = Wald/Berge/Wasser, Startplättchen = Himmelsstimmungen). Derzeit aus der
+Übersicht des Owners ausgeschnitten (klein, 128×200); die Originale liegen auf pCloud – bei Zugriff unter gleichem Dateinamen ersetzen.
 Das Cover ist das Coverbild des Owners mit eingemalter Wortmarke und Slogan „Entdecken · Sammeln · Weiterziehen“ (`saum/cover.jpg` 3:4 fürs Dashboard, `saum/art/cover.jpg` 2:3 als Startbild; die Überschrift darunter ist nur für Screenreader da). App-Oberfläche nach dem Style-Board des Owners (Farbschema und Look):
 Wortmarke „SAUM“ in Fraunces Black (Versalien, Dunkelgrün `#1C302B`), Überschriften/Kartentitel Lora Bold (Aubergine `#251737`),
 Fließtext DM Sans; Papier `#F5F0E4`; Akzente Lila `#5E4E6F`, Gelb `#F2A744` (du bist dran), Koralle `#F58A7E` (Stadt, vertieft
