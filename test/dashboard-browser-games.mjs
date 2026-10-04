@@ -54,14 +54,14 @@ try {
   await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
   await page.waitForTimeout(2500);
   check(await page.locator("text=Digital spielen").count() >= 1, "Abschnitt „Digital spielen“ fehlt im Dashboard");
-  for (const href of ["grand-austria-hotel/", "three-sisters/", "rebel-princess/", "countryside/"])
+  for (const href of ["grand-austria-hotel/", "three-sisters/", "rebel-princess/", "countryside/", "saum/"])
     check(await page.locator(`a[href^="${href}?v="] img[src^="${href}cover.jpg"]`).count() === 1, `Dashboard-Cover ${href} fehlt`);
   const covers = await page.evaluate(() => [...document.querySelectorAll("a img[src*='cover.jpg']")].map((i) => i.complete && i.naturalWidth > 0));
-  check(covers.length === 4 && covers.every(Boolean), "Cover-Bilder laden nicht: " + JSON.stringify(covers));
+  check(covers.length === 5 && covers.every(Boolean), "Cover-Bilder laden nicht: " + JSON.stringify(covers));
   check(await page.locator('a[href^="grand-austria-hotel/?v="]:has-text("Partie läuft")').count() === 1, "laufende Grand-Hotel-Partie nicht angezeigt");
   check(await page.locator('a[href^="three-sisters/?v="]:has-text("Partie läuft")').count() === 0, "Drei Schwestern fälschlich als laufend markiert");
   if (process.env.SHOT) { await page.emulateMedia({ colorScheme: "dark" }); await page.locator("text=Digital spielen").first().scrollIntoViewIfNeeded(); await page.waitForTimeout(400); await page.screenshot({ path: process.env.SHOT }); }
-  for (const n of ["Grand Hotel Wien", "Drei Schwestern", "Prinzessinnenball", "Landgut"]) check(await page.locator(`a:has-text("${n}")`).count() >= 1, `Name ${n} fehlt`);
+  for (const n of ["Grand Hotel Wien", "Drei Schwestern", "Prinzessinnenball", "Landgut", "Saum"]) check(await page.locator(`a:has-text("${n}")`).count() >= 1, `Name ${n} fehlt`);
   await page.locator('button:has-text("Sammlung")').last().click();
   await page.waitForTimeout(500);
   await page.locator("text=Three Sisters: Harvest Edition").first().click();

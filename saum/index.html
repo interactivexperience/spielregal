@@ -1,0 +1,518 @@
+<title>Saum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;600;800&display=swap">
+<style>
+/* Layout: ein Spieltisch – oben Lage & Gegner, Mitte dein Plan (Stadt links, Wildnis rechts, Saum in der Mitte), unten Hand, Auslage, Aktionsleiste */
+:root{
+  --bg:#F3F1EA; --paper:#FFFFFF; --ink:#22261F; --muted:#6B6F63; --line:#D9D6CB;
+  --stadt:#5F6F8C; --stadt-soft:#E1E6EF; --wild:#4F7F4A; --wild-soft:#DDEBD6;
+  --saum:#C08A2E; --saum-soft:#F6E9CF; --bad:#B4483A; --good:#3F7D46;
+  --f-display:"Young Serif",Georgia,serif; --f-body:"Figtree",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#191C17; --paper:#23271F; --ink:#ECEDE6; --muted:#A3A797; --line:#3A3F34;
+  --stadt:#9AAAC8; --stadt-soft:#2C3445; --wild:#8DBE84; --wild-soft:#28382A;
+  --saum:#E2B460; --saum-soft:#3D321C; --bad:#E07A6B; --good:#8DBE84; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#191C17; --paper:#23271F; --ink:#ECEDE6; --muted:#A3A797; --line:#3A3F34;
+  --stadt:#9AAAC8; --stadt-soft:#2C3445; --wild:#8DBE84; --wild-soft:#28382A;
+  --saum:#E2B460; --saum-soft:#3D321C; --bad:#E07A6B; --good:#8DBE84; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.4 var(--f-body);margin:0}
+#app{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:12px 120px}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;margin:0;text-wrap:balance}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible{outline:2px solid var(--saum);outline-offset:2px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.top h1{font-size:28px}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{border-radius:99px;padding:3px 10px;font-size:12.5px;font-weight:600;background:var(--paper);border:1px solid var(--line);font-variant-numeric:tabular-nums}
+.pill.season{background:var(--saum-soft);border-color:transparent}
+.pill.winter{background:var(--ink);color:var(--bg);border-color:transparent}
+.opps{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.opp{display:flex;gap:8px;align-items:center;border:1px solid var(--line);background:var(--paper);border-radius:12px;padding:6px 10px;font-size:13px}
+.opp.cur{border-color:var(--saum);box-shadow:0 0 0 1px var(--saum)}
+.opp b{font-weight:800}
+.me-bar{display:flex;gap:14px;margin:12px 0 6px;font-weight:600;font-variant-numeric:tabular-nums;flex-wrap:wrap}
+.me-bar span{display:flex;gap:4px;align-items:center}
+.phase{margin:10px 0;padding:10px 12px;border-radius:12px;background:var(--saum-soft);font-size:14px}
+.phase b{font-weight:800}
+.board{display:grid;gap:6px;margin-top:6px}
+.row{display:grid;grid-template-columns:22px repeat(6,minmax(0,1fr)) 22px;gap:4px;align-items:stretch}
+.edge{display:grid;place-items:center;font-size:10px;color:var(--muted);writing-mode:vertical-rl;text-orientation:mixed}
+.cell{min-height:58px;border-radius:8px;border:1px dashed var(--line);background:transparent}
+.tile{min-height:58px;border-radius:8px;padding:4px 5px;font-size:11px;line-height:1.15;position:relative;text-align:left;overflow:hidden;min-width:0}
+.tile.S{background:var(--stadt-soft);border:1.5px solid var(--stadt)}
+.tile.W{background:var(--wild-soft);border:1.5px solid var(--wild)}
+.tile b{display:block;font-size:11px;font-weight:800;hyphens:auto;overflow-wrap:anywhere;padding-right:2px}
+.tile .rl{color:var(--muted);font-size:10px;display:block}
+.tile .dots{display:block;font-size:8px;letter-spacing:1px;color:var(--saum);line-height:1;margin-bottom:2px}
+.tile.pick{outline:3px solid var(--saum);outline-offset:1px}
+.rowinfo{font-size:11px;color:var(--muted);display:flex;gap:8px;padding:0 24px;justify-content:space-between}
+.rowinfo .closed{color:var(--saum);font-weight:800}
+.row.pickrow .cell{border-color:var(--saum);background:var(--saum-soft)}
+.row.tired .edge{color:var(--bad)}
+.sec{margin-top:16px}
+.sec h3{font-size:16px;margin-bottom:6px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px}
+.card{border-radius:12px;border:1px solid var(--line);background:var(--paper);padding:8px;text-align:left;display:flex;flex-direction:column;gap:3px;min-width:0}
+.card.S{border-top:4px solid var(--stadt)} .card.W{border-top:4px solid var(--wild)}
+.card.sel{outline:3px solid var(--saum);outline-offset:1px}
+.card.off{opacity:.45}
+.card .nm{font-weight:800;font-size:13.5px;display:flex;justify-content:space-between;gap:4px}
+.card .meta{font-size:11px;color:var(--muted)}
+.card .ln{font-size:11px}
+.card .ln i{font-style:normal;font-weight:800;color:var(--muted);margin-right:3px}
+.actions{position:fixed;left:0;right:0;bottom:0;background:var(--paper);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px))}
+.actions .in{max-width:720px;margin:0 auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border-radius:99px;padding:10px 14px;font-weight:800;background:var(--ink);color:var(--bg)}
+.btn.alt{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+.btn.saum{background:var(--saum);color:#1E1A10}
+.btn:disabled{opacity:.35;cursor:default}
+.btn small{font-weight:600;opacity:.8}
+.log{font-size:12.5px;color:var(--muted);max-height:180px;overflow:auto;border-top:1px solid var(--line);margin-top:8px;padding-top:6px}
+.log div{padding:2px 0}
+.log .me{color:var(--ink)}
+.goals{display:flex;gap:6px;flex-wrap:wrap;font-size:12px}
+.goal{border:1px solid var(--line);border-radius:10px;padding:4px 8px;background:var(--paper)}
+.start{max-width:520px;margin:10vh auto 0;display:flex;flex-direction:column;gap:14px}
+.start h1{font-size:48px}
+.start p{color:var(--muted);margin:0}
+.rules{font-size:14px;color:var(--ink)}
+.rules li{margin:4px 0}
+.end table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+.end td,.end th{padding:6px;border-bottom:1px solid var(--line);text-align:right}
+.end td:first-child,.end th:first-child{text-align:left}
+.toast{position:fixed;left:50%;top:14px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:99px;font-size:13px;font-weight:600;z-index:9}
+@media (prefers-reduced-motion:no-preference){.tile{transition:transform .15s}.tile.flash{animation:fl .6s}@keyframes fl{0%{transform:scale(1.08)}100%{transform:none}}}
+
+.steps{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap}
+.steps span{font-size:11.5px;font-weight:800;border-radius:99px;padding:2px 9px;background:var(--paper);color:var(--muted)}
+.steps span.on{background:var(--ink);color:var(--bg)}
+.steps span.done{color:var(--good)}
+.sheet{width:100%;display:flex;flex-direction:column;gap:8px;max-height:52vh;overflow:auto}
+.sh{display:flex;flex-direction:column;gap:2px}.sh b{font-size:15px}.sh span{font-size:13px;color:var(--muted)}
+.grp{border:1px solid var(--line);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:6px}
+.gl{font-weight:800;font-size:13.5px}.gs{font-size:12.5px;color:var(--muted)}
+.opts{display:flex;gap:6px;flex-wrap:wrap}
+.opt{flex:1 1 140px;text-align:left;border:1.5px solid var(--ink);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;background:var(--paper)}
+.opt b{font-size:13.5px}.opt span{font-size:12px;color:var(--muted)}
+.opt:disabled{opacity:.35;cursor:default}
+.opt[data-hl]{border-color:var(--saum);background:var(--saum-soft)}
+.hint{font-size:13px;color:var(--muted)}
+.intro{background:var(--paper);border:1.5px solid var(--saum);border-radius:14px;padding:12px 14px;margin:10px 0;font-size:14px;display:flex;flex-direction:column;gap:6px}
+.intro h2{font-size:20px}.intro ol{margin:0;padding-left:20px}.intro li{margin:3px 0}.intro p{margin:0}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:grid;place-items:center;padding:16px;z-index:8}
+.overlay .intro{max-width:560px;max-height:85vh;overflow:auto}
+.card .ln i{display:block;font-style:normal;font-weight:800;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.04em;margin:0}
+.nm>span:last-child{white-space:nowrap}
+.start{position:relative}
+.leave{position:absolute;top:0;right:0;font:600 13px/1 system-ui,sans-serif;color:var(--muted);text-decoration:none;border:1px solid currentColor;border-radius:999px;padding:7px 12px}
+</style>
+<div id="app" lang="de"></div>
+<script>
+// ======================= Regeln (identisch mit sim.mjs, Stand v0.5) =======================
+const ROWS=4, COLS=6, MINSIDE=2, RUHE=1, COPIES=5, TUCKCOST=1;
+const C=(id,n,side,w,cost,fam,tile,eff,edge)=>({id,n,side,w,cost,fam,tile,eff,edge});
+const START=[
+ C('feldarbeit','Feldarbeit','S',1,1,'start',[{t:'src',g:'korn',n:1}],{act:1,add:{korn:1}},[{t:'src',g:'korn',n:1}]),
+ C('holzsammeln','Holz sammeln','W',1,1,'start',[{t:'src',g:'holz',n:1}],{act:1,add:{holz:1}},[{t:'src',g:'holz',n:1}]),
+ C('bluetenlese','Blütenlese','W',1,1,'start',[{t:'src',g:'bluete',n:1}],{coins:2},[{t:'src',g:'bluete',n:1}]),
+ C('tagelohn','Tagelohn','S',1,1,'start',[{t:'sell',gs:'any',coin:1,max:2}],{coins:2,draw:1},[{t:'sell',gs:'any',coin:1,max:1}]),
+];
+const MARKET_TYPES=[
+ C('acker','Acker','S',1,1,'mueller',[{t:'src',g:'korn',n:2}],{act:1,add:{korn:2}},[{t:'src',g:'korn',n:1}]),
+ C('feldscheune','Feldscheune','S',2,3,'mueller',[{t:'src',g:'korn',n:3}],{coins:3},[{t:'src',g:'korn',n:2}]),
+ C('muehle','Mühle','S',1,2,'mueller',[{t:'conv',from:'korn',to:'mehl',max:3}],{act:1},[{t:'vpPer',g:'mehl',vp:1}]),
+ C('baeckerei','Bäckerei','S',1,3,'mueller',[{t:'conv',from:'mehl',to:'brot',max:2},{t:'vpPer',g:'brot',vp:1}],{coins:2},[{t:'vpPer',g:'brot',vp:1}]),
+ C('gasthaus','Gasthaus','S',2,4,'mueller',[{t:'score',g:'brot',vp:2,max:3},{t:'score',g:'honig',vp:2,max:3}],{act:1},[{t:'score',g:'moebel',vp:3,max:2}]),
+ C('wald','Wald','W',1,1,'foerster',[{t:'src',g:'holz',n:2}],{act:1,add:{holz:2}},[{t:'src',g:'holz',n:1}]),
+ C('hochwald','Hochwald','W',2,3,'foerster',[{t:'src',g:'holz',n:3}],{draw:2},[{t:'src',g:'holz',n:2}]),
+ C('saegewerk','Sägewerk','S',1,2,'foerster',[{t:'conv',from:'holz',to:'brett',max:3}],{coins:1,draw:1},[{t:'vpPer',g:'brett',vp:1}]),
+ C('schreinerei','Schreinerei','S',1,3,'foerster',[{t:'conv',from:'brett',to:'moebel',max:2},{t:'vpPer',g:'moebel',vp:1}],{act:1},[{t:'vpPer',g:'moebel',vp:1}]),
+ C('biberbau','Biberbau','W',1,2,'foerster',[{t:'score',g:'holz',vp:1,max:3}],{act:1},[{t:'score',g:'brett',vp:2,max:2}]),
+ C('wiese','Wiese','W',1,1,'imker',[{t:'src',g:'bluete',n:2}],{coins:2},[{t:'src',g:'bluete',n:1}]),
+ C('obstgarten','Obstgarten','W',2,3,'imker',[{t:'src',g:'bluete',n:2},{t:'src',g:'holz',n:1}],{act:1,add:{bluete:1}},[{t:'src',g:'bluete',n:2}]),
+ C('bienenstock','Bienenstock','W',1,2,'imker',[{t:'conv',from:'bluete',to:'honig',max:3}],{act:1},[{t:'vpPer',g:'honig',vp:1}]),
+ C('imkerei','Imkerei','W',2,3,'imker',[{t:'conv',from:'bluete',to:'honig',max:4},{t:'vpPer',g:'honig',vp:1}],{coins:3},[{t:'vpPer',g:'honig',vp:1}]),
+ C('marktstand','Marktstand','S',1,2,'haendler',[{t:'sell',gs:'any',coin:1,max:3}],{coins:3},[{t:'sell',gs:'any',coin:1,max:2}]),
+ C('kontor','Kontor','S',2,4,'haendler',[{t:'sell',gs:['brot','honig','moebel'],coin:2,vp:1,max:3}],{draw:2},[{t:'sell',gs:['mehl','brett'],coin:2,max:2}]),
+ C('laden','Laden','S',1,2,'haendler',[{t:'sell',gs:['honig'],coin:3,max:2}],{coins:2,buyDisc:2},[{t:'sell',gs:['brot'],coin:2,max:2}]),
+ C('rathaus','Rathaus','S',2,5,'haendler',[{t:'endRows',vp:2}],{coins:4},[{t:'endRows',vp:1}]),
+ C('kraeutergarten','Kräutergarten','W',1,2,'kraeuter',[{t:'combo',a:'brot',b:'honig',vp:4,max:2}],{act:1},[{t:'combo',a:'moebel',b:'honig',vp:4,max:1}]),
+ C('teich','Teich','W',1,2,'kraeuter',[{t:'dup',max:2}],{act:1,add:{bluete:1,korn:1}},[{t:'dup',max:1}]),
+];
+MARKET_TYPES.forEach(c=>{c.cost=Math.max(1,c.cost-1)});
+// Startplättchen für den Draft (1 Feld, nur als Plättchen)
+const G1=(id,n,side,tile)=>C(id,n,side,1,0,'grund',tile,{},[]);
+const GRUND=[
+  G1('gutshof','Gutshof','S',[{t:'src',g:'korn',n:1},{t:'conv',from:'korn',to:'mehl',max:2}]),
+  G1('zunfthaus','Zunfthaus','S',[{t:'conv',from:'holz',to:'brett',max:2},{t:'vpPer',g:'brett',vp:1}]),
+  G1('markthalle','Markthalle','S',[{t:'sell',gs:'any',coin:1,vp:1,max:2}]),
+  G1('brunnenplatz','Brunnenplatz','S',[{t:'src',g:'korn',n:1},{t:'dup',max:2}]),
+  G1('klosterkueche','Klosterküche','S',[{t:'conv',from:'mehl',to:'brot',max:2},{t:'score',g:'brot',vp:2,max:1}]),
+  G1('stadtarchiv','Stadtarchiv','S',[{t:'endRows',vp:2}]),
+  G1('alteeiche','Alte Eiche','W',[{t:'src',g:'holz',n:2},{t:'src',g:'bluete',n:1}]),
+  G1('wildbienenhang','Wildbienenhang','W',[{t:'src',g:'bluete',n:2},{t:'conv',from:'bluete',to:'honig',max:2}]),
+  G1('quelle','Quelle','W',[{t:'src',g:'holz',n:1},{t:'dup',max:2}]),
+  G1('lichtung','Lichtung','W',[{t:'src',g:'bluete',n:3}]),
+  G1('fuchsbau','Fuchsbau','W',[{t:'score',g:'holz',vp:1,max:2},{t:'score',g:'brett',vp:2,max:1}]),
+  G1('kraeuterhang','Kräuterhang','W',[{t:'src',g:'bluete',n:2},{t:'combo',a:'brot',b:'honig',vp:4,max:1}]),
+];
+const DRAFT=2,ENDM=6,MSTVP=3; // je 2 Startplättchen; Ende bei 6 Meisterstücken oder vollem Plan; Meisterstück = 3 Ruhm
+const CARDS=Object.fromEntries([...START,...MARKET_TYPES,...GRUND].map(c=>[c.id,c]));
+const RAW=['korn','holz','bluete'];
+const GOALS=[{k:'brot',n:5,tx:'5 Brot erzeugt'},{k:'honig',n:6,tx:'6 Honig erzeugt'},{k:'moebel',n:4,tx:'4 Möbel erzeugt'},{k:'meister',n:2,tx:'2 Meisterstücke'},{k:'rows',n:2,tx:'2 Reihen gesäumt'},{k:'chain',n:5,tx:'Kette mit 5 Gliedern'}];
+const G={korn:'Korn',mehl:'Mehl',brot:'Brot',holz:'Holz',brett:'Bretter',moebel:'Möbel',bluete:'Blüten',honig:'Honig'};
+function rng(seed){let a=seed>>>0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const shuffle=(a,r)=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const clone=o=>JSON.parse(JSON.stringify(o));
+function newPlayer(name,bot,r){const deck=shuffle([...START,...START].map(c=>c.id),r);const p={name,bot,vp:0,coins:4,deck,hand:[],disc:[],rows:[...Array(ROWS)].map(()=>({S:[],W:[]})),made:{},maxChain:0,chains:[],tired:{}};draw(p,5,r);return p}
+function draw(p,n,r){for(let i=0;i<n;i++){if(!p.deck.length){if(!p.disc.length)return;p.deck=shuffle(p.disc,r);p.disc=[]}p.hand.push(p.deck.pop())}}
+const used=row=>row.S.reduce((s,t)=>s+CARDS[t.id].w,0)+row.W.reduce((s,t)=>s+CARDS[t.id].w,0);
+const sideW=(row,sd)=>row[sd].reduce((s,t)=>s+CARDS[t.id].w,0);
+const closed=row=>used(row)>=COLS&&sideW(row,'S')>=MINSIDE&&sideW(row,'W')>=MINSIDE;
+const closedCount=p=>p.rows.filter(closed).length;
+const tilesOf=p=>p.rows.flatMap(rw=>[...rw.S,...rw.W]);
+// eine Reihe darf nie so voll werden, dass sie nicht mehr gesäumt werden kann
+const canPlace=(row,c)=>{const free=COLS-used(row)-c.w;if(free<0)return false;const own=sideW(row,c.side)+c.w,other=sideW(row,c.side==='S'?'W':'S');return free>=Math.max(0,MINSIDE-own)+Math.max(0,MINSIDE-other)};
+function runChain(p,ri,dir,start,dry=false,trace=null){
+  const row=p.rows[ri],cl=closed(row);
+  const ord=(rw,d)=>{const c2=closed(rw);return d==='LR'?(c2?[...rw.S,...[...rw.W].reverse()]:rw.S):(c2?[...rw.W,...[...rw.S].reverse()]:rw.W)};
+  let order=ord(row,dir).map(t=>[t,ri]);
+  if(cl){let d=dir;for(let n=ri+1;n<ROWS&&closed(p.rows[n]);n++){d=d==='LR'?'RL':'LR';order=order.concat(ord(p.rows[n],d).map(t=>[t,n]))}}
+  const b={...start};let vp=0,coins=0,links=0;
+  for(const [t] of order){
+    const rules=[...CARDS[t.id].tile,...t.edges.map(e=>CARDS[e].edge).flat()];
+    const made={};let acted=false,step=[];
+    for(const ru of rules){
+      if(ru.t==='src'){b[ru.g]=(b[ru.g]||0)+ru.n;acted=true;step.push('+'+ru.n+' '+G[ru.g])}
+      else if(ru.t==='conv'){const k=Math.min(b[ru.from]||0,ru.max);if(k){b[ru.from]-=k;b[ru.to]=(b[ru.to]||0)+k;made[ru.to]=(made[ru.to]||0)+k;acted=true;step.push(k+' '+G[ru.from]+'→'+G[ru.to])}}
+      else if(ru.t==='score'){const k=Math.min(b[ru.g]||0,ru.max);if(k){b[ru.g]-=k;vp+=k*ru.vp;acted=true;step.push(k+' '+G[ru.g]+'→'+(k*ru.vp)+' Ruhm')}}
+      else if(ru.t==='sell'){let k=ru.max;const gs=ru.gs==='any'?Object.keys(b):ru.gs;for(const g of gs){const x=Math.min(b[g]||0,k);if(x){b[g]-=x;k-=x;coins+=x*ru.coin;vp+=x*(ru.vp||0);acted=true;step.push(x+' '+G[g]+'→'+(x*ru.coin)+' Mz.')}}}
+      else if(ru.t==='combo'){const k=Math.min(b[ru.a]||0,b[ru.b]||0,ru.max);if(k){b[ru.a]-=k;b[ru.b]-=k;vp+=k*ru.vp;acted=true;step.push(k+'×('+G[ru.a]+'+'+G[ru.b]+')→'+(k*ru.vp)+' Ruhm')}}
+      else if(ru.t==='dup'){let k=ru.max;for(const g of RAW){if(k&&b[g]){b[g]++;k--;acted=true;step.push('+1 '+G[g])}}}
+      else if(ru.t==='vpPer'){if(made[ru.g]){vp+=made[ru.g]*ru.vp;step.push('+'+(made[ru.g]*ru.vp)+' Ruhm')}}
+    }
+    if(!dry)for(const g in made)p.made[g]=(p.made[g]||0)+made[g];
+    if(acted){links++;if(trace)trace.push(CARDS[t.id].n+': '+step.join(', '))}
+  }
+  coins+=Math.floor(Object.values(b).reduce((x,y)=>x+y,0)/2);
+  let conv=0;if(!cl){conv=vp;coins+=vp;vp=0}
+  if(dry)return{vp,coins,links,conv};
+  p.vp+=vp;p.coins+=coins;p.maxChain=Math.max(p.maxChain,links);p.chains.push(links);
+  return{vp,coins,links,conv};
+}
+const price=(S,i)=>Math.max(0,CARDS[S.market[i]].cost-(i<2?1:0));
+const surcharge=i=>1+Math.floor(i/2); // Aufpreis fürs Bauen direkt aus der Auslage: +1/+1/+2/+2/+3/+3
+const mprice=(S,i)=>price(S,i)+surcharge(i);
+const UPMAX=2; // Upgrades im Abschluss
+function landMoves(S,pi){
+  const p=S.players[pi],out=[];
+  p.hand.forEach((id,hi)=>{const c=CARDS[id];
+    if(c.fam!=='start')for(let r=0;r<ROWS;r++)if(canPlace(p.rows[r],c))out.push({k:'build',hi,r});
+    if(p.coins>=TUCKCOST)p.rows.forEach((rw,r)=>['S','W'].forEach(sd=>rw[sd].forEach((t,ti)=>{if(t.edges.length<3)out.push({k:'tuck',hi,r,sd,ti})})));
+    out.push({k:'brache',hi});
+  });
+  S.market.forEach((id,mi)=>{const c=CARDS[id];if(p.coins>=mprice(S,mi))for(let r=0;r<ROWS;r++)if(canPlace(p.rows[r],c))out.push({k:'mbuild',mi,r})});
+  return out;
+}
+const rowTired=(S,p,r)=>RUHE&&S.round-(p.tired[r]??-99)<=RUHE;
+function tatMoves(S,pi){
+  const p=S.players[pi],out=[{k:'ruhe'}];
+  p.hand.forEach((id,hi)=>{const c=CARDS[id];
+    if(c.eff.act){for(let r=0;r<ROWS;r++){if(rowTired(S,p,r))continue;out.push({k:'eff',hi,r,d:S.season})}}
+    else out.push({k:'eff',hi})});
+  return out;
+}
+function applyMove(S,pi,m,r){
+  const p=S.players[pi];let disc=0;
+  if(m.k==='ruhe'){if(m.take!=null){p.hand.push(S.market[m.take]);S.market.splice(m.take,1);refill(S);return 0}p.coins+=2;return 0}
+  if(m.k==='brache'){const id=p.hand.splice(m.hi,1)[0];p.disc.push(id);p.coins+=1;return 0}
+  if(m.k==='mbuild'){const id=S.market[m.mi],c=CARDS[id];p.coins-=mprice(S,m.mi);S.market.splice(m.mi,1);refill(S);p.rows[m.r][c.side].push({id,edges:[]});return 0}
+  const id=p.hand.splice(m.hi,1)[0],c=CARDS[id];
+  if(m.k==='eff'){
+    if(c.eff.coins)p.coins+=c.eff.coins;
+    if(c.eff.act){m.res=runChain(p,m.r,m.d,c.eff.add||{},false,m.trace=[]);p.tired[m.r]=S.round}
+    if(c.eff.buyDisc)disc=c.eff.buyDisc;
+    p.disc.push(id);
+    if(c.eff.draw)draw(p,c.eff.draw,r);
+  }else if(m.k==='build'){p.rows[m.r][c.side].push({id,edges:[]})} // aus der Hand gratis: beim Kauf schon bezahlt
+  else if(m.k==='tuck'){p.coins-=TUCKCOST;p.rows[m.r][m.sd][m.ti].edges.push(id)}
+  return disc;
+}
+function finalScore(p,detail){
+  let s=p.vp,bal=0,mst=0,end=0;const cl=closedCount(p);
+  for(const rw of p.rows)if(closed(rw))bal+=2*Math.min(sideW(rw,'S'),sideW(rw,'W'));
+  for(const t of tilesOf(p)){if(t.edges.length>=3)mst+=MSTVP;for(const ru of [...CARDS[t.id].tile,...t.edges.map(e=>CARDS[e].edge).flat()])if(ru.t==='endRows')end+=ru.vp*cl}
+  const coin=Math.floor(p.coins/4);
+  if(detail)return{ruhm:p.vp,bal,mst,end,coin,total:s+bal+mst+end+coin};
+  return s+bal+mst+end+coin;
+}
+const meisterCount=p=>tilesOf(p).filter(t=>t.edges.length>=3).length;
+const filledCount=p=>p.rows.reduce((a,rw)=>a+used(rw),0);
+const planFull=p=>filledCount(p)>=ROWS*COLS;
+function goalProgress(p,g){if(g.k==='meister')return tilesOf(p).filter(t=>t.edges.length>=3).length;if(g.k==='rows')return closedCount(p);if(g.k==='chain')return p.maxChain;return p.made[g.k]||0}
+function checkGoals(S){S.goals.forEach(g=>S.players.forEach((p,pi)=>{if(g.by.includes(pi)||g.by.length>=2)return;if(goalProgress(p,g)>=g.n){const v=g.by.length?3:6;p.vp+=v;g.by.push(pi);say(`${p.name} erreicht „${g.tx}“: +${v} Ruhm`,!p.bot)}}))}
+function refill(S){while(S.market.length<6&&S.supply.length){const id=S.supply.pop();if(id==='WINTER'){if(S.winterAt==null){S.winterAt=S.round;say('Der Winter ist aufgedeckt! Diese Runde wird zu Ende gespielt, dann folgt eine letzte Runde.',true)}continue}S.market.push(id)}}
+// ---- Bot (wie in der Simulation: Bewertung 1 Zug voraus, Strategie „ausgewogen“) ----
+const W8={e:1.0,c:2.0,f:0.5,t:0.8};
+const TYPICAL={korn:1,holz:1,bluete:1};
+function engineValue(S,p){const per=[];for(let r=0;r<ROWS;r++){let best=0;for(const d of['LR','RL']){const res=runChain(p,r,d,TYPICAL,true);best+=(res.vp+res.coins*0.45+res.links*0.15)/2}per.push(best)}per.sort((a,b)=>b-a);return per[0]+0.5*per[1]}
+function evalState(S,pi){
+  const p=S.players[pi],w=W8;
+  const lead=Math.max(...S.players.map(o=>o.rows.reduce((a,rw)=>a+used(rw),0)));
+  const rem=S.winterAt!=null?0.6:Math.max(1,(ROWS*COLS-lead)/3)*0.45;
+  const filled=p.rows.reduce((a,rw)=>a+used(rw),0);
+  const tucks=tilesOf(p).reduce((a,t)=>a+t.edges.length+(t.edges.length>=3?1:0),0);
+  let v=finalScore(p)+Math.min(p.coins,8)*0.3+Math.max(0,p.coins-8)*0.08+p.hand.length*0.3;
+  for(const rw of p.rows)if(!closed(rw)){const sc=sideW(rw,'S'),wc=sideW(rw,'W');v+=1.4*Math.min(sc,wc)+0.25*(sc+wc)}
+  v+=w.e*rem*engineValue(S,p)+w.c*closedCount(p)+w.f*filled+w.t*tucks;
+  S.goals.forEach(g=>{if(g.by.length<2&&!g.by.includes(pi))v+=Math.min(1,goalProgress(p,g)/g.n)*2});
+  return v;
+}
+function botTurn(S,pi,r){
+  const p=S.players[pi],msgs=[];
+  const land=landMoves(S,pi);
+  const lite=x=>{const T=clone(S);T.log=[];return T};
+  const cand=land.map(m=>{const T=lite(S);applyMove(T,pi,m,rng(3));return[m,evalState(T,pi)]}).sort((a,b)=>b[1]-a[1]).slice(0,6).map(x=>x[0]);
+  let best=-1e9,bl=null,bt=null;
+  for(const lm of cand){const T=lite(S);applyMove(T,pi,lm,rng(3));for(const tm of tatMoves(T,pi)){const U=clone(T);applyMove(U,pi,tm,rng(4));const v=evalState(U,pi)+r()*0.3;if(v>best){best=v;bl=lm;bt=tm}}}
+  if(bl){msgs.push(describe(S,pi,bl));applyMove(S,pi,bl,r)}
+  let tm=bt||{k:'ruhe'};if(tm.k==='ruhe'&&S.market.length){let bi=null,bv=1.7;S.market.forEach((id,i)=>{const c=CARDS[id];const tv=c.tile.reduce((a,ru)=>a+({src:ru.n*0.6,conv:1.2,score:ru.vp*0.8,sell:0.8,combo:2.5,dup:1,vpPer:ru.vp,endRows:ru.vp*1.2}[ru.t]||0),0)+0.5+c.cost*0.3;if(tv>bv){bv=tv;bi=i}});if(bi!=null)tm={k:'ruhe',take:bi}}
+  const tdesc=describe(S,pi,tm);let disc=applyMove(S,pi,tm,r)||0;msgs.push(tdesc+(tm.res?` → ${tm.res.links} Glieder, +${tm.res.vp} Ruhm, +${tm.res.coins} Mz.`:''));
+  for(let k=0;k<UPMAX&&p.hand.length;k++){const tucks=landMoves(S,pi).filter(m=>m.k==='tuck');let bv=evalState(S,pi)+0.5,bm=null;for(const m of tucks){const T=lite(S);applyMove(T,pi,m,rng(5+k));const v=evalState(T,pi);if(v>bv){bv=v;bm=m}}if(!bm)break;msgs.push(describe(S,pi,bm));applyMove(S,pi,bm,r)}
+  // Kauf
+  let bi=null,bvv=0.8;S.market.forEach((id,i)=>{const pr=Math.max(0,price(S,i)-disc);if(pr>p.coins)return;const c=CARDS[id];const tv=c.tile.reduce((a,ru)=>a+({src:ru.n*0.6,conv:1.2,score:ru.vp*0.8,sell:0.8,combo:2.5,dup:1,vpPer:ru.vp,endRows:ru.vp*1.2}[ru.t]||0),0);const v=tv+0.5-pr*0.45+r()*0.2;if(v>bvv){bvv=v;bi=i}});
+  if(bi!==null){const id=S.market[bi];p.coins-=Math.max(0,price(S,bi)-disc);p.hand.push(id);S.market.splice(bi,1);refill(S);msgs.push('kauft '+CARDS[id].n)}
+  draw(p,Math.max(0,5-p.hand.length),r);
+  msgs.forEach(m=>say(p.name+' '+m));
+}
+function describe(S,pi,m){const p=S.players[pi];
+  if(m.k==='ruhe')return m.take!=null?'ruht und nimmt '+CARDS[S.market[m.take]].n+' aus der Auslage':'ruht (+2 Mz.)';
+  if(m.k==='brache')return 'legt '+CARDS[p.hand[m.hi]].n+' brach';
+  if(m.k==='mbuild')return 'baut '+CARDS[S.market[m.mi]].n+' aus der Auslage in Reihe '+(m.r+1);
+  const c=CARDS[p.hand[m.hi]];
+  if(m.k==='build')return 'baut '+c.n+' in Reihe '+(m.r+1);
+  if(m.k==='tuck')return 'schiebt '+c.n+' unter '+CARDS[p.rows[m.r][m.sd][m.ti].id].n;
+  if(m.k==='eff')return 'spielt '+c.n+(c.eff.act?' auf Reihe '+(m.r+1):'');
+  return ''}
+
+// ======================= Spielablauf & Oberfläche =======================
+let S=null, U={phase:null,sel:null,disc:0,toast:null,view:0}, R=null;
+const LOGMAX=60;
+function say(t,me){if(!S)return;S.log.unshift({t,me:!!me});S.log.length=Math.min(S.log.length,LOGMAX)}
+function newGame(nBots){
+  const seed=(Date.now()^Math.floor(Math.random()*1e9))>>>0;R=rng(seed);
+  const names=['Mara','Gustav'];
+  S={seed,season:'LR',round:0,winterAt:null,over:false,cur:0,log:[],
+    players:[newPlayer('Du',false,R),...names.slice(0,nBots).map(n=>newPlayer(n,true,R))],
+    supply:shuffle(MARKET_TYPES.flatMap(c=>Array(COPIES).fill(c.id)),R),market:[],
+    goals:shuffle([...GOALS],R).slice(0,3).map(g=>({...g,by:[]}))};
+  refill(S);
+  // offener Schlangen-Draft: wer zuletzt am Zug ist, wählt zuerst
+  const n=S.players.length,order=[];for(let k=0;k<DRAFT;k++){const o=[...Array(n).keys()].reverse();order.push(...(k%2?o.reverse():o))}
+  S.draft={disp:shuffle(GRUND.map(c=>c.id),R).slice(0,DRAFT*n+1),order,step:0};S.endAt=null;
+  U={phase:'draft',sel:null,disc:0,view:0};say('Neue Partie. Zuerst wählt jede Person 2 Startplättchen – sie kommen sofort auf den Plan.',true);save();runDraft();
+}
+function endRound(){
+  if(S.endAt!=null){S.over=true;return}
+  S.round++;S.season=S.season==='LR'?'RL':'LR';
+  if(S.market.length)S.supply.unshift(S.market.shift());refill(S);
+  say(`Runde ${S.round+1} · ${S.season==='LR'?'Frühling: Stadt → Wildnis':'Herbst: Wildnis → Stadt'}`,true);
+}
+function nextTurn(){
+  checkGoals(S);
+  {const q=S.players[S.cur];if(S.endAt==null&&(meisterCount(q)>=ENDM||planFull(q))){S.endAt=S.cur;say(`${q.bot?q.name+' hat':'Du hast'} ${meisterCount(q)>=ENDM?ENDM+' Meisterstücke':'den Plan voll'} – diese Runde wird zu Ende gespielt, dann ist Schluss.`,true)}}
+  S.cur=(S.cur+1)%S.players.length;
+  if(S.cur===0){endRound();if(S.over){recordPlay();save();render();return}}
+  if(S.players[S.cur].bot){render();setTimeout(()=>{botTurn(S,S.cur,R);nextTurn()},450)}
+  else{U={phase:'land',sel:null,disc:0,view:0};save();render()}
+}
+function me(){return S.players[0]}
+function draftWho(){return S.draft?S.draft.order[S.draft.step]:null}
+function draftPlace(qi,di,r){const q=S.players[qi],id=S.draft.disp.splice(di,1)[0];q.rows[r][CARDS[id].side].push({id,edges:[]});say(`${q.bot?q.name+' wählt':'Du wählst'} ${CARDS[id].n} (Reihe ${r+1})`,!q.bot);S.draft.step++}
+function draftBot(qi){let best=null,bv=-1e9;S.draft.disp.forEach((id,di)=>{for(let r=0;r<ROWS;r++){if(!canPlace(S.players[qi].rows[r],CARDS[id]))continue;const T=clone(S);T.players[qi].rows[r][CARDS[id].side].push({id,edges:[]});const v=evalState(T,qi)+Math.random()*0.3;if(v>bv){bv=v;best=[di,r]}}});draftPlace(qi,best[0],best[1])}
+function runDraft(){
+  if(!S.draft)return;
+  if(S.draft.step>=S.draft.order.length){S.draft=null;S.cur=0;U={phase:'land',sel:null,disc:0,view:0};say('Draft beendet. Frühling: Ketten fließen von der Stadt (links) in die Wildnis.',true);save();render();return}
+  const qi=draftWho();if(qi===0){save();render();return}
+  render();setTimeout(()=>{draftBot(qi);runDraft()},450);
+}
+function toast(t){U.toast=t;render();setTimeout(()=>{U.toast=null;render()},1800)}
+function save(){try{localStorage.setItem('saum:save',JSON.stringify({screen:S&&!S.over?'game':'start',S,U:{phase:U.phase,disc:U.disc}}))}catch(e){}}
+// Partie an Spielregal melden (Eingangskorb, wie bei den anderen Browserspielen)
+const INBOX_KEY='spielregal:inbox:plays';
+function localDate(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function myName(){try{const p=(JSON.parse(localStorage.getItem('spielregal:players')||'[]')||[]).filter(x=>x&&x.name);return p.length?p[0].name:'Du'}catch(e){return 'Du'}}
+function recordPlay(){if(!S||!S.over||S.recorded)return;const sc=S.players.map(q=>finalScore(q)),best=Math.max(...sc),nm=myName();
+  const entry={id:'saum-'+S.seed,source:'saum',app:'Saum',bggId:'',gameName:'Saum',date:localDate(),human:nm,
+    results:S.players.map((q,i)=>({name:q.bot?q.name:nm,bot:!!q.bot,total:sc[i]})),winners:S.players.filter((q,i)=>sc[i]===best).map(q=>q.bot?q.name:nm)};
+  try{const inbox=JSON.parse(localStorage.getItem(INBOX_KEY)||'[]');if(!inbox.some(e=>e.id===entry.id))inbox.push(entry);localStorage.setItem(INBOX_KEY,JSON.stringify(inbox));S.recorded=true}catch(e){}}
+function load(){try{const x=JSON.parse(localStorage.getItem('saum:save')||'null');return x&&x.S&&!x.S.over?x:null}catch(e){return null}}
+
+// ---- Darstellung ----
+const rule=r=>({src:()=>`+${r.n} ${G[r.g]}`,conv:()=>`${G[r.from]} → ${G[r.to]} (bis ${r.max})`,score:()=>`${G[r.g]} → ${r.vp} Ruhm je Stück (bis ${r.max})`,sell:()=>`${r.gs==='any'?'beliebige Ware':r.gs.map(g=>G[g]).join('/')} → ${r.coin} Mz.${r.vp?' + '+r.vp+' Ruhm':''} (bis ${r.max})`,combo:()=>`je ${G[r.a]} + ${G[r.b]} → ${r.vp} Ruhm (bis ${r.max})`,dup:()=>`verdoppelt bis ${r.max} Rohwaren`,vpPer:()=>`+${r.vp} Ruhm je hier erzeugtem ${G[r.g]}`,endRows:()=>`bei Spielende +${r.vp} Ruhm je gesäumter Reihe`}[r.t]());
+const eff=e=>[e.act?'Kette in einer Reihe auslösen'+(e.add?' (startet mit '+Object.entries(e.add).map(([g,n])=>`${n} ${G[g]}`).join(', ')+')':''):'',e.coins?`+${e.coins} Münzen`:'',e.draw?`${e.draw} Karte${e.draw>1?'n':''} ziehen`:'',e.buyDisc?`nächster Kauf ${e.buyDisc} Mz. billiger`:''].filter(Boolean).join(', ');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function cardHtml(id,o={}){const c=CARDS[id];return `<button class="card ${c.side} ${o.sel?'sel':''} ${o.off?'off':''}" data-a="${o.a||''}" data-i="${o.i??''}">
+ <span class="nm"><span>${esc(c.n)}</span><span>${o.price!=null?'Kauf '+o.price+' Mz.':''}</span></span>
+ <span class="meta">${c.side==='S'?'Stadt':'Wildnis'} · ${c.w} Feld${c.w>1?'er':''}${c.fam==='start'?' · nicht baubar':''}${c.fam==='grund'?' · Startplättchen':''}${o.build!=null?` · direkt bauen ${o.build} Mz.`:''}</span>
+ <span class="ln"><i>Als Plättchen</i>${esc(c.tile.map(rule).join('; '))}</span>
+ ${c.fam==='grund'?'':`<span class="ln"><i>Als Aktion</i>${esc(eff(c.eff))}</span>
+ <span class="ln"><i>Als Upgrade</i>${esc(c.edge.map(rule).join('; '))}</span>`}</button>`}
+function boardHtml(p,pi,pick){
+  return `<div class="board">${p.rows.map((rw,r)=>{
+    const cl=closed(rw),tired=rowTired(S,p,r),free=COLS-used(rw);
+    const tile=(t,sd,ti)=>{const c=CARDS[t.id];const pk=pick&&pick.tiles&&pick.tiles(r,sd,ti);return `<button class="tile ${sd} ${pk?'pick':''}" style="grid-column:span ${c.w}" data-a="${pk?'tile':'tinfo'}" data-r="${r}" data-sd="${sd}" data-ti="${ti}" data-p="${pi}"><span class="dots" title="Upgrades">${'●'.repeat(t.edges.length)}${'○'.repeat(3-t.edges.length)}</span><b>${esc(c.n)}</b>${c.w>1?`<span class="rl">${esc([...c.tile,...t.edges.map(e=>CARDS[e].edge).flat()].map(rule).slice(0,2).join('; '))}</span>`:''}</button>`};
+    const pr=pick&&pick.rows&&pick.rows(r);
+    return `<div class="row ${pr?'pickrow':''} ${tired?'tired':''}" ${pr?`data-a="row" data-r="${r}"`:''}><span class="edge">Stadt</span>${rw.S.map((t,ti)=>tile(t,'S',ti)).join('')}${Array(free).fill(`<span class="cell" ${pr?`data-a="row" data-r="${r}"`:''}></span>`).join('')}${[...rw.W].reverse().map((t,i)=>tile(t,'W',rw.W.length-1-i)).join('')}<span class="edge">Wald</span></div>
+    <div class="rowinfo"><span>Reihe ${r+1}${tired?' · ruht diese Runde':''}</span><span class="${cl?'closed':''}">${cl?'gesäumt ✓ bringt Ruhm':`Stadt ${sideW(rw,'S')} · Wildnis ${sideW(rw,'W')} · frei ${free}`}</span></div>`}).join('')}</div>`}
+const STEPS=['Plättchen','Aktion','Abschluss'];
+function stepIdx(){return {land:0,tat:1,ende:2}[U.phase]??0}
+function phaseText(){
+  if(S.over)return '';
+  if(S.draft){const w=draftWho(),left=S.draft.order.slice(S.draft.step).filter(x=>x===0).length;return w===0?`<b>Startplättchen wählen</b> (noch ${left}): Tippe eines an und lege es in eine Reihe. Stadtplättchen kommen links an, Wildnis rechts. Die anderen sehen, was du nimmst – Reihenfolge: ${S.draft.order.map(i=>esc(S.players[i].name)).join(' → ')}.`:`<b>${esc(S.players[w].name)}</b> wählt ein Startplättchen …`}
+  if(S.cur!==0)return `<b>${esc(S.players[S.cur].name)}</b> ist am Zug …`;
+  const dir=S.season==='LR'?'Frühling: Ketten laufen von der Stadt (links) nach rechts – in offenen Reihen nur durch die Stadtseite':'Herbst: Ketten laufen vom Wald (rechts) nach links – in offenen Reihen nur durch die Waldseite';
+  const steps=`<div class="steps">${STEPS.map((s,i)=>`<span class="${i===stepIdx()?'on':i<stepIdx()?'done':''}">${i+1} ${s}</span>`).join('')}</div>`;
+  if(U.phase==='land')return steps+'Wähle <b>eine Karte</b> aus Hand oder Auslage. Du kannst sie als Plättchen bauen, als Upgrade unter ein Plättchen schieben oder darauf verzichten (+1 Münze).';
+  if(U.phase==='tat')return steps+`Wähle eine <b>Handkarte als Aktion</b>, oder ruhe dich aus (+2 Münzen oder eine Karte aus der Auslage). ${dir}.`;
+  if(U.phase==='ende')return steps+`Beides freiwillig: ${!upLeft()?'':`<b>bis zu ${UPMAX-U.ups} Upgrade${UPMAX-U.ups>1?'s':''}</b> (Handkarte antippen, je 1 Mz.)`}${upLeft()&&!U.bought?' und ':''}${U.bought?'':'<b>ein Kauf</b> (Karte der Auslage antippen)'}. Dann Zug beenden.`;
+  return '';
+}
+function pickFor(){
+  if(S.cur!==0||S.over)return null;const p=me(),sel=U.sel;
+  if(U.phase==='draft'){if(draftWho()!==0||!sel)return null;const c=CARDS[S.draft.disp[sel.i]];return{rows:r=>canPlace(p.rows[r],c)}}
+  if(U.mode==='tuck')return{tiles:(r,sd,ti)=>p.rows[r][sd][ti].edges.length<3};
+  if(U.phase==='land'&&sel){const c=sel.src==='m'?CARDS[S.market[sel.i]]:CARDS[p.hand[sel.i]];const cost=sel.src==='m'?mprice(S,sel.i):0;const ok=c.fam!=='start'&&p.coins>=cost;return{rows:r=>ok&&canPlace(p.rows[r],c)}}
+  return null;
+}
+const opt=(a,title,sub,dis,extra='')=>`<button class="opt" data-a="${a}" ${extra} ${dis?'disabled':''}><b>${title}</b><span>${sub}</span></button>`;
+function actionsHtml(){
+  if(S.over)return `<button class="btn" data-a="new">Neue Partie</button>`;
+  if(S.draft){if(draftWho()!==0)return `<span style="color:var(--muted)">Die Bots wählen …</span>`;const sel=U.sel;if(!sel)return `<span class="hint">Startplättchen oben antippen</span>`;const c=CARDS[S.draft.disp[sel.i]];return `<div class="sheet"><div class="sh"><b>${esc(c.n)}</b><span>${c.side==='S'?'Stadt – kommt links an':'Wildnis – kommt rechts an'}. Wirkt jedes Mal, wenn eine Kette hindurchläuft: ${esc(c.tile.map(rule).join('; '))}.</span></div><div class="opts">${[0,1,2,3].map(r=>opt('gplace',`Reihe ${r+1}`,canPlace(me().rows[r],c)?`frei ${COLS-used(me().rows[r])}`:'passt nicht',!canPlace(me().rows[r],c),`data-r="${r}"`)).join('')}</div><div class="opts"><button class="btn alt" data-a="unsel">Anderes Plättchen</button></div></div>`}
+  if(S.cur!==0)return `<span style="color:var(--muted)">Die Bots ziehen …</span>`;
+  const p=me(),sel=U.sel;
+  const tip=`<button class="btn alt" data-a="tip">Tipp</button>`;
+  if(U.mode==='tuck'){const c=CARDS[p.hand[sel.i]];return `<div class="sheet"><div class="sh"><b>${esc(c.n)} als Upgrade</b><span>Tippe oben das Plättchen an, das dazubekommt: ${esc(c.edge.map(rule).join('; '))}. Kostet 1 Münze.</span></div><div class="opts"><button class="btn alt" data-a="cancel">Abbrechen</button></div></div>`}
+  if(U.phase==='land'){
+    if(!sel)return `${!p.hand.length?'<button class="btn alt" data-a="noland">Ohne Plättchen weiter</button>':''}${tip}<span class="hint">Karte antippen</span>`;
+    const c=sel.src==='m'?CARDS[S.market[sel.i]]:CARDS[p.hand[sel.i]];const cost=sel.src==='m'?mprice(S,sel.i):0;
+    const why=c.fam==='start'?'Startkarten sind nicht baubar':p.coins<cost?`zu wenig Münzen (${cost} nötig)`:'';
+    const rows=[0,1,2,3].map(r=>{const okr=!why&&canPlace(p.rows[r],c);return opt('build',`Reihe ${r+1}`,okr?`frei ${COLS-used(p.rows[r])}`:'passt nicht',!okr,`data-r="${r}"`)}).join('');
+    let h=`<div class="sheet"><div class="sh"><b>${esc(c.n)}</b>${sel.src==='m'?`<span>direkt aus der Auslage – mit Aufpreis +${surcharge(sel.i)}. Günstiger: im Abschluss kaufen (${price(S,sel.i)} Mz.), dann später gratis aus der Hand bauen.</span>`:''}</div>
+      <div class="grp"><div class="gl">Als Plättchen bauen · ${sel.src==='m'?cost+' Mz.':'gratis'}</div><div class="gs">${why?esc(why):`Kommt dauerhaft auf deinen Plan. Jedes Mal, wenn eine Kette hindurchläuft: ${esc(c.tile.map(rule).join('; '))}.`}</div><div class="opts">${rows}</div></div>`;
+    if(sel.src==='h')h+=`<div class="opts">${opt('tuckmode','Als Upgrade unterschieben · 1 Mz.',`Ein vorhandenes Plättchen bekommt dazu: ${esc(c.edge.map(rule).join('; '))}`,p.coins<TUCKCOST||!tilesOf(p).some(t=>t.edges.length<3))}${opt('brache','Nicht bauen · +1 Mz.','Karte geht auf den Ablagestapel und kommt später wieder')}</div>`;
+    return h+`<div class="opts"><button class="btn alt" data-a="unsel">Andere Karte</button>${tip}</div></div>`;
+  }
+  if(U.phase==='tat'){
+    if(U.mode==='take')return `<div class="sheet"><div class="sh"><b>Ausruhen: Karte nehmen</b><span>Tippe eine Karte der Auslage an – sie kommt gratis auf deine Hand.</span></div><div class="opts"><button class="btn alt" data-a="cancel">Abbrechen</button></div></div>`;
+    if(!sel)return `<div class="sheet"><div class="sh"><b>Aktion</b><span>Handkarte antippen und ausspielen – oder ausruhen:</span></div><div class="opts">${opt('ruhe','Ausruhen · +2 Mz.','Münzen für Käufe und Aufpreise')}${opt('takemode','Ausruhen · Karte nehmen','Eine Karte der Auslage gratis auf die Hand',!S.market.length)}</div><div class="opts">${tip}</div></div>`;
+    const c=CARDS[p.hand[sel.i]];
+    if(c.eff.act){const rows=[0,1,2,3].map(r=>{if(rowTired(S,p,r))return opt('act',`Reihe ${r+1}`,'ruht diese Runde',true,`data-r="${r}"`);const res=runChain(p,r,S.season,c.eff.add||{},true);const side=S.season==='LR'?'Stadtseite':'Waldseite',op=!closed(p.rows[r]);return opt('act',`Reihe ${r+1}`,`${res.links} ${res.links===1?'Glied':'Glieder'} · ${res.vp?'+'+res.vp+' Ruhm · ':''}+${res.coins} Mz.${res.conv?' (offen: Ruhm → Mz.)':''}${op&&!res.links?` · offen, ${side} leer`:''}`,false,`data-r="${r}"${res.vp?' data-hl="1"':''}`)}).join('');
+      return `<div class="sheet"><div class="sh"><b>${esc(c.n)}: Kette auslösen</b><span>Die Waren laufen durch die gewählte Reihe – in offenen Reihen nur durch die ${S.season==='LR'?'Stadtseite':'Waldseite'}, in gesäumten durch alles. Vorschau:</span></div><div class="opts">${rows}</div><div class="opts"><button class="btn alt" data-a="unsel">Andere Karte</button>${tip}</div></div>`}
+    return `<div class="sheet"><div class="sh"><b>${esc(c.n)}</b></div><div class="opts">${opt('play','Aktion ausführen',esc(eff(c.eff)))}<button class="btn alt" data-a="unsel">Andere Karte</button></div></div>`;
+  }
+  if(U.phase==='ende'){
+    if(sel&&sel.src==='h'&&upLeft()){const c=CARDS[p.hand[sel.i]];return `<div class="sheet"><div class="sh"><b>${esc(c.n)}</b></div><div class="opts">${opt('tuckmode','Als Upgrade unterschieben · 1 Mz.',`Ein Plättchen bekommt dazu: ${esc(c.edge.map(rule).join('; '))}`,p.coins<TUCKCOST)}<button class="btn alt" data-a="unsel">Zurück</button></div></div>`}
+    if(sel&&sel.src==='m'&&!U.bought){const c=CARDS[S.market[sel.i]],pr=Math.max(0,price(S,sel.i)-U.disc);return `<div class="sheet"><div class="sh"><b>${esc(c.n)}</b></div><div class="opts">${opt('buy',`Kaufen · ${pr} Mz.`,'Kommt sofort auf deine Hand – aus der Hand baust du später gratis',pr>p.coins)}<button class="btn alt" data-a="unsel">Zurück</button></div></div>`}
+    return `<button class="btn" data-a="endturn">Zug beenden</button>${tip}${U.ups<UPMAX&&p.hand.length&&p.coins<TUCKCOST?'<span class="hint">Upgrade braucht 1 Mz.</span>':''}`;
+  }
+  return '';
+}
+function introHtml(){return `<div class="intro"><h2>So geht ein Zug</h2><ol>
+ <li><b>Plättchen:</b> Eine Karte wird Teil deines Plans – gebaut (Stadtkarten wachsen von links, Wildnis von rechts) oder als Upgrade unter ein vorhandenes Plättchen geschoben. Aus der Hand baust du <b>gratis</b>, direkt aus der Auslage nur mit <b>Aufpreis</b>.</li>
+ <li><b>Aktion:</b> Eine andere Karte ausspielen. Meist löst sie eine <b>Kette</b> aus: Waren laufen durch eine Reihe, jedes Plättchen verarbeitet sie (Korn → Mehl → Brot …). Oder ausruhen: +2 Münzen <i>oder</i> eine Karte aus der Auslage gratis auf die Hand.</li>
+ <li><b>Abschluss:</b> Freiwillig bis zu 2 Upgrades (je 1 Münze) und/oder ein Kauf aus der Auslage – gekaufte Karten kommen sofort auf die Hand.</li></ol>
+ <p><b>Vor dem ersten Zug</b> wählt jede Person reihum 2 <b>Startplättchen</b> aus einer offenen Auslage (wer zuletzt am Zug ist, wählt zuerst, danach in Gegenrichtung). Sie liegen sofort auf deinem Plan.</p>
+ <p><b>Ziel:</b> Ruhm. Den gibt es aus Ketten nur in <b>gesäumten</b> Reihen: alle 6 Felder voll, je mindestens 2 Stadt und 2 Wildnis. Offene Reihen zahlen nur Münzen. Am Ende zählen noch Reihenbalance, Meisterstücke (je 3) und Münzen.</p>
+ <p><b>Ende:</b> Hat jemand <b>6 Meisterstücke</b> (Plättchen mit 3 Upgrades) oder einen <b>vollen Plan</b>, wird die Runde zu Ende gespielt – alle hatten dann gleich viele Züge.</p>
+ <p>Unsicher? Der Knopf <b>Tipp</b> zeigt, was ein Bot an deiner Stelle tun würde.</p>
+ <button class="btn" data-a="intro-ok">Verstanden</button></div>`}
+function render(){
+  const app=document.getElementById('app');
+  if(!S){const sv=load();app.innerHTML=`<div class="start"><a class="leave" href="../" aria-label="Beenden und zurück zu Spielregal">✕ Beenden</a><h1>Saum</h1><p>Von links wächst deine Stadt, von rechts deine Wildnis. Wo sie sich treffen, entsteht ein Kreislauf – und nur gesäumte Reihen bringen Ruhm. Prototyp ohne Grafik, Regeln Stand v0.7.</p>
+   <div style="display:flex;gap:8px;flex-wrap:wrap">${sv?'<button class="btn saum" data-a="resume">Partie fortsetzen</button>':''}<button class="btn" data-a="start" data-n="1">Gegen 1 Bot</button><button class="btn alt" data-a="start" data-n="2">Gegen 2 Bots</button></div></div>`;return}
+  const p=me(),pick=pickFor(),view=U.view||0,vp=S.players[view];
+  const winter=S.draft?'Startplättchen-Draft':S.endAt!=null?'Letzte Runde':`Ende: ${ENDM} Meisterstücke oder voller Plan`;
+  let intro=false;try{intro=!localStorage.getItem('saum:intro')}catch(_){intro=!U.introSeen}if(U.introSeen)intro=false;
+  app.innerHTML=`${U.toast?`<div class="toast">${esc(U.toast)}</div>`:''}
+  <div class="top"><h1>Saum</h1><div class="pills"><span class="pill">Runde ${S.round+1}</span><span class="pill season">${S.season==='LR'?'Frühling · Stadt → Wald':'Herbst · Wald → Stadt'}</span><span class="pill ${S.endAt!=null?'winter':''}">${winter}</span><button class="pill" data-a="help">? Regeln</button><a class="pill" href="../" style="text-decoration:none;color:inherit" aria-label="Zurück zu Spielregal (Partie bleibt gespeichert)">Spielregal</a></div></div>
+  <div class="opps">${S.players.map((q,i)=>`<button class="opp ${S.cur===i?'cur':''}" data-a="view" data-p="${i}"><b>${esc(q.name)}</b> ${finalScore(q)} Ruhm · ${q.coins} Mz. · ${closedCount(q)}/4 gesäumt · Meister ${meisterCount(q)}/${ENDM} · Felder ${filledCount(q)}/24${view===i?' ·&nbsp;sichtbar':''}</button>`).join('')}</div>
+  ${intro&&!S.over?introHtml():''}
+  ${S.over?endHtml():`<div class="phase">${phaseText()}</div>`}
+  <div class="me-bar"><span>${view===0?'Dein Plan':esc(vp.name)+'s Plan'}</span><span>Ruhm ${finalScore(vp)}</span><span>Münzen ${vp.coins}</span><span>Hand ${vp.hand.length}</span></div>
+  ${boardHtml(vp,view,view===0?pick:null)}
+  ${S.draft?`<div class="sec"><h3>Startplättchen</h3><div class="cards">${S.draft.disp.map((id,i)=>cardHtml(id,{a:'gpick',i,sel:U.sel&&U.sel.src==='g'&&U.sel.i===i,off:draftWho()!==0})).join('')}</div></div>`:''}
+  ${view===0&&!S.over?`<div class="sec"><h3>Deine Hand</h3><div class="cards">${p.hand.map((id,i)=>cardHtml(id,{a:'hand',i,sel:U.sel&&U.sel.src==='h'&&U.sel.i===i,off:S.cur!==0||(U.phase==='ende'&&!upLeft())})).join('')||'<span style="color:var(--muted)">leer</span>'}</div></div>`:''}
+  <div class="sec"><h3>Auslage</h3><div class="cards">${S.market.map((id,i)=>{const pr=Math.max(0,price(S,i)-(U.phase==='ende'?U.disc:0)),bp=mprice(S,i),take=U.phase==='tat'&&U.mode==='take';return cardHtml(id,{a:'market',i,price:pr,build:bp,sel:U.sel&&U.sel.src==='m'&&U.sel.i===i,off:!take&&(!(S.cur===0&&(U.phase==='land'||(U.phase==='ende'&&!U.bought)))||(U.phase==='land'?bp:pr)>p.coins)})}).join('')}</div></div>
+  <div class="sec"><h3>Jahresziele</h3><div class="goals">${S.goals.map(g=>`<span class="goal">${esc(g.tx)} · ${g.by.length?g.by.map(i=>esc(S.players[i].name)).join(', '):'6/3 Ruhm'} · du ${Math.min(goalProgress(p,g),g.n)}/${g.n}</span>`).join('')}</div></div>
+  <div class="sec"><h3>Chronik</h3><div class="log">${S.log.map(l=>`<div class="${l.me?'me':''}">${esc(l.t)}</div>`).join('')}</div></div>
+  ${U.help?`<div class="overlay" data-a="help-x"><div class="intro" data-stop="1">${introHtml().replace('<button class="btn" data-a="intro-ok">Verstanden</button>','<button class="btn" data-a="help-x">Schließen</button>').replace('<div class="intro">','').replace(/<\/div>$/,'')}</div></div>`:''}
+  <div class="actions"><div class="in">${actionsHtml()}</div></div>`;
+}
+function endHtml(){
+  const rows=S.players.map(q=>({q,d:finalScore(q,true)})).sort((a,b)=>b.d.total-a.d.total);
+  return `<div class="phase end"><h2 style="font-size:22px;margin-bottom:6px">${rows[0].q.bot?esc(rows[0].q.name)+' gewinnt':'Du gewinnst!'}</h2>
+  <div style="overflow-x:auto"><table style="font-size:13px"><tr><th></th><th>Ketten & Ziele</th><th>Balance</th><th>Meister</th><th>Ende</th><th>Mz.</th><th>Ruhm</th></tr>${rows.map(({q,d})=>`<tr><td>${esc(q.name)}</td><td>${d.ruhm}</td><td>${d.bal}</td><td>${d.mst}</td><td>${d.end}</td><td>${d.coin}</td><td><b>${d.total}</b></td></tr>`).join('')}</table></div>
+  <p style="margin:8px 0 0;font-size:13px;color:var(--muted)">Längste Kette: ${Math.max(...S.players.map(q=>q.maxChain))} Glieder (du ${me().maxChain}).</p>${S.recorded?'<p style="margin:10px 0 0;font-size:13px">✓ Als Partie für <b>Saum</b> vorgemerkt – sie erscheint in Spielregal, sobald du die App öffnest.</p>':''}<p style="margin:12px 0 0"><a class="btn alt" href="../" style="text-decoration:none;display:inline-block">Zum Spielregal</a></p></div>`}
+// Tipp: was der Bot an deiner Stelle täte
+function tipText(){
+  const p=me(),lite=()=>{const T=clone(S);T.log=[];return T};
+  if(U.phase==='land'){let best=-1e9,bl=null;for(const lm of landMoves(S,0)){const T=lite();applyMove(T,0,lm,rng(3));let v=-1e9;for(const tm of tatMoves(T,0)){const X=clone(T);applyMove(X,0,tm,rng(4));v=Math.max(v,evalState(X,0))}if(v>best){best=v;bl=lm}}return bl?'Tipp: '+describe(S,0,bl).replace(/^baut/,'Baue').replace(/^schiebt/,'Schiebe').replace(/^legt (.*) brach/,'Verzichte mit $1 (+1 Mz.)'):''}
+  if(U.phase==='tat'){let best=-1e9,bt=null;for(const tm of tatMoves(S,0)){const T=lite();applyMove(T,0,tm,rng(4));const v=evalState(T,0);if(v>best){best=v;bt=tm}}return 'Tipp: '+describe(S,0,bt).replace(/^spielt/,'Spiele').replace(/^ruht/,'Ruhe dich aus')}
+  if(U.phase==='ende'){let bi=null,bv=0.8;S.market.forEach((id,i)=>{const pr=Math.max(0,price(S,i)-U.disc);if(pr>p.coins)return;const c=CARDS[id];const tv=c.tile.reduce((a,ru)=>a+({src:ru.n*0.6,conv:1.2,score:ru.vp*0.8,sell:0.8,combo:2.5,dup:1,vpPer:ru.vp,endRows:ru.vp*1.2}[ru.t]||0),0);const v=tv+0.5-pr*0.45;if(v>bv){bv=v;bi=i}});return bi!=null&&!U.bought?'Tipp: Kaufe '+CARDS[S.market[bi]].n:'Tipp: Zug beenden'}
+  return '';
+}
+// ---- Eingaben ----
+function toastLong(t){U.toast=t;render();clearTimeout(U.tt);U.tt=setTimeout(()=>{U.toast=null;render()},4200)}
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-a]');if(!el)return;const a=el.dataset.a;
+  if(e.target.closest('[data-stop]')&&a==='help-x'&&!e.target.closest('button'))return;
+  if(a==='start'){newGame(+el.dataset.n);return}
+  if(a==='resume'){const sv=load();S=sv.S;R=rng(S.seed+S.round*7919+S.log.length);U={phase:sv.U.phase||'land',sel:null,disc:sv.U.disc||0,view:0};if(S.draft){U.phase='draft';runDraft();return}if(S.cur!==0){S.cur=S.players.length-1;nextTurn()}else render();return}
+  if(a==='new'){S=null;try{localStorage.removeItem('saum:save')}catch(_){}render();return}
+  if(!S)return;
+  if(a==='intro-ok'){U.introSeen=true;try{localStorage.setItem('saum:intro','1')}catch(_){}render();return}
+  if(a==='help'){U.help=true;render();return}
+  if(a==='help-x'){U.help=false;render();return}
+  if(a==='view'){U.view=+el.dataset.p;render();return}
+  if(a==='tinfo'){const q=S.players[+el.dataset.p],t=q.rows[+el.dataset.r][el.dataset.sd][+el.dataset.ti],c=CARDS[t.id];toastLong(`${c.n}: ${[...c.tile,...t.edges.map(x=>CARDS[x].edge).flat()].map(rule).join('; ')}${t.edges.length?` · Upgrades: ${t.edges.map(x=>CARDS[x].n).join(', ')}`:''}`);return}
+  if(S.cur!==0||S.over)return;
+  if(S.draft){if(draftWho()!==0)return;if(a==='gpick'){U.sel={src:'g',i:+el.dataset.i};render();return}if(a==='unsel'){U.sel=null;render();return}if((a==='gplace'||a==='row')&&U.sel){const r=+el.dataset.r;if(!canPlace(me().rows[r],CARDS[S.draft.disp[U.sel.i]]))return;draftPlace(0,U.sel.i,r);U.sel=null;runDraft()}return}
+  const p=me();
+  if(a==='tip'){toastLong(tipText()||'Kein Tipp');return}
+  if(a==='cancel'){U.mode=null;render();return}
+  if(a==='unsel'){U.sel=null;U.mode=null;render();return}
+  if(a==='hand'){if(U.phase==='ende'&&!upLeft())return;if(U.mode==='take')return;U.sel={src:'h',i:+el.dataset.i};U.mode=null;render();return}
+  if(a==='market'){const i=+el.dataset.i;if(U.phase==='tat'&&U.mode==='take'){const m={k:'ruhe',take:i};say('Du '+describe(S,0,m),true);applyMove(S,0,m,R);U.mode=null;afterTat(0);return}if(U.phase==='land'||(U.phase==='ende'&&!U.bought)){U.sel={src:'m',i};U.mode=null;render()}return}
+  const done=m=>{say('Du '+describe(S,0,m),true);applyMove(S,0,m,R);U.sel=null;U.mode=null};
+  if(U.phase==='land'){
+    if(a==='noland'&&!p.hand.length){U.phase='tat';render();return}
+    const sel=U.sel;if(!sel)return;
+    if(a==='build'||a==='row'){const r=+el.dataset.r;const pk=pickFor();if(!pk||!pk.rows||!pk.rows(r))return;done(sel.src==='m'?{k:'mbuild',mi:sel.i,r}:{k:'build',hi:sel.i,r});U.phase='tat';render();return}
+    if(a==='tuckmode'&&sel.src==='h'){U.mode='tuck';render();return}
+    if(a==='tile'&&U.mode==='tuck'){done({k:'tuck',hi:sel.i,r:+el.dataset.r,sd:el.dataset.sd,ti:+el.dataset.ti});U.phase='tat';render();return}
+    if(a==='brache'&&sel.src==='h'){done({k:'brache',hi:sel.i});U.phase='tat';render();return}
+  }
+  if(U.phase==='tat'){
+    if(a==='takemode'){U.sel=null;U.mode='take';render();return}
+    if(a==='ruhe'){applyMove(S,0,{k:'ruhe'},R);say('Du ruhst (+2 Mz.)',true);afterTat(0);return}
+    if(!U.sel)return;
+    if(a==='act'){const m={k:'eff',hi:U.sel.i,r:+el.dataset.r,d:S.season};const d=describe(S,0,m);const disc=applyMove(S,0,m,R);say(`Du ${d} → ${m.res.links} Glieder, +${m.res.vp} Ruhm, +${m.res.coins} Mz.${m.res.conv?' (offene Reihe: Ruhm als Münzen)':''}`,true);if(m.trace&&m.trace.length)say('Kette: '+m.trace.join(' · '),true);afterTat(disc);toastLong(`Kette: ${m.res.links} Glieder · +${m.res.vp} Ruhm · +${m.res.coins} Mz.`);return}
+    if(a==='play'){const m={k:'eff',hi:U.sel.i};const d=describe(S,0,m);const disc=applyMove(S,0,m,R);say('Du '+d,true);afterTat(disc);return}
+  }
+  if(U.phase==='ende'){
+    if(a==='tuckmode'&&U.sel&&U.sel.src==='h'&&upLeft()){U.mode='tuck';render();return}
+    if(a==='tile'&&U.mode==='tuck'){done({k:'tuck',hi:U.sel.i,r:+el.dataset.r,sd:el.dataset.sd,ti:+el.dataset.ti});U.ups++;maybeFinish();return}
+    if(a==='buy'&&U.sel&&U.sel.src==='m'&&!U.bought){const i=U.sel.i,pr=Math.max(0,price(S,i)-U.disc);if(pr>p.coins)return;const id=S.market[i];p.coins-=pr;p.disc.push(id);S.market.splice(i,1);refill(S);say('Du kaufst '+CARDS[id].n,true);U.bought=true;U.sel=null;maybeFinish();return}
+    if(a==='endturn'){finishTurn();return}
+  }
+});
+function afterTat(disc){U.disc=disc||0;U.sel=null;U.mode=null;U.ups=0;U.bought=false;U.phase='ende';render()}
+function upLeft(){const p=me();return U.ups<UPMAX&&p.hand.length>0&&p.coins>=TUCKCOST&&tilesOf(p).some(t=>t.edges.length<3)}
+function maybeFinish(){if(!upLeft()&&U.bought)finishTurn();else render()}
+function finishTurn(){const p=me();draw(p,Math.max(0,5-p.hand.length),R);U.phase=null;U.sel=null;U.mode=null;nextTurn()}
+render();
+</script>

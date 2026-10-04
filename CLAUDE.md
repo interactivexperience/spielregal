@@ -174,7 +174,7 @@ Seite des Ziels; während des Wischens wird nicht neu gezeichnet (`render` warte
 Spielen deckend in der Seitenfarbe, ohne milchigen Blur (Owner: „kein milchiger Hintergrund“).
 
 Jedes Spiel hat einen eigenen Smoke-Test in `test/` (`gah-smoke.mjs`,
-`rebel-princess-smoke.mjs`, `three-sisters-smoke.mjs`, `countryside-smoke.mjs`); nach Änderungen an einem Spiel
+`rebel-princess-smoke.mjs`, `three-sisters-smoke.mjs`, `countryside-smoke.mjs`, `saum-smoke.mjs`); nach Änderungen an einem Spiel
 dessen Test laufen lassen, dazu `tutorials.mjs` (spielt die Lernspiele aller vier Spiele durch) und
 `save-leave.mjs` (Speichern & verlassen, Fortsetzen, Rückfrage vor dem Überschreiben), nach Änderungen an `index.html` zusätzlich
 `digital-play-link.mjs`, `digital-play-tracking.mjs` und `dashboard-browser-games.mjs`
@@ -193,3 +193,15 @@ Bogen-Abbildung auf S. 2 des Regelhefts. Was die Regelhefte nicht
 abdrucken (Karteninhalte, Aufdruck der Bögen/Leisten), ist jeweils im Abschnitt
 „Unterschiede zum Original“ der Spielregeln im Spiel offen benannt; bei Änderungen dort
 mitpflegen.
+
+## Saum (eigenes Spielkonzept)
+
+`saum/` ist das fünfte Browserspiel: ein eigenes Spiel des Owners (Plättchen legen + Deckbau + Kettenzüge),
+kein Nachbau. Regeln, Simulation und Gestaltung werden im Repo `interactivexperience/saum` entwickelt
+(`REGELN.md`, `sim.mjs`, `design/`); `saum/index.html` ist eine Kopie von dessen `prototyp/index.html` mit
+Spielregal-Anbindung (Beenden-Knopf und Link „Spielregal“, Spielstand `saum:save` mit `screen: 'game'` für den
+Dashboard-Hinweis „Partie läuft“, Partie-Meldung über `spielregal:inbox:plays` mit `source: 'saum'`). Der Owner
+hat ausdrücklich entschieden, dass Saum damit öffentlich im Spielregal liegt. Änderungen am Prototyp im Saum-Repo
+machen und hierher übernehmen (Anbindung erhalten). Das Cover `saum/cover.jpg` stammt aus der Mal-Engine
+`design/saum-art.js` des Saum-Repos (Stil: Gouache + Buntstift, Plakat-Aufbau wie die Parks-Karten).
+Die Spielregal-Konventionen der vier anderen Spiele (Menü, Lernspiel, Wischseiten …) gelten für den Prototyp noch nicht.
