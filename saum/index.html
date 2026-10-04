@@ -153,10 +153,11 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .goal{border:1px solid var(--line);border-radius:99px;padding:5px 11px;background:var(--paper);color:var(--muted)}
 /* Startbildschirm */
 .start{position:relative;max-width:520px;margin:-14px auto 0;display:flex;flex-direction:column;gap:16px}
-.start .hero{aspect-ratio:2/3;margin:0 -16px;border-radius:0 0 26px 26px;background:url(art/muehle.jpg) center/cover;box-shadow:0 30px 60px -30px rgba(28,48,43,.6)}
+.start .hero{aspect-ratio:2/3;margin:0 -16px;border-radius:0 0 26px 26px;background:url(art/cover.jpg) center top/cover;box-shadow:0 30px 60px -30px rgba(28,48,43,.6)}
 .start h1{font:900 72px/.9 var(--f-logo);text-transform:uppercase;letter-spacing:.01em;color:var(--logo);margin-top:4px}
 .start .tag{font:600 12px/1.3 var(--f-body);text-transform:uppercase;letter-spacing:.22em;color:var(--teal);margin-top:10px}
 .start p{color:var(--muted);margin:0}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .leave{position:absolute;top:16px;right:16px;z-index:2;font:600 12.5px/1 var(--f-body);color:#1C302B;background:rgba(251,248,241,.9);text-decoration:none;border-radius:999px;padding:8px 13px}
 .rules{font-size:14px;color:var(--ink)}
 .rules li{margin:4px 0}
@@ -630,14 +631,14 @@ function goTo(){
   scrollTo({top,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
   el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');
 }
-const HERO_TOP='#BEAFBE';
+const HERO_TOP='#6E7A55';
 function themeFor(onStart){document.documentElement.style.backgroundColor=onStart?HERO_TOP:'';let tc=document.querySelector('meta[name="theme-color"]');if(!tc){tc=document.createElement('meta');tc.name='theme-color';document.head.appendChild(tc);tc.dataset.base='#F5F0E4'}tc.content=onStart?HERO_TOP:tc.dataset.base}
 addEventListener('scroll',()=>{const on=scrollY>90;if(on!==!!U.scr){U.scr=on;const h=document.querySelector('.thead');if(h)h.classList.toggle('scr',on)}},{passive:true});
 function resumeGame(){const sv=load();if(!sv)return;S=sv.S;R=rng(S.seed+S.round*7919+S.log.length);U={phase:sv.U.phase||'land',sel:null,disc:sv.U.disc||0,view:0};if(S.draft){U.phase='draft';runDraft();return}if(S.cur!==0){S.cur=S.players.length-1;nextTurn()}else render()}
 document.addEventListener('saum:resume',resumeGame);
 function render(){
   const app=document.getElementById('app');themeFor(!S);
-  if(!S){const sv=load();app.innerHTML=`<div class="start"><a class="leave" href="../" aria-label="Beenden und zurück zu Spielregal">✕ Beenden</a><div class="hero" role="img" aria-label="Die Mühle von Saum im Abendlicht"></div><div><h1>Saum</h1><div class="tag">Stadt · Wildnis · Kreislauf</div></div><p>Von links wächst deine Stadt, von rechts deine Wildnis. Wo sie sich treffen, entsteht ein Kreislauf – und nur gesäumte Reihen bringen Ruhm. Prototyp, Regeln Stand v0.7.</p>
+  if(!S){const sv=load();app.innerHTML=`<div class="start"><a class="leave" href="../" aria-label="Beenden und zurück zu Spielregal">✕ Beenden</a><div class="hero" role="img" aria-label="Saum – Entdecken, Sammeln, Weiterziehen: Blick über Fluss, Stadt und Wald"></div><div class="vh"><h1>Saum</h1><div class="tag">Entdecken · Sammeln · Weiterziehen</div></div><p>Von links wächst deine Stadt, von rechts deine Wildnis. Wo sie sich treffen, entsteht ein Kreislauf – und nur gesäumte Reihen bringen Ruhm. Prototyp, Regeln Stand v0.7.</p>
    <div style="display:flex;gap:8px;flex-wrap:wrap">${sv?'<button class="btn saum" data-a="resume">Partie fortsetzen</button>':''}<button class="btn" data-a="start" data-n="1">Gegen 1 Bot</button><button class="btn alt" data-a="start" data-n="2">Gegen 2 Bots</button></div></div>`;return}
   if(U.page==null)U.page=1;if(pagesBusy()){U.rpend=true;return}U.rpend=false;autoPage();
   const p=me(),pick=pickFor(),view=U.view||0,vp=S.players[view];

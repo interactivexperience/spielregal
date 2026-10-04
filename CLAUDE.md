@@ -204,7 +204,7 @@ Dashboard-Hinweis „Partie läuft“, Partie-Meldung über `spielregal:inbox:pl
 hat ausdrücklich entschieden, dass Saum damit öffentlich im Spielregal liegt. Änderungen am Prototyp im Saum-Repo
 machen und hierher übernehmen (Anbindung erhalten). Kartenbilder liegen unter `saum/art/` (vom Owner nach den Prompts der Art-Bible
 `design/art-bible.html` erzeugt, Zuordnung über `ART` je Karten-id; Karten ohne Bild zeigen einen Farbverlauf ihrer Familie).
-Das Cover `saum/cover.jpg` ist das Mühlenbild mit Wortmarke. App-Oberfläche nach dem Style-Board des Owners (Farbschema und Look):
+Das Cover ist das Coverbild des Owners mit eingemalter Wortmarke und Slogan „Entdecken · Sammeln · Weiterziehen“ (`saum/cover.jpg` 3:4 fürs Dashboard, `saum/art/cover.jpg` 2:3 als Startbild; die Überschrift darunter ist nur für Screenreader da). App-Oberfläche nach dem Style-Board des Owners (Farbschema und Look):
 Wortmarke „SAUM“ in Fraunces Black (Versalien, Dunkelgrün `#1C302B`), Überschriften/Kartentitel Lora Bold (Aubergine `#251737`),
 Fließtext DM Sans; Papier `#F5F0E4`; Akzente Lila `#5E4E6F`, Gelb `#F2A744` (du bist dran), Koralle `#F58A7E` (Stadt, vertieft
 `#D2614F`), Blau `#6DA1DB`, Salbei `#95A985` (Wildnis, vertieft `#5E8052`); Kartenfamilien je eine dieser Farben. Tokens in `:root`.
