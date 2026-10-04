@@ -105,20 +105,48 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .card{isolation:isolate;position:relative;aspect-ratio:2/3;border-radius:var(--r);background:var(--paper);text-align:left;display:flex;flex-direction:column;justify-content:flex-end;min-width:0;overflow:hidden;box-shadow:0 1px 0 var(--line),0 0 0 1px var(--line)}
 .card .art{position:absolute;inset:0;z-index:-1;background:var(--saum-soft);background-size:cover;background-position:center top}
 .card .art::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(28,48,43,.6),rgba(28,48,43,0) 55%)}
-.card .side{position:absolute;top:9px;left:9px;display:flex;gap:3px}
-.card .side i{width:11px;height:11px;border-radius:3px;background:var(--stadt);box-shadow:0 0 0 2px rgba(251,248,241,.9)}
-.card.W .side i{background:var(--wild)}
 .card .cost{position:absolute;top:6px;right:6px;line-height:0;filter:drop-shadow(0 1px 3px rgba(28,48,43,.35))}
 .card .cost .tk{width:30px;height:30px}
-.card .ttl{position:absolute;left:0;right:0;bottom:calc(33.333% + 2px);padding:0 10px 4px;font:700 19px/1.02 var(--f-display);color:#FBF8F1;text-shadow:0 1px 8px rgba(28,48,43,.45)}
-.card .body{container-type:inline-size;position:absolute;left:5px;right:5px;bottom:5px;height:calc(33.333% - 5px);display:grid;grid-template-columns:1fr 1fr;grid-template-rows:44fr 56fr;overflow:hidden;border-radius:calc(var(--r) - 4px);background:color-mix(in srgb,var(--paper) 95%,transparent)}
+.card .body{container-type:inline-size;position:absolute;left:5px;right:5px;bottom:5px;height:calc(33.333% - 5px);display:grid;grid-template-rows:52fr 48fr;overflow:hidden;border-radius:calc(var(--r) - 4px);background:color-mix(in srgb,var(--paper) 95%,transparent)}
 .card .body.solo{grid-template-rows:1fr}
-.card .solo .main{flex-direction:column;justify-content:center;gap:2.5cqw}
-.card .ln{--k:1;display:flex;align-items:center;min-width:0;overflow:hidden}
-.card .main{grid-column:1/-1;padding:0 4.5cqw;gap:0}
-.card .act,.card .up{flex-direction:column;align-items:flex-start;justify-content:center;gap:1.6cqw;padding:0 3cqw 0 4.5cqw;border-top:1px solid var(--line)}
-.card .up{background:color-mix(in srgb,var(--saum-soft) 85%,transparent);border-left:1px solid var(--line);padding-left:3.5cqw}
-.card .ln i{font-style:normal;font:700 4.6cqw/1 var(--f-body);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.card .ln{--k:1;display:flex;align-items:center;gap:2.5cqw;min-width:0;overflow:hidden;padding:0 3.5cqw}
+.card .ln .pm{width:11cqw;height:11cqw;flex:none}
+.card .up{background:color-mix(in srgb,var(--saum-soft) 88%,transparent);border-top:1px dashed color-mix(in srgb,var(--saum) 55%,transparent)}
+.card .rls{display:flex;flex-direction:column;gap:2cqw;justify-content:center}
+.card .acts{position:absolute;top:7px;left:7px;display:flex;flex-direction:column;gap:5px;align-items:flex-start}
+.card .chip{display:flex;align-items:center;gap:3px;min-height:34px;padding:4px;border-radius:10px;background:var(--head);box-shadow:0 0 0 2px rgba(251,248,241,.85),0 3px 8px rgba(20,30,27,.35)}
+.card .chip .tk,.card .chip .ic{width:24px;height:24px}
+.card .chip .cg{display:flex;align-items:center;color:#FBF8F1;font:800 12px/1 var(--f-body)}
+.card .chip .cg .tk{width:18px;height:18px}
+.card .chip .ct{color:#FBF8F1;font:700 10px/1 var(--f-body);padding-right:3px}
+.card .wtag{position:absolute;top:46px;right:7px;font:700 9.5px/1 var(--f-body);color:#1F2B27;background:rgba(251,248,241,.9);border-radius:99px;padding:4px 7px}
+.card:not(:has(.cost)) .wtag{top:9px}
+/* große Karte beim langen Drücken: Karte plus Text zu jedem Symbol */
+.big{position:fixed;inset:0;z-index:12;background:rgba(20,30,27,.62);display:flex;flex-direction:column;align-items:center;gap:12px;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 16px;overflow-y:auto;animation:bub .18s ease-out}
+.bigcard{width:min(62vw,270px);flex:none}
+.bigcard .card{width:100%;box-shadow:0 20px 50px -12px rgba(0,0,0,.55);cursor:default}
+.bigcard .card .ttl{font-size:28px}
+.bigcard .card .chip{min-height:44px;padding:5px;border-radius:12px}.bigcard .card .chip .tk,.bigcard .card .chip .ic{width:32px;height:32px}
+.bigtxt{width:min(100%,420px);background:var(--paper);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;flex:none}
+.bigtxt h3{font-size:22px}
+.bigtxt .bm{margin:-6px 0 0;font-size:12.5px;color:var(--muted)}
+.bigtxt .bs{display:flex;flex-direction:column;gap:6px;padding-top:8px;border-top:1px solid var(--line)}
+.bigtxt .bs.up{background:var(--saum-soft);margin:0 -16px;padding:8px 16px;border-top:1px dashed var(--saum)}
+.bigtxt .bh{display:flex;align-items:center;flex-wrap:wrap;gap:4px 7px;font:700 14px/1.2 var(--f-display);color:var(--head)}
+.bigtxt .bh small{font:500 11.5px/1.25 var(--f-body);color:var(--muted)}
+.bigtxt .bh .pm{width:22px;height:22px;flex:none}
+.bigtxt .bl{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;font-size:13.5px;line-height:1.35}
+.bigtxt .bi{display:flex;align-items:center;min-width:58px}
+.bigtxt .bi .tk,.bigtxt .bi .pm{width:22px;height:22px}
+.bigtxt .cardrule{--k:1;display:flex;align-items:center;gap:2px}
+.bigtxt .cardrule .tk{width:22px;height:22px;flex:none}.bigtxt .cardrule .stk{display:flex}.bigtxt .cardrule .stk .tk+.tk{margin-left:-8px}
+.bigtxt .cardrule .arr{font-size:13px;margin:0 2px}.bigtxt .cardrule .pl,.bigtxt .cardrule .x2,.bigtxt .cardrule .n{font:800 14px/1 var(--f-body)}
+.bigtxt .cardrule .wd{font:700 11px/1 var(--f-body);background:var(--line);border-radius:99px;padding:3px 6px}
+.bigtxt .bchip{display:inline-flex;align-items:center;justify-content:center;gap:2px;min-width:30px;height:30px;padding:3px;border-radius:9px;background:var(--head);color:#FBF8F1;font-size:12px}
+.bigtxt .bchip.sm{min-width:22px;height:22px;font-size:10px;border-radius:7px}
+.bigtxt .bchip .tk,.bigtxt .bchip .ic{width:22px;height:22px}
+.bigtxt .bx{margin:0;text-align:center;font-size:12px;color:var(--muted)}
+.card .ttl{position:absolute;left:0;right:0;bottom:calc(33.333% + 2px);padding:0 10px 4px;font:700 19px/1.02 var(--f-display);color:#FBF8F1;text-shadow:0 1px 8px rgba(28,48,43,.45)}
 .card .rl{display:flex;align-items:center;flex-wrap:nowrap;white-space:nowrap}
 .card .tk{width:calc(14cqw * var(--k));height:calc(14cqw * var(--k));flex:none;display:block}
 .card .stk{display:flex}.card .stk .tk+.tk{margin-left:calc(-5.5cqw * var(--k))}
@@ -189,6 +217,19 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .pdots .pd.on i{width:18px;background:var(--ink)}
 .pdots .pd.act:not(.on) i{background:var(--saum)}
 @media (prefers-reduced-motion:reduce){.pages,.pdots .pd i{transition:none}}
+/* Hand-Fächer */
+.fan{position:fixed;left:0;right:0;z-index:4;pointer-events:none;max-width:720px;margin:0 auto;transition:opacity .2s,transform .25s}
+.fan.hid{opacity:0;transform:translateY(40px)}
+.fan .fc{position:absolute;top:0;transform-origin:50% 120%;pointer-events:auto;transition:transform .2s,left .2s}
+.fan .fc .card{width:100%;box-shadow:0 -4px 14px rgba(20,30,27,.22),0 0 0 1px var(--line)}
+.fan .fc:active{z-index:2}
+.fan.hid .fc{pointer-events:none}
+.fan .card .ttl{top:5px;bottom:auto;font-size:12.5px;line-height:1.05;padding:0 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fan .card .art::before{content:"";position:absolute;inset:0 0 auto;height:30%;background:linear-gradient(rgba(20,30,27,.55),rgba(20,30,27,0));z-index:1}
+.fan .card .chip{min-height:24px;padding:2px 3px;border-radius:7px}.fan .card .chip .tk,.fan .card .chip .ic{width:18px;height:18px}.fan .card .chip .cg .tk{width:14px;height:14px}
+.fan .card .acts{top:23px;left:5px;gap:3px}
+.fan .card.sel{transform:translateY(-14px)}
+.fan.flash .fc .card{animation:flash 1.1s ease-out}
 /* Schritte, Auswahlfenster, Hilfe */
 .steps{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
 .steps span{font-size:11px;font-weight:600;border-radius:99px;padding:3px 10px;color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
@@ -314,8 +355,8 @@ function runChain(p,ri,dir,start,dry=false,trace=null){
   p.vp+=vp;p.coins+=coins;p.maxChain=Math.max(p.maxChain,links);p.chains.push(links);
   return{vp,coins,links,conv};
 }
-// Rückenwind (v0.8): wer am wenigsten Ruhm hat (und nicht mit der Führenden gleichauf liegt), kauft und baut aus der Auslage 1 billiger
-const isLast=(S,pi)=>{const sc=S.players.map(q=>finalScore(q)),me=sc[pi];return me===Math.min(...sc)&&me<Math.max(...sc)};
+// Rückenwind (v0.8, nur zu zweit): wer am wenigsten Ruhm hat (und nicht mit der Führenden gleichauf liegt), kauft und baut aus der Auslage 1 billiger
+const isLast=(S,pi)=>{if(S.players.length!==2)return false;const sc=S.players.map(q=>finalScore(q)),me=sc[pi];return me===Math.min(...sc)&&me<Math.max(...sc)};
 const price=(S,i,pi=S.cur)=>Math.max(0,CARDS[S.market[i]].cost-(i<2?1:0)-(isLast(S,pi)?1:0));
 const surcharge=i=>1+Math.floor(i/2); // Aufpreis fürs Bauen direkt aus der Auslage: +1/+1/+2/+2/+3/+3
 const mprice=(S,i,pi=S.cur)=>price(S,i,pi)+surcharge(i);
@@ -502,6 +543,23 @@ const ruleIc=r=>({src:()=>`<b class="pl">+</b>${stack(r.g,r.n)}`,
   vpPer:()=>`${ruhmT(r.vp)}${word('je')}${tok(r.g)}`,
   endRows:()=>`${ruhmT(r.vp)}${word('je Reihe')}`}[r.t]());
 const effIc=e=>[e.act?word('Kette')+(e.add?Object.entries(e.add).map(([g,n])=>stack(g,n)).join(''):''):'',e.coins?coinT(e.coins):'',e.draw?cardT(e.draw):'',e.buyDisc?word('Kauf')+coinT('−'+e.buyDisc):''].filter(Boolean).join('<span class="gap"></span>');
+// Kartensymbole v3: Aktionen als Chips oben links (wie Radlands), passive Zeilen mit festen Erkennungszeichen
+const FLOW=svg24(`<g fill="none" stroke="${W}" stroke-width="2" stroke-linecap="round"><path d="M3.5 12h13"/><path d="M13 7.5l4.5 4.5-4.5 4.5"/></g><circle cx="4" cy="12" r="2.4" fill="${W}"/><circle cx="10" cy="12" r="2.4" fill="${W}"/>`,'ic');
+const PASS=svg24(`<circle cx="12" cy="12" r="11" fill="var(--wild)"/><g fill="none" stroke="${W}" stroke-width="2.2" stroke-linecap="round"><path d="M17.5 9.5A6 6 0 1 0 18 13.5"/></g><path d="M19.6 6.2l-.6 4.6-4.4-1.6z" fill="${W}"/>`,'pm');
+const UPG=svg24(`<circle cx="12" cy="12" r="11" fill="var(--saum)"/><rect x="6.5" y="6" width="11" height="7" rx="1.6" fill="${W}"/><rect x="6.5" y="14.2" width="11" height="2.4" rx="1" fill="${W}" opacity=".85"/><rect x="6.5" y="17.6" width="11" height="2.2" rx="1" fill="${W}" opacity=".7"/>`,'pm');
+const actChips=e=>[e.act?`<span class="chip kette" data-t="Kette auslösen">${FLOW}${e.add?Object.entries(e.add).map(([g,n])=>`<span class="cg">${n>1?`<b>${n}</b>`:''}${tok(g)}</span>`).join(''):''}</span>`:'',e.coins?`<span class="chip">${coinT('+'+e.coins)}</span>`:'',e.draw?`<span class="chip">${cardT('+'+e.draw)}</span>`:'',e.buyDisc?`<span class="chip kauf">${coinT('−'+e.buyDisc)}<span class="ct">Kauf</span></span>`:''].filter(Boolean).join('');
+const effLines=e=>[e.act?[`${FLOW}`,`Kette auslösen: Waren laufen durch eine deiner Reihen${e.add?' – sie startet mit '+Object.entries(e.add).map(([g,n])=>`${n} ${G[g]}`).join(' und '):''}.`]:null,e.coins?[coinT('+'+e.coins),`Du bekommst ${e.coins} Münzen.`]:null,e.draw?[cardT('+'+e.draw),`Du ziehst ${e.draw} Karte${e.draw>1?'n':''}.`]:null,e.buyDisc?[coinT('−'+e.buyDisc),`Dein nächster Kauf kostet ${e.buyDisc} Münzen weniger.`]:null].filter(Boolean);
+function bigHtml(id,edges){const c=CARDS[id],ln=(ic,tx)=>`<div class="bl"><span class="bi">${ic}</span><span>${tx}</span></div>`;
+  const tile=c.tile.map(r=>ln(`<span class="cardrule">${ruleIc(r)}</span>`,esc(ruleLong(r).replace(/^./,m=>m.toUpperCase())))).join('');
+  const up=c.edge.map(r=>ln(`<span class="cardrule">${ruleIc(r)}</span>`,esc(ruleLong(r).replace(/^./,m=>m.toUpperCase())))).join('');
+  const acts=effLines(c.eff).map(([ic,tx])=>ln(`<span class="bchip">${ic}</span>`,esc(tx))).join('');
+  return `<div class="big" role="dialog" aria-label="${esc(c.n)}"><div class="bigcard">${cardHtml(id,{big:true})}</div><div class="bigtxt">
+   <h3>${esc(c.n)}</h3><p class="bm">${c.side==='S'?'Stadt – wird von links gebaut':'Wildnis – wird von rechts gebaut'} · ${c.w} Feld${c.w>1?'er':''}${c.fam==='start'?' · Startkarte, nicht baubar':''}${c.fam==='grund'?' · Startplättchen':''}</p>
+   ${acts?`<div class="bs"><div class="bh"><span class="bchip sm">▶</span>Aktion <small>einmal ausspielen, dann Ablage</small></div>${acts}</div>`:''}
+   <div class="bs"><div class="bh">${PASS}Plättchen <small>passiv · wirkt jedes Mal, wenn eine Kette hindurchläuft</small></div>${tile}</div>
+   ${c.edge.length?`<div class="bs up"><div class="bh">${UPG}Upgrade <small>passiv · unter ein Plättchen geschoben, wirkt es dort mit</small></div>${up}</div>`:''}
+   ${edges&&edges.length?`<div class="bs"><div class="bh">Untergeschoben</div>${edges.map(x=>ln(UPG,esc(CARDS[x].n+': '+CARDS[x].edge.map(ruleLong).join(' ')))).join('')}</div>`:''}
+   <p class="bx">Antippen schließt.</p></div></div>`}
 const RAWN='Rohwaren (Korn, Holz, Blüten)';
 const ruleLong=r=>({src:()=>`bringt ${r.n} ${G[r.g]} in die Kette.`,conv:()=>`tauscht bis zu ${r.max} ${G[r.from]} aus der Kette in ${G[r.to]}.`,
   score:()=>`verbraucht bis zu ${r.max} ${G[r.g]} aus der Kette für je ${r.vp} Ruhm.`,
@@ -520,14 +578,15 @@ function fitK(html,avail,cap=1){const stk=[...html.matchAll(/<span class="stk[^"
   const words=[...html.matchAll(/<span class="wd">([^<]*)<\/span>/g)].reduce((n,m)=>n+0.45+m[1].length*0.33,0);
   const u=(html.match(/<svg/g)||[]).length-stk*0.4+words+(html.match(/class="arr"/g)||[]).length*0.6+(html.match(/class="pl"/g)||[]).length*0.45+(html.match(/class="x2"/g)||[]).length*0.8+(html.match(/class="gap"/g)||[]).length*0.3;
   return ` style="--k:${Math.min(cap,avail/Math.max(u,0.1)).toFixed(3)}">${html}`}
-function cardHtml(id,o={}){const c=CARDS[id],art=ART[id];return `<button class="card ${c.side} f-${c.fam} ${o.sel?'sel':''} ${o.off?'off':''}" data-a="${o.a||''}" data-i="${o.i??''}" data-info="${esc(cardInfo(c))}">
- <span class="art"${art?` style="background-image:url(${art})"`:''}></span><span class="side" title="${c.side==='S'?'Stadt':'Wildnis'}">${'<i></i>'.repeat(c.w)}</span>${o.price!=null?`<span class="cost" title="Kaufpreis">${coinT(o.price)}</span>`:''}<span class="ttl">${esc(c.n)}</span>
- <span class="body ${c.fam==='grund'?'solo':''}">${c.fam==='grund'?`<span class="ln main">${c.tile.map(r=>`<span class="rl"${fitK(ruleIc(r),6,c.tile.length>1?1.2:1.45)}</span>`).join('')}</span>`:`<span class="ln main"${fitK(c.tile.map(ruleIc).join('<span class="gap"></span>'),6)}</span>`}
- ${c.fam==='grund'?'':`<span class="ln act"><i>Aktion</i><span class="rl"${fitK(effIc(c.eff),2.9)}</span></span><span class="ln up"><i>Upgrade</i><span class="rl"${fitK(c.edge.map(ruleIc).join('<span class="gap"></span>'),2.9)}</span></span>`}</span></button>`}
+function cardHtml(id,o={}){const c=CARDS[id],art=ART[id],g=c.fam==='grund';
+ const tileH=g?c.tile.map(r=>`<span class="rl"${fitK(ruleIc(r),5.2,c.tile.length>1?1.15:1.4)}</span>`).join(''):`<span class="rl"${fitK(c.tile.map(ruleIc).join('<span class="gap"></span>'),5.2)}</span>`;
+ return `<button class="card ${c.side} f-${c.fam} ${o.sel?'sel':''} ${o.off?'off':''} ${o.big?'bigc':''}" ${o.big?'':`data-a="${o.a||''}" data-i="${o.i??''}" data-id="${id}" data-big="${id}"`}>
+ <span class="art"${art?` style="background-image:url(${art})"`:''}></span>${g?'':`<span class="acts">${actChips(c.eff)}</span>`}${o.price!=null?`<span class="cost" title="Kaufpreis">${coinT(o.price)}</span>`:''}${c.w>1?'<span class="wtag">2 Felder</span>':''}<span class="ttl">${esc(c.n)}</span>
+ <span class="body ${g?'solo':''}"><span class="ln main">${PASS}${g?`<span class="rls">${tileH}</span>`:tileH}</span>${g?'':`<span class="ln up">${UPG}<span class="rl"${fitK(c.edge.map(ruleIc).join('<span class="gap"></span>'),5.2)}</span></span>`}</span></button>`}
 function boardHtml(p,pi,pick){
   return `<div class="board">${p.rows.map((rw,r)=>{
     const cl=closed(rw),tired=rowTired(S,p,r),free=COLS-used(rw);
-    const tile=(t,sd,ti)=>{const c=CARDS[t.id];const pk=pick&&pick.tiles&&pick.tiles(r,sd,ti);return `<button class="tile ${sd} f-${c.fam} ${ART[t.id]?'has-art':''} ${pk?'pick':''}" style="grid-column:span ${c.w}${ART[t.id]?`;background-image:url(${ART[t.id]})`:''}" data-a="${pk?'tile':'tinfo'}" data-info="${esc(cardInfo(c)+(t.edges.length?'\nUntergeschoben: '+t.edges.map(x=>CARDS[x].n+' ('+CARDS[x].edge.map(rule).join('; ')+')').join(', '):''))}" data-r="${r}" data-sd="${sd}" data-ti="${ti}" data-p="${pi}"><span class="dots" title="Upgrades">${'●'.repeat(t.edges.length)}${'○'.repeat(3-t.edges.length)}</span><b>${esc(c.n)}</b>${c.w>1?`<span class="rl">${esc([...c.tile,...t.edges.map(e=>CARDS[e].edge).flat()].map(rule).slice(0,2).join('; '))}</span>`:''}</button>`};
+    const tile=(t,sd,ti)=>{const c=CARDS[t.id];const pk=pick&&pick.tiles&&pick.tiles(r,sd,ti);return `<button class="tile ${sd} f-${c.fam} ${ART[t.id]?'has-art':''} ${pk?'pick':''}" style="grid-column:span ${c.w}${ART[t.id]?`;background-image:url(${ART[t.id]})`:''}" data-a="${pk?'tile':'tinfo'}" data-big="${t.id}" data-edges="${t.edges.join(',')}" data-r="${r}" data-sd="${sd}" data-ti="${ti}" data-p="${pi}"><span class="dots" title="Upgrades">${'●'.repeat(t.edges.length)}${'○'.repeat(3-t.edges.length)}</span><b>${esc(c.n)}</b>${c.w>1?`<span class="rl">${esc([...c.tile,...t.edges.map(e=>CARDS[e].edge).flat()].map(rule).slice(0,2).join('; '))}</span>`:''}</button>`};
     const pr=pick&&pick.rows&&pick.rows(r);
     return `<div class="row ${pr?'pickrow':''} ${tired?'tired':''}" ${pr?`data-a="row" data-r="${r}"`:''}><span class="edge">Stadt</span>${rw.S.map((t,ti)=>tile(t,'S',ti)).join('')}${Array(free).fill(`<span class="cell" ${pr?`data-a="row" data-r="${r}"`:''}></span>`).join('')}${[...rw.W].reverse().map((t,i)=>tile(t,'W',rw.W.length-1-i)).join('')}<span class="edge">Wald</span></div>
     <div class="rowinfo"><span>Reihe ${r+1}${tired?' · ruht diese Runde':''}</span><span class="${cl?'closed':''}">${cl?'gesäumt ✓ bringt Ruhm':`Stadt ${sideW(rw,'S')} · Wildnis ${sideW(rw,'W')} · frei ${free}`}</span></div>`}).join('')}</div>`}
@@ -591,10 +650,21 @@ function introHtml(){return `<div class="intro"><h2>So geht ein Zug</h2><ol>
  <li><b>Abschluss:</b> Freiwillig bis zu 2 Upgrades (je 1 Münze) und/oder ein Kauf aus der Auslage – gekaufte Karten kommen sofort auf die Hand.</li></ol>
  <p><b>Vor dem ersten Zug</b> wählt jede Person reihum 2 <b>Startplättchen</b> aus einer offenen Auslage (wer zuletzt am Zug ist, wählt zuerst, danach in Gegenrichtung). Sie liegen sofort auf deinem Plan.</p>
  <p><b>Ziel:</b> Ruhm. Den gibt es aus Ketten nur in <b>gesäumten</b> Reihen: alle 6 Felder voll, je mindestens 2 Stadt und 2 Wildnis. Offene Reihen zahlen nur Münzen. Am Ende zählen noch Reihenbalance, Meisterstücke (je 4) und Münzen.</p>
- <p><b>Rückenwind:</b> Wer gerade am wenigsten Ruhm hat (nicht gleichauf mit der Führenden), kauft und baut aus der Auslage <b>1 Münze billiger</b>.</p>
+ <p><b>Rückenwind (nur zu zweit):</b> Wer gerade am wenigsten Ruhm hat (nicht gleichauf mit der Führenden), kauft und baut aus der Auslage <b>1 Münze billiger</b>.</p>
  <p><b>Ende:</b> Hat jemand <b>6 Meisterstücke</b> (Plättchen mit 3 Upgrades) oder einen <b>vollen Plan</b>, wird die Runde zu Ende gespielt – alle hatten dann gleich viele Züge.</p>
  <p>Unsicher? Der Knopf <b>Tipp</b> zeigt, was ein Bot an deiner Stelle tun würde.</p>
  <button class="btn" data-a="intro-ok">Verstanden</button></div>`}
+// ---------- Hand als Fächer hinter dem Footer (wie Landgut): angeschnitten, antippen = wählen, lange drücken = ganze Karte ----------
+function fanHtml(){if(!S||S.over||U.view)return '';const p=me();if(!p.hand.length)return '';
+  const hide=!!(U.sel||U.mode),off=i=>S.cur!==0||!!S.draft||(U.phase==='ende'&&!upLeft());
+  return `<div class="fan ${hide?'hid':''}" id="hand" aria-label="Deine Hand">${p.hand.map((id,i)=>`<div class="fc" style="--i:${i}">${cardHtml(id,{a:'hand',i,sel:U.sel&&U.sel.src==='h'&&U.sel.i===i,off:off(i)})}</div>`).join('')}</div>`}
+function layoutFan(){const f=document.querySelector('.fan'),a=document.querySelector('.actions');if(!f||!a)return;
+  const n=f.children.length,vw=Math.min(innerWidth,720),cw=Math.min(104,Math.max(84,vw*.25)),ch=cw*1.5,peek=Math.round(ch*.5);
+  const span=Math.min(vw-32-cw,(n-1)*cw*.78),step=n>1?span/(n-1):0,x0=(vw-(span+cw))/2;
+  f.style.bottom=(a.offsetHeight-ch+peek)+'px';f.style.height=ch+'px';
+  [...f.children].forEach((c,i)=>{const t=n>1?i/(n-1)-.5:0;c.style.width=cw+'px';c.style.left=(x0+i*step)+'px';c.style.transform=`translateY(${Math.round(t*t*28)}px) rotate(${(t*10).toFixed(1)}deg)`});
+  document.getElementById('app').style.paddingBottom=(a.offsetHeight+peek+24)+'px'}
+addEventListener('resize',()=>layoutFan());
 // ---------- Drei Wischseiten (Plan · Karten · Ziele & Chronik), Technik wie in Landgut ----------
 const PAGES=['Plan','Karten','Ziele & Chronik'];
 if(U.page==null)U.page=1;
@@ -643,6 +713,7 @@ function goTo(){
   if(U.sel||U.mode){const a=document.querySelector('.actions');if(a){a.classList.remove('flash');void a.offsetWidth;a.classList.add('flash')}return}
   const id=S.over?'plan':S.draft?(draftWho()===0?'draft':'plan'):S.cur!==0?'plan':U.mode==='tuck'?'plan':U.phase==='ende'?(U.bought?'hand':'markt'):'hand';
   const el=document.getElementById(id);if(!el)return;
+  if(id==='hand'){el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');return}
   const pi=pageOf(el);if(pi>=0&&pi!==U.page)pageGo(pi,false);
   const top=el.getBoundingClientRect().top+scrollY-(document.querySelector('.thead')?.offsetHeight||0)-8;
   scrollTo({top,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
@@ -670,14 +741,13 @@ function render(){
   <div class="pages"><div class="page"><div class="me-bar" id="plan"><span>${view===0?'Dein Plan':esc(vp.name)+'s Plan'}</span>${view===0?'':`<span>Ruhm ${finalScore(vp)}</span><span>Münzen ${vp.coins}</span><span>Hand ${vp.hand.length}</span>`}</div>
   ${boardHtml(vp,view,view===0?pick:null)}</div><div class="page">
   ${S.draft?`<div class="sec" id="draft"><h3>Startplättchen</h3><div class="cards">${S.draft.disp.map((id,i)=>cardHtml(id,{a:'gpick',i,sel:U.sel&&U.sel.src==='g'&&U.sel.i===i,off:draftWho()!==0})).join('')}</div></div>`:''}
-  ${view===0&&!S.over?`<div class="sec" id="hand"><h3>Deine Hand</h3><div class="cards">${p.hand.map((id,i)=>cardHtml(id,{a:'hand',i,sel:U.sel&&U.sel.src==='h'&&U.sel.i===i,off:S.cur!==0||(U.phase==='ende'&&!upLeft())})).join('')||'<span style="color:var(--muted)">leer</span>'}</div></div>`:''}
   <div class="sec" id="markt"><h3>Auslage</h3><div class="cards">${S.market.map((id,i)=>{const pr=Math.max(0,price(S,i,0)-(U.phase==='ende'?U.disc:0)),bp=mprice(S,i,0),take=U.phase==='tat'&&U.mode==='take';return cardHtml(id,{a:'market',i,price:pr,build:bp,sel:U.sel&&U.sel.src==='m'&&U.sel.i===i,off:!take&&(!(S.cur===0&&(U.phase==='land'||(U.phase==='ende'&&!U.bought)))||(U.phase==='land'?bp:pr)>p.coins)})}).join('')}</div></div>
   </div><div class="page">
   <div class="sec" id="ziele"><h3>Jahresziele</h3><div class="goals">${S.goals.map(g=>`<span class="goal">${esc(g.tx)} · ${g.by.length?g.by.map(i=>esc(S.players[i].name)).join(', '):'6/3 Ruhm'} · du ${Math.min(goalProgress(p,g),g.n)}/${g.n}</span>`).join('')}</div></div>
   <div class="sec"><h3>Chronik</h3><div class="log">${S.log.map(l=>`<div class="${l.me?'me':''}">${esc(l.t)}</div>`).join('')}</div></div></div></div>
   ${U.help?`<div class="overlay" data-a="help-x"><div class="intro" data-stop="1"><button class="ico xbtn" data-a="help-x" aria-label="Schließen">✕</button>${introHtml().replace('<button class="btn" data-a="intro-ok">Verstanden</button>','<button class="btn" data-a="help-x">Schließen</button>').replace('<div class="intro">','').replace(/<\/div>$/,'')}</div></div>`:''}${U.menu?menuHtml():''}
-  <div class="actions">${S.over?'':dotsHtml()}<div class="in">${actionsHtml()}</div></div>`;
-  pageSync(true);
+  ${fanHtml()}<div class="actions">${S.over?'':dotsHtml()}<div class="in">${actionsHtml()}</div></div>`;
+  pageSync(true);layoutFan();
 }
 function endHtml(){
   const rows=S.players.map(q=>({q,d:finalScore(q,true)})).sort((a,b)=>b.d.total-a.d.total);
@@ -696,17 +766,18 @@ function tipText(){
 function toastLong(t){U.toast=t;render();clearTimeout(U.tt);U.tt=setTimeout(()=>{U.toast=null;render()},4200)}
 // Langes Drücken (≈0,45 s) auf ein Element mit data-info zeigt eine Info-Blase
 let lpT=null,lpFired=false,lpXY=null;
+function showBig(el){const ed=el.dataset.edges?el.dataset.edges.split(',').filter(Boolean):null;document.body.insertAdjacentHTML('beforeend',bigHtml(el.dataset.big,ed))}
 function hideBubble(){const b=document.querySelector('.bubble');if(b)b.remove()}
 function showBubble(el){hideBubble();const b=document.createElement('div');b.className='bubble';b.textContent=el.dataset.info;document.body.appendChild(b);
   const r=el.getBoundingClientRect(),bw=b.offsetWidth,bh=b.offsetHeight,vw=innerWidth;
   let x=Math.min(Math.max(12,r.left+r.width/2-bw/2),vw-bw-12),y=r.top-bh-10;if(y<12)y=Math.min(r.bottom+10,innerHeight-bh-12);
   b.style.left=x+'px';b.style.top=Math.max(12,y)+'px'}
-document.addEventListener('pointerdown',e=>{hideBubble();const el=e.target.closest('[data-info]');if(!el)return;lpFired=false;lpXY=[e.clientX,e.clientY];
-  clearTimeout(lpT);lpT=setTimeout(()=>{lpFired=true;showBubble(el);if(navigator.vibrate)try{navigator.vibrate(8)}catch(_){}},450)});
+document.addEventListener('pointerdown',e=>{if(document.querySelector('.big')){document.querySelector('.big').remove();lpFired=true;return}hideBubble();const el=e.target.closest('[data-big],[data-info]');if(!el)return;lpFired=false;lpXY=[e.clientX,e.clientY];
+  clearTimeout(lpT);lpT=setTimeout(()=>{lpFired=true;if(el.dataset.big)showBig(el);else showBubble(el);if(navigator.vibrate)try{navigator.vibrate(8)}catch(_){}},450)});
 document.addEventListener('pointermove',e=>{if(lpXY&&Math.hypot(e.clientX-lpXY[0],e.clientY-lpXY[1])>10){clearTimeout(lpT);lpXY=null}});
-['pointerup','pointercancel'].forEach(t=>document.addEventListener(t,()=>{clearTimeout(lpT);lpXY=null;if(lpFired)setTimeout(hideBubble,2600)}));
+['pointerup','pointercancel'].forEach(t=>document.addEventListener(t,()=>{clearTimeout(lpT);lpXY=null;if(lpFired&&!document.querySelector('.big'))setTimeout(hideBubble,2600)}));
 addEventListener('scroll',()=>{clearTimeout(lpT);hideBubble()},{passive:true});
-document.addEventListener('contextmenu',e=>{if(e.target.closest('[data-info]'))e.preventDefault()});
+document.addEventListener('contextmenu',e=>{if(e.target.closest('[data-info],[data-big]'))e.preventDefault()});
 document.addEventListener('click',e=>{if(lpFired){lpFired=false;e.stopImmediatePropagation();e.preventDefault()}},true);
 function handleClick(e){
   const el=e.target.closest('[data-a]');if(!el)return;const a=el.dataset.a;

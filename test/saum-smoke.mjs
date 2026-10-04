@@ -4,6 +4,8 @@
 //    Plättchen bauen / unterschieben / nicht bauen, Aktionen, Ausruhen mit Karte, Abschluss.
 // 3. Prüft Spielende, Spielstand-Kennung fürs Dashboard und den Eintrag im Spielregal-Eingangskorb.
 // Aufruf (aus test/): node saum-smoke.mjs
+// Handkarten liegen als Fächer hinter dem Footer – nur der obere Teil schaut heraus, dort wird getippt
+const HANDTAP = { position: { x: 22, y: 16 } };
 import { chromium } from "playwright";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -52,7 +54,7 @@ try {
     if (st.mode === "take") { await page.locator(".card[data-a=market]").first().click(); takes++; continue; }
     if (st.phase === "land") {
       if (!st.sel) { const m = page.locator(".card[data-a=market]:not(.off)"), n = await m.count(), h = page.locator(".card[data-a=hand]"), hn = await h.count();
-        if (n && it % 2) await m.nth(it % n).click(); else if (hn) await h.nth(it % hn).click(); else if (n) await m.first().click(); else await page.click("[data-a=noland]"); continue; }
+        if (n && it % 2) await m.nth(it % n).click(); else if (hn) await h.nth(it % hn).click(HANDTAP); else if (n) await m.first().click(); else await page.click("[data-a=noland]"); continue; }
       if (await cnt("[data-a=build]")) { await en("[data-a=build]").first().click(); builds++; continue; }
       if (it % 3 && await cnt("[data-a=tuckmode]")) { await page.click("[data-a=tuckmode]"); continue; }
       if (await cnt("[data-a=brache]")) { await page.click("[data-a=brache]"); continue; }
@@ -60,7 +62,7 @@ try {
     }
     if (st.phase === "tat") {
       if (!st.sel && it % 5 === 0 && await cnt("[data-a=takemode]")) { await page.click("[data-a=takemode]"); continue; }
-      if (!st.sel) { const h = page.locator(".card[data-a=hand]"), hn = await h.count(); if (hn) await h.nth(it % hn).click(); else await page.click("[data-a=ruhe]"); continue; }
+      if (!st.sel) { const h = page.locator(".card[data-a=hand]"), hn = await h.count(); if (hn) await h.nth(it % hn).click(HANDTAP); else await page.click("[data-a=ruhe]"); continue; }
       if (await cnt("[data-a=act]")) { const hl = page.locator("[data-a=act][data-hl]:not([disabled])"); if (await hl.count()) await hl.first().click(); else await en("[data-a=act]").last().click(); continue; }
       if (await cnt("[data-a=play]")) { await page.click("[data-a=play]"); continue; }
       await page.click("[data-a=unsel]"); await page.click("[data-a=ruhe]"); continue;
@@ -68,7 +70,7 @@ try {
     if (st.phase === "ende") {
       if (st.sel) { if (await cnt("[data-a=tuckmode]")) { await page.click("[data-a=tuckmode]"); continue; } if (await cnt("[data-a=buy]")) { await page.click("[data-a=buy]"); continue; } await page.click("[data-a=unsel]"); await page.click("[data-a=endturn]"); continue; }
       const up = await page.evaluate(() => ({ b: U.bought }));
-      if (it % 2) { const h = page.locator(".card[data-a=hand]:not(.off)"); if (await h.count()) { await h.first().click(); continue; } }
+      if (it % 2) { const h = page.locator(".card[data-a=hand]:not(.off)"); if (await h.count()) { await h.first().click(HANDTAP); continue; } }
       if (!up.b && it % 3) { const m = page.locator(".card[data-a=market]:not(.off)"); if (await m.count()) { await m.first().click(); continue; } }
       if (await cnt("[data-a=endturn]")) await page.click("[data-a=endturn]");
       continue;
