@@ -124,13 +124,24 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .card .up{background:color-mix(in srgb,var(--saum-soft) 88%,transparent);border-top:1px dashed color-mix(in srgb,var(--saum) 55%,transparent)}
 .card .rls{display:flex;flex-direction:column;gap:2cqw;justify-content:center}
 .card .acts{position:absolute;top:7px;left:7px;display:flex;flex-direction:column;gap:5px;align-items:flex-start}
-.card .chip{display:flex;align-items:center;gap:3px;min-height:34px;padding:4px;border-radius:10px;background:var(--head);box-shadow:0 0 0 2px rgba(251,248,241,.85),0 3px 8px rgba(20,30,27,.35)}
+.card .chip{display:flex;align-items:center;gap:3px;min-height:34px;padding:4px;border-radius:10px;background:#251737;box-shadow:0 0 0 2px rgba(251,248,241,.85),0 3px 8px rgba(20,30,27,.35)}
 .card .chip .tk,.card .chip .ic{width:24px;height:24px}
 .card .chip .cg{display:flex;align-items:center;color:#FBF8F1;font:800 12px/1 var(--f-body)}
 .card .chip .cg .tk{width:18px;height:18px}
 .card .chip .ct{color:#FBF8F1;font:700 10px/1 var(--f-body);padding-right:3px}
 .card .wtag{position:absolute;top:46px;right:7px;font:700 9.5px/1 var(--f-body);color:#1F2B27;background:rgba(251,248,241,.9);border-radius:99px;padding:4px 7px}
 .card:not(:has(.cost)) .wtag{top:9px}
+.card .acts{padding-left:9px;padding-top:7px}
+.card .acts .bolt{position:absolute;left:-3px;top:-3px;z-index:1;line-height:0}
+.card .acts .bolt .pm{width:20px;height:20px;filter:drop-shadow(0 1px 2px rgba(20,30,27,.4))}
+.fan .card .acts .bolt .pm{width:15px;height:15px}.fan .card .acts{padding-left:6px;padding-top:5px}
+.bigcard .card .acts .bolt .pm{width:26px;height:26px}
+.bigtxt .bl{font-size:15px;line-height:1.4}
+.bigtxt .bi .tk,.bigtxt .bi .pm,.bigtxt .cardrule .tk{width:26px;height:26px}
+.bigtxt .bchip .tk,.bigtxt .bchip .ic{width:26px;height:26px}
+.bigtxt .bh{font-size:15.5px}.bigtxt .bh .pm{width:24px;height:24px}
+.bigtxt .bh small{font-size:12.5px}
+.intro.rules .pm{width:20px;height:20px;vertical-align:-5px}
 /* große Karte beim langen Drücken: Karte plus Text zu jedem Symbol */
 .big{position:fixed;inset:0;z-index:12;background:rgba(20,30,27,.62);display:flex;flex-direction:column;align-items:center;gap:12px;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 16px;overflow-y:auto;animation:bub .18s ease-out}
 .bigcard{width:min(62vw,270px);flex:none}
@@ -152,7 +163,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .bigtxt .cardrule .tk{width:22px;height:22px;flex:none}.bigtxt .cardrule .stk{display:flex}.bigtxt .cardrule .stk .tk+.tk{margin-left:-8px}
 .bigtxt .cardrule .arr{font-size:13px;margin:0 2px}.bigtxt .cardrule .pl,.bigtxt .cardrule .x2,.bigtxt .cardrule .n{font:800 14px/1 var(--f-body)}
 .bigtxt .cardrule .wd{font:700 11px/1 var(--f-body);background:var(--line);border-radius:99px;padding:3px 6px}
-.bigtxt .bchip{display:inline-flex;align-items:center;justify-content:center;gap:2px;min-width:30px;height:30px;padding:3px;border-radius:9px;background:var(--head);color:#FBF8F1;font-size:12px}
+.bigtxt .bchip{display:inline-flex;align-items:center;justify-content:center;gap:2px;min-width:34px;height:34px;padding:3px;border-radius:10px;background:#251737;color:#FBF8F1;font-size:12px}
 .bigtxt .bchip.sm{min-width:22px;height:22px;font-size:10px;border-radius:7px}
 .bigtxt .bchip .tk,.bigtxt .bchip .ic{width:22px;height:22px}
 .bigtxt .bx{margin:0;text-align:center;font-size:12px;color:var(--muted)}
@@ -556,25 +567,30 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const ART={acker:'art/land/15-kornfeld.jpg',feldscheune:'art/land/16-heuhang.jpg',muehle:'art/land/21-muehle-am-fluss.jpg',baeckerei:'art/land/19-bergdorf.jpg',gasthaus:'art/land/20-marktplatz.jpg',saegewerk:'art/land/26-flusslandschaft.jpg',schreinerei:'art/land/23-weinort.jpg',marktstand:'art/land/22-seedorf.jpg',kontor:'art/land/29-inselblick.jpg',laden:'art/land/03-almenwiese.jpg',rathaus:'art/land/24-kirchenhuegel.jpg',feldarbeit:'art/land/13-sonnenfeld.jpg',tagelohn:'art/land/17-terrassenfeld.jpg',gutshof:'art/land/14-mohnwiese.jpg',zunfthaus:'art/land/31-morgenlicht.jpg',markthalle:'art/land/32-sommerhimmel.jpg',brunnenplatz:'art/land/27-wasserfall.jpg',stadtarchiv:'art/land/34-abendrot.jpg',klosterkueche:'art/land/36-polarlicht.jpg',wald:'art/land/12-pilzlichtung.jpg',hochwald:'art/land/08-tannenhang.jpg',biberbau:'art/land/09-waldsee.jpg',wiese:'art/land/18-bluetenwiese.jpg',obstgarten:'art/land/01-gipfelblick.jpg',bienenstock:'art/land/06-abendspitze.jpg',imkerei:'art/land/25-bergsee.jpg',kraeutergarten:'art/land/02-felsgrat.jpg',teich:'art/land/28-seeufer.jpg',holzsammeln:'art/land/07-lichter-wald.jpg',bluetenlese:'art/land/05-bergpfad.jpg',alteeiche:'art/land/11-bachlauf.jpg',quelle:'art/land/04-gletschersee.jpg',lichtung:'art/land/10-mooslichtung.jpg',wildbienenhang:'art/land/33-gewitterhimmel.jpg',fuchsbau:'art/land/35-sternenhimmel.jpg',kraeuterhang:'art/land/30-flussdelta.jpg'};
 // ---------- Icons: große runde Spielsteine, Zahl im Stein; Langtext per langem Drücken ----------
 // Waren: Farbscheibe + klare Silhouette (W = weiß, D = dunkel)
-const W='#FBF8F1',D='#1C302B';
+const W='#FBF8F1',D='#1C302B',INK='#251737';
+// Ein Stil für alle Symbole, passend zur Illustration: flache Gouache-Scheibe mit weichem Rand, leichtem Glanz,
+// unruhiger Kante und Druckkorn (gemeinsamer Filter #gq); Zahlen bleiben außerhalb des Filters gestochen scharf.
+const disc=f=>`<circle cx="12" cy="12" r="11" fill="${f}"/><circle cx="12" cy="12" r="10.3" fill="none" stroke="rgba(20,30,27,.22)" stroke-width="1.3"/><path d="M5.8 7.2a8.6 8.6 0 0 1 8.6-3.6" stroke="rgba(255,255,255,.32)" stroke-width="1.7" fill="none" stroke-linecap="round"/>`;
+const paint=i=>`<g filter="url(#gq)">${i}</g>`;
+document.body.insertAdjacentHTML('afterbegin','<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><filter id="gq" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="1.7" numOctaves="2" seed="5" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="0.9" xChannelSelector="R" yChannelSelector="G" result="d"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 1 0 0 0 0 0.98 0 0 0 0 0.93 -1.5 0 0 0 0.62" result="sp"/><feComposite in="sp" in2="d" operator="in" result="spi"/><feMerge><feMergeNode in="d"/><feMergeNode in="spi"/></feMerge></filter></defs></svg>');
 const GOODIC={
- korn:['#F2A744',`<path d="M12 19.5V8" stroke="${W}" stroke-width="1.8" stroke-linecap="round"/><g fill="${W}"><ellipse cx="12" cy="6" rx="1.9" ry="2.8"/><ellipse cx="9.3" cy="10" rx="1.8" ry="2.6" transform="rotate(-35 9.3 10)"/><ellipse cx="14.7" cy="10" rx="1.8" ry="2.6" transform="rotate(35 14.7 10)"/><ellipse cx="9.3" cy="14.2" rx="1.8" ry="2.6" transform="rotate(-35 9.3 14.2)"/><ellipse cx="14.7" cy="14.2" rx="1.8" ry="2.6" transform="rotate(35 14.7 14.2)"/></g>`],
- mehl:['#E8DFCC',`<path d="M8 9.5 9.6 6h4.8L16 9.5l1.2 8.3a1.6 1.6 0 0 1-1.6 1.8H8.4a1.6 1.6 0 0 1-1.6-1.8z" fill="${W}" stroke="#8C5A3C" stroke-width="1.5" stroke-linejoin="round"/><path d="M9.2 8.6h5.6" stroke="#8C5A3C" stroke-width="1.5"/>`],
- brot:['#D98B3A',`<path d="M5 15.2C5 10.6 8.2 8 12 8s7 2.6 7 7.2c0 1.2-.9 2-2 2H7c-1.1 0-2-.8-2-2z" fill="${W}"/><path d="M9 11.2l1.2 2.6M12 10.6v2.9M15 11.2l-1.2 2.6" stroke="#D98B3A" stroke-width="1.4" stroke-linecap="round"/>`],
- holz:['#8C5A3C',`<circle cx="12" cy="12" r="6.3" fill="${W}"/><circle cx="12" cy="12" r="4" fill="none" stroke="#8C5A3C" stroke-width="1.2"/><circle cx="12" cy="12" r="1.5" fill="#8C5A3C"/>`],
- brett:['#B98A5E',`<rect x="5.5" y="7" width="13" height="4.2" rx=".8" fill="${W}"/><rect x="5.5" y="12.8" width="13" height="4.2" rx=".8" fill="${W}"/>`],
- moebel:['#5E4030',`<path d="M8.5 5.5v13M8.5 12h7.5v6.5" stroke="${W}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><rect x="7.4" y="10.6" width="9.6" height="2.6" rx=".8" fill="${W}"/>`],
- bluete:['#8B7BA3',`<g fill="${W}"><circle cx="12" cy="7.6" r="2.9"/><circle cx="16.2" cy="10.7" r="2.9"/><circle cx="14.6" cy="15.6" r="2.9"/><circle cx="9.4" cy="15.6" r="2.9"/><circle cx="7.8" cy="10.7" r="2.9"/></g><circle cx="12" cy="12" r="2.3" fill="#F2A744"/>`],
- honig:['#F7C878',`<path d="M12 5.5c2.6 3.6 4.6 6.2 4.6 8.7a4.6 4.6 0 0 1-9.2 0c0-2.5 2-5.1 4.6-8.7z" fill="#8C5A3C"/>`],
- any:['#E8DFCC',`<text x="12" y="16.5" text-anchor="middle" font-family="DM Sans,system-ui,sans-serif" font-weight="800" font-size="12" fill="#8C5A3C">?</text>`]
+ korn:['#E39A35',`<path d="M12 19.5V8" stroke="${W}" stroke-width="1.8" stroke-linecap="round"/><g fill="${W}"><ellipse cx="12" cy="6" rx="1.9" ry="2.8"/><ellipse cx="9.3" cy="10" rx="1.8" ry="2.6" transform="rotate(-35 9.3 10)"/><ellipse cx="14.7" cy="10" rx="1.8" ry="2.6" transform="rotate(35 14.7 10)"/><ellipse cx="9.3" cy="14.2" rx="1.8" ry="2.6" transform="rotate(-35 9.3 14.2)"/><ellipse cx="14.7" cy="14.2" rx="1.8" ry="2.6" transform="rotate(35 14.7 14.2)"/></g>`],
+ mehl:['#E3D2B4',`<path d="M8 9.5 9.6 6h4.8L16 9.5l1.2 8.3a1.6 1.6 0 0 1-1.6 1.8H8.4a1.6 1.6 0 0 1-1.6-1.8z" fill="${W}" stroke="#8C5A3C" stroke-width="1.5" stroke-linejoin="round"/><path d="M9.2 8.6h5.6" stroke="#8C5A3C" stroke-width="1.5"/>`],
+ brot:['#A85A2E',`<path d="M5 15.2C5 10.6 8.2 8 12 8s7 2.6 7 7.2c0 1.2-.9 2-2 2H7c-1.1 0-2-.8-2-2z" fill="${W}"/><path d="M9 11.2l1.2 2.6M12 10.6v2.9M15 11.2l-1.2 2.6" stroke="#A85A2E" stroke-width="1.4" stroke-linecap="round"/>`],
+ holz:['#6E4A33',`<circle cx="12" cy="12" r="6.3" fill="${W}"/><circle cx="12" cy="12" r="4" fill="none" stroke="#6E4A33" stroke-width="1.2"/><circle cx="12" cy="12" r="1.5" fill="#6E4A33"/>`],
+ brett:['#B07A4A',`<rect x="5.5" y="7" width="13" height="4.2" rx=".8" fill="${W}"/><rect x="5.5" y="12.8" width="13" height="4.2" rx=".8" fill="${W}"/>`],
+ moebel:['#5E4E6F',`<path d="M8.5 5.5v13M8.5 12h7.5v6.5" stroke="${W}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><rect x="7.4" y="10.6" width="9.6" height="2.6" rx=".8" fill="${W}"/>`],
+ bluete:['#8B7BA3',`<g fill="${W}"><circle cx="12" cy="7.6" r="2.9"/><circle cx="16.2" cy="10.7" r="2.9"/><circle cx="14.6" cy="15.6" r="2.9"/><circle cx="9.4" cy="15.6" r="2.9"/><circle cx="7.8" cy="10.7" r="2.9"/></g><circle cx="12" cy="12" r="2.3" fill="#E39A35"/>`],
+ honig:['#D9783A',`<path d="M12 5.5c2.6 3.6 4.6 6.2 4.6 8.7a4.6 4.6 0 0 1-9.2 0c0-2.5 2-5.1 4.6-8.7z" fill="${W}"/>`],
+ any:['#9E93B4',`<text x="12" y="16.5" text-anchor="middle" font-family="DM Sans,system-ui,sans-serif" font-weight="800" font-size="12" fill="${W}">?</text>`]
 };
 const svg24=(inner,cls='tk')=>`<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${inner}</svg>`;
-const tok=g=>{const [bg,gl]=GOODIC[g];return svg24(`<circle cx="12" cy="12" r="11" fill="${bg}" stroke="rgba(28,48,43,.25)" stroke-width="1"/>${gl}`)};
+const tok=g=>{const [bg,gl]=GOODIC[g];return svg24(paint(disc(bg)+gl))};
 const stack=(g,n)=>n<=3?`<span class="stk">${Array.from({length:n},()=>tok(g)).join('')}</span>`:`<b class="n">${n}</b>${tok(g)}`;
-const numT=(shape,n,fg)=>svg24(`${shape}<text x="12" y="16.3" text-anchor="middle" font-family="DM Sans,system-ui,sans-serif" font-weight="800" font-size="12.5" fill="${fg}">${n}</text>`);
-const coinT=n=>numT(`<circle cx="12" cy="12" r="11" fill="#F2A744"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#F7C878" stroke-width="1.2"/>`,n,D);
-const ruhmT=n=>numT(`<path d="M12 1.5l9 3.3v6.6c0 5.4-3.8 9.3-9 11.1-5.2-1.8-9-5.7-9-11.1V4.8z" fill="#3F73B8"/>`,n,W);
-const cardT=n=>numT(`<rect x="4.5" y="1.5" width="15" height="21" rx="2.5" fill="${W}" stroke="#6E6B63" stroke-width="1.5"/>`,n,D);
+const numT=(shape,n,fg)=>svg24(`${paint(shape)}<text x="12" y="16.3" text-anchor="middle" font-family="DM Sans,system-ui,sans-serif" font-weight="800" font-size="12.5" fill="${fg}">${n}</text>`);
+const coinT=n=>numT(disc('#F5C84C')+'<circle cx="12" cy="12" r="8.2" fill="none" stroke="#E39A35" stroke-width="1.3"/>',n,D);
+const ruhmT=n=>numT(`<path d="M12 1.5l9 3.3v6.6c0 5.4-3.8 9.3-9 11.1-5.2-1.8-9-5.7-9-11.1V4.8z" fill="#3F73B8"/><path d="M12 3.2l7.3 2.7v5.5c0 4.5-3.1 7.8-7.3 9.4" fill="none" stroke="rgba(20,30,27,.22)" stroke-width="1.2"/><path d="M5.6 6.4l4.6-1.7" stroke="rgba(255,255,255,.32)" stroke-width="1.6" stroke-linecap="round"/>`,n,W);
+const cardT=n=>numT(`<rect x="4.5" y="1.5" width="15" height="21" rx="2.5" fill="#F4EAD8" stroke="#8C7B66" stroke-width="1.5"/><path d="M7 4.5h6" stroke="rgba(140,123,102,.5)" stroke-width="1.4" stroke-linecap="round"/>`,n,D);
 const ARR='<span class="arr">➜</span>';
 const word=t=>`<span class="wd">${t}</span>`;
 const gsIc=gs=>gs==='any'?tok('any'):`<span class="stk or">${gs.map(tok).join('')}</span>`;
@@ -588,9 +604,10 @@ const ruleIc=r=>({src:()=>`<b class="pl">+</b>${stack(r.g,r.n)}`,
   endRows:()=>`${ruhmT(r.vp)}${word('je Reihe')}`}[r.t]());
 const effIc=e=>[e.act?word('Kette')+(e.add?Object.entries(e.add).map(([g,n])=>stack(g,n)).join(''):''):'',e.coins?coinT(e.coins):'',e.draw?cardT(e.draw):'',e.buyDisc?word('Kauf')+coinT('−'+e.buyDisc):''].filter(Boolean).join('<span class="gap"></span>');
 // Kartensymbole v3: Aktionen als Chips oben links (wie Radlands), passive Zeilen mit festen Erkennungszeichen
-const FLOW=svg24(`<g fill="none" stroke="${W}" stroke-width="2" stroke-linecap="round"><path d="M3.5 12h13"/><path d="M13 7.5l4.5 4.5-4.5 4.5"/></g><circle cx="4" cy="12" r="2.4" fill="${W}"/><circle cx="10" cy="12" r="2.4" fill="${W}"/>`,'ic');
-const PASS=svg24(`<circle cx="12" cy="12" r="11" fill="var(--wild)"/><g fill="none" stroke="${W}" stroke-width="2.2" stroke-linecap="round"><path d="M17.5 9.5A6 6 0 1 0 18 13.5"/></g><path d="M19.6 6.2l-.6 4.6-4.4-1.6z" fill="${W}"/>`,'pm');
-const UPG=svg24(`<circle cx="12" cy="12" r="11" fill="var(--saum)"/><rect x="6.5" y="6" width="11" height="7" rx="1.6" fill="${W}"/><rect x="6.5" y="14.2" width="11" height="2.4" rx="1" fill="${W}" opacity=".85"/><rect x="6.5" y="17.6" width="11" height="2.2" rx="1" fill="${W}" opacity=".7"/>`,'pm');
+const FLOW=svg24(paint(disc('#3F6B69')+`<g fill="none" stroke="${W}" stroke-width="1.9" stroke-linecap="round"><path d="M5.5 12h11"/><path d="M13.6 8.4l3.6 3.6-3.6 3.6"/></g><circle cx="6" cy="12" r="2" fill="${W}"/><circle cx="10.5" cy="12" r="2" fill="${W}"/>`),'ic');
+const PASS=svg24(paint(disc('#5E8052')+`<g fill="none" stroke="${W}" stroke-width="2.1" stroke-linecap="round"><path d="M17.3 9.6A5.8 5.8 0 1 0 17.8 13.4"/></g><path d="M19.4 6.3l-.6 4.5-4.3-1.6z" fill="${W}"/>`),'pm');
+const UPG=svg24(paint(disc('#D9902A')+`<rect x="6.6" y="6.2" width="10.8" height="6.8" rx="1.5" fill="${W}"/><rect x="6.6" y="14.2" width="10.8" height="2.3" rx="1" fill="${W}" opacity=".88"/><rect x="6.6" y="17.5" width="10.8" height="2.1" rx="1" fill="${W}" opacity=".72"/>`),'pm');
+const BOLT=svg24(paint(disc('#F5C84C')+`<path d="M13.6 3.8 6.8 13.1h4.5l-1.5 7.1 7.6-10.1h-4.6z" fill="${INK}"/>`),'pm');
 const actChips=e=>[e.act?`<span class="chip kette" data-t="Kette auslösen">${FLOW}${e.add?Object.entries(e.add).map(([g,n])=>`<span class="cg">${n>1?`<b>${n}</b>`:''}${tok(g)}</span>`).join(''):''}</span>`:'',e.coins?`<span class="chip">${coinT('+'+e.coins)}</span>`:'',e.draw?`<span class="chip">${cardT('+'+e.draw)}</span>`:'',e.buyDisc?`<span class="chip kauf">${coinT('−'+e.buyDisc)}<span class="ct">Kauf</span></span>`:''].filter(Boolean).join('');
 const effLines=e=>[e.act?[`${FLOW}`,`Kette auslösen: Waren laufen durch eine deiner Reihen${e.add?' – sie startet mit '+Object.entries(e.add).map(([g,n])=>`${n} ${G[g]}`).join(' und '):''}.`]:null,e.coins?[coinT('+'+e.coins),`Du bekommst ${e.coins} Münzen.`]:null,e.draw?[cardT('+'+e.draw),`Du ziehst ${e.draw} Karte${e.draw>1?'n':''}.`]:null,e.buyDisc?[coinT('−'+e.buyDisc),`Dein nächster Kauf kostet ${e.buyDisc} Münzen weniger.`]:null].filter(Boolean);
 function bigHtml(id,edges){const c=CARDS[id],ln=(ic,tx)=>`<div class="bl"><span class="bi">${ic}</span><span>${tx}</span></div>`;
@@ -599,7 +616,7 @@ function bigHtml(id,edges){const c=CARDS[id],ln=(ic,tx)=>`<div class="bl"><span 
   const acts=effLines(c.eff).map(([ic,tx])=>ln(`<span class="bchip">${ic}</span>`,esc(tx))).join('');
   return `<div class="big" role="dialog" aria-label="${esc(c.n)}"><div class="bigcard">${cardHtml(id,{big:true})}</div><div class="bigtxt">
    <h3>${esc(c.n)}</h3><p class="bm">${c.side==='S'?'Stadt – wird von links gebaut':'Wildnis – wird von rechts gebaut'} · ${c.w} Feld${c.w>1?'er':''}${c.fam==='start'?' · Startkarte, nicht baubar':''}${c.fam==='grund'?' · Startplättchen':''}</p>
-   ${acts?`<div class="bs"><div class="bh"><span class="bchip sm">▶</span>Aktion <small>einmal ausspielen, dann Ablage</small></div>${acts}</div>`:''}
+   ${acts?`<div class="bs"><div class="bh">${BOLT}Aktion <small>einmal ausspielen, dann Ablage</small></div>${acts}</div>`:''}
    <div class="bs"><div class="bh">${PASS}Plättchen <small>passiv · wirkt jedes Mal, wenn eine Kette hindurchläuft</small></div>${tile}</div>
    ${c.edge.length?`<div class="bs up"><div class="bh">${UPG}Upgrade <small>passiv · unter ein Plättchen geschoben, wirkt es dort mit</small></div>${up}</div>`:''}
    ${edges&&edges.length?`<div class="bs"><div class="bh">Untergeschoben</div>${edges.map(x=>ln(UPG,esc(CARDS[x].n+': '+CARDS[x].edge.map(ruleLong).join(' ')))).join('')}</div>`:''}
@@ -625,7 +642,7 @@ function fitK(html,avail,cap=1){const stk=[...html.matchAll(/<span class="stk[^"
 function cardHtml(id,o={}){const c=CARDS[id],art=ART[id],g=c.fam==='grund';
  const tileH=g?c.tile.map(r=>`<span class="rl"${fitK(ruleIc(r),5.2,c.tile.length>1?1.15:1.4)}</span>`).join(''):`<span class="rl"${fitK(c.tile.map(ruleIc).join('<span class="gap"></span>'),5.2)}</span>`;
  return `<button class="card ${c.side} f-${c.fam} ${o.sel?'sel':''} ${o.off?'off':''} ${o.big?'bigc':''}" ${o.big?'':`data-a="${o.a||''}" data-i="${o.i??''}" data-id="${id}" data-big="${id}"`}>
- <span class="art"${art?` style="background-image:url(${art})"`:''}></span>${g?'':`<span class="acts">${actChips(c.eff)}</span>`}${o.price!=null?`<span class="cost" title="Kaufpreis">${coinT(o.price)}</span>`:''}${c.w>1?'<span class="wtag">2 Felder</span>':''}<span class="ttl">${esc(c.n)}</span>
+ <span class="art"${art?` style="background-image:url(${art})"`:''}></span>${g?'':`<span class="acts"><span class="bolt" title="Aktion">${BOLT}</span>${actChips(c.eff)}</span>`}${o.price!=null?`<span class="cost" title="Kaufpreis">${coinT(o.price)}</span>`:''}${c.w>1?'<span class="wtag">2 Felder</span>':''}<span class="ttl">${esc(c.n)}</span>
  <span class="body ${g?'solo':''}"><span class="ln main">${PASS}${g?`<span class="rls">${tileH}</span>`:tileH}</span>${g?'':`<span class="ln up">${UPG}<span class="rl"${fitK(c.edge.map(ruleIc).join('<span class="gap"></span>'),5.2)}</span></span>`}</span></button>`}
 function boardHtml(p,pi,pick){
   return `<div class="board">${p.rows.map((rw,r)=>{
@@ -793,7 +810,7 @@ function rulesHtml(){return `<h2>Spielregeln</h2>
  <h3>Dein Plan</h3>
  <p>4 Reihen mit je 6 Feldern. <b>Stadtkarten</b> wachsen vom linken Rand (Stadttor), <b>Wildniskarten</b> vom rechten Rand (Waldrand). Eine Reihe ist <b>gesäumt</b>, wenn alle 6 Felder belegt sind und beide Seiten mindestens 2 Felder haben.</p>
  <h3>Die Karten lesen</h3>
- <ul><li><span class="rchip">▶</span> <b>Aktion</b> (Chips oben links): einmal ausspielen, dann auf den Ablagestapel.</li>
+ <ul><li>${BOLT} <b>Aktion</b> (⚡ und Chips oben links): einmal ausspielen, dann auf den Ablagestapel.</li>
  <li>${PASS} <b>Plättchen</b> (passiv): Liegt die Karte auf deinem Plan, wirkt diese Zeile jedes Mal, wenn eine Kette hindurchläuft.</li>
  <li>${UPG} <b>Upgrade</b> (passiv): Unter ein Plättchen geschoben, wirkt diese Zeile dort mit. 3 Upgrades unter einem Plättchen = <b>Meisterstück</b>.</li>
  <li>Lange auf eine Karte drücken zeigt sie groß mit Text zu jedem Symbol.</li></ul>

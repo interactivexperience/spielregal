@@ -216,7 +216,9 @@ Menü ☰ (Spielregeln, Mitspieler-Tempo `spielregal:botFast`, Speichern & zum S
 sticky Kopf/Knopfzeile in Auswahlfenstern. Zug rückgängig (↶ in der Fußleiste und im Menü; verfällt, sobald eine neue Karte aufgedeckt oder gezogen wird oder der Zug endet).
 Drei Wischseiten (`.pages`, Plan · Karten · Ziele & Chronik, Punkte `.pdots` in der Fußleiste, orange = Seite mit offener
 Aktion, `autoPage`: dein Zug/Draft → Karten, Upgrade-Ziel wählen → Plan; kein Neuzeichnen während des Wischens).
-Karten (Owner-Vorbild Radlands): Aktionen als dunkle Chips oben links untereinander (`actChips`), unten das Papierfeld (1/3 der
+Symbole in einem Stil passend zur Illustration: flache Gouache-Scheiben mit Glanzkante, Randschatten und Druckkorn (SVG-Filter `#gq`,
+`disc`/`paint`), Zahlen scharf darüber; Aktion = gelber Blitz `BOLT`. Karten (Owner-Vorbild Radlands): ⚡ plus Aktionen als dunkle Chips (immer
+`#251737`, auch im Dunkelmodus) oben links untereinander (`actChips`), unten das Papierfeld (1/3 der
 Karte) mit den passiven Fähigkeiten: ⟳ im Salbei-Kreis = Plättchen (wirkt, wenn eine Kette hindurchläuft), gelbes Stapel-Symbol im
 abgesetzten Band = Upgrade; keine farbigen Kästchen, zweifeldrige Karten tragen „2 Felder“. Langes Drücken auf Karte/Plättchen
 (`data-big`) öffnet die ganze Karte groß mit Text zu jedem Symbol (`bigHtml`), Antippen schließt. Handkarten als Fächer hinter dem
