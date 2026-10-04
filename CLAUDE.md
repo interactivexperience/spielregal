@@ -211,4 +211,6 @@ Hand/Auslage, langes Drücken = ausführlicher Text), Mitspieler-Chips in eigene
 Menü ☰ (Spielregeln, Mitspieler-Tempo `spielregal:botFast`, Speichern & zum Spielregal, Neustart, „Neueste Version laden“ mit
 `?resume=1`), Einklappen beim Scrollen (`.scr`), Info-Blase per langem Drücken, Textauswahl aus, `HERO_TOP` auf dem Startbildschirm,
 sticky Kopf/Knopfzeile in Auswahlfenstern. Zug rückgängig (↶ in der Fußleiste und im Menü; verfällt, sobald eine neue Karte aufgedeckt oder gezogen wird oder der Zug endet).
-Noch nicht übernommen: Wischseiten, Lernspiel.
+Drei Wischseiten (`.pages`, Plan · Karten · Ziele & Chronik, Punkte `.pdots` in der Fußleiste, orange = Seite mit offener
+Aktion, `autoPage`: dein Zug/Draft → Karten, Upgrade-Ziel wählen → Plan; kein Neuzeichnen während des Wischens).
+Noch nicht übernommen: Lernspiel.

@@ -161,6 +161,17 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .end td:first-child,.end th:first-child{text-align:left}
 .toast{position:fixed;left:50%;top:14px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:99px;font-size:13px;font-weight:500;z-index:9;max-width:calc(100vw - 32px)}
 @media (prefers-reduced-motion:no-preference){.tile{transition:transform .15s}.card{transition:box-shadow .15s,opacity .15s}}
+.pages{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;align-items:flex-start;margin:0 -16px;transition:height .32s cubic-bezier(.2,.8,.2,1)}
+.pages::-webkit-scrollbar{display:none}
+.pages>.page{flex:0 0 100%;min-width:0;scroll-snap-align:start;scroll-snap-stop:always;padding:0 16px 8px}
+.pages>.page>.sec:first-child{margin-top:14px}
+.actions{padding-top:24px}
+.pdots{position:absolute;left:50%;top:4px;transform:translateX(-50%);display:flex;gap:2px}
+.pdots .pd{width:26px;height:16px;display:grid;place-items:center;padding:0}
+.pdots .pd i{width:6px;height:6px;border-radius:99px;background:var(--line);transition:width .2s,background .2s}
+.pdots .pd.on i{width:18px;background:var(--ink)}
+.pdots .pd.act:not(.on) i{background:var(--saum)}
+@media (prefers-reduced-motion:reduce){.pages,.pdots .pd i{transition:none}}
 /* Schritte, Auswahlfenster, Hilfe */
 .steps{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
 .steps span{font-size:11px;font-weight:600;border-radius:99px;padding:3px 10px;color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
@@ -562,6 +573,31 @@ function introHtml(){return `<div class="intro"><h2>So geht ein Zug</h2><ol>
  <p><b>Ende:</b> Hat jemand <b>6 Meisterstücke</b> (Plättchen mit 3 Upgrades) oder einen <b>vollen Plan</b>, wird die Runde zu Ende gespielt – alle hatten dann gleich viele Züge.</p>
  <p>Unsicher? Der Knopf <b>Tipp</b> zeigt, was ein Bot an deiner Stelle tun würde.</p>
  <button class="btn" data-a="intro-ok">Verstanden</button></div>`}
+// ---------- Drei Wischseiten (Plan · Karten · Ziele & Chronik), Technik wie in Landgut ----------
+const PAGES=['Plan','Karten','Ziele & Chronik'];
+if(U.page==null)U.page=1;
+function actPage(){if(!S||S.over)return -1;if(S.draft)return draftWho()===0?1:-1;if(S.cur!==0)return -1;return U.mode==='tuck'?0:1}
+function autoPage(){const k=[S.over,!!S.draft&&draftWho()===0,S.cur,U.phase,U.mode].join('|');if(k===U.apKey)return;U.apKey=k;const ap=actPage();if(ap>=0&&(U.mode==='tuck'||!U.sel))U.page=ap}
+function dotsHtml(){const ap=actPage();return `<div class="pdots" role="tablist">${PAGES.map((t,i)=>`<button class="pd ${i===U.page?'on':''} ${i===ap?'act':''}" data-a="page" data-p="${i}" role="tab" aria-label="${t}" aria-selected="${i===U.page}"><i></i></button>`).join('')}</div>`}
+const pagesEl=()=>document.querySelector('.pages');
+function pageSync(instant){const pg=pagesEl();if(!pg)return;const w=pg.clientWidth||1;
+  if(instant&&Math.abs(pg.scrollLeft-U.page*w)>1){U.progScroll=Date.now();pg.scrollLeft=U.page*w}
+  const a=pg.children[U.page];if(a)pg.style.height=a.offsetHeight+'px';
+  document.querySelectorAll('.pdots .pd').forEach((t,i)=>{t.classList.toggle('on',i===U.page);t.setAttribute('aria-selected',i===U.page);const d=t.firstElementChild;if(d){d.style.width='';d.style.opacity=''}})}
+function pageOf(el){const pg=el&&el.closest('.page');return pg?[...pg.parentElement.children].indexOf(pg):-1}
+function pageGo(i,smooth){const pg=pagesEl();if(!pg||i<0)return;
+  const th=document.querySelector('.thead'),y0=pg.getBoundingClientRect().top+scrollY-(th?th.offsetHeight:0)-8;
+  if(i!==U.page&&scrollY>y0)scrollTo({top:Math.max(0,y0)});
+  U.page=i;if(smooth){U.progScroll=0;pg.scrollTo({left:i*pg.clientWidth,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}else pageSync(true);pageSync(false)}
+function dotsLive(pg){const x=pg.scrollLeft/(pg.clientWidth||1);document.querySelectorAll('.pdots .pd i').forEach((d,i)=>{const k=Math.max(0,1-Math.abs(x-i));d.style.width=(6+12*k).toFixed(1)+'px';d.style.opacity=(.55+.45*k).toFixed(2)})}
+let pTouch=false,pScrollT=0;
+function pagesBusy(){return pTouch||Date.now()-pScrollT<140}
+document.addEventListener('scroll',e=>{const pg=e.target;if(!pg.classList||!pg.classList.contains('pages'))return;dotsLive(pg);
+  if(Date.now()-(U.progScroll||0)<60)return;pScrollT=Date.now();clearTimeout(pg._t);
+  pg._t=setTimeout(()=>{const i=Math.round(pg.scrollLeft/(pg.clientWidth||1));if(i!==U.page)pageGo(i,false);else pageSync(false);if(U.rpend&&!pTouch)render()},150)},true);
+document.addEventListener('touchstart',e=>{if(e.target.closest&&e.target.closest('.pages'))pTouch=true},{passive:true,capture:true});
+['touchend','touchcancel'].forEach(t=>document.addEventListener(t,()=>{if(pTouch){pTouch=false;pScrollT=Date.now();setTimeout(()=>{if(U.rpend&&!pagesBusy())render()},200)}},{passive:true,capture:true}));
+addEventListener('resize',()=>pageSync(true));
 // ---------- Kopf: Ansage, Menü, Sprungziele (Spielregal-Konventionen) ----------
 const plain=h=>h.replace(/<[^>]+>/g,'').replace(/&amp;/g,'&');
 function annMine(){return S&&!S.over&&(S.draft?draftWho()===0:S.cur===0)}
@@ -583,8 +619,9 @@ const fastPref=()=>{try{return localStorage.getItem('spielregal:botFast')==='1'}
 const botDelay=()=>fastPref()?160:450;
 function goTo(){
   if(U.sel||U.mode){const a=document.querySelector('.actions');if(a){a.classList.remove('flash');void a.offsetWidth;a.classList.add('flash')}return}
-  const id=S.over?'plan':S.draft?(draftWho()===0?'draft':'plan'):S.cur!==0?'plan':U.phase==='ende'?(U.bought?'hand':'markt'):'hand';
+  const id=S.over?'plan':S.draft?(draftWho()===0?'draft':'plan'):S.cur!==0?'plan':U.mode==='tuck'?'plan':U.phase==='ende'?(U.bought?'hand':'markt'):'hand';
   const el=document.getElementById(id);if(!el)return;
+  const pi=pageOf(el);if(pi>=0&&pi!==U.page)pageGo(pi,false);
   const top=el.getBoundingClientRect().top+scrollY-(document.querySelector('.thead')?.offsetHeight||0)-8;
   scrollTo({top,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
   el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');
@@ -598,6 +635,7 @@ function render(){
   const app=document.getElementById('app');themeFor(!S);
   if(!S){const sv=load();app.innerHTML=`<div class="start"><a class="leave" href="../" aria-label="Beenden und zurück zu Spielregal">✕ Beenden</a><div class="hero" role="img" aria-label="Die Mühle von Saum im Abendlicht"></div><div><h1>Saum</h1><div class="tag">Stadt, Wildnis und der Kreislauf dazwischen</div></div><p>Von links wächst deine Stadt, von rechts deine Wildnis. Wo sie sich treffen, entsteht ein Kreislauf – und nur gesäumte Reihen bringen Ruhm. Prototyp, Regeln Stand v0.7.</p>
    <div style="display:flex;gap:8px;flex-wrap:wrap">${sv?'<button class="btn saum" data-a="resume">Partie fortsetzen</button>':''}<button class="btn" data-a="start" data-n="1">Gegen 1 Bot</button><button class="btn alt" data-a="start" data-n="2">Gegen 2 Bots</button></div></div>`;return}
+  if(U.page==null)U.page=1;if(pagesBusy()){U.rpend=true;return}U.rpend=false;autoPage();
   const p=me(),pick=pickFor(),view=U.view||0,vp=S.players[view];
   const winter=S.draft?'Startplättchen-Draft':S.endAt!=null?'Letzte Runde':`Ende: ${ENDM} ★ · voller Plan`;
   let intro=false;try{intro=!localStorage.getItem('saum:intro')}catch(_){intro=!U.introSeen}if(U.introSeen)intro=false;
@@ -607,15 +645,17 @@ function render(){
   <div class="res"><span data-info="Ruhm (Punkte), Stand jetzt inklusive Endwertung">${ruhmT('')}${finalScore(p)}</span><span data-info="Münzen">${coinT('')}${p.coins}</span><span data-info="Handkarten">${cardT('')}${p.hand.length}</span><span data-info="Meisterstücke (Plättchen mit 3 Upgrades). Bei ${ENDM} endet das Spiel.">★ ${meisterCount(p)}/${ENDM}</span><span data-info="Belegte Felder. Bei 24 endet das Spiel.">▦ ${filledCount(p)}/24</span><span class="rd ${S.endAt!=null?'last':''}" data-info="${S.season==='LR'?'Frühling: Ketten laufen von der Stadt (links) zur Wildnis':'Herbst: Ketten laufen von der Wildnis (rechts) zur Stadt'}. ${winter}.">${S.endAt!=null?'Letzte Runde':`R${S.round+1} · ${S.season==='LR'?'Frühling →':'← Herbst'}`}</span></div></div>
   ${intro&&!S.over?introHtml():''}
   ${S.over?endHtml():''}
-  <div class="me-bar" id="plan"><span>${view===0?'Dein Plan':esc(vp.name)+'s Plan'}</span>${view===0?'':`<span>Ruhm ${finalScore(vp)}</span><span>Münzen ${vp.coins}</span><span>Hand ${vp.hand.length}</span>`}</div>
-  ${boardHtml(vp,view,view===0?pick:null)}
+  <div class="pages"><div class="page"><div class="me-bar" id="plan"><span>${view===0?'Dein Plan':esc(vp.name)+'s Plan'}</span>${view===0?'':`<span>Ruhm ${finalScore(vp)}</span><span>Münzen ${vp.coins}</span><span>Hand ${vp.hand.length}</span>`}</div>
+  ${boardHtml(vp,view,view===0?pick:null)}</div><div class="page">
   ${S.draft?`<div class="sec" id="draft"><h3>Startplättchen</h3><div class="cards">${S.draft.disp.map((id,i)=>cardHtml(id,{a:'gpick',i,sel:U.sel&&U.sel.src==='g'&&U.sel.i===i,off:draftWho()!==0})).join('')}</div></div>`:''}
   ${view===0&&!S.over?`<div class="sec" id="hand"><h3>Deine Hand</h3><div class="cards">${p.hand.map((id,i)=>cardHtml(id,{a:'hand',i,sel:U.sel&&U.sel.src==='h'&&U.sel.i===i,off:S.cur!==0||(U.phase==='ende'&&!upLeft())})).join('')||'<span style="color:var(--muted)">leer</span>'}</div></div>`:''}
   <div class="sec" id="markt"><h3>Auslage</h3><div class="cards">${S.market.map((id,i)=>{const pr=Math.max(0,price(S,i)-(U.phase==='ende'?U.disc:0)),bp=mprice(S,i),take=U.phase==='tat'&&U.mode==='take';return cardHtml(id,{a:'market',i,price:pr,build:bp,sel:U.sel&&U.sel.src==='m'&&U.sel.i===i,off:!take&&(!(S.cur===0&&(U.phase==='land'||(U.phase==='ende'&&!U.bought)))||(U.phase==='land'?bp:pr)>p.coins)})}).join('')}</div></div>
-  <div class="sec"><h3>Jahresziele</h3><div class="goals">${S.goals.map(g=>`<span class="goal">${esc(g.tx)} · ${g.by.length?g.by.map(i=>esc(S.players[i].name)).join(', '):'6/3 Ruhm'} · du ${Math.min(goalProgress(p,g),g.n)}/${g.n}</span>`).join('')}</div></div>
-  <div class="sec"><h3>Chronik</h3><div class="log">${S.log.map(l=>`<div class="${l.me?'me':''}">${esc(l.t)}</div>`).join('')}</div></div>
+  </div><div class="page">
+  <div class="sec" id="ziele"><h3>Jahresziele</h3><div class="goals">${S.goals.map(g=>`<span class="goal">${esc(g.tx)} · ${g.by.length?g.by.map(i=>esc(S.players[i].name)).join(', '):'6/3 Ruhm'} · du ${Math.min(goalProgress(p,g),g.n)}/${g.n}</span>`).join('')}</div></div>
+  <div class="sec"><h3>Chronik</h3><div class="log">${S.log.map(l=>`<div class="${l.me?'me':''}">${esc(l.t)}</div>`).join('')}</div></div></div></div>
   ${U.help?`<div class="overlay" data-a="help-x"><div class="intro" data-stop="1"><button class="ico xbtn" data-a="help-x" aria-label="Schließen">✕</button>${introHtml().replace('<button class="btn" data-a="intro-ok">Verstanden</button>','<button class="btn" data-a="help-x">Schließen</button>').replace('<div class="intro">','').replace(/<\/div>$/,'')}</div></div>`:''}${U.menu?menuHtml():''}
-  <div class="actions"><div class="in">${actionsHtml()}</div></div>`;
+  <div class="actions">${S.over?'':dotsHtml()}<div class="in">${actionsHtml()}</div></div>`;
+  pageSync(true);
 }
 function endHtml(){
   const rows=S.players.map(q=>({q,d:finalScore(q,true)})).sort((a,b)=>b.d.total-a.d.total);
@@ -658,11 +698,12 @@ function handleClick(e){
   if(a==='menu'){U.menu=true;render();return}
   if(a==='menu-x'){U.menu=false;render();return}
   if(a==='go'){goTo();return}
+  if(a==='page'){pageGo(+el.dataset.p,true);return}
   if(a==='fast'){try{localStorage.setItem('spielregal:botFast',fastPref()?'0':'1')}catch(_){}render();return}
   if(a==='reload'){save();location.replace(location.pathname+'?v='+Date.now()+'&resume=1');return}
   if(a==='restart'){if(!confirm('Partie abbrechen und eine neue beginnen?'))return;S=null;U={phase:null,sel:null,disc:0,toast:null,view:0};try{localStorage.removeItem('saum:save')}catch(_){}scrollTo(0,0);render();return}
   if(a==='help-x'){U.help=false;render();return}
-  if(a==='view'){U.view=+el.dataset.p;render();return}
+  if(a==='view'){U.view=+el.dataset.p;U.page=0;render();window.scrollTo({top:0});return}
   if(a==='tinfo'){const q=S.players[+el.dataset.p],t=q.rows[+el.dataset.r][el.dataset.sd][+el.dataset.ti],c=CARDS[t.id];toastLong(`${c.n}: ${[...c.tile,...t.edges.map(x=>CARDS[x].edge).flat()].map(rule).join('; ')}${t.edges.length?` · Upgrades: ${t.edges.map(x=>CARDS[x].n).join(', ')}`:''}`);return}
   if(S.cur!==0||S.over)return;
   if(S.draft){if(draftWho()!==0)return;if(a==='gpick'){U.sel={src:'g',i:+el.dataset.i};render();return}if(a==='unsel'){U.sel=null;render();return}if((a==='gplace'||a==='row')&&U.sel){const r=+el.dataset.r;if(!canPlace(me().rows[r],CARDS[S.draft.disp[U.sel.i]]))return;draftPlace(0,U.sel.i,r);U.sel=null;runDraft()}return}
