@@ -79,18 +79,20 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .sec{margin-top:22px}
 .sec h3{font-size:19px;margin-bottom:8px}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-/* Karte: oben Bild oder Familienfläche mit Titel, darunter drei ruhige Zeilen */
-.card{isolation:isolate;border-radius:var(--r);background:var(--paper);text-align:left;display:flex;flex-direction:column;min-width:0;overflow:hidden;box-shadow:0 1px 0 var(--line),0 0 0 1px var(--line)}
-.card .art{position:relative;aspect-ratio:4/3;background:var(--saum-soft);background-size:cover;background-position:center 30%;display:flex;align-items:flex-end;padding:8px 10px}
-.card .art::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(59,35,18,.55),rgba(59,35,18,0) 60%)}
-.card .ttl{position:relative;z-index:1;font:700 19px/1 var(--f-display);color:#FCF7EE;text-shadow:0 1px 8px rgba(59,35,18,.35)}
-.card .cost{position:absolute;z-index:1;top:8px;right:8px;font:600 11px/1 var(--f-body);color:var(--ink);background:rgba(252,247,238,.92);border-radius:99px;padding:4px 8px}
-.card .side{position:absolute;z-index:1;top:8px;left:8px;width:8px;height:8px;border-radius:50%;background:var(--stadt);box-shadow:0 0 0 2px rgba(252,247,238,.9)}
+/* Karte im Hochformat 2:3 wie die Bilder: Bild randlos, Text auf Papierfeld im ruhigen unteren Drittel */
+.card{isolation:isolate;position:relative;aspect-ratio:2/3;border-radius:var(--r);background:var(--paper);text-align:left;display:flex;flex-direction:column;justify-content:flex-end;min-width:0;overflow:hidden;box-shadow:0 1px 0 var(--line),0 0 0 1px var(--line)}
+.card .art{position:absolute;inset:0;z-index:-1;background:var(--saum-soft);background-size:cover;background-position:center top}
+.card .art::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(59,35,18,.6),rgba(59,35,18,0) 55%)}
+.card .ttl{display:block;padding:0 10px 6px;font:700 19px/1.02 var(--f-display);color:#FCF7EE;text-shadow:0 1px 8px rgba(59,35,18,.45)}
+.card .cost{position:absolute;top:8px;right:8px;font:600 11px/1 var(--f-body);color:var(--ink);background:rgba(252,247,238,.92);border-radius:99px;padding:4px 8px}
+.card .side{position:absolute;top:8px;left:8px;width:8px;height:8px;border-radius:50%;background:var(--stadt);box-shadow:0 0 0 2px rgba(252,247,238,.9)}
 .card.W .side{background:var(--wild)}
-.card .body{display:flex;flex-direction:column;gap:6px;padding:9px 10px 11px}
-.card .meta{font-size:10.5px;color:var(--muted)}
-.card .ln{font-size:11.5px;line-height:1.3}
-.card .ln i{display:block;font-style:normal;font-weight:600;color:var(--muted);font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;margin:0 0 1px}
+.card .body{display:flex;flex-direction:column;gap:3px;margin:0 5px 5px;padding:7px 8px 8px;border-radius:calc(var(--r) - 4px);background:color-mix(in srgb,var(--paper) 94%,transparent)}
+.card .meta{font-size:10px;color:var(--muted);margin-bottom:1px}
+.card .ln{display:grid;grid-template-columns:12px 1fr;font-size:11px;line-height:1.25}
+.card .ln i{font-style:normal;font-size:9px;line-height:1.4;color:var(--muted)}
+.card .meta+.ln i{color:var(--stadt)}
+.card.W .meta+.ln i{color:var(--wild)}
 .card.sel{box-shadow:0 0 0 2px var(--saum)}
 .card.off{opacity:.42}
 /* Familienflächen (ohne Illustration) – Töne aus dem Bild */
@@ -117,7 +119,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .goal{border:1px solid var(--line);border-radius:99px;padding:5px 11px;background:var(--paper);color:var(--muted)}
 /* Startbildschirm */
 .start{position:relative;max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:16px;padding-top:6px}
-.start .hero{aspect-ratio:4/5;border-radius:22px;background:url(art/muehle.jpg) center 30%/cover;box-shadow:0 30px 60px -30px rgba(59,35,18,.6)}
+.start .hero{aspect-ratio:2/3;border-radius:22px;background:url(art/muehle.jpg) center/cover;box-shadow:0 30px 60px -30px rgba(59,35,18,.6)}
 .start h1{font-size:60px;font-weight:700;line-height:.9;margin-top:4px}
 .start .tag{font:italic 500 22px/1.2 var(--f-display);color:var(--stadt)}
 .start p{color:var(--muted);margin:0}
@@ -399,11 +401,11 @@ const eff=e=>[e.act?'Kette in einer Reihe auslösen'+(e.add?' (startet mit '+Obj
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const ART={muehle:'art/muehle.jpg'};
 function cardHtml(id,o={}){const c=CARDS[id],art=ART[id];return `<button class="card ${c.side} f-${c.fam} ${o.sel?'sel':''} ${o.off?'off':''}" data-a="${o.a||''}" data-i="${o.i??''}">
- <span class="art"${art?` style="background-image:url(${art})"`:''}><span class="side" title="${c.side==='S'?'Stadt':'Wildnis'}"></span>${o.price!=null?`<span class="cost">${o.price} Mz.</span>`:''}<span class="ttl">${esc(c.n)}</span></span>
- <span class="body"><span class="meta">${c.side==='S'?'Stadt':'Wildnis'} · ${c.w} Feld${c.w>1?'er':''}${c.fam==='start'?' · nicht baubar':''}${c.fam==='grund'?' · Startplättchen':''}${o.build!=null?` · direkt bauen ${o.build} Mz.`:''}</span>
- <span class="ln"><i>Plättchen</i>${esc(c.tile.map(rule).join('; '))}</span>
- ${c.fam==='grund'?'':`<span class="ln"><i>Aktion</i>${esc(eff(c.eff))}</span>
- <span class="ln"><i>Upgrade</i>${esc(c.edge.map(rule).join('; '))}</span>`}</span></button>`}
+ <span class="art"${art?` style="background-image:url(${art})"`:''}></span><span class="side" title="${c.side==='S'?'Stadt':'Wildnis'}"></span>${o.price!=null?`<span class="cost">${o.price} Mz.</span>`:''}<span class="ttl">${esc(c.n)}</span>
+ <span class="body"><span class="meta">${c.w} Feld${c.w>1?'er':''}${c.fam==='start'?' · nicht baubar':''}${c.fam==='grund'?' · Start':''}${o.build!=null?` · bauen ${o.build} Mz.`:''}</span>
+ <span class="ln"><i title="Plättchen: wirkt, wenn eine Kette hindurchläuft">◆</i>${esc(c.tile.map(rule).join('; '))}</span>
+ ${c.fam==='grund'?'':`<span class="ln"><i title="Aktion: einmal ausspielen">▸</i>${esc(eff(c.eff))}</span>
+ <span class="ln"><i title="Upgrade: unter ein Plättchen schieben">↧</i>${esc(c.edge.map(rule).join('; '))}</span>`}</span></button>`}
 function boardHtml(p,pi,pick){
   return `<div class="board">${p.rows.map((rw,r)=>{
     const cl=closed(rw),tired=rowTired(S,p,r),free=COLS-used(rw);
