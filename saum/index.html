@@ -1,46 +1,50 @@
 <title>Saum</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,900&family=Lora:wght@500;600;700&family=DM+Sans:opsz,wght@9..40,400;500;600;700;800&display=swap">
 <style>
 /* Layout: ein ruhiger Spieltisch – Lage oben, dein Plan in der Mitte, Hand und Auslage darunter, eine schlanke Aktionsleiste unten.
-   Farben ausschließlich aus der Mühlen-Illustration (plus hellere/dunklere Stufen derselben Töne). */
+   Farben und Schriften nach dem Style-Board des Owners: Papier, Dunkelgrün, Aubergine; Akzente Lila, Gelb, Koralle, Blau, Salbei.
+   Wortmarke Fraunces Black, Überschriften/Kartentitel Lora Bold, Fließtext DM Sans. */
 :root{
-  --bg:#F7EEDF;      /* Mühlenwand, Creme */
-  --paper:#FCF7EE;   /* aufgehellte Mühlenwand */
-  --ink:#3B2312;     /* dunkles Holz, vertieft */
-  --muted:#8C6E55;   /* Rinde/Lehm */
-  --line:#E7D6BD;    /* Pfirsich, sehr hell */
-  --stadt:#975B1E;   /* Kupfer – Gebäude, Holz */
-  --stadt-soft:#F4E2C8;
-  --wild:#4E5A33;    /* Waldgrün, aufgehellt */
-  --wild-soft:#E5E6D2;
-  --saum:#E8A23D;    /* Gold – Akzent */
-  --saum-soft:#FBE8C6;
-  --dusk:#F2A27D;    /* Abendrosa */
-  --lilac:#BCACC4;   /* Flieder – Berge */
-  --blue:#4C7695;    /* Jackenblau */
-  --bad:#B5402E; --good:#4E5A33;
-  --f-display:"Cormorant Garamond","Iowan Old Style",Georgia,serif; --f-body:"Figtree",system-ui,sans-serif;
+  --bg:#F5F0E4;      /* Papier */
+  --paper:#FBF8F1;   /* helles Papier für Karten und Fenster */
+  --ink:#1F2B27;     /* Schrift, Knöpfe (Dunkelgrün) */
+  --logo:#1C302B;    /* Wortmarke */
+  --head:#251737;    /* Überschriften (Aubergine) */
+  --muted:#6E6B63;
+  --line:#E6DDCB;
+  --stadt:#D2614F;   /* Koralle, vertieft – Stadt */
+  --stadt-soft:#FBE3DE;
+  --wild:#5E8052;    /* Salbei, vertieft – Wildnis */
+  --wild-soft:#E6EDDF;
+  --saum:#F2A744;    /* Gelb – Akzent, du bist dran */
+  --saum-soft:#FCEACB;
+  --dusk:#F58A7E;    /* Koralle */
+  --lilac:#5E4E6F;   /* Lila */
+  --blue:#6DA1DB;    /* Himmelblau */
+  --teal:#3F6B69;    /* Unterzeile der Wortmarke */
+  --bad:#C0452F; --good:#5E8052;
+  --f-logo:"Fraunces",Georgia,serif; --f-display:"Lora",Georgia,serif; --f-body:"DM Sans",system-ui,sans-serif;
   --r:14px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#241A12; --paper:#2F2318; --ink:#F7EEDF; --muted:#BFA88F; --line:#4A3828;
-  --stadt:#D9A06A; --stadt-soft:#3E2C1C; --wild:#A7B07A; --wild-soft:#2E3122;
-  --saum:#F9BE63; --saum-soft:#463219; --dusk:#F2A27D; --lilac:#BCACC4; --blue:#8FB0C8; --bad:#E07A62; --good:#A7B07A; color-scheme:dark}}
+  --bg:#17201D; --paper:#1F2A26; --ink:#F2EDE2; --logo:#F2EDE2; --head:#EDE4F7; --muted:#A9A79D; --line:#33413B;
+  --stadt:#F08C7C; --stadt-soft:#3A2724; --wild:#A9C29A; --wild-soft:#26332A;
+  --saum:#F2A744; --saum-soft:#3D3220; --dusk:#F58A7E; --lilac:#B9AFCB; --blue:#8DB6E6; --teal:#8FC0BC; --bad:#F08C7C; --good:#A9C29A; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#241A12; --paper:#2F2318; --ink:#F7EEDF; --muted:#BFA88F; --line:#4A3828;
-  --stadt:#D9A06A; --stadt-soft:#3E2C1C; --wild:#A7B07A; --wild-soft:#2E3122;
-  --saum:#F9BE63; --saum-soft:#463219; --dusk:#F2A27D; --lilac:#BCACC4; --blue:#8FB0C8; --bad:#E07A62; --good:#A7B07A; color-scheme:dark}
+  --bg:#17201D; --paper:#1F2A26; --ink:#F2EDE2; --logo:#F2EDE2; --head:#EDE4F7; --muted:#A9A79D; --line:#33413B;
+  --stadt:#F08C7C; --stadt-soft:#3A2724; --wild:#A9C29A; --wild-soft:#26332A;
+  --saum:#F2A744; --saum-soft:#3D3220; --dusk:#F58A7E; --lilac:#B9AFCB; --blue:#8DB6E6; --teal:#8FC0BC; --bad:#F08C7C; --good:#A9C29A; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--f-body);margin:0;-webkit-font-smoothing:antialiased}
 #app{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:14px 132px}
-h1,h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance;letter-spacing:.005em}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;color:var(--head);margin:0;text-wrap:balance;letter-spacing:.005em}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offset:2px}
 /* Kopf: fest und deckend in der Seitenfarbe (kein Blur), Ansage kompakt, Vorräte immer sichtbar */
 .thead{position:sticky;top:0;z-index:4;background:var(--bg);margin:0 -16px;padding:10px 16px 8px;box-shadow:0 1px 0 var(--line)}
 .hrow{display:flex;align-items:center;gap:10px;min-height:38px}
-.hrow h1{font-size:28px;font-weight:700;flex:none;transition:font-size .2s,opacity .2s}
+.hrow h1{font:900 26px/1 var(--f-logo);text-transform:uppercase;letter-spacing:.01em;color:var(--logo);flex:none;transition:font-size .2s,opacity .2s}
 .ann{flex:1;min-width:0;text-align:left;font-size:13px;line-height:1.25;color:var(--ink);background:var(--paper);border-radius:99px;padding:7px 12px;box-shadow:inset 0 0 0 1px var(--line);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ann.me{background:var(--saum-soft);box-shadow:inset 0 0 0 1.5px var(--saum)}
 .ann b{font-weight:700}
@@ -62,7 +66,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 @keyframes flash{0%,40%{box-shadow:0 0 0 3px var(--saum);border-radius:var(--r)}100%{box-shadow:0 0 0 0 transparent}}
 @media (prefers-reduced-motion:reduce){.flash{animation:none}.hrow h1,.ico{transition:none}}
 .me-bar{display:flex;gap:18px;margin:14px 0 4px;font-variant-numeric:tabular-nums;flex-wrap:wrap;font-size:13px;color:var(--muted)}
-.me-bar span:first-child{font-family:var(--f-display);font-size:20px;font-weight:700;color:var(--ink);margin-right:auto}
+.me-bar span:first-child{font-family:var(--f-display);font-size:20px;font-weight:700;color:var(--head);margin-right:auto;font-variant-numeric:normal}
 .phase{margin:12px 0;padding:12px 14px;border-radius:var(--r);background:var(--paper);border:1px solid var(--line);font-size:14px}
 .phase b{font-weight:700}
 /* Plan */
@@ -73,8 +77,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .tile{min-height:64px;border-radius:10px;padding:6px;font-size:11px;line-height:1.15;position:relative;text-align:left;overflow:hidden;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;color:var(--ink);background:var(--paper);box-shadow:inset 0 0 0 1px var(--line)}
 .tile.S{box-shadow:inset 0 -3px 0 var(--stadt),inset 0 0 0 1px var(--line)}
 .tile.W{box-shadow:inset 0 -3px 0 var(--wild),inset 0 0 0 1px var(--line)}
-.tile.has-art{color:#FCF7EE;background-size:cover;background-position:center 35%}
-.tile.has-art::before{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(59,35,18,.82),rgba(59,35,18,0) 70%)}
+.tile.has-art{color:#FBF8F1;background-size:cover;background-position:center 35%}
+.tile.has-art::before{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(28,48,43,.82),rgba(28,48,43,0) 70%)}
 .tile>*{position:relative}
 .tile b{display:block;font:600 12.5px/1.05 var(--f-display);hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word}
 .tile .rl{color:inherit;opacity:.7;font-size:9.5px;display:block;margin-top:2px}
@@ -91,13 +95,13 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 /* Karte im Hochformat 2:3 wie die Bilder: Bild randlos, Text auf Papierfeld im ruhigen unteren Drittel */
 .card{isolation:isolate;position:relative;aspect-ratio:2/3;border-radius:var(--r);background:var(--paper);text-align:left;display:flex;flex-direction:column;justify-content:flex-end;min-width:0;overflow:hidden;box-shadow:0 1px 0 var(--line),0 0 0 1px var(--line)}
 .card .art{position:absolute;inset:0;z-index:-1;background:var(--saum-soft);background-size:cover;background-position:center top}
-.card .art::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(59,35,18,.6),rgba(59,35,18,0) 55%)}
+.card .art::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(28,48,43,.6),rgba(28,48,43,0) 55%)}
 .card .side{position:absolute;top:9px;left:9px;display:flex;gap:3px}
-.card .side i{width:11px;height:11px;border-radius:3px;background:var(--stadt);box-shadow:0 0 0 2px rgba(252,247,238,.9)}
+.card .side i{width:11px;height:11px;border-radius:3px;background:var(--stadt);box-shadow:0 0 0 2px rgba(251,248,241,.9)}
 .card.W .side i{background:var(--wild)}
-.card .cost{position:absolute;top:6px;right:6px;line-height:0;filter:drop-shadow(0 1px 3px rgba(59,35,18,.35))}
+.card .cost{position:absolute;top:6px;right:6px;line-height:0;filter:drop-shadow(0 1px 3px rgba(28,48,43,.35))}
 .card .cost .tk{width:30px;height:30px}
-.card .ttl{position:absolute;left:0;right:0;bottom:calc(33.333% + 2px);padding:0 10px 4px;font:700 19px/1.02 var(--f-display);color:#FCF7EE;text-shadow:0 1px 8px rgba(59,35,18,.45)}
+.card .ttl{position:absolute;left:0;right:0;bottom:calc(33.333% + 2px);padding:0 10px 4px;font:700 19px/1.02 var(--f-display);color:#FBF8F1;text-shadow:0 1px 8px rgba(28,48,43,.45)}
 .card .body{container-type:inline-size;position:absolute;left:5px;right:5px;bottom:5px;height:calc(33.333% - 5px);display:grid;grid-template-columns:1fr 1fr;grid-template-rows:44fr 56fr;overflow:hidden;border-radius:calc(var(--r) - 4px);background:color-mix(in srgb,var(--paper) 95%,transparent)}
 .card .body.solo{grid-template-rows:1fr}
 .card .solo .main{flex-direction:column;justify-content:center;gap:2.5cqw}
@@ -118,7 +122,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .card .meta .card .meta .w{display:flex;gap:2px}.card .meta .w i{width:6px;height:6px;border-radius:1.5px;background:var(--stadt)}
 .card.W .meta .w i{background:var(--wild)}
 /* Info-Blase beim langen Drücken */
-.bubble{position:fixed;z-index:10;max-width:300px;background:var(--ink);color:var(--bg);border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.4;white-space:pre-line;box-shadow:0 18px 40px -16px rgba(36,26,18,.6);pointer-events:none;animation:bub .16s ease-out}
+.bubble{position:fixed;z-index:10;max-width:300px;background:var(--ink);color:var(--bg);border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.4;white-space:pre-line;box-shadow:0 18px 40px -16px rgba(20,30,27,.6);pointer-events:none;animation:bub .16s ease-out}
 .bubble::first-line{font-family:var(--f-display);font-size:17px;font-weight:700}
 @keyframes bub{from{opacity:0;transform:translateY(4px)}}
 @media (prefers-reduced-motion:reduce){.bubble{animation:none}}
@@ -126,20 +130,20 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .card.sel{box-shadow:0 0 0 2px var(--saum)}
 .card.off{opacity:.42}
 /* Familienflächen (ohne Illustration) – Töne aus dem Bild */
-.f-mueller .art{background-image:linear-gradient(160deg,#F9BE63,#E8A23D 55%,#CA7E1B)}
-.f-foerster .art{background-image:linear-gradient(160deg,#6E7650,#4E5A33 55%,#303321)}
-.f-imker .art{background-image:linear-gradient(160deg,#F7C58F,#F2A27D 50%,#BCACC4)}
-.f-haendler .art{background-image:linear-gradient(160deg,#B3815B,#975B1E 55%,#663B1A)}
-.f-kraeuter .art{background-image:linear-gradient(160deg,#BCACC4,#7F96A8 50%,#4C7695)}
-.f-start .art{background-image:linear-gradient(160deg,#E7D6BD,#B3815B)}
-.f-grund .art{background-image:linear-gradient(160deg,#F7C58F,#B3815B 60%,#695847)}
-.tile.f-mueller{background:#FBE8C6}.tile.f-foerster{background:#E5E6D2}.tile.f-imker{background:#F8E1D6}.tile.f-haendler{background:#F1DCC6}.tile.f-kraeuter{background:#E3E4EC}.tile.f-grund{background:#F3E2CC}
+.f-mueller .art{background-image:linear-gradient(160deg,#F7C878,#F2A744 55%,#D98B3A)}
+.f-foerster .art{background-image:linear-gradient(160deg,#A9BE98,#95A985 45%,#4E6B46)}
+.f-imker .art{background-image:linear-gradient(160deg,#F9B3A8,#F58A7E 55%,#D2614F)}
+.f-haendler .art{background-image:linear-gradient(160deg,#8E7DA3,#5E4E6F 60%,#3E3250)}
+.f-kraeuter .art{background-image:linear-gradient(160deg,#A6C6EC,#6DA1DB 55%,#3F73B8)}
+.f-start .art{background-image:linear-gradient(160deg,#E8DFCC,#B9A98A)}
+.f-grund .art{background-image:linear-gradient(160deg,#CFDCC2,#95A985 55%,#5E7F55)}
+.tile.f-mueller{background:color-mix(in srgb,#F2A744 24%,var(--paper))}.tile.f-foerster{background:color-mix(in srgb,#95A985 26%,var(--paper))}.tile.f-imker{background:color-mix(in srgb,#F58A7E 22%,var(--paper))}.tile.f-haendler{background:color-mix(in srgb,#5E4E6F 16%,var(--paper))}.tile.f-kraeuter{background:color-mix(in srgb,#6DA1DB 22%,var(--paper))}.tile.f-grund{background:color-mix(in srgb,#95A985 14%,var(--paper))}
 /* Aktionsleiste */
-.actions{position:fixed;z-index:5;left:0;right:0;bottom:0;background:var(--paper);box-shadow:0 -1px 0 var(--line),0 -12px 30px -18px rgba(59,35,18,.35);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
+.actions{position:fixed;z-index:5;left:0;right:0;bottom:0;background:var(--paper);box-shadow:0 -1px 0 var(--line),0 -12px 30px -18px rgba(28,48,43,.35);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
 .actions .in{max-width:720px;margin:0 auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .btn{border-radius:99px;padding:11px 18px;font-weight:600;background:var(--ink);color:var(--bg);font-size:14px}
 .btn.alt{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
-.btn.saum{background:var(--saum);color:#3B2312}
+.btn.saum{background:var(--saum);color:#1C302B}
 .btn:disabled{opacity:.35;cursor:default}
 .btn small{font-weight:500;opacity:.8}
 .log{font-size:12.5px;color:var(--muted);max-height:180px;overflow:auto;margin-top:8px}
@@ -149,11 +153,11 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .goal{border:1px solid var(--line);border-radius:99px;padding:5px 11px;background:var(--paper);color:var(--muted)}
 /* Startbildschirm */
 .start{position:relative;max-width:520px;margin:-14px auto 0;display:flex;flex-direction:column;gap:16px}
-.start .hero{aspect-ratio:2/3;margin:0 -16px;border-radius:0 0 26px 26px;background:url(art/muehle.jpg) center/cover;box-shadow:0 30px 60px -30px rgba(59,35,18,.6)}
-.start h1{font-size:60px;font-weight:700;line-height:.9;margin-top:4px}
-.start .tag{font:italic 500 22px/1.2 var(--f-display);color:var(--stadt)}
+.start .hero{aspect-ratio:2/3;margin:0 -16px;border-radius:0 0 26px 26px;background:url(art/muehle.jpg) center/cover;box-shadow:0 30px 60px -30px rgba(28,48,43,.6)}
+.start h1{font:900 72px/.9 var(--f-logo);text-transform:uppercase;letter-spacing:.01em;color:var(--logo);margin-top:4px}
+.start .tag{font:600 12px/1.3 var(--f-body);text-transform:uppercase;letter-spacing:.22em;color:var(--teal);margin-top:10px}
 .start p{color:var(--muted);margin:0}
-.leave{position:absolute;top:16px;right:16px;z-index:2;font:600 12.5px/1 var(--f-body);color:#3B2312;background:rgba(252,247,238,.9);text-decoration:none;border-radius:999px;padding:8px 13px}
+.leave{position:absolute;top:16px;right:16px;z-index:2;font:600 12.5px/1 var(--f-body);color:#1C302B;background:rgba(251,248,241,.9);text-decoration:none;border-radius:999px;padding:8px 13px}
 .rules{font-size:14px;color:var(--ink)}
 .rules li{margin:4px 0}
 .end table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
@@ -197,7 +201,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .overlay .intro .xbtn{position:sticky;top:-16px;align-self:flex-end;margin:-6px -8px 0 0;z-index:1}
 .intro{background:var(--paper);border-radius:var(--r);box-shadow:0 0 0 1px var(--line);padding:16px 18px;margin:12px 0;font-size:14px;display:flex;flex-direction:column;gap:8px}
 .intro h2{font-size:24px}.intro ol{margin:0;padding-left:20px}.intro li{margin:4px 0}.intro p{margin:0}
-.overlay{position:fixed;inset:0;background:rgba(36,26,18,.5);display:grid;place-items:center;padding:16px;z-index:8}
+.overlay{position:fixed;inset:0;background:rgba(20,30,27,.5);display:grid;place-items:center;padding:16px;z-index:8}
 .overlay .intro{max-width:560px;max-height:85vh;overflow:auto}
 .nm>span:last-child{white-space:nowrap}
 </style>
@@ -450,25 +454,25 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const ART={muehle:'art/muehle.jpg'};
 // ---------- Icons: große runde Spielsteine, Zahl im Stein; Langtext per langem Drücken ----------
 // Waren: Farbscheibe + klare Silhouette (W = weiß, D = dunkel)
-const W='#FCF7EE',D='#3B2312';
+const W='#FBF8F1',D='#1C302B';
 const GOODIC={
- korn:['#E8A23D',`<path d="M12 19.5V8" stroke="${W}" stroke-width="1.8" stroke-linecap="round"/><g fill="${W}"><ellipse cx="12" cy="6" rx="1.9" ry="2.8"/><ellipse cx="9.3" cy="10" rx="1.8" ry="2.6" transform="rotate(-35 9.3 10)"/><ellipse cx="14.7" cy="10" rx="1.8" ry="2.6" transform="rotate(35 14.7 10)"/><ellipse cx="9.3" cy="14.2" rx="1.8" ry="2.6" transform="rotate(-35 9.3 14.2)"/><ellipse cx="14.7" cy="14.2" rx="1.8" ry="2.6" transform="rotate(35 14.7 14.2)"/></g>`],
- mehl:['#E7D6BD',`<path d="M8 9.5 9.6 6h4.8L16 9.5l1.2 8.3a1.6 1.6 0 0 1-1.6 1.8H8.4a1.6 1.6 0 0 1-1.6-1.8z" fill="${W}" stroke="#975B1E" stroke-width="1.5" stroke-linejoin="round"/><path d="M9.2 8.6h5.6" stroke="#975B1E" stroke-width="1.5"/>`],
- brot:['#CA7E1B',`<path d="M5 15.2C5 10.6 8.2 8 12 8s7 2.6 7 7.2c0 1.2-.9 2-2 2H7c-1.1 0-2-.8-2-2z" fill="${W}"/><path d="M9 11.2l1.2 2.6M12 10.6v2.9M15 11.2l-1.2 2.6" stroke="#CA7E1B" stroke-width="1.4" stroke-linecap="round"/>`],
- holz:['#975B1E',`<circle cx="12" cy="12" r="6.3" fill="${W}"/><circle cx="12" cy="12" r="4" fill="none" stroke="#975B1E" stroke-width="1.2"/><circle cx="12" cy="12" r="1.5" fill="#975B1E"/>`],
- brett:['#B3815B',`<rect x="5.5" y="7" width="13" height="4.2" rx=".8" fill="${W}"/><rect x="5.5" y="12.8" width="13" height="4.2" rx=".8" fill="${W}"/>`],
- moebel:['#663B1A',`<path d="M8.5 5.5v13M8.5 12h7.5v6.5" stroke="${W}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><rect x="7.4" y="10.6" width="9.6" height="2.6" rx=".8" fill="${W}"/>`],
- bluete:['#9E8BB0',`<g fill="${W}"><circle cx="12" cy="7.6" r="2.9"/><circle cx="16.2" cy="10.7" r="2.9"/><circle cx="14.6" cy="15.6" r="2.9"/><circle cx="9.4" cy="15.6" r="2.9"/><circle cx="7.8" cy="10.7" r="2.9"/></g><circle cx="12" cy="12" r="2.3" fill="#E8A23D"/>`],
- honig:['#F9BE63',`<path d="M12 5.5c2.6 3.6 4.6 6.2 4.6 8.7a4.6 4.6 0 0 1-9.2 0c0-2.5 2-5.1 4.6-8.7z" fill="#975B1E"/>`],
- any:['#E7D6BD',`<text x="12" y="16.5" text-anchor="middle" font-family="Figtree,system-ui,sans-serif" font-weight="800" font-size="12" fill="#975B1E">?</text>`]
+ korn:['#F2A744',`<path d="M12 19.5V8" stroke="${W}" stroke-width="1.8" stroke-linecap="round"/><g fill="${W}"><ellipse cx="12" cy="6" rx="1.9" ry="2.8"/><ellipse cx="9.3" cy="10" rx="1.8" ry="2.6" transform="rotate(-35 9.3 10)"/><ellipse cx="14.7" cy="10" rx="1.8" ry="2.6" transform="rotate(35 14.7 10)"/><ellipse cx="9.3" cy="14.2" rx="1.8" ry="2.6" transform="rotate(-35 9.3 14.2)"/><ellipse cx="14.7" cy="14.2" rx="1.8" ry="2.6" transform="rotate(35 14.7 14.2)"/></g>`],
+ mehl:['#E8DFCC',`<path d="M8 9.5 9.6 6h4.8L16 9.5l1.2 8.3a1.6 1.6 0 0 1-1.6 1.8H8.4a1.6 1.6 0 0 1-1.6-1.8z" fill="${W}" stroke="#8C5A3C" stroke-width="1.5" stroke-linejoin="round"/><path d="M9.2 8.6h5.6" stroke="#8C5A3C" stroke-width="1.5"/>`],
+ brot:['#D98B3A',`<path d="M5 15.2C5 10.6 8.2 8 12 8s7 2.6 7 7.2c0 1.2-.9 2-2 2H7c-1.1 0-2-.8-2-2z" fill="${W}"/><path d="M9 11.2l1.2 2.6M12 10.6v2.9M15 11.2l-1.2 2.6" stroke="#D98B3A" stroke-width="1.4" stroke-linecap="round"/>`],
+ holz:['#8C5A3C',`<circle cx="12" cy="12" r="6.3" fill="${W}"/><circle cx="12" cy="12" r="4" fill="none" stroke="#8C5A3C" stroke-width="1.2"/><circle cx="12" cy="12" r="1.5" fill="#8C5A3C"/>`],
+ brett:['#B98A5E',`<rect x="5.5" y="7" width="13" height="4.2" rx=".8" fill="${W}"/><rect x="5.5" y="12.8" width="13" height="4.2" rx=".8" fill="${W}"/>`],
+ moebel:['#5E4030',`<path d="M8.5 5.5v13M8.5 12h7.5v6.5" stroke="${W}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><rect x="7.4" y="10.6" width="9.6" height="2.6" rx=".8" fill="${W}"/>`],
+ bluete:['#8B7BA3',`<g fill="${W}"><circle cx="12" cy="7.6" r="2.9"/><circle cx="16.2" cy="10.7" r="2.9"/><circle cx="14.6" cy="15.6" r="2.9"/><circle cx="9.4" cy="15.6" r="2.9"/><circle cx="7.8" cy="10.7" r="2.9"/></g><circle cx="12" cy="12" r="2.3" fill="#F2A744"/>`],
+ honig:['#F7C878',`<path d="M12 5.5c2.6 3.6 4.6 6.2 4.6 8.7a4.6 4.6 0 0 1-9.2 0c0-2.5 2-5.1 4.6-8.7z" fill="#8C5A3C"/>`],
+ any:['#E8DFCC',`<text x="12" y="16.5" text-anchor="middle" font-family="DM Sans,system-ui,sans-serif" font-weight="800" font-size="12" fill="#8C5A3C">?</text>`]
 };
 const svg24=(inner,cls='tk')=>`<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${inner}</svg>`;
-const tok=g=>{const [bg,gl]=GOODIC[g];return svg24(`<circle cx="12" cy="12" r="11" fill="${bg}" stroke="rgba(59,35,18,.25)" stroke-width="1"/>${gl}`)};
+const tok=g=>{const [bg,gl]=GOODIC[g];return svg24(`<circle cx="12" cy="12" r="11" fill="${bg}" stroke="rgba(28,48,43,.25)" stroke-width="1"/>${gl}`)};
 const stack=(g,n)=>n<=3?`<span class="stk">${Array.from({length:n},()=>tok(g)).join('')}</span>`:`<b class="n">${n}</b>${tok(g)}`;
-const numT=(shape,n,fg)=>svg24(`${shape}<text x="12" y="16.3" text-anchor="middle" font-family="Figtree,system-ui,sans-serif" font-weight="800" font-size="12.5" fill="${fg}">${n}</text>`);
-const coinT=n=>numT(`<circle cx="12" cy="12" r="11" fill="#E8A23D"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#F9BE63" stroke-width="1.2"/>`,n,D);
-const ruhmT=n=>numT(`<path d="M12 1.5l9 3.3v6.6c0 5.4-3.8 9.3-9 11.1-5.2-1.8-9-5.7-9-11.1V4.8z" fill="#4C7695"/>`,n,W);
-const cardT=n=>numT(`<rect x="4.5" y="1.5" width="15" height="21" rx="2.5" fill="${W}" stroke="#8C6E55" stroke-width="1.5"/>`,n,D);
+const numT=(shape,n,fg)=>svg24(`${shape}<text x="12" y="16.3" text-anchor="middle" font-family="DM Sans,system-ui,sans-serif" font-weight="800" font-size="12.5" fill="${fg}">${n}</text>`);
+const coinT=n=>numT(`<circle cx="12" cy="12" r="11" fill="#F2A744"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#F7C878" stroke-width="1.2"/>`,n,D);
+const ruhmT=n=>numT(`<path d="M12 1.5l9 3.3v6.6c0 5.4-3.8 9.3-9 11.1-5.2-1.8-9-5.7-9-11.1V4.8z" fill="#3F73B8"/>`,n,W);
+const cardT=n=>numT(`<rect x="4.5" y="1.5" width="15" height="21" rx="2.5" fill="${W}" stroke="#6E6B63" stroke-width="1.5"/>`,n,D);
 const ARR='<span class="arr">➜</span>';
 const word=t=>`<span class="wd">${t}</span>`;
 const gsIc=gs=>gs==='any'?tok('any'):`<span class="stk or">${gs.map(tok).join('')}</span>`;
@@ -627,13 +631,13 @@ function goTo(){
   el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');
 }
 const HERO_TOP='#BEAFBE';
-function themeFor(onStart){document.documentElement.style.backgroundColor=onStart?HERO_TOP:'';let tc=document.querySelector('meta[name="theme-color"]');if(!tc){tc=document.createElement('meta');tc.name='theme-color';document.head.appendChild(tc);tc.dataset.base='#F7EEDF'}tc.content=onStart?HERO_TOP:tc.dataset.base}
+function themeFor(onStart){document.documentElement.style.backgroundColor=onStart?HERO_TOP:'';let tc=document.querySelector('meta[name="theme-color"]');if(!tc){tc=document.createElement('meta');tc.name='theme-color';document.head.appendChild(tc);tc.dataset.base='#F5F0E4'}tc.content=onStart?HERO_TOP:tc.dataset.base}
 addEventListener('scroll',()=>{const on=scrollY>90;if(on!==!!U.scr){U.scr=on;const h=document.querySelector('.thead');if(h)h.classList.toggle('scr',on)}},{passive:true});
 function resumeGame(){const sv=load();if(!sv)return;S=sv.S;R=rng(S.seed+S.round*7919+S.log.length);U={phase:sv.U.phase||'land',sel:null,disc:sv.U.disc||0,view:0};if(S.draft){U.phase='draft';runDraft();return}if(S.cur!==0){S.cur=S.players.length-1;nextTurn()}else render()}
 document.addEventListener('saum:resume',resumeGame);
 function render(){
   const app=document.getElementById('app');themeFor(!S);
-  if(!S){const sv=load();app.innerHTML=`<div class="start"><a class="leave" href="../" aria-label="Beenden und zurück zu Spielregal">✕ Beenden</a><div class="hero" role="img" aria-label="Die Mühle von Saum im Abendlicht"></div><div><h1>Saum</h1><div class="tag">Stadt, Wildnis und der Kreislauf dazwischen</div></div><p>Von links wächst deine Stadt, von rechts deine Wildnis. Wo sie sich treffen, entsteht ein Kreislauf – und nur gesäumte Reihen bringen Ruhm. Prototyp, Regeln Stand v0.7.</p>
+  if(!S){const sv=load();app.innerHTML=`<div class="start"><a class="leave" href="../" aria-label="Beenden und zurück zu Spielregal">✕ Beenden</a><div class="hero" role="img" aria-label="Die Mühle von Saum im Abendlicht"></div><div><h1>Saum</h1><div class="tag">Stadt · Wildnis · Kreislauf</div></div><p>Von links wächst deine Stadt, von rechts deine Wildnis. Wo sie sich treffen, entsteht ein Kreislauf – und nur gesäumte Reihen bringen Ruhm. Prototyp, Regeln Stand v0.7.</p>
    <div style="display:flex;gap:8px;flex-wrap:wrap">${sv?'<button class="btn saum" data-a="resume">Partie fortsetzen</button>':''}<button class="btn" data-a="start" data-n="1">Gegen 1 Bot</button><button class="btn alt" data-a="start" data-n="2">Gegen 2 Bots</button></div></div>`;return}
   if(U.page==null)U.page=1;if(pagesBusy()){U.rpend=true;return}U.rpend=false;autoPage();
   const p=me(),pick=pickFor(),view=U.view||0,vp=S.players[view];

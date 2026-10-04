@@ -204,8 +204,10 @@ Dashboard-Hinweis „Partie läuft“, Partie-Meldung über `spielregal:inbox:pl
 hat ausdrücklich entschieden, dass Saum damit öffentlich im Spielregal liegt. Änderungen am Prototyp im Saum-Repo
 machen und hierher übernehmen (Anbindung erhalten). Kartenbilder liegen unter `saum/art/` (vom Owner nach den Prompts der Art-Bible
 `design/art-bible.html` erzeugt, Zuordnung über `ART` je Karten-id; Karten ohne Bild zeigen einen Farbverlauf ihrer Familie).
-Das Cover `saum/cover.jpg` ist das Mühlenbild mit Titel. App-Oberfläche: elegant-minimalistisch, Farben nur aus dem
-Mühlenbild (Tokens in `:root`), Schriften Cormorant Garamond + Figtree.
+Das Cover `saum/cover.jpg` ist das Mühlenbild mit Wortmarke. App-Oberfläche nach dem Style-Board des Owners (Farbschema und Look):
+Wortmarke „SAUM“ in Fraunces Black (Versalien, Dunkelgrün `#1C302B`), Überschriften/Kartentitel Lora Bold (Aubergine `#251737`),
+Fließtext DM Sans; Papier `#F5F0E4`; Akzente Lila `#5E4E6F`, Gelb `#F2A744` (du bist dran), Koralle `#F58A7E` (Stadt, vertieft
+`#D2614F`), Blau `#6DA1DB`, Salbei `#95A985` (Wildnis, vertieft `#5E8052`); Kartenfamilien je eine dieser Farben. Tokens in `:root`.
 Übernommene Spielregal-Konventionen: fester deckender Kopf (`.thead`) mit kompakter Ansage (`data-a="go"`, Antippen springt zur
 Hand/Auslage, langes Drücken = ausführlicher Text), Mitspieler-Chips in eigener Zeile, eigene Vorräte immer sichtbar (`.res`),
 Menü ☰ (Spielregeln, Mitspieler-Tempo `spielregal:botFast`, Speichern & zum Spielregal, Neustart, „Neueste Version laden“ mit
