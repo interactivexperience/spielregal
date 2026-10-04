@@ -60,6 +60,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .res{display:flex;align-items:center;gap:12px;margin-top:8px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;overflow-x:auto;scrollbar-width:none;white-space:nowrap}
 .res>span{display:flex;align-items:center;gap:4px}
 .res .tk{width:20px;height:20px}
+.res .rw{font-size:11.5px;font-weight:700;color:var(--wild);background:var(--wild-soft);border-radius:99px;padding:3px 8px}
 .res .rd{margin-left:auto;font-weight:500;color:var(--muted);font-size:12px}
 .res .rd.last{color:var(--bad);font-weight:700}
 .flash{animation:flash 1.1s ease-out}
@@ -247,16 +248,16 @@ const GRUND=[
   G1('zunfthaus','Zunfthaus','S',[{t:'conv',from:'holz',to:'brett',max:2},{t:'vpPer',g:'brett',vp:1}]),
   G1('markthalle','Markthalle','S',[{t:'sell',gs:'any',coin:1,vp:1,max:2}]),
   G1('brunnenplatz','Brunnenplatz','S',[{t:'src',g:'korn',n:1},{t:'dup',max:2}]),
-  G1('klosterkueche','Klosterküche','S',[{t:'conv',from:'mehl',to:'brot',max:2},{t:'score',g:'brot',vp:2,max:1}]),
-  G1('stadtarchiv','Stadtarchiv','S',[{t:'endRows',vp:2}]),
+  G1('klosterkueche','Klosterküche','S',[{t:'conv',from:'mehl',to:'brot',max:2},{t:'score',g:'brot',vp:2,max:2}]),
+  G1('stadtarchiv','Stadtarchiv','S',[{t:'endRows',vp:3}]),
   G1('alteeiche','Alte Eiche','W',[{t:'src',g:'holz',n:2},{t:'src',g:'bluete',n:1}]),
-  G1('wildbienenhang','Wildbienenhang','W',[{t:'src',g:'bluete',n:2},{t:'conv',from:'bluete',to:'honig',max:2}]),
-  G1('quelle','Quelle','W',[{t:'src',g:'holz',n:1},{t:'dup',max:2}]),
+  G1('wildbienenhang','Wildbienenhang','W',[{t:'src',g:'bluete',n:1},{t:'conv',from:'bluete',to:'honig',max:2}]),
+  G1('quelle','Quelle','W',[{t:'src',g:'holz',n:1},{t:'dup',max:3}]),
   G1('lichtung','Lichtung','W',[{t:'src',g:'bluete',n:3}]),
   G1('fuchsbau','Fuchsbau','W',[{t:'score',g:'holz',vp:1,max:2},{t:'score',g:'brett',vp:2,max:1}]),
   G1('kraeuterhang','Kräuterhang','W',[{t:'src',g:'bluete',n:2},{t:'combo',a:'brot',b:'honig',vp:4,max:1}]),
 ];
-const DRAFT=2,ENDM=6,MSTVP=3; // je 2 Startplättchen; Ende bei 6 Meisterstücken oder vollem Plan; Meisterstück = 3 Ruhm
+const DRAFT=2,ENDM=6,MSTVP=4; // je 2 Startplättchen; Ende bei 6 Meisterstücken oder vollem Plan; Meisterstück = 4 Ruhm (v0.8)
 const CARDS=Object.fromEntries([...START,...MARKET_TYPES,...GRUND].map(c=>[c.id,c]));
 const RAW=['korn','holz','bluete'];
 const GOALS=[{k:'brot',n:5,tx:'5 Brot erzeugt'},{k:'honig',n:6,tx:'6 Honig erzeugt'},{k:'moebel',n:4,tx:'4 Möbel erzeugt'},{k:'meister',n:2,tx:'2 Meisterstücke'},{k:'rows',n:2,tx:'2 Reihen gesäumt'},{k:'chain',n:5,tx:'Kette mit 5 Gliedern'}];
@@ -300,9 +301,11 @@ function runChain(p,ri,dir,start,dry=false,trace=null){
   p.vp+=vp;p.coins+=coins;p.maxChain=Math.max(p.maxChain,links);p.chains.push(links);
   return{vp,coins,links,conv};
 }
-const price=(S,i)=>Math.max(0,CARDS[S.market[i]].cost-(i<2?1:0));
+// Rückenwind (v0.8): wer am wenigsten Ruhm hat (und nicht mit der Führenden gleichauf liegt), kauft und baut aus der Auslage 1 billiger
+const isLast=(S,pi)=>{const sc=S.players.map(q=>finalScore(q)),me=sc[pi];return me===Math.min(...sc)&&me<Math.max(...sc)};
+const price=(S,i,pi=S.cur)=>Math.max(0,CARDS[S.market[i]].cost-(i<2?1:0)-(isLast(S,pi)?1:0));
 const surcharge=i=>1+Math.floor(i/2); // Aufpreis fürs Bauen direkt aus der Auslage: +1/+1/+2/+2/+3/+3
-const mprice=(S,i)=>price(S,i)+surcharge(i);
+const mprice=(S,i,pi=S.cur)=>price(S,i,pi)+surcharge(i);
 const UPMAX=2; // Upgrades im Abschluss
 function landMoves(S,pi){
   const p=S.players[pi],out=[];
@@ -574,7 +577,8 @@ function introHtml(){return `<div class="intro"><h2>So geht ein Zug</h2><ol>
  <li><b>Aktion:</b> Eine andere Karte ausspielen. Meist löst sie eine <b>Kette</b> aus: Waren laufen durch eine Reihe, jedes Plättchen verarbeitet sie (Korn → Mehl → Brot …). Oder ausruhen: +2 Münzen <i>oder</i> eine Karte aus der Auslage gratis auf die Hand.</li>
  <li><b>Abschluss:</b> Freiwillig bis zu 2 Upgrades (je 1 Münze) und/oder ein Kauf aus der Auslage – gekaufte Karten kommen sofort auf die Hand.</li></ol>
  <p><b>Vor dem ersten Zug</b> wählt jede Person reihum 2 <b>Startplättchen</b> aus einer offenen Auslage (wer zuletzt am Zug ist, wählt zuerst, danach in Gegenrichtung). Sie liegen sofort auf deinem Plan.</p>
- <p><b>Ziel:</b> Ruhm. Den gibt es aus Ketten nur in <b>gesäumten</b> Reihen: alle 6 Felder voll, je mindestens 2 Stadt und 2 Wildnis. Offene Reihen zahlen nur Münzen. Am Ende zählen noch Reihenbalance, Meisterstücke (je 3) und Münzen.</p>
+ <p><b>Ziel:</b> Ruhm. Den gibt es aus Ketten nur in <b>gesäumten</b> Reihen: alle 6 Felder voll, je mindestens 2 Stadt und 2 Wildnis. Offene Reihen zahlen nur Münzen. Am Ende zählen noch Reihenbalance, Meisterstücke (je 4) und Münzen.</p>
+ <p><b>Rückenwind:</b> Wer gerade am wenigsten Ruhm hat (nicht gleichauf mit der Führenden), kauft und baut aus der Auslage <b>1 Münze billiger</b>.</p>
  <p><b>Ende:</b> Hat jemand <b>6 Meisterstücke</b> (Plättchen mit 3 Upgrades) oder einen <b>vollen Plan</b>, wird die Runde zu Ende gespielt – alle hatten dann gleich viele Züge.</p>
  <p>Unsicher? Der Knopf <b>Tipp</b> zeigt, was ein Bot an deiner Stelle tun würde.</p>
  <button class="btn" data-a="intro-ok">Verstanden</button></div>`}
@@ -638,7 +642,7 @@ function resumeGame(){const sv=load();if(!sv)return;S=sv.S;R=rng(S.seed+S.round*
 document.addEventListener('saum:resume',resumeGame);
 function render(){
   const app=document.getElementById('app');themeFor(!S);
-  if(!S){const sv=load();app.innerHTML=`<div class="start"><a class="leave" href="../" aria-label="Beenden und zurück zu Spielregal">✕ Beenden</a><div class="hero" role="img" aria-label="Saum – Entdecken, Sammeln, Weiterziehen: Blick über Fluss, Stadt und Wald"></div><div class="vh"><h1>Saum</h1><div class="tag">Entdecken · Sammeln · Weiterziehen</div></div><p>Von links wächst deine Stadt, von rechts deine Wildnis. Wo sie sich treffen, entsteht ein Kreislauf – und nur gesäumte Reihen bringen Ruhm. Prototyp, Regeln Stand v0.7.</p>
+  if(!S){const sv=load();app.innerHTML=`<div class="start"><a class="leave" href="../" aria-label="Beenden und zurück zu Spielregal">✕ Beenden</a><div class="hero" role="img" aria-label="Saum – Entdecken, Sammeln, Weiterziehen: Blick über Fluss, Stadt und Wald"></div><div class="vh"><h1>Saum</h1><div class="tag">Entdecken · Sammeln · Weiterziehen</div></div><p>Von links wächst deine Stadt, von rechts deine Wildnis. Wo sie sich treffen, entsteht ein Kreislauf – und nur gesäumte Reihen bringen Ruhm. Prototyp, Regeln Stand v0.8.</p>
    <div style="display:flex;gap:8px;flex-wrap:wrap">${sv?'<button class="btn saum" data-a="resume">Partie fortsetzen</button>':''}<button class="btn" data-a="start" data-n="1">Gegen 1 Bot</button><button class="btn alt" data-a="start" data-n="2">Gegen 2 Bots</button></div></div>`;return}
   if(U.page==null)U.page=1;if(pagesBusy()){U.rpend=true;return}U.rpend=false;autoPage();
   const p=me(),pick=pickFor(),view=U.view||0,vp=S.players[view];
@@ -647,14 +651,14 @@ function render(){
   app.innerHTML=`${U.toast?`<div class="toast">${esc(U.toast)}</div>`:''}
   <div class="thead ${U.scr?'scr':''}"><div class="hrow"><h1>Saum</h1><button class="ann ${annMine()?'me':''}" data-a="go" data-info="${esc(annLong())}">${annShort()}</button><button class="ico" data-a="menu" aria-label="Menü">☰</button></div>
   <div class="opps">${S.players.map((q,i)=>`<button class="opp ${S.cur===i?'cur':''} ${view===i?'vis':''}" data-a="view" data-p="${i}" data-info="${esc(q.name)}: ${finalScore(q)} Ruhm · ${q.coins} Münzen · ${closedCount(q)}/4 Reihen gesäumt · ${meisterCount(q)}/${ENDM} Meisterstücke · ${filledCount(q)}/24 Felder. Antippen zeigt den Plan."><b>${esc(q.name)}</b><span class="sc">${finalScore(q)}</span></button>`).join('')}</div>
-  <div class="res"><span data-info="Ruhm (Punkte), Stand jetzt inklusive Endwertung">${ruhmT('')}${finalScore(p)}</span><span data-info="Münzen">${coinT('')}${p.coins}</span><span data-info="Handkarten">${cardT('')}${p.hand.length}</span><span data-info="Meisterstücke (Plättchen mit 3 Upgrades). Bei ${ENDM} endet das Spiel.">★ ${meisterCount(p)}/${ENDM}</span><span data-info="Belegte Felder. Bei 24 endet das Spiel.">▦ ${filledCount(p)}/24</span><span class="rd ${S.endAt!=null?'last':''}" data-info="${S.season==='LR'?'Frühling: Ketten laufen von der Stadt (links) zur Wildnis':'Herbst: Ketten laufen von der Wildnis (rechts) zur Stadt'}. ${winter}.">${S.endAt!=null?'Letzte Runde':`R${S.round+1} · ${S.season==='LR'?'Frühling →':'← Herbst'}`}</span></div></div>
+  <div class="res"><span data-info="Ruhm (Punkte), Stand jetzt inklusive Endwertung">${ruhmT('')}${finalScore(p)}</span><span data-info="Münzen">${coinT('')}${p.coins}</span>${!S.over&&!S.draft&&isLast(S,0)?'<span class="rw" data-info="Rückenwind: Du hast gerade am wenigsten Ruhm. Kauf und Bauen aus der Auslage kosten dich 1 Münze weniger – die Preise in der Auslage sind schon verbilligt.">Rückenwind −1</span>':''}<span data-info="Handkarten">${cardT('')}${p.hand.length}</span><span data-info="Meisterstücke (Plättchen mit 3 Upgrades). Bei ${ENDM} endet das Spiel.">★ ${meisterCount(p)}/${ENDM}</span><span data-info="Belegte Felder. Bei 24 endet das Spiel.">▦ ${filledCount(p)}/24</span><span class="rd ${S.endAt!=null?'last':''}" data-info="${S.season==='LR'?'Frühling: Ketten laufen von der Stadt (links) zur Wildnis':'Herbst: Ketten laufen von der Wildnis (rechts) zur Stadt'}. ${winter}.">${S.endAt!=null?'Letzte Runde':`R${S.round+1} · ${S.season==='LR'?'Frühling →':'← Herbst'}`}</span></div></div>
   ${intro&&!S.over?introHtml():''}
   ${S.over?endHtml():''}
   <div class="pages"><div class="page"><div class="me-bar" id="plan"><span>${view===0?'Dein Plan':esc(vp.name)+'s Plan'}</span>${view===0?'':`<span>Ruhm ${finalScore(vp)}</span><span>Münzen ${vp.coins}</span><span>Hand ${vp.hand.length}</span>`}</div>
   ${boardHtml(vp,view,view===0?pick:null)}</div><div class="page">
   ${S.draft?`<div class="sec" id="draft"><h3>Startplättchen</h3><div class="cards">${S.draft.disp.map((id,i)=>cardHtml(id,{a:'gpick',i,sel:U.sel&&U.sel.src==='g'&&U.sel.i===i,off:draftWho()!==0})).join('')}</div></div>`:''}
   ${view===0&&!S.over?`<div class="sec" id="hand"><h3>Deine Hand</h3><div class="cards">${p.hand.map((id,i)=>cardHtml(id,{a:'hand',i,sel:U.sel&&U.sel.src==='h'&&U.sel.i===i,off:S.cur!==0||(U.phase==='ende'&&!upLeft())})).join('')||'<span style="color:var(--muted)">leer</span>'}</div></div>`:''}
-  <div class="sec" id="markt"><h3>Auslage</h3><div class="cards">${S.market.map((id,i)=>{const pr=Math.max(0,price(S,i)-(U.phase==='ende'?U.disc:0)),bp=mprice(S,i),take=U.phase==='tat'&&U.mode==='take';return cardHtml(id,{a:'market',i,price:pr,build:bp,sel:U.sel&&U.sel.src==='m'&&U.sel.i===i,off:!take&&(!(S.cur===0&&(U.phase==='land'||(U.phase==='ende'&&!U.bought)))||(U.phase==='land'?bp:pr)>p.coins)})}).join('')}</div></div>
+  <div class="sec" id="markt"><h3>Auslage</h3><div class="cards">${S.market.map((id,i)=>{const pr=Math.max(0,price(S,i,0)-(U.phase==='ende'?U.disc:0)),bp=mprice(S,i,0),take=U.phase==='tat'&&U.mode==='take';return cardHtml(id,{a:'market',i,price:pr,build:bp,sel:U.sel&&U.sel.src==='m'&&U.sel.i===i,off:!take&&(!(S.cur===0&&(U.phase==='land'||(U.phase==='ende'&&!U.bought)))||(U.phase==='land'?bp:pr)>p.coins)})}).join('')}</div></div>
   </div><div class="page">
   <div class="sec" id="ziele"><h3>Jahresziele</h3><div class="goals">${S.goals.map(g=>`<span class="goal">${esc(g.tx)} · ${g.by.length?g.by.map(i=>esc(S.players[i].name)).join(', '):'6/3 Ruhm'} · du ${Math.min(goalProgress(p,g),g.n)}/${g.n}</span>`).join('')}</div></div>
   <div class="sec"><h3>Chronik</h3><div class="log">${S.log.map(l=>`<div class="${l.me?'me':''}">${esc(l.t)}</div>`).join('')}</div></div></div></div>
