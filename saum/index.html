@@ -83,20 +83,21 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .row{--th:calc((100cqw - 20px) / 6 * 1.5);position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));align-items:start;gap:4px;border-radius:12px}
 .row.closed{background:color-mix(in srgb,var(--saum) 16%,transparent);box-shadow:0 0 0 4px color-mix(in srgb,var(--saum) 16%,transparent)}
 .row.tired .tile{filter:saturate(.45) brightness(1.08);opacity:.7}
-.rn{position:absolute;z-index:2;left:-7px;top:-7px;min-width:19px;height:19px;border-radius:99px;display:grid;place-items:center;font:700 11px/1 var(--f-body);color:var(--bg);background:var(--ink);box-shadow:0 0 0 2px var(--bg)}
+.rn{position:absolute;z-index:2;left:-15px;top:calc(var(--th) / 2 - 9px);width:13px;height:18px;border-radius:5px;display:grid;place-items:center;font:700 10px/1 var(--f-body);color:var(--bg);background:var(--ink)}
 .row.closed .rn{background:var(--saum);color:#1C302B}
-.rz{position:absolute;z-index:2;right:-6px;top:-8px;font-size:13px;line-height:1;background:var(--bg);border-radius:99px;padding:2px 3px;color:var(--muted)}
+.rz{position:absolute;z-index:2;right:-15px;top:calc(var(--th) / 2 - 8px);font-size:12px;line-height:1;color:var(--muted)}
 .cell{height:var(--th);border-radius:9px;border:1px dashed var(--line)}
 .tile{border-radius:9px;padding:5px;font-size:11px;line-height:1.15;position:relative;text-align:left;overflow:hidden;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;color:var(--ink);background:var(--paper);container-type:inline-size}
 .tile.S{box-shadow:inset 0 -3px 0 var(--stadt),inset 0 0 0 1px var(--line)}
 .tile.W{box-shadow:inset 0 -3px 0 var(--wild),inset 0 0 0 1px var(--line)}
 .tile b{display:block;font:700 11.5px/1.05 var(--f-display);hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word;text-shadow:0 1px 6px rgba(20,30,27,.5)}
-.tile .tico{position:absolute;left:4px;top:4px;right:4px;display:flex;flex-wrap:wrap;align-items:center;gap:1px;--k:1}
-.tile .tico .tk{width:min(15px,31cqw);height:min(15px,31cqw)}.tile .tico .stk{display:flex}.tile .tico .stk .tk+.tk{margin-left:-7px}
-.tile .tico .arr{font-size:9px;margin:0 1px;color:#FBF8F1;text-shadow:0 0 3px rgba(0,0,0,.6)}
-.tile .tico .pl,.tile .tico .x2,.tile .tico .n{font:800 10px/1 var(--f-body);color:#FBF8F1;text-shadow:0 0 3px rgba(0,0,0,.6)}
-.tile .tico .wd{font:700 8px/1 var(--f-body);background:rgba(251,248,241,.9);color:#1F2B27;border-radius:99px;padding:2px 4px}
-.tile .tico .gap{width:3px}
+.tile .tico{position:absolute;left:4px;top:4px;right:4px;display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.tile .tl{display:flex;align-items:center;flex-wrap:nowrap;white-space:nowrap;max-width:100%;overflow:hidden}
+.tile .tico .tk{width:calc(15px * var(--k));height:calc(15px * var(--k));flex:none}.tile .tico .stk{display:flex}.tile .tico .stk .tk+.tk{margin-left:calc(-6px * var(--k))}
+.tile .tico .arr{font-size:calc(9px * var(--k));margin:0 1px;color:#FBF8F1;text-shadow:0 0 3px rgba(0,0,0,.6)}
+.tile .tico .pl,.tile .tico .x2,.tile .tico .n{font:800 calc(10px * var(--k))/1 var(--f-body);color:#FBF8F1;text-shadow:0 0 3px rgba(0,0,0,.6)}
+.tile .tico .wd{font:700 calc(8px * var(--k))/1 var(--f-body);background:rgba(251,248,241,.9);color:#1F2B27;border-radius:99px;padding:2px 3px}
+.tile .tico .gap{width:2px}
 .tile .tico{background:linear-gradient(rgba(20,30,27,.45),rgba(20,30,27,0));margin:-4px;padding:4px 4px 8px;border-radius:9px 9px 0 0}
 .tw{position:relative;min-width:0;display:flex;flex-direction:column}
 .tw .tile{height:var(--th);z-index:1}
@@ -106,10 +107,10 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .ust{--k:1;position:relative;display:flex;align-items:center;justify-content:center;gap:2px;height:22px;padding:6px 3px 0;margin-top:-4px;border-radius:0 0 8px 8px;background:color-mix(in srgb,var(--saum-soft) 92%,var(--paper));box-shadow:0 0 0 1px color-mix(in srgb,var(--saum) 45%,transparent),0 2px 4px rgba(20,30,27,.12);overflow:hidden;cursor:default}
 .ust:first-child{margin-top:0;padding-top:8px;height:24px}
 .ust .pm{width:12px;height:12px;flex:none}
-.ust .uic{display:flex;align-items:center;gap:1px;min-width:0;overflow:hidden}
-.ust .uic .tk{width:14px;height:14px;flex:none}.ust .uic .stk{display:flex}.ust .uic .stk .tk+.tk{margin-left:-6px}
-.ust .uic .arr{font-size:8px;margin:0 1px}.ust .uic .pl,.ust .uic .x2,.ust .uic .n{font:800 9px/1 var(--f-body)}
-.ust .uic .wd{font:700 7.5px/1 var(--f-body);background:var(--line);border-radius:99px;padding:2px 3px}
+.ust .uic{display:flex;align-items:center;gap:1px;min-width:0;max-width:100%;overflow:hidden;white-space:nowrap}
+.ust .uic .tk{width:calc(15px * var(--k));height:calc(15px * var(--k));flex:none}.ust .uic .stk{display:flex}.ust .uic .stk .tk+.tk{margin-left:calc(-6px * var(--k))}
+.ust .uic .arr{font-size:calc(9px * var(--k));margin:0 1px}.ust .uic .pl,.ust .uic .x2,.ust .uic .n{font:800 calc(10px * var(--k))/1 var(--f-body)}
+.ust .uic .wd{font:700 calc(8px * var(--k))/1 var(--f-body);background:var(--line);border-radius:99px;padding:2px 3px}
 .ust .uic .gap{width:3px}
 .tile.mst{box-shadow:inset 0 0 0 2px var(--saum)}
 .cell.zs{border:1.5px dashed color-mix(in srgb,var(--stadt) 55%,transparent);background:color-mix(in srgb,var(--stadt) 13%,transparent)}
@@ -183,7 +184,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .bigtxt .bchip .tk,.bigtxt .bchip .ic{width:22px;height:22px}
 .bigtxt .bx{margin:0;text-align:center;font-size:12px;color:var(--muted)}
 .card .ttl{position:absolute;left:0;right:0;bottom:calc(33.333% + 2px);padding:0 10px 4px;font:700 19px/1.02 var(--f-display);color:#FBF8F1;text-shadow:0 1px 8px rgba(28,48,43,.45)}
-.card .rl{display:flex;align-items:center;flex-wrap:nowrap;white-space:nowrap}
+.card .rl{display:flex;align-items:center;flex-wrap:nowrap;white-space:nowrap;min-width:0;overflow:hidden}
 .card .tk{width:calc(14cqw * var(--k));height:calc(14cqw * var(--k));flex:none;display:block}
 .card .stk{display:flex}.card .stk .tk+.tk{margin-left:calc(-5.5cqw * var(--k))}
 .card .arr{color:var(--ink);font-size:calc(8cqw * var(--k));margin:0 calc(.6cqw * var(--k));opacity:.8}
@@ -663,8 +664,8 @@ function boardHtml(p,pi,pick){
   return `<div class="board">${p.rows.map((rw,r)=>{
     const cl=closed(rw),tired=rowTired(S,p,r),free=COLS-used(rw);
     const tile=(t,sd,ti)=>{const c=CARDS[t.id];const pk=pick&&pick.tiles&&pick.tiles(r,sd,ti),m=t.edges.length>=3;
-      const ups=t.edges.map(e=>`<span class="ust f-${CARDS[e].fam}" data-big="${e}" title="Upgrade: ${esc(CARDS[e].n)}"><span class="uic">${CARDS[e].edge.map(ruleIc).join('<span class="gap"></span>')}</span></span>`).join('');
-      return `<div class="tw" style="grid-column:span ${c.w}"><button class="tile ${sd} f-${c.fam} ${ART[t.id]?'has-art':''} ${pk?'pick':''} ${m?'mst':''}" style="${ART[t.id]?`background-image:url(${ART[t.id]})`:''}" data-a="${pk?'tile':'tinfo'}" data-id="${t.id}" data-big="${t.id}" data-edges="${t.edges.join(',')}" data-r="${r}" data-sd="${sd}" data-ti="${ti}" data-p="${pi}"><span class="tico">${c.tile.map(ruleIc).join('<span class="gap"></span>')}</span>${m?'<span class="mstar" aria-label="Meisterstück">★</span>':''}<b>${esc(c.n)}</b></button>${ups?`<div class="ups">${ups}</div>`:''}</div>`};
+      const ups=t.edges.map(e=>`<span class="ust f-${CARDS[e].fam}" data-big="${e}" title="Upgrade: ${esc(CARDS[e].n)}"><span class="uic"${fitK(CARDS[e].edge.map(ruleIc).join('<span class="gap"></span>'),c.w>1?7.6:3.4)}</span></span>`).join('');
+      return `<div class="tw" style="grid-column:span ${c.w}"><button class="tile ${sd} f-${c.fam} ${ART[t.id]?'has-art':''} ${pk?'pick':''} ${m?'mst':''}" style="${ART[t.id]?`background-image:url(${ART[t.id]})`:''}" data-a="${pk?'tile':'tinfo'}" data-id="${t.id}" data-big="${t.id}" data-edges="${t.edges.join(',')}" data-r="${r}" data-sd="${sd}" data-ti="${ti}" data-p="${pi}"><span class="tico">${c.tile.map(r=>`<span class="tl"${fitK(ruleIc(r),c.w>1?7.4:3.25)}</span>`).join('')}</span>${m?'<span class="mstar" aria-label="Meisterstück">★</span>':''}<b>${esc(c.n)}</b></button>${ups?`<div class="ups">${ups}</div>`:''}</div>`};
     const pr=pick&&pick.rows&&pick.rows(r);
     const info=`Reihe ${r+1}: Stadt ${sideW(rw,'S')} · Wildnis ${sideW(rw,'W')} · frei ${free}.${cl?' Gesäumt – Ketten laufen durch die ganze Reihe und bringen Ruhm.':' Offen – Ketten laufen nur durch die Seite der Jahreszeit, Ruhm zählt als Münzen.'}${tired?' Ruht diese Runde (gerade aktiviert).':''}`;
     return `<div class="row ${cl?'closed':''} ${pr?'pickrow':''} ${tired?'tired':''}" ${pr?`data-a="row" data-r="${r}"`:''}><span class="rn" data-info="${esc(info)}">${r+1}</span>${rw.S.map((t,ti)=>tile(t,'S',ti)).join('')}${Array.from({length:free},(_,k)=>{const nS=Math.max(0,MINSIDE-sideW(rw,'S')),nW=Math.max(0,MINSIDE-sideW(rw,'W')),z=k<nS?'zs':k>=free-nW?'zw':'zf',sm=k===nS&&nS>0||(z==='zw'&&k===free-nW&&k>0&&!(k-1<nS));return `<span class="cell ${z}" ${pr?`data-a="row" data-r="${r}"`:''} data-info="${esc(info+(z==='zs'?' Dieses Feld gehört sicher zur Stadt (jede Seite braucht mindestens 2 Felder).':z==='zw'?' Dieses Feld gehört sicher zur Wildnis (jede Seite braucht mindestens 2 Felder).':' Freies Feld: Hier entscheidet sich, wo Stadt und Wildnis sich treffen.'))}"></span>`}).join('')}${[...rw.W].reverse().map((t,i)=>tile(t,'W',rw.W.length-1-i)).join('')}${tired?'<span class="rz" aria-label="ruht">☾</span>':''}</div>`}).join('')}</div>`}
@@ -736,6 +737,8 @@ function introHtml(){return `<div class="intro"><h2>So geht ein Zug</h2><ol>
 function fanHtml(){if(!S||S.over||U.view)return '';const p=me();if(!p.hand.length)return '';
   const hide=!!(U.sel||U.mode),off=i=>S.cur!==0||!!S.draft||(U.phase==='ende'&&!upLeft());
   return `<div class="fan ${hide?'hid':''}" id="hand" aria-label="Deine Hand">${p.hand.map((id,i)=>`<div class="fc" style="--i:${i}">${cardHtml(id,{a:'hand',i,sel:U.sel&&U.sel.src==='h'&&U.sel.i===i,off:off(i)})}</div>`).join('')}</div>`}
+// Symbole nie abschneiden: gemessen nachskalieren, falls die Schätzung (fitK) zu groß war
+function fitSyms(root=document){root.querySelectorAll('.tile .tl,.ust .uic,.card .rl').forEach(el=>{for(let i=0;i<3;i++){const sw=el.scrollWidth,cw=el.clientWidth;if(!cw||sw<=cw+0.5)break;const k=parseFloat(getComputedStyle(el).getPropertyValue('--k'))||1;el.style.setProperty('--k',(k*cw/sw*0.98).toFixed(3))}})}
 function layoutFan(){const f=document.querySelector('.fan'),a=document.querySelector('.actions');if(!f||!a)return;
   const n=f.children.length,vw=Math.min(innerWidth,720),cw=Math.min(104,Math.max(84,vw*.25)),ch=cw*1.5,peek=Math.round(ch*.5);
   const span=Math.min(vw-32-cw,(n-1)*cw*.78),step=n>1?span/(n-1):0,x0=(vw-(span+cw))/2;
@@ -931,7 +934,7 @@ function render(){
   <div class="sec"><h3>Chronik</h3><div class="log">${S.log.map(l=>`<div class="${l.me?'me':''}">${esc(l.t)}</div>`).join('')}</div></div></div></div>
   ${U.help?`<div class="overlay" data-a="help-x"><div class="intro" data-stop="1"><button class="ico xbtn" data-a="help-x" aria-label="Schließen">✕</button>${introHtml().replace('<button class="btn" data-a="intro-ok">Verstanden</button>','<button class="btn" data-a="help-x">Schließen</button>').replace('<div class="intro">','').replace(/<\/div>$/,'')}</div></div>`:''}${U.menu?menuHtml():''}${U.rules?rulesOverlay():''}${TUT?tutHtml():''}
   ${fanHtml()}<div class="actions">${S.over?'':dotsHtml()}<div class="in">${actionsHtml()}</div></div>`;
-  pageSync(true);layoutFan();if(TUT)tutDecorate();
+  pageSync(true);layoutFan();fitSyms();if(TUT)tutDecorate();
 }
 function endHtml(){
   const rows=S.players.map(q=>({q,d:finalScore(q,true)})).sort((a,b)=>b.d.total-a.d.total);
@@ -950,7 +953,7 @@ function tipText(){
 function toastLong(t){U.toast=t;render();clearTimeout(U.tt);U.tt=setTimeout(()=>{U.toast=null;render()},4200)}
 // Langes Drücken (≈0,45 s) auf ein Element mit data-info zeigt eine Info-Blase
 let lpT=null,lpFired=false,lpXY=null;
-function showBig(el){const ed=el.dataset.edges?el.dataset.edges.split(',').filter(Boolean):null;document.body.insertAdjacentHTML('beforeend',bigHtml(el.dataset.big,ed))}
+function showBig(el){const ed=el.dataset.edges?el.dataset.edges.split(',').filter(Boolean):null;document.body.insertAdjacentHTML('beforeend',bigHtml(el.dataset.big,ed));fitSyms(document.querySelector('.big'))}
 function hideBubble(){const b=document.querySelector('.bubble');if(b)b.remove()}
 function showBubble(el){hideBubble();const b=document.createElement('div');b.className='bubble';b.textContent=el.dataset.info;document.body.appendChild(b);
   const r=el.getBoundingClientRect(),bw=b.offsetWidth,bh=b.offsetHeight,vw=innerWidth;
