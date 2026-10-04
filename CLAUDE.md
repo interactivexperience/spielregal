@@ -225,7 +225,9 @@ abgesetzten Band = Upgrade; keine farbigen Kästchen, zweifeldrige Karten tragen
 Footer (`fanHtml`/`layoutFan`, wie Landgut): nur die obere Hälfte schaut heraus (Name + Aktions-Chips), antippen = wählen,
 lange drücken = ganze Karte; bei offenem Auswahlfenster weicht der Fächer. Rückenwind gilt nur zu zweit.
 Stadt/Wildnis im Plan: leere Felder, die einer Seite sicher gehören (je mind. 2), sind rot bzw. grün getönt, die freien dazwischen
-gelb schraffiert; wo Stadt und Wildnis sich berühren, liegt eine gelbe gestrichelte Naht (`.seam`). Legende ■ Stadt ■ Wildnis in der Titelzeile.
+gelb schraffiert (keine gestrichelte Naht – Owner). Legende ■ Stadt ■ Wildnis in der Titelzeile. Gesäumte Reihe = goldene Fläche hinter der
+Reihe + goldene Nummer. Upgrades werden unter das Plättchen gestapelt: von jeder untergeschobenen Karte schaut nur ihre Upgrade-Leiste
+hervor (`.ups`/`.ust`, langes Drücken = ganze Karte); Meisterstück = ★ auf dem Plättchen.
 Plan ohne Dopplungen: Richtung „← Stadt · Wildnis →“ nur einmal in der Titelzeile, Reihennummer als Plakette, Status als Bild statt
 Text (gesäumte Reihe = gelbe gestrichelte Naht, ruhende Reihe = blass mit ☾, Details per langem Drücken auf Nummer/leeres Feld);
 Plättchen volle Breite im Hochformat 2:3 mit Bild, passiven Symbolen oben, Upgrade-Punkten und Namen unten, Meisterstück = ★ + Goldrand.
