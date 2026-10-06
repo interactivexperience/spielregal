@@ -57,8 +57,6 @@ try {
     if (st.phase === "land") {
       if (!st.sel) { const m = page.locator(".card[data-a=market]:not(.off)"), n = await m.count(), h = page.locator(".card[data-a=hand]"), hn = await h.count();
         if (n && it % 2) await m.nth(it % n).click(); else if (hn) await h.nth(it % hn).click(HANDTAP); else if (n) await m.first().click(); else await page.click("[data-a=noland]"); continue; }
-      if (it % 6 === 0 && await cnt("[data-a=actmode]")) { await page.click("[data-a=actmode]"); continue; }
-      if (it % 6 === 1 && await cnt("[data-a=play]")) { await page.click("[data-a=play]"); acts++; continue; }
       if (await cnt("[data-a=buildmode]")) { await page.click("[data-a=buildmode]"); continue; }
       if (it % 3 && await cnt("[data-a=tuckmode]")) { await page.click("[data-a=tuckmode]"); continue; }
       if (await cnt("[data-a=brache]")) { await page.click("[data-a=brache]"); continue; }
