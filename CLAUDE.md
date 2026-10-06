@@ -233,6 +233,11 @@ gleichem Abstand oben/unten, durch feine Linien getrennt, nicht überlappend; Re
 Plan ohne Dopplungen: Richtung „← Stadt · Wildnis →“ nur einmal in der Titelzeile, Reihennummer als Plakette, Status als Bild statt
 Text (gesäumte Reihe = gelbe gestrichelte Naht, ruhende Reihe = blass mit ☾, Details per langem Drücken auf Nummer/leeres Feld);
 Plättchen volle Breite im Hochformat 2:3 mit Bild, passiven Symbolen oben, Upgrade-Punkten und Namen unten, Meisterstück = ★ + Goldrand.
+Passive Zeilen auf Karten ohne Symbol-Spalte, stattdessen farbiger Streifen links (Wingspan-Prinzip: Salbei = Plättchen, Gold = Upgrade);
+die Zeichen ⟳/Stapel erklären die große Ansicht und die Regeln. Beim Platzieren leuchten nur die Felder, auf denen das Plättchen landet
+(`.cell.land`, „hier“, in Stadt- bzw. Wildnisfarbe). Jahresziele als Kacheln mit großem Symbol, Fortschrittsbalken und Preis-Schilden
+6/3 (vergeben = blass mit Initiale). Beim Scrollen klappen die Mitspieler-Chips weg (Ansage + Vorräte bleiben); keine Textauswahl, auch
+nicht in der großen Ansicht.
 Startseite wie die anderen Spiele (Name mit Spielregal-Profil-Chips, Gegner 1/2 Bots, „Partie beginnen“, „Lernspiel“, „Spielregeln
 lesen“ als Fenster `rulesOverlay`, auch im Menü). Lernspiel (`TUT_STEPS`, Coach Fuchs „Fenn“ im Aubergine-Rahmen mit gelbem Leuchten,
 immer gegenüber dem markierten Element): vorbereiteter Plan, Bäckerei säumt Reihe 1, Kette, Upgrade, Kauf, Zug beenden, Herbst,
