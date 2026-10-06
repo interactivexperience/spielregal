@@ -209,12 +209,10 @@ Kategorie **„Wald“** (Wald, Hochwald, Sägewerk, Schreinerei, Biberbau, Alte
 (Bilder schon 2:3, auf 640×960 verkleinert).
 Kategorie **„Blüte und Honig“** (Wiese, Obstgarten, Bienenstock, Imkerei, Wildbienenhang, Lichtung, Blütenlese) unter `saum/art/bluete-honig/NN-name.jpg` (ebenfalls 2:3).
 Kategorie **„Stadt“** (Marktstand, Kontor, Laden, Rathaus, Markthalle, Brunnenplatz, Stadtarchiv, Tagelohn) unter `saum/art/stadt/NN-name.jpg`.
-Noch auf Platzhaltern (`art/land/`): Kräutergarten, Teich, Kräuterhang, Quelle – Kategorie Kräuter/Wasser steht aus. **Karten im Format 3:4** (so viel Bild wie möglich; 2:3-Bilder werden oben bündig zugeschnitten, das untere Drittel verdeckt ohnehin das Textfeld).
+Kategorie **„Kräuter und Wasser“** (Kräuterhang, Quelle, Teich, Kräutergarten) unter `saum/art/kraeuter-wasser/NN-name.jpg` (Querformat-Originale, auf 3:4 zugeschnitten). Damit haben alle 36 Karten ihr Bild. **Karten im Format 3:4** (so viel Bild wie möglich; 2:3-Bilder werden oben bündig zugeschnitten, das untere Drittel verdeckt ohnehin das Textfeld).
 **Plan-Vorschau:** jede Karte hat eine vereinfachte Fassung (`saum/art/simpel/<id>.jpg`, `ARTS`; flache Farbflächen via Mean-Shift + 9 Farben,
 Skript `vereinfachen.py` im Saum-Repo `design/`) – Plättchen zeigen sie statt des Detailbilds; Symbole im Plan 13 px. Neues Kartenbild → Skript
-laufen lassen und `art/simpel/` ergänzen. Kartennamen im Plan werden an festen Silbengrenzen getrennt (`HY`, `&shy;`), nie mitten in der Silbe. Die übrigen Karten zeigen vorläufig die Landschafts-Serie des Owners (36 Motive, eines je Karte) unter
-`saum/art/land/NN-name.jpg`, bis ihre Kategorien geliefert sind. Zuordnung über `ART` je Karten-id (Stadt = Dörfer/Felder, Wildnis = Wald/Berge/Wasser, Startplättchen = Himmelsstimmungen). Die Platzhalter sind aus der
-Übersicht des Owners ausgeschnitten (klein, 128×200).
+laufen lassen und `art/simpel/` ergänzen. Kartennamen im Plan werden an festen Silbengrenzen getrennt (`HY`, `&shy;`), nie mitten in der Silbe.
 Das Cover ist das Coverbild des Owners mit eingemalter Wortmarke und Slogan „Entdecken · Sammeln · Weiterziehen“ (`saum/cover.jpg` 3:4 fürs Dashboard, `saum/art/cover.jpg` 2:3 als Startbild; die Überschrift darunter ist nur für Screenreader da). App-Oberfläche nach dem Style-Board des Owners (Farbschema und Look):
 Wortmarke „SAUM“ in Fraunces Black (Versalien, Dunkelgrün `#1C302B`), Überschriften/Kartentitel Lora Bold (Aubergine `#251737`),
 Fließtext DM Sans; Papier `#F5F0E4`; Akzente Lila `#5E4E6F`, Gelb `#F2A744` (du bist dran), Koralle `#F58A7E` (Stadt, vertieft
