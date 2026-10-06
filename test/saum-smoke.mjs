@@ -38,7 +38,7 @@ try {
   await page.goto(url, { waitUntil: "load" });
   check(await page.locator('a.leave[href="../"]').count() === 1, "Beenden-Knopf fehlt auf dem Startbildschirm");
   await page.click("[data-a=start][data-n='1']");
-  let it = 0, drafts = 0, builds = 0, tucks = 0, takes = 0, sawGame = false;
+  let it = 0, drafts = 0, builds = 0, tucks = 0, takes = 0, acts = 0, sawGame = false;
   while (it++ < 2500) {
     if (await cnt("[data-a=intro-ok]")) { await page.click("[data-a=intro-ok]"); continue; }
     const st = await page.evaluate(() => ({ over: S.over, cur: S.cur, phase: U.phase, sel: !!U.sel, mode: U.mode, draft: S.draft ? S.draft.order[S.draft.step] : null }));
@@ -47,15 +47,19 @@ try {
     if (st.phase === "draft") {
       if (st.draft !== 0) { await page.waitForTimeout(120); continue; }
       if (!st.sel) { await page.locator(".card[data-a=gpick]").first().click(); continue; }
-      await en("[data-a=gplace]").first().click(); drafts++; continue;
+      const lc = page.locator(".cell.land"); if (await lc.count()) { await lc.first().click(); drafts++; } else await page.click("[data-a=unsel]"); continue;
     }
     if (st.cur !== 0) { await page.waitForTimeout(120); continue; }
     if (st.mode === "tuck") { const t = page.locator(".tile.pick"); if (await t.count()) { await t.nth(it % (await t.count())).click(); tucks++; } else await page.click("[data-a=cancel]"); continue; }
+    if (st.mode === "build") { const lc = page.locator(".cell.land"); if (await lc.count()) { await lc.first().click(); builds++; } else await page.click("[data-a=unsel], [data-a=cancel]"); continue; }
+    if (st.mode === "act") { const hl = page.locator("[data-a=act][data-hl]:not([disabled])"); if (await hl.count()) await hl.first().click(); else if (await cnt("[data-a=act]")) await en("[data-a=act]").last().click(); else await page.click("[data-a=cancel]"); acts++; continue; }
     if (st.mode === "take") { await page.locator(".card[data-a=market]").first().click(); takes++; continue; }
     if (st.phase === "land") {
       if (!st.sel) { const m = page.locator(".card[data-a=market]:not(.off)"), n = await m.count(), h = page.locator(".card[data-a=hand]"), hn = await h.count();
         if (n && it % 2) await m.nth(it % n).click(); else if (hn) await h.nth(it % hn).click(HANDTAP); else if (n) await m.first().click(); else await page.click("[data-a=noland]"); continue; }
-      if (await cnt("[data-a=build]")) { await en("[data-a=build]").first().click(); builds++; continue; }
+      if (it % 6 === 0 && await cnt("[data-a=actmode]")) { await page.click("[data-a=actmode]"); continue; }
+      if (it % 6 === 1 && await cnt("[data-a=play]")) { await page.click("[data-a=play]"); acts++; continue; }
+      if (await cnt("[data-a=buildmode]")) { await page.click("[data-a=buildmode]"); continue; }
       if (it % 3 && await cnt("[data-a=tuckmode]")) { await page.click("[data-a=tuckmode]"); continue; }
       if (await cnt("[data-a=brache]")) { await page.click("[data-a=brache]"); continue; }
       await page.click("[data-a=unsel]"); continue;

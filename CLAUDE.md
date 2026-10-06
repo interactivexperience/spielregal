@@ -250,6 +250,10 @@ die Zeichen ⟳/Stapel erklären die große Ansicht und die Regeln. Beim Platzie
 (`.cell.land`, „hier“, in Stadt- bzw. Wildnisfarbe). Jahresziele als Kacheln mit großem Symbol, Fortschrittsbalken und Preis-Schilden
 6/3 (vergeben = blass mit Initiale). Beim Scrollen klappen die Mitspieler-Chips weg (Ansage + Vorräte bleiben); keine Textauswahl, auch
 nicht in der großen Ansicht.
+Kartenwahl im Zug: Eine gewählte Handkarte bietet drei Wege – **Bauen**, **Upgrade**, **Aktion ausführen** (Karte auf den Ablagestapel), dazu klein
+„Ablegen +1 Mz.“. Bauen und Upgrade wählen das Ziel **direkt im Plan** (`U.mode='build'`: Felder „hier“, `'tuck'`: Plättchen; Seite springt zum Plan),
+Auslagekarten gehen sofort in den Bau-Modus; Startplättchen-Draft ebenso. Die Aktion darf vor oder nach dem Plättchen gespielt werden
+(`U.acted`, `runAct`/`toTat`); pro Zug bleibt es je ein Plättchen und eine Aktion.
 Startseite wie die anderen Spiele (Name mit Spielregal-Profil-Chips, Gegner 1/2 Bots, „Partie beginnen“, „Lernspiel“, „Spielregeln
 lesen“ als Fenster `rulesOverlay`, auch im Menü). Lernspiel (`TUT_STEPS`, Coach Fuchs „Fenn“ mit Gouache-Porträt `saum/art/fenn.jpg` (256×256, vom Owner) im Aubergine-Rahmen mit gelbem Leuchten,
 immer gegenüber dem markierten Element): vorbereiteter Plan, Bäckerei säumt Reihe 1, Kette, Upgrade, Kauf, Zug beenden, Herbst,

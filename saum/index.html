@@ -342,6 +342,9 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .opts{display:flex;gap:6px;flex-wrap:wrap}
 .opt{flex:1 1 140px;text-align:left;border-radius:12px;padding:9px 12px;display:flex;flex-direction:column;gap:2px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line)}
 .opt b{font-size:13.5px;font-weight:600}.opt span{font-size:12px;color:var(--muted)}
+.opts.col{flex-direction:column}
+.opts.col .opt{flex:none;width:100%;border-left:5px solid var(--line)}
+.opt[data-k=b]{border-left-color:var(--wild)!important}.opt[data-k=u]{border-left-color:var(--saum)!important}.opt[data-k=a]{border-left-color:var(--lilac)!important}
 .opt:not(:disabled):hover{box-shadow:inset 0 0 0 1px var(--ink)}
 .opt:disabled{opacity:.35;cursor:default}
 .opt[data-hl]{box-shadow:inset 0 0 0 1.5px var(--saum);background:var(--saum-soft)}
@@ -709,8 +712,8 @@ function phaseText(){
   if(S.draft){const w=draftWho(),left=S.draft.order.slice(S.draft.step).filter(x=>x===0).length;return w===0?`<b>Startplättchen wählen</b> (noch ${left}): Tippe eines an und lege es in eine Reihe. Stadtplättchen kommen links an, Wildnis rechts. Die anderen sehen, was du nimmst – Reihenfolge: ${S.draft.order.map(i=>esc(S.players[i].name)).join(' → ')}.`:`<b>${esc(S.players[w].name)}</b> wählt ein Startplättchen …`}
   if(S.cur!==0)return `<b>${esc(S.players[S.cur].name)}</b> ist am Zug …`;
   const dir=S.season==='LR'?'Frühling: Ketten laufen von der Stadt (links) nach rechts – in offenen Reihen nur durch die Stadtseite':'Herbst: Ketten laufen vom Wald (rechts) nach links – in offenen Reihen nur durch die Waldseite';
-  const steps=`<div class="steps">${STEPS.map((s,i)=>`<span class="${i===stepIdx()?'on':i<stepIdx()?'done':''}">${i+1} ${s}</span>`).join('')}</div>`;
-  if(U.phase==='land')return steps+'Wähle <b>eine Karte</b> aus Hand oder Auslage. Du kannst sie als Plättchen bauen, als Upgrade unter ein Plättchen schieben oder darauf verzichten (+1 Münze).';
+  const steps=`<div class="steps">${STEPS.map((s,i)=>`<span class="${i===stepIdx()?'on':i<stepIdx()||(U.acted&&i===1)?'done':''}">${i+1} ${s}</span>`).join('')}</div>`;
+  if(U.phase==='land')return steps+`Wähle <b>eine Karte</b> aus Hand oder Auslage: <b>bauen</b>, als <b>Upgrade</b> unterschieben oder ihre <b>Aktion</b> ausführen.${U.acted?' Die Aktion hast du schon gespielt.':' Die Reihenfolge von Plättchen und Aktion ist frei.'}`;
   if(U.phase==='tat')return steps+`Wähle eine <b>Handkarte als Aktion</b>, oder ruhe dich aus (+2 Münzen oder eine Karte aus der Auslage). ${dir}.`;
   if(U.phase==='ende')return steps+`Beides freiwillig: ${!upLeft()?'':`<b>bis zu ${UPMAX-U.ups} Upgrade${UPMAX-U.ups>1?'s':''}</b> (Handkarte antippen, je 1 Mz.)`}${upLeft()&&!U.bought?' und ':''}${U.bought?'':'<b>ein Kauf</b> (Karte der Auslage antippen)'}. Dann Zug beenden.`;
   return '';
@@ -719,34 +722,38 @@ function pickFor(){
   if(S.cur!==0||S.over)return null;const p=me(),sel=U.sel;
   if(U.phase==='draft'){if(draftWho()!==0||!sel)return null;const c=CARDS[S.draft.disp[sel.i]];return{card:c,rows:r=>canPlace(p.rows[r],c)}}
   if(U.mode==='tuck')return{tiles:(r,sd,ti)=>p.rows[r][sd][ti].edges.length<3};
-  if(U.phase==='land'&&sel){const c=sel.src==='m'?CARDS[S.market[sel.i]]:CARDS[p.hand[sel.i]];const cost=sel.src==='m'?mprice(S,sel.i):0;const ok=c.fam!=='start'&&p.coins>=cost;return{card:c,rows:r=>ok&&canPlace(p.rows[r],c)}}
+  if(U.phase==='land'&&sel&&U.mode==='build'){const c=sel.src==='m'?CARDS[S.market[sel.i]]:CARDS[p.hand[sel.i]];const cost=sel.src==='m'?mprice(S,sel.i):0;const ok=c.fam!=='start'&&p.coins>=cost;return{card:c,rows:r=>ok&&canPlace(p.rows[r],c)}}
   return null;
 }
 const opt=(a,title,sub,dis,extra='')=>`<button class="opt" data-a="${a}" ${extra} ${dis?'disabled':''}><b>${title}</b><span>${sub}</span></button>`;
 function actionsHtml(){const h=actionsHtml0();return undoable()&&!U.sel&&!U.mode?`<button class="btn alt undo" data-a="undo" aria-label="Zug rückgängig" data-info="Letzte Entscheidung zurücknehmen. Geht nicht mehr, sobald eine neue Karte aufgedeckt oder gezogen wurde.">↶</button>${h}`:h}
+function chainSheet(c,back){const p=me(),tip='<button class="btn alt" data-a="tip">Tipp</button>';
+  const rows=[0,1,2,3].map(r=>{if(rowTired(S,p,r))return opt('act',`Reihe ${r+1}`,'ruht diese Runde',true,`data-r="${r}"`);const res=runChain(p,r,S.season,c.eff.add||{},true);const side=S.season==='LR'?'Stadtseite':'Waldseite',op=!closed(p.rows[r]);return opt('act',`Reihe ${r+1}`,`${res.links} ${res.links===1?'Glied':'Glieder'} · ${res.vp?'+'+res.vp+' Ruhm · ':''}+${res.coins} Mz.${res.conv?' (offen: Ruhm → Mz.)':''}${op&&!res.links?` · offen, ${side} leer`:''}`,false,`data-r="${r}"${res.vp?' data-hl="1"':''}`)}).join('');
+  return `<div class="sheet"><div class="sh"><b>${esc(c.n)}: Kette auslösen</b><span>Wähle eine Reihe. Ihre Plättchen laufen ${S.season==='LR'?'von links nach rechts (Frühling)':'von rechts nach links (Herbst)'} ab – in offenen Reihen nur die ${S.season==='LR'?'Stadtseite':'Waldseite'}, in gesäumten alles. Vorschau:</span></div><div class="opts">${rows}</div><div class="opts"><button class="btn alt" data-a="${back}">${back==='cancel'?'Zurück':'Andere Karte'}</button>${tip}</div></div>`}
 function actionsHtml0(){
   if(S.over)return `<button class="btn" data-a="new">Neue Partie</button>`;
-  if(S.draft){if(draftWho()!==0)return `<span style="color:var(--muted)">Die Bots wählen …</span>`;const sel=U.sel;if(!sel)return `<span class="hint">Startplättchen oben antippen</span>`;const c=CARDS[S.draft.disp[sel.i]];return `<div class="sheet"><div class="sh"><b>${esc(c.n)}</b><span>${c.side==='S'?'Stadt – kommt links an':'Wildnis – kommt rechts an'}. Wirkt jedes Mal, wenn eine Kette hindurchläuft: ${esc(c.tile.map(rule).join('; '))}.</span></div><div class="opts">${[0,1,2,3].map(r=>opt('gplace',`Reihe ${r+1}`,canPlace(me().rows[r],c)?`frei ${COLS-used(me().rows[r])}`:'passt nicht',!canPlace(me().rows[r],c),`data-r="${r}"`)).join('')}</div><div class="opts"><button class="btn alt" data-a="unsel">Anderes Plättchen</button></div></div>`}
+  if(S.draft){if(draftWho()!==0)return `<span style="color:var(--muted)">Die Bots wählen …</span>`;const sel=U.sel;if(!sel)return `<span class="hint">Startplättchen oben antippen</span>`;const c=CARDS[S.draft.disp[sel.i]];return `<div class="sheet"><div class="sh"><b>${esc(c.n)}</b><span>${c.side==='S'?'Stadt – kommt links an':'Wildnis – kommt rechts an'}. Tippe im Plan auf ein markiertes Feld („hier“).</span></div><div class="opts"><button class="btn alt" data-a="unsel">Anderes Plättchen</button></div></div>`}
   if(S.cur!==0)return `<span style="color:var(--muted)">Die Bots ziehen …</span>`;
   const p=me(),sel=U.sel;
   const tip=`<button class="btn alt" data-a="tip">Tipp</button>`;
   if(U.mode==='tuck'){const c=CARDS[p.hand[sel.i]];return `<div class="sheet"><div class="sh"><b>${esc(c.n)} als Upgrade</b><span>Tippe oben das Plättchen an, das dazubekommt: ${esc(c.edge.map(rule).join('; '))}. Kostet 1 Münze.</span></div><div class="opts"><button class="btn alt" data-a="cancel">Abbrechen</button></div></div>`}
   if(U.phase==='land'){
     if(!sel)return `${!p.hand.length?'<button class="btn alt" data-a="noland">Ohne Plättchen weiter</button>':''}${tip}<span class="hint">Karte aus Hand oder Auslage antippen</span>`;
-    const c=sel.src==='m'?CARDS[S.market[sel.i]]:CARDS[p.hand[sel.i]];const cost=sel.src==='m'?mprice(S,sel.i):0;
-    const why=c.fam==='start'?'Startkarten sind nicht baubar':p.coins<cost?`zu wenig Münzen (${cost} nötig)`:'';
-    const rows=[0,1,2,3].map(r=>{const okr=!why&&canPlace(p.rows[r],c);return opt('build',`Reihe ${r+1}`,okr?`frei ${COLS-used(p.rows[r])}`:'passt nicht',!okr,`data-r="${r}"`)}).join('');
-    let h=`<div class="sheet"><div class="sh"><b>${esc(c.n)}</b>${sel.src==='m'?`<span>direkt aus der Auslage – mit Aufpreis +${surcharge(sel.i)}. Günstiger: im Abschluss kaufen (${price(S,sel.i)} Mz.), dann später gratis aus der Hand bauen.</span>`:''}</div>
-      <div class="grp"><div class="gl">Als Plättchen bauen · ${sel.src==='m'?cost+' Mz.':'gratis'}</div><div class="gs">${why?esc(why):`Kommt dauerhaft auf deinen Plan. Jedes Mal, wenn eine Kette hindurchläuft: ${esc(c.tile.map(rule).join('; '))}.`}</div><div class="opts">${rows}</div></div>`;
-    if(sel.src==='h')h+=`<div class="opts">${opt('tuckmode','Als Upgrade unterschieben · 1 Mz.',`Ein vorhandenes Plättchen bekommt dazu: ${esc(c.edge.map(rule).join('; '))}`,p.coins<TUCKCOST||!tilesOf(p).some(t=>t.edges.length<3))}${opt('brache','Nicht bauen · +1 Mz.','Karte geht auf den Ablagestapel und kommt später wieder')}</div>`;
-    return h+`<div class="opts"><button class="btn alt" data-a="unsel">Andere Karte</button>${tip}</div></div>`;
+    const c=sel.src==='m'?CARDS[S.market[sel.i]]:CARDS[p.hand[sel.i]];const cost=sel.src==='m'?mprice(S,sel.i):0,fromHand=sel.src==='h';
+    const canAny=[0,1,2,3].some(r=>canPlace(p.rows[r],c));
+    const why=c.fam==='start'?'Startkarten sind nicht baubar':p.coins<cost?`zu wenig Münzen (${cost} nötig)`:!canAny?'passt in keine Reihe':'';
+    if(U.mode==='build')return `<div class="sheet"><div class="sh"><b>${esc(c.n)} bauen</b><span>Tippe im Plan auf ein markiertes Feld („hier“). ${sel.src==='m'?`Kostet ${cost} Mz. (Kaufpreis plus Aufpreis +${surcharge(sel.i)}) – im Abschluss kaufen wäre günstiger (${price(S,sel.i)} Mz.), dann baust du gratis aus der Hand.`:'Aus der Hand baust du gratis.'}</span></div><div class="opts"><button class="btn alt" data-a="${fromHand?'cancel':'unsel'}">${fromHand?'Zurück':'Andere Karte'}</button>${tip}</div></div>`;
+    if(U.mode==='act'&&fromHand)return chainSheet(c,'cancel');
+    const hasEff=fromHand&&(c.eff.act||c.eff.coins||c.eff.draw||c.eff.buyDisc);
+    const actOpt=!hasEff?'':c.eff.act?opt('actmode','Aktion ausführen',U.acted?'schon gespielt':'Kette in einer Reihe · Karte auf den Ablagestapel',!!U.acted,'data-k="a"'):opt('play','Aktion ausführen',U.acted?'schon gespielt':esc(eff(c.eff))+' · Karte auf den Ablagestapel',!!U.acted,'data-k="a"');
+    if(!fromHand)return `<div class="sheet"><div class="sh"><b>${esc(c.n)}</b><span>Direkt aus der Auslage bauen: ${cost} Mz. (Aufpreis +${surcharge(sel.i)}).</span></div><div class="opts col">${opt('buildmode',`Bauen · ${cost} Mz.`,why||'Plättchen: wirkt bei jeder Kette, die durch sie läuft',!!why,'data-k="b"')}</div><div class="opts"><button class="btn alt" data-a="unsel">Andere Karte</button>${tip}</div></div>`;
+    return `<div class="sheet"><div class="sh"><b>${esc(c.n)}</b><span>Was soll diese Karte tun?</span></div><div class="opts col">${opt('buildmode','Bauen · gratis',why||'Wird Plättchen in deinem Plan',!!why,'data-k="b"')}${opt('tuckmode',`Upgrade · ${TUCKCOST} Mz.`,'Unter ein Plättchen schieben, das schon liegt',p.coins<TUCKCOST||!tilesOf(p).some(t=>t.edges.length<3),'data-k="u"')}${actOpt}</div><div class="opts"><button class="btn alt" data-a="unsel">Andere Karte</button><button class="btn alt" data-a="brache" data-info="Karte ablegen und 1 Münze nehmen – wenn sie nirgends passt.">Ablegen · +1 Mz.</button>${tip}</div></div>`;
   }
   if(U.phase==='tat'){
     if(U.mode==='take')return `<div class="sheet"><div class="sh"><b>Ausruhen: Karte nehmen</b><span>Tippe eine Karte der Auslage an – sie kommt gratis auf deine Hand.</span></div><div class="opts"><button class="btn alt" data-a="cancel">Abbrechen</button></div></div>`;
     if(!sel)return `<div class="sheet"><div class="sh"><b>Aktion</b><span>Handkarte antippen und ausspielen – oder ausruhen:</span></div><div class="opts">${opt('ruhe','Ausruhen · +2 Mz.','Münzen für Käufe und Aufpreise')}${opt('takemode','Ausruhen · Karte nehmen','Eine Karte der Auslage gratis auf die Hand',!S.market.length)}</div><div class="opts">${tip}</div></div>`;
     const c=CARDS[p.hand[sel.i]];
-    if(c.eff.act){const rows=[0,1,2,3].map(r=>{if(rowTired(S,p,r))return opt('act',`Reihe ${r+1}`,'ruht diese Runde',true,`data-r="${r}"`);const res=runChain(p,r,S.season,c.eff.add||{},true);const side=S.season==='LR'?'Stadtseite':'Waldseite',op=!closed(p.rows[r]);return opt('act',`Reihe ${r+1}`,`${res.links} ${res.links===1?'Glied':'Glieder'} · ${res.vp?'+'+res.vp+' Ruhm · ':''}+${res.coins} Mz.${res.conv?' (offen: Ruhm → Mz.)':''}${op&&!res.links?` · offen, ${side} leer`:''}`,false,`data-r="${r}"${res.vp?' data-hl="1"':''}`)}).join('');
-      return `<div class="sheet"><div class="sh"><b>${esc(c.n)}: Kette auslösen</b><span>Die Waren laufen durch die gewählte Reihe – in offenen Reihen nur durch die ${S.season==='LR'?'Stadtseite':'Waldseite'}, in gesäumten durch alles. Vorschau:</span></div><div class="opts">${rows}</div><div class="opts"><button class="btn alt" data-a="unsel">Andere Karte</button>${tip}</div></div>`}
+    if(c.eff.act)return chainSheet(c,'unsel');
     return `<div class="sheet"><div class="sh"><b>${esc(c.n)}</b></div><div class="opts">${opt('play','Aktion ausführen',esc(eff(c.eff)))}<button class="btn alt" data-a="unsel">Andere Karte</button></div></div>`;
   }
   if(U.phase==='ende'){
@@ -758,7 +765,7 @@ function actionsHtml0(){
 }
 function introHtml(){return `<div class="intro"><h2>So geht ein Zug</h2><ol>
  <li><b>Plättchen:</b> Eine Karte wird Teil deines Plans – gebaut (Stadtkarten wachsen von links, Wildnis von rechts) oder als Upgrade unter ein vorhandenes Plättchen geschoben. Aus der Hand baust du <b>gratis</b>, direkt aus der Auslage nur mit <b>Aufpreis</b>.</li>
- <li><b>Aktion:</b> Eine andere Karte ausspielen. Meist löst sie eine <b>Kette</b> aus: Waren laufen durch eine Reihe, jedes Plättchen verarbeitet sie (Korn → Mehl → Brot …). Oder ausruhen: +2 Münzen <i>oder</i> eine Karte aus der Auslage gratis auf die Hand.</li>
+ <li><b>Aktion:</b> Eine andere Karte ausspielen (die Reihenfolge von Plättchen und Aktion ist frei – du kannst die Aktion auch zuerst spielen). Meist löst sie eine <b>Kette</b> aus: Waren laufen durch eine Reihe, jedes Plättchen verarbeitet sie (Korn → Mehl → Brot …). Oder ausruhen: +2 Münzen <i>oder</i> eine Karte aus der Auslage gratis auf die Hand.</li>
  <li><b>Abschluss:</b> Freiwillig bis zu 2 Upgrades (je 1 Münze) und/oder ein Kauf aus der Auslage – gekaufte Karten kommen sofort auf die Hand.</li></ol>
  <p><b>Vor dem ersten Zug</b> wählt jede Person reihum 2 <b>Startplättchen</b> aus einer offenen Auslage (wer zuletzt am Zug ist, wählt zuerst, danach in Gegenrichtung). Sie liegen sofort auf deinem Plan.</p>
  <p><b>Ziel:</b> Ruhm. Den gibt es aus Ketten nur in <b>gesäumten</b> Reihen: alle 6 Felder voll, je mindestens 2 Stadt und 2 Wildnis. Offene Reihen zahlen nur Münzen. Am Ende zählen noch Reihenbalance, Meisterstücke (je 4) und Münzen.</p>
@@ -782,8 +789,8 @@ addEventListener('resize',()=>layoutFan());
 // ---------- Drei Wischseiten (Plan · Karten · Ziele & Chronik), Technik wie in Landgut ----------
 const PAGES=['Plan','Karten','Ziele & Chronik'];
 if(U.page==null)U.page=1;
-function actPage(){if(!S||S.over)return -1;if(S.draft)return draftWho()===0?1:-1;if(S.cur!==0)return -1;return U.mode==='tuck'?0:1}
-function autoPage(){if(S.tut)return;const k=[S.over,!!S.draft&&draftWho()===0,S.cur,U.phase,U.mode].join('|');if(k===U.apKey)return;U.apKey=k;const ap=actPage();if(ap>=0&&(U.mode==='tuck'||!U.sel))U.page=ap}
+function actPage(){if(!S||S.over)return -1;if(S.draft)return draftWho()===0?1:-1;if(S.cur!==0)return -1;return U.mode==='tuck'||U.mode==='build'?0:1}
+function autoPage(){if(S.tut)return;const k=[S.over,!!S.draft&&draftWho()===0,S.cur,U.phase,U.mode].join('|');if(k===U.apKey)return;U.apKey=k;const ap=actPage();if(ap>=0&&(U.mode==='tuck'||U.mode==='build'||!U.sel))U.page=ap}
 function dotsHtml(){const ap=actPage();return `<div class="pdots" role="tablist">${PAGES.map((t,i)=>`<button class="pd ${i===U.page?'on':''} ${i===ap?'act':''}" data-a="page" data-p="${i}" role="tab" aria-label="${t}" aria-selected="${i===U.page}"><i></i></button>`).join('')}</div>`}
 const pagesEl=()=>document.querySelector('.pages');
 function pageSync(instant){const pg=pagesEl();if(!pg)return;const w=pg.clientWidth||1;
@@ -825,7 +832,7 @@ const fastPref=()=>{try{return localStorage.getItem('spielregal:botFast')==='1'}
 const botDelay=()=>fastPref()?160:450;
 function goTo(){
   if(U.sel||U.mode){const a=document.querySelector('.actions');if(a){a.classList.remove('flash');void a.offsetWidth;a.classList.add('flash')}return}
-  const id=S.over?'plan':S.draft?(draftWho()===0?'draft':'plan'):S.cur!==0?'plan':U.mode==='tuck'?'plan':U.phase==='ende'?(U.bought?'hand':'markt'):'hand';
+  const id=S.over?'plan':S.draft?(draftWho()===0?'draft':'plan'):S.cur!==0?'plan':U.mode==='tuck'||U.mode==='build'?'plan':U.phase==='ende'?(U.bought?'hand':'markt'):'hand';
   const el=document.getElementById(id);if(!el)return;
   if(id==='hand'){el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');return}
   const pi=pageOf(el);if(pi>=0&&pi!==U.page)pageGo(pi,false);
@@ -874,10 +881,10 @@ function rulesHtml(){return `<h2>Spielregeln</h2>
  <li>Lange auf eine Karte drücken zeigt sie groß mit Text zu jedem Symbol.</li></ul>
  <h3>Vor dem ersten Zug</h3>
  <p>Reihum wählt jede Person 2 <b>Startplättchen</b> aus einer offenen Auslage und legt sie sofort auf ihren Plan. Wer zuletzt am Zug ist, wählt zuerst, die zweite Wahl läuft in Gegenrichtung.</p>
- <h3>Ein Zug in drei Schritten</h3>
+ <h3>Ein Zug in drei Schritten</h3><p>Jede Handkarte kann dreierlei: <b>bauen</b> (Plättchen), als <b>Upgrade</b> unterschieben oder ihre <b>Aktion</b> ausführen (dann kommt sie auf den Ablagestapel). Beim Bauen und Unterschieben tippst du das Ziel direkt im Plan an.</p>
  <ol><li><b>Plättchen:</b> eine Karte wird Teil deines Plans.
   <ul><li>Aus der <b>Hand bauen: gratis</b> (bezahlt hast du beim Kauf).</li><li>Direkt aus der <b>Auslage bauen:</b> Kaufpreis plus Aufpreis je Platz (+1/+1/+2/+2/+3/+3).</li><li>Als <b>Upgrade</b> unter ein eigenes Plättchen schieben: 1 Münze.</li><li>Oder <b>nicht bauen:</b> Karte ablegen, +1 Münze.</li></ul></li>
- <li><b>Aktion:</b> eine andere Handkarte ausspielen – oder ausruhen: +2 Münzen <i>oder</i> eine Karte aus der Auslage gratis auf die Hand.</li>
+ <li><b>Aktion:</b> eine andere Handkarte ausspielen (die Reihenfolge von Plättchen und Aktion ist frei) – oder ausruhen: +2 Münzen <i>oder</i> eine Karte aus der Auslage gratis auf die Hand.</li>
  <li><b>Abschluss</b> (freiwillig): bis zu 2 Upgrades (je 1 Münze) und 1 Kauf aus der Auslage. Die beiden ältesten Plätze kosten 1 weniger. Gekaufte Karten kommen sofort auf die Hand.</li></ol>
  <p>Danach ziehst du auf 5 Karten nach. Am Rundenende fällt die älteste Karte der Auslage heraus.</p>
  <h3>Ketten</h3>
@@ -901,8 +908,9 @@ const TUT_STEPS=[
  {ch:'Willkommen',pos:'top',text:'Hallo, ich bin Fenn, der Fuchs. In <b>Saum</b> wächst von links deine <b>Stadt</b> und von rechts deine <b>Wildnis</b>. Dein Ziel: möglichst viel <b>Ruhm</b> – das blaue Schild oben.'},
  {ch:'Dein Plan',sel:'#plan',text:'Das ist dein Plan: 4 Reihen mit je 6 Feldern. Stadtplättchen kommen links an, Wildnis rechts. In <b>Reihe 1</b> fehlt nur noch ein Feld.',why:'Gesäumt ist eine Reihe, wenn alle 6 Felder voll sind und beide Seiten mindestens 2 Felder haben. Nur gesäumte Reihen bringen echten Ruhm.'},
  {ch:'Deine Hand',sel:'#hand',text:'Unten im Fächer liegt deine Hand. Oben links auf jeder Karte siehst du ihre <b>Aktion</b>. Lange drücken zeigt eine Karte groß mit allen Erklärungen.'},
- {ch:'Zug 1 · Plättchen',sel:'.fan .card[data-id=baeckerei]',allow:{hand:d=>d.id==='baeckerei'},done:()=>handIs('baeckerei')||closed(tme().rows[0]),text:'Ein Zug hat drei Schritte. <b>Schritt 1:</b> Eine Karte wird zum Plättchen. Tippe die <b>Bäckerei</b> an.',why:'Aus der Hand baust du gratis – bezahlt hast du die Karte schon beim Kauf.'},
- {ch:'Zug 1 · Plättchen',sel:'.actions [data-a=build][data-r="0"]',allow:{build:d=>d.r==='0'},done:()=>closed(tme().rows[0]),text:'Bau sie in <b>Reihe 1</b>. Damit ist die Reihe voll und <b>gesäumt</b>.'},
+ {ch:'Zug 1 · Plättchen',sel:'.fan .card[data-id=baeckerei]',allow:{hand:d=>d.id==='baeckerei'},done:()=>handIs('baeckerei')||closed(tme().rows[0]),text:'Ein Zug hat drei Schritte: ein <b>Plättchen</b>, eine <b>Aktion</b> und der freiwillige <b>Abschluss</b>. Fangen wir mit dem Plättchen an: Tippe die <b>Bäckerei</b> an.',why:'Aus der Hand baust du gratis – bezahlt hast du die Karte schon beim Kauf.'},
+ {ch:'Zug 1 · Plättchen',sel:'.actions [data-a=buildmode]',allow:{buildmode:true},done:()=>U.mode==='build'||closed(tme().rows[0]),text:'Jede Handkarte kann dreierlei: <b>Bauen</b>, als <b>Upgrade</b> unterschieben oder ihre <b>Aktion</b> ausführen. Tippe „Bauen“.',why:'Die Bäckerei wird dadurch Teil deines Plans und wirkt ab jetzt bei jeder Kette, die durch sie läuft.'},
+ {ch:'Zug 1 · Plättchen',sel:'.cell.land',allow:{row:d=>d.r==='0'},done:()=>closed(tme().rows[0]),text:'Tippe im Plan auf das markierte Feld („hier“) in <b>Reihe 1</b>. Damit ist die Reihe voll und <b>gesäumt</b>.'},
  {ch:'Zug 1 · Aktion',sel:'.fan .card[data-id=feldarbeit]',allow:{hand:d=>d.id==='feldarbeit'},done:()=>handIs('feldarbeit')||U.phase==='ende',text:'<b>Schritt 2:</b> eine andere Karte als Aktion ausspielen. Die <b>Feldarbeit</b> löst eine Kette aus – siehst du den Pfeil oben links?'},
  {ch:'Zug 1 · Kette',sel:'.actions [data-a=act][data-r="0"]',allow:{act:d=>d.r==='0'},done:()=>U.phase==='ende',text:'Wähle <b>Reihe 1</b>. Es ist Frühling: Die Waren laufen von der Stadt (links) nach rechts – und weil die Reihe gesäumt ist, weiter durch die Wildnis.',why:'Jedes Plättchen verarbeitet, was die Kette trägt: Acker gibt Korn, die Mühle macht Mehl, die Bäckerei Brot und Ruhm, die Wildnis Blüten, Honig und Holz.'},
  {ch:'Die Kette',pos:'top',text:()=>`Geschafft! Die Kette brachte dir <b>${tme().vp} Ruhm</b> und Münzen. Übrige Waren am Ende werden verkauft: je 2 Waren 1 Münze.`,why:'In einer offenen Reihe wäre der Ruhm nur Münzen wert. Darum lohnt es sich, Reihen von beiden Seiten zu säumen.'},
@@ -1032,28 +1040,30 @@ function handleClick(e){
   if(a==='view'){U.view=+el.dataset.p;U.page=0;render();window.scrollTo({top:0});return}
   if(a==='tinfo'){const q=S.players[+el.dataset.p],t=q.rows[+el.dataset.r][el.dataset.sd][+el.dataset.ti],c=CARDS[t.id];toastLong(`${c.n}: ${[...c.tile,...t.edges.map(x=>CARDS[x].edge).flat()].map(rule).join('; ')}${t.edges.length?` · Upgrades: ${t.edges.map(x=>CARDS[x].n).join(', ')}`:''}`);return}
   if(S.cur!==0||S.over)return;
-  if(S.draft){if(draftWho()!==0)return;if(a==='gpick'){U.sel={src:'g',i:+el.dataset.i};render();return}if(a==='unsel'){U.sel=null;render();return}if((a==='gplace'||a==='row')&&U.sel){const r=+el.dataset.r;if(!canPlace(me().rows[r],CARDS[S.draft.disp[U.sel.i]]))return;draftPlace(0,U.sel.i,r);U.sel=null;runDraft()}return}
+  if(S.draft){if(draftWho()!==0)return;if(a==='gpick'){U.sel={src:'g',i:+el.dataset.i};U.page=0;render();window.scrollTo({top:0});return}if(a==='unsel'){U.sel=null;U.page=1;render();return}if((a==='gplace'||a==='row')&&U.sel){const r=+el.dataset.r;if(!canPlace(me().rows[r],CARDS[S.draft.disp[U.sel.i]]))return;draftPlace(0,U.sel.i,r);U.sel=null;U.page=1;runDraft()}return}
   const p=me();
   if(a==='tip'){toastLong(tipText()||'Kein Tipp');return}
   if(a==='cancel'){U.mode=null;render();return}
   if(a==='unsel'){U.sel=null;U.mode=null;render();return}
   if(a==='hand'){if(U.phase==='ende'&&!upLeft())return;if(U.mode==='take')return;U.sel={src:'h',i:+el.dataset.i};U.mode=null;render();return}
-  if(a==='market'){const i=+el.dataset.i;if(U.phase==='tat'&&U.mode==='take'){const m={k:'ruhe',take:i};say('Du '+describe(S,0,m),true);applyMove(S,0,m,R);U.mode=null;afterTat(0);return}if(U.phase==='land'||(U.phase==='ende'&&!U.bought)){U.sel={src:'m',i};U.mode=null;render()}return}
+  if(a==='market'){const i=+el.dataset.i;if(U.phase==='tat'&&U.mode==='take'){const m={k:'ruhe',take:i};say('Du '+describe(S,0,m),true);applyMove(S,0,m,R);U.mode=null;afterTat(0);return}if(U.phase==='land'||(U.phase==='ende'&&!U.bought)){U.sel={src:'m',i};{const mc=U.phase==='land'?CARDS[S.market[i]]:null;U.mode=mc&&mc.fam!=='start'&&p.coins>=mprice(S,i)&&[0,1,2,3].some(r=>canPlace(p.rows[r],mc))?'build':null}render()}return}
   const done=m=>{say('Du '+describe(S,0,m),true);applyMove(S,0,m,R);U.sel=null;U.mode=null};
   if(U.phase==='land'){
-    if(a==='noland'&&!p.hand.length){U.phase='tat';render();return}
+    if(a==='noland'&&!p.hand.length){toTat();return}
     const sel=U.sel;if(!sel)return;
-    if(a==='build'||a==='row'){const r=+el.dataset.r;const pk=pickFor();if(!pk||!pk.rows||!pk.rows(r))return;done(sel.src==='m'?{k:'mbuild',mi:sel.i,r}:{k:'build',hi:sel.i,r});U.phase='tat';render();return}
+    if(a==='buildmode'){U.mode='build';render();return}
+    if(a==='actmode'&&sel.src==='h'&&!U.acted){U.mode='act';render();return}
+    if((a==='act'||a==='play')&&sel.src==='h'&&!U.acted){runAct(a,el);return}
+    if(a==='build'||a==='row'){const r=+el.dataset.r;const pk=pickFor();if(!pk||!pk.rows||!pk.rows(r))return;done(sel.src==='m'?{k:'mbuild',mi:sel.i,r}:{k:'build',hi:sel.i,r});toTat();return}
     if(a==='tuckmode'&&sel.src==='h'){U.mode='tuck';render();return}
-    if(a==='tile'&&U.mode==='tuck'){done({k:'tuck',hi:sel.i,r:+el.dataset.r,sd:el.dataset.sd,ti:+el.dataset.ti});U.phase='tat';render();return}
-    if(a==='brache'&&sel.src==='h'){done({k:'brache',hi:sel.i});U.phase='tat';render();return}
+    if(a==='tile'&&U.mode==='tuck'){done({k:'tuck',hi:sel.i,r:+el.dataset.r,sd:el.dataset.sd,ti:+el.dataset.ti});toTat();return}
+    if(a==='brache'&&sel.src==='h'){done({k:'brache',hi:sel.i});toTat();return}
   }
   if(U.phase==='tat'){
     if(a==='takemode'){U.sel=null;U.mode='take';render();return}
     if(a==='ruhe'){applyMove(S,0,{k:'ruhe'},R);say('Du ruhst (+2 Mz.)',true);afterTat(0);return}
     if(!U.sel)return;
-    if(a==='act'){const m={k:'eff',hi:U.sel.i,r:+el.dataset.r,d:S.season};const d=describe(S,0,m);const disc=applyMove(S,0,m,R);say(`Du ${d} → ${m.res.links} Glieder, +${m.res.vp} Ruhm, +${m.res.coins} Mz.${m.res.conv?' (offene Reihe: Ruhm als Münzen)':''}`,true);if(m.trace&&m.trace.length)say('Kette: '+m.trace.join(' · '),true);afterTat(disc);toastLong(`Kette: ${m.res.links} Glieder · +${m.res.vp} Ruhm · +${m.res.coins} Mz.`);return}
-    if(a==='play'){const m={k:'eff',hi:U.sel.i};const d=describe(S,0,m);const disc=applyMove(S,0,m,R);say('Du '+d,true);afterTat(disc);return}
+    if(a==='act'||a==='play'){runAct(a,el);return}
   }
   if(U.phase==='ende'){
     if(a==='tuckmode'&&U.sel&&U.sel.src==='h'&&upLeft()){U.mode='tuck';render();return}
@@ -1069,7 +1079,7 @@ function doUndo(){if(!undoable())return;const b=U.undo.pop();S=JSON.parse(b.s);O
 document.addEventListener('click',e=>{
   const el=e.target.closest('[data-a]');if(el&&el.dataset.a==='undo'){doUndo();return}
   const mine=S&&!S.over&&!S.draft&&S.cur===0&&U.phase;
-  const before=mine?{s:JSON.stringify(S),u:{phase:U.phase,disc:U.disc,ups:U.ups,bought:U.bought},sup:S.supply.length,dk:S.players[0].deck.length}:null;
+  const before=mine?{s:JSON.stringify(S),u:{phase:U.phase,disc:U.disc,ups:U.ups,bought:U.bought,acted:U.acted},sup:S.supply.length,dk:S.players[0].deck.length}:null;
   handleClick(e);
   if(!before)return;
   if(!S||JSON.stringify(S)===before.s)return;
@@ -1077,6 +1087,12 @@ document.addEventListener('click',e=>{
   if(S.cur!==0||!U.phase||S.over||S.supply.length!==before.sup||S.players[0].deck.length<before.dk){const had=U.undo&&U.undo.length;U.undo=[];if(had&&S.cur===0&&U.phase)render()}
   else{stack.push(before);U.undo=stack;render()}
 });
+// Aktion einer Handkarte ausführen – vor dem Plättchen (Schritt 1) oder danach (Schritt 2); Reihenfolge ist frei
+function runAct(a,el){const m=a==='act'?{k:'eff',hi:U.sel.i,r:+el.dataset.r,d:S.season}:{k:'eff',hi:U.sel.i};const d=describe(S,0,m);const disc=applyMove(S,0,m,R);
+  if(a==='act'){say(`Du ${d} → ${m.res.links} Glieder, +${m.res.vp} Ruhm, +${m.res.coins} Mz.${m.res.conv?' (offene Reihe: Ruhm als Münzen)':''}`,true);if(m.trace&&m.trace.length)say('Kette: '+m.trace.join(' · '),true)}else say('Du '+d,true);
+  if(U.phase==='land'){U.acted=true;U.disc=disc||0;U.sel=null;U.mode=null;render()}else afterTat(disc);
+  if(a==='act')toastLong(`Kette: ${m.res.links} Glieder · +${m.res.vp} Ruhm · +${m.res.coins} Mz.`)}
+function toTat(){if(U.acted)afterTat(U.disc);else{U.phase='tat';render()}}
 function afterTat(disc){U.disc=disc||0;U.sel=null;U.mode=null;U.ups=0;U.bought=false;U.phase='ende';render()}
 function upLeft(){const p=me();return U.ups<UPMAX&&p.hand.length>0&&p.coins>=TUCKCOST&&tilesOf(p).some(t=>t.edges.length<3)}
 function maybeFinish(){if(!upLeft()&&U.bought)finishTurn();else render()}
