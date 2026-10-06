@@ -351,6 +351,8 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .grp{border-radius:var(--r);padding:10px;display:flex;flex-direction:column;gap:6px;background:var(--bg)}
 .gl{font-weight:600;font-size:13.5px}.gs{font-size:12.5px;color:var(--muted)}
 .opts{display:flex;gap:6px;flex-wrap:wrap}
+.btn.tipb{width:44px;min-height:42px;align-self:stretch;border-radius:50%;padding:0;font:700 17px/1 var(--f-display);flex:none}.actions .in>.go{margin-left:auto}
+.sheet{box-sizing:border-box;margin:-8px;padding:8px;width:calc(100% + 16px)}
 .opt{flex:1 1 140px;text-align:left;border-radius:12px;padding:9px 12px;display:flex;flex-direction:column;gap:2px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line)}
 .opt b{font-size:13.5px;font-weight:600}.opt span{font-size:12px;color:var(--muted)}
 .opts.col{flex-direction:column}
@@ -747,7 +749,7 @@ function pickFor(){
 }
 const opt=(a,title,sub,dis,extra='')=>`<button class="opt" data-a="${a}" ${extra} ${dis?'disabled':''}><b>${title}</b><span>${sub}</span></button>`;
 function actionsHtml(){const h=actionsHtml0();return undoable()&&!U.sel&&!U.mode?`<button class="btn alt undo" data-a="undo" aria-label="Zug rückgängig" data-info="Letzte Entscheidung zurücknehmen. Geht nicht mehr, sobald eine neue Karte aufgedeckt oder gezogen wurde.">↶</button>${h}`:h}
-function chainSheet(c,back){const p=me(),tip='<button class="btn alt" data-a="tip">Tipp</button>';
+function chainSheet(c,back){const p=me(),tip='<button class="btn alt tipb" data-a="tip" aria-label="Tipp" data-info="Tipp: zeigt dir einen guten Zug">?</button>';
   const rows=[0,1,2,3].map(r=>{if(rowTired(S,p,r))return opt('act',`Reihe ${r+1}`,'ruht diese Runde',true,`data-r="${r}"`);const res=runChain(p,r,S.season,c.eff.add||{},true);const side=S.season==='LR'?'Stadtseite':'Waldseite',op=!closed(p.rows[r]);return opt('act',`Reihe ${r+1}`,`${res.links} ${res.links===1?'Glied':'Glieder'} · ${res.vp?'+'+res.vp+' Ruhm · ':''}+${res.coins} Mz.${res.conv?' (offen: Ruhm → Mz.)':''}${op&&!res.links?` · offen, ${side} leer`:''}`,false,`data-r="${r}"${res.vp?' data-hl="1"':''}`)}).join('');
   return `<div class="sheet"><div class="sh"><b>${esc(c.n)}: Kette auslösen</b><span>Wähle eine Reihe. Ihre Plättchen laufen ${S.season==='LR'?'von links nach rechts (Frühling)':'von rechts nach links (Herbst)'} ab – in offenen Reihen nur die ${S.season==='LR'?'Stadtseite':'Waldseite'}, in gesäumten alles. Vorschau:</span></div><div class="opts">${rows}</div><div class="opts"><button class="btn alt" data-a="${back}">${back==='cancel'?'Zurück':'Andere Karte'}</button>${tip}</div></div>`}
 function actionsHtml0(){
@@ -755,7 +757,7 @@ function actionsHtml0(){
   if(S.draft){if(draftWho()!==0)return `<span style="color:var(--muted)">Die Bots wählen …</span>`;const sel=U.sel;if(!sel)return `<span class="hint">Startplättchen oben antippen</span>`;const c=CARDS[S.draft.disp[sel.i]];return `<div class="sheet"><div class="sh"><b>${esc(c.n)}</b><span>${c.side==='S'?'Stadt – kommt links an':'Wildnis – kommt rechts an'}. Tippe im Plan auf ein markiertes Feld („hier“).</span></div><div class="opts"><button class="btn alt" data-a="unsel">Anderes Plättchen</button></div></div>`}
   if(S.cur!==0)return `<span style="color:var(--muted)">Die Bots ziehen …</span>`;
   const p=me(),sel=U.sel;
-  const tip=`<button class="btn alt" data-a="tip">Tipp</button>`;
+  const tip=`<button class="btn alt tipb" data-a="tip" aria-label="Tipp" data-info="Tipp: zeigt dir einen guten Zug">?</button>`;
   if(U.mode==='tuck'){const c=CARDS[p.hand[sel.i]];return `<div class="sheet"><div class="sh"><b>${esc(c.n)} als Upgrade</b><span>Tippe oben das Plättchen an, das dazubekommt: ${esc(c.edge.map(rule).join('; '))}. Kostet 1 Münze.</span></div><div class="opts"><button class="btn alt" data-a="cancel">Abbrechen</button></div></div>`}
   if(U.phase==='land'){
     if(!sel)return `${!p.hand.length?'<button class="btn alt" data-a="noland">Ohne Plättchen weiter</button>':''}${tip}<span class="hint">Karte aus Hand oder Auslage antippen</span>`;
@@ -779,7 +781,7 @@ function actionsHtml0(){
   if(U.phase==='ende'){
     if(sel&&sel.src==='h'&&upLeft()){const c=CARDS[p.hand[sel.i]];return `<div class="sheet"><div class="sh"><b>${esc(c.n)}</b></div><div class="opts">${opt('tuckmode','Als Upgrade unterschieben · 1 Mz.',`Ein Plättchen bekommt dazu: ${esc(c.edge.map(rule).join('; '))}`,p.coins<TUCKCOST)}<button class="btn alt" data-a="unsel">Zurück</button></div></div>`}
     if(sel&&sel.src==='m'&&!U.bought){const c=CARDS[S.market[sel.i]],pr=Math.max(0,price(S,sel.i)-U.disc);return `<div class="sheet"><div class="sh"><b>${esc(c.n)}</b></div><div class="opts">${opt('buy',`Kaufen · ${pr} Mz.`,'Kommt sofort auf deine Hand – aus der Hand baust du später gratis',pr>p.coins)}<button class="btn alt" data-a="unsel">Zurück</button></div></div>`}
-    return `<button class="btn" data-a="endturn">Zug beenden</button>${tip}${U.ups<UPMAX&&p.hand.length&&p.coins<TUCKCOST?'<span class="hint">Upgrade braucht 1 Mz.</span>':''}`;
+    return `${tip}${U.ups<UPMAX&&p.hand.length&&p.coins<TUCKCOST?'<span class="hint">Upgrade braucht 1 Mz.</span>':''}<button class="btn go" data-a="endturn">Zug beenden</button>`;
   }
   return '';
 }
@@ -791,7 +793,7 @@ function introHtml(){return `<div class="intro"><h2>So geht ein Zug</h2><ol>
  <p><b>Ziel:</b> Ruhm. Den gibt es aus Ketten nur in <b>gesäumten</b> Reihen: alle 6 Felder voll, je mindestens 2 Stadt und 2 Wildnis. Offene Reihen zahlen nur Münzen. Am Ende zählen noch Reihenbalance, Meisterstücke (je 4) und Münzen.</p>
  <p><b>Rückenwind (nur zu zweit):</b> Wer gerade am wenigsten Ruhm hat (nicht gleichauf mit der Führenden), kauft und baut aus der Auslage <b>1 Münze billiger</b>.</p>
  <p><b>Ende:</b> Hat jemand <b>6 Meisterstücke</b> (Plättchen mit 3 Upgrades) oder einen <b>vollen Plan</b>, wird die Runde zu Ende gespielt – alle hatten dann gleich viele Züge.</p>
- <p>Unsicher? Der Knopf <b>Tipp</b> zeigt, was ein Bot an deiner Stelle tun würde.</p>
+ <p>Unsicher? Der Knopf <b>?</b> (Tipp) zeigt, was ein Bot an deiner Stelle tun würde.</p>
  <button class="btn" data-a="intro-ok">Verstanden</button></div>`}
 // ---------- Hand als Fächer hinter dem Footer (wie Landgut): angeschnitten, antippen = wählen, lange drücken = ganze Karte ----------
 function fanHtml(){if(!S||S.over||U.view)return '';const p=me();if(!p.hand.length)return '';
