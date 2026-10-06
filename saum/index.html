@@ -206,7 +206,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .card.W .meta .w i{background:var(--wild)}
 /* Info-Blase beim langen Drücken */
 .bubble{position:fixed;z-index:10;max-width:300px;background:var(--ink);color:var(--bg);border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.4;white-space:pre-line;box-shadow:0 18px 40px -16px rgba(20,30,27,.6);pointer-events:none;animation:bub .16s ease-out}
-.bubble::first-line{font-family:var(--f-display);font-size:17px;font-weight:700}
+.bubble .bt{display:block;font:700 17px/1.2 var(--f-display);margin-bottom:4px}
 @keyframes bub{from{opacity:0;transform:translateY(4px)}}
 @media (prefers-reduced-motion:reduce){.bubble{animation:none}}
 body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -834,7 +834,7 @@ const GOALN={brot:'Brot erzeugen',honig:'Honig erzeugen',moebel:'Möbel erzeugen
 function goalHtml(g){const p=me(),pr=Math.min(goalProgress(p,g),g.n),mine=g.by.includes(0);
   const ic=g.k==='meister'?`<span class="gstar">★</span>`:g.k==='rows'?`<span class="grow"><i></i><i></i><i></i><i></i><i></i><i></i></span>`:g.k==='chain'?FLOW:tok(g.k);
   const prize=[6,3].map((v,i)=>{const who=g.by[i];return `<span class="gp ${who!=null?'got':''}">${ruhmT(v)}${who!=null?`<span class="gw">${esc(S.players[who].name.slice(0,1))}</span>`:''}</span>`}).join('');
-  return `<div class="goal ${mine?'done':''}" data-info="${esc(g.tx)}: Wer das zuerst schafft, bekommt 6 Ruhm, die zweite Person 3. Du hast ${pr} von ${g.n}.${g.by.length?' Erreicht von: '+g.by.map(i=>S.players[i].name).join(', ')+'.':''}"><div class="gi">${ic}<b>${g.n}</b></div><div class="gt"><span>${GOALN[g.k]||esc(g.tx)}</span></div><div class="gbar"><i style="width:${pr/g.n*100}%"></i></div><div class="gn">${mine?'✓ geschafft':`du ${pr}/${g.n}`}</div><div class="gprize">${prize}</div></div>`}
+  return `<div class="goal ${mine?'done':''}" data-info="${esc(g.tx)}\nWer das zuerst schafft, bekommt 6 Ruhm, die zweite Person 3. Du hast ${pr} von ${g.n}.${g.by.length?' Erreicht von: '+g.by.map(i=>S.players[i].name).join(', ')+'.':''}"><div class="gi">${ic}<b>${g.n}</b></div><div class="gt"><span>${GOALN[g.k]||esc(g.tx)}</span></div><div class="gbar"><i style="width:${pr/g.n*100}%"></i></div><div class="gn">${mine?'✓ geschafft':`du ${pr}/${g.n}`}</div><div class="gprize">${prize}</div></div>`}
 function startHtml(){const sv=load(),prof=profiles();
   const sc=sv?sv.S.players.map(q=>finalScore(q)).join(' : '):'';
   return `<div class="start"><a class="leave" href="../" aria-label="Beenden und zurück zu Spielregal">✕ Beenden</a>
@@ -949,7 +949,8 @@ function render(){
   let intro=false;try{intro=!localStorage.getItem('saum:intro')}catch(_){intro=!U.introSeen}if(U.introSeen||S.tut)intro=false;
   app.innerHTML=`${U.toast?`<div class="toast">${esc(U.toast)}</div>`:''}
   <div class="thead ${U.scr?'scr':''}"><div class="hrow"><h1>Saum</h1><button class="ann ${annMine()?'me':''}" data-a="go" data-info="${esc(annLong())}">${annShort()}</button><button class="ico" data-a="menu" aria-label="Menü">☰</button></div>
-  <div class="opps">${S.players.map((q,i)=>`<button class="opp ${S.cur===i?'cur':''} ${view===i?'vis':''}" data-a="view" data-p="${i}" data-info="${esc(q.name)}: ${finalScore(q)} Ruhm · ${q.coins} Münzen · ${closedCount(q)}/4 Reihen gesäumt · ${meisterCount(q)}/${ENDM} Meisterstücke · ${filledCount(q)}/24 Felder. Antippen zeigt den Plan."><b>${esc(q.name)}</b><span class="sc">${finalScore(q)}</span></button>`).join('')}</div>
+  <div class="opps">${S.players.map((q,i)=>`<button class="opp ${S.cur===i?'cur':''} ${view===i?'vis':''}" data-a="view" data-p="${i}" data-info="${esc(q.name)}
+${finalScore(q)} Ruhm · ${q.coins} Münzen · ${closedCount(q)}/4 Reihen gesäumt · ${meisterCount(q)}/${ENDM} Meisterstücke · ${filledCount(q)}/24 Felder. Antippen zeigt den Plan."><b>${esc(q.name)}</b><span class="sc">${finalScore(q)}</span></button>`).join('')}</div>
   <div class="res"><span data-info="Ruhm (Punkte), Stand jetzt inklusive Endwertung">${ruhmT('')}${finalScore(p)}</span><span data-info="Münzen">${coinT('')}${p.coins}</span>${!S.over&&!S.draft&&isLast(S,0)?'<span class="rw" data-info="Rückenwind: Du hast gerade am wenigsten Ruhm. Kauf und Bauen aus der Auslage kosten dich 1 Münze weniger – die Preise in der Auslage sind schon verbilligt.">Rückenwind −1</span>':''}<span data-info="Handkarten">${cardT('')}${p.hand.length}</span><span data-info="Meisterstücke (Plättchen mit 3 Upgrades). Bei ${ENDM} endet das Spiel.">★ ${meisterCount(p)}/${ENDM}</span><span data-info="Belegte Felder. Bei 24 endet das Spiel.">▦ ${filledCount(p)}/24</span><span class="rd ${S.endAt!=null?'last':''}" data-info="${S.season==='LR'?'Frühling: Ketten laufen von der Stadt (links) zur Wildnis':'Herbst: Ketten laufen von der Wildnis (rechts) zur Stadt'}. ${winter}.">${S.endAt!=null?'Letzte Runde':`R${S.round+1} · ${S.season==='LR'?'Frühling →':'← Herbst'}`}</span></div></div>
   ${intro&&!S.over?introHtml():''}
   ${S.over?endHtml():''}
@@ -983,7 +984,7 @@ function toastLong(t){U.toast=t;render();clearTimeout(U.tt);U.tt=setTimeout(()=>
 let lpT=null,lpFired=false,lpXY=null;
 function showBig(el){const ed=el.dataset.edges?el.dataset.edges.split(',').filter(Boolean):null;document.body.insertAdjacentHTML('beforeend',bigHtml(el.dataset.big,ed));fitSyms(document.querySelector('.big'))}
 function hideBubble(){const b=document.querySelector('.bubble');if(b)b.remove()}
-function showBubble(el){hideBubble();const b=document.createElement('div');b.className='bubble';b.textContent=el.dataset.info;document.body.appendChild(b);
+function showBubble(el){hideBubble();const b=document.createElement('div');b.className='bubble';{const [t,...r]=el.dataset.info.split('\n');if(r.length){const h=document.createElement('span');h.className='bt';h.textContent=t;b.appendChild(h);b.appendChild(document.createTextNode(r.join('\n')))}else b.textContent=t}document.body.appendChild(b);
   const r=el.getBoundingClientRect(),bw=b.offsetWidth,bh=b.offsetHeight,vw=innerWidth;
   let x=Math.min(Math.max(12,r.left+r.width/2-bw/2),vw-bw-12),y=r.top-bh-10;if(y<12)y=Math.min(r.bottom+10,innerHeight-bh-12);
   b.style.left=x+'px';b.style.top=Math.max(12,y)+'px'}
