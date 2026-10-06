@@ -246,6 +246,6 @@ die Zeichen ⟳/Stapel erklären die große Ansicht und die Regeln. Beim Platzie
 6/3 (vergeben = blass mit Initiale). Beim Scrollen klappen die Mitspieler-Chips weg (Ansage + Vorräte bleiben); keine Textauswahl, auch
 nicht in der großen Ansicht.
 Startseite wie die anderen Spiele (Name mit Spielregal-Profil-Chips, Gegner 1/2 Bots, „Partie beginnen“, „Lernspiel“, „Spielregeln
-lesen“ als Fenster `rulesOverlay`, auch im Menü). Lernspiel (`TUT_STEPS`, Coach Fuchs „Fenn“ im Aubergine-Rahmen mit gelbem Leuchten,
+lesen“ als Fenster `rulesOverlay`, auch im Menü). Lernspiel (`TUT_STEPS`, Coach Fuchs „Fenn“ mit Gouache-Porträt `saum/art/fenn.jpg` (256×256, vom Owner) im Aubergine-Rahmen mit gelbem Leuchten,
 immer gegenüber dem markierten Element): vorbereiteter Plan, Bäckerei säumt Reihe 1, Kette, Upgrade, Kauf, Zug beenden, Herbst,
 Ziele/Ende; wird weder gespeichert noch gemeldet, kein Zug rückgängig, kein automatischer Seitenwechsel.

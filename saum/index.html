@@ -308,8 +308,8 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 /* Lernspiel-Coach: Fuchs Fenn, Aubergine-Rahmen mit gelbem Leuchten – hebt sich klar von Karten und Plan ab */
 .coach{position:fixed;left:12px;right:12px;bottom:200px;z-index:7;max-width:536px;margin:0 auto;display:flex;gap:12px;align-items:flex-start;background:var(--paper);border:3px solid var(--head);border-radius:22px;box-shadow:0 0 0 6px color-mix(in srgb,var(--saum) 45%,transparent),0 16px 40px rgba(20,30,27,.3);padding:12px 14px;max-height:56vh;overflow-y:auto}
 .coach.top{top:calc(10px + env(safe-area-inset-top,0px));bottom:auto!important}
-.coach .cface{width:48px;height:48px;flex:none;border-radius:50%;overflow:hidden;box-shadow:0 0 0 3px var(--head)}
-.coach .cface svg{width:100%;height:100%;display:block}
+.coach .cface{width:58px;height:58px;flex:none;border-radius:50%;overflow:hidden;box-shadow:0 0 0 3px var(--head)}
+.coach .cface svg,.coach .cface img{width:100%;height:100%;display:block;object-fit:cover}
 .coach .ctext{flex:1;min-width:0}
 .coach .cstep{font:700 11px/1.2 var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--head)}
 .coach p{margin:3px 0 8px;font-size:14px;line-height:1.4}
@@ -824,7 +824,7 @@ function goTo(){
   scrollTo({top,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
   el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');
 }
-const HERO_TOP='#6E7A55';
+const HERO_TOP='#6C7142';
 function themeFor(onStart){document.documentElement.style.backgroundColor=onStart?HERO_TOP:'';let tc=document.querySelector('meta[name="theme-color"]');if(!tc){tc=document.createElement('meta');tc.name='theme-color';tc.content='#F5F0E4';document.head.appendChild(tc)}if(!tc.dataset.base)tc.dataset.base=tc.content;tc.content=onStart?HERO_TOP:tc.dataset.base}
 addEventListener('scroll',()=>{const on=scrollY>90;if(on!==!!U.scr){U.scr=on;const h=document.querySelector('.thead');if(h)h.classList.toggle('scr',on)}},{passive:true});
 // ---------- Startseite (Aufbau wie die anderen Spiele), Spielregeln, Lernspiel ----------
@@ -839,7 +839,7 @@ function goalHtml(g){const p=me(),pr=Math.min(goalProgress(p,g),g.n),mine=g.by.i
 function startHtml(){const sv=load(),prof=profiles();
   const sc=sv?sv.S.players.map(q=>finalScore(q)).join(' : '):'';
   return `<div class="start"><a class="leave" href="../" aria-label="Beenden und zurück zu Spielregal">✕ Beenden</a>
-   <div class="hero" role="img" aria-label="Saum – Entdecken, Sammeln, Weiterziehen: Wanderin mit Hund blickt über Fluss, Dorf, Wassermühle und Berge"></div><div class="vh"><h1>Saum</h1><div class="tag">Entdecken · Sammeln · Weiterziehen</div></div>
+   <div class="hero" role="img" aria-label="Saum – Entdecken, Sammeln, Weiterziehen: Wanderin mit Hund blickt bei Sonnenuntergang über Fluss, Brücke, Dorf, Wassermühle und Berge"></div><div class="vh"><h1>Saum</h1><div class="tag">Entdecken · Sammeln · Weiterziehen</div></div>
    <p class="sub">Von links wächst deine Stadt, von rechts deine Wildnis. Wo sie sich treffen, entsteht ein Kreislauf – und nur gesäumte Reihen bringen Ruhm.</p>
    ${sv?`<button class="btn saum wide" data-a="resume">Partie fortsetzen · ${sc} Ruhm</button>`:''}
    <div class="panel">
@@ -885,7 +885,7 @@ function rulesHtml(){return `<h2>Spielregeln</h2>
 function rulesOverlay(){return `<div class="overlay" data-a="rules-x"><div class="intro rules" data-stop="1"><button class="ico xbtn" data-a="rules-x" aria-label="Schließen">✕</button>${rulesHtml()}<button class="btn" data-a="rules-x">Schließen</button></div></div>`}
 // Lernspiel: vorbereiteter Plan, ein Coach führt Schritt für Schritt; wird weder gespeichert noch gemeldet
 let TUT=null;
-const FOX=`<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="24" fill="#F2A744"/><path d="M10 14l7 5h14l7-5-2 14c-2 8-7 12-12 12s-10-4-12-12z" fill="#D2614F"/><path d="M16 30c2 5 5 8 8 8s6-3 8-8c-3 2-5 3-8 3s-5-1-8-3z" fill="#FBF8F1"/><circle cx="19" cy="26" r="2" fill="#1C302B"/><circle cx="29" cy="26" r="2" fill="#1C302B"/><path d="M22 32h4l-2 2.4z" fill="#1C302B"/></svg>`;
+const FOX='<img src="art/fenn.jpg" alt="Fenn, der Fuchs" width="256" height="256">';
 const tme=()=>S.players[0];
 const handIs=id=>U.sel&&U.sel.src==='h'&&tme().hand[U.sel.i]===id;
 const TUT_STEPS=[
