@@ -231,7 +231,9 @@ Symbole in einem Stil passend zur Illustration: flache Gouache-Scheiben mit Glan
 `#251737`, auch im Dunkelmodus) oben links untereinander (`actChips`), unten das Papierfeld (1/3 der
 Karte) mit den passiven Fähigkeiten: ⟳ im Salbei-Kreis = Plättchen (wirkt, wenn eine Kette hindurchläuft), gelbes Stapel-Symbol im
 abgesetzten Band = Upgrade; keine farbigen Kästchen, zweifeldrige Karten tragen „2 Felder“. Langes Drücken auf Karte/Plättchen
-(`data-big`) öffnet die ganze Karte groß mit Text zu jedem Symbol (`bigHtml`), Antippen schließt. Handkarten als Fächer hinter dem
+(`data-big`) öffnet die ganze Karte groß (`bigHtml`): Abschnitte Aktion (⚡) · Plättchen (grüner Streifen) · Upgrade (goldener Streifen), je mit
+Kurzerklärung und einer Zeile je Regel (Symbol links, Satz rechts; breite Symbolgruppen darüber); kein Wort „passiv“, keine eigenen
+Passiv-Symbole – die Streifen sind dieselben wie auf der Karte. Antippen schließt (✕ oben rechts). Handkarten als Fächer hinter dem
 Footer (`fanHtml`/`layoutFan`, wie Landgut): nur die obere Hälfte schaut heraus (Name + Aktions-Chips), antippen = wählen,
 lange drücken = ganze Karte; bei offenem Auswahlfenster weicht der Fächer. Rückenwind gilt nur zu zweit.
 Stadt/Wildnis im Plan: leere Felder, die einer Seite sicher gehören (je mind. 2), sind rot bzw. grün getönt, die freien dazwischen
