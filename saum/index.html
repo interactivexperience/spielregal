@@ -233,20 +233,21 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .log div{padding:3px 0;border-bottom:1px solid var(--line)}
 .log .me{color:var(--ink)}
 .goals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.goal{background:var(--paper);border-radius:14px;box-shadow:0 0 0 1px var(--line);padding:10px 8px 8px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
+.goal{background:var(--paper);border-radius:14px;box-shadow:0 0 0 1px var(--line);padding:12px 8px 10px;display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center}
 .goal.done{box-shadow:0 0 0 2px var(--wild);background:color-mix(in srgb,var(--wild) 10%,var(--paper))}
-.goal .gi{display:flex;align-items:center;gap:4px;font:800 22px/1 var(--f-display);color:var(--head)}
+.goal .gi{display:flex;align-items:center;justify-content:center;gap:6px;height:34px;font:800 26px/1 var(--f-display);color:var(--head)}
 .goal .gi .tk,.goal .gi .ic{width:32px;height:32px}
 .goal .gstar{font-size:28px;color:var(--saum);line-height:1}
 .goal .grow{display:flex;gap:2px}.goal .grow i{width:5px;height:16px;border-radius:2px;background:var(--stadt)}.goal .grow i:nth-child(n+4){background:var(--wild)}
-.goal .gt{font-size:11.5px;line-height:1.2;color:var(--ink);min-height:2.4em}
+.goal .gt{font-size:12px;line-height:1.2;color:var(--ink);height:2.4em;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .goal .gbar{width:100%;height:5px;border-radius:99px;background:var(--line);overflow:hidden}.goal .gbar i{display:block;height:100%;background:var(--saum)}
 .goal.done .gbar i{background:var(--wild)}
-.goal .gn{font-size:11px;color:var(--muted)}
-.goal .gprize{display:flex;gap:6px}
+.goal .gn{font-size:11.5px;line-height:1;color:var(--muted);height:12px;font-variant-numeric:tabular-nums}
+.goal.done .gn{color:var(--wild);font-weight:700}
+.goal .gprize{display:flex;gap:10px;margin-top:1px}
 .goal .gp{position:relative;line-height:0}.goal .gp .tk{width:24px;height:24px}
-.goal .gp.got .tk{opacity:.35}
-.goal .gw{position:absolute;right:-5px;bottom:-4px;width:15px;height:15px;border-radius:50%;background:var(--ink);color:var(--bg);font:700 9px/15px var(--f-body);text-align:center}
+.goal .gp.got .tk{opacity:.4;filter:grayscale(.6)}
+.goal .gw{position:absolute;right:-7px;top:-6px;width:14px;height:14px;border-radius:50%;background:var(--ink);color:var(--bg);font:700 8.5px/14px var(--f-body);text-align:center;box-shadow:0 0 0 1.5px var(--paper)}
 /* Startbildschirm */
 .start{position:relative;max-width:520px;margin:-14px auto 0;display:flex;flex-direction:column;gap:16px}
 .start .hero{height:min(150vw,62svh,900px);margin:0 -16px;border-radius:0 0 26px 26px;background:url(art/cover.jpg) center top/cover;box-shadow:0 30px 60px -30px rgba(28,48,43,.6)}
@@ -829,10 +830,11 @@ addEventListener('scroll',()=>{const on=scrollY>90;if(on!==!!U.scr){U.scr=on;con
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(_){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(_){}};
 const SETUP={name:lsGet('saum:name')||'',bots:+(lsGet('saum:bots')||1)};
 function profiles(){try{return (JSON.parse(lsGet('spielregal:players')||'[]')||[]).filter(p=>p&&p.name).map(p=>p.name)}catch(_){return []}}
+const GOALN={brot:'Brot erzeugen',honig:'Honig erzeugen',moebel:'Möbel erzeugen',meister:'Meisterstücke',rows:'Reihen säumen',chain:'Glieder in einer Kette'};
 function goalHtml(g){const p=me(),pr=Math.min(goalProgress(p,g),g.n),mine=g.by.includes(0);
   const ic=g.k==='meister'?`<span class="gstar">★</span>`:g.k==='rows'?`<span class="grow"><i></i><i></i><i></i><i></i><i></i><i></i></span>`:g.k==='chain'?FLOW:tok(g.k);
   const prize=[6,3].map((v,i)=>{const who=g.by[i];return `<span class="gp ${who!=null?'got':''}">${ruhmT(v)}${who!=null?`<span class="gw">${esc(S.players[who].name.slice(0,1))}</span>`:''}</span>`}).join('');
-  return `<div class="goal ${mine?'done':''}" data-info="${esc(g.tx)}: Wer das zuerst schafft, bekommt 6 Ruhm, die zweite Person 3. Du hast ${pr} von ${g.n}.${g.by.length?' Erreicht von: '+g.by.map(i=>S.players[i].name).join(', ')+'.':''}"><div class="gi">${ic}<b>${g.n}</b></div><div class="gt">${esc(g.tx.replace(/^\d+\s*/,''))}</div><div class="gbar"><i style="width:${pr/g.n*100}%"></i></div><div class="gn">${mine?'✓ geschafft':`du ${pr}/${g.n}`}</div><div class="gprize">${prize}</div></div>`}
+  return `<div class="goal ${mine?'done':''}" data-info="${esc(g.tx)}: Wer das zuerst schafft, bekommt 6 Ruhm, die zweite Person 3. Du hast ${pr} von ${g.n}.${g.by.length?' Erreicht von: '+g.by.map(i=>S.players[i].name).join(', ')+'.':''}"><div class="gi">${ic}<b>${g.n}</b></div><div class="gt"><span>${GOALN[g.k]||esc(g.tx)}</span></div><div class="gbar"><i style="width:${pr/g.n*100}%"></i></div><div class="gn">${mine?'✓ geschafft':`du ${pr}/${g.n}`}</div><div class="gprize">${prize}</div></div>`}
 function startHtml(){const sv=load(),prof=profiles();
   const sc=sv?sv.S.players.map(q=>finalScore(q)).join(' : '):'';
   return `<div class="start"><a class="leave" href="../" aria-label="Beenden und zurück zu Spielregal">✕ Beenden</a>
