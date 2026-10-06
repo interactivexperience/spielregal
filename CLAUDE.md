@@ -204,7 +204,9 @@ Dashboard-Hinweis „Partie läuft“, Partie-Meldung über `spielregal:inbox:pl
 hat ausdrücklich entschieden, dass Saum damit öffentlich im Spielregal liegt. Änderungen am Prototyp im Saum-Repo
 machen und hierher übernehmen (Anbindung erhalten). Kartenbilder: Der Owner liefert sie **nach Kategorien** (Bilder in voller Größe, 3:4, werden mittig auf 2:3 zugeschnitten und auf 640×960 verkleinert).
 Kategorie **„Goldene Ernte“** (Klosterküche, Feldarbeit, Gutshof, Gasthaus, Bäckerei, Mühle, Feldscheune, Acker) unter
-`saum/art/goldene-ernte/NN-name.jpg`. Die übrigen Karten zeigen vorläufig die Landschafts-Serie des Owners (36 Motive, eines je Karte) unter
+`saum/art/goldene-ernte/NN-name.jpg`.
+Kategorie **„Wald“** (Wald, Hochwald, Sägewerk, Schreinerei, Biberbau, Alte Eiche, Zunfthaus, Fuchsbau, Holzsammeln) unter `saum/art/wald/NN-name.jpg`
+(Bilder schon 2:3, auf 640×960 verkleinert). Kartennamen im Plan werden an festen Silbengrenzen getrennt (`HY`, `&shy;`), nie mitten in der Silbe. Die übrigen Karten zeigen vorläufig die Landschafts-Serie des Owners (36 Motive, eines je Karte) unter
 `saum/art/land/NN-name.jpg`, bis ihre Kategorien geliefert sind. Zuordnung über `ART` je Karten-id (Stadt = Dörfer/Felder, Wildnis = Wald/Berge/Wasser, Startplättchen = Himmelsstimmungen). Derzeit aus der
 Übersicht des Owners ausgeschnitten (klein, 128×200); die Originale liegen auf pCloud – bei Zugriff unter gleichem Dateinamen ersetzen.
 Das Cover ist das Coverbild des Owners mit eingemalter Wortmarke und Slogan „Entdecken · Sammeln · Weiterziehen“ (`saum/cover.jpg` 3:4 fürs Dashboard, `saum/art/cover.jpg` 2:3 als Startbild; die Überschrift darunter ist nur für Screenreader da). App-Oberfläche nach dem Style-Board des Owners (Farbschema und Look):
