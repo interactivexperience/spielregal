@@ -131,6 +131,15 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .tile.has-art::before{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(28,48,43,.68),rgba(28,48,43,0) 55%)}
 .tile>*{position:relative}
 .tile.pick{outline:2px solid var(--saum);outline-offset:1px}
+.tile.fxp{animation:fxpulse .8s ease-out;z-index:3}
+@keyframes fxpulse{0%{box-shadow:0 0 0 0 rgba(242,167,68,.95);transform:scale(1)}35%{box-shadow:0 0 0 5px rgba(242,167,68,.85),0 0 18px 6px rgba(242,167,68,.55);transform:scale(1.07)}100%{box-shadow:0 0 0 0 rgba(242,167,68,0);transform:scale(1)}}
+.fxf{position:absolute;left:50%;top:34%;transform:translateX(-50%);z-index:6;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:3px;animation:fxup 1.5s ease-out forwards}
+.fxf span{display:flex;align-items:center;gap:1px;background:rgba(251,248,241,.97);color:#1F2B27;border-radius:99px;padding:2px 7px 2px 5px;box-shadow:0 2px 8px rgba(28,48,43,.35);white-space:nowrap;font:800 12px/1 var(--f-body)}
+.fxf .tk,.fxf .ic{width:22px;height:22px}.fxf i{font-style:normal;font-size:12px;margin:0 1px}
+@keyframes fxup{0%{opacity:0;transform:translate(-50%,10px) scale(.7)}18%{opacity:1;transform:translate(-50%,0) scale(1.05)}70%{opacity:1;transform:translate(-50%,-14px) scale(1)}100%{opacity:0;transform:translate(-50%,-26px)}}
+@media (prefers-reduced-motion:reduce){.tile.fxp{animation:none;outline:3px solid var(--saum)}.fxf{animation:none}}
+.sbadge{position:absolute;top:4px;right:4px;width:14px;height:14px;border-radius:50%;background:#FBF8F1;color:#1F2B27;font:800 9px/14px var(--f-body);text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.4);z-index:2;pointer-events:none}
+.card .sbadge{top:6px;right:6px;width:18px;height:18px;font-size:11px;line-height:18px}
 /* Abschnitte */
 .sec{margin-top:22px}
 .sec h3{font-size:19px;margin-bottom:8px}
@@ -191,6 +200,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .bigtxt .bsym .gap{width:6px}
 .bigtxt .bchip{display:inline-flex;align-items:center;justify-content:center;gap:2px;min-width:38px;height:38px;padding:4px;border-radius:11px;background:#251737;color:#FBF8F1}
 .bigtxt .bchip .tk,.bigtxt .bchip .ic{width:26px;height:26px}
+.bigtxt{padding:12px 18px 2px}.bigtxt section{padding:9px 0 10px}.bigtxt .bm{margin:2px 0 8px}.bigtxt .bhd{margin-bottom:6px;gap:0 8px}.bigtxt .bhd>small{flex-basis:auto;align-self:center}.bigtxt .bhd .pm{width:20px;height:20px}
+.bigtxt .bl{list-style:none;margin:0;padding:0}.bigtxt .bl li{font-size:14px;line-height:1.35;padding:2px 0 2px 14px;position:relative}.bigtxt .bl li::before{content:"•";position:absolute;left:3px;color:var(--muted)}
 .sw{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--wild);margin-right:6px;vertical-align:0}.sw.u{background:var(--saum)}
 .big{position:fixed;inset:0;z-index:12;background:rgba(20,30,27,.62);display:flex;flex-direction:column;align-items:center;gap:12px;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 16px;overflow-y:auto;animation:bub .18s ease-out}
 .bigcard{width:min(62vw,270px);flex:none}
@@ -434,27 +445,28 @@ function runChain(p,ri,dir,start,dry=false,trace=null){
   const ord=(rw,d)=>{const c2=closed(rw);return d==='LR'?(c2?[...rw.S,...[...rw.W].reverse()]:rw.S):(c2?[...rw.W,...[...rw.S].reverse()]:rw.W)};
   let order=ord(row,dir).map(t=>[t,ri]);
   if(cl){let d=dir;for(let n=ri+1;n<ROWS&&closed(p.rows[n]);n++){d=d==='LR'?'RL':'LR';order=order.concat(ord(p.rows[n],d).map(t=>[t,n]))}}
-  const b={...start};let vp=0,coins=0,links=0;
-  for(const [t] of order){
+  const b={...start};let vp=0,coins=0,links=0;const anim=[];
+  for(const [t,tr] of order){
     const rules=[...CARDS[t.id].tile,...t.edges.map(e=>CARDS[e].edge).flat()];
-    const made={};let acted=false,step=[];
+    const made={};let acted=false,step=[];const ev=[];
     for(const ru of rules){
-      if(ru.t==='src'){b[ru.g]=(b[ru.g]||0)+ru.n;acted=true;step.push('+'+ru.n+' '+G[ru.g])}
-      else if(ru.t==='conv'){const k=Math.min(b[ru.from]||0,ru.max);if(k){b[ru.from]-=k;b[ru.to]=(b[ru.to]||0)+k;made[ru.to]=(made[ru.to]||0)+k;acted=true;step.push(k+' '+G[ru.from]+'→'+G[ru.to])}}
-      else if(ru.t==='score'){const k=Math.min(b[ru.g]||0,ru.max);if(k){b[ru.g]-=k;vp+=k*ru.vp;acted=true;step.push(k+' '+G[ru.g]+'→'+(k*ru.vp)+' Ruhm')}}
-      else if(ru.t==='sell'){let k=ru.max;const gs=ru.gs==='any'?Object.keys(b):ru.gs;for(const g of gs){const x=Math.min(b[g]||0,k);if(x){b[g]-=x;k-=x;coins+=x*ru.coin;vp+=x*(ru.vp||0);acted=true;step.push(x+' '+G[g]+'→'+(x*ru.coin)+' Mz.')}}}
-      else if(ru.t==='combo'){const k=Math.min(b[ru.a]||0,b[ru.b]||0,ru.max);if(k){b[ru.a]-=k;b[ru.b]-=k;vp+=k*ru.vp;acted=true;step.push(k+'×('+G[ru.a]+'+'+G[ru.b]+')→'+(k*ru.vp)+' Ruhm')}}
-      else if(ru.t==='dup'){let k=ru.max;for(const g of RAW){if(k&&b[g]){b[g]++;k--;acted=true;step.push('+1 '+G[g])}}}
-      else if(ru.t==='vpPer'){if(made[ru.g]){vp+=made[ru.g]*ru.vp;step.push('+'+(made[ru.g]*ru.vp)+' Ruhm')}}
+      if(ru.t==='src'){b[ru.g]=(b[ru.g]||0)+ru.n;ev.push({k:'src',g:ru.g,n:ru.n});acted=true;step.push('+'+ru.n+' '+G[ru.g])}
+      else if(ru.t==='conv'){const k=Math.min(b[ru.from]||0,ru.max);if(k){b[ru.from]-=k;b[ru.to]=(b[ru.to]||0)+k;made[ru.to]=(made[ru.to]||0)+k;ev.push({k:'conv',f:ru.from,g:ru.to,n:k});acted=true;step.push(k+' '+G[ru.from]+'→'+G[ru.to])}}
+      else if(ru.t==='score'){const k=Math.min(b[ru.g]||0,ru.max);if(k){b[ru.g]-=k;vp+=k*ru.vp;ev.push({k:'vp',n:k*ru.vp});acted=true;step.push(k+' '+G[ru.g]+'→'+(k*ru.vp)+' Ruhm')}}
+      else if(ru.t==='sell'){let k=ru.max;const gs=ru.gs==='any'?Object.keys(b):ru.gs;for(const g of gs){const x=Math.min(b[g]||0,k);if(x){b[g]-=x;k-=x;coins+=x*ru.coin;vp+=x*(ru.vp||0);ev.push({k:'coin',n:x*ru.coin});if(ru.vp)ev.push({k:'vp',n:x*ru.vp});acted=true;step.push(x+' '+G[g]+'→'+(x*ru.coin)+' Mz.')}}}
+      else if(ru.t==='combo'){const k=Math.min(b[ru.a]||0,b[ru.b]||0,ru.max);if(k){b[ru.a]-=k;b[ru.b]-=k;vp+=k*ru.vp;ev.push({k:'vp',n:k*ru.vp});acted=true;step.push(k+'×('+G[ru.a]+'+'+G[ru.b]+')→'+(k*ru.vp)+' Ruhm')}}
+      else if(ru.t==='dup'){let k=ru.max;for(const g of RAW){if(k&&b[g]){b[g]++;k--;ev.push({k:'src',g,n:1});acted=true;step.push('+1 '+G[g])}}}
+      else if(ru.t==='vpPer'){if(made[ru.g]){vp+=made[ru.g]*ru.vp;ev.push({k:'vp',n:made[ru.g]*ru.vp});step.push('+'+(made[ru.g]*ru.vp)+' Ruhm')}}
     }
     if(!dry)for(const g in made)p.made[g]=(p.made[g]||0)+made[g];
+    if(ev.length){const rw=p.rows[tr],sd=rw.S.includes(t)?'S':'W';anim.push({r:tr,sd,ti:rw[sd].indexOf(t),ev})}
     if(acted){links++;if(trace)trace.push(CARDS[t.id].n+': '+step.join(', '))}
   }
   coins+=Math.floor(Object.values(b).reduce((x,y)=>x+y,0)/2);
   let conv=0;if(!cl){conv=vp;coins+=vp;vp=0}
   if(dry)return{vp,coins,links,conv};
   p.vp+=vp;p.coins+=coins;p.maxChain=Math.max(p.maxChain,links);p.chains.push(links);
-  return{vp,coins,links,conv};
+  return{vp,coins,links,conv,anim};
 }
 // Rückenwind (v0.8, nur zu zweit): wer am wenigsten Ruhm hat (und nicht mit der Führenden gleichauf liegt), kauft und baut aus der Auslage 1 billiger
 const isLast=(S,pi)=>{if(S.players.length!==2)return false;const sc=S.players.map(q=>finalScore(q)),me=sc[pi];return me===Math.min(...sc)&&me<Math.max(...sc)};
@@ -660,19 +672,27 @@ const UPG=svg24(paint(disc('#D9902A')+`<rect x="6.6" y="6.2" width="10.8" height
 const BOLT=svg24(paint(disc('#F5C84C')+`<path d="M13.6 3.8 6.8 13.1h4.5l-1.5 7.1 7.6-10.1h-4.6z" fill="${INK}"/>`),'pm');
 const actChips=e=>[e.act?`<span class="chip kette" data-t="Kette auslösen">${FLOW}${e.add?Object.entries(e.add).map(([g,n])=>`<span class="cg">${n>1?`<b>${n}</b>`:''}${tok(g)}</span>`).join(''):''}</span>`:'',e.coins?`<span class="chip">${coinT('+'+e.coins)}</span>`:'',e.draw?`<span class="chip">${cardT('+'+e.draw)}</span>`:'',e.buyDisc?`<span class="chip kauf">${coinT('−'+e.buyDisc)}<span class="ct">Kauf</span></span>`:''].filter(Boolean).join('');
 const effLines=e=>[e.act?[`${FLOW}`,`Wähle eine Reihe: Ihre Plättchen laufen nacheinander ab, im Frühling von links nach rechts, im Herbst von rechts nach links. Jedes Plättchen gibt, wandelt oder verkauft Waren; was übrig bleibt, geht an das nächste.${e.add?' Start: '+Object.entries(e.add).map(([g,n])=>`${n} ${G[g]}`).join(' und ')+'.':''}`]:null,e.coins?[coinT('+'+e.coins),`Du bekommst ${e.coins} Münzen.`]:null,e.draw?[cardT('+'+e.draw),`Du ziehst ${e.draw} Karte${e.draw>1?'n':''}.`]:null,e.buyDisc?[coinT('−'+e.buyDisc),`Dein nächster Kauf kostet ${e.buyDisc} Münzen weniger.`]:null].filter(Boolean);
-function bigHtml(id,edges){const c=CARDS[id],cap=t=>t.replace(/^./,m=>m.toUpperCase());
-  const row=(sym,tx)=>`<div class="br ${(sym.match(/class="tk"/g)||[]).length>2?'wide':''}"><span class="bsym">${sym}</span><span class="btx">${tx}</span></div>`;
+function bigHtml(id,edges){const c=CARDS[id];
+  const li=t=>`<li>${t}</li>`;
   const head=(sw,t,sub)=>`<div class="bhd">${sw}<b>${t}</b><small>${sub}</small></div>`;
-  const rules=rs=>rs.map(r=>row(ruleIc(r),esc(cap(ruleLong(r))))).join('');
-  const acts=effLines(c.eff).map(([ic,tx])=>row(`<span class="bchip">${ic}</span>`,esc(tx))).join('');
+  const rules=rs=>`<ul class="bl">${rs.map(r=>li(esc(ruleShort(r)))).join('')}</ul>`;
+  const acts=effShort(c.eff).map(li).join('');
   const kind=c.fam==='grund'?'Startplättchen':c.fam==='start'?'Startkarte, nicht baubar':'';
   return `<div class="big" role="dialog" aria-label="${esc(c.n)}"><span class="bigx" aria-hidden="true">✕</span><div class="bigcard">${cardHtml(id,{big:true})}</div><div class="bigtxt">
    <h3>${esc(c.n)}</h3><p class="bm">${c.side==='S'?'Stadt · baut von links':'Wildnis · baut von rechts'} · ${c.w} Feld${c.w>1?'er':''}${kind?' · '+kind:''}</p>
-   ${acts?`<section>${head(BOLT,'Aktion','Einmal ausspielen, danach auf den Ablagestapel.')}${acts}</section>`:''}
-   <section>${head('<i class="sw"></i>','Plättchen','Liegt die Karte in deinem Plan, wirkt sie bei jeder Kette, die durch sie läuft.')}${rules(c.tile)}</section>
-   ${c.edge.length?`<section>${head('<i class="sw u"></i>','Upgrade','Unter ein Plättchen geschoben, wirkt sie dort zusätzlich.')}${rules(c.edge)}</section>`:''}
-   ${edges&&edges.length?`<section>${head('<i class="sw u"></i>','Darunter geschoben','Diese Upgrades wirken zusätzlich in diesem Plättchen.')}${edges.map(x=>row(CARDS[x].edge.map(ruleIc).join('<span class="gap"></span>'),`<b>${esc(CARDS[x].n)}:</b> ${esc(CARDS[x].edge.map(ruleLong).join(' '))}`)).join('')}</section>`:''}
+   ${acts?`<section>${head(BOLT,'Aktion','einmal, dann Ablage')}<ul class="bl">${acts}</ul></section>`:''}
+   <section>${head('<i class="sw"></i>','Plättchen','wirkt bei jeder Kette durch dieses Feld')}${rules(c.tile)}</section>
+   ${c.edge.length?`<section>${head('<i class="sw u"></i>','Upgrade','unter ein Plättchen gelegt')}${rules(c.edge)}</section>`:''}
+   ${edges&&edges.length?`<section>${head('<i class="sw u"></i>','Darunter geschoben','wirken hier zusätzlich')}<ul class="bl">${edges.map(x=>li(`<b>${esc(CARDS[x].n)}:</b> ${esc(CARDS[x].edge.map(ruleShort).join('; '))}`)).join('')}</ul></section>`:''}
   </div></div>`}
+const ruleShort=r=>({src:()=>`+${r.n} ${G[r.g]}`,conv:()=>`bis ${r.max} ${G[r.from]} → ${G[r.to]}`,
+  score:()=>`bis ${r.max} ${G[r.g]} → je ${r.vp} Ruhm`,
+  sell:()=>`bis ${r.max} ${r.gs==='any'?'beliebige Waren':r.gs.map(g=>G[g]).join('/')} → je ${r.coin} Mz.${r.vp?` + ${r.vp} Ruhm`:''}`,
+  combo:()=>`${G[r.a]} + ${G[r.b]} als Paar → ${r.vp} Ruhm (bis ${r.max}×)`,
+  dup:()=>`Rohwaren: bis ${r.max} Sorten +1`,
+  vpPer:()=>`+${r.vp} Ruhm je hier erzeugtem ${G[r.g]}`,
+  endRows:()=>`Spielende: +${r.vp} Ruhm je gesäumter Reihe`}[r.t]());
+const effShort=e=>[e.act?'Kette in einer Reihe'+(e.add?' · Start: '+Object.entries(e.add).map(([g,n])=>`${n} ${G[g]}`).join(' + '):''):'',e.coins?`+${e.coins} Münzen`:'',e.draw?`+${e.draw} Karte${e.draw>1?'n':''} ziehen`:'',e.buyDisc?`nächster Kauf −${e.buyDisc} Mz.`:''].filter(Boolean);
 const RAWN='Rohwaren (Korn, Holz, Blüten)';
 const ruleLong=r=>({src:()=>`bringt ${r.n} ${G[r.g]} in die Kette.`,conv:()=>`tauscht bis zu ${r.max} ${G[r.from]} aus der Kette in ${G[r.to]}.`,
   score:()=>`verbraucht bis zu ${r.max} ${G[r.g]} aus der Kette für je ${r.vp} Ruhm.`,
@@ -694,14 +714,14 @@ function fitK(html,avail,cap=1){const stk=[...html.matchAll(/<span class="stk[^"
 function cardHtml(id,o={}){const c=CARDS[id],art=ART[id],g=c.fam==='grund';
  const tileH=g?c.tile.map(r=>`<span class="rl"${fitK(ruleIc(r),5.2,c.tile.length>1?1.15:1.4)}</span>`).join(''):`<span class="rl"${fitK(c.tile.map(ruleIc).join('<span class="gap"></span>'),5.2)}</span>`;
  return `<button class="card ${c.side} f-${c.fam} ${o.sel?'sel':''} ${o.off?'off':''} ${o.big?'bigc':''}" ${o.big?'':`data-a="${o.a||''}" data-i="${o.i??''}" data-id="${id}" data-big="${id}"`}>
- <span class="art"${art?` style="background-image:url(${art})"`:''}></span>${g?'':`<span class="acts"><span class="bolt" title="Aktion">${BOLT}</span>${actChips(c.eff)}</span>`}${o.price!=null?`<span class="cost" title="Kaufpreis">${coinT(o.price)}</span>`:''}${c.w>1?'<span class="wtag">2 Felder</span>':''}<span class="ttl">${esc(c.n)}</span>
+ <span class="art"${art?` style="background-image:url(${art})"`:''}></span>${g?'<span class="sbadge">S</span>':''}${g?'':`<span class="acts"><span class="bolt" title="Aktion">${BOLT}</span>${actChips(c.eff)}</span>`}${o.price!=null?`<span class="cost" title="Kaufpreis">${coinT(o.price)}</span>`:''}${c.w>1?'<span class="wtag">2 Felder</span>':''}<span class="ttl">${esc(c.n)}</span>
  <span class="body ${g?'solo':''}"><span class="ln main">${g?`<span class="rls">${tileH}</span>`:tileH}</span>${g?'':`<span class="ln up"><span class="rl"${fitK(c.edge.map(ruleIc).join('<span class="gap"></span>'),5.2)}</span></span>`}</span></button>`}
 function boardHtml(p,pi,pick){
   return `<div class="board">${p.rows.map((rw,r)=>{
     const cl=closed(rw),tired=rowTired(S,p,r),free=COLS-used(rw);
     const tile=(t,sd,ti)=>{const c=CARDS[t.id];const pk=pick&&pick.tiles&&pick.tiles(r,sd,ti),m=t.edges.length>=3;
       const ups=t.edges.map(e=>`<span class="ust f-${CARDS[e].fam}" data-big="${e}" title="Upgrade: ${esc(CARDS[e].n)}"><span class="uic">${CARDS[e].edge.map(ruleIc).join('<span class="gap"></span>')}</span></span>`).join('');
-      return `<div class="tw" style="grid-column:span ${c.w}"><button class="tile ${sd} f-${c.fam} ${ARTS[t.id]?'has-art':''} ${pk?'pick':''} ${m?'mst':''}" style="${ARTS[t.id]?`background-image:url(${ARTS[t.id]})`:''}" data-a="${pk?'tile':'tinfo'}" data-id="${t.id}" data-big="${t.id}" data-edges="${t.edges.join(',')}" data-r="${r}" data-sd="${sd}" data-ti="${ti}" data-p="${pi}"><span class="tico">${c.tile.map(r=>`<span class="tl">${ruleIc(r)}</span>`).join('')}</span>${m?'<span class="mstar" aria-label="Meisterstück">★</span>':''}<b>${HY[t.id]||esc(c.n)}</b></button>${ups?`<div class="ups">${ups}</div>`:''}</div>`};
+      return `<div class="tw" style="grid-column:span ${c.w}"><button class="tile ${sd} f-${c.fam} ${ARTS[t.id]?'has-art':''} ${pk?'pick':''} ${m?'mst':''}" style="${ARTS[t.id]?`background-image:url(${ARTS[t.id]})`:''}" data-a="${pk?'tile':'tinfo'}" data-id="${t.id}" data-big="${t.id}" data-edges="${t.edges.join(',')}" data-r="${r}" data-sd="${sd}" data-ti="${ti}" data-p="${pi}">${c.fam==='grund'?'<span class="sbadge" data-info="Startplättchen">S</span>':''}<span class="tico">${c.tile.map(r=>`<span class="tl">${ruleIc(r)}</span>`).join('')}</span>${m?'<span class="mstar" aria-label="Meisterstück">★</span>':''}<b>${HY[t.id]||esc(c.n)}</b></button>${ups?`<div class="ups">${ups}</div>`:''}</div>`};
     const pr=pick&&pick.rows&&pick.rows(r);
     const info=`Reihe ${r+1}: Stadt ${sideW(rw,'S')} · Wildnis ${sideW(rw,'W')} · frei ${free}.${cl?' Gesäumt – Ketten laufen durch die ganze Reihe und bringen Ruhm.':' Offen – Ketten laufen nur durch die Seite der Jahreszeit, Ruhm zählt als Münzen.'}${tired?' Ruht diese Runde (gerade aktiviert).':''}`;
     return `<div class="row ${cl?'closed':''} ${pr?'pickrow':''} ${tired?'tired':''}" ${pr?`data-a="row" data-r="${r}"`:''}><span class="rn" data-info="${esc(info)}">${r+1}</span>${rw.S.map((t,ti)=>tile(t,'S',ti)).join('')}${Array.from({length:free},(_,k)=>{const nS=Math.max(0,MINSIDE-sideW(rw,'S')),nW=Math.max(0,MINSIDE-sideW(rw,'W')),z=k<nS?'zs':k>=free-nW?'zw':'zf',pc=pr&&pick.card,land=pc&&(pc.side==='S'?k<pc.w:k>=free-pc.w),sm=k===nS&&nS>0||(z==='zw'&&k===free-nW&&k>0&&!(k-1<nS));return `<span class="cell ${z} ${land?'land '+pc.side:''}" ${pr?`data-a="row" data-r="${r}"`:''} data-info="${esc(info+(z==='zs'?' Dieses Feld gehört sicher zur Stadt (jede Seite braucht mindestens 2 Felder).':z==='zw'?' Dieses Feld gehört sicher zur Wildnis (jede Seite braucht mindestens 2 Felder).':' Freies Feld: Hier entscheidet sich, wo Stadt und Wildnis sich treffen.'))}"></span>`}).join('')}${[...rw.W].reverse().map((t,i)=>tile(t,'W',rw.W.length-1-i)).join('')}${tired?'<span class="rz" aria-label="ruht">☾</span>':''}</div>`}).join('')}</div>`}
@@ -997,7 +1017,7 @@ function tipText(){
   return '';
 }
 // ---- Eingaben ----
-function toastLong(t){U.toast=t;render();clearTimeout(U.tt);U.tt=setTimeout(()=>{U.toast=null;render()},4200)}
+function toastLong(t,ms=4200){U.toast=t;render();clearTimeout(U.tt);U.tt=setTimeout(()=>{U.toast=null;render()},ms)}
 // Langes Drücken (≈0,45 s) auf ein Element mit data-info zeigt eine Info-Blase
 let lpT=null,lpFired=false,lpXY=null;
 function showBig(el){const ed=el.dataset.edges?el.dataset.edges.split(',').filter(Boolean):null;document.body.insertAdjacentHTML('beforeend',bigHtml(el.dataset.big,ed));fitSyms(document.querySelector('.big'))}
@@ -1087,11 +1107,20 @@ document.addEventListener('click',e=>{
   if(S.cur!==0||!U.phase||S.over||S.supply.length!==before.sup||S.players[0].deck.length<before.dk){const had=U.undo&&U.undo.length;U.undo=[];if(had&&S.cur===0&&U.phase)render()}
   else{stack.push(before);U.undo=stack;render()}
 });
+
+// Feedback je Karte: die Kette läuft Plättchen für Plättchen, jedes leuchtet kurz und zeigt, was es erzeugt (+Ware, Tausch, Ruhm, Münzen)
+const fxChip=e=>e.k==='src'?`<b>+${e.n}</b>${tok(e.g)}`:e.k==='conv'?`${tok(e.f)}<i>→</i>${tok(e.g)}${e.n>1?`<b>×${e.n}</b>`:''}`:e.k==='vp'?ruhmT('+'+e.n):coinT('+'+e.n);
+const FXSTEP=640;
+function playFx(anim){if(!anim||!anim.length)return 0;const quick=matchMedia('(prefers-reduced-motion: reduce)').matches;U.fxId=(U.fxId||0)+1;const id=U.fxId;
+  anim.forEach((a,i)=>setTimeout(()=>{if(U.fxId!==id)return;const t=document.querySelector(`.tile[data-p="${S.players.indexOf(me())}"][data-r="${a.r}"][data-sd="${a.sd}"][data-ti="${a.ti}"]`);if(!t)return;
+    const w=t.parentElement;t.scrollIntoView({block:'nearest',behavior:quick?'auto':'smooth'});t.classList.remove('fxp');void t.offsetWidth;t.classList.add('fxp');
+    const f=document.createElement('div');f.className='fxf';f.innerHTML=a.ev.map(e=>`<span>${fxChip(e)}</span>`).join('');w.appendChild(f);setTimeout(()=>{f.remove();t.classList.remove('fxp')},1500)},300+i*FXSTEP));
+  return 300+anim.length*FXSTEP+1500}
 // Aktion einer Handkarte ausführen – vor dem Plättchen (Schritt 1) oder danach (Schritt 2); Reihenfolge ist frei
 function runAct(a,el){const m=a==='act'?{k:'eff',hi:U.sel.i,r:+el.dataset.r,d:S.season}:{k:'eff',hi:U.sel.i};const d=describe(S,0,m);const disc=applyMove(S,0,m,R);
   if(a==='act'){say(`Du ${d} → ${m.res.links} Glieder, +${m.res.vp} Ruhm, +${m.res.coins} Mz.${m.res.conv?' (offene Reihe: Ruhm als Münzen)':''}`,true);if(m.trace&&m.trace.length)say('Kette: '+m.trace.join(' · '),true)}else say('Du '+d,true);
   if(U.phase==='land'){U.acted=true;U.disc=disc||0;U.sel=null;U.mode=null;render()}else afterTat(disc);
-  if(a==='act')toastLong(`Kette: ${m.res.links} Glieder · +${m.res.vp} Ruhm · +${m.res.coins} Mz.`)}
+  if(a==='act'){U.page=0;toastLong(`Kette: ${m.res.links} Glieder · +${m.res.vp} Ruhm · +${m.res.coins} Mz.`,Math.max(4200,playFx(m.res.anim)))}}
 function toTat(){if(U.acted)afterTat(U.disc);else{U.phase='tat';render()}}
 function afterTat(disc){U.disc=disc||0;U.sel=null;U.mode=null;U.ups=0;U.bought=false;U.phase='ende';render()}
 function upLeft(){const p=me();return U.ups<UPMAX&&p.hand.length>0&&p.coins>=TUCKCOST&&tilesOf(p).some(t=>t.edges.length<3)}

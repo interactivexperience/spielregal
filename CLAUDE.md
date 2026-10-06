@@ -231,7 +231,7 @@ Karte) mit den passiven Fähigkeiten: ⟳ im Salbei-Kreis = Plättchen (wirkt, w
 abgesetzten Band = Upgrade; keine farbigen Kästchen, zweifeldrige Karten tragen „2 Felder“. Langes Drücken auf Karte/Plättchen
 (`data-big`) öffnet die ganze Karte groß (`bigHtml`): Abschnitte Aktion (⚡) · Plättchen (grüner Streifen) · Upgrade (goldener Streifen), je mit
 Kurzerklärung und einer Zeile je Regel (Symbol links, Satz rechts; breite Symbolgruppen darüber); kein Wort „passiv“, keine eigenen
-Passiv-Symbole – die Streifen sind dieselben wie auf der Karte. Antippen schließt (✕ oben rechts). Handkarten als Fächer hinter dem
+Passiv-Symbole – die Streifen sind dieselben wie auf der Karte. Die Texte stehen **ohne wiederholte Symbole** als knappe Stichpunkte (`ruleShort`/`effShort`, z. B. „bis 2 Korn → Mehl“); die Symbole zeigt die Karte darüber. Antippen schließt (✕ oben rechts). Handkarten als Fächer hinter dem
 Footer (`fanHtml`/`layoutFan`, wie Landgut): nur die obere Hälfte schaut heraus (Name + Aktions-Chips), antippen = wählen,
 lange drücken = ganze Karte; bei offenem Auswahlfenster weicht der Fächer. Rückenwind gilt nur zu zweit.
 Stadt/Wildnis im Plan: leere Felder, die einer Seite sicher gehören (je mind. 2), sind rot bzw. grün getönt, die freien dazwischen
@@ -252,6 +252,7 @@ Kartenwahl im Zug: Eine gewählte Handkarte bietet drei Wege – **Bauen**, **Up
 „Ablegen +1 Mz.“. Bauen und Upgrade wählen das Ziel **direkt im Plan** (`U.mode='build'`: Felder „hier“, `'tuck'`: Plättchen; Seite springt zum Plan),
 Auslagekarten gehen sofort in den Bau-Modus; Startplättchen-Draft ebenso. Die Aktion darf vor oder nach dem Plättchen gespielt werden
 (`U.acted`, `runAct`/`toTat`); pro Zug bleibt es je ein Plättchen und eine Aktion.
+Startplättchen tragen ein kleines „S“ (`.sbadge`, auf Karte und Plan). **Ketten-Feedback:** nach „Kette auslösen“ springt der Plan auf Seite 1, jedes Plättchen leuchtet der Reihe nach kurz auf (`.fxp`) und zeigt schwebende Chips, was es erzeugt (+Ware, Tausch, Ruhm, Münzen; `runChain` liefert `anim`, `playFx`); `prefers-reduced-motion` respektiert.
 Startseite wie die anderen Spiele (Name mit Spielregal-Profil-Chips, Gegner 1/2 Bots, „Partie beginnen“, „Lernspiel“, „Spielregeln
 lesen“ als Fenster `rulesOverlay`, auch im Menü). Lernspiel (`TUT_STEPS`, Coach Fuchs „Fenn“ mit Gouache-Porträt `saum/art/fenn.jpg` (256×256, vom Owner) im Aubergine-Rahmen mit gelbem Leuchten,
 immer gegenüber dem markierten Element): vorbereiteter Plan, Bäckerei säumt Reihe 1, Kette, Upgrade, Kauf, Zug beenden, Herbst,
