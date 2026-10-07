@@ -354,6 +354,9 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .abl{display:inline-flex;align-items:center;gap:1px;padding:2px 7px 2px 3px;border-radius:99px;background:rgba(251,248,241,.94);box-shadow:inset 0 0 0 1.5px #6E7B88;color:#1F2B27}.abl .pm,.abl .ic{width:20px;height:20px}
 .bigcard{position:relative}.bigcard>.abl{position:absolute;right:12px;bottom:calc(33.333% + 8px);z-index:3}
 .btn.brache{padding:4px 10px}
+.mxw{position:relative;display:inline-flex;flex:none}.mx{position:absolute;right:-3px;bottom:0;min-width:10px;height:10px;padding:0 2px;box-sizing:border-box;border-radius:99px;background:#251737;color:#FBF8F1;font:800 7.5px/10px var(--f-body);font-style:normal;text-align:center;box-shadow:0 0 0 1px rgba(251,248,241,.92);z-index:2;pointer-events:none}
+.bigtxt .mx,.big .mx{font-size:8px}
+.big.notxt{justify-content:center}
 .btn.tipb{width:30px;height:30px;min-height:0;align-self:center;border-radius:50%;padding:0;font:600 14px/1 var(--f-body);flex:none;box-shadow:none;background:color-mix(in srgb,var(--muted) 16%,transparent);color:var(--muted)}.actions .in>.go{margin-left:auto}
 .sheet{box-sizing:border-box;margin:-8px;padding:8px;width:calc(100% + 16px)}
 .opt{flex:1 1 140px;text-align:left;border-radius:12px;padding:9px 12px;display:flex;flex-direction:column;gap:2px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line)}
@@ -661,11 +664,12 @@ const cardT=n=>numT(`<rect x="4.5" y="1.5" width="15" height="21" rx="2.5" fill=
 const ARR='<span class="arr">➜</span>';
 const word=t=>`<span class="wd">${t}</span>`;
 const gsIc=gs=>gs==='any'?tok('any'):`<span class="stk or">${gs.map(tok).join('')}</span>`;
+const mx=(inner,n)=>`<span class="mxw">${inner}<i class="mx" aria-hidden="true">${n}</i></span>`; // kleine Zahl = „bis zu n“
 const ruleIc=r=>({src:()=>`<b class="pl">+</b>${stack(r.g,r.n)}`,
-  conv:()=>`${tok(r.from)}${ARR}${tok(r.to)}`,
-  score:()=>`${tok(r.g)}${ARR}${ruhmT(r.vp)}`,
-  sell:()=>`${gsIc(r.gs)}${ARR}${coinT(r.coin)}${r.vp?ruhmT(r.vp):''}`,
-  combo:()=>`${tok(r.a)}<b class="pl">+</b>${tok(r.b)}${ARR}${ruhmT(r.vp)}`,
+  conv:()=>`${mx(tok(r.from),r.max)}${ARR}${tok(r.to)}`,
+  score:()=>`${mx(tok(r.g),r.max)}${ARR}${ruhmT(r.vp)}`,
+  sell:()=>`${mx(gsIc(r.gs),r.max)}${ARR}${coinT(r.coin)}${r.vp?ruhmT(r.vp):''}`,
+  combo:()=>`${mx(tok(r.a),r.max)}<b class="pl">+</b>${tok(r.b)}${ARR}${ruhmT(r.vp)}`,
   dup:()=>`<span class="stk">${tok('korn')}${tok('holz')}${tok('bluete')}</span><b class="x2">×2</b>`,
   vpPer:()=>`${ruhmT(r.vp)}${word('je')}${tok(r.g)}`,
   endRows:()=>`${ruhmT(r.vp)}${word('je Reihe')}`}[r.t]());
@@ -679,19 +683,19 @@ const ABLG=svg24(paint(disc('#6E7B88')+`<rect x="8.3" y="4.6" width="7.4" height
 const ABL=`<span class="abl" data-info="Ablegen\nKarte ohne Wirkung auf den Ablagestapel legen und dafür 1 Münze nehmen.">${ABLG}${coinT('+1')}</span>`;
 const actChips=e=>[e.act?`<span class="chip kette" data-t="Kette auslösen">${FLOW}${e.add?Object.entries(e.add).map(([g,n])=>`<span class="cg">${n>1?`<b>${n}</b>`:''}${tok(g)}</span>`).join(''):''}</span>`:'',e.coins?`<span class="chip">${coinT('+'+e.coins)}</span>`:'',e.draw?`<span class="chip">${cardT('+'+e.draw)}</span>`:'',e.buyDisc?`<span class="chip kauf">${coinT('−'+e.buyDisc)}<span class="ct">Kauf</span></span>`:''].filter(Boolean).join('');
 const effLines=e=>[e.act?[`${FLOW}`,`Wähle eine Reihe: Ihre Plättchen laufen nacheinander ab, im Frühling von links nach rechts, im Herbst von rechts nach links. Jedes Plättchen gibt, wandelt oder verkauft Waren; was übrig bleibt, geht an das nächste.${e.add?' Start: '+Object.entries(e.add).map(([g,n])=>`${n} ${G[g]}`).join(' und ')+'.':''}`]:null,e.coins?[coinT('+'+e.coins),`Du bekommst ${e.coins} Münzen.`]:null,e.draw?[cardT('+'+e.draw),`Du ziehst ${e.draw} Karte${e.draw>1?'n':''}.`]:null,e.buyDisc?[coinT('−'+e.buyDisc),`Dein nächster Kauf kostet ${e.buyDisc} Münzen weniger.`]:null].filter(Boolean);
-function bigHtml(id,edges){const c=CARDS[id];
+function bigHtml(id,edges,textless){const c=CARDS[id];
   const li=t=>`<li>${t}</li>`;
   const head=(sw,t,sub)=>`<div class="bhd">${sw}<b>${t}</b><small>${sub}</small></div>`;
   const rules=rs=>`<ul class="bl">${rs.map(r=>li(esc(ruleShort(r)))).join('')}</ul>`;
   const acts=effShort(c.eff).map(li).join('');
   const kind=c.fam==='grund'?'Startplättchen':c.fam==='start'?'Startkarte, nicht baubar':'';
-  return `<div class="big" role="dialog" aria-label="${esc(c.n)}"><span class="bigx" aria-hidden="true">✕</span><div class="bigcard">${cardHtml(id,{big:true})}${c.fam==='start'||c.fam==='grund'?'':ABL}</div><div class="bigtxt">
+  return `<div class="big${textless?' notxt':''}" role="dialog" aria-label="${esc(c.n)}"><span class="bigx" aria-hidden="true">✕</span><div class="bigcard">${cardHtml(id,{big:true})}${c.fam==='start'||c.fam==='grund'?'':ABL}</div>${textless?'</div>':'<div class="bigtxt">'}
    <h3>${esc(c.n)}</h3><p class="bm">${c.side==='S'?'Stadt · baut von links':'Wildnis · baut von rechts'} · ${c.w} Feld${c.w>1?'er':''}${kind?' · '+kind:''}</p>
    ${acts?`<section>${head(BOLT,'Aktion','einmal, dann Ablage')}<ul class="bl">${acts}</ul></section>`:''}
    <section>${head('<i class="sw"></i>','Plättchen','wirkt bei jeder Kette durch dieses Feld')}${rules(c.tile)}</section>
    ${c.edge.length?`<section>${head('<i class="sw u"></i>','Upgrade','unter ein Plättchen gelegt')}${rules(c.edge)}</section>`:''}
    ${edges&&edges.length?`<section>${head('<i class="sw u"></i>','Darunter geschoben','wirken hier zusätzlich')}<ul class="bl">${edges.map(x=>li(`<b>${esc(CARDS[x].n)}:</b> ${esc(CARDS[x].edge.map(ruleShort).join('; '))}`)).join('')}</ul></section>`:''}
-  </div></div>`}
+  ${textless?'':'</div></div>'}`}
 const ruleShort=r=>({src:()=>`+${r.n} ${G[r.g]}`,conv:()=>`bis ${r.max} ${G[r.from]} → ${G[r.to]}`,
   score:()=>`bis ${r.max} ${G[r.g]} → je ${r.vp} Ruhm`,
   sell:()=>`bis ${r.max} ${r.gs==='any'?'beliebige Waren':r.gs.map(g=>G[g]).join('/')} → je ${r.coin} Mz.${r.vp?` + ${r.vp} Ruhm`:''}`,
@@ -1024,14 +1028,14 @@ function tipText(){
 function toastLong(t,ms=4200){U.toast=t;render();clearTimeout(U.tt);U.tt=setTimeout(()=>{U.toast=null;render()},ms)}
 // Langes Drücken (≈0,45 s) auf ein Element mit data-info zeigt eine Info-Blase
 let lpT=null,lpFired=false,lpXY=null;
-function showBig(el){const ed=el.dataset.edges?el.dataset.edges.split(',').filter(Boolean):null;document.body.insertAdjacentHTML('beforeend',bigHtml(el.dataset.big,ed));fitSyms(document.querySelector('.big'))}
+function showBig(el,withText){const ed=el.dataset.edges?el.dataset.edges.split(',').filter(Boolean):null;document.body.insertAdjacentHTML('beforeend',bigHtml(el.dataset.big,ed,!withText));fitSyms(document.querySelector('.big'))}
 function hideBubble(){const b=document.querySelector('.bubble');if(b)b.remove()}
 function showBubble(el){hideBubble();const b=document.createElement('div');b.className='bubble';{const [t,...r]=el.dataset.info.split('\n');if(r.length){const h=document.createElement('span');h.className='bt';h.textContent=t;b.appendChild(h);b.appendChild(document.createTextNode(r.join('\n')))}else b.textContent=t}document.body.appendChild(b);
   const r=el.getBoundingClientRect(),bw=b.offsetWidth,bh=b.offsetHeight,vw=innerWidth;
   let x=Math.min(Math.max(12,r.left+r.width/2-bw/2),vw-bw-12),y=r.top-bh-10;if(y<12)y=Math.min(r.bottom+10,innerHeight-bh-12);
   b.style.left=x+'px';b.style.top=Math.max(12,y)+'px'}
 document.addEventListener('pointerdown',e=>{if(document.querySelector('.big')){document.querySelector('.big').remove();lpFired=true;return}hideBubble();const el=e.target.closest('[data-big],[data-info]');if(!el)return;lpFired=false;lpXY=[e.clientX,e.clientY];
-  clearTimeout(lpT);lpT=setTimeout(()=>{lpFired=true;if(el.dataset.big)showBig(el);else showBubble(el);if(navigator.vibrate)try{navigator.vibrate(8)}catch(_){}},450)});
+  clearTimeout(lpT);lpT=setTimeout(()=>{lpFired=true;if(el.dataset.big)showBig(el,true);else showBubble(el);if(navigator.vibrate)try{navigator.vibrate(8)}catch(_){}},450)});
 document.addEventListener('pointermove',e=>{if(lpXY&&Math.hypot(e.clientX-lpXY[0],e.clientY-lpXY[1])>10){clearTimeout(lpT);lpXY=null}});
 ['pointerup','pointercancel'].forEach(t=>document.addEventListener(t,()=>{clearTimeout(lpT);lpXY=null;if(lpFired&&!document.querySelector('.big'))setTimeout(hideBubble,2600)}));
 addEventListener('scroll',()=>{clearTimeout(lpT);hideBubble()},{passive:true});
@@ -1062,7 +1066,7 @@ function handleClick(e){
   if(a==='restart'){if(!confirm('Partie abbrechen und eine neue beginnen?'))return;S=null;U={phase:null,sel:null,disc:0,toast:null,view:0};try{localStorage.removeItem('saum:save')}catch(_){}scrollTo(0,0);render();return}
   if(a==='help-x'){U.help=false;render();return}
   if(a==='view'){U.view=+el.dataset.p;U.page=0;render();window.scrollTo({top:0});return}
-  if(a==='tinfo'){const q=S.players[+el.dataset.p],t=q.rows[+el.dataset.r][el.dataset.sd][+el.dataset.ti],c=CARDS[t.id];toastLong(`${c.n}: ${[...c.tile,...t.edges.map(x=>CARDS[x].edge).flat()].map(rule).join('; ')}${t.edges.length?` · Upgrades: ${t.edges.map(x=>CARDS[x].n).join(', ')}`:''}`);return}
+  if(a==='tinfo'){const q=S.players[+el.dataset.p],t=q.rows[+el.dataset.r][el.dataset.sd][+el.dataset.ti],c=CARDS[t.id];showBig(el,false);return}
   if(S.cur!==0||S.over)return;
   if(S.draft){if(draftWho()!==0)return;if(a==='gpick'){U.sel={src:'g',i:+el.dataset.i};U.page=0;render();window.scrollTo({top:0});return}if(a==='unsel'){U.sel=null;U.page=1;render();return}if((a==='gplace'||a==='row')&&U.sel){const r=+el.dataset.r;if(!canPlace(me().rows[r],CARDS[S.draft.disp[U.sel.i]]))return;draftPlace(0,U.sel.i,r);U.sel=null;U.page=1;runDraft()}return}
   const p=me();
