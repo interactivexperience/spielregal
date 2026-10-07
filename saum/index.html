@@ -161,6 +161,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .card .acts{position:absolute;top:7px;left:7px;display:flex;flex-direction:column;gap:5px;align-items:flex-start}
 .card .chip{display:flex;align-items:center;gap:3px;min-height:34px;padding:4px;border-radius:10px;background:#251737;box-shadow:0 0 0 2px rgba(251,248,241,.85),0 3px 8px rgba(20,30,27,.35)}
 .card .chip .tk,.card .chip .ic{width:24px;height:24px}
+.rw{height:24px;width:42px;flex:none}.card .chip .rw{height:24px;width:42px}
 .card .chip .cg{display:flex;align-items:center;color:#FBF8F1;font:800 12px/1 var(--f-body)}
 .card .chip .cg .tk{width:18px;height:18px}
 .card .chip .ct{color:#FBF8F1;font:700 10px/1 var(--f-body);padding-right:3px}
@@ -207,7 +208,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--saum);outline-offse
 .bigcard{width:min(62vw,270px);flex:none}
 .bigcard .card{width:100%;box-shadow:0 20px 50px -12px rgba(0,0,0,.55);cursor:default}
 .bigcard .card .ttl{font-size:28px}
-.bigcard .card .chip{min-height:44px;padding:5px;border-radius:12px}.bigcard .card .chip .tk,.bigcard .card .chip .ic{width:32px;height:32px}
+.bigcard .card .chip{min-height:44px;padding:5px;border-radius:12px}.bigcard .card .chip .tk,.bigcard .card .chip .ic{width:32px;height:32px}.bigcard .card .chip .rw{height:32px;width:56px}
 .card .ttl{position:absolute;left:0;right:0;bottom:calc(33.333% + 2px);padding:0 10px 4px;font:700 19px/1.02 var(--f-display);color:#FBF8F1;text-shadow:0 1px 8px rgba(28,48,43,.45)}
 .card .rl{display:flex;align-items:center;flex-wrap:nowrap;white-space:nowrap;min-width:0;overflow:hidden}
 .card .tk{width:calc(14cqw * var(--k));height:calc(14cqw * var(--k));flex:none;display:block}
@@ -302,7 +303,7 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .fan.hid .fc{pointer-events:none}
 .fan .card .ttl{top:5px;bottom:auto;font-size:12.5px;line-height:1.05;padding:0 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fan .card .art::before{content:"";position:absolute;inset:0 0 auto;height:30%;background:linear-gradient(rgba(20,30,27,.55),rgba(20,30,27,0));z-index:1}
-.fan .card .chip{min-height:24px;padding:2px 3px;border-radius:7px}.fan .card .chip .tk,.fan .card .chip .ic{width:18px;height:18px}.fan .card .chip .cg .tk{width:14px;height:14px}
+.fan .card .chip{min-height:24px;padding:2px 3px;border-radius:7px}.fan .card .chip .tk,.fan .card .chip .ic{width:18px;height:18px}.fan .card .chip .rw{height:18px;width:32px}.fan .card .chip .cg .tk{width:14px;height:14px}
 .fan .card .acts{top:23px;left:5px;gap:3px}
 .fan .card.sel{transform:translateY(-14px)}
 .fan.flash .fc .card{animation:flash 1.1s ease-out}
@@ -351,7 +352,7 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .grp{border-radius:var(--r);padding:10px;display:flex;flex-direction:column;gap:6px;background:var(--bg)}
 .gl{font-weight:600;font-size:13.5px}.gs{font-size:12.5px;color:var(--muted)}
 .opts{display:flex;gap:6px;flex-wrap:wrap}
-.abl{display:inline-flex;align-items:center;gap:1px;padding:2px 7px 2px 3px;border-radius:99px;background:rgba(251,248,241,.94);box-shadow:inset 0 0 0 1.5px #6E7B88;color:#1F2B27}.abl .pm,.abl .ic{width:20px;height:20px}
+.abl{display:inline-flex;align-items:center;gap:1px;padding:2px 7px 2px 3px;border-radius:99px;background:rgba(251,248,241,.94);box-shadow:inset 0 0 0 1.5px #6E7B88;color:#1F2B27}.abl .pm,.abl .ic{width:26px;height:26px}.goal .rw{height:22px;width:38px}
 .bigcard{position:relative}.bigcard>.abl{position:absolute;right:12px;bottom:calc(33.333% + 8px);z-index:3}
 .btn.brache{padding:4px 10px}
 .mxw{position:relative;display:inline-flex;flex:none}.mx{position:absolute;right:-3px;bottom:0;min-width:10px;height:10px;padding:0 2px;box-sizing:border-box;border-radius:99px;background:#251737;color:#FBF8F1;font:800 7.5px/10px var(--f-body);font-style:normal;text-align:center;box-shadow:0 0 0 1px rgba(251,248,241,.92);z-index:2;pointer-events:none}
@@ -675,13 +676,15 @@ const ruleIc=r=>({src:()=>`<b class="pl">+</b>${stack(r.g,r.n)}`,
   endRows:()=>`${ruhmT(r.vp)}${word('je Reihe')}`}[r.t]());
 const effIc=e=>[e.act?word('Kette')+(e.add?Object.entries(e.add).map(([g,n])=>stack(g,n)).join(''):''):'',e.coins?coinT(e.coins):'',e.draw?cardT(e.draw):'',e.buyDisc?word('Kauf')+coinT('−'+e.buyDisc):''].filter(Boolean).join('<span class="gap"></span>');
 // Kartensymbole v3: Aktionen als Chips oben links (wie Radlands), passive Zeilen mit festen Erkennungszeichen
+// Kette = Ware läuft in eine Reihe (Pfeil + drei Plättchen), keine eigene Münze; Starterwaren stehen davor
+const CHAINIC=`<svg class="rw" viewBox="0 0 42 24" aria-hidden="true"><g fill="none" stroke="${W}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12h7"/><path d="M7 8.4 10.6 12 7 15.6"/></g><rect x="14" y="5" width="7" height="14" rx="2.2" fill="${W}"/><rect x="23" y="5" width="7" height="14" rx="2.2" fill="${W}" opacity=".72"/><rect x="32" y="5" width="7" height="14" rx="2.2" fill="${W}" opacity=".46"/></svg>`;
 const FLOW=svg24(paint(disc('#3F6B69')+`<g fill="none" stroke="${W}" stroke-width="1.9" stroke-linecap="round"><path d="M5.5 12h11"/><path d="M13.6 8.4l3.6 3.6-3.6 3.6"/></g><circle cx="6" cy="12" r="2" fill="${W}"/><circle cx="10.5" cy="12" r="2" fill="${W}"/>`),'ic');
 const PASS=svg24(paint(disc('#5E8052')+`<g fill="none" stroke="${W}" stroke-width="2.1" stroke-linecap="round"><path d="M17.3 9.6A5.8 5.8 0 1 0 17.8 13.4"/></g><path d="M19.4 6.3l-.6 4.5-4.3-1.6z" fill="${W}"/>`),'pm');
 const UPG=svg24(paint(disc('#D9902A')+`<rect x="6.6" y="6.2" width="10.8" height="6.8" rx="1.5" fill="${W}"/><rect x="6.6" y="14.2" width="10.8" height="2.3" rx="1" fill="${W}" opacity=".88"/><rect x="6.6" y="17.5" width="10.8" height="2.1" rx="1" fill="${W}" opacity=".72"/>`),'pm');
 const BOLT=svg24(paint(disc('#F5C84C')+`<path d="M13.6 3.8 6.8 13.1h4.5l-1.5 7.1 7.6-10.1h-4.6z" fill="${INK}"/>`),'pm');
-const ABLG=svg24(paint(disc('#6E7B88')+`<rect x="8.3" y="4.6" width="7.4" height="8.6" rx="1.4" fill="${W}"/><path d="M5.2 14.6v3.6h13.6v-3.6" fill="none" stroke="${W}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>`),'pm');
+const ABLG=svg24(paint(disc('#6E7B88')+`<g transform="rotate(-9 12 8)"><rect x="7" y="2.8" width="10" height="10.2" rx="1.9" fill="${W}"/><path d="M12 5.2v5M9.7 8.5l2.3 2.5 2.3-2.5" fill="none" stroke="#6E7B88" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g><rect x="5.4" y="15.4" width="13.2" height="2.4" rx="1.2" fill="${W}"/><rect x="6.2" y="19" width="11.6" height="2.3" rx="1.1" fill="${W}" opacity=".78"/>`),'pm');
 const ABL=`<span class="abl" data-info="Ablegen\nKarte ohne Wirkung auf den Ablagestapel legen und dafür 1 Münze nehmen.">${ABLG}${coinT('+1')}</span>`;
-const actChips=e=>[e.act?`<span class="chip kette" data-t="Kette auslösen">${FLOW}${e.add?Object.entries(e.add).map(([g,n])=>`<span class="cg">${n>1?`<b>${n}</b>`:''}${tok(g)}</span>`).join(''):''}</span>`:'',e.coins?`<span class="chip">${coinT('+'+e.coins)}</span>`:'',e.draw?`<span class="chip">${cardT('+'+e.draw)}</span>`:'',e.buyDisc?`<span class="chip kauf">${coinT('−'+e.buyDisc)}<span class="ct">Kauf</span></span>`:''].filter(Boolean).join('');
+const actChips=e=>[e.act?`<span class="chip kette" data-t="Kette auslösen">${e.add?Object.entries(e.add).map(([g,n])=>`<span class="cg">${n>1?`<b>${n}</b>`:''}${tok(g)}</span>`).join(''):''}${CHAINIC}</span>`:'',e.coins?`<span class="chip">${coinT('+'+e.coins)}</span>`:'',e.draw?`<span class="chip">${cardT('+'+e.draw)}</span>`:'',e.buyDisc?`<span class="chip kauf">${coinT('−'+e.buyDisc)}<span class="ct">Kauf</span></span>`:''].filter(Boolean).join('');
 const effLines=e=>[e.act?[`${FLOW}`,`Wähle eine Reihe: Ihre Plättchen laufen nacheinander ab, im Frühling von links nach rechts, im Herbst von rechts nach links. Jedes Plättchen gibt, wandelt oder verkauft Waren; was übrig bleibt, geht an das nächste.${e.add?' Start: '+Object.entries(e.add).map(([g,n])=>`${n} ${G[g]}`).join(' und ')+'.':''}`]:null,e.coins?[coinT('+'+e.coins),`Du bekommst ${e.coins} Münzen.`]:null,e.draw?[cardT('+'+e.draw),`Du ziehst ${e.draw} Karte${e.draw>1?'n':''}.`]:null,e.buyDisc?[coinT('−'+e.buyDisc),`Dein nächster Kauf kostet ${e.buyDisc} Münzen weniger.`]:null].filter(Boolean);
 function bigHtml(id,edges,textless){const c=CARDS[id];
   const li=t=>`<li>${t}</li>`;
@@ -877,7 +880,7 @@ const SETUP={name:lsGet('saum:name')||'',bots:+(lsGet('saum:bots')||1)};
 function profiles(){try{return (JSON.parse(lsGet('spielregal:players')||'[]')||[]).filter(p=>p&&p.name).map(p=>p.name)}catch(_){return []}}
 const GOALN={brot:'Brot erzeugen',honig:'Honig erzeugen',moebel:'Möbel erzeugen',meister:'Meisterstücke',rows:'Reihen säumen',chain:'Glieder in einer Kette'};
 function goalHtml(g){const p=me(),pr=Math.min(goalProgress(p,g),g.n),mine=g.by.includes(0);
-  const ic=g.k==='meister'?`<span class="gstar">★</span>`:g.k==='rows'?`<span class="grow"><i></i><i></i><i></i><i></i><i></i><i></i></span>`:g.k==='chain'?FLOW:tok(g.k);
+  const ic=g.k==='meister'?`<span class="gstar">★</span>`:g.k==='rows'?`<span class="grow"><i></i><i></i><i></i><i></i><i></i><i></i></span>`:g.k==='chain'?CHAINIC:tok(g.k);
   const prize=[6,3].map((v,i)=>{const who=g.by[i];return `<span class="gp ${who!=null?'got':''}">${ruhmT(v)}${who!=null?`<span class="gw">${esc(S.players[who].name.slice(0,1))}</span>`:''}</span>`}).join('');
   return `<div class="goal ${mine?'done':''}" data-info="${esc(g.tx)}\nWer das zuerst schafft, bekommt 6 Ruhm, die zweite Person 3. Du hast ${pr} von ${g.n}.${g.by.length?' Erreicht von: '+g.by.map(i=>S.players[i].name).join(', ')+'.':''}"><div class="gi">${ic}<b>${g.n}</b></div><div class="gt"><span>${GOALN[g.k]||esc(g.tx)}</span></div><div class="gbar"><i style="width:${pr/g.n*100}%"></i></div><div class="gn">${mine?'✓ geschafft':`du ${pr}/${g.n}`}</div><div class="gprize">${prize}</div></div>`}
 function startHtml(){const sv=load(),prof=profiles();
