@@ -352,9 +352,25 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .grp{border-radius:var(--r);padding:10px;display:flex;flex-direction:column;gap:6px;background:var(--bg)}
 .gl{font-weight:600;font-size:13.5px}.gs{font-size:12.5px;color:var(--muted)}
 .opts{display:flex;gap:6px;flex-wrap:wrap}
-.abl{display:inline-flex;align-items:center;gap:1px;padding:2px 7px 2px 3px;border-radius:99px;background:rgba(251,248,241,.94);box-shadow:inset 0 0 0 1.5px #6E7B88;color:#1F2B27}.abl .pm,.abl .ic{width:26px;height:26px}.goal .rw{height:22px;width:38px}
 .bigcard{position:relative}.bigcard>.abl{position:absolute;right:12px;bottom:calc(33.333% + 8px);z-index:3}
 .btn.brache{padding:4px 10px}
+.gi,.ig{display:inline-block;flex:none;background:var(--l) center/contain no-repeat}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .gi,:root:not([data-theme="light"]) .ig{background-image:var(--d)}}
+:root[data-theme="dark"] .gi,:root[data-theme="dark"] .ig{background-image:var(--d)}
+.dk{background-image:var(--d)!important}.lt{background-image:var(--l)!important}
+.ig{--ih:24px;height:var(--ih);width:calc(var(--ih)*var(--r));max-width:100%;background-position:left center}
+.ig.ri{--ih:calc(20px*var(--k,1))}
+.card .ig.ri{--ih:calc(16cqw*var(--k,1))}
+.tile .tico .ig.ri{--ih:calc(24px*var(--k,1))}
+.ust .uic .ig.ri{--ih:calc(19px*var(--k,1))}
+.card .chip .ig.ci{--ih:32px;width:calc(var(--ih)*var(--r))}
+.bigcard .card .chip .ig.ci{--ih:46px}
+.fan .card .chip .ig.ci{--ih:22px}
+.goal .ig{--ih:26px}
+.abl{display:inline-flex;align-items:center;line-height:0}.abl .ig{--ih:30px}
+.bigcard>.abl{background:rgba(251,248,241,.94);border-radius:99px;padding:3px 10px}.bigcard>.abl .ig{background-image:var(--l)!important}
+.sbadge{background:none!important;box-shadow:none!important;width:auto!important;height:auto!important;line-height:0!important}.sbadge .ig{--ih:16px}.card .sbadge .ig{--ih:22px}
+.gi.pm{display:inline-block}
 .mxw{position:relative;display:inline-flex;flex:none}.mx{position:absolute;right:-3px;bottom:0;min-width:10px;height:10px;padding:0 2px;box-sizing:border-box;border-radius:99px;background:#251737;color:#FBF8F1;font:800 7.5px/10px var(--f-body);font-style:normal;text-align:center;box-shadow:0 0 0 1px rgba(251,248,241,.92);z-index:2;pointer-events:none}
 .bigtxt .mx,.big .mx{font-size:8px}
 .big.notxt{justify-content:center}
@@ -656,7 +672,15 @@ const GOODIC={
  any:['#9E93B4',`<text x="12" y="16.5" text-anchor="middle" font-family="DM Sans,system-ui,sans-serif" font-weight="800" font-size="12" fill="${W}">?</text>`]
 };
 const svg24=(inner,cls='tk')=>`<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${inner}</svg>`;
-const tok=g=>{const [bg,gl]=GOODIC[g];return svg24(paint(disc(bg)+gl))};
+// Icon-Set des Owners (art/icons/l = hell, d = dunkel); Nummer = Position im Ikonografie-Katalog
+const ICM={"1":1.0,"2":1.0,"3":1.0,"4":1.0,"5":1.0,"6":1.0,"7":1.0,"8":1.0,"9":1.0,"10":1.0,"11":1.0,"12":1.0,"13":1.0,"14":1.0,"15":1.0,"16":1.0,"17":1.0,"18":2.412,"19":1.0,"20":0.447,"21":1.0,"22":1.0,"23":0.656,"24":1.189,"25":0.742,"26":1.0,"27":1.0,"28":1.0,"29":1.0,"30":1.0,"31":1.0,"32":1.0,"33":1.0,"34":1.0,"35":1.0,"36":1.0,"37":1.0,"38":1.0,"39":1.0,"40":1.0,"41":1.0,"42":1.0,"43":1.0,"44":2.465,"45":2.465,"46":2.465,"47":2.465,"48":2.465,"49":2.465,"50":2.465,"51":2.465,"52":2.465,"53":2.412,"54":2.412,"55":2.412,"56":2.412,"57":2.412,"58":2.412,"59":2.412,"60":2.412,"61":2.412,"62":2.412,"63":5.412,"64":2.412,"65":3.412,"66":2.412,"67":3.412,"68":2.412,"69":3.412,"70":3.412,"71":3.412,"72":4.0,"73":2.656,"74":2.656,"75":2.656,"76":2.656,"77":2.656,"78":2.189,"79":2.189,"80":2.189,"81":1.0,"82":1.0,"83":1.0,"84":2.0,"85":1.0,"86":1.0,"87":1.0,"88":1.0,"89":1.0,"90":2.0,"91":1.0,"92":2.742,"93":1.0,"94":1.137};
+const ICR={"[[\"g\",\"korn\"],[\"n\",1],[\"t\",\"src\"]]":35,"[[\"g\",\"holz\"],[\"n\",1],[\"t\",\"src\"]]":36,"[[\"g\",\"bluete\"],[\"n\",1],[\"t\",\"src\"]]":37,"[[\"g\",\"korn\"],[\"n\",2],[\"t\",\"src\"]]":38,"[[\"g\",\"korn\"],[\"n\",3],[\"t\",\"src\"]]":39,"[[\"g\",\"holz\"],[\"n\",2],[\"t\",\"src\"]]":40,"[[\"g\",\"holz\"],[\"n\",3],[\"t\",\"src\"]]":41,"[[\"g\",\"bluete\"],[\"n\",2],[\"t\",\"src\"]]":42,"[[\"g\",\"bluete\"],[\"n\",3],[\"t\",\"src\"]]":43,"[[\"from\",\"korn\"],[\"max\",3],[\"t\",\"conv\"],[\"to\",\"mehl\"]]":44,"[[\"from\",\"mehl\"],[\"max\",2],[\"t\",\"conv\"],[\"to\",\"brot\"]]":45,"[[\"from\",\"holz\"],[\"max\",3],[\"t\",\"conv\"],[\"to\",\"brett\"]]":46,"[[\"from\",\"brett\"],[\"max\",2],[\"t\",\"conv\"],[\"to\",\"moebel\"]]":47,"[[\"from\",\"bluete\"],[\"max\",3],[\"t\",\"conv\"],[\"to\",\"honig\"]]":48,"[[\"from\",\"bluete\"],[\"max\",4],[\"t\",\"conv\"],[\"to\",\"honig\"]]":49,"[[\"from\",\"korn\"],[\"max\",2],[\"t\",\"conv\"],[\"to\",\"mehl\"]]":50,"[[\"from\",\"holz\"],[\"max\",2],[\"t\",\"conv\"],[\"to\",\"brett\"]]":51,"[[\"from\",\"bluete\"],[\"max\",2],[\"t\",\"conv\"],[\"to\",\"honig\"]]":52,"[[\"g\",\"brot\"],[\"max\",3],[\"t\",\"score\"],[\"vp\",2]]":53,"[[\"g\",\"honig\"],[\"max\",3],[\"t\",\"score\"],[\"vp\",2]]":54,"[[\"g\",\"holz\"],[\"max\",3],[\"t\",\"score\"],[\"vp\",1]]":55,"[[\"g\",\"brot\"],[\"max\",2],[\"t\",\"score\"],[\"vp\",2]]":56,"[[\"g\",\"holz\"],[\"max\",2],[\"t\",\"score\"],[\"vp\",1]]":57,"[[\"g\",\"brett\"],[\"max\",1],[\"t\",\"score\"],[\"vp\",2]]":58,"[[\"g\",\"moebel\"],[\"max\",2],[\"t\",\"score\"],[\"vp\",3]]":59,"[[\"g\",\"brett\"],[\"max\",2],[\"t\",\"score\"],[\"vp\",2]]":60,"[[\"coin\",1],[\"gs\",\"any\"],[\"max\",2],[\"t\",\"sell\"]]":61,"[[\"coin\",1],[\"gs\",\"any\"],[\"max\",3],[\"t\",\"sell\"]]":62,"[[\"coin\",2],[\"gs\",[\"brot\",\"honig\",\"moebel\"]],[\"max\",3],[\"t\",\"sell\"],[\"vp\",1]]":63,"[[\"coin\",3],[\"gs\",[\"honig\"]],[\"max\",2],[\"t\",\"sell\"]]":64,"[[\"coin\",1],[\"gs\",\"any\"],[\"max\",2],[\"t\",\"sell\"],[\"vp\",1]]":65,"[[\"coin\",1],[\"gs\",\"any\"],[\"max\",1],[\"t\",\"sell\"]]":66,"[[\"coin\",2],[\"gs\",[\"mehl\",\"brett\"]],[\"max\",2],[\"t\",\"sell\"]]":67,"[[\"coin\",2],[\"gs\",[\"brot\"]],[\"max\",2],[\"t\",\"sell\"]]":68,"[[\"a\",\"brot\"],[\"b\",\"honig\"],[\"max\",2],[\"t\",\"combo\"],[\"vp\",4]]":69,"[[\"a\",\"brot\"],[\"b\",\"honig\"],[\"max\",1],[\"t\",\"combo\"],[\"vp\",4]]":70,"[[\"a\",\"moebel\"],[\"b\",\"honig\"],[\"max\",1],[\"t\",\"combo\"],[\"vp\",4]]":71,"[[\"max\",2],[\"t\",\"dup\"]]":72,"[[\"g\",\"brot\"],[\"t\",\"vpPer\"],[\"vp\",1]]":73,"[[\"g\",\"moebel\"],[\"t\",\"vpPer\"],[\"vp\",1]]":74,"[[\"g\",\"honig\"],[\"t\",\"vpPer\"],[\"vp\",1]]":75,"[[\"g\",\"brett\"],[\"t\",\"vpPer\"],[\"vp\",1]]":76,"[[\"g\",\"mehl\"],[\"t\",\"vpPer\"],[\"vp\",1]]":77,"[[\"t\",\"endRows\"],[\"vp\",2]]":78,"[[\"t\",\"endRows\"],[\"vp\",3]]":79,"[[\"t\",\"endRows\"],[\"vp\",1]]":80};
+const ICE={"[[\"act\",1],[\"add\",{\"korn\":1}]]":81,"[[\"act\",1],[\"add\",{\"holz\":1}]]":82,"[[\"coins\",2]]":83,"[[\"coins\",2],[\"draw\",1]]":84,"[[\"act\",1],[\"add\",{\"korn\":2}]]":85,"[[\"coins\",3]]":86,"[[\"act\",1]]":87,"[[\"act\",1],[\"add\",{\"holz\":2}]]":88,"[[\"draw\",2]]":89,"[[\"coins\",1],[\"draw\",1]]":90,"[[\"act\",1],[\"add\",{\"bluete\":1}]]":91,"[[\"buyDisc\",2],[\"coins\",2]]":92,"[[\"coins\",4]]":93,"[[\"act\",1],[\"add\",{\"bluete\":1,\"korn\":1}]]":94};
+const GN={korn:1,mehl:2,brot:3,holz:4,brett:5,moebel:6,bluete:7,honig:8,any:9};
+const canon=o=>JSON.stringify(Object.keys(o).sort().map(k=>[k,o[k]]));
+const icv=n=>{n=String(n).padStart(2,"0");return `--l:url(art/icons/l/${n}.png?v=1);--d:url(art/icons/d/${n}.png?v=1)`};
+const ico=(n,cls='')=>`<i class="ig ${cls}" style="${icv(n)};--r:${ICM[n]}"></i>`;
+const tok=g=>`<i class="tk gi" style="${icv(GN[g])}"></i>`;
 const stack=(g,n)=>n<=3?`<span class="stk">${Array.from({length:n},()=>tok(g)).join('')}</span>`:`<b class="n">${n}</b>${tok(g)}`;
 const numT=(shape,n,fg)=>svg24(`${paint(shape)}<text x="12" y="16.3" text-anchor="middle" font-family="DM Sans,system-ui,sans-serif" font-weight="800" font-size="12.5" fill="${fg}">${n}</text>`);
 const coinT=n=>numT(disc('#F5C84C')+'<circle cx="12" cy="12" r="8.2" fill="none" stroke="#E39A35" stroke-width="1.3"/>',n,D);
@@ -666,7 +690,7 @@ const ARR='<span class="arr">➜</span>';
 const word=t=>`<span class="wd">${t}</span>`;
 const gsIc=gs=>gs==='any'?tok('any'):`<span class="stk or">${gs.map(tok).join('')}</span>`;
 const mx=(inner,n)=>`<span class="mxw">${inner}<i class="mx" aria-hidden="true">${n}</i></span>`; // kleine Zahl = „bis zu n“
-const ruleIc=r=>({src:()=>`<b class="pl">+</b>${stack(r.g,r.n)}`,
+const ruleIcOld=r=>({src:()=>`<b class="pl">+</b>${stack(r.g,r.n)}`,
   conv:()=>`${mx(tok(r.from),r.max)}${ARR}${tok(r.to)}`,
   score:()=>`${mx(tok(r.g),r.max)}${ARR}${ruhmT(r.vp)}`,
   sell:()=>`${mx(gsIc(r.gs),r.max)}${ARR}${coinT(r.coin)}${r.vp?ruhmT(r.vp):''}`,
@@ -674,17 +698,19 @@ const ruleIc=r=>({src:()=>`<b class="pl">+</b>${stack(r.g,r.n)}`,
   dup:()=>`<span class="stk">${tok('korn')}${tok('holz')}${tok('bluete')}</span><b class="x2">×2</b>`,
   vpPer:()=>`${ruhmT(r.vp)}${word('je')}${tok(r.g)}`,
   endRows:()=>`${ruhmT(r.vp)}${word('je Reihe')}`}[r.t]());
+const ruleIc=r=>{const n=ICR[canon(r)];return n?ico(n,'ri'):ruleIcOld(r)};
 const effIc=e=>[e.act?word('Kette')+(e.add?Object.entries(e.add).map(([g,n])=>stack(g,n)).join(''):''):'',e.coins?coinT(e.coins):'',e.draw?cardT(e.draw):'',e.buyDisc?word('Kauf')+coinT('−'+e.buyDisc):''].filter(Boolean).join('<span class="gap"></span>');
 // Kartensymbole v3: Aktionen als Chips oben links (wie Radlands), passive Zeilen mit festen Erkennungszeichen
 // Kette = Ware läuft in eine Reihe (Pfeil + drei Plättchen), keine eigene Münze; Starterwaren stehen davor
-const CHAINIC=`<svg class="rw" viewBox="0 0 42 24" aria-hidden="true"><g fill="none" stroke="${W}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12h7"/><path d="M7 8.4 10.6 12 7 15.6"/></g><rect x="14" y="5" width="7" height="14" rx="2.2" fill="${W}"/><rect x="23" y="5" width="7" height="14" rx="2.2" fill="${W}" opacity=".72"/><rect x="32" y="5" width="7" height="14" rx="2.2" fill="${W}" opacity=".46"/></svg>`;
+const CHAINIC=ico(16);
 const FLOW=svg24(paint(disc('#3F6B69')+`<g fill="none" stroke="${W}" stroke-width="1.9" stroke-linecap="round"><path d="M5.5 12h11"/><path d="M13.6 8.4l3.6 3.6-3.6 3.6"/></g><circle cx="6" cy="12" r="2" fill="${W}"/><circle cx="10.5" cy="12" r="2" fill="${W}"/>`),'ic');
 const PASS=svg24(paint(disc('#5E8052')+`<g fill="none" stroke="${W}" stroke-width="2.1" stroke-linecap="round"><path d="M17.3 9.6A5.8 5.8 0 1 0 17.8 13.4"/></g><path d="M19.4 6.3l-.6 4.5-4.3-1.6z" fill="${W}"/>`),'pm');
 const UPG=svg24(paint(disc('#D9902A')+`<rect x="6.6" y="6.2" width="10.8" height="6.8" rx="1.5" fill="${W}"/><rect x="6.6" y="14.2" width="10.8" height="2.3" rx="1" fill="${W}" opacity=".88"/><rect x="6.6" y="17.5" width="10.8" height="2.1" rx="1" fill="${W}" opacity=".72"/>`),'pm');
-const BOLT=svg24(paint(disc('#F5C84C')+`<path d="M13.6 3.8 6.8 13.1h4.5l-1.5 7.1 7.6-10.1h-4.6z" fill="${INK}"/>`),'pm');
-const ABLG=svg24(paint(disc('#6E7B88')+`<g transform="rotate(-9 12 8)"><rect x="7" y="2.8" width="10" height="10.2" rx="1.9" fill="${W}"/><path d="M12 5.2v5M9.7 8.5l2.3 2.5 2.3-2.5" fill="none" stroke="#6E7B88" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g><rect x="5.4" y="15.4" width="13.2" height="2.4" rx="1.2" fill="${W}"/><rect x="6.2" y="19" width="11.6" height="2.3" rx="1.1" fill="${W}" opacity=".78"/>`),'pm');
-const ABL=`<span class="abl" data-info="Ablegen\nKarte ohne Wirkung auf den Ablagestapel legen und dafür 1 Münze nehmen.">${ABLG}${coinT('+1')}</span>`;
-const actChips=e=>[e.act?`<span class="chip kette" data-t="Kette auslösen">${e.add?Object.entries(e.add).map(([g,n])=>`<span class="cg">${n>1?`<b>${n}</b>`:''}${tok(g)}</span>`).join(''):''}${CHAINIC}</span>`:'',e.coins?`<span class="chip">${coinT('+'+e.coins)}</span>`:'',e.draw?`<span class="chip">${cardT('+'+e.draw)}</span>`:'',e.buyDisc?`<span class="chip kauf">${coinT('−'+e.buyDisc)}<span class="ct">Kauf</span></span>`:''].filter(Boolean).join('');
+const BOLT=`<i class="pm gi dk" style="${icv(15)}"></i>`;
+const ABLG='';
+const ABL=`<span class="abl" data-info="Ablegen\nKarte ohne Wirkung auf den Ablagestapel legen und dafür 1 Münze nehmen.">${ico(18)}</span>`;
+const actChips=e=>{const n=ICE[canon(e)];if(n)return `<span class="chip kette" data-t="Aktion">${ico(n,'ci dk')}</span>`;return actChipsOld(e)};
+const actChipsOld=e=>[e.act?`<span class="chip kette" data-t="Kette auslösen">${e.add?Object.entries(e.add).map(([g,n])=>`<span class="cg">${n>1?`<b>${n}</b>`:''}${tok(g)}</span>`).join(''):''}${CHAINIC}</span>`:'',e.coins?`<span class="chip">${coinT('+'+e.coins)}</span>`:'',e.draw?`<span class="chip">${cardT('+'+e.draw)}</span>`:'',e.buyDisc?`<span class="chip kauf">${coinT('−'+e.buyDisc)}<span class="ct">Kauf</span></span>`:''].filter(Boolean).join('');
 const effLines=e=>[e.act?[`${FLOW}`,`Wähle eine Reihe: Ihre Plättchen laufen nacheinander ab, im Frühling von links nach rechts, im Herbst von rechts nach links. Jedes Plättchen gibt, wandelt oder verkauft Waren; was übrig bleibt, geht an das nächste.${e.add?' Start: '+Object.entries(e.add).map(([g,n])=>`${n} ${G[g]}`).join(' und ')+'.':''}`]:null,e.coins?[coinT('+'+e.coins),`Du bekommst ${e.coins} Münzen.`]:null,e.draw?[cardT('+'+e.draw),`Du ziehst ${e.draw} Karte${e.draw>1?'n':''}.`]:null,e.buyDisc?[coinT('−'+e.buyDisc),`Dein nächster Kauf kostet ${e.buyDisc} Münzen weniger.`]:null].filter(Boolean);
 function bigHtml(id,edges,textless){const c=CARDS[id];
   const li=t=>`<li>${t}</li>`;
@@ -728,14 +754,14 @@ function fitK(html,avail,cap=1){const stk=[...html.matchAll(/<span class="stk[^"
 function cardHtml(id,o={}){const c=CARDS[id],art=ART[id],g=c.fam==='grund';
  const tileH=g?c.tile.map(r=>`<span class="rl"${fitK(ruleIc(r),5.2,c.tile.length>1?1.15:1.4)}</span>`).join(''):`<span class="rl"${fitK(c.tile.map(ruleIc).join('<span class="gap"></span>'),5.2)}</span>`;
  return `<button class="card ${c.side} f-${c.fam} ${o.sel?'sel':''} ${o.off?'off':''} ${o.big?'bigc':''}" ${o.big?'':`data-a="${o.a||''}" data-i="${o.i??''}" data-id="${id}" data-big="${id}"`}>
- <span class="art"${art?` style="background-image:url(${art})"`:''}></span>${g?'<span class="sbadge">S</span>':''}${g?'':`<span class="acts"><span class="bolt" title="Aktion">${BOLT}</span>${actChips(c.eff)}</span>`}${o.price!=null?`<span class="cost" title="Kaufpreis">${coinT(o.price)}</span>`:''}${c.w>1?'<span class="wtag">2 Felder</span>':''}<span class="ttl">${esc(c.n)}</span>
+ <span class="art"${art?` style="background-image:url(${art})"`:''}></span>${g?`<span class="sbadge">${ico(26)}</span>`:''}${g?'':`<span class="acts"><span class="bolt" title="Aktion">${BOLT}</span>${actChips(c.eff)}</span>`}${o.price!=null?`<span class="cost" title="Kaufpreis">${coinT(o.price)}</span>`:''}${c.w>1?'<span class="wtag">2 Felder</span>':''}<span class="ttl">${esc(c.n)}</span>
  <span class="body ${g?'solo':''}"><span class="ln main">${g?`<span class="rls">${tileH}</span>`:tileH}</span>${g?'':`<span class="ln up"><span class="rl"${fitK(c.edge.map(ruleIc).join('<span class="gap"></span>'),5.2)}</span></span>`}</span></button>`}
 function boardHtml(p,pi,pick){
   return `<div class="board">${p.rows.map((rw,r)=>{
     const cl=closed(rw),tired=rowTired(S,p,r),free=COLS-used(rw);
     const tile=(t,sd,ti)=>{const c=CARDS[t.id];const pk=pick&&pick.tiles&&pick.tiles(r,sd,ti),m=t.edges.length>=3;
       const ups=t.edges.map(e=>`<span class="ust f-${CARDS[e].fam}" data-big="${e}" title="Upgrade: ${esc(CARDS[e].n)}"><span class="uic">${CARDS[e].edge.map(ruleIc).join('<span class="gap"></span>')}</span></span>`).join('');
-      return `<div class="tw" style="grid-column:span ${c.w}"><button class="tile ${sd} f-${c.fam} ${ARTS[t.id]?'has-art':''} ${pk?'pick':''} ${m?'mst':''}" style="${ARTS[t.id]?`background-image:url(${ARTS[t.id]})`:''}" data-a="${pk?'tile':'tinfo'}" data-id="${t.id}" data-big="${t.id}" data-edges="${t.edges.join(',')}" data-r="${r}" data-sd="${sd}" data-ti="${ti}" data-p="${pi}">${c.fam==='grund'&&S.draft?'<span class="sbadge" data-info="Startplättchen">S</span>':''}<span class="tico">${c.tile.map(r=>`<span class="tl">${ruleIc(r)}</span>`).join('')}</span>${m?'<span class="mstar" aria-label="Meisterstück">★</span>':''}<b>${HY[t.id]||esc(c.n)}</b></button>${ups?`<div class="ups">${ups}</div>`:''}</div>`};
+      return `<div class="tw" style="grid-column:span ${c.w}"><button class="tile ${sd} f-${c.fam} ${ARTS[t.id]?'has-art':''} ${pk?'pick':''} ${m?'mst':''}" style="${ARTS[t.id]?`background-image:url(${ARTS[t.id]})`:''}" data-a="${pk?'tile':'tinfo'}" data-id="${t.id}" data-big="${t.id}" data-edges="${t.edges.join(',')}" data-r="${r}" data-sd="${sd}" data-ti="${ti}" data-p="${pi}">${c.fam==='grund'&&S.draft?'<span class="sbadge" data-info="Startplättchen">${ico(26)}</span>':''}<span class="tico">${c.tile.map(r=>`<span class="tl">${ruleIc(r)}</span>`).join('')}</span>${m?'<span class="mstar" aria-label="Meisterstück">★</span>':''}<b>${HY[t.id]||esc(c.n)}</b></button>${ups?`<div class="ups">${ups}</div>`:''}</div>`};
     const pr=pick&&pick.rows&&pick.rows(r);
     const info=`Reihe ${r+1}: Stadt ${sideW(rw,'S')} · Wildnis ${sideW(rw,'W')} · frei ${free}.${cl?' Gesäumt – Ketten laufen durch die ganze Reihe und bringen Ruhm.':' Offen – Ketten laufen nur durch die Seite der Jahreszeit, Ruhm zählt als Münzen.'}${tired?' Ruht diese Runde (gerade aktiviert).':''}`;
     return `<div class="row ${cl?'closed':''} ${pr?'pickrow':''} ${tired?'tired':''}" ${pr?`data-a="row" data-r="${r}"`:''}><span class="rn" data-info="${esc(info)}">${r+1}</span>${rw.S.map((t,ti)=>tile(t,'S',ti)).join('')}${Array.from({length:free},(_,k)=>{const nS=Math.max(0,MINSIDE-sideW(rw,'S')),nW=Math.max(0,MINSIDE-sideW(rw,'W')),z=k<nS?'zs':k>=free-nW?'zw':'zf',pc=pr&&pick.card,land=pc&&(pc.side==='S'?k<pc.w:k>=free-pc.w),sm=k===nS&&nS>0||(z==='zw'&&k===free-nW&&k>0&&!(k-1<nS));return `<span class="cell ${z} ${land?'land '+pc.side:''}" ${pr?`data-a="row" data-r="${r}"`:''} data-info="${esc(info+(z==='zs'?' Dieses Feld gehört sicher zur Stadt (jede Seite braucht mindestens 2 Felder).':z==='zw'?' Dieses Feld gehört sicher zur Wildnis (jede Seite braucht mindestens 2 Felder).':' Freies Feld: Hier entscheidet sich, wo Stadt und Wildnis sich treffen.'))}"></span>`}).join('')}${[...rw.W].reverse().map((t,i)=>tile(t,'W',rw.W.length-1-i)).join('')}${tired?'<span class="rz" aria-label="ruht">☾</span>':''}</div>`}).join('')}</div>`}
