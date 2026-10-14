@@ -18,7 +18,9 @@ const PARAM = {
   guildFirst: 4, guildSecond: 2,
   dukPerRuhm: 4,
   noise: 0.15,
-  rest: 0,            // 1 = Schüren nur durch Passen (Rasten würfelt kalte Würfel neu), kein Schüren mitten in der Runde
+  seat3p: 1,          // 3 Spieler: dritter Sitz +Dukaten (Sitz 1 hat sonst Vorteil)
+  seatDuk: 0,         // Ausgleich: Sitz i erhält i*seatDuk Dukaten extra
+  rest: 1,            // 1 = Schüren nur durch Passen (Rasten würfelt kalte Würfel neu), kein Schüren mitten in der Runde
   lookDepth: 3, lookBeam: 3, lookTop: 8,   // Planer-Bot: Tiefe, Strahlbreite, Kandidaten im ersten Schritt
   orderQ: -3,          // Offset auf Güte-Anforderungen der Aufträge
   cap: 0,             // Slots pro Ort (0 = nach Spielerzahl)
@@ -121,7 +123,7 @@ function newGame(profNames, seed) {
   const players = profNames.map((name, seat) => ({
     name, seat, prof: PROFILES[name],
     dice: Array.from({ length: PARAM.dice }, () => roll(rnd)),
-    res: { sand: 2, soda: 1, holz: 1, masse: 0, duk: PARAM.startDuk },
+    res: { sand: 2, soda: 1, holz: 1, masse: 0, duk: PARAM.startDuk + seat * PARAM.seatDuk + (np === 3 && seat === 2 ? PARAM.seat3p : 0) },
     pieces: [], cards: [], signs: { B: 0, H: 0, M: 0 }, ruhm: 0,
     passed: false, schueren: 0, noCoolUsed: false, bfreeUsed: false,
     src: { order: 0, guild: 0, card: 0, left: 0 },
@@ -447,7 +449,9 @@ for (const kv of setS.split(',').filter(Boolean)) { const [k, v] = kv.split('=')
 if (setS) console.log('Parameter:', setS);
 
 const ST = ['ausgewogen', 'blaeser', 'haendler', 'meister'];
-if (argv.includes('--planer')) {
+if (argv.includes('--p3')) {
+  run('Planer-Spiegel 3p', ['planer', 'planer', 'planer'], n);
+} else if (argv.includes('--planer')) {
   run('Planer vs ausgewogen 2p', ['planer', 'ausgewogen'], n);
   run('Planer-Spiegel 2p', ['planer', 'planer'], n);
   run('Planer-Spiegel 4p', ['planer', 'planer', 'planer', 'planer'], n);
