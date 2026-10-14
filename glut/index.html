@@ -142,6 +142,8 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .pci{display:inline-grid;place-items:center;background:var(--paper);border-radius:50%;width:21px;height:21px;margin-right:5px;vertical-align:middle}.pci svg{width:16px;height:16px;display:block}
 .pill svg{width:1.25em;height:1.25em;flex:none}
 .opt small .ri,.opt small .ti{font-weight:700}
+.coach .ri svg,.coach .ti svg{background:#FBF3E8;border-radius:50%;padding:2px;box-sizing:content-box}
+.rules .ri svg,.rules .ti svg{width:1.2em;height:1.2em}
 /* ---- Animationen ---- */
 .btn,.chip,.opt,.mbtn,.xbtn,.pill[data-a],.plc,.die,.pdots button{transition:transform .12s ease,box-shadow .12s ease}
 .btn:active,.chip:active,.opt:active,.mbtn:active,.xbtn:active,.pill[data-a]:active{transform:scale(.95)}
@@ -470,6 +472,11 @@ function icoTxt(h){
   h=h.replace(/([+−-]?)(\d+)\s*(Ton|Asche|Holz|Rohlinge|Rohling|Dukaten|Dukat|Ruhm)(?![\wäöüß])/g,(m,sg,n,w)=>`<span class="ri">${sg}${n}${RIC[RWORD[w]]}</span>`);
   h=h.replace(/(?<![\wäöüß>])(Fliesen|Fliese|Krüge|Krug|Zierplatten|Zierplatte)(?![\wäöüß])/g,(m,w)=>`<span class="ti">${TIC[/^Fl/.test(w)?'F':/^Kr/.test(w)?'K':'Z']}</span>${w}`);
   return h}
+// Für Fließtexte mit <b>Wort</b> (Lernspiel, Spielregeln): benannte Waren und Stücke bekommen ihr Symbol, Mengen („2 Ton“) werden zu Symbolen
+function tutIco(h){
+  h=h.replace(/<b>(Ton|Asche|Holz|Rohlinge|Rohling|Dukaten|Dukat|Ruhm)<\/b>/g,(m,w)=>`<b>${w}</b> <span class="ri">${RIC[RWORD[w]]}</span>`);
+  h=h.replace(/<b>(Fliesen|Fliese|Krug|Zierplatte)<\/b>/g,(m,w)=>`<span class="ti">${TIC[/^Fl/.test(w)?'F':/^Kr/.test(w)?'K':'Z']}</span><b>${w}</b>`);
+  return icoTxt(h)}
 const PHTML={
  ton:()=>`Hitze 1–6 → 1 · 2 · 3 · 3 · 4 · 5 ${RIC.ton.replace('<svg','<svg class="ri-i"')}`,
  asche:()=>`${ri('asche','+2')}`,
@@ -559,7 +566,7 @@ function menuHtml(){
     <button class="link" data-a="reload">Neueste Version laden</button></div></div></div>`}
 function rulesHtml(){
   if(!U.rules)return '';
-  return `<div class="overlay" data-a="rules-x"><div class="sheet rules" data-stop="1"><div class="sh"><h2 class="disp">Spielregeln</h2><button class="xbtn" data-a="rules-x" aria-label="Schließen">✕</button></div>
+  return tutIco(`<div class="overlay" data-a="rules-x"><div class="sheet rules" data-stop="1"><div class="sh"><h2 class="disp">Spielregeln</h2><button class="xbtn" data-a="rules-x" aria-label="Schließen">✕</button></div>
   <p><b>Ziel:</b> Am Ende die meisten Ruhm-Punkte. Du führst eine Fayence-Manufaktur. Deine <b>Würfel sind die Glut</b>: Die Zahl ist die Hitze (1–6).</p>
   <h3 class="disp">Dein Zug</h3><ul><li><b>Arbeiten:</b> Tippe einen Würfel (am Töpferscheibe auch zwei), dann einen Ort. Der Würfel wirkt mit seiner Hitze und <b>kühlt um 1 ab</b>. Auf 0 ist er kalt und kann nicht mehr eingesetzt werden.</li>
   <li><b>Anfachen:</b> Mit 1 Holz erhöhst du die Hitze eines Würfels für diesen Einsatz um 1 (bis 6, höchstens +2).</li>
@@ -569,7 +576,7 @@ function rulesHtml(){
   <li><b>Töpferscheibe:</b> Fliese (1 Würfel, 1 Rohling), Krug (2 gleiche Würfel) oder Zierplatte (2 aufeinanderfolgende Würfel), je 2 Rohlinge + 1 Holz. Güte = Summe.</li>
   <li><b>Kontor</b> (Hitze 2+): Stücke verkaufen (Fliese 3 · Krug/Zierplatte 8 Dukaten) oder einen Auftrag liefern.</li><li><b>Gildehaus:</b> Gildenkarten kaufen (Hitze ≥ Stufe).</li></ul>
   <h3 class="disp">Wertung</h3><p>Aufträge bringen Ruhm. Die drei Gilden (Töpfer, Händler, Brenner) sammeln Zeichen: Wer die meisten hat, bekommt 4 Ruhm, der Zweite 2 (nur ab 3 Spielern). Gewertet wird nach der halben Spielzeit und am Ende. Dazu zählen am Ende die Ruhm-Werte der Karten, je unverkauftem Stück 1 und je 4 Dukaten 1 Ruhm.</p>
-  <p class="note">Lange auf ein Element drücken zeigt eine Erklärung. Vollständige Regeln und Testergebnisse: REGELN.md im Repo.</p></div></div>`}
+  <p class="note">Lange auf ein Element drücken zeigt eine Erklärung. Vollständige Regeln und Testergebnisse: REGELN.md im Repo.</p></div></div>`)}
 function overHtml(){
   if(!S.over)return '';
   const order=S.players.map((p,i)=>({p,i})).sort((a,b)=>b.p.ruhm-a.p.ruhm||b.p.res.duk-a.p.res.duk);
@@ -683,7 +690,7 @@ function tutAllowed(a,d){
 function tutHtml(){
   const st=tutStep();if(!st)return '';const last=TUT.i===TUT_STEPS.length-1;
   const btn=last?'<button class="btn" data-a="tutend">Echtes Spiel starten</button>':!st.done?'<button class="btn" data-a="tutnext">Weiter</button>':st.wait?'<span class="cwait">· · ·</span>':'';
-  return `<div class="coach" id="coach" role="dialog" aria-live="polite"><div class="cface">${KILN}</div><div class="ctext"><span class="cstep">Lernspiel · ${TUT.i+1}/${TUT_STEPS.length} · ${esc(st.ch)}</span><p>${st.text}</p>${st.why?`<p class="cwhy"><b>Warum?</b> ${st.why}</p>`:''}<div class="cbtns">${btn}<button class="cquit" data-a="tutquit">Lernspiel beenden</button></div></div></div>`}
+  return `<div class="coach" id="coach" role="dialog" aria-live="polite"><div class="cface">${KILN}</div><div class="ctext"><span class="cstep">Lernspiel · ${TUT.i+1}/${TUT_STEPS.length} · ${esc(st.ch)}</span><p>${tutIco(st.text)}</p>${st.why?`<p class="cwhy"><b>Warum?</b> ${tutIco(st.why)}</p>`:''}<div class="cbtns">${btn}<button class="cquit" data-a="tutquit">Lernspiel beenden</button></div></div></div>`}
 function tutDecorate(){
   const st=tutStep(),coach=document.getElementById('coach');if(!st||!coach)return;
   const els=st.sel?[...document.querySelectorAll(st.sel)]:[];els.forEach(e=>e.classList.add('tut-hl'));
