@@ -58,7 +58,7 @@ Keine zweite Schrift, keine Handschrift, keine Serife. Großschreibung normal (k
 - **Rahmen und Versatzschatten:** Weinbraun, harter 3-px-Versatz (`3px 3px 0`), kein weicher Schatten.
 - **Würfel:** abgerundetes Quadrat (16 px), 3-px-Rahmen, Zahl groß, Farbe nach Hitzeleiter.
 - **Stempel-Rosetten** für Ruhm (Koralle, leicht gedreht) – wie bei Aufträgen und Gilden-Wertung.
-- Vorratsleiste immer sichtbar unter der Kopfzeile (Spielregal-Konvention); kleine Farbscheibe + Zahl je Ware.
+- Vorratsleiste immer sichtbar unter der Kopfzeile (Spielregal-Konvention); je Ware ein eigenes **Symbol** (flach mit Weinbraun-Kontur, `RIC`) + Zahl: Ton = Lehmklumpen (Ocker), Asche = Aschehaufen mit Flocken (Lila), Holz = Holzscheibe mit Jahresringen, Rohling = Vase (Hellkobalt), Dukaten = Münze (Lime), Ruhm = Stern im Koralle-Stempel. **Stücke** ebenso (`TIC`): Fliese = Kachel mit Blüte, Krug = Kobaltkrug mit Henkel, Zierplatte = Teller mit Ring. Symbole stehen auch in Rezeptzeilen, Kosten und Erträgen der Auswahlfenster, Chronik und Aufträgen (`icoTxt` verwandelt „+3 Ton“, „Krug“ … automatisch); Erklär-Blasen bleiben Text.
 - Alle übrigen Spielregal-Konventionen gelten unverändert (Info-Blase per langem Drücken, Menü ☰, Kopfzeile deckend,
   Zug rückgängig, Lernspiel, Wischseiten, `HERO_TOP` auf dem Startbildschirm).
 
@@ -83,6 +83,11 @@ aber der Ofen stand am Rand. Jetzt trägt das Cover das Spiel in einem Bild:
 - **Wortmarke** „Glut." in Bricolage Breite 75, Weinbraun, mit Zeile „Würfel, die abbrennen."
 - Körnung nur als feine, seltene Sprenkel über allem (Papier), kein Rauschen.
 Für Handys (9:19,5) wird das Cover unten verankert und oben mit Pfirsich aufgefüllt; ein Hochformat-Zuschnitt lässt sich aus dem Skript erzeugen.
+
+## Bewegung
+Bewegung erzählt die Mechanik: **Hitze sinkt sichtbar** (Würfel zischt und kühlt ab, kalte Würfel zittern, Rasten würfelt sie neu herein), Vorräte federn mit „+2/−1“,
+der **Brennofen glüht auf**, wenn er benutzt wird, Ruhm schlägt als **Stempel** ein, Runden werden als **Banner** angesagt, der Sieg bekommt Konfetti. Das Cover lebt (Glut im Ofen, Funken).
+Federnde, kurze Bewegungen (0,3–0,9 s, Überschwinger), nie Dauerbewegung im Spielfeld; Dauerbewegung nur auf dem Cover. `prefers-reduced-motion` schaltet alles ab.
 
 ## Offene Entscheidungen
 1. ~~Thema~~ **entschieden: Fayence-Manufaktur** (Kobalt = Glasurpigment, Brennofen = Hitze). Begriffe siehe `REGELN.md`.
