@@ -69,18 +69,18 @@ Keine zweite Schrift, keine Handschrift, keine Serife. Großschreibung normal (k
 - **Dichte Muster in Flächen:** Streifen, Punkte und Blätter wie im Berg-Poster, nur in 2–3 Tönen derselben Farbe.
 - **Palette je Bild begrenzt:** Pfirsich + Kobalt + Koralle (+ Pink/Olive), nicht alles zugleich.
 
-## Cover (v0.3 – erzählt jetzt das Spielthema)
+## Cover (v0.4 – der Brennofen ist der Mittelpunkt)
 Datei `cover.png` (800×1200, 2:3), erzeugt aus `tools/cover.py` (SVG) und `tools/render-cover.mjs` (PNG mit Bricolage).
-Warum die erste Fassung kindlich wirkte: runde Klumpen-Hügel, dicke Strahlen, winziges Haus, Rauschen über allem.
-Was die Referenzen dagegen tun und das Cover jetzt nachbaut:
-- **Eine große, ruhige Form** (Berg mit Weg und Haus) statt vieler kleiner Dinge; viel Pfirsich als Luft darum.
-- **Textur trägt die Fläche:** Konturlinien parallel zum Weg (gestrichelt wie Handschnitt), Punktgruppen, Farne – links Weiß auf Kobalt,
-  rechts Dunkelkobalt auf Hellkobalt. Das ist Handwerk, nicht Körnung.
-- **Streng begrenzte Palette:** Pfirsich, drei Blautöne, Sonnen-Koralle, Creme, Weinbraun. Sonne klein und mit Spirale (wie im Berg-Poster).
-- **Inhalt statt Stimmung (v0.3):** Die Sonne ist ein **Würfel mit 6 Augen** (Hitze). Entlang des Weges liegen sieben Würfel, die von **6 (dunkles Rot)
-  bis kalt (Lila, gestrichelt)** abkühlen – das Spielprinzip als Bild. **Kachel-Intarsien** (Azulejo-Quatrefoils in Kobalt/Creme) liegen in den
-  Berg eingelegt (Fayence). Neben dem Haus steht ein **Brennofen** (Terrakotta-Kuppel mit glühender Öffnung) mit Schornstein und Rauchfaden.
-- **Wortmarke** „Glut." in Bricolage Breite 75, Weinbraun, mit Zeile „Würfel, die abbrennen." – Platzhalter, bis das Thema steht.
+Verlauf: Die erste Fassung (Landschaft mit Haus) wirkte kindlich und hatte nichts mit dem Spiel zu tun; die zweite erzählte das Thema,
+aber der Ofen stand am Rand. Jetzt trägt das Cover das Spiel in einem Bild:
+- **Der Brennofen steht groß in der Mitte:** Terrakotta-Kuppel mit Backsteinfugen, hoher Schornstein mit Rauchfaden zur Sonne,
+  Sockel mit Kachelband, glühende Öffnung in Schichten (Dunkelrot → Koralle → Orange → Gelb).
+- **Im Feuer glüht ein Würfel mit 6 Augen** – die Hitze, um die sich das Spiel dreht.
+- **Aus der Öffnung führt der Weg:** darauf Würfel, die von 5 (heiß) bis kalt (Lila, gestrichelt) abkühlen.
+- **Die Sonne oben rechts ist ebenfalls ein 6er-Würfel.** Hitze zieht sich als Motiv durch das ganze Bild.
+- **Warm gegen kühl:** der warme Ofen vor Kobalt- und Hellkobalt-Hügeln mit dichter Konturtextur (gestrichelt entlang des Weges, Punktgruppen),
+  Vordergrund-Blätter in Dunkelkobalt – der Ofen hebt sich so von selbst ab.
+- **Wortmarke** „Glut." in Bricolage Breite 75, Weinbraun, mit Zeile „Würfel, die abbrennen."
 - Körnung nur als feine, seltene Sprenkel über allem (Papier), kein Rauschen.
 Für Handys (9:19,5) wird das Cover unten verankert und oben mit Pfirsich aufgefüllt; ein Hochformat-Zuschnitt lässt sich aus dem Skript erzeugen.
 
