@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // GLUT – Balancing-Simulation v0.1
 // Aufruf:  node sim.mjs [--n 1000] [--set cool=1,dice=4] [--quiet]
+// Begriffe: sand/soda/masse = Ton/Asche/Rohling; Gilden B/H/M = Töpfer/Händler/Brenner; Orte siehe REGELN.md.
 // Die Regeln stehen in REGELN.md; hier sind sie 1:1 als Code abgebildet.
 // Bots = einschrittige Greedy-Bewertung (value) mit Profil-Gewichten. Das ist eine UNTERGRENZE
 // für Spielstärke: zeigt Ausreißer-Strategien, ersetzt keine Tests mit Menschen.
