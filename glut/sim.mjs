@@ -18,6 +18,7 @@ const PARAM = {
   guildFirst: 4, guildSecond: 2,
   dukPerRuhm: 4,
   noise: 0.15,
+  rest: 0,            // 1 = Schüren nur durch Passen (Rasten würfelt kalte Würfel neu), kein Schüren mitten in der Runde
   lookDepth: 3, lookBeam: 3, lookTop: 8,   // Planer-Bot: Tiefe, Strahlbreite, Kandidaten im ersten Schritt
   orderQ: -3,          // Offset auf Güte-Anforderungen der Aufträge
   cap: 0,             // Slots pro Ort (0 = nach Spielerzahl)
@@ -174,7 +175,7 @@ function pairs(p) {
 
 function actions(s) {
   const p = s.p, R = p.res, out = [{ type: 'pass' }];
-  if (p.dice.some(h => h === 0)) {
+  if (!PARAM.rest && p.dice.some(h => h === 0)) {
     const c = p.schueren > 0 ? PARAM.schuerenExtraHolz : 0;
     if (R.holz >= c) out.push({ type: 'schueren' });
   }
@@ -221,7 +222,11 @@ function cool(p, dice) {
 
 function apply(s, a) {
   const p = s.p, R = p.res;
-  if (a.type === 'pass') { p.passed = true; return; }
+  if (a.type === 'pass') {
+    p.passed = true;
+    if (PARAM.rest) { for (let i = 0; i < p.dice.length; i++) if (p.dice[i] === 0) p.dice[i] = s.real ? roll(s.rnd) : 3.5; if (s.real && p.dice.some(h => h > 0)) p.st.schueren++; }
+    return;
+  }
   if (a.type === 'schueren') {
     if (p.schueren > 0) R.holz -= PARAM.schuerenExtraHolz;
     p.schueren++; p.st.schueren++;
@@ -304,6 +309,11 @@ function chooseLook(g, pi, pl, s0, acts, left) {
   }
   first.sort((x, y) => y.v - x.v);
   let best = null, bv = 0;
+  if (PARAM.rest) {
+    const sv = cloneView(s0); apply(sv, { type: 'pass' });
+    const dv = value(sv, pl.prof, left) - v0 + (g.rnd() - 0.5) * 2 * PARAM.noise;
+    if (dv > bv) { bv = dv; best = { type: 'pass' }; }
+  }
   for (const f of first.slice(0, PARAM.lookTop)) {
     let top = f.v, frontier = [f.sv];
     for (let d = 2; d <= PARAM.lookDepth; d++) {
@@ -336,7 +346,7 @@ function choose(g, pi) {
   const v0 = value(s0, pl.prof, left);
   let best = acts[0], bv = 0;
   for (const a of acts) {
-    if (a.type === 'pass') continue;
+    if (a.type === 'pass' && !PARAM.rest) continue;
     const sv = view(g, pi, false); apply(sv, a);
     const dv = value(sv, pl.prof, left) - v0 + (g.rnd() - 0.5) * 2 * PARAM.noise;
     if (dv > bv) { bv = dv; best = a; }
