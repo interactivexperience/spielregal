@@ -84,6 +84,11 @@ aber der Ofen stand am Rand. Jetzt trägt das Cover das Spiel in einem Bild:
 - Körnung nur als feine, seltene Sprenkel über allem (Papier), kein Rauschen.
 Für Handys (9:19,5) wird das Cover unten verankert und oben mit Pfirsich aufgefüllt; ein Hochformat-Zuschnitt lässt sich aus dem Skript erzeugen.
 
+## Bewegung
+Bewegung erzählt die Mechanik: **Hitze sinkt sichtbar** (Würfel zischt und kühlt ab, kalte Würfel zittern, Rasten würfelt sie neu herein), Vorräte federn mit „+2/−1“,
+der **Brennofen glüht auf**, wenn er benutzt wird, Ruhm schlägt als **Stempel** ein, Runden werden als **Banner** angesagt, der Sieg bekommt Konfetti. Das Cover lebt (Glut im Ofen, Funken).
+Federnde, kurze Bewegungen (0,3–0,9 s, Überschwinger), nie Dauerbewegung im Spielfeld; Dauerbewegung nur auf dem Cover. `prefers-reduced-motion` schaltet alles ab.
+
 ## Offene Entscheidungen
 1. ~~Thema~~ **entschieden: Fayence-Manufaktur** (Kobalt = Glasurpigment, Brennofen = Hitze). Begriffe siehe `REGELN.md`.
 2. **Tintenfallen-Optik der Referenzschrift:** Bricolage ist ein guter, freier Ersatz; ein Kauf der echten Schrift wäre möglich.

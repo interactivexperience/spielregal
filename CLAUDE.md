@@ -212,7 +212,12 @@ drei Wischseiten (Orte · Werkstatt · Aufträge & Gildenhaus, Punkte im Fuß). 
 (Würfel 6·4·2·1, feste Aufträge/Karten) – Brennofen → Rohling, Krug mit Anfachen (Auswahlfenster), Auftrag liefern, kleiner Würfel in der Aschehütte, Rasten, neue Runde (Lotte beginnt, weil sie zuerst
 gerastet hat), Aufträge, Gilden. Coach **Ottilie**, der Brennofen mit Gesicht (`KILN`), als dunkle Karte mit Limerand gegenüber dem markierten Element (`.tut-hl`, Kobaltring); nur die erlaubten Aktionen
 (`allow`) gehen, sonst Hinweis; Lotte ist geskriptet (`tutBotAction`: Wald, Tongrube, dann Rasten); wird weder gespeichert noch gemeldet, kein Zug rückgängig. Test: `glut-tutorial.mjs`.
-**Noch nicht umgesetzt:** Solo-Automa, Bildmaterial auf Karten, Sound/Animationen; die Anfachen-Auswahl und das Auswahlfenster sind schlicht.
+**Animationen und Mikro-Interaktionen** (Owner-Wunsch; `fxSnap`/`fxDiff`/`fxRun` am Ende von `render`, Zustandsvergleich wie in Drei Schwestern): Würfel kühlen sichtbar ab (`fx-cool` mit Dampf, kalt = Zittern und lila Ring `fx-cold`),
+neu gewürfelte drehen herein (`fx-roll`), angetippte wackeln (`fx-sel`); Vorrats-Chips federn mit schwebendem „+2/−1“ (`fx-bump`, `.fl`); Figuren fallen auf den Ort, der Brennofen glüht auf (`fx-glow`, sonst `fx-stamp`); neue Stücke/Aufträge poppen/gleiten ein;
+Ruhm ab +5 schlägt als Stempel ein (`.bigstamp`), jede neue Runde als Banner „Runde n – x beginnt“ (`.rbanner`), Sieg mit Konfetti (`.cf`); Fenster gleiten hoch, Ansage/Toast/Coach tauschen weich; Knöpfe geben beim Drücken nach, kurze Vibration (`buzz`).
+Effekte auf Elementen, die bei jedem Neuzeichnen neu entstehen, stehen in `FX` und werden mit negativem `animation-delay` nahtlos wieder angesetzt; schwebende Elemente liegen im `body` und überleben das Neuzeichnen. Das Cover lebt (Glut im Ofen `.kglow`, Funken `.ember`).
+`prefers-reduced-motion` und `RM()` schalten alles ab. `glut-smoke.mjs` prüft, dass Effekte ausgelöst werden (`FXC`-Zähler) und bei reduzierter Bewegung nichts läuft.
+**Noch nicht umgesetzt:** Solo-Automa, Bildmaterial auf Karten, Sound (Töne mit Schalter im Menü wären der nächste Schritt); die Anfachen-Auswahl und das Auswahlfenster sind schlicht.
 
 ## Saum (eigenes Spielkonzept)
 
