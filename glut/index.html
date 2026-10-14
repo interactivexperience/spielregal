@@ -135,6 +135,13 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .coach .cwait{font-weight:800;letter-spacing:3px;color:var(--lime)}
 .tut-hl{outline:4px solid var(--cobalt)!important;outline-offset:3px;animation:tutp 1.2s ease-in-out infinite;position:relative;z-index:3}
 @keyframes tutp{50%{outline-color:var(--sun)}}
+/* Symbole in Texten */
+.ri{display:inline-flex;align-items:center;gap:2px;font-weight:800;white-space:nowrap;vertical-align:middle}
+.ri svg,.ri-i{width:1.3em;height:1.3em;flex:none;display:inline-block;vertical-align:middle}
+.ti{display:inline-block;vertical-align:middle;margin-right:3px}.ti svg{width:1.35em;height:1.35em;display:block}
+.pci{display:inline-grid;place-items:center;background:var(--paper);border-radius:50%;width:21px;height:21px;margin-right:5px;vertical-align:middle}.pci svg{width:16px;height:16px;display:block}
+.pill svg{width:1.25em;height:1.25em;flex:none}
+.opt small .ri,.opt small .ti{font-weight:700}
 /* ---- Animationen ---- */
 .btn,.chip,.opt,.mbtn,.xbtn,.pill[data-a],.plc,.die,.pdots button{transition:transform .12s ease,box-shadow .12s ease}
 .btn:active,.chip:active,.opt:active,.mbtn:active,.xbtn:active,.pill[data-a]:active{transform:scale(.95)}
@@ -451,6 +458,26 @@ const RIC={
  rohling:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2.8h6v3.2c4 1.9 5.2 5.4 5.2 8.6 0 4.1-3 6.6-8.2 6.6S3.8 18.7 3.8 14.6c0-3.2 1.2-6.7 5.2-8.6z" fill="#6F7BE8" stroke="#3B1220" stroke-width="1.6" stroke-linejoin="round"/><path d="M6.2 12.6h11.6" stroke="#FBF3E8" stroke-width="1.6" stroke-linecap="round"/></svg>',
  duk:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.2" fill="#B4E35E" stroke="#3B1220" stroke-width="1.6"/><circle cx="12" cy="12" r="5.7" fill="none" stroke="#3B1220" stroke-width="1.3"/><path d="M12 8.4l2.6 3.6-2.6 3.6-2.6-3.6z" fill="#3B1220"/></svg>',
  ruhm:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.2" fill="#F2502E" stroke="#3B1220" stroke-width="1.6"/><polygon points="12,5.9 13.7,10.2 18.2,10.5 14.7,13.4 15.8,17.9 12,15.4 8.2,17.9 9.3,13.4 5.8,10.5 10.3,10.2" fill="#FBF3E8"/></svg>'};
+const TIC={
+ F:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2.6" fill="#FBF3E8" stroke="#3B1220" stroke-width="1.6"/><g fill="none" stroke="#2A2BC8" stroke-width="1.5"><circle cx="9.4" cy="12" r="2.4"/><circle cx="14.6" cy="12" r="2.4"/><circle cx="12" cy="9.4" r="2.4"/><circle cx="12" cy="14.6" r="2.4"/></g><path d="M12 10.4l1.6 1.6-1.6 1.6-1.6-1.6z" fill="#F2502E"/></svg>',
+ K:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.6 9.2c3.4 0 3.8 6.2 0 6.8" fill="none" stroke="#3B1220" stroke-width="1.7" stroke-linecap="round"/><path d="M8 2.8h7v3.2c3 1.6 4 4.6 4 7.6 0 4-3 6.8-7.5 6.8S4 17.6 4 13.6c0-3 1-6 4-7.6z" fill="#2A2BC8" stroke="#3B1220" stroke-width="1.6" stroke-linejoin="round"/><path d="M5.6 12.4h11.8" stroke="#FBF3E8" stroke-width="1.6" stroke-linecap="round"/><circle cx="11.5" cy="16.4" r="1.2" fill="#FBF3E8"/></svg>',
+ Z:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.2" fill="#FBF3E8" stroke="#3B1220" stroke-width="1.6"/><circle cx="12" cy="12" r="6.2" fill="none" stroke="#2A2BC8" stroke-width="1.5"/><circle cx="12" cy="12" r="2.2" fill="#F2502E"/><g fill="#2A2BC8"><circle cx="12" cy="7.2" r="1"/><circle cx="12" cy="16.8" r="1"/><circle cx="7.2" cy="12" r="1"/><circle cx="16.8" cy="12" r="1"/></g></svg>'};
+const ri=(k,t)=>`<span class="ri">${t}${RIC[k]}</span>`;
+const ti=t=>`<span class="ti">${TIC[t]}</span>`;
+// Wörter in Symbole verwandeln: „+3 Ton“ → +3 [Symbol], „Krug“ → [Symbol] Krug (Eingabe: bereits maskierter Text)
+const RWORD={Ton:'ton',Asche:'asche',Holz:'holz',Rohling:'rohling',Rohlinge:'rohling',Dukaten:'duk',Dukat:'duk',Ruhm:'ruhm'};
+function icoTxt(h){
+  h=h.replace(/([+−-]?)(\d+)\s*(Ton|Asche|Holz|Rohlinge|Rohling|Dukaten|Dukat|Ruhm)(?![\wäöüß])/g,(m,sg,n,w)=>`<span class="ri">${sg}${n}${RIC[RWORD[w]]}</span>`);
+  h=h.replace(/(?<![\wäöüß>])(Fliesen|Fliese|Krüge|Krug|Zierplatten|Zierplatte)(?![\wäöüß])/g,(m,w)=>`<span class="ti">${TIC[/^Fl/.test(w)?'F':/^Kr/.test(w)?'K':'Z']}</span>${w}`);
+  return h}
+const PHTML={
+ ton:()=>`Hitze 1–6 → 1 · 2 · 3 · 3 · 4 · 5 ${RIC.ton.replace('<svg','<svg class="ri-i"')}`,
+ asche:()=>`${ri('asche','+2')}`,
+ wald:()=>`${ri('holz','1')} bei Hitze 1–3 · ${ri('holz','2')} ab Hitze 4`,
+ ofen:()=>`${ri('ton','2')} + ${ri('asche','1')} → ${ri('rohling','1')} · so oft wie Hitze − 3 · +1 Brenner`,
+ topf:()=>`${ri('rohling','1')} → ${ti('F')} Fliese<br>${ri('rohling','2')} + ${ri('holz','1')} → ${ti('K')} Krug (2 gleiche Würfel) oder ${ti('Z')} Zierplatte (2 aufeinanderfolgende)`,
+ kontor:()=>`Verkaufen: ${ti('F')} 3 · ${ti('K')}${ti('Z')} 8 ${RIC.duk.replace('<svg','<svg class="ri-i"')}<br>oder Auftrag liefern → ${RIC.ruhm.replace('<svg','<svg class="ri-i"')}`,
+ gilde:()=>`Karte kaufen für ${RIC.duk.replace('<svg','<svg class="ri-i"')}, Hitze ≥ Stufe`};
 const PCOL=['#F2502E','#2A2BC8','#124D39','#9C90D6'];
 const avatar=(i)=>`<span class="av" data-p="${i}" style="background:${PCOL[i]}">${esc((S.players[i].bot?S.players[i].name:myName()).slice(0,1).toUpperCase())}</span>`;
 const dieHtml=(i,h,cls='')=>`<button class="die num h${Math.min(6,Math.max(0,Math.round(h)))} ${cls}" data-a="die" data-i="${i}" data-info="${h>0?`Würfel mit Hitze ${h}\nBei jedem Einsatz kühlt er um 1 ab. Kalte Würfel werden beim Rasten neu gewürfelt.`:'Kalter Würfel\nBeim Rasten wird er neu gewürfelt.'}">${h>0?h:'kalt'}</button>`;
@@ -489,9 +516,9 @@ function placesPage(){
     const occ=S.places[i],pick=myTurn()&&U.sel.length&&optionsFor(k).length>0,full=occ.length>=cap||occ.includes(0);
     return `<div class="plc ${pick?'pick':''} ${!pick&&full?'off':''}" data-a="place" data-k="${k}" data-info="${esc(PNAME[k]+'\n'+PINFO[k])}">
       <div class="t"><span class="n disp">${PNAME[k]}</span><span class="pill ${pick?'p-ink':'p-pink'}">${placeCond(k,p)}</span></div>
-      <div class="e">${esc(PINFO[k])}</div>
+      <div class="e">${PHTML[k]()}</div>
       <div class="occ">${occ.map(avatar).join('')}${Array.from({length:cap-occ.length},()=>'<span class="slot"></span>').join('')}</div></div>`}).join('')+`</div>`}
-function pieceChip(pc){return `<span class="pc ${pc.t}" data-info="${esc(TNAME[pc.t]+'\nGüte '+pc.q+'. Verkauf '+price(pc.t)+' Dukaten, oder für einen Auftrag.')}">${TNAME[pc.t]} ${pc.q}</span>`}
+function pieceChip(pc){return `<span class="pc ${pc.t}" data-info="${esc(TNAME[pc.t]+'\nGüte '+pc.q+'. Verkauf '+price(pc.t)+' Dukaten, oder für einen Auftrag.')}"><span class="pci">${TIC[pc.t]}</span>${TNAME[pc.t]} ${pc.q}</span>`}
 function workshopPage(){
   const p=me();
   const tbl=`<table class="tbl"><tr><th></th>${S.players.map((q,i)=>`<th>${avatar(i)}</th>`).join('')}</tr>${['T','H','B'].map(gl=>`<tr><td data-info="${esc(GNAME[gl]+'\nMehrheit nach Runde '+roundsFor(S.np)/2+' und am Ende: '+PARAM.guildFirst+' Ruhm für den ersten Platz'+(S.np>2?', '+PARAM.guildSecond+' für den zweiten':'')+'.')}">${GNAME[gl]}</td>${S.players.map(q=>`<td class="num">${q.signs[gl]}</td>`).join('')}</tr>`).join('')}</table>`;
@@ -502,13 +529,13 @@ function workshopPage(){
 function cardHtml(id,market){
   const c=CARD[id],p=me(),can=market&&myTurn()&&p.res.duk>=c.cost&&p.dice.some(h=>h>=c.tier);
   return `<div class="card ${can?'can':''}" data-info="${esc(c.n+'\n'+c.tx+'\nGilde: '+GNAME[c.g]+' (+2 Zeichen)')}"><div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span class="n disp">${c.n}</span>
-    <span class="pill p-ink">${GNAME[c.g]}</span></div><div class="e">${c.tx}</div>
-    <div class="chips"><span class="pill p-out">Stufe ${c.tier}</span><span class="pill p-pink">${c.cost} Dukaten</span><span class="pill p-out">${c.ruhm} Ruhm</span></div></div>`}
+    <span class="pill p-ink">${GNAME[c.g]}</span></div><div class="e">${icoTxt(esc(c.tx))}</div>
+    <div class="chips"><span class="pill p-out">Stufe ${c.tier}</span><span class="pill p-pink">${c.cost}${RIC.duk}</span><span class="pill p-out">${c.ruhm}${RIC.ruhm}</span></div></div>`}
 function ordersPage(){
   const p=me();
   const ord=S.orders.map((o,oi)=>{const can=assign(p.pieces,o.need);
-    return `<div class="ord ${can?'can':''}" data-oi="${oi}" data-info="${esc('Auftrag\nAm Kontor liefern: Stücke der Art und Mindestgüte abgeben → '+o.ruhm+' Ruhm'+(o.duk?' und '+o.duk+' Dukaten':'')+'.')}"><div class="need">${o.need.map(n=>`<span class="pc ${n.t}">${TNAME[n.t]}${n.q>1?' ≥'+n.q:''}</span>`).join('')}</div>${o.duk?`<span class="pill p-pink">+${o.duk}</span>`:''}<span class="stamp num">${o.ruhm}</span></div>`}).join('');
-  const lg=S.log.slice(-40).reverse().map(l=>`<div>${l.p>=0?'<b>'+esc(l.p===0?'Du':S.players[l.p].name)+'</b> ':''}${esc(l.t)} <span style="opacity:.55">· R${l.r}</span></div>`).join('');
+    return `<div class="ord ${can?'can':''}" data-oi="${oi}" data-info="${esc('Auftrag\nAm Kontor liefern: Stücke der Art und Mindestgüte abgeben → '+o.ruhm+' Ruhm'+(o.duk?' und '+o.duk+' Dukaten':'')+'.')}"><div class="need">${o.need.map(n=>`<span class="pc ${n.t}"><span class="pci">${TIC[n.t]}</span>${TNAME[n.t]}${n.q>1?' ≥'+n.q:''}</span>`).join('')}</div>${o.duk?`<span class="pill p-pink">+${o.duk}${RIC.duk}</span>`:''}<span class="stamp num">${o.ruhm}</span></div>`}).join('');
+  const lg=S.log.slice(-40).reverse().map(l=>`<div>${l.p>=0?'<b>'+esc(l.p===0?'Du':S.players[l.p].name)+'</b> ':''}${icoTxt(esc(l.t))} <span style="opacity:.55">· R${l.r}</span></div>`).join('');
   return `<div class="page" id="pg2"><div class="ptitle disp">Aufträge.</div>${ord}
     <div class="ptitle disp" style="margin-top:6px">Gildenhaus.</div>${S.market.map(id=>cardHtml(id,true)).join('')}
     <div class="box"><h3 class="disp">Chronik</h3><div class="log">${lg}</div></div></div>`}
@@ -520,7 +547,7 @@ function footHtml(){
 function sheetHtml(){
   if(!U.sheet)return '';
   return `<div class="overlay" data-a="sheet-x"><div class="sheet" data-stop="1"><div class="sh"><h2 class="disp">${esc(U.sheet.title)}</h2><button class="xbtn" data-a="sheet-x" aria-label="Schließen">✕</button></div>
-    <div class="opts">${U.sheet.opts.map((o,i)=>`<button class="opt" data-a="opt" data-i="${i}" data-m="${o.a.mode||''}">${esc(o.txt)}${o.sub?`<small>${esc(o.sub)}</small>`:''}</button>`).join('')}</div></div></div>`}
+    <div class="opts">${U.sheet.opts.map((o,i)=>`<button class="opt" data-a="opt" data-i="${i}" data-m="${o.a.mode||''}">${icoTxt(esc(o.txt))}${o.sub?`<small>${icoTxt(esc(o.sub))}</small>`:''}</button>`).join('')}</div></div></div>`}
 function menuHtml(){
   if(!U.menu)return '';
   return `<div class="overlay" data-a="menu-x"><div class="sheet" data-stop="1"><div class="sh"><h2 class="disp">Menü</h2><button class="xbtn" data-a="menu-x" aria-label="Schließen">✕</button></div><div class="menu">
