@@ -109,10 +109,14 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:16px;z-index:80;font-weight:600;font-size:14px;max-width:88vw;text-align:center;white-space:pre-line}
 .flash{animation:fl .6s}@keyframes fl{0%{box-shadow:0 0 0 0 var(--lime)}40%{box-shadow:0 0 0 8px var(--lime)}100%{box-shadow:0 0 0 0 transparent}}
 /* ---- Start ---- */
-.start{position:relative;min-height:100vh;min-height:100dvh;background:#F2C8B6;overflow:hidden;max-width:560px;margin:0 auto}
-.start .cov{position:absolute;top:44px;left:0;width:100%;height:calc(72% - 44px);object-fit:cover;object-position:top}
+.start{position:relative;display:flex;flex-direction:column;height:100vh;height:100dvh;background:#F2C8B6;overflow:hidden;max-width:560px;margin:0 auto}
+.start .stage{flex:1;min-height:0;overflow:hidden;position:relative;padding-top:calc(env(safe-area-inset-top) + 46px)}
+.start .cov{display:block;width:100%;height:auto}
 .leave{position:absolute;top:calc(env(safe-area-inset-top) + 10px);left:12px;z-index:3;background:var(--paper);border:2.5px solid var(--ink);border-radius:var(--r-pill);padding:5px 13px;font-weight:700;font-size:14px;color:var(--ink);text-decoration:none}
-.panel{position:absolute;left:0;right:0;bottom:0;background:var(--paper);border-top:3px solid var(--ink);border-radius:var(--r-card) var(--r-card) 0 0;padding:16px 16px calc(env(safe-area-inset-bottom) + 16px);display:flex;flex-direction:column;gap:10px;z-index:2}
+.panel{flex:none;background:var(--paper);border-top:3px solid var(--ink);border-radius:var(--r-card) var(--r-card) 0 0;padding:13px 14px calc(env(safe-area-inset-bottom) + 12px);display:flex;flex-direction:column;gap:9px;z-index:2}
+.prow{display:flex;gap:9px}.prow .btn{flex:1;padding:13px 10px;font-size:17px}.prow .btn.alt{padding:10.5px 10px}
+.prow2{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.prow2 .link{padding:4px 2px;font-size:14px}
 .input{width:100%;border:3px solid var(--ink);border-radius:var(--r-pill);padding:10px 16px;font:inherit;font-weight:600;font-size:16px;background:#fff8f0;color:var(--ink)}
 .chip{border:2.5px solid var(--ink);border-radius:var(--r-pill);padding:5px 14px;font-weight:700;font-size:14px;background:var(--paper)}.chip.on{background:var(--lime)}
 .note{font-size:12.5px;opacity:.75;line-height:1.35}
@@ -297,7 +301,7 @@ function outcome(a,p,s){ // {txt, sub}
   return{txt,sub}}
 
 /* ---- Spielablauf ---- */
-let S=null,U={page:0,sel:[],boost:0,sheet:null,menu:false,rules:false,toast:null,undo:[],pending:false};
+let S=null,U={page:0,sel:[],boost:0,sheet:null,menu:false,rules:false,setup:false,toast:null,undo:[],pending:false};
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(_){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(_){}};
 const fastPref=()=>lsGet('spielregal:botFast')==='1',botDelay=()=>fastPref()?160:600;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -501,17 +505,22 @@ function gameHtml(){return `<div class="app">${headHtml()}<div class="pages" id=
 
 /* ---- Startseite ---- */
 const SETUP={name:lsGet('glut:name')||'',bots:+(lsGet('glut:bots')||1)};
-function startHtml(){
+function setupHtml(){
+  if(!U.setup)return '';
   let prof=[];try{prof=(JSON.parse(lsGet('spielregal:players')||'[]')||[]).map(x=>x&&x.name).filter(Boolean)}catch(_){}
-  const sv=loadSave();
-  return `<div class="start"><img class="cov" src="cover.png" alt="Glut – Würfel, die abbrennen"><a class="leave" href="../" data-info="Zurück zum Spielregal">‹ Spielregal</a>
-    <div class="panel"><input class="input" id="nm" maxlength="30" placeholder="Dein Name" value="${esc(SETUP.name)}" autocomplete="off">
+  return `<div class="overlay" data-a="setup-x"><div class="sheet" data-stop="1"><div class="sh"><h2 class="disp">Spieler &amp; Gegner</h2><button class="xbtn" data-a="setup-x" aria-label="Schließen">✕</button></div>
+    <div class="menu"><input class="input" id="nm" maxlength="30" placeholder="Dein Name" value="${esc(SETUP.name)}" autocomplete="off">
     ${prof.length?`<div class="chips">${prof.slice(0,6).map(n=>`<button class="chip ${SETUP.name===n?'on':''}" data-a="pickname" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div>`:''}
     <div class="chips" style="align-items:center"><span class="lab">Gegner</span>${[1,2,3].map(n=>`<button class="chip ${SETUP.bots===n?'on':''}" data-a="bots" data-n="${n}">${n} Bot${n>1?'s':''}</button>`).join('')}</div>
-    <button class="btn wide" data-a="start">Partie beginnen</button>
-    <button class="btn alt wide" data-a="tutor" data-info="Lernspiel\nEine geführte Runde: Ofen, Krug, Auftrag und Rasten – mit allen Regeln im Spiel erklärt.">Lernspiel</button>
-    ${sv?'<button class="btn alt wide" data-a="resume">Partie fortsetzen</button>':''}
-    <button class="link" data-a="rules">Spielregeln lesen</button></div>${rulesHtml()}</div>`}
+    <p class="note">Zu zweit und zu viert gibt es 8 Runden, zu dritt 6. Die Bots spielen unterschiedlich: mal mehr Töpfer, mal Händler, mal Brenner.</p>
+    <button class="btn wide" data-a="setup-x">Fertig</button></div></div></div>`}
+function startHtml(){
+  const sv=loadSave(),nm=SETUP.name.trim()||myName();
+  const prim=sv?`<button class="btn wide" data-a="resume">Partie fortsetzen</button><div class="prow"><button class="btn alt" data-a="start">Neue Partie</button><button class="btn alt" data-a="tutor" data-info="Lernspiel\nEine geführte Runde: Ofen, Krug, Auftrag und Rasten – mit allen Regeln im Spiel erklärt.">Lernspiel</button></div>`
+    :`<div class="prow"><button class="btn" data-a="start">Partie beginnen</button><button class="btn alt" data-a="tutor" data-info="Lernspiel\nEine geführte Runde: Ofen, Krug, Auftrag und Rasten – mit allen Regeln im Spiel erklärt.">Lernspiel</button></div>`;
+  return `<div class="start"><a class="leave" href="../" data-info="Zurück zum Spielregal">‹ Spielregal</a>
+    <div class="stage"><img class="cov" src="cover.png" width="800" height="1200" alt="Glut – Würfel, die abbrennen"></div>
+    <div class="panel">${prim}<div class="prow2"><button class="pill p-out" data-a="setup" data-info="Spieler und Gegner\nName ändern und die Zahl der Bots wählen.">${esc(nm)} · ${SETUP.bots} Bot${SETUP.bots>1?'s':''} ▾</button><button class="link" data-a="rules">Spielregeln lesen</button></div></div>${setupHtml()}${rulesHtml()}</div>`}
 const BOTS=['Lotte','Ben','Mara'];
 function startGame(){
   const list=[{name:myName(),bot:false}];for(let i=0;i<SETUP.bots;i++)list.push({name:BOTS[i],bot:true});
@@ -521,6 +530,11 @@ const HERO_TOP='#F2C8B6';
 function themeFor(on){document.documentElement.style.backgroundColor=on?HERO_TOP:'';let tc=document.querySelector('meta[name="theme-color"]');if(!tc){tc=document.createElement('meta');tc.name='theme-color';document.head.appendChild(tc)}tc.content=on?HERO_TOP:'#F7EBDD'}
 
 /* ---- Rendern ---- */
+// Startbild: nie überdeckt. Ist Platz übrig, füllt Pfirsich oben auf (das Cover beginnt in Pfirsich); ist zu wenig Platz, wird unten angeschnitten.
+function fitStart(){const st=document.querySelector('.start .stage'),im=st&&st.querySelector('.cov');if(!im)return;
+  const pt=parseFloat(getComputedStyle(st).paddingTop)||0,h=st.clientHeight-pt,w=st.clientWidth,k=Math.min(1.08,Math.max(1,h/(w*1.5)));
+  im.style.width=(k*100)+'%';im.style.marginLeft=(-(k-1)*50)+'%';im.style.marginTop=Math.max(0,h-w*k*1.5)+'px'}
+addEventListener('resize',()=>{if(!S)fitStart()});
 let touching=false;
 function render(){
   if(touching){U.pending=true;return}
@@ -532,6 +546,7 @@ function render(){
   const onStart=!S;
   root.innerHTML=onStart?startHtml():gameHtml();
   themeFor(onStart);
+  if(onStart)fitStart();
   if(TUT&&S)tutDecorate();
   if(!onStart){const pg=document.getElementById('pages');if(pg){pg.scrollLeft=U.page*pg.clientWidth;[0,1,2].forEach(i=>{const e=document.getElementById('pg'+i);if(e)e.scrollTop=sy[i]})}}
   if(keep!==null){const n=document.getElementById('nm');if(n){n.focus();try{n.setSelectionRange(keep,keep)}catch(_){}}}}
@@ -624,6 +639,8 @@ function tutEnd(){TUT=null;S=null;clearTimeout(botT);U={page:0,sel:[],boost:0,sh
 document.addEventListener('click',e=>{
   if(e.target.closest('[data-stop]')&&!e.target.closest('[data-a]:not(.overlay)'))return;
   const el=e.target.closest('[data-a]');if(!el)return;const a=el.dataset.a;
+  if(a==='setup'){U.setup=true;render();return}
+  if(a==='setup-x'){U.setup=false;render();return}
   if(a==='bots'){SETUP.bots=+el.dataset.n;lsSet('glut:bots',SETUP.bots);render();return}
   if(a==='pickname'){SETUP.name=el.dataset.n;lsSet('glut:name',SETUP.name);render();return}
   if(a==='start'||a==='again'){S=null;lsSet(SAVE,'');startGame();return}

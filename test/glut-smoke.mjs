@@ -53,7 +53,9 @@ async function playGame(bots, label) {
   await page.evaluate(() => { try { localStorage.removeItem("glut:save"); localStorage.removeItem("spielregal:inbox:plays"); } catch (_) {} });
   await page.goto(url, { waitUntil: "load" });
   if (label === "erste") check(await cnt('a.leave[href="../"]') === 1, "Beenden-Link ‹ Spielregal fehlt auf dem Startbildschirm");
-  await page.click(`[data-a=bots][data-n='${bots}']`);
+  await page.click("[data-a=setup]");
+  await page.click(`.sheet [data-a=bots][data-n='${bots}']`);
+  await page.click(".sheet .btn[data-a=setup-x]");
   await page.click("[data-a=start]");
   let it = 0, works = 0, passes = 0, sheets = 0, pairs = 0, undone = 0, savedGame = false, resumed = false, bubble = false, menuOk = false;
   const tried = new Set();
@@ -129,6 +131,19 @@ async function playGame(bots, label) {
 try {
   await page.goto(url, { waitUntil: "load" });
   check(await page.title() === "Glut", "Titel");
+  // Startbild darf nicht von der Knopfleiste überdeckt werden (kleines und großes Handy)
+  for (const [w, h] of [[390, 844], [390, 664], [360, 640], [430, 932]]) {
+    await page.setViewportSize({ width: w, height: h }); await page.waitForTimeout(150);
+    const m = await page.evaluate(() => {
+      const im = document.querySelector(".start .cov").getBoundingClientRect(), pn = document.querySelector(".start .panel").getBoundingClientRect(), st = document.querySelector(".start .stage").getBoundingClientRect();
+      const visible = Math.min(im.bottom, st.bottom) - Math.max(im.top, st.top);
+      return { frac: visible / im.height, panelTop: pn.top, stageBottom: st.bottom, imW: im.width, vw: innerWidth, panelH: pn.height, vh: innerHeight };
+    });
+    check(m.frac >= 0.75, `Startbild bei ${w}×${h} nur zu ${(m.frac * 100).toFixed(0)} % sichtbar (mind. 75 %)`);
+    check(m.stageBottom <= m.panelTop + 1, `Startbild reicht bei ${w}×${h} unter die Knopfleiste`);
+    check(m.panelH < m.vh * 0.28, `Knopfleiste bei ${w}×${h} zu hoch (${m.panelH.toFixed(0)} px)`);
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
   await playGame(1, "erste");
   await playGame(3, "vier");
   await playGame(2, "drei");
