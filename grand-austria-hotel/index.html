@@ -145,7 +145,14 @@ button:disabled{cursor:default}
 /* --- hotel --- */
 .hotel{border:2.5px solid var(--ink);border-radius:6px 6px 16px 16px;background:#FDE7C8;padding:8px;box-shadow:4px 4px 0 var(--ink)}
 .roof{width:100%;height:46px;display:block;margin-bottom:-3px}
-.rooms{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.rooms{display:grid;grid-template-columns:repeat(5,1fr);gap:0;padding:2px}
+/* Gruppen: dicke Wand nur an den Außenseiten einer Gruppe, innen nur eine feine Linie */
+.rooms .room{border-radius:0;border-width:1px;border-style:solid;border-color:rgba(22,22,22,.28)}
+.rooms .room.e{border-style:dashed}
+.rooms .room.wt{border-top:4px solid var(--ink)}.rooms .room.wb{border-bottom:4px solid var(--ink)}
+.rooms .room.wl{border-left:4px solid var(--ink)}.rooms .room.wr{border-right:4px solid var(--ink)}
+.rooms .room.ctl{border-top-left-radius:12px}.rooms .room.ctr{border-top-right-radius:12px}
+.rooms .room.cbl{border-bottom-left-radius:8px}.rooms .room.cbr{border-bottom-right-radius:8px}
 .room{aspect-ratio:1/1.05;border:2.5px solid var(--ink);border-radius:10px 10px 4px 4px;position:relative;overflow:hidden;display:grid;place-items:center;background:#fff}
 .room.e{border-style:dashed;background:rgba(255,255,255,.55)}
 .room.e .cc{font-family:"Space Mono",monospace;font-size:11px;font-weight:700;display:flex;align-items:center;gap:1px}
@@ -1682,20 +1689,28 @@ function staffCard(id, opts = {}) {
     <div class="b"><div class="sn">${esc(st.n)}</div><div class="tx">${esc(st.tx)}</div></div>
   </${el}>`;
 }
+// Zimmergruppen wie im Original: gleichfarbige, zusammenhängende Zimmer bilden eine Gruppe; zwischen Gruppen liegt eine dicke Wand
+function grpCls(i) {
+  const f = Math.floor(i / 5), c = i % 5, g = GROUP_OF[i];
+  const same = (ff, cc) => ff >= 0 && ff <= 3 && cc >= 0 && cc <= 4 && GROUP_OF[ff * 5 + cc] === g;
+  // Anzeige: Etage 3 oben, daher oben = f+1, unten = f-1
+  const wt = !same(f + 1, c), wb = !same(f - 1, c), wl = !same(f, c - 1), wr = !same(f, c + 1);
+  return `g${GROUPS[g].length > 1 ? 'm' : 's'} ${wt ? 'wt' : ''} ${wb ? 'wb' : ''} ${wl ? 'wl' : ''} ${wr ? 'wr' : ''} ${wt && wl ? 'ctl' : ''} ${wt && wr ? 'ctr' : ''} ${wb && wl ? 'cbl' : ''} ${wb && wr ? 'cbr' : ''}`;
+}
 function roomTile(p, i, mode) {
   const st = p.rooms[i], c = ROOM_COLOR[i];
   if (st === 2) {
     const gid = p.roomGuest[i];
-    return `<div class="room grainy" style="background:${COL[c]}" data-info="${esc(roomInfo(p, i))}"><svg viewBox="0 0 100 100" class="ill" aria-hidden="true"><g filter="url(#wob)" stroke="#161616" stroke-width="3"><rect x="10" y="58" width="80" height="34" rx="6" fill="#FFF9EE"/><path d="M10,70 H90" fill="none"/></g><svg x="14" y="8" width="72" height="80" viewBox="22 0 56 62">${gid >= 0 ? head('g' + gid, Object.assign({}, GUESTS[gid][4], { sleepy: 1, glasses: 0 })).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '') : ''}</svg><g stroke="#161616" stroke-width="3"><path d="M8,66 C30,58 70,58 92,66 V92 H8 Z" fill="#FFF9EE"/><path d="M20,74 h10 M40,78 h14 M64,74 h12" stroke-width="2" fill="none"/></g></svg></div>`;
+    return `<div class="room grainy ${grpCls(i)}" style="background:${COL[c]}" data-info="${esc(roomInfo(p, i))}"><svg viewBox="0 0 100 100" class="ill" aria-hidden="true"><g filter="url(#wob)" stroke="#161616" stroke-width="3"><rect x="10" y="58" width="80" height="34" rx="6" fill="#FFF9EE"/><path d="M10,70 H90" fill="none"/></g><svg x="14" y="8" width="72" height="80" viewBox="22 0 56 62">${gid >= 0 ? head('g' + gid, Object.assign({}, GUESTS[gid][4], { sleepy: 1, glasses: 0 })).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '') : ''}</svg><g stroke="#161616" stroke-width="3"><path d="M8,66 C30,58 70,58 92,66 V92 H8 Z" fill="#FFF9EE"/><path d="M20,74 h10 M40,78 h14 M64,74 h12" stroke-width="2" fill="none"/></g></svg></div>`;
   }
   const ok = mode && mode.ok && mode.ok(i);
   const sel = mode && mode.sel && mode.sel.includes(i);
   const attrs = (ok || sel) && mode.act ? `data-a="${mode.act}" data-i="${i}" role="button" tabindex="0"` : '';
   if (st === 1) {
-    return `<div class="room p grainy ${sel ? 'sel' : ''} ${ok ? 'ok' : ''}" style="background:${COL[c]}" ${attrs} data-info="${esc(roomInfo(p, i))}"><svg viewBox="0 0 100 100" class="curt" aria-hidden="true"><g filter="url(#wob)" stroke="#161616" stroke-width="3"><path d="M8,6 C30,30 26,70 12,96 L8,96 Z" fill="#FFF9EE"/><path d="M92,6 C70,30 74,70 88,96 L92,96 Z" fill="#FFF9EE"/><path d="M30,80 H70 V90 H30 Z" fill="#FFF9EE"/></g></svg>${sel ? '<span class="tag">neu</span>' : ''}</div>`;
+    return `<div class="room p grainy ${grpCls(i)} ${sel ? 'sel' : ''} ${ok ? 'ok' : ''}" style="background:${COL[c]}" ${attrs} data-info="${esc(roomInfo(p, i))}"><svg viewBox="0 0 100 100" class="curt" aria-hidden="true"><g filter="url(#wob)" stroke="#161616" stroke-width="3"><path d="M8,6 C30,30 26,70 12,96 L8,96 Z" fill="#FFF9EE"/><path d="M92,6 C70,30 74,70 88,96 L92,96 Z" fill="#FFF9EE"/><path d="M30,80 H70 V90 H30 Z" fill="#FFF9EE"/></g></svg>${sel ? '<span class="tag">neu</span>' : ''}</div>`;
   }
-  if (sel) return `<div class="room p sel grainy" style="background:${COL[c]}" ${attrs}><span class="tag">✓ ${mode.free ? 'gratis' : roomCost(p, i) + ' K'}</span></div>`;
-  return `<div class="room e ${ok ? 'ok' : ''}" ${attrs} data-info="${esc(roomInfo(p, i))}"><span class="dot" style="background:${COL[c]}"></span><span class="cc">${coinSvg()}${roomCost(p, i)}</span>${ROOM_VP[i] ? `<span class="rvp">+${ROOM_VP[i]}★</span>` : ''}</div>`;
+  if (sel) return `<div class="room p sel grainy ${grpCls(i)}" style="background:${COL[c]}" ${attrs}><span class="tag">✓ ${mode.free ? 'gratis' : roomCost(p, i) + ' K'}</span></div>`;
+  return `<div class="room e ${grpCls(i)} ${ok ? 'ok' : ''}" ${attrs} data-info="${esc(roomInfo(p, i))}"><span class="dot" style="background:${COL[c]}"></span><span class="cc">${coinSvg()}${roomCost(p, i)}</span>${ROOM_VP[i] ? `<span class="rvp">+${ROOM_VP[i]}★</span>` : ''}</div>`;
 }
 function hotelGrid(p, mode) {
   let h = '<div class="hotel">' + roofSvg(p.bot ? `Hotel ${p.name}` : 'Dein Hotel') + '<div class="rooms">';
