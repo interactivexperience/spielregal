@@ -190,6 +190,18 @@ input,textarea{-webkit-user-select:text;user-select:text}
 /* Beenden-Knopf liegt über allen Elementen des Startbildschirms */
 .start .startbar{z-index:90!important}
 .start .startbar .icobtn{position:relative;z-index:91}
+
+/* Startseite wie Glut: Hauptknöpfe in fester Leiste unten, Einstellungen in einem Fenster */
+.start{padding-bottom:calc(210px + env(safe-area-inset-bottom));min-height:100dvh;box-sizing:border-box}
+.start .sdock{position:fixed;left:0;right:0;bottom:0;z-index:30;max-width:560px;margin:0 auto;padding:14px 16px calc(12px + env(safe-area-inset-bottom));background:var(--paper);border-radius:24px 24px 0 0;box-shadow:0 -12px 30px -14px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:10px}
+.start .sdock .srow{display:flex;gap:9px}.start .sdock .srow .btn{flex:1;width:auto;margin:0;padding-left:10px;padding-right:10px}
+.start .sdock .srow2{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.start .sdock .srow2 .link{margin:0}.start .sdock .chip{white-space:nowrap}
+.start .sdock .wide{margin:0}.start .sdock p{margin:0}
+.start .ssheet{display:none}
+.start .ssheet.open{display:flex;position:fixed;inset:0;z-index:60;background:rgba(20,20,20,.5);align-items:flex-end;justify-content:center}
+.start .ssheet .panel{width:100%;max-width:560px;max-height:88dvh;overflow:auto;margin:0;border-radius:24px 24px 0 0;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+.start .ssheet .panel>.btn{margin-top:14px}
 </style>
 </head>
 <body>
@@ -1378,6 +1390,10 @@ const avatar = p => bwHead('pl' + S.players.indexOf(p) + p.name, Object.assign({
 const myAsk = () => S && S.ask && !S.players[S.ask.pi].bot ? S.ask : null;
 const isMyTurn = () => S && S.phase === 'play' && !S.ask && !cur().bot;
 const short = n => n.split(' ').slice(-1)[0];
+function setupLabel(st) {
+  const nm = (st.name || '').trim() || 'Du';
+  return `${nm} · ${st.bots === 0 ? 'Solo' : st.bots + ' Bot' + (st.bots > 1 ? 's' : '')}`;
+}
 function viewStart() {
   const saved = load(), st = U.setup, prof = spielregalProfiles();
   const n = st.bots + 1, per = deckFor(n).length / n;
@@ -1386,8 +1402,7 @@ function viewStart() {
     <div class="hero">${heroSvg()}</div>
     <h1 class="hand">Prinzessinnen&shy;ball</h1>
     <p class="sub">Fünf Ballnächte, zu viele Prinzen: das Stichspiel nach den Regeln von <i>Rebel Princess</i> (Deluxe Edition).</p>
-    ${saved && saved.screen === 'game' ? `<button class="btn wide" data-a="resume">Partie fortsetzen · Ballnacht ${saved.round || 1}/${ROUNDS}</button><p style="margin:6px 0 0;font-size:12.5px;opacity:.75">${saved.savedAt ? `Gespeichert ${savedLabel(saved)} · ` : ''}<button class="link" data-a="discard" style="font-size:12.5px">verwerfen</button></p>` : ''}
-    <div class="panel">
+    <div class="ssheet ${U.sopen ? 'open' : ''}"><div class="panel">
       <p class="label">Dein Name</p>
       <input class="input" id="nm" maxlength="30" placeholder="z. B. Prinzessin Mi" value="${esc(st.name)}">
       ${prof.length ? `<div class="chips" style="margin-top:8px">${prof.slice(0, 8).map(n => `<button class="chip ${st.name === n ? 'on' : ''}" data-a="pickname" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div><p class="note">Wähle dein Spielregal-Profil, dann landet die Partie mit deinen Anträgen in deiner Partien-Liste.</p>` : ''}
@@ -1397,10 +1412,13 @@ function viewStart() {
       <div class="chips"><button class="chip ${st.mode === 'first' ? 'on' : ''}" data-a="mode" data-m="first">Erste Partie (a–e)</button><button class="chip ${st.mode === 'random' ? 'on' : ''}" data-a="mode" data-m="random">Zufällig</button></div>
       <div class="chips" style="margin-top:8px"><button class="chip ${st.exp ? 'on' : ''}" data-a="exp">${st.exp ? '✓ ' : ''}mit „Doppelt Rebellisch“</button></div>
       <p class="note">${ROUNDS} Runden · ${n} Personen · ${per} Karten auf der Hand${n === 3 ? ' (ohne 1, 11, 12)' : n < 6 ? ' (ohne 11, 12)' : ''} · Wenigste Anträge gewinnt.</p>
+      <button class="btn wide" data-a="setup-x">Fertig</button>
+    </div></div>
+    <div class="sdock">
+      ${saved && saved.screen === 'game' ? `<button class="btn wide" data-a="resume">Partie fortsetzen · Ballnacht ${saved.round || 1}/${ROUNDS}</button><p style="margin:6px 0 0;font-size:12.5px;opacity:.75">${saved.savedAt ? `Gespeichert ${savedLabel(saved)} · ` : ''}<button class="link" data-a="discard" style="font-size:12.5px">verwerfen</button></p>` : ''}
+      <div class="srow"><button class="btn" data-a="start">Zum Ball</button><button class="btn white" data-a="tutorial" data-info="Lernspiel\nEine geführte Partie: Die Regeln werden Schritt für Schritt im Spiel erklärt.">Lernspiel</button></div>
+      <div class="srow2"><button class="chip" data-a="setup" data-info="Spieler und Gegner\nName ändern, Gegner und Optionen wählen.">${esc(setupLabel(st))} ▾</button><button class="link" data-a="rules">Spielregeln lesen</button></div>
     </div>
-    <button class="btn wide" data-a="start">Zum Ball</button>
-    <button class="btn white wide" data-a="tutorial" style="margin-top:12px">Lernspiel: Regeln spielend lernen</button>
-    <p style="margin-top:14px"><button class="link" data-a="rules">Spielregeln lesen</button></p>
   </div>`;
 }
 function oppRow(p, i) {
@@ -1767,6 +1785,8 @@ const H = {
   mode: d => { U.setup.mode = d.m; },
   exp: () => { U.setup.exp = !U.setup.exp; },
   pickname: d => { U.setup.name = d.n; const nmi = document.getElementById('nm'); if (nmi) nmi.value = d.n; },
+  setup: () => { U.sopen = true; },
+  'setup-x': () => { const nm = document.getElementById('nm'); if (nm) U.setup.name = nm.value.trim(); U.sopen = false; },
   start: () => { const sv = load(); if (sv && sv.screen === 'game' && !confirm(`Es gibt eine gespeicherte Partie (Ballnacht ${sv.round || 1}). Neue Partie starten und die gespeicherte verwerfen?`)) return; const nmi = document.getElementById('nm'); U.setup.name = nmi ? nmi.value.trim() : ''; U.pick = null; resetSel(); newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0, { mode: U.setup.mode, exp: U.setup.exp, rules: window.__forceRules }); window.scrollTo(0, 0); },
   resume: () => { S = load(); U.sheet = null; resetSel(); },
   rules: () => { U.sheet = { type: 'rules' }; },

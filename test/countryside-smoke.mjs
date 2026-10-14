@@ -64,7 +64,9 @@ const avg = (a) => (a.reduce((x, y) => x + y, 0) / a.length).toFixed(1);
 for (const n of [2, 3, 4, "solo"]) { const s = sim.filter((x) => x.n === n); console.log(`Bots ${n}: Ø Sieger ${avg(s.map((x) => Math.max(...x.vp)))}, Ø Punkte ${avg(s.flatMap((x) => x.vp))}, Ø Züge ${avg(s.map((x) => x.guard))}`); }
 
 async function playUi(label, bots) {
+  await page.click("[data-a=setup]");
   await page.click(`[data-a=bots][data-n='${bots}']`);
+  await page.click("[data-a=setup-x]");
   await page.click("text=Landgut übernehmen");
   await page.waitForSelector(".sheet");
   // Mitspieler-Tempo liegt im Menü (nicht als flüchtiger Knopf in der Fußleiste) und bleibt gespeichert

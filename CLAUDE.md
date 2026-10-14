@@ -174,6 +174,8 @@ ziehen …“ → „Loslassen = einsetzen“ (Petrol). Menü: „Neueste Versio
 Seite des Ziels; während des Wischens wird nicht neu gezeichnet (`render` wartet). Kopfzeilen (`.thead`) sind in allen
 Spielen deckend in der Seitenfarbe, ohne milchigen Blur (Owner: „kein milchiger Hintergrund“).
 
+**Startseiten aller Spiele wie Glut:** Titelbild oben, unten eine feste Leiste (`.sdock`) mit Hauptknopf + „Lernspiel“ nebeneinander, darunter eine Pille „Name · n Bots ▾“ (öffnet das Einstellungsfenster `.ssheet` mit Name, Profil-Chips, Gegner, Optionen; `data-a="setup"` / `"setup-x"` = „Fertig“) und der Link „Spielregeln lesen“; „Partie fortsetzen“ steht in der Leiste. Tests öffnen vor dem Wählen der Gegner zuerst das Einstellungsfenster.
+
 Jedes Spiel hat einen eigenen Smoke-Test in `test/` (`gah-smoke.mjs`,
 `rebel-princess-smoke.mjs`, `three-sisters-smoke.mjs`, `countryside-smoke.mjs`, `saum-smoke.mjs` + `saum-tutorial.mjs`, `glut-smoke.mjs` + `glut-tutorial.mjs`); nach Änderungen an einem Spiel
 dessen Test laufen lassen, dazu `tutorials.mjs` (spielt die Lernspiele aller vier Spiele durch) und

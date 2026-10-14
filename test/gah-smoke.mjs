@@ -136,14 +136,18 @@ async function playUi(label) {
   console.log(`UI-Partie ${label}: ${myTurns} Züge, ${guests} Gäste geholt, ${served} Gerichte serviert.`);
   if (shots) await page.screenshot({ path: `${shots}/4-end-${label}.png`, fullPage: true });
 }
+await page.click("[data-a=setup]");
 await page.fill("#nm", "Testerin");
 await page.click("text=2 Bots");
+await page.click("[data-a=setup-x]");
 await page.click("text=Hotel eröffnen");
 await playUi("2 Bots");
 // Solo gegen Leopold (Automa aus Alles Walzer): erst 6 von 10 Personalkarten wählen
 await page.click("[data-a=newgame]");
+await page.click("[data-a=setup]");
 await page.click("text=Leopold (Solo)");
 await page.click("[data-a=leolvl][data-n='2']");
+await page.click("[data-a=setup-x]");
 await page.click("text=Hotel eröffnen");
 await page.waitForSelector("[data-a=spok]");
 if (shots) await page.screenshot({ path: `${shots}/5-staffpick.png` });
