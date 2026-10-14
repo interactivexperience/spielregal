@@ -69,6 +69,19 @@ Keine zweite Schrift, keine Handschrift, keine Serife. Großschreibung normal (k
 - **Dichte Muster in Flächen:** Streifen, Punkte und Blätter wie im Berg-Poster, nur in 2–3 Tönen derselben Farbe.
 - **Palette je Bild begrenzt:** Pfirsich + Kobalt + Koralle (+ Pink/Olive), nicht alles zugleich.
 
+## Cover (v0.2 – ersetzt die erste, zu „kindliche" Fassung)
+Datei `cover.png` (800×1200, 2:3), erzeugt aus `tools/cover.py` (SVG) und `tools/render-cover.mjs` (PNG mit Bricolage).
+Warum die erste Fassung kindlich wirkte: runde Klumpen-Hügel, dicke Strahlen, winziges Haus, Rauschen über allem.
+Was die Referenzen dagegen tun und das Cover jetzt nachbaut:
+- **Eine große, ruhige Form** (Berg mit Weg und Haus) statt vieler kleiner Dinge; viel Pfirsich als Luft darum.
+- **Textur trägt die Fläche:** Konturlinien parallel zum Weg (gestrichelt wie Handschnitt), Punktgruppen, Farne – links Weiß auf Kobalt,
+  rechts Dunkelkobalt auf Hellkobalt. Das ist Handwerk, nicht Körnung.
+- **Streng begrenzte Palette:** Pfirsich, drei Blautöne, Sonnen-Koralle, Creme, Weinbraun. Sonne klein und mit Spirale (wie im Berg-Poster).
+- **Schornstein mit Rauchfaden** auf dem Haus: leise Anspielung auf Hitze und Ofen, passt zu jedem Thema.
+- **Wortmarke** „Glut." in Bricolage Breite 75, Weinbraun, mit Zeile „Würfel, die abbrennen." – Platzhalter, bis das Thema steht.
+- Körnung nur als feine, seltene Sprenkel über allem (Papier), kein Rauschen.
+Für Handys (9:19,5) wird das Cover unten verankert und oben mit Pfirsich aufgefüllt; ein Hochformat-Zuschnitt lässt sich aus dem Skript erzeugen.
+
 ## Offene Entscheidungen
 1. **Thema:** Der Stil passt zu „Sonne/Hitze". Naheliegend ist eine **Fayence-/Keramik-Manufaktur** (Kobalt ist *das*
    Glasurpigment, Brennofen = Hitze) – oder Murano, Salzgärten. Ersetzt die Platzhalter (Sand, Soda, Glasmasse …).
