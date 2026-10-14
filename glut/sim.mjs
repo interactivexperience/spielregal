@@ -18,6 +18,7 @@ const PARAM = {
   guildFirst: 4, guildSecond: 2,
   dukPerRuhm: 4,
   noise: 0.15,
+  lookDepth: 3, lookBeam: 3, lookTop: 8,   // Planer-Bot: Tiefe, Strahlbreite, Kandidaten im ersten Schritt
   orderQ: -3,          // Offset auf Güte-Anforderungen der Aufträge
   cap: 0,             // Slots pro Ort (0 = nach Spielerzahl)
   batchSand: 2,       // Sand je Glasmasse im Ofen
@@ -83,6 +84,10 @@ const PROFILES = {
   meister:    { w: merge({ sign: { M: 1.5 }, cardFx: 2.2 }) },
   kurzsichtig:{ w: merge({ sand: 0.1, soda: 0.1, holz: 0.2, masse: 0.4, heat: 0.1, sign: { B: 0.3, H: 0.3, M: 0.3 } }) },
   zufall:     { random: true, w: merge({}) },
+  planer:     { look: true, w: merge({}) },
+  planer_bl:  { look: true, w: merge({ sign: { B: 1.5 }, piece: { S: 1.4, P: 3.6, Z: 3.6 } }) },
+  planer_ha:  { look: true, w: merge({ sign: { H: 1.5 }, duk: 0.7 }) },
+  planer_me:  { look: true, w: merge({ sign: { M: 1.5 }, cardFx: 2.2 }) },
 };
 
 // ---------- Hilfen ----------
@@ -286,6 +291,39 @@ function value(s, pr, roundsLeft) {
   return v;
 }
 
+
+const cloneView = (s) => ({ ...s, real: false, p: clonePlayer(s.p), places: s.places.map(a => a.slice()), orders: s.orders.slice(), market: s.market.slice() });
+// Beam-Suche über die nächsten eigenen Züge (Gegner bleiben fest). Bewertet jeden Pfad nach seinem besten Zwischenstand.
+function chooseLook(g, pi, pl, s0, acts, left) {
+  const v0 = value(s0, pl.prof, left);
+  const first = [];
+  for (const a of acts) {
+    if (a.type === 'pass') continue;
+    const sv = cloneView(s0); apply(sv, a);
+    first.push({ a, sv, v: value(sv, pl.prof, left) });
+  }
+  first.sort((x, y) => y.v - x.v);
+  let best = null, bv = 0;
+  for (const f of first.slice(0, PARAM.lookTop)) {
+    let top = f.v, frontier = [f.sv];
+    for (let d = 2; d <= PARAM.lookDepth; d++) {
+      const kids = [];
+      for (const st of frontier) for (const a of actions(st)) {
+        if (a.type === 'pass') continue;
+        const c = cloneView(st); apply(c, a);
+        kids.push({ c, v: value(c, pl.prof, left) });
+      }
+      if (!kids.length) break;
+      kids.sort((x, y) => y.v - x.v);
+      top = Math.max(top, kids[0].v);
+      frontier = kids.slice(0, PARAM.lookBeam).map(k => k.c);
+    }
+    const dv = top - v0 + (g.rnd() - 0.5) * 2 * PARAM.noise;
+    if (dv > bv) { bv = dv; best = f.a; }
+  }
+  return best || acts[0];
+}
+
 function choose(g, pi) {
   const pl = g.players[pi], s0 = view(g, pi, true);
   const acts = actions(s0);
@@ -294,6 +332,7 @@ function choose(g, pi) {
     return nonPass.length && g.rnd() > 0.1 ? nonPass[Math.floor(g.rnd() * nonPass.length)] : acts[0];
   }
   const left = roundsFor(g.np) - g.round + 1;
+  if (pl.prof.look) return chooseLook(g, pi, pl, s0, acts, left);
   const v0 = value(s0, pl.prof, left);
   let best = acts[0], bv = 0;
   for (const a of acts) {
@@ -398,9 +437,17 @@ for (const kv of setS.split(',').filter(Boolean)) { const [k, v] = kv.split('=')
 if (setS) console.log('Parameter:', setS);
 
 const ST = ['ausgewogen', 'blaeser', 'haendler', 'meister'];
+if (argv.includes('--planer')) {
+  run('Planer vs ausgewogen 2p', ['planer', 'ausgewogen'], n);
+  run('Planer-Spiegel 2p', ['planer', 'planer'], n);
+  run('Planer-Spiegel 4p', ['planer', 'planer', 'planer', 'planer'], n);
+  run('Planer-Strategien 4p (Bläser/Händler/Meister/ausgewogen)', ['planer_bl', 'planer_ha', 'planer_me', 'planer'], n);
+  run('Planer-Strategien 3p', ['planer_bl', 'planer_ha', 'planer_me'], n);
+} else {
 run('Spiegel 2p', ['ausgewogen', 'ausgewogen'], n);
 run('Spiegel 3p', ['ausgewogen', 'ausgewogen', 'ausgewogen'], n);
 run('Spiegel 4p', ['ausgewogen', 'ausgewogen', 'ausgewogen', 'ausgewogen'], n);
 run('Strategien 4p (Bläser/Händler/Meister/ausgewogen)', ST, n);
 run('Kontrolle: ausgewogen gegen Zufall 2p', ['ausgewogen', 'zufall'], n);
 run('Kontrolle: ausgewogen gegen kurzsichtig 2p', ['ausgewogen', 'kurzsichtig'], n);
+}
