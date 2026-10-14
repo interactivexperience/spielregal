@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F7EBDD">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Glut">
+<title>Glut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&display=swap">
+<style>
+:root{
+  --ground:#F2C8B6;--paper:#F7EBDD;--ink:#3B1220;--cobalt:#2A2BC8;--peri:#6F7BE8;--sun:#F2502E;--pink:#F6A8BE;--lilac:#9C90D6;--lime:#B4E35E;--pine:#124D39;--amber:#FFA844;
+  --h0:#D6CEEA;--h1:#F6A8BE;--h2:#F58FA0;--h3:#F7794F;--h4:#F2502E;--h5:#E0371F;--h6:#B81E1A;
+  --r-pill:999px;--r-card:24px;--r-die:15px;
+}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--paper)}
+body{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-variation-settings:'wdth' 100,'opsz' 14;font-weight:500;color:var(--ink);background:var(--paper);overscroll-behavior:none;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input{-webkit-user-select:text;user-select:text}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+.disp{font-variation-settings:'wdth' 75,'opsz' 96;font-weight:600;line-height:.9;letter-spacing:-.01em}
+.num{font-variation-settings:'wdth' 75,'opsz' 96;font-weight:800}
+.lab{font-variation-settings:'wdth' 90,'opsz' 14;font-weight:600;font-size:13px}
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:560px;margin:0 auto;background:var(--paper)}
+/* ---- Pillen, Knöpfe ---- */
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:var(--r-pill);padding:6px 13px;font-variation-settings:'wdth' 90,'opsz' 14;font-weight:600;font-size:14px;white-space:nowrap}
+.p-ink{background:var(--ink);color:var(--paper)}.p-pink{background:var(--pink)}.p-lilac{background:var(--lilac)}.p-lime{background:var(--lime)}.p-cream{background:var(--paper)}.p-out{border:2.5px solid var(--ink);padding:3.5px 11px}.p-sun{background:var(--sun);color:#fff}.p-cobalt{background:var(--cobalt);color:#fff}
+.btn{border-radius:var(--r-pill);padding:12px 20px;font-variation-settings:'wdth' 90,'opsz' 14;font-weight:700;font-size:16px;background:var(--sun);color:#fff;text-align:center;text-decoration:none;display:inline-block;white-space:nowrap}
+.btn.alt{background:var(--paper);color:var(--ink);border:2.5px solid var(--ink);padding:9.5px 18px}
+.btn.wide{display:block;width:100%}.btn[disabled]{opacity:.4}
+.link{text-decoration:underline;font-size:14px;color:var(--ink);opacity:.8;padding:8px}
+/* ---- Kopf ---- */
+.thead{background:var(--paper);padding:calc(env(safe-area-inset-top) + 6px) 12px 8px;border-bottom:3px solid var(--ink);z-index:20}
+.hrow{display:flex;align-items:center;gap:8px}
+.hrow h1{font-size:34px;font-variation-settings:'wdth' 75,'opsz' 96;font-weight:700;line-height:.9}
+.ann{flex:1;min-width:0;text-align:left;border-radius:var(--r-pill);padding:7px 13px;background:var(--pink);font-variation-settings:'wdth' 90,'opsz' 14;font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ann.me{background:var(--lime)}
+.mbtn{width:38px;height:38px;border-radius:50%;border:2.5px solid var(--ink);font-size:18px;line-height:1}
+.opps{display:flex;gap:6px;margin-top:7px;overflow-x:auto;scrollbar-width:none;align-items:center}
+.opps .pill{margin-left:auto;padding:4px 11px;font-size:13px}
+.opp{display:flex;align-items:center;gap:6px;border:2.5px solid var(--ink);border-radius:var(--r-pill);padding:2px 10px 2px 3px;font-size:14px;font-weight:600;white-space:nowrap;background:var(--paper)}
+.opp.cur{background:var(--lime)}.opp.done{opacity:.55}
+.av{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;flex:none}
+.res{display:flex;gap:4px;margin-top:6px;align-items:center;justify-content:space-between}
+.rc{background:var(--paper);border:2.5px solid var(--ink);border-radius:var(--r-pill);padding:1px 8px 1px 3px;display:flex;align-items:center;gap:4px;font-size:16px;line-height:1.1}
+.rc i{width:19px;height:19px;border-radius:50%;display:block;border:2px solid var(--ink);flex:none}
+.dicerow{display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap}
+.die{width:50px;height:50px;border-radius:var(--r-die);border:3px solid var(--ink);display:grid;place-items:center;font-size:36px;line-height:1;box-shadow:3px 3px 0 var(--ink);position:relative;color:var(--ink);transition:transform .15s}
+.die.h4,.die.h5,.die.h6{color:#fff}
+.die.h0{background:var(--h0);color:#8d84b5;border-style:dashed;box-shadow:none;font-size:15px}
+.die.h1{background:var(--h1)}.die.h2{background:var(--h2)}.die.h3{background:var(--h3)}.die.h4{background:var(--h4)}.die.h5{background:var(--h5)}.die.h6{background:var(--h6)}
+.die.sel{transform:translateY(-5px);outline:4px solid var(--lime);outline-offset:2px}
+.die.boost::after{content:"+";position:absolute;top:-8px;right:-8px;background:var(--lime);border:2.5px solid var(--ink);border-radius:50%;width:20px;height:20px;font-size:13px;display:grid;place-items:center;font-weight:800}
+.die.dim{opacity:.55}
+.bchips{display:flex;gap:5px}
+.bchips .pill{padding:4px 11px;border:2.5px solid var(--ink)}
+.bchips .pill.on{background:var(--lime)}
+/* ---- Seiten ---- */
+.pages{flex:1;min-height:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;background:var(--ground)}
+.pages::-webkit-scrollbar{display:none}
+.page{flex:0 0 100%;scroll-snap-align:start;overflow-y:auto;padding:12px 12px 20px;display:flex;flex-direction:column;gap:10px;scrollbar-width:none}
+.ptitle{font-size:34px}
+.plc{background:var(--paper);border:3px solid var(--ink);border-radius:var(--r-card);padding:9px 12px;display:flex;flex-direction:column;gap:4px}
+.plc .t{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.plc .n{font-size:27px}
+.plc .e{font-size:12.5px;line-height:1.3}
+.plc.pick{background:var(--lime);box-shadow:4px 4px 0 var(--ink)}
+.plc.off{opacity:.55}
+.occ{display:flex;gap:5px;align-items:center}
+.slot{width:26px;height:26px;border-radius:50%;border:2.5px dashed var(--ink);opacity:.45}
+.box{background:var(--paper);border:3px solid var(--ink);border-radius:var(--r-card);padding:12px 13px}
+.box h3{font-size:24px;margin-bottom:8px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.pc{border:2.5px solid var(--ink);border-radius:12px 12px 16px 16px;padding:4px 10px;font-weight:700;font-size:14px;background:var(--peri);color:#fff}
+.pc.F{background:var(--paper);color:var(--ink)}.pc.Z{background:var(--cobalt)}
+.ord{background:var(--paper);border:3px solid var(--ink);border-radius:var(--r-card);padding:10px 12px;display:flex;gap:10px;align-items:center}
+.ord.can{background:var(--lime)}
+.ord .need{display:flex;gap:5px;flex-wrap:wrap;flex:1}
+.stamp{width:50px;height:50px;border-radius:50%;background:var(--sun);color:#fff;display:grid;place-items:center;font-size:28px;transform:rotate(-8deg);box-shadow:3px 3px 0 var(--ink);border:3px solid var(--ink);flex:none}
+.card{background:var(--paper);border:3px solid var(--ink);border-radius:var(--r-card);padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.card.can{background:var(--lime)}.card .n{font-size:24px}
+.card .e{font-size:13px;line-height:1.3}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}.tbl td,.tbl th{padding:4px 6px;text-align:left;border-bottom:1.5px solid rgba(59,18,32,.2)}
+.log{font-size:13px;line-height:1.35}.log div{padding:3px 0;border-bottom:1.5px solid rgba(59,18,32,.15)}
+/* ---- Fuß ---- */
+.foot{display:flex;align-items:center;gap:8px;padding:8px 12px calc(env(safe-area-inset-bottom) + 8px);background:var(--paper);border-top:3px solid var(--ink)}
+.pdots{display:flex;gap:7px;flex:1;justify-content:center}
+.pdots button{width:11px;height:11px;border-radius:50%;background:rgba(59,18,32,.25)}
+.pdots button.on{background:var(--ink)}
+.foot .btn{padding:10px 16px;font-size:15px}.foot .btn.alt{padding:7.5px 14px}
+/* ---- Überlagerungen ---- */
+.overlay{position:fixed;inset:0;background:rgba(59,18,32,.55);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--paper);border:3px solid var(--ink);border-radius:var(--r-card) var(--r-card) 0 0;width:100%;max-width:560px;max-height:82dvh;overflow-y:auto;padding:0 14px 16px}
+.sheet .sh{position:sticky;top:0;background:var(--paper);padding:14px 0 8px;display:flex;justify-content:space-between;align-items:center;gap:10px;z-index:2}
+.sheet h2{font-size:30px}
+.xbtn{width:36px;height:36px;border-radius:50%;border:2.5px solid var(--ink);font-size:16px;flex:none}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{text-align:left;border:3px solid var(--ink);border-radius:18px;padding:11px 14px;background:var(--paper);font-weight:600;font-size:15px;line-height:1.3}
+.opt:active{background:var(--lime)}
+.opt small{display:block;font-weight:500;opacity:.75;font-size:12.5px;margin-top:2px}
+.menu{display:flex;flex-direction:column;gap:9px}
+.rules p{font-size:14px;line-height:1.4;margin-bottom:8px}.rules h3{font-size:22px;margin:10px 0 4px}
+.rules ul{padding-left:18px;font-size:14px;line-height:1.4;margin-bottom:8px}
+.bubble{position:fixed;z-index:90;max-width:260px;background:var(--ink);color:var(--paper);padding:9px 12px;border-radius:14px;font-size:13.5px;line-height:1.35;white-space:pre-line;pointer-events:none}
+.bubble .bt{display:block;font-weight:800;margin-bottom:2px;color:var(--lime)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:16px;z-index:80;font-weight:600;font-size:14px;max-width:88vw;text-align:center;white-space:pre-line}
+.flash{animation:fl .6s}@keyframes fl{0%{box-shadow:0 0 0 0 var(--lime)}40%{box-shadow:0 0 0 8px var(--lime)}100%{box-shadow:0 0 0 0 transparent}}
+/* ---- Start ---- */
+.start{position:relative;min-height:100vh;min-height:100dvh;background:#F2C8B6;overflow:hidden;max-width:560px;margin:0 auto}
+.start .cov{position:absolute;top:44px;left:0;width:100%;height:calc(72% - 44px);object-fit:cover;object-position:top}
+.leave{position:absolute;top:calc(env(safe-area-inset-top) + 10px);left:12px;z-index:3;background:var(--paper);border:2.5px solid var(--ink);border-radius:var(--r-pill);padding:5px 13px;font-weight:700;font-size:14px;color:var(--ink);text-decoration:none}
+.panel{position:absolute;left:0;right:0;bottom:0;background:var(--paper);border-top:3px solid var(--ink);border-radius:var(--r-card) var(--r-card) 0 0;padding:16px 16px calc(env(safe-area-inset-bottom) + 16px);display:flex;flex-direction:column;gap:10px;z-index:2}
+.input{width:100%;border:3px solid var(--ink);border-radius:var(--r-pill);padding:10px 16px;font:inherit;font-weight:600;font-size:16px;background:#fff8f0;color:var(--ink)}
+.chip{border:2.5px solid var(--ink);border-radius:var(--r-pill);padding:5px 14px;font-weight:700;font-size:14px;background:var(--paper)}.chip.on{background:var(--lime)}
+.note{font-size:12.5px;opacity:.75;line-height:1.35}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+'use strict';
+/* =====================================================================
+   GLUT – Fayence-Manufaktur. Regeln: REGELN.md; die Engine ist die getestete Simulation (sim.mjs).
+   Interne Schlüssel: Waren ton/asche/holz/rohling/duk; Stücke F=Fliese K=Krug Z=Zierplatte; Gilden T=Töpfer H=Händler B=Brenner.
+   ===================================================================== */
+const PARAM={dice:4,cool:1,ofenMin:4,startDuk:3,noise:0.15,lookDepth:3,lookBeam:3,lookTop:6,priceMul:1.5,orderMul:1.3,dukPerRuhm:4,guildFirst:4,guildSecond:2,seat3p:1,batchTon:2};
+const ROUNDS_BY={2:8,3:6,4:8},roundsFor=np=>ROUNDS_BY[np],capFor=np=>np>=3?2:1,scoreAt=np=>[roundsFor(np)/2,roundsFor(np)];
+const TON=[0,1,2,3,3,4,5];
+const PRICE0={F:2,K:5,Z:5},price=t=>Math.round(PRICE0[t]*PARAM.priceMul);
+const PL=['ton','asche','wald','ofen','topf','kontor','gilde'];
+const PNAME={ton:'Tongrube',asche:'Aschehütte',wald:'Wald',ofen:'Brennofen',topf:'Töpferscheibe',kontor:'Kontor',gilde:'Gildehaus'};
+const TNAME={F:'Fliese',K:'Krug',Z:'Zierplatte'};
+const GNAME={T:'Töpfer',H:'Händler',B:'Brenner'};
+const RN={ton:'Ton',asche:'Asche',holz:'Holz',rohling:'Rohling',duk:'Dukaten'};
+const RCOL={ton:'#E9C46A',asche:'#9C90D6',holz:'#8A5A2B',rohling:'#6F7BE8',duk:'#B4E35E',ruhm:'#F2502E'};
+const CARDS=[
+ {id:'waechter',n:'Glutwächter',tier:3,cost:7,g:'B',ruhm:2,fx:'nocool',tx:'Dein erster Einsatz je Runde kühlt nicht ab.'},
+ {id:'lehrling',n:'Lehrling',tier:3,cost:6,g:'B',ruhm:1,fx:'dice',tx:'Du erhältst einen fünften Würfel (zunächst kalt).'},
+ {id:'ofenmeister',n:'Ofenmeister',tier:2,cost:5,g:'B',ruhm:2,fx:'ofen3',tx:'Der Brennofen genügt dir schon ab Hitze 3.'},
+ {id:'haendler',n:'Handelsbrief',tier:2,cost:5,g:'H',ruhm:2,fx:'kont1',tx:'+1 Dukat je verkauftem Stück.'},
+ {id:'zunft',n:'Zunftbrief',tier:2,cost:5,g:'H',ruhm:3,fx:null,tx:'Nur Ruhm am Spielende.'},
+ {id:'kontorist',n:'Kontorist',tier:3,cost:7,g:'H',ruhm:3,fx:'sell1',tx:'Am Kontor darfst du ein Stück mehr verkaufen.'},
+ {id:'sandkarre',n:'Tonkarre',tier:1,cost:3,g:'T',ruhm:1,fx:'ton1',tx:'Tongrube: +1 Ton.'},
+ {id:'holzrecht',n:'Holzrecht',tier:1,cost:3,g:'T',ruhm:1,fx:'holz1',tx:'Wald: +1 Holz.'},
+ {id:'glasmeister',n:'Malermeister',tier:2,cost:5,g:'T',ruhm:2,fx:'qual1',tx:'Deine Stücke werden mit +1 Güte hergestellt.'},
+ {id:'lehrbrief',n:'Lehrbrief',tier:1,cost:2,g:'T',ruhm:2,fx:null,tx:'Nur Ruhm am Spielende.'},
+ {id:'sparglut',n:'Sparglut',tier:3,cost:6,g:'B',ruhm:2,fx:'bfree',tx:'Das erste Anfachen je Runde kostet kein Holz.'},
+ {id:'aschebrenner',n:'Aschebrenner',tier:1,cost:3,g:'B',ruhm:1,fx:'asche1',tx:'Aschehütte: +1 Asche.'},
+];
+const CARD=Object.fromEntries(CARDS.map(c=>[c.id,c]));
+const ORDER_T=[
+ {need:[{t:'K',q:5}],ruhm:5,duk:0},{need:[{t:'K',q:7}],ruhm:7,duk:0},{need:[{t:'Z',q:5}],ruhm:6,duk:0},{need:[{t:'Z',q:7}],ruhm:8,duk:0},
+ {need:[{t:'F',q:1},{t:'F',q:1}],ruhm:4,duk:2},{need:[{t:'F',q:2},{t:'F',q:2},{t:'F',q:0}],ruhm:7,duk:0},
+ {need:[{t:'K',q:3},{t:'F',q:1}],ruhm:7,duk:0},{need:[{t:'Z',q:4},{t:'F',q:0}],ruhm:7,duk:0},
+ {need:[{t:'K',q:5},{t:'Z',q:5}],ruhm:11,duk:0},{need:[{t:'K',q:3},{t:'K',q:3}],ruhm:9,duk:0},
+ {need:[{t:'Z',q:3},{t:'Z',q:3}],ruhm:9,duk:0},{need:[{t:'F',q:3}],ruhm:3,duk:3},
+];
+const BASE_W={ton:.3,asche:.4,holz:.6,rohling:1.3,duk:.5,heat:.3,piece:{F:1.2,K:3,Z:3},orderBonus:1,sign:{T:.9,H:.9,B:.9},cardFx:1.2};
+const mergeW=o=>({...BASE_W,...o,piece:{...BASE_W.piece,...(o.piece||{})},sign:{...BASE_W.sign,...(o.sign||{})}});
+const PROFS=[mergeW({}),mergeW({sign:{T:1.5},piece:{F:1.4,K:3.6,Z:3.6}}),mergeW({sign:{H:1.5},duk:.7}),mergeW({sign:{B:1.5},cardFx:2.2})];
+
+const rnd=g=>{let a=(g.rs=(g.rs+0x6D2B79F5)|0);let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const roll=g=>1+Math.floor(rnd(g)*6);
+const shuffle=(a,g)=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd(g)*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const has=(p,fx)=>p.cards.some(id=>CARD[id].fx===fx);
+const sum=a=>a.reduce((x,y)=>x+y,0);
+const cp=p=>({...p,dice:p.dice.slice(),res:{...p.res},pieces:p.pieces.map(x=>({...x})),cards:p.cards.slice(),signs:{...p.signs},src:{...p.src},st:{...p.st}});
+function assign(pieces,need){const used=new Set(),res=[];const ord=need.map((_,i)=>i).sort((a,b)=>need[b].q-need[a].q);
+  for(const i of ord){let best=-1;pieces.forEach((pc,j)=>{if(used.has(j)||pc.t!==need[i].t||pc.q<need[i].q)return;if(best<0||pc.q<pieces[best].q)best=j});if(best<0)return null;used.add(best);res.push(best)}return res}
+
+function newGame(list,seed){
+  const g={v:1,seed,rs:seed|0,np:list.length,round:1,first:0,cur:0,firstPass:-1,over:false,log:[]};
+  g.players=list.map((x,seat)=>({name:x.name,bot:!!x.bot,prof:x.bot?(seat-1)%PROFS.length:-1,seat,
+    dice:Array.from({length:PARAM.dice},()=>roll(g)),res:{ton:2,asche:1,holz:1,rohling:0,duk:PARAM.startDuk+(g.np===3&&seat===2?PARAM.seat3p:0)},
+    pieces:[],cards:[],signs:{T:0,H:0,B:0},ruhm:0,passed:false,noCoolUsed:false,bfreeUsed:false,src:{order:0,guild:0,card:0,left:0},st:{turns:0,orders:0}}));
+  g.places=PL.map(()=>[]);
+  g.orderDeck=shuffle(ORDER_T.map(o=>({...o,need:o.need.map(n=>({...n})),ruhm:Math.round(o.ruhm*PARAM.orderMul)})),g);
+  g.orders=g.orderDeck.splice(0,3);
+  g.cardDeck=shuffle(CARDS.map(c=>c.id),g);
+  g.market=g.cardDeck.splice(0,4);
+  return g}
+
+/* ---- Aktionen (View = Spielerkopie für Vorschau/Bot, real = echter Zustand) ---- */
+const view=(g,pi,real)=>real?{p:g.players[pi],places:g.places,orders:g.orders,market:g.market,pi,real,g}:{p:cp(g.players[pi]),places:g.places.map(a=>a.slice()),orders:g.orders.slice(),market:g.market.slice(),pi,real,g};
+const cloneView=s=>({...s,real:false,p:cp(s.p),places:s.places.map(a=>a.slice()),orders:s.orders.slice(),market:s.market.slice()});
+const bcost=(p,nb)=>Math.max(0,nb-((has(p,'bfree')&&!p.bfreeUsed&&nb>0)?1:0));
+function singles(p,maxB=2){const out=[],seen=new Set();p.dice.forEach((h,i)=>{if(h<=0)return;for(let b=0;b<=maxB&&h+b<=6;b++){const k=h+':'+b;if(seen.has(k))continue;seen.add(k);out.push({i,b,eff:h+b,cost:bcost(p,b)})}});return out}
+function pairs(p){const out=[],seen=new Set();for(let i=0;i<p.dice.length;i++)for(let j=i+1;j<p.dice.length;j++){const hi=p.dice[i],hj=p.dice[j];if(hi<=0||hj<=0)continue;
+  for(let b1=0;b1<=1;b1++)for(let b2=0;b2<=1;b2++){if(hi+b1>6||hj+b2>6)continue;const k=[hi,hj,b1,b2].join(':');if(seen.has(k))continue;seen.add(k);out.push({i,j,b1,b2,e1:hi+b1,e2:hj+b2,cost:bcost(p,b1+b2)})}}return out}
+const ofenMin=p=>has(p,'ofen3')?PARAM.ofenMin-1:PARAM.ofenMin;
+function actions(s){
+  const p=s.p,R=p.res,out=[{type:'pass'}];
+  const free=k=>{const o=s.places[PL.indexOf(k)];return o.length<capFor(s.g.np)&&!o.includes(s.pi)};
+  const S=singles(p),D=pairs(p);
+  if(free('ton'))for(const d of S)if(d.cost<=R.holz)out.push({type:'work',place:'ton',d});
+  if(free('asche'))for(const d of S)if(d.eff<=3&&d.cost<=R.holz)out.push({type:'work',place:'asche',d});
+  if(free('wald'))for(const d of S)if(d.cost<=R.holz)out.push({type:'work',place:'wald',d});
+  if(free('ofen')&&R.ton>=PARAM.batchTon&&R.asche>=1)for(const d of S)if(d.eff>=ofenMin(p)&&d.cost<=R.holz)out.push({type:'work',place:'ofen',d});
+  if(free('topf')){
+    if(R.rohling>=1)for(const d of S)if(d.cost<=R.holz)out.push({type:'work',place:'topf',mode:'F',d});
+    if(R.rohling>=2)for(const d of D)if(d.cost+1<=R.holz){if(d.e1===d.e2)out.push({type:'work',place:'topf',mode:'K',d});else if(Math.abs(d.e1-d.e2)===1)out.push({type:'work',place:'topf',mode:'Z',d})}}
+  if(free('kontor'))for(const d of S){
+    if(d.eff<2||d.cost>R.holz)continue;
+    if(p.pieces.length){const max=Math.ceil(d.eff/2)+(has(p,'sell1')?1:0),seenK=new Set();
+      for(const dir of[1,-1]){const idx=p.pieces.map((_,i)=>i).sort((a,b)=>dir*(price(p.pieces[a].t)-price(p.pieces[b].t))||p.pieces[a].q-p.pieces[b].q);
+        for(let n=1;n<=Math.min(max,idx.length);n++){const sel=idx.slice(0,n),k=sel.slice().sort().join(',');if(seenK.has(k))continue;seenK.add(k);out.push({type:'work',place:'kontor',mode:'sell',idx:sel,d})}}}
+    s.orders.forEach((o,oi)=>{const a=assign(p.pieces,o.need);if(a)out.push({type:'work',place:'kontor',mode:'deliver',oi,idx:a,d})})}
+  if(free('gilde'))for(const d of S){if(d.cost>R.holz)continue;s.market.forEach((id,mi)=>{const c=CARD[id];if(c.tier<=d.eff&&R.duk>=c.cost)out.push({type:'work',place:'gilde',mi,d})})}
+  return out}
+function cool(p,dl){for(const{i,eff}of dl){if(has(p,'nocool')&&!p.noCoolUsed){p.dice[i]=eff;p.noCoolUsed=true}else p.dice[i]=Math.max(0,eff-PARAM.cool)}}
+const dieList=a=>a.d.j===undefined?[{i:a.d.i,eff:a.d.eff}]:[{i:a.d.i,eff:a.d.e1},{i:a.d.j,eff:a.d.e2}];
+function ofenN(p,e){return Math.min(e-ofenMin(p)+1,Math.floor(p.res.ton/PARAM.batchTon),p.res.asche)}
+function apply(s,a){
+  const p=s.p,R=p.res;
+  if(a.type==='pass'){p.passed=true;for(let i=0;i<p.dice.length;i++)if(p.dice[i]===0){p.dice[i]=s.real?roll(s.g):3.5;if(s.real)s.g.hidden=true}
+    if(s.real&&s.g.firstPass<0)s.g.firstPass=s.pi;return}
+  const d=a.d,dl=dieList(a),nb=d.j===undefined?d.b:d.b1+d.b2;
+  R.holz-=bcost(p,nb);if(nb>0&&has(p,'bfree')&&!p.bfreeUsed)p.bfreeUsed=true;
+  s.places[PL.indexOf(a.place)].push(s.pi);
+  const e=d.eff;
+  switch(a.place){
+    case'ton':R.ton+=TON[e]+(has(p,'ton1')?1:0);break;
+    case'asche':R.asche+=2+(has(p,'asche1')?1:0);break;
+    case'wald':R.holz+=Math.ceil(e/3)+(has(p,'holz1')?1:0);break;
+    case'ofen':{const n=ofenN(p,e);R.ton-=PARAM.batchTon*n;R.asche-=n;R.rohling+=n;p.signs.B+=1;break}
+    case'topf':{const q=has(p,'qual1')?1:0;
+      if(a.mode==='F'){R.rohling-=1;p.pieces.push({t:'F',q:e+q});p.signs.T+=1}
+      else{R.rohling-=2;R.holz-=1;p.pieces.push({t:a.mode,q:d.e1+d.e2+q});p.signs.T+=2}break}
+    case'kontor':
+      if(a.mode==='sell'){for(const i of a.idx)R.duk+=price(p.pieces[i].t)+(has(p,'kont1')?1:0);p.pieces=p.pieces.filter((_,i)=>!a.idx.includes(i));p.signs.H+=1}
+      else{const o=s.orders[a.oi];p.pieces=p.pieces.filter((_,i)=>!a.idx.includes(i));p.ruhm+=o.ruhm;p.src.order+=o.ruhm;R.duk+=o.duk;p.signs.H+=2;p.st.orders++;
+        if(s.real){const nx=s.g.orderDeck.shift();if(nx)s.orders[a.oi]=nx;else s.orders.splice(a.oi,1);s.g.hidden=true}else s.orders.splice(a.oi,1)}
+      break;
+    case'gilde':{const id=s.market[a.mi],cd=CARD[id];R.duk-=cd.cost;p.cards.push(id);p.signs[cd.g]+=2;if(cd.fx==='dice')p.dice.push(0);
+      if(s.real){const nx=s.g.cardDeck.shift();if(nx)s.market[a.mi]=nx;else s.market.splice(a.mi,1);s.g.hidden=true}else s.market.splice(a.mi,1);break}
+  }
+  cool(p,dl)}
+
+/* ---- Bewertung und Planer-Bot (Beam-Suche über 3 eigene Züge) ---- */
+function value(s,W,left){
+  const p=s.p,R=p.res,m=left>=3?1:left===2?.7:.3;let v=p.ruhm;
+  v+=m*(W.ton*R.ton+W.asche*R.asche+W.holz*R.holz+W.rohling*R.rohling+W.heat*sum(p.dice));
+  v+=(left>=3?W.duk:.3*W.duk+.7*W.duk*(left-1)/2)*R.duk;
+  for(const pc of p.pieces){const useful=s.orders.some(o=>o.need.some(n=>n.t===pc.t&&pc.q>=n.q));v+=Math.max(1,m*(W.piece[pc.t]+(useful?W.orderBonus:0)))}
+  for(const gl of'THB')v+=W.sign[gl]*p.signs[gl];
+  for(const id of p.cards)v+=CARD[id].ruhm+m*W.cardFx;
+  return v}
+function chooseBot(g,pi){
+  const pl=g.players[pi],W=PROFS[pl.prof],s0=view(g,pi,true),acts=actions(s0),left=roundsFor(g.np)-g.round+1,v0=value(s0,W,left),first=[];
+  for(const a of acts){if(a.type==='pass')continue;const sv=cloneView(s0);apply(sv,a);first.push({a,sv,v:value(sv,W,left)})}
+  first.sort((x,y)=>y.v-x.v);
+  let best=null,bv=0;
+  { const sv=cloneView(s0);apply(sv,{type:'pass'});const dv=value(sv,W,left)-v0+(rnd(g)-.5)*2*PARAM.noise;if(dv>bv){bv=dv;best={type:'pass'}} }
+  for(const f of first.slice(0,PARAM.lookTop)){
+    let top=f.v,fr=[f.sv];
+    for(let dd=2;dd<=PARAM.lookDepth;dd++){const kids=[];
+      for(const st of fr)for(const a of actions(st)){if(a.type==='pass')continue;const c=cloneView(st);apply(c,a);kids.push({c,v:value(c,W,left)})}
+      if(!kids.length)break;kids.sort((x,y)=>y.v-x.v);top=Math.max(top,kids[0].v);fr=kids.slice(0,PARAM.lookBeam).map(k=>k.c)}
+    const dv=top-v0+(rnd(g)-.5)*2*PARAM.noise;if(dv>bv){bv=dv;best=f.a}}
+  return best||{type:'pass'}}
+
+/* ---- Beschreibungen ---- */
+function outcome(a,p,s){ // {txt, sub}
+  const d=a.d,e=d?d.eff:0,q=has(p,'qual1')?1:0;
+  if(a.type==='pass')return{txt:'Rasten',sub:'Kalte Würfel werden neu gewürfelt.'};
+  let txt='',sub='';
+  switch(a.place){
+    case'ton':txt=`+${TON[e]+(has(p,'ton1')?1:0)} Ton`;break;
+    case'asche':txt=`+${2+(has(p,'asche1')?1:0)} Asche`;break;
+    case'wald':txt=`+${Math.ceil(e/3)+(has(p,'holz1')?1:0)} Holz`;break;
+    case'ofen':{const n=ofenN(p,e);txt=`+${n} Rohling${n>1?'e':''}`;sub=`−${PARAM.batchTon*n} Ton, −${n} Asche`;break}
+    case'topf':if(a.mode==='F'){txt=`Fliese, Güte ${e+q}`;sub='−1 Rohling'}else{txt=`${TNAME[a.mode]}, Güte ${d.e1+d.e2+q}`;sub='−2 Rohlinge, −1 Holz'}break;
+    case'kontor':if(a.mode==='sell'){const tot=sum(a.idx.map(i=>price(p.pieces[i].t)+(has(p,'kont1')?1:0)));txt=`Verkaufen: ${a.idx.map(i=>TNAME[p.pieces[i].t]+' '+p.pieces[i].q).join(', ')}`;sub=`+${tot} Dukaten`}
+      else{const o=s.orders[a.oi];txt=`Auftrag liefern: ${o.need.map(n=>TNAME[n.t]).join(' + ')}`;sub=`+${o.ruhm} Ruhm`+(o.duk?`, +${o.duk} Dukaten`:'')}break;
+    case'gilde':{const c=CARD[s.market[a.mi]];txt=`„${c.n}“ kaufen`;sub=`−${c.cost} Dukaten · ${c.tx}`;break}
+  }
+  const nb=d.j===undefined?d.b:d.b1+d.b2;if(nb>0){const c=bcost(p,nb);sub+=(sub?' · ':'')+`angefacht +${nb}`+(c?` (−${c} Holz)`:' (gratis)')}
+  return{txt,sub}}
+
+/* ---- Spielablauf ---- */
+let S=null,U={page:0,sel:[],boost:0,sheet:null,menu:false,rules:false,toast:null,undo:[],pending:false};
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(_){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(_){}};
+const fastPref=()=>lsGet('spielregal:botFast')==='1',botDelay=()=>fastPref()?160:600;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const SAVE='glut:save',INBOX='spielregal:inbox:plays';
+function save(){try{lsSet(SAVE,JSON.stringify({screen:S&&!S.over?'game':'start',S}))}catch(_){}}
+function loadSave(){try{const x=JSON.parse(lsGet(SAVE)||'null');return x&&x.S&&!x.S.over?x:null}catch(_){return null}}
+const myName=()=>{if(SETUP.name.trim())return SETUP.name.trim();try{const p=(JSON.parse(lsGet('spielregal:players')||'[]')||[]).filter(x=>x&&x.name);return p.length?p[0].name:'Du'}catch(_){return 'Du'}};
+const cardRuhm=p=>sum(p.cards.map(id=>CARD[id].ruhm));
+const total=p=>p.ruhm+cardRuhm(p)+p.pieces.length+Math.floor(p.res.duk/PARAM.dukPerRuhm);
+function log(t,pi){S.log.push({r:S.round,p:pi,t})}
+function nextCur(){for(let k=1;k<=S.np;k++){const i=(S.cur+k)%S.np;if(!S.players[i].passed)return i}return -1}
+function exec(pi,a){
+  const p=S.players[pi],s=view(S,pi,true),o=outcome(a,p,s);
+  if(pi===0&&!p.bot)U.undo.push(JSON.stringify(S));else U.undo=[];
+  S.hidden=false;
+  apply(s,a);p.st.turns++;
+  log(a.type==='pass'?'rastet.':`${PNAME[a.place]}: ${o.txt}${o.sub?' ('+o.sub+')':''}`,pi);
+  if(S.hidden)U.undo=[];
+  U.sel=[];U.boost=0;U.sheet=null;
+  afterAction()}
+function afterAction(){
+  if(S.players.every(p=>p.passed)){endRound();return}
+  const n=nextCur();S.cur=n<0?S.cur:n;
+  save();render();schedule()}
+function endRound(){
+  const g=S;let msg='';
+  if(scoreAt(g.np).includes(g.round))msg=scoreGuilds(g);
+  g.first=g.firstPass>=0?g.firstPass:(g.first+1)%g.np;
+  if(g.round>=roundsFor(g.np)){finish();return}
+  g.round++;startRound();
+  toast((msg?msg+'\n':'')+`Runde ${g.round} von ${roundsFor(g.np)} – ${g.players[g.first].bot?g.players[g.first].name:'du'} ${g.players[g.first].bot?'beginnt':'beginnst'}.`,msg?4200:2400);
+  save();render();schedule()}
+function startRound(){const g=S;g.places=PL.map(()=>[]);g.players.forEach(p=>{p.passed=false;p.noCoolUsed=false;p.bfreeUsed=false});g.firstPass=-1;g.cur=g.first;U.undo=[];U.page=0;log(`Runde ${g.round} beginnt.`,-1)}
+function scoreGuilds(g){
+  const lines=[];
+  for(const gl of'THB'){
+    const vals=g.players.map(p=>p.signs[gl]),order=[...new Set(vals)].filter(v=>v>0).sort((a,b)=>b-a);if(!order.length)continue;
+    const win=g.players.filter(p=>p.signs[gl]===order[0]),pts=[PARAM.guildFirst,PARAM.guildSecond],got=[];
+    if(win.length>1){const sh=Math.floor((pts[0]+pts[1])/win.length);win.forEach(p=>{p.ruhm+=sh;p.src.guild+=sh;got.push(`${nm(p)} +${sh}`)})}
+    else{win[0].ruhm+=pts[0];win[0].src.guild+=pts[0];got.push(`${nm(win[0])} +${pts[0]}`);
+      if(g.np>2&&order[1]){const w2=g.players.filter(p=>p.signs[gl]===order[1]),sh=Math.floor(pts[1]/w2.length);w2.forEach(p=>{p.ruhm+=sh;p.src.guild+=sh;got.push(`${nm(p)} +${sh}`)})}}
+    lines.push(`${GNAME[gl]}: ${got.join(', ')}`)}
+  const t='Gilden-Wertung – '+lines.join(' · ');log(t,-1);return 'Gilden-Wertung:\n'+lines.join('\n')}
+const nm=p=>p.bot?p.name:(p.seat===0?'du':p.name);
+function finish(){
+  const g=S;
+  for(const p of g.players){const k=cardRuhm(p);p.ruhm+=k;p.src.card=k;const l=p.pieces.length+Math.floor(p.res.duk/PARAM.dukPerRuhm);p.ruhm+=l;p.src.left=l}
+  g.over=true;U.undo=[];log('Das Spiel ist zu Ende.',-1);recordPlay();save();render()}
+function recordPlay(){
+  if(!S||!S.over||S.recorded)return;const sc=S.players.map(p=>p.ruhm),best=Math.max(...sc),n=myName();
+  const entry={id:'glut-'+S.seed,source:'glut',app:'Glut',bggId:'',gameName:'Glut',date:(()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`})(),human:n,
+    results:S.players.map((p,i)=>({name:p.bot?p.name:n,bot:!!p.bot,total:sc[i]})),winners:S.players.filter((p,i)=>sc[i]===best).map(p=>p.bot?p.name:n)};
+  try{const inbox=JSON.parse(lsGet(INBOX)||'[]');if(!inbox.some(e=>e.id===entry.id))inbox.push(entry);lsSet(INBOX,JSON.stringify(inbox));S.recorded=true}catch(_){}}
+let botT=null;
+function schedule(){clearTimeout(botT);if(!S||S.over)return;const p=S.players[S.cur];if(!p.bot||p.passed)return;
+  botT=setTimeout(()=>{if(!S||S.over||S.players[S.cur]!==p)return;const a=chooseBot(S,S.cur);exec(S.cur,a)},botDelay())}
+let toastT=null;
+function toast(t,ms=1900){U.toast=t;clearTimeout(toastT);toastT=setTimeout(()=>{U.toast=null;render()},ms);render()}
+
+/* ---- Auswahl des Menschen ---- */
+const me=()=>S.players[0];
+const myTurn=()=>S&&!S.over&&S.cur===0&&!me().passed;
+function optionsFor(k){
+  if(!myTurn()||!U.sel.length)return[];
+  const p=me(),s=view(S,0,false),heats=U.sel.map(i=>p.dice[i]).sort(),want=U.sel.length;
+  return actions(s).filter(a=>{
+    if(a.type!=='work'||a.place!==k)return false;
+    const dl=a.d.j===undefined?[p.dice[a.d.i]]:[p.dice[a.d.i],p.dice[a.d.j]];
+    if(dl.length!==want||dl.slice().sort().join()!==heats.join())return false;
+    if(want===1&&a.d.b!==U.boost)return false;
+    return true})}
+function pickDie(i){
+  if(!myTurn())return;const p=me();if(p.dice[i]<=0){toast('Dieser Würfel ist kalt – er wird beim Rasten neu gewürfelt.');return}
+  const at=U.sel.indexOf(i);
+  if(at>=0)U.sel.splice(at,1);else{U.sel.push(i);if(U.sel.length>2)U.sel.shift()}
+  U.boost=0;U.page=0;render()}
+function pickPlace(k){
+  if(!myTurn())return;
+  if(!U.sel.length){toast('Wähle zuerst einen Würfel.');return}
+  const opts=optionsFor(k);
+  if(!opts.length){toast(whyNot(k));return}
+  if(opts.length===1){exec(0,opts[0]);return}
+  const p=me(),s=view(S,0,false);
+  U.sheet={title:PNAME[k],opts:opts.map(a=>({a,...outcome(a,p,s)}))};render()}
+function whyNot(k){
+  const p=me(),R=p.res,h=Math.max(...U.sel.map(i=>p.dice[i])),pl=S.places[PL.indexOf(k)];
+  if(pl.length>=capFor(S.np))return `${PNAME[k]} ist belegt.`;if(pl.includes(0))return `Du warst in dieser Runde schon an der ${PNAME[k]}.`;
+  switch(k){case'asche':return 'Aschehütte: nur mit Hitze 3 oder weniger.';
+    case'ofen':return R.ton<2||R.asche<1?'Brennofen: du brauchst 2 Ton und 1 Asche.':`Brennofen: Hitze ${ofenMin(p)} nötig (du hast ${h}).`;
+    case'topf':return U.sel.length===1?(R.rohling<1?'Töpferscheibe: du brauchst einen Rohling.':'Töpferscheibe: Fliese braucht 1 Rohling.'):(R.rohling<2?'Krug oder Zierplatte brauchen 2 Rohlinge.':R.holz<1?'Krug oder Zierplatte brauchen 1 Holz.':'Zwei Würfel müssen gleich oder aufeinanderfolgend sein.');
+    case'kontor':return p.pieces.length?'Kontor: Hitze 2 oder mehr, und die Stücke müssen zu einem Auftrag passen oder verkauft werden.':'Du hast noch keine Stücke zu verkaufen oder zu liefern.';
+    case'gilde':return 'Gildehaus: Hitze ≥ Stufe der Karte und genug Dukaten.';
+    default:return 'Das geht mit diesem Würfel nicht.'}}
+function doUndo(){if(!U.undo.length||!myTurn())return;S=JSON.parse(U.undo.pop());U.sel=[];U.boost=0;U.sheet=null;save();render()}
+const undoable=()=>S&&!S.over&&U.undo.length&&myTurn();
+
+/* ---- Darstellung ---- */
+const PCOL=['#F2502E','#2A2BC8','#124D39','#9C90D6'];
+const avatar=(i)=>`<span class="av" style="background:${PCOL[i]}">${esc((S.players[i].bot?S.players[i].name:myName()).slice(0,1).toUpperCase())}</span>`;
+const dieHtml=(i,h,cls='')=>`<button class="die num h${Math.min(6,Math.max(0,Math.round(h)))} ${cls}" data-a="die" data-i="${i}" data-info="${h>0?`Würfel mit Hitze ${h}\nBei jedem Einsatz kühlt er um 1 ab. Kalte Würfel werden beim Rasten neu gewürfelt.`:'Kalter Würfel\nBeim Rasten wird er neu gewürfelt.'}">${h>0?h:'kalt'}</button>`;
+function annShort(){
+  if(S.over)return 'Partie beendet';
+  const c=S.players[S.cur];
+  if(c.bot)return `${c.name} ist dran …`;
+  if(c.passed)return 'Du hast gerastet';
+  if(U.sel.length)return U.sel.length===2?'Wähle einen Ort (2 Würfel)':'Wähle einen Ort';
+  return 'Du bist dran: wähle einen Würfel'}
+function annLong(){if(S.over)return 'Das Spiel ist zu Ende.';const c=S.players[S.cur];if(c.bot)return `${c.name} ist am Zug. Du siehst jeden Zug in der Chronik.`;
+  return 'Tippe einen deiner Würfel an (für den Krug und die Zierplatte zwei), dann den Ort, an dem du arbeiten willst. Mit „Anfachen“ zahlst du Holz für mehr Hitze. Wenn du fertig bist, rastest du.'}
+function headHtml(){
+  const p=me();
+  const opps=S.players.map((q,i)=>`<span class="opp ${S.cur===i&&!S.over?'cur':''} ${q.passed?'done':''}" data-info="${esc((i===0?myName():q.name)+'\nRuhm (Stand jetzt, ohne Gilden-Wertung): '+total(q)+'\nGilden-Zeichen: Töpfer '+q.signs.T+', Händler '+q.signs.H+', Brenner '+q.signs.B+(q.passed?'\nhat gerastet':''))}">${avatar(i)}${esc(i===0?'Du':q.name)} <b class="num">${total(q)}</b>${q.passed?' ☾':''}</span>`).join('');
+  const rc=(k,v,info)=>`<span class="rc num" data-info="${esc(info)}"><i style="background:${RCOL[k]}"></i>${v}</span>`;
+  const R=p.res;
+  const rnd_=`<span class="pill p-ink" data-info="Runde\nNach der Runde ${roundsFor(S.np)/2} und am Spielende werden die Gilden gewertet.">R ${S.round}/${roundsFor(S.np)}</span>`;
+  const res=rc('ton',R.ton,'Ton\nAus der Tongrube. 2 Ton + 1 Asche ergeben im Brennofen 1 Rohling.')+rc('asche',R.asche,'Asche\nAus der Aschehütte. Flussmittel für den Brennofen.')+
+    rc('holz',R.holz,'Holz\nAus dem Wald. Zum Anfachen (+1 Hitze) und für Krug und Zierplatte.')+rc('rohling',R.rohling,'Rohlinge\nAus dem Brennofen. Auf der Töpferscheibe werden daraus Stücke.')+
+    rc('duk',R.duk,'Dukaten\nVom Verkauf am Kontor. Für Gildenkarten. 4 Dukaten sind am Ende 1 Ruhm.')+rc('ruhm',total(p),'Ruhm (Stand jetzt)\nAufträge, Gilden, Karten, unverkaufte Stücke und je 4 Dukaten.');
+  const dim=!myTurn();
+  const dice=p.dice.map((h,i)=>{const sel=U.sel.includes(i),bo=sel&&U.sel.length===1&&U.boost>0;return dieHtml(i,bo?Math.min(6,h+U.boost):h,(sel?'sel ':'')+(bo?'boost ':'')+(dim?'dim':''))}).join('');
+  const bch=myTurn()&&U.sel.length===1&&p.dice[U.sel[0]]>0&&(p.res.holz>0||has(p,'bfree'))?`<span class="bchips" data-info="Anfachen\nMit Holz erhöhst du die Hitze des gewählten Würfels für diesen Einsatz.">${[0,1,2].filter(b=>p.dice[U.sel[0]]+b<=6&&(b===0||bcost(p,b)<=p.res.holz)).map(b=>`<button class="pill ${U.boost===b?'on':'p-cream'}" data-a="boost" data-b="${b}">${b?`+${b}`:'ohne'}</button>`).join('')}</span>`:'';
+  return `<div class="thead"><div class="hrow"><h1>Glut.</h1><button class="ann ${myTurn()?'me':''}" data-a="go" data-info="${esc(annLong())}">${esc(annShort())}</button><button class="mbtn" data-a="menu" aria-label="Menü">☰</button></div>
+    <div class="opps">${opps}${rnd_}</div><div class="res">${res}</div><div class="dicerow">${dice}${bch}</div></div>`}
+const PINFO={ton:'Ton: Hitze 1–6 → 1 · 2 · 3 · 3 · 4 · 5',asche:'+2 Asche',wald:'Holz: 1 (Hitze 1–3), 2 (ab Hitze 4)',
+  ofen:'2 Ton + 1 Asche → 1 Rohling, so oft wie Hitze − 3 (und du es hast). +1 Brenner-Zeichen',
+  topf:'Fliese: 1 Rohling · Krug (zwei gleiche Würfel) oder Zierplatte (zwei aufeinanderfolgende): 2 Rohlinge + 1 Holz. Güte = Summe der Hitze. Töpfer-Zeichen',
+  kontor:'Stücke verkaufen (bis ⌈Hitze/2⌉, Fliese 3 · Krug/Zierplatte 8 Dukaten) oder einen Auftrag liefern. Händler-Zeichen',
+  gilde:'Gildenkarte kaufen: Hitze ≥ Stufe der Karte, Dukaten als Preis. Gilden-Zeichen'};
+function placeCond(k,p){return({ton:'beliebig',asche:'Hitze ≤ 3',wald:'beliebig',ofen:`Hitze ≥ ${ofenMin(p)}`,topf:'1–2 Würfel',kontor:'Hitze ≥ 2',gilde:'Hitze ≥ Stufe'})[k]}
+function placesPage(){
+  const p=me(),cap=capFor(S.np);
+  return `<div class="page" id="pg0"><div class="ptitle disp">Orte.</div>`+PL.map((k,i)=>{
+    const occ=S.places[i],pick=myTurn()&&U.sel.length&&optionsFor(k).length>0,full=occ.length>=cap||occ.includes(0);
+    return `<div class="plc ${pick?'pick':''} ${!pick&&full?'off':''}" data-a="place" data-k="${k}" data-info="${esc(PNAME[k]+'\n'+PINFO[k])}">
+      <div class="t"><span class="n disp">${PNAME[k]}</span><span class="pill ${pick?'p-ink':'p-pink'}">${placeCond(k,p)}</span></div>
+      <div class="e">${esc(PINFO[k])}</div>
+      <div class="occ">${occ.map(avatar).join('')}${Array.from({length:cap-occ.length},()=>'<span class="slot"></span>').join('')}</div></div>`}).join('')+`</div>`}
+function pieceChip(pc){return `<span class="pc ${pc.t}" data-info="${esc(TNAME[pc.t]+'\nGüte '+pc.q+'. Verkauf '+price(pc.t)+' Dukaten, oder für einen Auftrag.')}">${TNAME[pc.t]} ${pc.q}</span>`}
+function workshopPage(){
+  const p=me();
+  const tbl=`<table class="tbl"><tr><th></th>${S.players.map((q,i)=>`<th>${avatar(i)}</th>`).join('')}</tr>${['T','H','B'].map(gl=>`<tr><td data-info="${esc(GNAME[gl]+'\nMehrheit nach Runde '+roundsFor(S.np)/2+' und am Ende: '+PARAM.guildFirst+' Ruhm für den ersten Platz'+(S.np>2?', '+PARAM.guildSecond+' für den zweiten':'')+'.')}">${GNAME[gl]}</td>${S.players.map(q=>`<td class="num">${q.signs[gl]}</td>`).join('')}</tr>`).join('')}</table>`;
+  return `<div class="page" id="pg1"><div class="ptitle disp">Werkstatt.</div>
+    <div class="box"><h3 class="disp">Stücke</h3><div class="chips">${p.pieces.length?p.pieces.map(pieceChip).join(''):'<span class="note">Noch keine – Fliesen entstehen auf der Töpferscheibe.</span>'}</div></div>
+    <div class="box"><h3 class="disp">Deine Karten</h3>${p.cards.length?p.cards.map(id=>cardHtml(id,false)).join(''):'<span class="note">Karten kaufst du im Gildehaus.</span>'}</div>
+    <div class="box"><h3 class="disp">Gilden-Zeichen</h3>${tbl}</div></div>`}
+function cardHtml(id,market){
+  const c=CARD[id],p=me(),can=market&&myTurn()&&p.res.duk>=c.cost&&p.dice.some(h=>h>=c.tier);
+  return `<div class="card ${can?'can':''}" data-info="${esc(c.n+'\n'+c.tx+'\nGilde: '+GNAME[c.g]+' (+2 Zeichen)')}"><div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span class="n disp">${c.n}</span>
+    <span class="pill p-ink">${GNAME[c.g]}</span></div><div class="e">${c.tx}</div>
+    <div class="chips"><span class="pill p-out">Stufe ${c.tier}</span><span class="pill p-pink">${c.cost} Dukaten</span><span class="pill p-out">${c.ruhm} Ruhm</span></div></div>`}
+function ordersPage(){
+  const p=me();
+  const ord=S.orders.map(o=>{const can=assign(p.pieces,o.need);
+    return `<div class="ord ${can?'can':''}" data-info="${esc('Auftrag\nAm Kontor liefern: Stücke der Art und Mindestgüte abgeben → '+o.ruhm+' Ruhm'+(o.duk?' und '+o.duk+' Dukaten':'')+'.')}"><div class="need">${o.need.map(n=>`<span class="pc ${n.t}">${TNAME[n.t]}${n.q>1?' ≥'+n.q:''}</span>`).join('')}</div>${o.duk?`<span class="pill p-pink">+${o.duk}</span>`:''}<span class="stamp num">${o.ruhm}</span></div>`}).join('');
+  const lg=S.log.slice(-40).reverse().map(l=>`<div>${l.p>=0?'<b>'+esc(l.p===0?'Du':S.players[l.p].name)+'</b> ':''}${esc(l.t)} <span style="opacity:.55">· R${l.r}</span></div>`).join('');
+  return `<div class="page" id="pg2"><div class="ptitle disp">Aufträge.</div>${ord}
+    <div class="ptitle disp" style="margin-top:6px">Gildenhaus.</div>${S.market.map(id=>cardHtml(id,true)).join('')}
+    <div class="box"><h3 class="disp">Chronik</h3><div class="log">${lg}</div></div></div>`}
+function footHtml(){
+  const p=me();
+  return `<div class="foot">${undoable()?'<button class="btn alt" data-a="undo" aria-label="Zug rückgängig" data-info="Zug rückgängig\nNimmt deinen letzten Zug zurück, solange nichts Verdecktes aufgedeckt wurde.">↶</button>':''}
+    <span class="pdots">${[0,1,2].map(i=>`<button class="${U.page===i?'on':''}" data-a="page" data-n="${i}" aria-label="Seite ${i+1}"></button>`).join('')}</span>
+    <button class="btn ${myTurn()?'':'alt'}" data-a="pass" ${myTurn()?'':'disabled'} data-info="Rasten\nDu bist für diese Runde fertig und würfelst deine kalten Würfel neu. Wer zuerst rastet, beginnt die nächste Runde.">Rasten</button></div>`}
+function sheetHtml(){
+  if(!U.sheet)return '';
+  return `<div class="overlay" data-a="sheet-x"><div class="sheet" data-stop="1"><div class="sh"><h2 class="disp">${esc(U.sheet.title)}</h2><button class="xbtn" data-a="sheet-x" aria-label="Schließen">✕</button></div>
+    <div class="opts">${U.sheet.opts.map((o,i)=>`<button class="opt" data-a="opt" data-i="${i}">${esc(o.txt)}${o.sub?`<small>${esc(o.sub)}</small>`:''}</button>`).join('')}</div></div></div>`}
+function menuHtml(){
+  if(!U.menu)return '';
+  return `<div class="overlay" data-a="menu-x"><div class="sheet" data-stop="1"><div class="sh"><h2 class="disp">Menü</h2><button class="xbtn" data-a="menu-x" aria-label="Schließen">✕</button></div><div class="menu">
+    ${undoable()?'<button class="btn alt" data-a="undo">Zug rückgängig</button>':''}
+    <button class="btn alt" data-a="rules">Spielregeln</button>
+    <button class="btn alt" data-a="fast" data-info="Wie schnell die Mitspieler am Zug sind. Gilt für alle Spiele.">Mitspieler-Tempo: ${fastPref()?'schnell':'normal'}</button>
+    <a class="btn" href="../">Speichern &amp; zum Spielregal</a>
+    <button class="btn alt" data-a="restart">Partie abbrechen &amp; neu starten</button>
+    <button class="link" data-a="reload">Neueste Version laden</button></div></div></div>`}
+function rulesHtml(){
+  if(!U.rules)return '';
+  return `<div class="overlay" data-a="rules-x"><div class="sheet rules" data-stop="1"><div class="sh"><h2 class="disp">Spielregeln</h2><button class="xbtn" data-a="rules-x" aria-label="Schließen">✕</button></div>
+  <p><b>Ziel:</b> Am Ende die meisten Ruhm-Punkte. Du führst eine Fayence-Manufaktur. Deine <b>Würfel sind die Glut</b>: Die Zahl ist die Hitze (1–6).</p>
+  <h3 class="disp">Dein Zug</h3><ul><li><b>Arbeiten:</b> Tippe einen Würfel (am Töpferscheibe auch zwei), dann einen Ort. Der Würfel wirkt mit seiner Hitze und <b>kühlt um 1 ab</b>. Auf 0 ist er kalt und kann nicht mehr eingesetzt werden.</li>
+  <li><b>Anfachen:</b> Mit 1 Holz erhöhst du die Hitze eines Würfels für diesen Einsatz um 1 (bis 6, höchstens +2).</li>
+  <li><b>Rasten:</b> Du bist für die Runde fertig und würfelst alle kalten Würfel neu. <b>Wer zuerst rastet, beginnt die nächste Runde.</b></li></ul>
+  <h3 class="disp">Die Orte</h3><ul><li><b>Tongrube:</b> Ton (mehr Hitze = mehr Ton).</li><li><b>Aschehütte:</b> 2 Asche, nur mit Hitze 3 oder weniger.</li><li><b>Wald:</b> Holz.</li>
+  <li><b>Brennofen</b> (Hitze 4+): 2 Ton + 1 Asche → 1 Rohling, so oft wie Hitze − 3.</li>
+  <li><b>Töpferscheibe:</b> Fliese (1 Würfel, 1 Rohling), Krug (2 gleiche Würfel) oder Zierplatte (2 aufeinanderfolgende Würfel), je 2 Rohlinge + 1 Holz. Güte = Summe.</li>
+  <li><b>Kontor</b> (Hitze 2+): Stücke verkaufen (Fliese 3 · Krug/Zierplatte 8 Dukaten) oder einen Auftrag liefern.</li><li><b>Gildehaus:</b> Gildenkarten kaufen (Hitze ≥ Stufe).</li></ul>
+  <h3 class="disp">Wertung</h3><p>Aufträge bringen Ruhm. Die drei Gilden (Töpfer, Händler, Brenner) sammeln Zeichen: Wer die meisten hat, bekommt 4 Ruhm, der Zweite 2 (nur ab 3 Spielern). Gewertet wird nach der halben Spielzeit und am Ende. Dazu zählen am Ende die Ruhm-Werte der Karten, je unverkauftem Stück 1 und je 4 Dukaten 1 Ruhm.</p>
+  <p class="note">Lange auf ein Element drücken zeigt eine Erklärung. Vollständige Regeln und Testergebnisse: REGELN.md im Repo.</p></div></div>`}
+function overHtml(){
+  if(!S.over)return '';
+  const order=S.players.map((p,i)=>({p,i})).sort((a,b)=>b.p.ruhm-a.p.ruhm||b.p.res.duk-a.p.res.duk);
+  return `<div class="overlay"><div class="sheet" data-stop="1"><div class="sh"><h2 class="disp">${order[0].i===0?'Gewonnen!':order[0].p.name+' gewinnt.'}</h2></div>
+    <div class="opts">${order.map(({p,i},k)=>`<div class="opt" style="display:flex;justify-content:space-between;align-items:center;gap:8px;${k===0?'background:var(--lime)':''}"><span>${avatar(i)} ${k+1}. ${esc(i===0?myName():p.name)}<small>Aufträge ${p.src.order} · Gilden ${p.src.guild} · Karten ${p.src.card} · Rest ${p.src.left}</small></span><b class="num" style="font-size:30px">${p.ruhm}</b></div>`).join('')}
+    <button class="btn wide" data-a="again">Neue Partie</button><a class="btn alt wide" href="../">Zum Spielregal</a></div></div></div>`}
+function gameHtml(){return `<div class="app">${headHtml()}<div class="pages" id="pages">${placesPage()}${workshopPage()}${ordersPage()}</div>${footHtml()}</div>${sheetHtml()}${menuHtml()}${rulesHtml()}${overHtml()}${U.toast?`<div class="toast">${esc(U.toast)}</div>`:''}`}
+
+/* ---- Startseite ---- */
+const SETUP={name:lsGet('glut:name')||'',bots:+(lsGet('glut:bots')||1)};
+function startHtml(){
+  let prof=[];try{prof=(JSON.parse(lsGet('spielregal:players')||'[]')||[]).map(x=>x&&x.name).filter(Boolean)}catch(_){}
+  const sv=loadSave();
+  return `<div class="start"><img class="cov" src="cover.png" alt="Glut – Würfel, die abbrennen"><a class="leave" href="../" data-info="Zurück zum Spielregal">‹ Spielregal</a>
+    <div class="panel"><input class="input" id="nm" maxlength="30" placeholder="Dein Name" value="${esc(SETUP.name)}" autocomplete="off">
+    ${prof.length?`<div class="chips">${prof.slice(0,6).map(n=>`<button class="chip ${SETUP.name===n?'on':''}" data-a="pickname" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div>`:''}
+    <div class="chips" style="align-items:center"><span class="lab">Gegner</span>${[1,2,3].map(n=>`<button class="chip ${SETUP.bots===n?'on':''}" data-a="bots" data-n="${n}">${n} Bot${n>1?'s':''}</button>`).join('')}</div>
+    <button class="btn wide" data-a="start">Partie beginnen</button>
+    ${sv?'<button class="btn alt wide" data-a="resume">Partie fortsetzen</button>':''}
+    <button class="link" data-a="rules">Spielregeln lesen</button></div>${rulesHtml()}</div>`}
+const BOTS=['Lotte','Ben','Mara'];
+function startGame(){
+  const list=[{name:myName(),bot:false}];for(let i=0;i<SETUP.bots;i++)list.push({name:BOTS[i],bot:true});
+  S=newGame(list,(Date.now()&0x7fffffff)^0x5bd1e995);S.log.push({r:1,p:-1,t:'Die Manufaktur öffnet. Runde 1 beginnt.'});
+  U={page:0,sel:[],boost:0,sheet:null,menu:false,rules:false,toast:null,undo:[],pending:false};save();render();schedule()}
+const HERO_TOP='#F2C8B6';
+function themeFor(on){document.documentElement.style.backgroundColor=on?HERO_TOP:'';let tc=document.querySelector('meta[name="theme-color"]');if(!tc){tc=document.createElement('meta');tc.name='theme-color';document.head.appendChild(tc)}tc.content=on?HERO_TOP:'#F7EBDD'}
+
+/* ---- Rendern ---- */
+let touching=false;
+function render(){
+  if(touching){U.pending=true;return}
+  const root=document.getElementById('root');
+  const old=document.getElementById('pages');const left=old?old.scrollLeft:0,w=old?old.clientWidth:0;
+  const sy=[0,1,2].map(i=>{const e=document.getElementById('pg'+i);return e?e.scrollTop:0});
+  const ae=document.activeElement;const keep=ae&&ae.id==='nm'?ae.selectionStart:null;
+  const onStart=!S;
+  root.innerHTML=onStart?startHtml():gameHtml();
+  themeFor(onStart);
+  if(!onStart){const pg=document.getElementById('pages');if(pg){pg.scrollLeft=U.page*pg.clientWidth;[0,1,2].forEach(i=>{const e=document.getElementById('pg'+i);if(e)e.scrollTop=sy[i]})}}
+  if(keep!==null){const n=document.getElementById('nm');if(n){n.focus();try{n.setSelectionRange(keep,keep)}catch(_){}}}}
+document.addEventListener('scroll',e=>{if(e.target.id==='pages'){const pg=e.target,i=Math.round(pg.scrollLeft/(pg.clientWidth||1));if(i!==U.page){U.page=i;document.querySelectorAll('.pdots button').forEach((b,k)=>b.classList.toggle('on',k===i))}}},true);
+document.addEventListener('touchstart',e=>{if(e.target.closest&&e.target.closest('.pages'))touching=true},{passive:true});
+['touchend','touchcancel'].forEach(t=>document.addEventListener(t,()=>{if(touching){touching=false;if(U.pending){U.pending=false;render()}}},{passive:true}));
+document.addEventListener('input',e=>{if(e.target.id==='nm'){SETUP.name=e.target.value;lsSet('glut:name',SETUP.name)}});
+
+/* ---- Info-Blase per langem Drücken ---- */
+let lpT=null,lpFired=false,lpXY=null;
+function hideBubble(){const b=document.querySelector('.bubble');if(b)b.remove()}
+function showBubble(el){hideBubble();const b=document.createElement('div');b.className='bubble';const[t,...r]=el.dataset.info.split('\n');
+  if(r.length){const h=document.createElement('span');h.className='bt';h.textContent=t;b.appendChild(h);b.appendChild(document.createTextNode(r.join('\n')))}else b.textContent=t;
+  document.body.appendChild(b);const rc=el.getBoundingClientRect(),bw=b.offsetWidth,bh=b.offsetHeight;
+  const x=Math.min(Math.max(12,rc.left+rc.width/2-bw/2),innerWidth-bw-12);let y=rc.top-bh-10;if(y<12)y=Math.min(rc.bottom+10,innerHeight-bh-12);b.style.left=x+'px';b.style.top=Math.max(12,y)+'px'}
+document.addEventListener('pointerdown',e=>{hideBubble();const el=e.target.closest('[data-info]');if(!el)return;lpFired=false;lpXY=[e.clientX,e.clientY];clearTimeout(lpT);
+  lpT=setTimeout(()=>{lpFired=true;showBubble(el);if(navigator.vibrate)try{navigator.vibrate(8)}catch(_){}},450)});
+document.addEventListener('pointermove',e=>{if(lpXY&&Math.hypot(e.clientX-lpXY[0],e.clientY-lpXY[1])>10){clearTimeout(lpT);lpXY=null}});
+['pointerup','pointercancel'].forEach(t=>document.addEventListener(t,()=>{clearTimeout(lpT);lpXY=null;if(lpFired)setTimeout(hideBubble,2600)}));
+addEventListener('scroll',()=>{clearTimeout(lpT);hideBubble()},{passive:true,capture:true});
+document.addEventListener('contextmenu',e=>{if(e.target.closest('[data-info]'))e.preventDefault()});
+document.addEventListener('click',e=>{if(lpFired){lpFired=false;e.stopImmediatePropagation();e.preventDefault()}},true);
+
+/* ---- Eingaben ---- */
+document.addEventListener('click',e=>{
+  if(e.target.closest('[data-stop]')&&!e.target.closest('[data-a]:not(.overlay)'))return;
+  const el=e.target.closest('[data-a]');if(!el)return;const a=el.dataset.a;
+  if(a==='bots'){SETUP.bots=+el.dataset.n;lsSet('glut:bots',SETUP.bots);render();return}
+  if(a==='pickname'){SETUP.name=el.dataset.n;lsSet('glut:name',SETUP.name);render();return}
+  if(a==='start'||a==='again'){S=null;lsSet(SAVE,'');startGame();return}
+  if(a==='resume'){const sv=loadSave();if(sv){S=sv.S;U={page:0,sel:[],boost:0,sheet:null,menu:false,rules:false,toast:null,undo:[],pending:false};render();schedule()}return}
+  if(a==='rules'){U.rules=true;U.menu=false;render();return}
+  if(a==='rules-x'){U.rules=false;render();return}
+  if(!S)return;
+  if(a==='die'){pickDie(+el.dataset.i);return}
+  if(a==='boost'){U.boost=+el.dataset.b;render();return}
+  if(a==='place'){pickPlace(el.dataset.k);return}
+  if(a==='opt'){const o=U.sheet&&U.sheet.opts[+el.dataset.i];if(o){const act=o.a;U.sheet=null;exec(0,act)}return}
+  if(a==='sheet-x'){U.sheet=null;render();return}
+  if(a==='pass'){if(myTurn())exec(0,{type:'pass'});return}
+  if(a==='undo'){U.menu=false;doUndo();return}
+  if(a==='page'){U.page=+el.dataset.n;const pg=document.getElementById('pages');if(pg)pg.scrollTo({left:U.page*pg.clientWidth,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});document.querySelectorAll('.pdots button').forEach((b,k)=>b.classList.toggle('on',k===U.page));return}
+  if(a==='go'){if(myTurn()&&U.sel.length){U.page=0;render()}return}
+  if(a==='menu'){U.menu=true;render();return}
+  if(a==='menu-x'){U.menu=false;render();return}
+  if(a==='fast'){lsSet('spielregal:botFast',fastPref()?'0':'1');render();return}
+  if(a==='reload'){save();location.replace(location.pathname+'?v='+Date.now()+'&resume=1');return}
+  if(a==='restart'){if(!confirm('Partie abbrechen und eine neue beginnen?'))return;S=null;lsSet(SAVE,'');U.menu=false;clearTimeout(botT);render();return}
+});
+/* ---- Start ---- */
+(function init(){
+  const sv=loadSave();
+  if(sv&&/[?&]resume=1/.test(location.search)){S=sv.S;render();schedule();try{history.replaceState(null,'',location.pathname)}catch(_){}return}
+  render()})();
+</script>
+</body>
+</html>
