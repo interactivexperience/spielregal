@@ -116,6 +116,21 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .input{width:100%;border:3px solid var(--ink);border-radius:var(--r-pill);padding:10px 16px;font:inherit;font-weight:600;font-size:16px;background:#fff8f0;color:var(--ink)}
 .chip{border:2.5px solid var(--ink);border-radius:var(--r-pill);padding:5px 14px;font-weight:700;font-size:14px;background:var(--paper)}.chip.on{background:var(--lime)}
 .note{font-size:12.5px;opacity:.75;line-height:1.35}
+/* ---- Lernspiel ---- */
+.coach{position:fixed;left:10px;right:10px;z-index:70;max-width:540px;margin:0 auto;display:flex;gap:11px;align-items:flex-start;background:var(--ink);color:var(--paper);border-radius:22px;padding:11px 13px;box-shadow:0 0 0 3px var(--lime),0 10px 30px rgba(0,0,0,.38)}
+.coach .cface{width:54px;height:54px;flex:none;border-radius:50%;overflow:hidden;box-shadow:0 0 0 3px var(--sun)}
+.coach .cface svg{width:100%;height:100%;display:block}
+.coach .ctext{flex:1;min-width:0}
+.coach .cstep{font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--lime)}
+.coach p{margin:3px 0 7px;font-size:14px;line-height:1.38}
+.coach .cwhy{font-size:12.5px;padding:7px 10px;border-radius:13px;background:rgba(251,243,232,.13)}
+.coach .cwhy b{color:var(--lime)}
+.coach .cbtns{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.coach .btn{padding:8px 16px;font-size:15px}
+.coach .cquit{font-size:12px;opacity:.75;text-decoration:underline;margin-left:auto;color:var(--paper)}
+.coach .cwait{font-weight:800;letter-spacing:3px;color:var(--lime)}
+.tut-hl{outline:4px solid var(--cobalt)!important;outline-offset:3px;animation:tutp 1.2s ease-in-out infinite;position:relative;z-index:3}
+@keyframes tutp{50%{outline-color:var(--sun)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -287,7 +302,7 @@ const lsGet=k=>{try{return localStorage.getItem(k)}catch(_){return null}},lsSet=
 const fastPref=()=>lsGet('spielregal:botFast')==='1',botDelay=()=>fastPref()?160:600;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const SAVE='glut:save',INBOX='spielregal:inbox:plays';
-function save(){try{lsSet(SAVE,JSON.stringify({screen:S&&!S.over?'game':'start',S}))}catch(_){}}
+function save(){if(S&&S.tut)return;try{lsSet(SAVE,JSON.stringify({screen:S&&!S.over?'game':'start',S}))}catch(_){}}
 function loadSave(){try{const x=JSON.parse(lsGet(SAVE)||'null');return x&&x.S&&!x.S.over?x:null}catch(_){return null}}
 const myName=()=>{if(SETUP.name.trim())return SETUP.name.trim();try{const p=(JSON.parse(lsGet('spielregal:players')||'[]')||[]).filter(x=>x&&x.name);return p.length?p[0].name:'Du'}catch(_){return 'Du'}};
 const cardRuhm=p=>sum(p.cards.map(id=>CARD[id].ruhm));
@@ -332,13 +347,13 @@ function finish(){
   for(const p of g.players){const k=cardRuhm(p);p.ruhm+=k;p.src.card=k;const l=p.pieces.length+Math.floor(p.res.duk/PARAM.dukPerRuhm);p.ruhm+=l;p.src.left=l}
   g.over=true;U.undo=[];log('Das Spiel ist zu Ende.',-1);recordPlay();save();render()}
 function recordPlay(){
-  if(!S||!S.over||S.recorded)return;const sc=S.players.map(p=>p.ruhm),best=Math.max(...sc),n=myName();
+  if(!S||!S.over||S.recorded||S.tut)return;const sc=S.players.map(p=>p.ruhm),best=Math.max(...sc),n=myName();
   const entry={id:'glut-'+S.seed,source:'glut',app:'Glut',bggId:'',gameName:'Glut',date:(()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`})(),human:n,
     results:S.players.map((p,i)=>({name:p.bot?p.name:n,bot:!!p.bot,total:sc[i]})),winners:S.players.filter((p,i)=>sc[i]===best).map(p=>p.bot?p.name:n)};
   try{const inbox=JSON.parse(lsGet(INBOX)||'[]');if(!inbox.some(e=>e.id===entry.id))inbox.push(entry);lsSet(INBOX,JSON.stringify(inbox));S.recorded=true}catch(_){}}
 let botT=null;
 function schedule(){clearTimeout(botT);if(!S||S.over)return;const p=S.players[S.cur];if(!p.bot||p.passed)return;
-  botT=setTimeout(()=>{if(!S||S.over||S.players[S.cur]!==p)return;const a=chooseBot(S,S.cur);exec(S.cur,a)},botDelay())}
+  botT=setTimeout(()=>{if(!S||S.over||S.players[S.cur]!==p)return;const a=S.tut?tutBotAction():chooseBot(S,S.cur);exec(S.cur,a)},botDelay())}
 let toastT=null;
 function toast(t,ms=1900){U.toast=t;clearTimeout(toastT);toastT=setTimeout(()=>{U.toast=null;render()},ms);render()}
 
@@ -353,7 +368,11 @@ function optionsFor(k){
     const dl=a.d.j===undefined?[p.dice[a.d.i]]:[p.dice[a.d.i],p.dice[a.d.j]];
     if(dl.length!==want||dl.slice().sort().join()!==heats.join())return false;
     if(want===1&&a.d.b!==U.boost)return false;
-    return true})}
+    return true}).map(a=>{ // Würfel mit gleicher Hitze sind in der Engine austauschbar: Aktion dem angetippten Würfel zuordnen
+    const d={...a.d};
+    if(want===1)d.i=U.sel[0];
+    else{const[s0,s1]=U.sel;if(p.dice[d.i]===p.dice[s0]){d.i=s0;d.j=s1}else{d.i=s1;d.j=s0}}
+    return{...a,d}})}
 function pickDie(i){
   if(!myTurn())return;const p=me();if(p.dice[i]<=0){toast('Dieser Würfel ist kalt – er wird beim Rasten neu gewürfelt.');return}
   const at=U.sel.indexOf(i);
@@ -377,7 +396,7 @@ function whyNot(k){
     case'gilde':return 'Gildehaus: Hitze ≥ Stufe der Karte und genug Dukaten.';
     default:return 'Das geht mit diesem Würfel nicht.'}}
 function doUndo(){if(!U.undo.length||!myTurn())return;S=JSON.parse(U.undo.pop());U.sel=[];U.boost=0;U.sheet=null;save();render()}
-const undoable=()=>S&&!S.over&&U.undo.length&&myTurn();
+const undoable=()=>S&&!S.tut&&!S.over&&U.undo.length&&myTurn();
 
 /* ---- Darstellung ---- */
 const PCOL=['#F2502E','#2A2BC8','#124D39','#9C90D6'];
@@ -449,15 +468,15 @@ function footHtml(){
 function sheetHtml(){
   if(!U.sheet)return '';
   return `<div class="overlay" data-a="sheet-x"><div class="sheet" data-stop="1"><div class="sh"><h2 class="disp">${esc(U.sheet.title)}</h2><button class="xbtn" data-a="sheet-x" aria-label="Schließen">✕</button></div>
-    <div class="opts">${U.sheet.opts.map((o,i)=>`<button class="opt" data-a="opt" data-i="${i}">${esc(o.txt)}${o.sub?`<small>${esc(o.sub)}</small>`:''}</button>`).join('')}</div></div></div>`}
+    <div class="opts">${U.sheet.opts.map((o,i)=>`<button class="opt" data-a="opt" data-i="${i}" data-m="${o.a.mode||''}">${esc(o.txt)}${o.sub?`<small>${esc(o.sub)}</small>`:''}</button>`).join('')}</div></div></div>`}
 function menuHtml(){
   if(!U.menu)return '';
   return `<div class="overlay" data-a="menu-x"><div class="sheet" data-stop="1"><div class="sh"><h2 class="disp">Menü</h2><button class="xbtn" data-a="menu-x" aria-label="Schließen">✕</button></div><div class="menu">
-    ${undoable()?'<button class="btn alt" data-a="undo">Zug rückgängig</button>':''}
+    ${TUT?'<button class="btn" data-a="tutquit">Lernspiel beenden</button>':''}${undoable()?'<button class="btn alt" data-a="undo">Zug rückgängig</button>':''}
     <button class="btn alt" data-a="rules">Spielregeln</button>
     <button class="btn alt" data-a="fast" data-info="Wie schnell die Mitspieler am Zug sind. Gilt für alle Spiele.">Mitspieler-Tempo: ${fastPref()?'schnell':'normal'}</button>
     <a class="btn" href="../">Speichern &amp; zum Spielregal</a>
-    <button class="btn alt" data-a="restart">Partie abbrechen &amp; neu starten</button>
+    ${TUT?'':'<button class="btn alt" data-a="restart">Partie abbrechen &amp; neu starten</button>'}
     <button class="link" data-a="reload">Neueste Version laden</button></div></div></div>`}
 function rulesHtml(){
   if(!U.rules)return '';
@@ -478,7 +497,7 @@ function overHtml(){
   return `<div class="overlay"><div class="sheet" data-stop="1"><div class="sh"><h2 class="disp">${order[0].i===0?'Gewonnen!':order[0].p.name+' gewinnt.'}</h2></div>
     <div class="opts">${order.map(({p,i},k)=>`<div class="opt" style="display:flex;justify-content:space-between;align-items:center;gap:8px;${k===0?'background:var(--lime)':''}"><span>${avatar(i)} ${k+1}. ${esc(i===0?myName():p.name)}<small>Aufträge ${p.src.order} · Gilden ${p.src.guild} · Karten ${p.src.card} · Rest ${p.src.left}</small></span><b class="num" style="font-size:30px">${p.ruhm}</b></div>`).join('')}
     <button class="btn wide" data-a="again">Neue Partie</button><a class="btn alt wide" href="../">Zum Spielregal</a></div></div></div>`}
-function gameHtml(){return `<div class="app">${headHtml()}<div class="pages" id="pages">${placesPage()}${workshopPage()}${ordersPage()}</div>${footHtml()}</div>${sheetHtml()}${menuHtml()}${rulesHtml()}${overHtml()}${U.toast?`<div class="toast">${esc(U.toast)}</div>`:''}`}
+function gameHtml(){return `<div class="app">${headHtml()}<div class="pages" id="pages">${placesPage()}${workshopPage()}${ordersPage()}</div>${footHtml()}</div>${sheetHtml()}${menuHtml()}${rulesHtml()}${TUT&&S?tutHtml():''}${overHtml()}${U.toast?`<div class="toast">${esc(U.toast)}</div>`:''}`}
 
 /* ---- Startseite ---- */
 const SETUP={name:lsGet('glut:name')||'',bots:+(lsGet('glut:bots')||1)};
@@ -490,6 +509,7 @@ function startHtml(){
     ${prof.length?`<div class="chips">${prof.slice(0,6).map(n=>`<button class="chip ${SETUP.name===n?'on':''}" data-a="pickname" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div>`:''}
     <div class="chips" style="align-items:center"><span class="lab">Gegner</span>${[1,2,3].map(n=>`<button class="chip ${SETUP.bots===n?'on':''}" data-a="bots" data-n="${n}">${n} Bot${n>1?'s':''}</button>`).join('')}</div>
     <button class="btn wide" data-a="start">Partie beginnen</button>
+    <button class="btn alt wide" data-a="tutor" data-info="Lernspiel\nEine geführte Runde: Ofen, Krug, Auftrag und Rasten – mit allen Regeln im Spiel erklärt.">Lernspiel</button>
     ${sv?'<button class="btn alt wide" data-a="resume">Partie fortsetzen</button>':''}
     <button class="link" data-a="rules">Spielregeln lesen</button></div>${rulesHtml()}</div>`}
 const BOTS=['Lotte','Ben','Mara'];
@@ -504,6 +524,7 @@ function themeFor(on){document.documentElement.style.backgroundColor=on?HERO_TOP
 let touching=false;
 function render(){
   if(touching){U.pending=true;return}
+  if(TUT&&S)tutCheck();
   const root=document.getElementById('root');
   const old=document.getElementById('pages');const left=old?old.scrollLeft:0,w=old?old.clientWidth:0;
   const sy=[0,1,2].map(i=>{const e=document.getElementById('pg'+i);return e?e.scrollTop:0});
@@ -511,6 +532,7 @@ function render(){
   const onStart=!S;
   root.innerHTML=onStart?startHtml():gameHtml();
   themeFor(onStart);
+  if(TUT&&S)tutDecorate();
   if(!onStart){const pg=document.getElementById('pages');if(pg){pg.scrollLeft=U.page*pg.clientWidth;[0,1,2].forEach(i=>{const e=document.getElementById('pg'+i);if(e)e.scrollTop=sy[i]})}}
   if(keep!==null){const n=document.getElementById('nm');if(n){n.focus();try{n.setSelectionRange(keep,keep)}catch(_){}}}}
 document.addEventListener('scroll',e=>{if(e.target.id==='pages'){const pg=e.target,i=Math.round(pg.scrollLeft/(pg.clientWidth||1));if(i!==U.page){U.page=i;document.querySelectorAll('.pdots button').forEach((b,k)=>b.classList.toggle('on',k===i))}}},true);
@@ -533,6 +555,71 @@ addEventListener('scroll',()=>{clearTimeout(lpT);hideBubble()},{passive:true,cap
 document.addEventListener('contextmenu',e=>{if(e.target.closest('[data-info]'))e.preventDefault()});
 document.addEventListener('click',e=>{if(lpFired){lpFired=false;e.stopImmediatePropagation();e.preventDefault()}},true);
 
+
+/* ---- Lernspiel (eine geführte Runde, vorbereiteter Zustand, wird weder gespeichert noch gemeldet) ---- */
+let TUT=null;
+const KILN='<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="#F2C8B6"/><rect x="43" y="9" width="8" height="16" fill="#C9512F"/><rect x="41" y="7" width="12" height="4" fill="#3B1220"/><path d="M8 50 A24 24 0 0 1 56 50Z" fill="#C9512F"/><path d="M14 50 A18 18 0 0 1 50 50M20 50 A12 12 0 0 1 44 50" fill="none" stroke="#FBF3E8" stroke-width="1.4" stroke-dasharray="5 3" opacity=".85"/><path d="M25 50 V43 A7 7 0 0 1 39 43 V50Z" fill="#F2502E"/><path d="M28 50 V45 A4 4 0 0 1 36 45 V50Z" fill="#FFD27A"/><circle cx="25" cy="34" r="3.6" fill="#FBF3E8"/><circle cx="39" cy="34" r="3.6" fill="#FBF3E8"/><circle cx="25.6" cy="34.6" r="1.7" fill="#3B1220"/><circle cx="39.6" cy="34.6" r="1.7" fill="#3B1220"/><rect x="5" y="49" width="54" height="6" fill="#3B1220"/></svg>';
+const tme=()=>S.players[0];
+const TUT_STEPS=[
+ {ch:'Willkommen',pos:'bottom',text:'Hallo, ich bin <b>Ottilie</b>, der Brennofen dieser Manufaktur. In <b>Glut</b> arbeitest du mit Würfeln, die <b>abbrennen</b>. Dein Ziel: am Ende die meisten <b>Ruhm</b>-Punkte. Ich zeige dir eine Runde.'},
+ {ch:'Deine Glut',sel:'.dicerow',text:'Das sind deine Würfel. Die Zahl ist die <b>Hitze</b>. Jedes Mal, wenn du einen Würfel einsetzt, <b>kühlt er um 1 ab</b>. Auf 0 ist er <b>kalt</b> (gestrichelt) und ruht, bis du rastest.',why:'Hohe Würfel sind stark, halten aber nicht ewig. Überlege, wofür du deine Glut verbrauchst.'},
+ {ch:'Vorräte',sel:'.res',text:'Hier stehen deine Vorräte: <b>Ton</b>, <b>Asche</b>, <b>Holz</b>, <b>Rohlinge</b>, <b>Dukaten</b> und dein <b>Ruhm</b>. Langes Drücken auf ein Symbol erklärt es.'},
+ {ch:'Die Orte',sel:'#pg0 .plc[data-k=ofen]',text:'Das sind die <b>Orte</b>. Pro Zug setzt du einen Würfel an einen Ort. Oben rechts steht die Bedingung: Der <b>Brennofen</b> braucht Hitze 4 oder mehr. Zu zweit hat jeder Ort nur einen Platz.'},
+ {ch:'Zug 1 · Würfel',sel:'.dicerow .die[data-i="0"]',allow:{die:d=>d.i==='0'},done:()=>U.sel.includes(0)||tme().res.rohling>=2,text:'Im Brennofen wird aus <b>2 Ton und 1 Asche</b> ein <b>Rohling</b>, so oft, wie dein Würfel über Hitze 3 liegt. Tippe deine <b>6</b>.',why:'Die 6 schafft drei Durchgänge – du hast aber Material für zwei.'},
+ {ch:'Zug 1 · Brennofen',sel:'#pg0 .plc[data-k=ofen]',allow:{place:d=>d.k==='ofen'},done:()=>tme().res.rohling>=2,text:'Jetzt tippe den <b>Brennofen</b>. Grün leuchten die Orte, an denen der Würfel funktioniert.',why:'Du bekommst 2 Rohlinge. Die 6 kühlt zu einer 5 ab.'},
+ {ch:'Lotte ist dran',wait:true,done:()=>S.cur===0&&!tme().passed,text:'Lotte ist am Zug …'},
+ {ch:'Zug 2 · Zwei Würfel',sel:'.dicerow .die[data-i="0"], .dicerow .die[data-i="1"]',allow:{die:d=>d.i==='0'||d.i==='1'},done:()=>(U.sel.length===2)||tme().pieces.length>0,text:'Auf der Töpferscheibe machst du aus Rohlingen <b>Stücke</b>. Für einen <b>Krug</b> brauchst du zwei Würfel mit <b>gleicher Hitze</b>. Du hast eine 5 und eine 4: Tippe beide.',why:'Gleich ist nicht Pflicht: Mit Holz kannst du anfachen (+1 Hitze). Das siehst du gleich.'},
+ {ch:'Zug 2 · Töpferscheibe',sel:'#pg0 .plc[data-k=topf]',allow:{place:d=>d.k==='topf'},done:()=>!!U.sheet||tme().pieces.length>0,text:'Tippe die <b>Töpferscheibe</b>.'},
+ {ch:'Zug 2 · Krug',sel:'.opt[data-m="K"]',allow:{opt:d=>U.sheet&&U.sheet.opts[+d.i].a.mode==='K',place:d=>d.k==='topf'},done:()=>tme().pieces.length>0,text:'Zwei Möglichkeiten: Die <b>Zierplatte</b> klappt auch ohne Holz (5 und 4 folgen aufeinander). Wir wollen den <b>Krug</b>: Dafür fachst du die 4 mit 1 Holz zur 5 an. Tippe „Krug“.',why:'Die Güte ist die Summe beider Würfel: Ein Krug mit 5 + 5 hat Güte 10. Das ist für Aufträge richtig wertvoll.'},
+ {ch:'Lotte ist dran',wait:true,done:()=>S.cur===0&&!tme().passed,text:'Lotte ist am Zug …'},
+ {ch:'Zug 3 · Würfel',sel:'.dicerow .die[data-i="2"]',allow:{die:d=>d.i==='2'},done:()=>U.sel.includes(2)||tme().ruhm>=7,text:'Am <b>Kontor</b> verkaufst du Stücke oder lieferst <b>Aufträge</b> (siehst du auf der dritten Seite). Es braucht Hitze 2 oder mehr. Tippe deine <b>2</b>.'},
+ {ch:'Zug 3 · Kontor',sel:'#pg0 .plc[data-k=kontor]',allow:{place:d=>d.k==='kontor'},done:()=>!!U.sheet||tme().ruhm>=7,text:'Tippe das <b>Kontor</b>.'},
+ {ch:'Zug 3 · Auftrag',sel:'.opt[data-m="deliver"]',allow:{opt:d=>U.sheet&&U.sheet.opts[+d.i].a.mode==='deliver',place:d=>d.k==='kontor'},done:()=>tme().ruhm>=7,text:'Der Auftrag „Krug ab Güte 5“ passt zu deinem Krug. Liefere ihn für <b>7 Ruhm</b>.',why:'Verkaufen brächte nur 8 Dukaten. Aufträge geben Ruhm und zählen für die Händler-Gilde doppelt.'},
+ {ch:'Lotte ist dran',wait:true,done:()=>S.cur===0&&!tme().passed,text:'Lotte ist am Zug …'},
+ {ch:'Zug 4 · Würfel',sel:'.dicerow .die[data-i="3"]',allow:{die:d=>d.i==='3'},done:()=>U.sel.includes(3)||tme().dice[3]===0,text:'Lotte hat gerastet, du darfst aber weiterarbeiten. Auch kleine Würfel sind nützlich: Die <b>Aschehütte</b> nimmt nur Hitze 3 oder weniger. Tippe deine <b>1</b>.'},
+ {ch:'Zug 4 · Aschehütte',sel:'#pg0 .plc[data-k=asche]',allow:{place:d=>d.k==='asche'},done:()=>tme().dice[3]===0,text:'Tippe die <b>Aschehütte</b>.',why:'Dabei wird der Würfel <b>kalt</b>. Beim Rasten würfelst du ihn neu.'},
+ {ch:'Rasten',sel:'[data-a=pass]',allow:{pass:true},done:()=>S.round>=2,text:'Jetzt bist du fertig: Tippe <b>Rasten</b>.',why:'Rasten würfelt alle kalten Würfel neu. Wer zuerst rastet, beginnt die nächste Runde – das war Lotte.'},
+ {ch:'Neue Runde',pos:'bottom',text:'Neue Runde: <b>Lotte</b> beginnt, weil sie zuerst gerastet hat. Dein kalter Würfel wurde neu gewürfelt, du hast wieder Glut für diese Runde.'},
+ {ch:'Aufträge und Karten',sel:'#pg2 .ord',text:'Auf der dritten Seite liegen die <b>Aufträge</b> (Ruhm-Stempel rechts) und das <b>Gildenhaus</b> mit Karten, die dir dauerhafte Vorteile geben.'},
+ {ch:'Gilden',sel:'#pg1 .tbl',text:'Auf der zweiten Seite steht die <b>Gilden</b>-Tabelle. Nach der halben Spielzeit und am Ende bekommt, wer die meisten Zeichen einer Gilde hat, <b>4 Ruhm</b>. Töpferscheibe zählt für Töpfer, Kontor für Händler, Brennofen für Brenner.'},
+ {ch:'Das war’s',pos:'bottom',text:'Merke dir: <b>1.</b> Hitze ist knapp, jeder Einsatz kostet sie. <b>2.</b> Ton und Asche → Rohling → Stück → Auftrag, das bringt Ruhm. <b>3.</b> Wer zuerst rastet, beginnt die nächste Runde. Viel Spaß!'}
+];
+const tutStep=()=>TUT?TUT_STEPS[TUT.i]:null;
+function tutCheck(){let g=0;while(TUT&&g++<30){const st=TUT_STEPS[TUT.i];if(!st.done||!st.done())break;TUT.i++;TUT.scrolled=null}}
+function tutAllowed(a,d){
+  if(['tutnext','tutend','tutquit','go','menu','menu-x','rules','rules-x','fast','page','reload'].includes(a))return true;
+  const st=tutStep(),al=st&&st.allow;if(!al||!(a in al))return false;return al[a]===true||!!al[a](d)}
+function tutHtml(){
+  const st=tutStep();if(!st)return '';const last=TUT.i===TUT_STEPS.length-1;
+  const btn=last?'<button class="btn" data-a="tutend">Echtes Spiel starten</button>':!st.done?'<button class="btn" data-a="tutnext">Weiter</button>':st.wait?'<span class="cwait">· · ·</span>':'';
+  return `<div class="coach" id="coach" role="dialog" aria-live="polite"><div class="cface">${KILN}</div><div class="ctext"><span class="cstep">Lernspiel · ${TUT.i+1}/${TUT_STEPS.length} · ${esc(st.ch)}</span><p>${st.text}</p>${st.why?`<p class="cwhy"><b>Warum?</b> ${st.why}</p>`:''}<div class="cbtns">${btn}<button class="cquit" data-a="tutquit">Lernspiel beenden</button></div></div></div>`}
+function tutDecorate(){
+  const st=tutStep(),coach=document.getElementById('coach');if(!st||!coach)return;
+  const els=st.sel?[...document.querySelectorAll(st.sel)]:[];els.forEach(e=>e.classList.add('tut-hl'));
+  const el=els[0],pgs=document.getElementById('pages');
+  if(el&&pgs){const pg=el.closest('.page');
+    if(pg){const n=+pg.id.slice(2);if(n!==U.page){U.page=n;pgs.scrollLeft=n*pgs.clientWidth;document.querySelectorAll('.pdots button').forEach((b,k)=>b.classList.toggle('on',k===n))}
+      const key=TUT.i+'';if(TUT.scrolled!==key){TUT.scrolled=key;el.scrollIntoView({block:'center',behavior:'auto'})}}}
+  // Coach auf die dem markierten Element gegenüberliegende Seite
+  let top;
+  if(st.pos)top=st.pos==='top';else if(el){const r=el.getBoundingClientRect();top=(r.top+r.bottom)/2>innerHeight*.5}else top=false;
+  const head=document.querySelector('.thead'),foot=document.querySelector('.foot');
+  if(top){coach.style.top=((head?head.offsetHeight:0)+8)+'px';coach.style.bottom=''}else{coach.style.bottom=((foot?foot.offsetHeight:0)+8)+'px';coach.style.top=''}}
+function tutSetup(){
+  S=newGame([{name:'Du',bot:false},{name:'Lotte',bot:true}],4711);S.tut=true;S.tutK=0;
+  const m=S.players[0],b=S.players[1];
+  m.dice=[6,4,2,1];m.res={ton:4,asche:2,holz:2,rohling:0,duk:3};
+  b.dice=[4,3,3,2];b.res={ton:2,asche:1,holz:1,rohling:0,duk:3};
+  S.orders=[{need:[{t:'K',q:5}],ruhm:7,duk:0},{need:[{t:'Z',q:5}],ruhm:8,duk:0},{need:[{t:'F',q:1},{t:'F',q:1}],ruhm:5,duk:2}];
+  S.market=['sandkarre','holzrecht','haendler','ofenmeister'];S.cardDeck=S.cardDeck.filter(id=>!S.market.includes(id));
+  S.log=[{r:1,p:-1,t:'Lernspiel: eine vorbereitete Runde.'}];
+  TUT={i:0};U={page:0,sel:[],boost:0,sheet:null,menu:false,rules:false,toast:null,undo:[],pending:false};render();schedule()}
+function tutBotAction(){
+  const k=S.tutK=(S.tutK||0)+1,want=k===1?'wald':k===2?'ton':null,acts=actions(view(S,S.cur,true));
+  if(want){const c=acts.filter(a=>a.type==='work'&&a.place===want).sort((x,y)=>x.d.eff-y.d.eff)[0];if(c)return c}
+  return{type:'pass'}}
+function tutEnd(){TUT=null;S=null;clearTimeout(botT);U={page:0,sel:[],boost:0,sheet:null,menu:false,rules:false,toast:null,undo:[],pending:false};render()}
+
 /* ---- Eingaben ---- */
 document.addEventListener('click',e=>{
   if(e.target.closest('[data-stop]')&&!e.target.closest('[data-a]:not(.overlay)'))return;
@@ -541,9 +628,14 @@ document.addEventListener('click',e=>{
   if(a==='pickname'){SETUP.name=el.dataset.n;lsSet('glut:name',SETUP.name);render();return}
   if(a==='start'||a==='again'){S=null;lsSet(SAVE,'');startGame();return}
   if(a==='resume'){const sv=loadSave();if(sv){S=sv.S;U={page:0,sel:[],boost:0,sheet:null,menu:false,rules:false,toast:null,undo:[],pending:false};render();schedule()}return}
+  if(a==='tutor'){tutSetup();return}
   if(a==='rules'){U.rules=true;U.menu=false;render();return}
   if(a==='rules-x'){U.rules=false;render();return}
   if(!S)return;
+  if(TUT&&S.tut&&!tutAllowed(a,el.dataset)){toast('Folge dem markierten Hinweis im Lernspiel.');return}
+  if(a==='tutnext'){if(TUT){TUT.i=Math.min(TUT.i+1,TUT_STEPS.length-1);TUT.scrolled=null}render();return}
+  if(a==='tutend'){tutEnd();startGame();return}
+  if(a==='tutquit'){tutEnd();return}
   if(a==='die'){pickDie(+el.dataset.i);return}
   if(a==='boost'){U.boost=+el.dataset.b;render();return}
   if(a==='place'){pickPlace(el.dataset.k);return}

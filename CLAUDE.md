@@ -175,7 +175,7 @@ Seite des Ziels; während des Wischens wird nicht neu gezeichnet (`render` warte
 Spielen deckend in der Seitenfarbe, ohne milchigen Blur (Owner: „kein milchiger Hintergrund“).
 
 Jedes Spiel hat einen eigenen Smoke-Test in `test/` (`gah-smoke.mjs`,
-`rebel-princess-smoke.mjs`, `three-sisters-smoke.mjs`, `countryside-smoke.mjs`, `saum-smoke.mjs` + `saum-tutorial.mjs`, `glut-smoke.mjs`); nach Änderungen an einem Spiel
+`rebel-princess-smoke.mjs`, `three-sisters-smoke.mjs`, `countryside-smoke.mjs`, `saum-smoke.mjs` + `saum-tutorial.mjs`, `glut-smoke.mjs` + `glut-tutorial.mjs`); nach Änderungen an einem Spiel
 dessen Test laufen lassen, dazu `tutorials.mjs` (spielt die Lernspiele aller vier Spiele durch) und
 `save-leave.mjs` (Speichern & verlassen, Fortsetzen, Rückfrage vor dem Überschreiben), nach Änderungen an `index.html` zusätzlich
 `digital-play-link.mjs`, `digital-play-tracking.mjs` und `dashboard-browser-games.mjs`
@@ -208,7 +208,11 @@ gleichziehen, Simulation neu laufen lassen. Spielregal-Anbindung wie bei Saum: B
 Partie-Meldung über `spielregal:inbox:plays` mit `source: 'glut'`, Menü ☰ (Regeln, Mitspieler-Tempo, Speichern & zum Spielregal, Neustart, „Neueste Version laden“),
 Info-Blase per langem Drücken (`data-info`), Zug rückgängig (↶, verfällt, sobald Verdecktes aufgedeckt wird: Rasten mit Würfeln, Auftrags-/Kartenstapel),
 drei Wischseiten (Orte · Werkstatt · Aufträge & Gildenhaus, Punkte im Fuß). Bots sind der Planer (Beam-Suche über 3 eigene Züge) mit vier Gewichtsprofilen.
-**Noch nicht umgesetzt:** Lernspiel mit Coach, Solo-Automa, Bildmaterial auf Karten, Sound/Animationen; die Würfel-Anfachen-Auswahl und das Auswahlfenster sind schlicht.
+**Lernspiel** (Startseite „Lernspiel“, Menü „Lernspiel beenden“; `TUT_STEPS`, `tutSetup`, `tutDecorate`): eine geführte Runde in 22 Schritten gegen den Bot „Lotte“ mit vorbereitetem Zustand
+(Würfel 6·4·2·1, feste Aufträge/Karten) – Brennofen → Rohling, Krug mit Anfachen (Auswahlfenster), Auftrag liefern, kleiner Würfel in der Aschehütte, Rasten, neue Runde (Lotte beginnt, weil sie zuerst
+gerastet hat), Aufträge, Gilden. Coach **Ottilie**, der Brennofen mit Gesicht (`KILN`), als dunkle Karte mit Limerand gegenüber dem markierten Element (`.tut-hl`, Kobaltring); nur die erlaubten Aktionen
+(`allow`) gehen, sonst Hinweis; Lotte ist geskriptet (`tutBotAction`: Wald, Tongrube, dann Rasten); wird weder gespeichert noch gemeldet, kein Zug rückgängig. Test: `glut-tutorial.mjs`.
+**Noch nicht umgesetzt:** Solo-Automa, Bildmaterial auf Karten, Sound/Animationen; die Anfachen-Auswahl und das Auswahlfenster sind schlicht.
 
 ## Saum (eigenes Spielkonzept)
 

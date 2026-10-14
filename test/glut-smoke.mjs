@@ -90,7 +90,16 @@ async function playGame(bots, label) {
       await page.click(".foot [data-a=undo]"); const s2 = await st(); check(s2.logn < s.logn, "Zug rückgängig nimmt keinen Eintrag zurück"); undone++; continue;
     }
     const picks = await cnt(".plc.pick");
-    if (picks) { await page.locator(".plc.pick").nth(it % picks).click(); works++; continue; }
+    if (picks) {
+      // der angetippte Würfel muss abkühlen (nicht ein anderer mit gleicher Hitze)
+      const pre = await page.evaluate(() => ({ sel: U.sel.slice(), boost: U.boost, h: U.sel.map((i) => S.players[0].dice[i]), nocool: S.players[0].cards.includes("waechter") }));
+      await page.locator(".plc.pick").nth(it % picks).click(); works++;
+      if (!(await page.evaluate(() => !!U.sheet)) && pre.sel.length === 1 && !pre.nocool && pre.boost === 0 && !(await page.evaluate(() => S.over))) {
+        const after = await page.evaluate((i) => S.players[0].dice[i], pre.sel[0]);
+        check(after === Math.max(0, pre.h[0] - 1), `Der angetippte Würfel ${pre.sel[0]} (Hitze ${pre.h[0]}) ist nicht abgekühlt (jetzt ${after})`);
+      }
+      continue;
+    }
     // Würfel durchprobieren
     const dice = page.locator(".dicerow .die:not(.h0)"), n = await dice.count();
     let done = false;
