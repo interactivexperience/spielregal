@@ -66,9 +66,12 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .plc{background:var(--paper);border:3px solid var(--ink);border-radius:var(--r-card);padding:9px 12px;display:flex;flex-direction:column;gap:4px}
 .plc .t{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .plc .n{font-size:27px}
-.plc .e{font-size:12.5px;line-height:1.3}
+.plc .e{font-size:12.5px;line-height:1.3;display:flex;flex-direction:column;gap:4px}
 .plc.pick{background:var(--lime);box-shadow:4px 4px 0 var(--ink)}
 .plc.off{opacity:.55}
+.rec{display:flex;gap:7px;align-items:flex-start;font-size:12.5px;line-height:1.35}
+.rec .rl{flex:none;width:82px;text-align:center;font-weight:800;font-size:10px;letter-spacing:.05em;text-transform:uppercase;background:var(--ink);color:var(--paper);border-radius:999px;padding:2px 7px;margin-top:1px}
+.ortnote{color:var(--ink);opacity:.9;font-size:12.5px;line-height:1.4;padding:0 2px}
 .occ{display:flex;gap:5px;align-items:center}
 .slot{width:26px;height:26px;border-radius:50%;border:2.5px dashed var(--ink);opacity:.45}
 .box{background:var(--paper);border:3px solid var(--ink);border-radius:var(--r-card);padding:12px 13px}
@@ -477,14 +480,17 @@ function tutIco(h){
   h=h.replace(/<b>(Ton|Asche|Holz|Rohlinge|Rohling|Dukaten|Dukat|Ruhm)<\/b>/g,(m,w)=>`<b>${w}</b> <span class="ri">${RIC[RWORD[w]]}</span>`);
   h=h.replace(/<b>(Fliesen|Fliese|Krug|Zierplatte)<\/b>/g,(m,w)=>`<span class="ti">${TIC[/^Fl/.test(w)?'F':/^Kr/.test(w)?'K':'Z']}</span><b>${w}</b>`);
   return icoTxt(h)}
+const RI=k=>RIC[k].replace('<svg','<svg class="ri-i"');
+const rec=(l,h)=>`<div class="rec"><span class="rl">${l}</span><span>${h}</span></div>`;
 const PHTML={
- ton:()=>`Hitze 1–6 → 1 · 2 · 3 · 3 · 4 · 5 ${RIC.ton.replace('<svg','<svg class="ri-i"')}`,
- asche:()=>`${ri('asche','+2')}`,
- wald:()=>`${ri('holz','1')} bei Hitze 1–3 · ${ri('holz','2')} ab Hitze 4`,
- ofen:()=>`${ri('ton','2')} + ${ri('asche','1')} → ${ri('rohling','1')} · so oft wie Hitze − 3 · +1 Brenner`,
- topf:()=>`${ri('rohling','1')} → ${ti('F')} Fliese<br>${ri('rohling','2')} + ${ri('holz','1')} → ${ti('K')} Krug (2 gleiche Würfel) oder ${ti('Z')} Zierplatte (2 aufeinanderfolgende)`,
- kontor:()=>`Verkaufen: ${ti('F')} 3 · ${ti('K')}${ti('Z')} 8 ${RIC.duk.replace('<svg','<svg class="ri-i"')}<br>oder Auftrag liefern → ${RIC.ruhm.replace('<svg','<svg class="ri-i"')}`,
- gilde:()=>`Karte kaufen für ${RIC.duk.replace('<svg','<svg class="ri-i"')}, Hitze ≥ Stufe`};
+ ton:()=>rec('Ertrag',`nach Hitze 1→1 · 2→2 · 3→3 · 4→3 · 5→4 · 6→5 ${RI('ton')}`),
+ asche:()=>rec('Bedingung','nur mit Hitze 1–3')+rec('Ertrag',`${ri('asche','2')}`),
+ wald:()=>rec('Ertrag',`Hitze 1–3: ${ri('holz','1')} · ab Hitze 4: ${ri('holz','2')}`),
+ ofen:()=>{const m=ofenMin(me())-1,ex=[];for(let h=m+1;h<=6;h++)ex.push(`${h}: ${h-m}×`);
+   return rec('Je Satz',`${ri('ton','2')} + ${ri('asche','1')} → ${ri('rohling','1')}`)+rec('Wie oft',`Hitze − ${m} Sätze (${ex.join(' · ')}), soweit dein Vorrat reicht`)+rec('Zeichen','+1 Brenner')},
+ topf:()=>rec('Fliese',`1 Würfel · ${ri('rohling','1')} → ${ti('F')} Güte = Hitze · +1 Töpfer`)+rec('Krug',`2 Würfel mit gleicher Hitze · ${ri('rohling','2')} + ${ri('holz','1')} → ${ti('K')} Güte = Summe · +2 Töpfer`)+rec('Zierplatte',`2 Würfel mit aufeinanderfolgender Hitze (z. B. 3 und 4) · ${ri('rohling','2')} + ${ri('holz','1')} → ${ti('Z')} Güte = Summe · +2 Töpfer`),
+ kontor:()=>rec('Bedingung','Hitze 2 oder mehr, dann entweder:')+rec('Verkaufen',`bis zu Hitze ÷ 2 Stücke, aufgerundet (2: 1 · 3–4: 2 · 5–6: 3): ${ti('F')} 3 · ${ti('K')}${ti('Z')} 8 ${RI('duk')} · +1 Händler`)+rec('Liefern',`1 Auftrag erfüllen: verlangte Stücke abgeben → ${RI('ruhm')} des Auftrags · +2 Händler`),
+ gilde:()=>rec('Bedingung','Hitze mindestens so hoch wie die Stufe der Karte (1–3)')+rec('Kosten',`Preis der Karte ${RI('duk')}`)+rec('Ertrag','1 Gildenkarte (Dauer-Vorteil, Ruhm am Ende) · +2 Zeichen ihrer Gilde')};
 const PCOL=['#F2502E','#2A2BC8','#124D39','#9C90D6'];
 const avatar=(i)=>`<span class="av" data-p="${i}" style="background:${PCOL[i]}">${esc((S.players[i].bot?S.players[i].name:myName()).slice(0,1).toUpperCase())}</span>`;
 const dieHtml=(i,h,cls='')=>`<button class="die num h${Math.min(6,Math.max(0,Math.round(h)))} ${cls}" data-a="die" data-i="${i}" data-info="${h>0?`Würfel mit Hitze ${h}\nBei jedem Einsatz kühlt er um 1 ab. Kalte Würfel werden beim Rasten neu gewürfelt.`:'Kalter Würfel\nBeim Rasten wird er neu gewürfelt.'}">${h>0?h:'kalt'}</button>`;
@@ -512,17 +518,19 @@ function headHtml(){
   const bch=myTurn()&&U.sel.length===1&&p.dice[U.sel[0]]>0&&(p.res.holz>0||has(p,'bfree'))?`<span class="bchips" data-info="Anfachen\nMit Holz erhöhst du die Hitze des gewählten Würfels für diesen Einsatz.">${[0,1,2].filter(b=>p.dice[U.sel[0]]+b<=6&&(b===0||bcost(p,b)<=p.res.holz)).map(b=>`<button class="pill ${U.boost===b?'on':'p-cream'}" data-a="boost" data-b="${b}">${b?`+${b}`:'ohne'}</button>`).join('')}</span>`:'';
   return `<div class="thead"><div class="hrow"><h1>Glut.</h1><button class="ann ${myTurn()?'me':''}" data-a="go" data-info="${esc(annLong())}">${esc(annShort())}</button><button class="mbtn" data-a="menu" aria-label="Menü">☰</button></div>
     <div class="opps">${opps}${rnd_}</div><div class="res">${res}</div><div class="dicerow">${dice}${bch}</div></div>`}
-const PINFO={ton:'Ton: Hitze 1–6 → 1 · 2 · 3 · 3 · 4 · 5',asche:'+2 Asche',wald:'Holz: 1 (Hitze 1–3), 2 (ab Hitze 4)',
-  ofen:'2 Ton + 1 Asche → 1 Rohling, so oft wie Hitze − 3 (und du es hast). +1 Brenner-Zeichen',
-  topf:'Fliese: 1 Rohling · Krug (zwei gleiche Würfel) oder Zierplatte (zwei aufeinanderfolgende): 2 Rohlinge + 1 Holz. Güte = Summe der Hitze. Töpfer-Zeichen',
-  kontor:'Stücke verkaufen (bis ⌈Hitze/2⌉, Fliese 3 · Krug/Zierplatte 8 Dukaten) oder einen Auftrag liefern. Händler-Zeichen',
-  gilde:'Gildenkarte kaufen: Hitze ≥ Stufe der Karte, Dukaten als Preis. Gilden-Zeichen'};
+const PINFO={ton:'Tongrube\nErtrag nach Hitze: 1 → 1 Ton · 2 → 2 · 3 → 3 · 4 → 3 · 5 → 4 · 6 → 5. Keine Kosten.',
+  asche:'Aschehütte\nNur mit Hitze 1–3. Ertrag: 2 Asche.',
+  wald:'Wald\nErtrag: Hitze 1–3 → 1 Holz, ab Hitze 4 → 2 Holz. Keine Kosten.',
+  ofen:'Brennofen\nHitze 4 oder mehr (mit Ofenmeister 3). Je Satz: 2 Ton + 1 Asche → 1 Rohling. Du machst so viele Sätze, wie die Hitze über 3 liegt (4: 1, 5: 2, 6: 3), soweit dein Vorrat reicht. +1 Brenner-Zeichen.',
+  topf:'Töpferscheibe\nFliese: 1 Würfel, 1 Rohling, Güte = Hitze, +1 Töpfer. Krug: 2 Würfel mit gleicher Hitze, 2 Rohlinge + 1 Holz, Güte = Summe, +2 Töpfer. Zierplatte: 2 Würfel mit aufeinanderfolgender Hitze (z. B. 3 und 4), 2 Rohlinge + 1 Holz, Güte = Summe, +2 Töpfer.',
+  kontor:'Kontor\nHitze 2 oder mehr. Entweder verkaufen: bis zu Hitze ÷ 2 Stücke, aufgerundet (Fliese 3, Krug und Zierplatte je 8 Dukaten), +1 Händler-Zeichen. Oder einen Auftrag erfüllen: die verlangten Stücke abgeben, Ruhm und Boni des Auftrags, +2 Händler-Zeichen.',
+  gilde:'Gildehaus\nHitze mindestens so hoch wie die Stufe der Karte. Du bezahlst den Preis in Dukaten und erhältst die Karte (Dauer-Vorteil, Ruhm am Ende) und +2 Zeichen ihrer Gilde.'};
 function placeCond(k,p){return({ton:'beliebig',asche:'Hitze ≤ 3',wald:'beliebig',ofen:`Hitze ≥ ${ofenMin(p)}`,topf:'1–2 Würfel',kontor:'Hitze ≥ 2',gilde:'Hitze ≥ Stufe'})[k]}
 function placesPage(){
   const p=me(),cap=capFor(S.np);
-  return `<div class="page" id="pg0"><div class="ptitle disp">Orte.</div>`+PL.map((k,i)=>{
+  return `<div class="page" id="pg0"><div class="ptitle disp">Orte.</div><div class="note ortnote">${icoTxt(esc(`Pro Zug ein Würfel (Töpferscheibe: 1–2). Jeden Ort nutzt du höchstens einmal pro Runde; ${cap===1?'ein Platz':cap+' Plätze'} je Ort. Danach kühlt der Würfel um 1 ab. Anfachen: 1 Holz = +1 Hitze (höchstens +2, bis 6).`))}</div>`+PL.map((k,i)=>{
     const occ=S.places[i],pick=myTurn()&&U.sel.length&&optionsFor(k).length>0,full=occ.length>=cap||occ.includes(0);
-    return `<div class="plc ${pick?'pick':''} ${!pick&&full?'off':''}" data-a="place" data-k="${k}" data-info="${esc(PNAME[k]+'\n'+PINFO[k])}">
+    return `<div class="plc ${pick?'pick':''} ${!pick&&full?'off':''}" data-a="place" data-k="${k}" data-info="${esc(PINFO[k])}">
       <div class="t"><span class="n disp">${PNAME[k]}</span><span class="pill ${pick?'p-ink':'p-pink'}">${placeCond(k,p)}</span></div>
       <div class="e">${PHTML[k]()}</div>
       <div class="occ">${occ.map(avatar).join('')}${Array.from({length:cap-occ.length},()=>'<span class="slot"></span>').join('')}</div></div>`}).join('')+`</div>`}
