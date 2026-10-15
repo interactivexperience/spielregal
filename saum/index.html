@@ -414,7 +414,7 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .nm>span:last-child{white-space:nowrap}
 /* fxLite */
 @media (prefers-reduced-motion:no-preference){
-.fxpress{transform:scale(.955)!important;transition:transform .08s ease-out}
+button:active,[data-a]:active{transform:scale(.96)}
 button,[data-a]{transition:transform .18s cubic-bezier(.2,.9,.3,1.4),box-shadow .18s,background-color .18s,opacity .2s}
 .fxb{animation:fxbump .62s cubic-bezier(.2,.9,.3,1.5)}
 @keyframes fxbump{0%{transform:scale(1)}30%{transform:scale(1.28);filter:brightness(1.12)}100%{transform:scale(1)}}
@@ -430,6 +430,11 @@ button,[data-a]{transition:transform .18s cubic-bezier(.2,.9,.3,1.4),box-shadow 
 .fxfl.dn{background:#2b2b2b;color:#fff}
 @keyframes fxfloat{0%{opacity:0;transform:translate(-50%,6px) scale(.7)}20%{opacity:1;transform:translate(-50%,-6px) scale(1.08)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-34px) scale(1)}}
 }
+
+/* Coach verschiebbar */
+.coach{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.coach button,.coach a{touch-action:manipulation;cursor:pointer}
+.coach::before{content:"";position:absolute;top:4px;left:50%;width:32px;height:4px;margin-left:-16px;border-radius:4px;background:currentColor;opacity:.22;pointer-events:none}
 </style>
 </head>
 <body>
@@ -1235,7 +1240,7 @@ render();
    Vorrats-Chips federn und zeigen +n/−n, geänderte Karten/Felder poppen, Fenster und Meldungen gleiten ein,
    Knöpfe geben beim Drücken nach. prefers-reduced-motion schaltet alles ab. */
 (function(){
-  const CFG={"chips": ".res > span", "pop": [".tile", ".fan .card"], "sheet": ".sheet", "toast": ".toast", "buzz": ".btn,.card,.tile"};
+  const CFG={"chips": ".res > span", "pop": [".tile", ".fan .card"], "sheet": ".ov-none", "toast": ".toast", "buzz": ".btn,.card,.tile"};
   const RMQ=matchMedia('(prefers-reduced-motion: reduce)');
   const hash=s=>{let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return h};
   let prev=null;
@@ -1274,10 +1279,34 @@ render();
   };
   document.addEventListener('pointerdown',e=>{
     const b=e.target.closest&&e.target.closest('button,[data-a]');
-    if(b&&!RMQ.matches){b.classList.add('fxpress');setTimeout(()=>b.classList.remove('fxpress'),160);if(navigator.vibrate&&b.matches(CFG.buzz))try{navigator.vibrate(6)}catch(_){}}
+    if(b&&!RMQ.matches){if(navigator.vibrate&&b.matches(CFG.buzz))try{navigator.vibrate(6)}catch(_){}}
   },{passive:true});
 })();
 
+
+/* ---- Lernspiel-Coach verschiebbar: am Coach ziehen, Doppeltippen setzt zurück ---- */
+(function(){
+  let dx=0,dy=0,drag=null;
+  const apply=el=>{if(el)el.style.translate=(dx||dy)?dx+'px '+dy+'px':''};
+  new MutationObserver(()=>{const c=document.getElementById('coach');if(c&&c.style.translate!==((dx||dy)?dx+'px '+dy+'px':''))apply(c)}).observe(document.documentElement,{childList:true,subtree:true});
+  document.addEventListener('pointerdown',e=>{
+    const c=e.target.closest&&e.target.closest('#coach');if(!c||e.target.closest('button,a,input'))return;
+    drag={x:e.clientX,y:e.clientY,dx,dy,moved:false,id:e.pointerId,c};try{c.setPointerCapture(e.pointerId)}catch(_){}
+  });
+  document.addEventListener('pointermove',e=>{
+    if(!drag||e.pointerId!==drag.id)return;
+    const mx=e.clientX-drag.x,my=e.clientY-drag.y;if(!drag.moved&&Math.abs(mx)+Math.abs(my)<6)return;drag.moved=true;
+    const c=drag.c,r=c.getBoundingClientRect(),W=innerWidth,H=innerHeight;
+    let ndx=drag.dx+mx,ndy=drag.dy+my;
+    const cx=r.left-dx+ndx,cy=r.top-dy+ndy; // Position nach der Verschiebung
+    if(cx<-r.width+60)ndx+=(-r.width+60)-cx;if(cx>W-60)ndx-=cx-(W-60);
+    if(cy<8)ndy+=8-cy;if(cy>H-50)ndy-=cy-(H-50);
+    dx=ndx;dy=ndy;apply(c);e.preventDefault();
+  },{passive:false});
+  const end=e=>{if(drag&&e.pointerId===drag.id){drag=null}};
+  document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end);
+  document.addEventListener('dblclick',e=>{const c=e.target.closest&&e.target.closest('#coach');if(c&&!e.target.closest('button,a')){dx=dy=0;apply(c)}});
+})();
 </script>
 </body>
 </html>

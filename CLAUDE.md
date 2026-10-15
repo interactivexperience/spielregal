@@ -176,6 +176,8 @@ Spielen deckend in der Seitenfarbe, ohne milchigen Blur (Owner: „kein milchige
 
 **Mikro-Interaktionen in allen Spielen (`fxLite`, am Ende jedes `<script>`, je Spiel kopiert, Farbe `--fxc` je Stil):** `render` wird umhüllt und vergleicht vorher/nachher: Vorrats-Chips federn und zeigen schwebend „+n/−n“ (`.fxb`, `.fxfl`), geänderte Karten/Felder poppen (`.fxin`, Liste `pop` je Spiel), Fenster/Meldungen gleiten ein (`.fxsheet`, `.fxtoast`), Start→Spiel blendet weich ein (`.fxfade`), Knöpfe geben beim Drücken nach (`.fxpress`, kurze Vibration). `prefers-reduced-motion` schaltet alles ab. Drei Schwestern hat zusätzlich seine eigenen Effekte (nur Drücken/Fenster aus fxLite, keine Chips), Saum zusätzlich die Ketten-Animation, Glut sein eigenes System.
 
+**Lernspiel-Coach verschiebbar (alle Spiele):** Der Coach (`#coach`) lässt sich am Rand/Text ziehen (kleiner Griff oben), bleibt über die Schritte an der gewählten Stelle (`translate`), bleibt im Bildschirm; Doppeltippen setzt zurück. Hinweis: Saum animiert sein Fußfenster nicht (`fxsheet` dort aus – machte Tests und Bedienung wackelig).
+
 **Startseiten aller Spiele wie Glut:** Titelbild oben, unten eine feste Leiste (`.sdock`) mit Hauptknopf + „Lernspiel“ nebeneinander, darunter eine Pille „Name · n Bots ▾“ (öffnet das Einstellungsfenster `.ssheet` mit Name, Profil-Chips, Gegner, Optionen; `data-a="setup"` / `"setup-x"` = „Fertig“) und der Link „Spielregeln lesen“; „Partie fortsetzen“ steht in der Leiste. Tests öffnen vor dem Wählen der Gegner zuerst das Einstellungsfenster.
 
 Jedes Spiel hat einen eigenen Smoke-Test in `test/` (`gah-smoke.mjs`,

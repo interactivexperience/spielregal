@@ -190,6 +190,11 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .ember.e2{left:62%;animation-delay:.7s;--dx:16px}.ember.e3{left:60.5%;animation-delay:1.5s;--dx:-14px}.ember.e4{left:61.5%;animation-delay:2.1s;--dx:22px}.ember.e5{left:61%;animation-delay:2.8s;--dx:-8px}
 @keyframes emberk{0%{transform:translate(0,0) scale(1);opacity:0}12%{opacity:1}100%{transform:translate(var(--dx,8px),-130px) scale(.3);opacity:0}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* Coach verschiebbar */
+.coach{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.coach button,.coach a{touch-action:manipulation;cursor:pointer}
+.coach::before{content:"";position:absolute;top:4px;left:50%;width:32px;height:4px;margin-left:-16px;border-radius:4px;background:currentColor;opacity:.22;pointer-events:none}
 </style>
 </head>
 <body>
@@ -868,6 +873,30 @@ document.addEventListener('click',e=>{
   const sv=loadSave();
   if(sv&&/[?&]resume=1/.test(location.search)){S=sv.S;render();schedule();try{history.replaceState(null,'',location.pathname)}catch(_){}return}
   render()})();
+
+/* ---- Lernspiel-Coach verschiebbar: am Coach ziehen, Doppeltippen setzt zurück ---- */
+(function(){
+  let dx=0,dy=0,drag=null;
+  const apply=el=>{if(el)el.style.translate=(dx||dy)?dx+'px '+dy+'px':''};
+  new MutationObserver(()=>{const c=document.getElementById('coach');if(c&&c.style.translate!==((dx||dy)?dx+'px '+dy+'px':''))apply(c)}).observe(document.documentElement,{childList:true,subtree:true});
+  document.addEventListener('pointerdown',e=>{
+    const c=e.target.closest&&e.target.closest('#coach');if(!c||e.target.closest('button,a,input'))return;
+    drag={x:e.clientX,y:e.clientY,dx,dy,moved:false,id:e.pointerId,c};try{c.setPointerCapture(e.pointerId)}catch(_){}
+  });
+  document.addEventListener('pointermove',e=>{
+    if(!drag||e.pointerId!==drag.id)return;
+    const mx=e.clientX-drag.x,my=e.clientY-drag.y;if(!drag.moved&&Math.abs(mx)+Math.abs(my)<6)return;drag.moved=true;
+    const c=drag.c,r=c.getBoundingClientRect(),W=innerWidth,H=innerHeight;
+    let ndx=drag.dx+mx,ndy=drag.dy+my;
+    const cx=r.left-dx+ndx,cy=r.top-dy+ndy; // Position nach der Verschiebung
+    if(cx<-r.width+60)ndx+=(-r.width+60)-cx;if(cx>W-60)ndx-=cx-(W-60);
+    if(cy<8)ndy+=8-cy;if(cy>H-50)ndy-=cy-(H-50);
+    dx=ndx;dy=ndy;apply(c);e.preventDefault();
+  },{passive:false});
+  const end=e=>{if(drag&&e.pointerId===drag.id){drag=null}};
+  document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end);
+  document.addEventListener('dblclick',e=>{const c=e.target.closest&&e.target.closest('#coach');if(c&&!e.target.closest('button,a')){dx=dy=0;apply(c)}});
+})();
 </script>
 </body>
 </html>
