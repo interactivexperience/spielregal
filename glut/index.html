@@ -84,7 +84,9 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .ord .need{display:flex;gap:5px;flex-wrap:wrap;flex:1}
 .stamp{width:50px;height:50px;border-radius:50%;background:var(--sun);color:#fff;display:grid;place-items:center;font-size:28px;transform:rotate(-8deg);box-shadow:3px 3px 0 var(--ink);border:3px solid var(--ink);flex:none}
 .card{background:var(--paper);border:3px solid var(--ink);border-radius:var(--r-card);padding:10px 12px;display:flex;flex-direction:column;gap:4px}
-.card.can{background:var(--lime)}.card .n{font-size:24px}
+.card.can{background:var(--lime)}
+.card.buy{cursor:pointer;transition:transform .12s ease}.card.buy:active{transform:scale(.98)}
+.cbuy{font-size:12px;font-weight:700;opacity:.7;padding-top:2px}.cbuy.ok{opacity:1;color:var(--ink);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}.card .n{font-size:24px}
 .card .e{font-size:13px;line-height:1.3}
 .tbl{width:100%;border-collapse:collapse;font-size:14px}.tbl td,.tbl th{padding:4px 6px;text-align:left;border-bottom:1.5px solid rgba(59,18,32,.2)}
 .log{font-size:13px;line-height:1.35}.log div{padding:3px 0;border-bottom:1.5px solid rgba(59,18,32,.15)}
@@ -542,18 +544,41 @@ function workshopPage(){
     <div class="box"><h3 class="disp">Stücke</h3><div class="chips">${p.pieces.length?p.pieces.map(pieceChip).join(''):'<span class="note">Noch keine – Fliesen entstehen auf der Töpferscheibe.</span>'}</div></div>
     <div class="box"><h3 class="disp">Deine Karten</h3>${p.cards.length?p.cards.map(id=>cardHtml(id,false)).join(''):'<span class="note">Karten kaufst du im Gildehaus.</span>'}</div>
     <div class="box"><h3 class="disp">Gilden-Zeichen</h3>${tbl}</div></div>`}
-function cardHtml(id,market){
-  const c=CARD[id],p=me(),can=market&&myTurn()&&p.res.duk>=c.cost&&p.dice.some(h=>h>=c.tier);
-  return `<div class="card ${can?'can':''}" data-info="${esc(c.n+'\n'+c.tx+'\nGilde: '+GNAME[c.g]+' (+2 Zeichen)')}"><div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span class="n disp">${c.n}</span>
+// Kann ich diese Auslagekarte jetzt kaufen? Wählt den passendsten Würfel (den kühlsten, der reicht; notfalls mit Anfachen)
+function cardState(mi){
+  const c=CARD[S.market[mi]],p=me(),R=p.res;
+  if(S.over||!myTurn())return{ok:false,short:p.passed?'du hast gerastet':'nicht dran',why:p.passed?'Du hast in dieser Runde gerastet.':'Du bist gerade nicht dran.'};
+  const pl=S.places[PL.indexOf('gilde')];
+  if(pl.includes(0))return{ok:false,short:'Gildehaus schon genutzt',why:'Du warst in dieser Runde schon im Gildehaus.'};
+  if(pl.length>=capFor(S.np))return{ok:false,short:'Gildehaus belegt',why:'Das Gildehaus ist in dieser Runde belegt.'};
+  if(R.duk<c.cost)return{ok:false,short:`zu wenig Dukaten (${c.cost} nötig)`,why:`Zu wenig Dukaten: ${c.cost} nötig, du hast ${R.duk}.`};
+  const keep=U.sel.length===1?U.sel[0]:-1;
+  for(let b=0;b<=2;b++){
+    if(bcost(p,b)>R.holz)break;
+    const cand=p.dice.map((h,i)=>({h,i})).filter(x=>x.h>0&&x.h+b<=6&&x.h+b>=c.tier);
+    if(!cand.length)continue;
+    const pick=keep>=0&&cand.some(x=>x.i===keep&&b===U.boost)?cand.find(x=>x.i===keep):cand.sort((x,y)=>x.h-y.h)[0];
+    return{ok:true,die:pick.i,boost:b,heat:pick.h}}
+  return{ok:false,short:`kein Würfel mit Hitze ${c.tier}`,why:`Kein Würfel mit Hitze ${c.tier} oder mehr (auch nicht angefacht).`}}
+function buyCard(mi){
+  const st=cardState(mi);if(!st.ok){toast(st.why);return}
+  U.sel=[st.die];U.boost=st.boost;
+  const p=me(),s=view(S,0,false),opts=optionsFor('gilde').filter(a=>a.mi===mi);
+  if(!opts.length){toast('Das geht gerade nicht.');return}
+  U.sheet={title:`Gildehaus · Würfel ${p.dice[st.die]}${st.boost?' +'+st.boost:''}`,opts:opts.map(a=>({a,...outcome(a,p,s)}))};render()}
+function cardHtml(id,market,mi){
+  const c=CARD[id],st=market?cardState(mi):null,can=st&&st.ok;
+  const info=c.n+'\\n'+c.tx+'\\nGilde: '+GNAME[c.g]+' (+2 Zeichen)'+(market?'\\nKaufen am Gildehaus: Hitze mindestens '+c.tier+', Preis '+c.cost+' Dukaten. Antippen wählt den passendsten Würfel.':'');
+  return `<div class="card ${can?'can':''} ${market?'buy':''}" ${market?`data-a="card" data-mi="${mi}"`:''} data-info="${esc(info)}"><div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span class="n disp">${c.n}</span>
     <span class="pill p-ink">${GNAME[c.g]}</span></div><div class="e">${icoTxt(esc(c.tx))}</div>
-    <div class="chips"><span class="pill p-out">Stufe ${c.tier}</span><span class="pill p-pink">${c.cost}${RIC.duk}</span><span class="pill p-out">${c.ruhm}${RIC.ruhm}</span></div></div>`}
+    <div class="chips"><span class="pill p-out">Stufe ${c.tier}</span><span class="pill p-pink">${c.cost}${RIC.duk}</span><span class="pill p-out">${c.ruhm}${RIC.ruhm}</span></div>${market?`<div class="cbuy ${can?'ok':''}">${can?`Antippen zum Kaufen · Würfel ${st.heat}${st.boost?' +'+st.boost:''}`:'Kaufen am Gildehaus: '+esc(st.short)}</div>`:''}</div>`}
 function ordersPage(){
   const p=me();
   const ord=S.orders.map((o,oi)=>{const can=assign(p.pieces,o.need);
     return `<div class="ord ${can?'can':''}" data-oi="${oi}" data-info="${esc('Auftrag\nAm Kontor liefern: Stücke der Art und Mindestgüte abgeben → '+o.ruhm+' Ruhm'+(o.duk?' und '+o.duk+' Dukaten':'')+'.')}"><div class="need">${o.need.map(n=>`<span class="pc ${n.t}"><span class="pci">${TIC[n.t]}</span>${TNAME[n.t]}${n.q>1?' ≥'+n.q:''}</span>`).join('')}</div>${o.duk?`<span class="pill p-pink">+${o.duk}${RIC.duk}</span>`:''}<span class="stamp num">${o.ruhm}</span></div>`}).join('');
   const lg=S.log.slice(-40).reverse().map(l=>`<div>${l.p>=0?'<b>'+esc(l.p===0?'Du':S.players[l.p].name)+'</b> ':''}${icoTxt(esc(l.t))} <span style="opacity:.55">· R${l.r}</span></div>`).join('');
   return `<div class="page" id="pg2"><div class="ptitle disp">Aufträge.</div>${ord}
-    <div class="ptitle disp" style="margin-top:6px">Gildenhaus.</div>${S.market.map(id=>cardHtml(id,true)).join('')}
+    <div class="ptitle disp" style="margin-top:6px">Gildenhaus.</div>${S.market.map((id,mi)=>cardHtml(id,true,mi)).join('')}
     <div class="box"><h3 class="disp">Chronik</h3><div class="log">${lg}</div></div></div>`}
 function footHtml(){
   const p=me();
@@ -788,6 +813,7 @@ document.addEventListener('click',e=>{
   if(a==='tutnext'){if(TUT){TUT.i=Math.min(TUT.i+1,TUT_STEPS.length-1);TUT.scrolled=null}render();return}
   if(a==='tutend'){tutEnd();startGame();return}
   if(a==='tutquit'){tutEnd();return}
+  if(a==='card'){buyCard(+el.dataset.mi);return}
   if(a==='die'){pickDie(+el.dataset.i);return}
   if(a==='boost'){U.boost=+el.dataset.b;render();return}
   if(a==='place'){pickPlace(el.dataset.k);return}
