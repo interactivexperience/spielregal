@@ -71,7 +71,9 @@ async function playGame(bots, label) {
     // einmalig: Menü, Info-Blase, Speichern/Fortsetzen testen
     if (!menuOk && it > 3) {
       await page.click("[data-a=menu]");
-      check(await cnt("[data-a=rules]") === 1 && await cnt("a[href='../']") >= 1 && await cnt("[data-a=fast]") === 1 && await cnt("[data-a=reload]") === 1, "Menü unvollständig");
+      check(await cnt("[data-a=rules]") === 1 && await cnt("a[href='../']") >= 1 && await cnt("[data-a=fast]") === 1 && await cnt("[data-a=sound]") === 1 && await cnt("[data-a=reload]") === 1, "Menü unvollständig");
+      await page.click("[data-a=sound]"); check(await page.evaluate(() => localStorage.getItem("glut:sound")) === "0" && /aus/.test(await page.locator("[data-a=sound]").innerText()), "Ton-Schalter schaltet nicht aus");
+      await page.click("[data-a=sound]"); check(await page.evaluate(() => localStorage.getItem("glut:sound")) === "1" && /an/.test(await page.locator("[data-a=sound]").innerText()), "Ton-Schalter schaltet nicht ein");
       await page.click("[data-a=rules]"); check(await cnt(".rules") === 1, "Spielregeln öffnen sich nicht"); await page.click(".rules .xbtn");
       menuOk = true; continue;
     }

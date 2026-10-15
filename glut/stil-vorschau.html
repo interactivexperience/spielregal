@@ -66,7 +66,8 @@ body{font-family:'Bricolage Grotesque',system-ui,sans-serif;color:var(--ink);pad
 .top{display:flex;justify-content:space-between;align-items:center}
 .res{display:flex;gap:6px;flex-wrap:wrap}
 .rc{background:var(--paper);border:2.5px solid var(--ink);border-radius:var(--r-pill);padding:3px 11px 3px 4px;display:flex;align-items:center;gap:6px;font-size:19px;line-height:1}
-.rc i{width:24px;height:24px;border-radius:50%;display:block;border:2px solid var(--ink)}
+.rc svg{width:24px;height:24px;display:block;flex:none}
+.tp{position:relative;display:inline-block;width:38px;height:38px}.tp svg{width:38px;height:38px}.tp b{position:absolute;inset:0;display:grid;place-items:center;font-size:15px;color:var(--ink);padding-top:2px}
 .dice{display:flex;gap:9px}
 .die{width:60px;height:60px;border-radius:var(--r-die);border:3px solid var(--ink);display:grid;place-items:center;font-size:44px;line-height:1;color:var(--ink);position:relative;box-shadow:3px 3px 0 var(--ink)}
 .die.cold{background:var(--h0);color:#8d84b5;border-style:dashed;box-shadow:none;font-size:26px}
@@ -127,12 +128,12 @@ body{font-family:'Bricolage Grotesque',system-ui,sans-serif;color:var(--ink);pad
         <span class="pill p-lime">Du bist dran</span>
       </div>
       <div class="res">
-        <span class="rc num"><i style="background:#E9C46A"></i>4</span>
-        <span class="rc num"><i style="background:#9C90D6"></i>2</span>
-        <span class="rc num"><i style="background:#8A5A2B"></i>1</span>
-        <span class="rc num"><i style="background:var(--peri)"></i>3</span>
-        <span class="rc num"><i style="background:var(--lime)"></i>5</span>
-        <span class="rc num"><i style="background:var(--sun)"></i>12</span>
+        <span class="rc num"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.8 18.5C2.8 12.5 7 6.5 12 6.5s9.2 6 9.2 12c0 1.6-2.4 2.6-9.2 2.6S2.8 20.1 2.8 18.5z" fill="#E9C46A" stroke="#3B1220" stroke-width="1.6" stroke-linejoin="round"/><path d="M7.5 15c1.2-2.2 3.2-3.4 5.6-3.4" fill="none" stroke="#C99A2E" stroke-width="1.7" stroke-linecap="round"/><circle cx="16.5" cy="16.5" r="1.3" fill="#C99A2E"/></svg>4</span>
+        <span class="rc num"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 20 8 11l3.2 3.2 3.2-6.2L21.5 20z" fill="#9C90D6" stroke="#3B1220" stroke-width="1.6" stroke-linejoin="round"/><circle cx="8.5" cy="5.6" r="1.5" fill="#B9AEE6"/><circle cx="15" cy="3.8" r="1.3" fill="#B9AEE6"/><circle cx="19" cy="7.6" r="1.2" fill="#B9AEE6"/></svg>2</span>
+        <span class="rc num"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.2" fill="#C28A52" stroke="#3B1220" stroke-width="1.6"/><circle cx="12" cy="12" r="5.6" fill="none" stroke="#8A5A2B" stroke-width="1.5"/><circle cx="12" cy="12" r="2" fill="#8A5A2B"/></svg>1</span>
+        <span class="rc num"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2.8h6v3.2c4 1.9 5.2 5.4 5.2 8.6 0 4.1-3 6.6-8.2 6.6S3.8 18.7 3.8 14.6c0-3.2 1.2-6.7 5.2-8.6z" fill="#6F7BE8" stroke="#3B1220" stroke-width="1.6" stroke-linejoin="round"/><path d="M6.2 12.6h11.6" stroke="#FBF3E8" stroke-width="1.6" stroke-linecap="round"/></svg>3</span>
+        <span class="rc num"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.2" fill="#B4E35E" stroke="#3B1220" stroke-width="1.6"/><circle cx="12" cy="12" r="5.7" fill="none" stroke="#3B1220" stroke-width="1.3"/><path d="M12 8.4l2.6 3.6-2.6 3.6-2.6-3.6z" fill="#3B1220"/></svg>5</span>
+        <span class="rc num"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.2" fill="#F2502E" stroke="#3B1220" stroke-width="1.6"/><polygon points="12,5.9 13.7,10.2 18.2,10.5 14.7,13.4 15.8,17.9 12,15.4 8.2,17.9 9.3,13.4 5.8,10.5 10.3,10.2" fill="#FBF3E8"/></svg>12</span>
       </div>
       <div>
         <div class="lab" style="margin-bottom:6px">Deine Glut</div>
@@ -158,17 +159,17 @@ body{font-family:'Bricolage Grotesque',system-ui,sans-serif;color:var(--ink);pad
     <div class="scr">
       <div class="disp h2" style="position:relative">Aufträge.</div>
       <div class="ord">
-        <div class="glas"><span class="gl z num">9</span></div>
+        <div class="glas"><span class="tp"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.2" fill="#FBF3E8" stroke="#3B1220" stroke-width="1.6"/><circle cx="12" cy="12" r="6.2" fill="none" stroke="#2A2BC8" stroke-width="1.5"/><circle cx="12" cy="12" r="2.2" fill="#F2502E"/><g fill="#2A2BC8"><circle cx="12" cy="7.2" r="1"/><circle cx="12" cy="16.8" r="1"/><circle cx="7.2" cy="12" r="1"/><circle cx="16.8" cy="12" r="1"/></g></svg><b class="num">9</b></span></div>
         <div><div class="h3 disp">Zierplatte</div><div class="body">Güte ab 8</div></div>
         <span class="stamp num">6</span>
       </div>
       <div class="ord">
-        <div class="glas"><span class="gl num">8</span><span class="gl z num">8</span></div>
+        <div class="glas"><span class="tp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.6 9.2c3.4 0 3.8 6.2 0 6.8" fill="none" stroke="#3B1220" stroke-width="1.7" stroke-linecap="round"/><path d="M8 2.8h7v3.2c3 1.6 4 4.6 4 7.6 0 4-3 6.8-7.5 6.8S4 17.6 4 13.6c0-3 1-6 4-7.6z" fill="#2A2BC8" stroke="#3B1220" stroke-width="1.6" stroke-linejoin="round"/><path d="M5.6 12.4h11.8" stroke="#FBF3E8" stroke-width="1.6" stroke-linecap="round"/><circle cx="11.5" cy="16.4" r="1.2" fill="#FBF3E8"/></svg><b class="num">8</b></span><span class="tp"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.2" fill="#FBF3E8" stroke="#3B1220" stroke-width="1.6"/><circle cx="12" cy="12" r="6.2" fill="none" stroke="#2A2BC8" stroke-width="1.5"/><circle cx="12" cy="12" r="2.2" fill="#F2502E"/><g fill="#2A2BC8"><circle cx="12" cy="7.2" r="1"/><circle cx="12" cy="16.8" r="1"/><circle cx="7.2" cy="12" r="1"/><circle cx="16.8" cy="12" r="1"/></g></svg><b class="num">8</b></span></div>
         <div><div class="h3 disp">Krug + Zierplatte</div><div class="body">je Güte 8</div></div>
         <span class="stamp num">11</span>
       </div>
       <div class="ord" style="background:var(--pine);color:var(--paper)">
-        <div class="glas"><span class="gl s num">5</span><span class="gl s num">5</span></div>
+        <div class="glas"><span class="tp"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2.6" fill="#FBF3E8" stroke="#3B1220" stroke-width="1.6"/><g fill="none" stroke="#2A2BC8" stroke-width="1.5"><circle cx="9.4" cy="12" r="2.4"/><circle cx="14.6" cy="12" r="2.4"/><circle cx="12" cy="9.4" r="2.4"/><circle cx="12" cy="14.6" r="2.4"/></g><path d="M12 10.4l1.6 1.6-1.6 1.6-1.6-1.6z" fill="#F2502E"/></svg><b class="num">5</b></span><span class="tp"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2.6" fill="#FBF3E8" stroke="#3B1220" stroke-width="1.6"/><g fill="none" stroke="#2A2BC8" stroke-width="1.5"><circle cx="9.4" cy="12" r="2.4"/><circle cx="14.6" cy="12" r="2.4"/><circle cx="12" cy="9.4" r="2.4"/><circle cx="12" cy="14.6" r="2.4"/></g><path d="M12 10.4l1.6 1.6-1.6 1.6-1.6-1.6z" fill="#F2502E"/></svg><b class="num">5</b></span></div>
         <div><div class="h3 disp" style="color:var(--lime)">Zwei Fliesen</div><div class="body">+ 2 Dukaten</div></div>
         <span class="stamp num">4</span>
       </div>
