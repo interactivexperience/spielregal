@@ -71,7 +71,9 @@ async function playGame(bots, label) {
     // einmalig: Menü, Info-Blase, Speichern/Fortsetzen testen
     if (!menuOk && it > 3) {
       await page.click("[data-a=menu]");
-      check(await cnt("[data-a=rules]") === 1 && await cnt("a[href='../']") >= 1 && await cnt("[data-a=fast]") === 1 && await cnt("[data-a=reload]") === 1, "Menü unvollständig");
+      check(await cnt("[data-a=rules]") === 1 && await cnt("a[href='../']") >= 1 && await cnt("[data-a=fast]") === 1 && await cnt("[data-a=sound]") === 1 && await cnt("[data-a=reload]") === 1, "Menü unvollständig");
+      await page.click("[data-a=sound]"); check(await page.evaluate(() => localStorage.getItem("glut:sound")) === "0" && /aus/.test(await page.locator("[data-a=sound]").innerText()), "Ton-Schalter schaltet nicht aus");
+      await page.click("[data-a=sound]"); check(await page.evaluate(() => localStorage.getItem("glut:sound")) === "1" && /an/.test(await page.locator("[data-a=sound]").innerText()), "Ton-Schalter schaltet nicht ein");
       await page.click("[data-a=rules]"); check(await cnt(".rules") === 1, "Spielregeln öffnen sich nicht"); await page.click(".rules .xbtn");
       menuOk = true; continue;
     }
@@ -148,6 +150,22 @@ try {
     check(m.panelH < m.vh * 0.28, `Knopfleiste bei ${w}×${h} zu hoch (${m.panelH.toFixed(0)} px)`);
   }
   await page.setViewportSize({ width: 390, height: 844 });
+  // Gildenkarte direkt auf der Kartenseite kaufen
+  await page.evaluate(() => { try { localStorage.removeItem("glut:save"); } catch (_) {} });
+  await page.goto(url, { waitUntil: "load" });
+  await page.click("[data-a=start]");
+  await page.evaluate(() => { S.market[0] = "lehrbrief"; S.market[1] = "waechter"; S.players[0].dice = [4, 3, 2, 1]; S.players[0].res.duk = 3; U.page = 2; render(); });
+  check(await cnt(".card[data-a=card]") === 4, "Auslagekarten sind nicht antippbar");
+  check(await page.evaluate(() => document.querySelector('.card[data-mi="0"]').classList.contains("can") && !document.querySelector('.card[data-mi="1"]').classList.contains("can")), "Kaufbar-Markierung falsch (Lehrbrief ja, Glutwächter nein)");
+  await page.click('.card[data-mi="1"]');
+  check(await page.evaluate(() => /Zu wenig Dukaten/.test((document.querySelector(".toast") || {}).textContent || "")), "Antippen einer zu teuren Karte nennt den Grund nicht");
+  await page.click('.card[data-mi="0"]');
+  check(await cnt(".sheet .opt") === 1 && /Lehrbrief/.test(await page.locator(".sheet .opt").innerText()), "Antippen einer kaufbaren Karte öffnet keine Bestätigung");
+  const dieBefore = await page.evaluate(() => S.players[0].dice.slice());
+  await page.click(".sheet .opt");
+  const after = await page.evaluate(() => ({ cards: S.players[0].cards.slice(), duk: S.players[0].res.duk, dice: S.players[0].dice.slice(), ruhmT: S.players[0].signs.T }));
+  check(after.cards.includes("lehrbrief") && after.duk === 1 && after.ruhmT === 2, "Kauf über die Karte hat Karte/Dukaten/Zeichen nicht richtig verbucht " + JSON.stringify(after));
+  check(after.dice.join() === [4, 3, 2, 0].join() || after.dice.join() === [4, 3, 1, 1].join() || after.dice.filter((h, i) => h !== dieBefore[i]).length === 1, "Es wurde kein einzelner (passendster) Würfel abgekühlt " + JSON.stringify(after.dice));
   await playGame(1, "erste");
   await playGame(3, "vier");
   await playGame(2, "drei");

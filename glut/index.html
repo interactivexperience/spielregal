@@ -66,9 +66,12 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .plc{background:var(--paper);border:3px solid var(--ink);border-radius:var(--r-card);padding:9px 12px;display:flex;flex-direction:column;gap:4px}
 .plc .t{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .plc .n{font-size:27px}
-.plc .e{font-size:12.5px;line-height:1.3}
+.plc .e{font-size:12.5px;line-height:1.3;display:flex;flex-direction:column;gap:4px}
 .plc.pick{background:var(--lime);box-shadow:4px 4px 0 var(--ink)}
 .plc.off{opacity:.55}
+.rec{display:flex;gap:7px;align-items:flex-start;font-size:12.5px;line-height:1.35}
+.rec .rl{flex:none;width:82px;text-align:center;font-weight:800;font-size:10px;letter-spacing:.05em;text-transform:uppercase;background:var(--ink);color:var(--paper);border-radius:999px;padding:2px 7px;margin-top:1px}
+.ortnote{color:var(--ink);opacity:.9;font-size:12.5px;line-height:1.4;padding:0 2px}
 .occ{display:flex;gap:5px;align-items:center}
 .slot{width:26px;height:26px;border-radius:50%;border:2.5px dashed var(--ink);opacity:.45}
 .box{background:var(--paper);border:3px solid var(--ink);border-radius:var(--r-card);padding:12px 13px}
@@ -81,7 +84,9 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .ord .need{display:flex;gap:5px;flex-wrap:wrap;flex:1}
 .stamp{width:50px;height:50px;border-radius:50%;background:var(--sun);color:#fff;display:grid;place-items:center;font-size:28px;transform:rotate(-8deg);box-shadow:3px 3px 0 var(--ink);border:3px solid var(--ink);flex:none}
 .card{background:var(--paper);border:3px solid var(--ink);border-radius:var(--r-card);padding:10px 12px;display:flex;flex-direction:column;gap:4px}
-.card.can{background:var(--lime)}.card .n{font-size:24px}
+.card.can{background:var(--lime)}
+.card.buy{cursor:pointer;transition:transform .12s ease}.card.buy:active{transform:scale(.98)}
+.cbuy{font-size:12px;font-weight:700;opacity:.7;padding-top:2px}.cbuy.ok{opacity:1;color:var(--ink);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}.card .n{font-size:24px}
 .card .e{font-size:13px;line-height:1.3}
 .tbl{width:100%;border-collapse:collapse;font-size:14px}.tbl td,.tbl th{padding:4px 6px;text-align:left;border-bottom:1.5px solid rgba(59,18,32,.2)}
 .log{font-size:13px;line-height:1.35}.log div{padding:3px 0;border-bottom:1.5px solid rgba(59,18,32,.15)}
@@ -342,8 +347,8 @@ function outcome(a,p,s){ // {txt, sub}
     case'wald':txt=`+${Math.ceil(e/3)+(has(p,'holz1')?1:0)} Holz`;break;
     case'ofen':{const n=ofenN(p,e);txt=`+${n} Rohling${n>1?'e':''}`;sub=`−${PARAM.batchTon*n} Ton, −${n} Asche`;break}
     case'topf':if(a.mode==='F'){txt=`Fliese, Güte ${e+q}`;sub='−1 Rohling'}else{txt=`${TNAME[a.mode]}, Güte ${d.e1+d.e2+q}`;sub='−2 Rohlinge, −1 Holz'}break;
-    case'kontor':if(a.mode==='sell'){const tot=sum(a.idx.map(i=>price(p.pieces[i].t)+(has(p,'kont1')?1:0)));txt=`Verkaufen: ${a.idx.map(i=>TNAME[p.pieces[i].t]+' '+p.pieces[i].q).join(', ')}`;sub=`+${tot} Dukaten`}
-      else{const o=s.orders[a.oi];txt=`Auftrag liefern: ${o.need.map(n=>TNAME[n.t]).join(' + ')}`;sub=`+${o.ruhm} Ruhm`+(o.duk?`, +${o.duk} Dukaten`:'')}break;
+    case'kontor':if(a.mode==='sell'){const tot=sum(a.idx.map(i=>price(p.pieces[i].t)+(has(p,'kont1')?1:0)));txt=`Verkaufen: ${a.idx.map(i=>TNAME[p.pieces[i].t]+' '+p.pieces[i].q).join(', ')}`;sub=`+${tot} Dukaten · am Ende zählen 4 Dukaten nur 1 Ruhm`}
+      else{const o=s.orders[a.oi];txt=`Auftrag liefern: ${o.need.map(n=>TNAME[n.t]+(n.q>1?' ab Güte '+n.q:'')).join(' + ')}`;sub=`+${o.ruhm} Ruhm`+(o.duk?`, +${o.duk} Dukaten`:'')+' · zählt für die Händler-Gilde doppelt'}break;
     case'gilde':{const c=CARD[s.market[a.mi]];txt=`„${c.n}“ kaufen`;sub=`−${c.cost} Dukaten · ${c.tx}`;break}
   }
   const nb=d.j===undefined?d.b:d.b1+d.b2;if(nb>0){const c=bcost(p,nb);sub+=(sub?' · ':'')+`angefacht +${nb}`+(c?` (−${c} Holz)`:' (gratis)')}
@@ -429,7 +434,7 @@ function optionsFor(k){
 function pickDie(i){
   if(!myTurn())return;const p=me();if(p.dice[i]<=0){toast('Dieser Würfel ist kalt – er wird beim Rasten neu gewürfelt.');return}
   const at=U.sel.indexOf(i);
-  if(at>=0)U.sel.splice(at,1);else{U.sel.push(i);if(U.sel.length>2)U.sel.shift();fxAdd(`.dicerow .die[data-i="${i}"]`,'fx-sel',320);buzz(8)}
+  if(at>=0)U.sel.splice(at,1);else{U.sel.push(i);if(U.sel.length>2)U.sel.shift();fxAdd(`.dicerow .die[data-i="${i}"]`,'fx-sel',320);buzz(8);SND.pick()}
   U.boost=0;U.page=0;render()}
 function pickPlace(k){
   if(!myTurn())return;
@@ -477,14 +482,17 @@ function tutIco(h){
   h=h.replace(/<b>(Ton|Asche|Holz|Rohlinge|Rohling|Dukaten|Dukat|Ruhm)<\/b>/g,(m,w)=>`<b>${w}</b> <span class="ri">${RIC[RWORD[w]]}</span>`);
   h=h.replace(/<b>(Fliesen|Fliese|Krug|Zierplatte)<\/b>/g,(m,w)=>`<span class="ti">${TIC[/^Fl/.test(w)?'F':/^Kr/.test(w)?'K':'Z']}</span><b>${w}</b>`);
   return icoTxt(h)}
+const RI=k=>RIC[k].replace('<svg','<svg class="ri-i"');
+const rec=(l,h)=>`<div class="rec"><span class="rl">${l}</span><span>${h}</span></div>`;
 const PHTML={
- ton:()=>`Hitze 1–6 → 1 · 2 · 3 · 3 · 4 · 5 ${RIC.ton.replace('<svg','<svg class="ri-i"')}`,
- asche:()=>`${ri('asche','+2')}`,
- wald:()=>`${ri('holz','1')} bei Hitze 1–3 · ${ri('holz','2')} ab Hitze 4`,
- ofen:()=>`${ri('ton','2')} + ${ri('asche','1')} → ${ri('rohling','1')} · so oft wie Hitze − 3 · +1 Brenner`,
- topf:()=>`${ri('rohling','1')} → ${ti('F')} Fliese<br>${ri('rohling','2')} + ${ri('holz','1')} → ${ti('K')} Krug (2 gleiche Würfel) oder ${ti('Z')} Zierplatte (2 aufeinanderfolgende)`,
- kontor:()=>`Verkaufen: ${ti('F')} 3 · ${ti('K')}${ti('Z')} 8 ${RIC.duk.replace('<svg','<svg class="ri-i"')}<br>oder Auftrag liefern → ${RIC.ruhm.replace('<svg','<svg class="ri-i"')}`,
- gilde:()=>`Karte kaufen für ${RIC.duk.replace('<svg','<svg class="ri-i"')}, Hitze ≥ Stufe`};
+ ton:()=>rec('Ertrag',`nach Hitze 1→1 · 2→2 · 3→3 · 4→3 · 5→4 · 6→5 ${RI('ton')}`),
+ asche:()=>rec('Bedingung','nur mit Hitze 1–3')+rec('Ertrag',`${ri('asche','2')}`),
+ wald:()=>rec('Ertrag',`Hitze 1–3: ${ri('holz','1')} · ab Hitze 4: ${ri('holz','2')}`),
+ ofen:()=>{const m=ofenMin(me())-1,ex=[];for(let h=m+1;h<=6;h++)ex.push(`${h}: ${h-m}×`);
+   return rec('Je Satz',`${ri('ton','2')} + ${ri('asche','1')} → ${ri('rohling','1')}`)+rec('Wie oft',`Hitze − ${m} Sätze (${ex.join(' · ')}), soweit dein Vorrat reicht`)+rec('Zeichen','+1 Brenner')},
+ topf:()=>rec('Fliese',`1 Würfel · ${ri('rohling','1')} → ${ti('F')} Güte = Hitze · +1 Töpfer`)+rec('Krug',`2 Würfel mit gleicher Hitze · ${ri('rohling','2')} + ${ri('holz','1')} → ${ti('K')} Güte = Summe · +2 Töpfer`)+rec('Zierplatte',`2 Würfel mit aufeinanderfolgender Hitze (z. B. 3 und 4) · ${ri('rohling','2')} + ${ri('holz','1')} → ${ti('Z')} Güte = Summe · +2 Töpfer`),
+ kontor:()=>rec('Bedingung','Hitze 2 oder mehr, dann entweder:')+rec('Verkaufen',`bis zu Hitze ÷ 2 Stücke, aufgerundet (2: 1 · 3–4: 2 · 5–6: 3): ${ti('F')} 3 · ${ti('K')}${ti('Z')} 8 ${RI('duk')} · +1 Händler`)+rec('Liefern',`1 Auftrag erfüllen: verlangte Stücke abgeben → ${RI('ruhm')} des Auftrags · +2 Händler`),
+ gilde:()=>rec('Bedingung','Hitze mindestens so hoch wie die Stufe der Karte (1–3)')+rec('Kosten',`Preis der Karte ${RI('duk')}`)+rec('Ertrag','1 Gildenkarte (Dauer-Vorteil, Ruhm am Ende) · +2 Zeichen ihrer Gilde')};
 const PCOL=['#F2502E','#2A2BC8','#124D39','#9C90D6'];
 const avatar=(i)=>`<span class="av" data-p="${i}" style="background:${PCOL[i]}">${esc((S.players[i].bot?S.players[i].name:myName()).slice(0,1).toUpperCase())}</span>`;
 const dieHtml=(i,h,cls='')=>`<button class="die num h${Math.min(6,Math.max(0,Math.round(h)))} ${cls}" data-a="die" data-i="${i}" data-info="${h>0?`Würfel mit Hitze ${h}\nBei jedem Einsatz kühlt er um 1 ab. Kalte Würfel werden beim Rasten neu gewürfelt.`:'Kalter Würfel\nBeim Rasten wird er neu gewürfelt.'}">${h>0?h:'kalt'}</button>`;
@@ -493,6 +501,7 @@ function annShort(){
   const c=S.players[S.cur];
   if(c.bot)return `${c.name} ist dran …`;
   if(c.passed)return 'Du hast gerastet';
+  if(U.sheet)return 'Wähle eine Möglichkeit';
   if(U.sel.length)return U.sel.length===2?'Wähle einen Ort (2 Würfel)':'Wähle einen Ort';
   return 'Du bist dran: wähle einen Würfel'}
 function annLong(){if(S.over)return 'Das Spiel ist zu Ende.';const c=S.players[S.cur];if(c.bot)return `${c.name} ist am Zug. Du siehst jeden Zug in der Chronik.`;
@@ -511,17 +520,19 @@ function headHtml(){
   const bch=myTurn()&&U.sel.length===1&&p.dice[U.sel[0]]>0&&(p.res.holz>0||has(p,'bfree'))?`<span class="bchips" data-info="Anfachen\nMit Holz erhöhst du die Hitze des gewählten Würfels für diesen Einsatz.">${[0,1,2].filter(b=>p.dice[U.sel[0]]+b<=6&&(b===0||bcost(p,b)<=p.res.holz)).map(b=>`<button class="pill ${U.boost===b?'on':'p-cream'}" data-a="boost" data-b="${b}">${b?`+${b}`:'ohne'}</button>`).join('')}</span>`:'';
   return `<div class="thead"><div class="hrow"><h1>Glut.</h1><button class="ann ${myTurn()?'me':''}" data-a="go" data-info="${esc(annLong())}">${esc(annShort())}</button><button class="mbtn" data-a="menu" aria-label="Menü">☰</button></div>
     <div class="opps">${opps}${rnd_}</div><div class="res">${res}</div><div class="dicerow">${dice}${bch}</div></div>`}
-const PINFO={ton:'Ton: Hitze 1–6 → 1 · 2 · 3 · 3 · 4 · 5',asche:'+2 Asche',wald:'Holz: 1 (Hitze 1–3), 2 (ab Hitze 4)',
-  ofen:'2 Ton + 1 Asche → 1 Rohling, so oft wie Hitze − 3 (und du es hast). +1 Brenner-Zeichen',
-  topf:'Fliese: 1 Rohling · Krug (zwei gleiche Würfel) oder Zierplatte (zwei aufeinanderfolgende): 2 Rohlinge + 1 Holz. Güte = Summe der Hitze. Töpfer-Zeichen',
-  kontor:'Stücke verkaufen (bis ⌈Hitze/2⌉, Fliese 3 · Krug/Zierplatte 8 Dukaten) oder einen Auftrag liefern. Händler-Zeichen',
-  gilde:'Gildenkarte kaufen: Hitze ≥ Stufe der Karte, Dukaten als Preis. Gilden-Zeichen'};
+const PINFO={ton:'Tongrube\nErtrag nach Hitze: 1 → 1 Ton · 2 → 2 · 3 → 3 · 4 → 3 · 5 → 4 · 6 → 5. Keine Kosten.',
+  asche:'Aschehütte\nNur mit Hitze 1–3. Ertrag: 2 Asche.',
+  wald:'Wald\nErtrag: Hitze 1–3 → 1 Holz, ab Hitze 4 → 2 Holz. Keine Kosten.',
+  ofen:'Brennofen\nHitze 4 oder mehr (mit Ofenmeister 3). Je Satz: 2 Ton + 1 Asche → 1 Rohling. Du machst so viele Sätze, wie die Hitze über 3 liegt (4: 1, 5: 2, 6: 3), soweit dein Vorrat reicht. +1 Brenner-Zeichen.',
+  topf:'Töpferscheibe\nFliese: 1 Würfel, 1 Rohling, Güte = Hitze, +1 Töpfer. Krug: 2 Würfel mit gleicher Hitze, 2 Rohlinge + 1 Holz, Güte = Summe, +2 Töpfer. Zierplatte: 2 Würfel mit aufeinanderfolgender Hitze (z. B. 3 und 4), 2 Rohlinge + 1 Holz, Güte = Summe, +2 Töpfer.',
+  kontor:'Kontor\nHitze 2 oder mehr. Entweder verkaufen: bis zu Hitze ÷ 2 Stücke, aufgerundet (Fliese 3, Krug und Zierplatte je 8 Dukaten), +1 Händler-Zeichen. Oder einen Auftrag erfüllen: die verlangten Stücke abgeben, Ruhm und Boni des Auftrags, +2 Händler-Zeichen.',
+  gilde:'Gildehaus\nHitze mindestens so hoch wie die Stufe der Karte. Du bezahlst den Preis in Dukaten und erhältst die Karte (Dauer-Vorteil, Ruhm am Ende) und +2 Zeichen ihrer Gilde.'};
 function placeCond(k,p){return({ton:'beliebig',asche:'Hitze ≤ 3',wald:'beliebig',ofen:`Hitze ≥ ${ofenMin(p)}`,topf:'1–2 Würfel',kontor:'Hitze ≥ 2',gilde:'Hitze ≥ Stufe'})[k]}
 function placesPage(){
   const p=me(),cap=capFor(S.np);
-  return `<div class="page" id="pg0"><div class="ptitle disp">Orte.</div>`+PL.map((k,i)=>{
+  return `<div class="page" id="pg0"><div class="ptitle disp">Orte.</div><div class="note ortnote">${icoTxt(esc(`Pro Zug ein Würfel (Töpferscheibe: 1–2). Jeden Ort nutzt du höchstens einmal pro Runde; ${cap===1?'ein Platz':cap+' Plätze'} je Ort. Danach kühlt der Würfel um 1 ab. Anfachen: 1 Holz = +1 Hitze (höchstens +2, bis 6).`))}</div>`+PL.map((k,i)=>{
     const occ=S.places[i],pick=myTurn()&&U.sel.length&&optionsFor(k).length>0,full=occ.length>=cap||occ.includes(0);
-    return `<div class="plc ${pick?'pick':''} ${!pick&&full?'off':''}" data-a="place" data-k="${k}" data-info="${esc(PNAME[k]+'\n'+PINFO[k])}">
+    return `<div class="plc ${pick?'pick':''} ${!pick&&full?'off':''}" data-a="place" data-k="${k}" data-info="${esc(PINFO[k])}">
       <div class="t"><span class="n disp">${PNAME[k]}</span><span class="pill ${pick?'p-ink':'p-pink'}">${placeCond(k,p)}</span></div>
       <div class="e">${PHTML[k]()}</div>
       <div class="occ">${occ.map(avatar).join('')}${Array.from({length:cap-occ.length},()=>'<span class="slot"></span>').join('')}</div></div>`}).join('')+`</div>`}
@@ -533,18 +544,41 @@ function workshopPage(){
     <div class="box"><h3 class="disp">Stücke</h3><div class="chips">${p.pieces.length?p.pieces.map(pieceChip).join(''):'<span class="note">Noch keine – Fliesen entstehen auf der Töpferscheibe.</span>'}</div></div>
     <div class="box"><h3 class="disp">Deine Karten</h3>${p.cards.length?p.cards.map(id=>cardHtml(id,false)).join(''):'<span class="note">Karten kaufst du im Gildehaus.</span>'}</div>
     <div class="box"><h3 class="disp">Gilden-Zeichen</h3>${tbl}</div></div>`}
-function cardHtml(id,market){
-  const c=CARD[id],p=me(),can=market&&myTurn()&&p.res.duk>=c.cost&&p.dice.some(h=>h>=c.tier);
-  return `<div class="card ${can?'can':''}" data-info="${esc(c.n+'\n'+c.tx+'\nGilde: '+GNAME[c.g]+' (+2 Zeichen)')}"><div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span class="n disp">${c.n}</span>
+// Kann ich diese Auslagekarte jetzt kaufen? Wählt den passendsten Würfel (den kühlsten, der reicht; notfalls mit Anfachen)
+function cardState(mi){
+  const c=CARD[S.market[mi]],p=me(),R=p.res;
+  if(S.over||!myTurn())return{ok:false,short:p.passed?'du hast gerastet':'nicht dran',why:p.passed?'Du hast in dieser Runde gerastet.':'Du bist gerade nicht dran.'};
+  const pl=S.places[PL.indexOf('gilde')];
+  if(pl.includes(0))return{ok:false,short:'Gildehaus schon genutzt',why:'Du warst in dieser Runde schon im Gildehaus.'};
+  if(pl.length>=capFor(S.np))return{ok:false,short:'Gildehaus belegt',why:'Das Gildehaus ist in dieser Runde belegt.'};
+  if(R.duk<c.cost)return{ok:false,short:`zu wenig Dukaten (${c.cost} nötig)`,why:`Zu wenig Dukaten: ${c.cost} nötig, du hast ${R.duk}.`};
+  const keep=U.sel.length===1?U.sel[0]:-1;
+  for(let b=0;b<=2;b++){
+    if(bcost(p,b)>R.holz)break;
+    const cand=p.dice.map((h,i)=>({h,i})).filter(x=>x.h>0&&x.h+b<=6&&x.h+b>=c.tier);
+    if(!cand.length)continue;
+    const pick=keep>=0&&cand.some(x=>x.i===keep&&b===U.boost)?cand.find(x=>x.i===keep):cand.sort((x,y)=>x.h-y.h)[0];
+    return{ok:true,die:pick.i,boost:b,heat:pick.h}}
+  return{ok:false,short:`kein Würfel mit Hitze ${c.tier}`,why:`Kein Würfel mit Hitze ${c.tier} oder mehr (auch nicht angefacht).`}}
+function buyCard(mi){
+  const st=cardState(mi);if(!st.ok){toast(st.why);return}
+  U.sel=[st.die];U.boost=st.boost;
+  const p=me(),s=view(S,0,false),opts=optionsFor('gilde').filter(a=>a.mi===mi);
+  if(!opts.length){toast('Das geht gerade nicht.');return}
+  U.sheet={title:`Gildehaus · Würfel ${p.dice[st.die]}${st.boost?' +'+st.boost:''}`,opts:opts.map(a=>({a,...outcome(a,p,s)}))};render()}
+function cardHtml(id,market,mi){
+  const c=CARD[id],st=market?cardState(mi):null,can=st&&st.ok;
+  const info=c.n+'\\n'+c.tx+'\\nGilde: '+GNAME[c.g]+' (+2 Zeichen)'+(market?'\\nKaufen am Gildehaus: Hitze mindestens '+c.tier+', Preis '+c.cost+' Dukaten. Antippen wählt den passendsten Würfel.':'');
+  return `<div class="card ${can?'can':''} ${market?'buy':''}" ${market?`data-a="card" data-mi="${mi}"`:''} data-info="${esc(info)}"><div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span class="n disp">${c.n}</span>
     <span class="pill p-ink">${GNAME[c.g]}</span></div><div class="e">${icoTxt(esc(c.tx))}</div>
-    <div class="chips"><span class="pill p-out">Stufe ${c.tier}</span><span class="pill p-pink">${c.cost}${RIC.duk}</span><span class="pill p-out">${c.ruhm}${RIC.ruhm}</span></div></div>`}
+    <div class="chips"><span class="pill p-out">Stufe ${c.tier}</span><span class="pill p-pink">${c.cost}${RIC.duk}</span><span class="pill p-out">${c.ruhm}${RIC.ruhm}</span></div>${market?`<div class="cbuy ${can?'ok':''}">${can?`Antippen zum Kaufen · Würfel ${st.heat}${st.boost?' +'+st.boost:''}`:'Kaufen am Gildehaus: '+esc(st.short)}</div>`:''}</div>`}
 function ordersPage(){
   const p=me();
   const ord=S.orders.map((o,oi)=>{const can=assign(p.pieces,o.need);
     return `<div class="ord ${can?'can':''}" data-oi="${oi}" data-info="${esc('Auftrag\nAm Kontor liefern: Stücke der Art und Mindestgüte abgeben → '+o.ruhm+' Ruhm'+(o.duk?' und '+o.duk+' Dukaten':'')+'.')}"><div class="need">${o.need.map(n=>`<span class="pc ${n.t}"><span class="pci">${TIC[n.t]}</span>${TNAME[n.t]}${n.q>1?' ≥'+n.q:''}</span>`).join('')}</div>${o.duk?`<span class="pill p-pink">+${o.duk}${RIC.duk}</span>`:''}<span class="stamp num">${o.ruhm}</span></div>`}).join('');
   const lg=S.log.slice(-40).reverse().map(l=>`<div>${l.p>=0?'<b>'+esc(l.p===0?'Du':S.players[l.p].name)+'</b> ':''}${icoTxt(esc(l.t))} <span style="opacity:.55">· R${l.r}</span></div>`).join('');
   return `<div class="page" id="pg2"><div class="ptitle disp">Aufträge.</div>${ord}
-    <div class="ptitle disp" style="margin-top:6px">Gildenhaus.</div>${S.market.map(id=>cardHtml(id,true)).join('')}
+    <div class="ptitle disp" style="margin-top:6px">Gildenhaus.</div>${S.market.map((id,mi)=>cardHtml(id,true,mi)).join('')}
     <div class="box"><h3 class="disp">Chronik</h3><div class="log">${lg}</div></div></div>`}
 function footHtml(){
   const p=me();
@@ -561,6 +595,7 @@ function menuHtml(){
     ${TUT?'<button class="btn" data-a="tutquit">Lernspiel beenden</button>':''}${undoable()?'<button class="btn alt" data-a="undo">Zug rückgängig</button>':''}
     <button class="btn alt" data-a="rules">Spielregeln</button>
     <button class="btn alt" data-a="fast" data-info="Wie schnell die Mitspieler am Zug sind. Gilt für alle Spiele.">Mitspieler-Tempo: ${fastPref()?'schnell':'normal'}</button>
+    <button class="btn alt" data-a="sound" data-info="Töne ein- oder ausschalten. Gilt nur für Glut.">Töne: ${sndOn()?'an':'aus'}</button>
     <a class="btn" href="../">Speichern &amp; zum Spielregal</a>
     ${TUT?'':'<button class="btn alt" data-a="restart">Partie abbrechen &amp; neu starten</button>'}
     <button class="link" data-a="reload">Neueste Version laden</button></div></div></div>`}
@@ -672,7 +707,7 @@ const TUT_STEPS=[
  {ch:'Lotte ist dran',wait:true,done:()=>S.cur===0&&!tme().passed,text:'Lotte ist am Zug …'},
  {ch:'Zug 3 · Würfel',sel:'.dicerow .die[data-i="2"]',allow:{die:d=>d.i==='2'},done:()=>U.sel.includes(2)||tme().ruhm>=7,text:'Am <b>Kontor</b> verkaufst du Stücke oder lieferst <b>Aufträge</b> (siehst du auf der dritten Seite). Es braucht Hitze 2 oder mehr. Tippe deine <b>2</b>.'},
  {ch:'Zug 3 · Kontor',sel:'#pg0 .plc[data-k=kontor]',allow:{place:d=>d.k==='kontor'},done:()=>!!U.sheet||tme().ruhm>=7,text:'Tippe das <b>Kontor</b>.'},
- {ch:'Zug 3 · Auftrag',sel:'.opt[data-m="deliver"]',allow:{opt:d=>U.sheet&&U.sheet.opts[+d.i].a.mode==='deliver',place:d=>d.k==='kontor'},done:()=>tme().ruhm>=7,text:'Der Auftrag „Krug ab Güte 5“ passt zu deinem Krug. Liefere ihn für <b>7 Ruhm</b>.',why:'Verkaufen brächte nur 8 Dukaten. Aufträge geben Ruhm und zählen für die Händler-Gilde doppelt.'},
+ {ch:'Zug 3 · Auftrag',sel:'.opt[data-m="deliver"]',allow:{opt:d=>U.sheet&&U.sheet.opts[+d.i].a.mode==='deliver',place:d=>d.k==='kontor'},done:()=>tme().ruhm>=7,text:'Der Auftrag „Krug ab Güte 5“ passt zu deinem Krug. Liefere ihn für <b>7 Ruhm</b>.',why:'Verkaufen brächte 8 Dukaten, aber am Ende zählen 4 Dukaten nur 1 Ruhm – das wären gerade 2 Ruhm. Der Auftrag bringt dir 7 Ruhm und zählt für die Händler-Gilde doppelt.'},
  {ch:'Lotte ist dran',wait:true,done:()=>S.cur===0&&!tme().passed,text:'Lotte ist am Zug …'},
  {ch:'Zug 4 · Würfel',sel:'.dicerow .die[data-i="3"]',allow:{die:d=>d.i==='3'},done:()=>U.sel.includes(3)||tme().dice[3]===0,text:'Lotte hat gerastet, du darfst aber weiterarbeiten. Auch kleine Würfel sind nützlich: Die <b>Aschehütte</b> nimmt nur Hitze 3 oder weniger. Tippe deine <b>1</b>.'},
  {ch:'Zug 4 · Aschehütte',sel:'#pg0 .plc[data-k=asche]',allow:{place:d=>d.k==='asche'},done:()=>tme().dice[3]===0,text:'Tippe die <b>Aschehütte</b>.',why:'Dabei wird der Würfel <b>kalt</b>. Beim Rasten würfelst du ihn neu.'},
@@ -719,6 +754,33 @@ function tutBotAction(){
 function tutEnd(){TUT=null;S=null;clearTimeout(botT);U={page:0,sel:[],boost:0,sheet:null,menu:false,rules:false,toast:null,undo:[],pending:false};render()}
 
 
+/* ---- Töne (WebAudio, synthetisch; Schalter im Menü, gespeichert unter glut:sound) ---- */
+const sndOn=()=>lsGet('glut:sound')!=='0';
+let AC=null;const SNDC={n:0};
+function sndCtx(){if(!sndOn())return null;try{if(!AC){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;AC=new C()}if(AC.state==='suspended')AC.resume();return AC}catch(_){return null}}
+function tone(f,d,o={}){const c=sndCtx();if(!c)return;SNDC.n++;const t=c.currentTime+(o.at||0),os=c.createOscillator(),g=c.createGain();
+  os.type=o.type||'sine';os.frequency.setValueAtTime(f,t);if(o.to)os.frequency.exponentialRampToValueAtTime(o.to,t+d);
+  const v=o.v||.08;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  os.connect(g);g.connect(c.destination);os.start(t);os.stop(t+d+.03)}
+function noise(d,o={}){const c=sndCtx();if(!c)return;SNDC.n++;const t=c.currentTime+(o.at||0),n=Math.floor(c.sampleRate*d),b=c.createBuffer(1,n,c.sampleRate),x=b.getChannelData(0);
+  for(let i=0;i<n;i++)x[i]=(Math.random()*2-1)*(1-i/n);const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();
+  s.buffer=b;f.type='bandpass';f.frequency.value=o.f||2400;g.gain.value=o.v||.05;s.connect(f);f.connect(g);g.connect(c.destination);s.start(t)}
+const SND={
+  tap:()=>tone(520,.05,{type:'triangle',v:.05}),
+  pick:()=>tone(660,.07,{type:'triangle',v:.06}),
+  cool:()=>noise(.28,{f:3200,v:.05}),
+  cold:()=>{noise(.35,{f:1800,v:.05});tone(220,.3,{to:130,type:'sine',v:.06,at:.05})},
+  roll:()=>{for(let i=0;i<4;i++)tone(300+Math.random()*300,.04,{type:'square',v:.025,at:i*.05})},
+  gain:()=>{tone(740,.09,{type:'triangle',v:.06});tone(990,.12,{type:'triangle',v:.06,at:.07})},
+  loss:()=>tone(420,.16,{to:260,type:'triangle',v:.06}),
+  drop:()=>tone(150,.14,{to:70,type:'sine',v:.12}),
+  fire:()=>{noise(.6,{f:700,v:.07});tone(110,.5,{to:200,type:'sawtooth',v:.04})},
+  stamp:()=>{tone(90,.22,{to:50,v:.18});noise(.1,{f:900,v:.06})},
+  bell:()=>{[523,659,784].forEach((f,i)=>tone(f,.4,{type:'triangle',v:.06,at:i*.1}))},
+  gong:()=>{tone(196,1.1,{v:.1});tone(392,.8,{v:.04})},
+  fan:()=>{[523,659,784,1047].forEach((f,i)=>tone(f,.35,{type:'triangle',v:.07,at:i*.12}))},
+  no:()=>tone(160,.18,{type:'square',v:.04})};
+
 /* ---- Animationen und Mikro-Interaktionen (Zustandsvergleich nach jedem Neuzeichnen, wie in Drei Schwestern) ---- */
 const RM=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches}catch(_){return false}};
 const buzz=ms=>{try{if(navigator.vibrate&&!RM())navigator.vibrate(ms)}catch(_){}};
@@ -736,22 +798,26 @@ function fxRun(){
   if(prev&&prev.id===cur.id)fxDiff(prev,cur);
   fxApply()}
 function fxDiff(a,b){
+  let cooled=0,rolled=false;
   b.dice.forEach((h,i)=>{const o=a.dice[i];if(o===undefined||h===o)return;const sel=`.dicerow .die[data-i="${i}"]`;
-    if(h<o){fxAdd(sel,h===0?'fx-cold':'fx-cool',h===0?900:600);fxPuff(sel,h===0)}else fxAdd(sel,'fx-roll',700)});
-  for(const k in b.res){const d=b.res[k]-a.res[k];if(d){const sel=`.rc[data-r="${k}"]`;fxAdd(sel,'fx-bump',500);fxFloat(sel,(d>0?'+':'−')+Math.abs(d),d>0)}}
+    if(h<o){fxAdd(sel,h===0?'fx-cold':'fx-cool',h===0?900:600);fxPuff(sel,h===0);cooled=h===0?2:Math.max(cooled,1)}else{fxAdd(sel,'fx-roll',700);rolled=true}});
+  if(cooled)SND[cooled===2?'cold':'cool']();if(rolled)SND.roll();
+  let gn=0,ls=0;for(const k in b.res){const d=b.res[k]-a.res[k];if(d>0)gn++;else if(d<0)ls++;if(d){const sel=`.rc[data-r="${k}"]`;fxAdd(sel,'fx-bump',500);fxFloat(sel,(d>0?'+':'−')+Math.abs(d),d>0)}}
+  if(gn)SND.gain();else if(ls)SND.loss();
   const dr=b.tot[0]-a.tot[0];
-  if(dr){const sel='.rc[data-r="ruhm"]';fxAdd(sel,'fx-bump',500);fxFloat(sel,(dr>0?'+':'−')+Math.abs(dr),dr>0);if(dr>=5){fxStamp(dr);buzz([20,40,20])}}
+  if(dr){const sel='.rc[data-r="ruhm"]';fxAdd(sel,'fx-bump',500);fxFloat(sel,(dr>0?'+':'−')+Math.abs(dr),dr>0);if(dr>=5){fxStamp(dr);buzz([20,40,20]);SND.stamp()}else if(dr>0)SND.bell()}
   b.tot.forEach((t,i)=>{if(i>0&&t!==a.tot[i])fxAdd(`.opp[data-p="${i}"] b`,'fx-bump',500)});
   b.occ.forEach((o,k)=>{const po=a.occ[k]||[],added=o.filter(x=>!po.includes(x));if(!added.length)return;
-    const sel=`.plc[data-k="${PL[k]}"]`,hot=PL[k]==='ofen';fxAdd(sel,hot?'fx-glow':'fx-stamp',hot?1100:500);added.forEach(x=>fxAdd(`${sel} .av[data-p="${x}"]`,'fx-drop',600))});
+    const sel=`.plc[data-k="${PL[k]}"]`,hot=PL[k]==='ofen';(hot?SND.fire:SND.drop)();fxAdd(sel,hot?'fx-glow':'fx-stamp',hot?1100:500);added.forEach(x=>fxAdd(`${sel} .av[data-p="${x}"]`,'fx-drop',600))});
   if(b.pieces>a.pieces)fxAdd('#pg1 .chips .pc:last-child','fx-pop',500);
   b.orders.forEach((o,i)=>{if(!a.orders.includes(o))fxAdd(`#pg2 .ord[data-oi="${i}"]`,'fx-slide',600)});
   if(b.ann!==a.ann)fxAdd('.ann','fx-swap',350);
   if(b.ov&&b.ov!==a.ov){fxAdd('.sheet','fx-up',320);fxAdd('.overlay','fx-fade',220)}
+  if(b.toast&&b.toast!==a.toast)SND.no();
   if(b.toast&&b.toast!==a.toast)fxAdd('.toast','fx-toast',320);
   if(b.tut!==a.tut&&b.tut>=0)fxAdd('#coach','fx-coach',350);
-  if(b.round>a.round&&!S.over){const f=S.players[S.first];fxBanner('Runde '+b.round,(f.bot?f.name:'Du')+(f.bot?' beginnt':' beginnst'))}
-  if(b.over&&!a.over&&S.players[0].ruhm===Math.max(...S.players.map(p=>p.ruhm)))fxConfetti()}
+  if(b.round>a.round&&!S.over){const f=S.players[S.first];SND.gong();fxBanner('Runde '+b.round,(f.bot?f.name:'Du')+(f.bot?' beginnt':' beginnst'))}
+  if(b.over&&!a.over&&S.players[0].ruhm===Math.max(...S.players.map(p=>p.ruhm))){SND.fan();fxConfetti()}}
 function fxBody(cls,html,ms,style){if(RM())return null;const d=document.createElement('div');d.className=cls;if(html)d.innerHTML=html;if(style)Object.assign(d.style,style);document.body.appendChild(d);setTimeout(()=>d.remove(),ms);return d}
 function fxFloat(sel,txt,plus){if(RM())return;const el=document.querySelector(sel);if(!el)return;const r=el.getBoundingClientRect();FXC.float++;fxBody('fl '+(plus?'up':'dn'),txt,1000,{left:(r.left+r.width/2)+'px',top:(r.bottom-2)+'px'})}
 function fxPuff(sel,cold){if(RM())return;const el=document.querySelector(sel);if(!el)return;const r=el.getBoundingClientRect();
@@ -765,6 +831,7 @@ function fxConfetti(){if(RM())return;FXC.confetti++;const cols=['#F2502E','#2A2B
 document.addEventListener('click',e=>{
   if(e.target.closest('[data-stop]')&&!e.target.closest('[data-a]:not(.overlay)'))return;
   const el=e.target.closest('[data-a]');if(!el)return;const a=el.dataset.a;
+  if(a!=='die'&&a!=='sound')SND.tap();
   if(a==='setup'){U.setup=true;render();return}
   if(a==='setup-x'){U.setup=false;render();return}
   if(a==='bots'){SETUP.bots=+el.dataset.n;lsSet('glut:bots',SETUP.bots);render();return}
@@ -779,6 +846,7 @@ document.addEventListener('click',e=>{
   if(a==='tutnext'){if(TUT){TUT.i=Math.min(TUT.i+1,TUT_STEPS.length-1);TUT.scrolled=null}render();return}
   if(a==='tutend'){tutEnd();startGame();return}
   if(a==='tutquit'){tutEnd();return}
+  if(a==='card'){buyCard(+el.dataset.mi);return}
   if(a==='die'){pickDie(+el.dataset.i);return}
   if(a==='boost'){U.boost=+el.dataset.b;render();return}
   if(a==='place'){pickPlace(el.dataset.k);return}
@@ -790,6 +858,7 @@ document.addEventListener('click',e=>{
   if(a==='go'){if(myTurn()&&U.sel.length){U.page=0;render()}return}
   if(a==='menu'){U.menu=true;render();return}
   if(a==='menu-x'){U.menu=false;render();return}
+  if(a==='sound'){lsSet('glut:sound',sndOn()?'0':'1');if(sndOn())SND.bell();render();return}
   if(a==='fast'){lsSet('spielregal:botFast',fastPref()?'0':'1');render();return}
   if(a==='reload'){save();location.replace(location.pathname+'?v='+Date.now()+'&resume=1');return}
   if(a==='restart'){if(!confirm('Partie abbrechen und eine neue beginnen?'))return;S=null;lsSet(SAVE,'');U.menu=false;clearTimeout(botT);render();return}

@@ -221,7 +221,9 @@ neu gewürfelte drehen herein (`fx-roll`), angetippte wackeln (`fx-sel`); Vorrat
 Ruhm ab +5 schlägt als Stempel ein (`.bigstamp`), jede neue Runde als Banner „Runde n – x beginnt“ (`.rbanner`), Sieg mit Konfetti (`.cf`); Fenster gleiten hoch, Ansage/Toast/Coach tauschen weich; Knöpfe geben beim Drücken nach, kurze Vibration (`buzz`).
 Effekte auf Elementen, die bei jedem Neuzeichnen neu entstehen, stehen in `FX` und werden mit negativem `animation-delay` nahtlos wieder angesetzt; schwebende Elemente liegen im `body` und überleben das Neuzeichnen. Das Cover lebt (Glut im Ofen `.kglow`, Funken `.ember`).
 `prefers-reduced-motion` und `RM()` schalten alles ab. `glut-smoke.mjs` prüft, dass Effekte ausgelöst werden (`FXC`-Zähler) und bei reduzierter Bewegung nichts läuft.
-**Noch nicht umgesetzt:** Solo-Automa, Bildmaterial auf Karten, Sound (Töne mit Schalter im Menü wären der nächste Schritt); die Anfachen-Auswahl und das Auswahlfenster sind schlicht.
+**Gildenkarten kaufen:** Die offenen Karten auf der Seite „Aufträge & Gildenhaus“ sind antippbar (`cardState`/`buyCard`, `.cbuy`): grün mit „Antippen zum Kaufen · Würfel n“, sonst grau mit Grund; Antippen wählt den kühlsten ausreichenden Würfel (bei Bedarf mit Anfachen) und öffnet das Bestätigungsfenster des Gildehauses. Test in `glut-smoke.mjs`.
+**Töne** (WebAudio, synthetisch, `SND`/`tone`/`noise`; Schalter „Töne: an/aus“ im Menü, `glut:sound`): Tippen, Würfel wählen, Abkühlen (Zischen) / kalt, Würfeln, Vorrat rauf/runter, Figur setzen (Brennofen: Feuer), Ruhm (Glöckchen, ab +5 Stempel), Rundengong, Siegfanfare, Fehlerhinweis; hängen an `fxDiff`, unabhängig von reduzierter Bewegung. `stil-vorschau.html` zeigt die echten Vorrats- und Stücksymbole.
+**Noch nicht umgesetzt:** Solo-Automa, Bildmaterial auf Karten, die Anfachen-Auswahl und das Auswahlfenster sind schlicht.
 
 ## Saum (eigenes Spielkonzept)
 
