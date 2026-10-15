@@ -342,8 +342,8 @@ function outcome(a,p,s){ // {txt, sub}
     case'wald':txt=`+${Math.ceil(e/3)+(has(p,'holz1')?1:0)} Holz`;break;
     case'ofen':{const n=ofenN(p,e);txt=`+${n} Rohling${n>1?'e':''}`;sub=`−${PARAM.batchTon*n} Ton, −${n} Asche`;break}
     case'topf':if(a.mode==='F'){txt=`Fliese, Güte ${e+q}`;sub='−1 Rohling'}else{txt=`${TNAME[a.mode]}, Güte ${d.e1+d.e2+q}`;sub='−2 Rohlinge, −1 Holz'}break;
-    case'kontor':if(a.mode==='sell'){const tot=sum(a.idx.map(i=>price(p.pieces[i].t)+(has(p,'kont1')?1:0)));txt=`Verkaufen: ${a.idx.map(i=>TNAME[p.pieces[i].t]+' '+p.pieces[i].q).join(', ')}`;sub=`+${tot} Dukaten`}
-      else{const o=s.orders[a.oi];txt=`Auftrag liefern: ${o.need.map(n=>TNAME[n.t]).join(' + ')}`;sub=`+${o.ruhm} Ruhm`+(o.duk?`, +${o.duk} Dukaten`:'')}break;
+    case'kontor':if(a.mode==='sell'){const tot=sum(a.idx.map(i=>price(p.pieces[i].t)+(has(p,'kont1')?1:0)));txt=`Verkaufen: ${a.idx.map(i=>TNAME[p.pieces[i].t]+' '+p.pieces[i].q).join(', ')}`;sub=`+${tot} Dukaten · am Ende zählen 4 Dukaten nur 1 Ruhm`}
+      else{const o=s.orders[a.oi];txt=`Auftrag liefern: ${o.need.map(n=>TNAME[n.t]+(n.q>1?' ab Güte '+n.q:'')).join(' + ')}`;sub=`+${o.ruhm} Ruhm`+(o.duk?`, +${o.duk} Dukaten`:'')+' · zählt für die Händler-Gilde doppelt'}break;
     case'gilde':{const c=CARD[s.market[a.mi]];txt=`„${c.n}“ kaufen`;sub=`−${c.cost} Dukaten · ${c.tx}`;break}
   }
   const nb=d.j===undefined?d.b:d.b1+d.b2;if(nb>0){const c=bcost(p,nb);sub+=(sub?' · ':'')+`angefacht +${nb}`+(c?` (−${c} Holz)`:' (gratis)')}
@@ -493,6 +493,7 @@ function annShort(){
   const c=S.players[S.cur];
   if(c.bot)return `${c.name} ist dran …`;
   if(c.passed)return 'Du hast gerastet';
+  if(U.sheet)return 'Wähle eine Möglichkeit';
   if(U.sel.length)return U.sel.length===2?'Wähle einen Ort (2 Würfel)':'Wähle einen Ort';
   return 'Du bist dran: wähle einen Würfel'}
 function annLong(){if(S.over)return 'Das Spiel ist zu Ende.';const c=S.players[S.cur];if(c.bot)return `${c.name} ist am Zug. Du siehst jeden Zug in der Chronik.`;
@@ -672,7 +673,7 @@ const TUT_STEPS=[
  {ch:'Lotte ist dran',wait:true,done:()=>S.cur===0&&!tme().passed,text:'Lotte ist am Zug …'},
  {ch:'Zug 3 · Würfel',sel:'.dicerow .die[data-i="2"]',allow:{die:d=>d.i==='2'},done:()=>U.sel.includes(2)||tme().ruhm>=7,text:'Am <b>Kontor</b> verkaufst du Stücke oder lieferst <b>Aufträge</b> (siehst du auf der dritten Seite). Es braucht Hitze 2 oder mehr. Tippe deine <b>2</b>.'},
  {ch:'Zug 3 · Kontor',sel:'#pg0 .plc[data-k=kontor]',allow:{place:d=>d.k==='kontor'},done:()=>!!U.sheet||tme().ruhm>=7,text:'Tippe das <b>Kontor</b>.'},
- {ch:'Zug 3 · Auftrag',sel:'.opt[data-m="deliver"]',allow:{opt:d=>U.sheet&&U.sheet.opts[+d.i].a.mode==='deliver',place:d=>d.k==='kontor'},done:()=>tme().ruhm>=7,text:'Der Auftrag „Krug ab Güte 5“ passt zu deinem Krug. Liefere ihn für <b>7 Ruhm</b>.',why:'Verkaufen brächte nur 8 Dukaten. Aufträge geben Ruhm und zählen für die Händler-Gilde doppelt.'},
+ {ch:'Zug 3 · Auftrag',sel:'.opt[data-m="deliver"]',allow:{opt:d=>U.sheet&&U.sheet.opts[+d.i].a.mode==='deliver',place:d=>d.k==='kontor'},done:()=>tme().ruhm>=7,text:'Der Auftrag „Krug ab Güte 5“ passt zu deinem Krug. Liefere ihn für <b>7 Ruhm</b>.',why:'Verkaufen brächte 8 Dukaten, aber am Ende zählen 4 Dukaten nur 1 Ruhm – das wären gerade 2 Ruhm. Der Auftrag bringt dir 7 Ruhm und zählt für die Händler-Gilde doppelt.'},
  {ch:'Lotte ist dran',wait:true,done:()=>S.cur===0&&!tme().passed,text:'Lotte ist am Zug …'},
  {ch:'Zug 4 · Würfel',sel:'.dicerow .die[data-i="3"]',allow:{die:d=>d.i==='3'},done:()=>U.sel.includes(3)||tme().dice[3]===0,text:'Lotte hat gerastet, du darfst aber weiterarbeiten. Auch kleine Würfel sind nützlich: Die <b>Aschehütte</b> nimmt nur Hitze 3 oder weniger. Tippe deine <b>1</b>.'},
  {ch:'Zug 4 · Aschehütte',sel:'#pg0 .plc[data-k=asche]',allow:{place:d=>d.k==='asche'},done:()=>tme().dice[3]===0,text:'Tippe die <b>Aschehütte</b>.',why:'Dabei wird der Würfel <b>kalt</b>. Beim Rasten würfelst du ihn neu.'},
