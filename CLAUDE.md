@@ -174,6 +174,8 @@ ziehen …“ → „Loslassen = einsetzen“ (Petrol). Menü: „Neueste Versio
 Seite des Ziels; während des Wischens wird nicht neu gezeichnet (`render` wartet). Kopfzeilen (`.thead`) sind in allen
 Spielen deckend in der Seitenfarbe, ohne milchigen Blur (Owner: „kein milchiger Hintergrund“).
 
+**Mikro-Interaktionen in allen Spielen (`fxLite`, am Ende jedes `<script>`, je Spiel kopiert, Farbe `--fxc` je Stil):** `render` wird umhüllt und vergleicht vorher/nachher: Vorrats-Chips federn und zeigen schwebend „+n/−n“ (`.fxb`, `.fxfl`), geänderte Karten/Felder poppen (`.fxin`, Liste `pop` je Spiel), Fenster/Meldungen gleiten ein (`.fxsheet`, `.fxtoast`), Start→Spiel blendet weich ein (`.fxfade`), Knöpfe geben beim Drücken nach (`.fxpress`, kurze Vibration). `prefers-reduced-motion` schaltet alles ab. Drei Schwestern hat zusätzlich seine eigenen Effekte (nur Drücken/Fenster aus fxLite, keine Chips), Saum zusätzlich die Ketten-Animation, Glut sein eigenes System.
+
 **Startseiten aller Spiele wie Glut:** Titelbild oben, unten eine feste Leiste (`.sdock`) mit Hauptknopf + „Lernspiel“ nebeneinander, darunter eine Pille „Name · n Bots ▾“ (öffnet das Einstellungsfenster `.ssheet` mit Name, Profil-Chips, Gegner, Optionen; `data-a="setup"` / `"setup-x"` = „Fertig“) und der Link „Spielregeln lesen“; „Partie fortsetzen“ steht in der Leiste. Tests öffnen vor dem Wählen der Gegner zuerst das Einstellungsfenster.
 
 Jedes Spiel hat einen eigenen Smoke-Test in `test/` (`gah-smoke.mjs`,

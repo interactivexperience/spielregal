@@ -71,6 +71,8 @@ async function playUi(label, bots) {
   await page.waitForSelector(".sheet");
   // Mitspieler-Tempo liegt im Menü (nicht als flüchtiger Knopf in der Fußleiste) und bleibt gespeichert
   if (await page.locator(".bar [data-a=fast]").count()) fail("Tempo-Knopf noch in der Fußleiste");
+  if (!globalThis.__tempoDone) {
+  globalThis.__tempoDone = true;
   await page.waitForTimeout(400);
   if (await page.locator(".sheet").count()) await page.click("[data-a=close]", { force: true }).catch(() => {});
   await page.waitForTimeout(400);
@@ -83,6 +85,7 @@ async function playUi(label, bots) {
   if (fastSaved !== (fastBefore ? "0" : "1") || !(await page.locator(".sheet [data-a=fast]").innerText()).includes(fastBefore ? "normal" : "schnell")) fail("Mitspieler-Tempo im Menü schaltet/speichert nicht");
   await page.click("[data-a=close]", { force: true });
   await page.waitForTimeout(500);
+  }
   await page.evaluate(() => { U.fast = true; });
   let acts = 0, asks = 0, mk = 0, mr = 0, dp = 0, guard = 0, shot = false, zooms = 0, swipes = 0;
   while (guard++ < 3000) {
