@@ -93,7 +93,9 @@ async function playUi(label, expectPicks) {
   console.log(`UI-Partie ${label}: ${picks} Würfel, ${tasks} Aktionen.`);
 }
 
+await page.click("[data-a=setup]");
 await page.click("text=2 Bots");
+await page.click("[data-a=setup-x]");
 await page.click("text=Garten anlegen");
 await page.waitForSelector(".rondel");
 await page.evaluate(() => { U.fast = true; });
@@ -104,7 +106,9 @@ if (!inbox.some((e) => e.gameName === "Three Sisters" && e.bggId === "291845")) 
 if (shots) await page.screenshot({ path: `${shots}/ts-4-end.png`, fullPage: true });
 // Solo gegen Farmerin Edith
 await page.click("[data-a=newgame]");
+await page.click("[data-a=setup]");
 await page.click("text=Solo gegen Edith");
+await page.click("[data-a=setup-x]");
 await page.click("text=Garten anlegen");
 await page.waitForSelector(".rondel");
 await page.evaluate(() => { U.fast = true; });

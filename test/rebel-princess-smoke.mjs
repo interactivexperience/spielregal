@@ -65,8 +65,10 @@ for (const n of [3, 4, 5, 6]) { const s = sim.filter((x) => x.n === n && !x.k); 
 console.log(`Rundenkarten einzeln geprüft: ${new Set(sim.filter((x) => x.k).map((x) => x.k)).size}`);
 
 async function playUi(label, setup) {
+  await page.click("[data-a=setup]");
   await page.click("[data-a=bots][data-n='3']");
   await setup();
+  await page.click("[data-a=setup-x]");
   await page.click("text=Zum Ball");
   const ks = await page.locator("[data-a=pick]").evaluateAll((els) => els.map((e) => e.dataset.k));
   await page.click(`[data-a=pick][data-k=${ks[label.length % 2]}]`);

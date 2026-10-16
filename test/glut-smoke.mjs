@@ -71,7 +71,9 @@ async function playGame(bots, label) {
     // einmalig: Menü, Info-Blase, Speichern/Fortsetzen testen
     if (!menuOk && it > 3) {
       await page.click("[data-a=menu]");
-      check(await cnt("[data-a=rules]") === 1 && await cnt("a[href='../']") >= 1 && await cnt("[data-a=fast]") === 1 && await cnt("[data-a=reload]") === 1, "Menü unvollständig");
+      check(await cnt("[data-a=rules]") === 1 && await cnt("a[href='../']") >= 1 && await cnt("[data-a=fast]") === 1 && await cnt("[data-a=sound]") === 1 && await cnt("[data-a=reload]") === 1, "Menü unvollständig");
+      await page.click("[data-a=sound]"); check(await page.evaluate(() => localStorage.getItem("glut:sound")) === "0" && /aus/.test(await page.locator("[data-a=sound]").innerText()), "Ton-Schalter schaltet nicht aus");
+      await page.click("[data-a=sound]"); check(await page.evaluate(() => localStorage.getItem("glut:sound")) === "1" && /an/.test(await page.locator("[data-a=sound]").innerText()), "Ton-Schalter schaltet nicht ein");
       await page.click("[data-a=rules]"); check(await cnt(".rules") === 1, "Spielregeln öffnen sich nicht"); await page.click(".rules .xbtn");
       menuOk = true; continue;
     }
@@ -121,6 +123,9 @@ async function playGame(bots, label) {
   check(s.over, `${label}: Partie wurde nicht beendet (Runde ${s.round}, Iterationen ${it})`);
   console.log(`${label}: ${bots + 1} Spieler, Runden ${s.round}, Arbeiten ${works}, Rasten ${passes}, Fenster ${sheets}, Paar-Versuche ${pairs}, zurück ${undone}`);
   if (label === "erste") { check(savedGame && resumed && menuOk && bubble, "Zusatzprüfungen nicht durchlaufen"); check(works >= 10, "zu wenige Arbeitszüge"); }
+  const fx = await page.evaluate(() => FXC);
+  check(fx.fx > 20 && fx.float > 5 && fx.puff > 3, `${label}: Animationen kaum ausgelöst: ${JSON.stringify(fx)}`);
+  check(fx.banner >= 4, `${label}: Rundenbanner kaum gezeigt: ${JSON.stringify(fx)}`);
   const inbox = await page.evaluate(() => JSON.parse(localStorage.getItem("spielregal:inbox:plays") || "[]"));
   check(inbox.length === 1 && inbox[0].source === "glut" && inbox[0].gameName === "Glut" && inbox[0].results.length === bots + 1, `${label}: Eintrag im Eingangskorb fehlt oder falsch`);
   check(await cnt(".overlay [data-a=again]") === 1, `${label}: Endbildschirm fehlt`);
@@ -131,6 +136,7 @@ async function playGame(bots, label) {
 try {
   await page.goto(url, { waitUntil: "load" });
   check(await page.title() === "Glut", "Titel");
+  check(await page.evaluate(() => document.querySelectorAll(".start .ember").length === 5 && getComputedStyle(document.querySelector(".kglow")).animationName === "flick"), "Cover: Glut und Funken fehlen oder laufen nicht");
   // Startbild darf nicht von der Knopfleiste überdeckt werden (kleines und großes Handy)
   for (const [w, h] of [[390, 844], [390, 664], [360, 640], [430, 932]]) {
     await page.setViewportSize({ width: w, height: h }); await page.waitForTimeout(150);
@@ -144,9 +150,47 @@ try {
     check(m.panelH < m.vh * 0.28, `Knopfleiste bei ${w}×${h} zu hoch (${m.panelH.toFixed(0)} px)`);
   }
   await page.setViewportSize({ width: 390, height: 844 });
+  // Gildenkarte direkt auf der Kartenseite kaufen
+  await page.evaluate(() => { try { localStorage.removeItem("glut:save"); } catch (_) {} });
+  await page.goto(url, { waitUntil: "load" });
+  await page.click("[data-a=start]");
+  await page.evaluate(() => { S.market[0] = "lehrbrief"; S.market[1] = "waechter"; S.players[0].dice = [4, 3, 2, 1]; S.players[0].res.duk = 3; U.page = 2; render(); });
+  check(await cnt(".card[data-a=card]") === 4, "Auslagekarten sind nicht antippbar");
+  check(await page.evaluate(() => document.querySelector('.card[data-mi="0"]').classList.contains("can") && !document.querySelector('.card[data-mi="1"]').classList.contains("can")), "Kaufbar-Markierung falsch (Lehrbrief ja, Glutwächter nein)");
+  await page.click('.card[data-mi="1"]');
+  check(await page.evaluate(() => /Zu wenig Dukaten/.test((document.querySelector(".toast") || {}).textContent || "")), "Antippen einer zu teuren Karte nennt den Grund nicht");
+  await page.click('.card[data-mi="0"]');
+  check(await cnt(".sheet .opt") === 1 && /Lehrbrief/.test(await page.locator(".sheet .opt").innerText()), "Antippen einer kaufbaren Karte öffnet keine Bestätigung");
+  const dieBefore = await page.evaluate(() => S.players[0].dice.slice());
+  await page.click(".sheet .opt");
+  const after = await page.evaluate(() => ({ cards: S.players[0].cards.slice(), duk: S.players[0].res.duk, dice: S.players[0].dice.slice(), ruhmT: S.players[0].signs.T }));
+  check(after.cards.includes("lehrbrief") && after.duk === 1 && after.ruhmT === 2, "Kauf über die Karte hat Karte/Dukaten/Zeichen nicht richtig verbucht " + JSON.stringify(after));
+  check(after.dice.join() === [4, 3, 2, 0].join() || after.dice.join() === [4, 3, 1, 1].join() || after.dice.filter((h, i) => h !== dieBefore[i]).length === 1, "Es wurde kein einzelner (passendster) Würfel abgekühlt " + JSON.stringify(after.dice));
   await playGame(1, "erste");
   await playGame(3, "vier");
   await playGame(2, "drei");
+  // Bewegung reduzieren: keine Animationen, keine schwebenden Zeichen
+  const rctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+  await rctx.addInitScript(() => { try { localStorage.setItem("spielregal:botFast", "1"); } catch (_) {} });
+  const rp = await rctx.newPage();
+  await rp.route("**/fonts.googleapis.com/**", (r) => r.fulfill({ body: "", contentType: "text/css" }));
+  await rp.route("**/fonts.gstatic.com/**", (r) => r.abort());
+  rp.on("pageerror", (e) => errors.push(`pageerror (reduce): ${e.message}`));
+  await rp.goto(url, { waitUntil: "load" });
+  check(await rp.evaluate(() => getComputedStyle(document.querySelector(".kglow")).animationName === "none"), "Bewegung reduzieren: Cover-Glut läuft trotzdem");
+  await rp.click("[data-a=start]");
+  for (let k = 0; k < 8; k++) {
+    const st2 = await rp.evaluate(() => ({ cur: S.cur, over: S.over }));
+    if (st2.over) break;
+    if (st2.cur !== 0) { await rp.waitForTimeout(150); continue; }
+    const d = rp.locator(".dicerow .die:not(.h0)");
+    if (await d.count()) await d.first().click();
+    const pk = rp.locator(".plc.pick");
+    if (await pk.count()) await pk.first().click();
+    await rp.waitForTimeout(120);
+  }
+  const fr = await rp.evaluate(() => FXC);
+  check(fr.fx === 0 && fr.float === 0 && fr.puff === 0 && fr.stamp === 0 && fr.banner === 0, "Bewegung reduzieren: Effekte wurden trotzdem ausgelöst " + JSON.stringify(fr));
 } catch (e) { console.log("Test-Abbruch:", e.message); fehler++; }
 for (const e of errors) { console.log("FEHLER: " + e); fehler++; }
 await browser.close(); server.close();

@@ -41,7 +41,7 @@ try {
   check(await page.evaluate(() => S === null && TUT === null), "nach dem Lernspiel nicht zurück auf der Startseite");
   check(await page.evaluate(() => localStorage.getItem("saum:save") === null), "Lernspiel wurde gespeichert");
   check(await page.evaluate(() => (JSON.parse(localStorage.getItem("spielregal:inbox:plays") || "[]")).length === 0), "Lernspiel wurde als Partie gemeldet");
-} catch (e) { ok = false; console.log("FEHLER: " + e.message.split("\n")[0]); }
+} catch (e) { ok = false; console.log("FEHLER: " + e.message.split("\n").slice(0,12).join(" | ")); }
 for (const e of errs) { ok = false; console.log("JS-FEHLER: " + e); }
 await browser.close();
 if (!ok) process.exit(1);

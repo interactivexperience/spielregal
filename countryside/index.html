@@ -460,6 +460,43 @@ input,textarea{-webkit-user-select:text;user-select:text}
 /* Beenden-Knopf liegt über allen Elementen des Startbildschirms */
 .start .startbar{z-index:90!important}
 .start .startbar .icobtn{position:relative;z-index:91}
+
+/* Startseite wie Glut: Hauptknöpfe in fester Leiste unten, Einstellungen in einem Fenster */
+.start{padding-bottom:calc(210px + env(safe-area-inset-bottom));min-height:100dvh;box-sizing:border-box;display:flex;flex-direction:column}
+.start .hero{flex:1 1 auto;display:flex;align-items:flex-end;aspect-ratio:auto;background:#F2E8D3;overflow:hidden}
+.start .hero>svg{width:100%;height:auto;display:block;flex:none}
+.start .sdock{position:fixed;left:0;right:0;bottom:0;z-index:30;max-width:560px;margin:0 auto;padding:14px 16px calc(12px + env(safe-area-inset-bottom));background:var(--bg);border-radius:24px 24px 0 0;display:flex;flex-direction:column;gap:10px}
+.start .sdock .srow{display:flex;gap:9px}.start .sdock .srow .btn{flex:1;width:auto;margin:0;padding-left:10px;padding-right:10px}
+.start .sdock .srow2{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.start .sdock .srow2 .link{margin:0}.start .sdock .chip{white-space:nowrap}
+.start .sdock .wide{margin:0}.start .sdock p{margin:0}
+.start .ssheet{display:none}
+.start .ssheet.open{display:flex;position:fixed;inset:0;z-index:60;background:rgba(20,20,20,.5);align-items:flex-end;justify-content:center}
+.start .ssheet .panel{width:100%;max-width:560px;max-height:88dvh;overflow:auto;margin:0;border-radius:24px 24px 0 0;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+.start .ssheet .panel>.btn{margin-top:14px}
+/* fxLite */
+@media (prefers-reduced-motion:no-preference){
+button:active,[data-a]:active{transform:scale(.96)}
+button,[data-a]{transition:transform .18s cubic-bezier(.2,.9,.3,1.4),box-shadow .18s,background-color .18s,opacity .2s}
+.fxb{animation:fxbump .62s cubic-bezier(.2,.9,.3,1.5)}
+@keyframes fxbump{0%{transform:scale(1)}30%{transform:scale(1.28);filter:brightness(1.12)}100%{transform:scale(1)}}
+.fxin{animation:fxpop .5s cubic-bezier(.2,.9,.3,1.35)}
+@keyframes fxpop{0%{transform:scale(.9);opacity:.55}55%{transform:scale(1.045);opacity:1;box-shadow:0 0 0 3px #FDBA2C}100%{transform:scale(1);box-shadow:0 0 0 0 transparent}}
+.fxsheet{animation:fxsheetin .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes fxsheetin{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+.fxtoast{animation:fxtoastin .3s cubic-bezier(.2,.9,.3,1.3)}
+@keyframes fxtoastin{from{transform:translate(-50%,-10px) scale(.94);opacity:0}to{transform:translate(-50%,0) scale(1);opacity:1}}
+.fxfade{animation:fxfadein .45s ease-out}
+@keyframes fxfadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.fxfl{position:fixed;z-index:200;pointer-events:none;transform:translate(-50%,-4px);font:800 15px/1 system-ui,sans-serif;padding:3px 8px;border-radius:99px;background:#FDBA2C;color:#1a1a1a;box-shadow:0 2px 8px rgba(0,0,0,.25);animation:fxfloat 1.05s ease-out forwards}
+.fxfl.dn{background:#2b2b2b;color:#fff}
+@keyframes fxfloat{0%{opacity:0;transform:translate(-50%,6px) scale(.7)}20%{opacity:1;transform:translate(-50%,-6px) scale(1.08)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-34px) scale(1)}}
+}
+
+/* Coach verschiebbar */
+.coach{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.coach button,.coach a{touch-action:manipulation;cursor:pointer}
+.coach::before{content:"";position:absolute;top:4px;left:50%;width:32px;height:4px;margin-left:-16px;border-radius:4px;background:currentColor;opacity:.22;pointer-events:none}
 </style>
 </head>
 <body>
@@ -1544,6 +1581,10 @@ function boardHtml(p, live) {
     <div class="unlh"><h3>Freischalten</h3><p>${tokens(p, 1)} Pro erfülltem Auftrag nimmst du einen Marker von einem gesperrten Feld. Ist keiner mehr da, ist es frei.</p></div>
     <div class="fields">${other}</div></div>`;
 }
+function setupLabel(st) {
+  const nm = (st.name || '').trim() || 'Du';
+  return `${nm} · ${st.bots === 0 ? 'Solo' : st.bots + ' Bot' + (st.bots > 1 ? 's' : '')}`;
+}
 function viewStart() {
   const saved = load(), st = U.setup, prof = spielregalProfiles();
   return `<div class="wrap start">
@@ -1552,18 +1593,20 @@ function viewStart() {
     <h1 class="hand">Landgut</h1>
     <p class="script tagline">dein Traum vom Bauernhof.<svg viewBox="0 0 300 12" preserveAspectRatio="none" aria-hidden="true"><path d="M3,9 C80,3 190,2 297,6" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/></svg></p>
     <p class="sub">Das Kartenspiel nach den Regeln von <i>Countryside / Landgut</i>: Karten spielen, Waren sammeln, Aufträge erfüllen.</p>
-    ${saved && saved.screen === 'game' ? `<button class="btn wide" data-a="resume">Partie fortsetzen · ${saved.players.map(p => `${p.vp}`).join(' : ')} SP</button><p style="margin:6px 0 0;font-size:12.5px;opacity:.75">${saved.savedAt ? `Gespeichert ${savedLabel(saved)} · ` : ''}<button class="link" data-a="discard" style="font-size:12.5px">verwerfen</button></p>` : ''}
-    <div class="panel">
+    <div class="ssheet ${U.sopen ? 'open' : ''}"><div class="panel">
       <p class="label">Dein Name</p>
       <input class="input" id="nm" maxlength="30" placeholder="z. B. Bäuerin Mi" value="${esc(st.name)}">
       ${prof.length ? `<div class="chips" style="margin-top:8px">${prof.slice(0, 8).map(n => `<button class="chip ${st.name === n ? 'on' : ''}" data-a="pickname" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div><p class="note">Wähle dein Spielregal-Profil, dann landet die Partie mit deinen Punkten in deiner Partien-Liste.</p>` : ''}
       <p class="label" style="margin-top:14px">Gegner</p>
       <div class="chips"><button class="chip ${st.bots === 0 ? 'on' : ''}" data-a="bots" data-n="0">Solo</button>${[1, 2, 3].map(n => `<button class="chip ${st.bots === n ? 'on' : ''}" data-a="bots" data-n="${n}">${n} Bot${n > 1 ? 's' : ''}</button>`).join('')}</div>
       <p class="note">${st.bots === 0 ? 'Solo: 5 Stapel à 7 Karten. Jedes Mal, wenn du den Tag beendest, kommt ein neuer Stapel als Auslage. Sind alle verbraucht, endet das Spiel mit dem nächsten Tagesende.' : `Spielende, sobald jemand ${VP_END} Siegpunkte erreicht. Danach hat jede Person noch genau zwei Züge.`}</p>
+      <button class="btn wide" data-a="setup-x">Fertig</button>
+    </div></div>
+    <div class="sdock">
+      ${saved && saved.screen === 'game' ? `<button class="btn wide" data-a="resume">Partie fortsetzen · ${saved.players.map(p => `${p.vp}`).join(' : ')} SP</button><p style="margin:6px 0 0;font-size:12.5px;opacity:.75">${saved.savedAt ? `Gespeichert ${savedLabel(saved)} · ` : ''}<button class="link" data-a="discard" style="font-size:12.5px">verwerfen</button></p>` : ''}
+      <div class="srow"><button class="btn" data-a="start">Landgut übernehmen</button><button class="btn white" data-a="tutorial" data-info="Lernspiel\nEine geführte Partie: Die Regeln werden Schritt für Schritt im Spiel erklärt.">Lernspiel</button></div>
+      <div class="srow2"><button class="chip" data-a="setup" data-info="Spieler und Gegner\nName ändern, Gegner und Optionen wählen.">${esc(setupLabel(st))} ▾</button><button class="link" data-a="rules">Spielregeln lesen</button></div>
     </div>
-    <button class="btn wide" data-a="start">Landgut übernehmen</button>
-    <button class="btn white wide" data-a="tutorial" style="margin-top:12px">Lernspiel: Regeln spielend lernen</button>
-    <p style="margin-top:14px"><button class="link" data-a="rules">Spielregeln lesen</button></p>
   </div>`;
 }
 function viewGame() {
@@ -2081,6 +2124,8 @@ const H = {
   tutquit: () => { U.tut = null; U.sheet = null; U.fast = fastPref(); S = null; window.scrollTo(0, 0); },
   bots: d => { U.setup.bots = +d.n; },
   pickname: d => { U.setup.name = d.n; const nmi = document.getElementById('nm'); if (nmi) nmi.value = d.n; },
+  setup: () => { U.sopen = true; },
+  'setup-x': () => { const nm = document.getElementById('nm'); if (nm) U.setup.name = nm.value.trim(); U.sopen = false; },
   start: () => { U.page = 1; const sv = load(); if (sv && sv.screen === 'game' && !confirm('Es gibt eine gespeicherte Partie. Neue Partie starten und die gespeicherte verwerfen?')) return; const nmi = document.getElementById('nm'); U.setup.name = nmi ? nmi.value.trim() : ''; resetTmp(); newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0); window.scrollTo(0, 0); },
   resume: () => { U.page = 1; U.undo = []; S = load(); U.sheet = null; resetTmp(); },
   rules: () => { U.sheet = { type: 'rules' }; },
@@ -2312,6 +2357,78 @@ window.__lg = {
 // Nach „Neueste Version laden“ die gespeicherte Partie direkt fortsetzen
 if (new URLSearchParams(location.search).has('resume')) { try { const sv = load(); if (sv && sv.screen === 'game') H.resume(); } catch (e) { } history.replaceState(null, '', location.pathname); }
 render();
+
+/* ---- Mikro-Interaktionen (fxLite): Zustandsvergleich nach jedem Neuzeichnen, wie bei Glut/Drei Schwestern ----
+   Vorrats-Chips federn und zeigen +n/−n, geänderte Karten/Felder poppen, Fenster und Meldungen gleiten ein,
+   Knöpfe geben beim Drücken nach. prefers-reduced-motion schaltet alles ab. */
+(function(){
+  const CFG={"chips": ".status .gd", "pop": [".hcard", ".fld", ".otile", ".oct", ".terr"], "sheet": ".ov .sheet", "toast": ".toast", "buzz": ".btn,.hcard,.fld"};
+  const RMQ=matchMedia('(prefers-reduced-motion: reduce)');
+  const hash=s=>{let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return h};
+  let prev=null;
+  function snap(){
+    const o={chips:[],pop:{},sheet:!!document.querySelector(CFG.sheet),toast:(document.querySelector(CFG.toast)||{}).textContent||'',start:!!document.querySelector('.start')};
+    document.querySelectorAll(CFG.chips).forEach(e=>{const m=(e.textContent||'').match(/-?\d+/);o.chips.push(m?+m[0]:null)});
+    for(const sel of CFG.pop){o.pop[sel]=[...document.querySelectorAll(sel)].map(e=>hash(e.outerHTML.replace(/\s(?:class|style)="[^"]*"/g,m=>/fxin|fxb/.test(m)?'':m)))}
+    return o;
+  }
+  function floatTxt(el,txt,up){
+    const r=el.getBoundingClientRect();if(!r.width)return;
+    const f=document.createElement('div');f.className='fxfl '+(up?'up':'dn');f.textContent=txt;
+    f.style.left=(r.left+r.width/2)+'px';f.style.top=r.top+'px';document.body.appendChild(f);setTimeout(()=>f.remove(),1100);
+  }
+  function apply(a,b){
+    if(!a||RMQ.matches)return;
+    const app=document.querySelector('#app');
+    if(a.start&&!b.start&&app){app.classList.remove('fxfade');void app.offsetWidth;app.classList.add('fxfade')}
+    const chips=document.querySelectorAll(CFG.chips);
+    if(a.chips.length===b.chips.length)chips.forEach((e,i)=>{const x=a.chips[i],y=b.chips[i];if(x!=null&&y!=null&&x!==y){e.classList.add('fxb');setTimeout(()=>e.classList.remove('fxb'),700);const d=y-x;floatTxt(e,(d>0?'+':'−')+Math.abs(d),d>0)}});
+    for(const sel of CFG.pop){
+      const A=a.pop[sel]||[],B=b.pop[sel]||[],els=document.querySelectorAll(sel);
+      if(!A.length||Math.abs(A.length-B.length)>Math.max(8,A.length*0.6))continue;
+      let n=0;els.forEach((e,i)=>{if(A[i]!==B[i]&&n<14&&!e.closest('.fxfade')){n++;e.classList.add('fxin');setTimeout(()=>e.classList.remove('fxin'),600)}});
+    }
+    const sh=document.querySelector(CFG.sheet);if(sh&&!a.sheet){sh.classList.add('fxsheet');}
+    const to=document.querySelector(CFG.toast);if(to&&to.textContent!==a.toast){to.classList.add('fxtoast')}
+  }
+  const orig=window.render;
+  if(typeof orig!=='function')return;
+  window.render=function(){
+    const before=prev||snap();
+    const r=orig.apply(this,arguments);
+    try{const now=snap();apply(before,now);prev=now}catch(e){}
+    return r;
+  };
+  document.addEventListener('pointerdown',e=>{
+    const b=e.target.closest&&e.target.closest('button,[data-a]');
+    if(b&&!RMQ.matches){if(navigator.vibrate&&b.matches(CFG.buzz))try{navigator.vibrate(6)}catch(_){}}
+  },{passive:true});
+})();
+
+
+/* ---- Lernspiel-Coach verschiebbar: am Coach ziehen, Doppeltippen setzt zurück ---- */
+(function(){
+  let dx=0,dy=0,drag=null;
+  const apply=el=>{if(el)el.style.translate=(dx||dy)?dx+'px '+dy+'px':''};
+  new MutationObserver(()=>{const c=document.getElementById('coach');if(c&&c.style.translate!==((dx||dy)?dx+'px '+dy+'px':''))apply(c)}).observe(document.documentElement,{childList:true,subtree:true});
+  document.addEventListener('pointerdown',e=>{
+    const c=e.target.closest&&e.target.closest('#coach');if(!c||e.target.closest('button,a,input'))return;
+    drag={x:e.clientX,y:e.clientY,dx,dy,moved:false,id:e.pointerId,c};try{c.setPointerCapture(e.pointerId)}catch(_){}
+  });
+  document.addEventListener('pointermove',e=>{
+    if(!drag||e.pointerId!==drag.id)return;
+    const mx=e.clientX-drag.x,my=e.clientY-drag.y;if(!drag.moved&&Math.abs(mx)+Math.abs(my)<6)return;drag.moved=true;
+    const c=drag.c,r=c.getBoundingClientRect(),W=innerWidth,H=innerHeight;
+    let ndx=drag.dx+mx,ndy=drag.dy+my;
+    const cx=r.left-dx+ndx,cy=r.top-dy+ndy; // Position nach der Verschiebung
+    if(cx<-r.width+60)ndx+=(-r.width+60)-cx;if(cx>W-60)ndx-=cx-(W-60);
+    if(cy<8)ndy+=8-cy;if(cy>H-50)ndy-=cy-(H-50);
+    dx=ndx;dy=ndy;apply(c);e.preventDefault();
+  },{passive:false});
+  const end=e=>{if(drag&&e.pointerId===drag.id){drag=null}};
+  document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end);
+  document.addEventListener('dblclick',e=>{const c=e.target.closest&&e.target.closest('#coach');if(c&&!e.target.closest('button,a')){dx=dy=0;apply(c)}});
+})();
 </script>
 </body>
 </html>
