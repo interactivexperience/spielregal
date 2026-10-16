@@ -5391,7 +5391,17 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
   }, [plays]);
   const lastPlays = [...plays].sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 6);
   const dustCollectors = owned.filter(g => !playCounts[g.id]).sort((a, b) => (a.addedDate || "").localeCompare(b.addedDate || "")).slice(0, 6);
-  const topRated = [...owned].filter(g => g.rating).sort((a, b) => parseInt(b.rating) - parseInt(a.rating)).slice(0, 10);
+  // Gleichstand bei der Bewertung: erst mehr Partien, dann zuletzt gespielt,
+  // dann Name -- sonst entscheidet nur die Reihenfolge in den Daten, wer bei
+  // mehreren gleich bewerteten Spielen auf Platz 10 landet.
+  const lastPlayedOn = {};
+  plays.forEach(p => { if (p.date && p.date > (lastPlayedOn[p.gameId] || "")) lastPlayedOn[p.gameId] = p.date; });
+  const topRated = [...owned].filter(g => g.rating).sort((a, b) =>
+    (parseInt(b.rating) - parseInt(a.rating))
+    || ((playCounts[b.id] || 0) - (playCounts[a.id] || 0))
+    || (lastPlayedOn[b.id] || "").localeCompare(lastPlayedOn[a.id] || "")
+    || a.name.localeCompare(b.name, "de")
+  ).slice(0, 10);
   const lentGames = owned.filter(g => g.lentTo && g.lentTo.trim());
   const complexGames = owned.filter(g => g.complexity);
   const avgComplexity = complexGames.length ? (complexGames.reduce((s, g) => s + parseFloat(g.complexity), 0) / complexGames.length).toFixed(1) : "—";
