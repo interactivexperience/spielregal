@@ -1,0 +1,1117 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#B8A2E6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Siedlerhain">
+<title>Siedlerhain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Lexend:wght@400;500;600&display=swap">
+<style>
+/* Siedlerhain (Welcome To…): Naive-Design-Stil nach den Moodboard-Referenzen des Owners.
+   Flache Farbblöcke, dunkles Weinrot als Linienfarbe, wacklige Umrisse, harte Versatzschatten,
+   Blob- und Zackenformen, Bogenkanten. Eigener Stil, nicht von anderen Spielen übernommen. */
+:root{
+  --paper:#F5F2EE; --card:#FFFDF8; --ink:#6B1324; --ink2:#8E4A57;
+  --pink:#F59AC4; --lilac:#B8A2E6; --mint:#8ED9B0; --orange:#F7A21B; --yellow:#FFD23F; --red:#E0402F; --sky:#8FD0EE; --green:#63CE93;
+  --b0:var(--pink); --b1:var(--lilac); --b2:var(--mint);
+  --plate:#FFF8EE; --plate-ink:#6B1324; --dock:#FFD23F; --dock-ink:#6B1324; --hero:#B8A2E6;
+  --fd:'Dela Gothic One','Arial Black',system-ui,sans-serif;
+  --fb:'Lexend',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --g:4px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#170F1F; --card:#2A1B33; --ink:#F6E3DA; --ink2:#C9A9A6;
+    --b0:#9C3E70; --b1:#5C4A99; --b2:#2E7358; --red:#F0604B; --yellow:#E9BC22; --dock:#E9BC22; --hero:#5C4A99;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#170F1F; --card:#2A1B33; --ink:#F6E3DA; --ink2:#C9A9A6;
+  --b0:#9C3E70; --b1:#5C4A99; --b2:#2E7358; --red:#F0604B; --yellow:#E9BC22; --dock:#E9BC22; --hero:#5C4A99;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;position:fixed;inset:0;width:100%;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);
+  font:400 15px/1.4 var(--fb);-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-text-size-adjust:100%}
+h1,h2,h3,p{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:inherit}
+button:disabled{cursor:default}
+button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+a{color:inherit}
+#app{position:fixed;inset:0;display:flex;flex-direction:column}
+.disp{font-family:var(--fd);font-weight:400}
+
+/* Kopf */
+.thead{flex:none;background:var(--paper);border-bottom:2.5px solid var(--ink);display:flex;align-items:center;gap:8px;
+  padding:max(8px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px))}
+.leave{font:600 13px/1 var(--fb);text-decoration:none;color:var(--ink);padding:10px 4px;display:inline-block}
+.thead h1{font:400 19px/1 var(--fd);letter-spacing:-.01em;flex:1;min-width:0;white-space:nowrap}
+.pill{border:2px solid var(--ink);border-radius:999px;padding:3px 9px 4px;background:var(--card);box-shadow:2px 2px 0 var(--ink);
+  display:flex;flex-direction:column;align-items:center;min-width:50px}
+.pill b{font:400 15px/1.05 var(--fd)}
+.pill small{font:600 8px/1 var(--fb);letter-spacing:.09em;text-transform:uppercase;color:var(--ink2);margin-top:1px}
+.pill.pts{background:var(--pink);color:#6B1324}
+.pill.pts small{color:#6B1324;opacity:.8}
+.pill.bump{animation:bump .5s ease-out}
+.mbtn{width:38px;height:38px;border:2.5px solid var(--ink);border-radius:50% 46% 52% 48%;background:var(--orange);color:#6B1324;font:400 17px/1 var(--fd);
+  box-shadow:2px 2px 0 var(--ink);display:grid;place-items:center;flex:none}
+.mbtn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+
+/* Spielfläche */
+.main{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  padding:16px max(16px,env(safe-area-inset-right,0px)) 22px max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.label{font:600 11px/1 var(--fb);letter-spacing:.09em;text-transform:uppercase;color:var(--ink2)}
+.hand{font:400 13px/1.3 var(--fb);color:var(--ink2)}
+
+/* Stadtpläne */
+.plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:8px}
+.plan{background:var(--card);border:2.5px solid var(--ink);border-radius:12px 14px 11px 15px/14px 11px 15px 12px;padding:8px 8px 9px;box-shadow:3px 3px 0 var(--ink);
+  display:flex;flex-direction:column;gap:7px;min-width:0}
+.plan.done{background:var(--green);color:#6B1324}
+.plan b{font:400 14px/1 var(--fd)}
+.plan .pd{font-size:10.5px;line-height:1.25;margin-top:3px;display:block;color:var(--ink2)}
+.plan.done .pd{color:#6B1324;font-weight:600}
+.req{display:flex;flex-wrap:wrap;gap:4px}
+.sz{width:22px;height:22px;display:grid;place-items:center;border:2px solid var(--ink);border-radius:6px 7px 5px 7px;font:400 12px/1 var(--fd);background:transparent}
+.sz.ok{background:var(--green);color:#6B1324}
+.plan.done .sz{background:var(--card);color:#6B1324;border-color:#6B1324}
+
+/* Straßen */
+.street{background:var(--bc);border:2.5px solid var(--ink);border-radius:16px 20px 14px 22px/20px 14px 22px 16px;padding:10px 9px 9px;box-shadow:4px 4px 0 var(--ink);
+  display:flex;flex-direction:column;gap:3px;color:var(--ink)}
+.street[data-s="0"]{--bc:var(--b0)}.street[data-s="1"]{--bc:var(--b1)}.street[data-s="2"]{--bc:var(--b2)}
+.shead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
+.shead h3{font:400 14px/1.1 var(--fd)}
+.shead h3 span{font:500 11px/1 var(--fb);margin-left:6px;opacity:.8}
+.parks{display:flex;gap:4px}
+.ptok{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--ink);background:rgba(255,255,255,.4);font:400 10.5px/1 var(--fd);color:var(--ink)}
+.ptok.on{background:var(--green);color:#6B1324;border-color:#6B1324}
+.row{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));column-gap:var(--g);position:relative}
+.house{position:relative;aspect-ratio:5/6;border-radius:5px 6px 5px 6px;border:1.5px dashed color-mix(in srgb,var(--ink) 55%,transparent);background:rgba(255,255,255,.28);
+  display:grid;place-items:center;font:400 12.5px/1 var(--fd);color:var(--plate-ink);padding:0;text-align:center;min-width:0}
+.house.filled{background:var(--plate);border:2px solid #6B1324;box-shadow:1.5px 1.5px 0 #6B1324}
+.house.dup::after{content:"";position:absolute;top:-4px;right:-3px;width:8px;height:8px;border-radius:50%;background:var(--orange);border:1.5px solid #6B1324}
+.house.ok{border:2.5px solid #6B1324;background:var(--yellow);cursor:pointer;animation:wig 1.3s ease-in-out infinite}
+.house.ok .ghost{opacity:.7}
+.house.pop{animation:pop .45s cubic-bezier(.3,1.6,.5,1)}
+@keyframes wig{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg) translateY(-1px)}}
+@keyframes pop{0%{transform:scale(.3) rotate(-14deg)}100%{transform:none}}
+@keyframes bump{40%{transform:scale(1.18) rotate(-3deg)}}
+.fence{position:absolute;top:-4px;bottom:-4px;width:6px;transform:translateX(-50%);border-radius:3px 3px 1px 1px;background:var(--red);border:1.5px solid #6B1324;pointer-events:none;
+  left:calc((100% - (var(--n) - 1) * var(--g)) / var(--n) * var(--k) + var(--g) * (var(--k) - .5))}
+.fence.pop{animation:pop .4s cubic-bezier(.3,1.6,.5,1)}
+.gap{position:absolute;top:-8px;bottom:-8px;width:22px;transform:translateX(-50%);z-index:2;
+  left:calc((100% - (var(--n) - 1) * var(--g)) / var(--n) * var(--k) + var(--g) * (var(--k) - .5))}
+.gap::before{content:"";position:absolute;left:50%;top:5px;bottom:5px;border-left:3px dashed var(--red);transform:translateX(-50%);z-index:1}
+.gap::after{content:"";position:absolute;top:0;bottom:0;left:50%;width:10px;margin-left:-5px;background:var(--yellow);border:1.5px solid #6B1324;border-radius:6px;animation:wig 1.3s ease-in-out infinite}
+.poolrow,.estrow{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));column-gap:var(--g);align-items:center}
+.poolrow{height:16px;margin-top:2px}
+.pool{grid-row:1;justify-self:center;width:13px;height:13px;border-radius:50% 45% 52% 48%;border:2px solid var(--ink);background:transparent}
+.pool.on{background:var(--sky);border-color:#6B1324}
+.estrow{margin-top:2px}
+.est{grid-row:1;height:17px;position:relative;border-bottom:2px solid var(--ink);display:flex;justify-content:center;align-items:flex-start;font:400 11px/1 var(--fd);min-width:0}
+.est::before,.est::after{content:"";position:absolute;bottom:-5px;height:8px;border-left:2px solid var(--ink)}
+.est::before{left:0}.est::after{right:0}
+.est.done{color:#6B1324;border-color:#6B1324}
+.est.done::before,.est.done::after{border-color:#6B1324}
+.est.done b{background:var(--green);border:1.5px solid #6B1324;border-radius:8px;padding:2px 6px 1px;margin-top:-4px}
+
+/* Zähler */
+.stats{display:flex;flex-direction:column;gap:9px}
+.estgrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.cgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.cell{background:var(--card);border:2px solid var(--ink);border-radius:10px 12px 9px 12px;padding:6px 3px 5px;text-align:center;display:flex;flex-direction:column;gap:2px;min-width:0;box-shadow:2px 2px 0 var(--ink)}
+.cell small{font-size:10px;color:var(--ink2);line-height:1.2}
+.cell b{font:400 19px/1.05 var(--fd)}
+.pips{display:flex;justify-content:center;gap:3px;min-height:7px}
+.pip{width:7px;height:7px;border-radius:50%;border:1.5px solid var(--ink)}
+.pip.on{background:var(--orange)}
+details{background:var(--card);border:2px solid var(--ink);border-radius:12px;padding:10px 12px;box-shadow:3px 3px 0 var(--ink)}
+summary{cursor:pointer;font:400 14px/1.2 var(--fd)}
+details[open] summary{margin-bottom:8px}
+.lines{width:100%;border-collapse:collapse;font-size:13px}
+.lines td{padding:4px 0;border-top:1.5px dashed color-mix(in srgb,var(--ink) 35%,transparent)}
+.lines td:last-child{text-align:right;font:400 15px/1 var(--fd)}
+.lines .d{color:var(--ink2);font-size:11.5px;padding-left:8px}
+.lines tr.neg td:last-child{color:var(--red)}
+
+/* Ergebnis */
+.result{background:var(--orange);color:#6B1324;border:2.5px solid #6B1324;border-radius:20px 16px 22px 14px/16px 22px 14px 20px;padding:18px 16px 16px;box-shadow:5px 5px 0 #6B1324;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden}
+.result .eyebrow{font:600 11px/1 var(--fb);letter-spacing:.09em;text-transform:uppercase}
+.result h2{font:400 46px/1 var(--fd);letter-spacing:-.02em}
+.result .rank{font:400 17px/1.2 var(--fd)}
+.result .why{font-size:13px}
+.result .lines td{border-color:rgba(107,19,36,.35)}
+.result .lines .d{color:#6B1324;opacity:.8}
+.result .lines tr.neg td:last-child{color:#6B1324;text-decoration:underline wavy}
+.result .stern{position:absolute;right:-26px;top:-26px;width:120px;height:120px;opacity:.9}
+
+/* Knöpfe */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:2.5px solid #6B1324;border-radius:999px;padding:11px 20px;font:400 15px/1 var(--fd);
+  background:var(--card);color:#6B1324;box-shadow:3px 3px 0 #6B1324;text-align:center}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #6B1324}
+.btn.pri{background:var(--orange)}
+.btn.pink{background:var(--pink)}
+.btn.sm{padding:7px 13px;font-size:12.5px;box-shadow:2px 2px 0 #6B1324}
+.btn.arm{background:var(--red);color:#fff}
+.btn.hot{background:var(--yellow)}
+.btn:disabled{opacity:.45}
+.tlink{font:600 13px/1 var(--fb);text-decoration:underline;text-underline-offset:3px;padding:8px;text-align:center}
+
+/* Eingabeleiste */
+.dock{flex:none;position:relative;background:var(--dock);color:var(--dock-ink);margin-top:12px;
+  padding:12px max(14px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
+.dock::before{content:"";position:absolute;left:0;right:0;top:-10px;height:10px;pointer-events:none;
+  background:radial-gradient(circle at 11px 11px,var(--dock) 10px,transparent 10.5px) 0 0/22px 10px repeat-x}
+.dinner{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:9px}
+.prompt{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13.5px;line-height:1.3;min-height:32px;font-weight:500}
+.prompt p{min-width:0}
+.prompt b{font:400 16px/1 var(--fd)}
+.combos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.combo{background:var(--plate);color:var(--plate-ink);border:2.5px solid #6B1324;border-radius:14px 12px 16px 12px/12px 16px 12px 14px;box-shadow:3px 3px 0 #6B1324;
+  padding:9px 5px 9px;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;text-align:center}
+.combo:not(:disabled):active{transform:translate(2px,2px);box-shadow:1px 1px 0 #6B1324}
+.combo.dead{opacity:.4}
+.combo.tut-hl,.chip.tut-hl,.btn.tut-hl{outline:4px solid var(--red);outline-offset:3px;animation:wig 1.1s ease-in-out infinite}
+.num{display:grid;place-items:center;min-width:50px;height:50px;padding:0 6px;border:2.5px solid #6B1324;border-radius:7px 8px 7px 9px;background:#fff;
+  font:400 30px/1 var(--fd);box-shadow:inset 0 0 0 2px #fff,inset 0 0 0 3px rgba(107,19,36,.35)}
+.eff{display:flex;align-items:center;justify-content:center;gap:4px;font:400 11.5px/1.1 var(--fd);flex-wrap:wrap}
+.act{font-size:10.5px;line-height:1.2;color:var(--ink2);font-weight:500}
+.ico{width:19px;height:19px;stroke:#6B1324;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none;fill:none}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:2.5px solid #6B1324;border-radius:12px 14px 11px 13px;background:var(--plate);color:#6B1324;padding:6px 13px;display:flex;flex-direction:column;align-items:center;min-width:56px;box-shadow:2px 2px 0 #6B1324}
+.chip b{font:400 22px/1 var(--fd)}
+.chip small{font-size:10.5px;color:#8E4A57}
+.chip:disabled{opacity:.35}
+.chip:not(:disabled):active{transform:translate(1px,1px);box-shadow:1px 1px 0 #6B1324}
+
+/* Coach */
+.coach{flex:none;background:var(--lilac);color:#6B1324;border-top:2.5px solid #6B1324;padding:10px max(14px,env(safe-area-inset-right,0px)) 10px max(14px,env(safe-area-inset-left,0px))}
+.cin{max-width:520px;margin:0 auto;display:flex;gap:10px;align-items:flex-start}
+.cin svg{width:58px;height:58px;flex:none}
+.cin .tx{flex:1;min-width:0;font-size:13.5px;line-height:1.35;font-weight:500;display:flex;flex-direction:column;gap:8px}
+.cin .tx b{font:400 13px/1 var(--fd)}
+.cin .row2{display:flex;gap:8px}
+.coach .btn{box-shadow:2px 2px 0 #6B1324}
+
+/* Fenster */
+.ov{position:fixed;inset:0;z-index:20;background:rgba(40,10,30,.55);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:560px;max-height:88%;overflow-y:auto;background:var(--paper);border:2.5px solid var(--ink);border-bottom:0;border-radius:24px 24px 0 0;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) max(18px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));animation:up .25s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+.sh{position:sticky;top:0;background:var(--paper);display:flex;justify-content:space-between;align-items:center;padding:14px 0 10px;z-index:1}
+.sh h2{font:400 22px/1 var(--fd)}
+.xbtn{width:36px;height:36px;border:2.5px solid var(--ink);border-radius:50%;display:grid;place-items:center;font:400 14px/1 var(--fd);background:var(--card);box-shadow:2px 2px 0 var(--ink)}
+.menu{display:flex;flex-direction:column;gap:10px;padding-bottom:6px}
+.menu .btn{width:100%;justify-content:flex-start;padding:13px 18px}
+.rules{display:flex;flex-direction:column;gap:12px;font-size:14px;line-height:1.45}
+.rules h3{font:400 15px/1.1 var(--fd);margin-top:4px}
+.rules ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.rules .fine{font-size:12.5px;color:var(--ink2)}
+
+/* Info-Blase und Hinweis */
+.bub{position:fixed;z-index:40;max-width:250px;background:var(--ink);color:var(--paper);border-radius:12px 14px 12px 14px;padding:9px 12px;font-size:12.5px;line-height:1.35;box-shadow:3px 3px 0 var(--orange);pointer-events:none}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 190px);transform:translateX(-50%);z-index:45;max-width:86%;background:var(--red);color:#fff;border:2.5px solid #6B1324;border-radius:14px;padding:9px 14px;
+  font-size:13px;font-weight:500;box-shadow:3px 3px 0 #6B1324;text-align:center;animation:up .2s ease-out}
+.fl{position:fixed;z-index:35;font:400 20px/1 var(--fd);color:var(--orange);text-shadow:2px 2px 0 #6B1324;pointer-events:none;animation:fl 1.1s ease-out forwards}
+@keyframes fl{to{transform:translateY(-46px);opacity:0}}
+
+/* Startseite */
+.start{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--hero)}
+.stage{flex:1;min-height:0;position:relative;overflow:hidden}
+.stage svg.cover{position:absolute;inset:0;width:100%;height:100%;display:block}
+.start .leave{position:absolute;z-index:3;left:max(10px,env(safe-area-inset-left,0px));top:max(6px,env(safe-area-inset-top,0px));background:var(--paper);border:2.5px solid #6B1324;border-radius:999px;color:#6B1324;padding:9px 14px;box-shadow:2px 2px 0 #6B1324}
+.sdock{flex:none;position:relative;background:var(--paper);padding:16px max(16px,env(safe-area-inset-right,0px)) max(14px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  display:flex;flex-direction:column;gap:10px;align-items:stretch}
+.sdock::before{content:"";position:absolute;left:0;right:0;top:-10px;height:10px;pointer-events:none;
+  background:radial-gradient(circle at 11px 11px,var(--paper) 10px,transparent 10.5px) 0 0/22px 10px repeat-x}
+.sdock .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sdock .btn{width:100%}
+.sdock .tag{text-align:center;font-size:12.5px;color:var(--ink2);font-weight:500}
+
+@media (prefers-reduced-motion: reduce){
+  .house.ok,.gap::after,.tut-hl,.pill.bump,.house.pop,.fence.pop,.sheet,.toast,.fl{animation:none!important}
+}
+@media (max-width:360px){.thead h1{font-size:17px}.plan{padding:7px 6px}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.Siedler = api;
+})(typeof window !== 'undefined' ? window : globalThis, function () {
+  'use strict';
+
+  // ---------- Konstanten ----------
+  const LEN = [10, 11, 12];
+  const MAXN = 17;
+  const PARK_VALUES = [[2, 4, 10], [2, 4, 6, 14], [2, 4, 6, 8, 18]];
+  const POOL_SPOTS = [[1, 5, 8], [2, 6, 9], [0, 4, 7, 11]];
+  const POOL_SCORE = [0, 3, 6, 9, 13, 17, 21, 26, 31, 36, 40];
+  const TEMP_SCORE = [0, 1, 3, 6, 9, 12, 16, 20, 24, 28];
+  const BIS_SCORE = [0, -1, -3, -6, -9, -12, -16, -20, -24, -28];
+  const REFUSAL_TOTAL = [0, 0, -3, -5];
+  const EST_VALUES = [[1, 3], [2, 3, 4], [3, 4, 5, 6], [4, 5, 6, 7, 8], [5, 6, 7, 8, 10], [6, 7, 8, 10, 12]];
+  const EST_CAP = [1, 2, 3, 3, 2, 1];
+  const PLAN_LEVELS = [
+    { name: 'A', first: 6, second: 3, deadline: 12, opts: [[3, 3, 2], [4, 3, 1], [4, 2, 2]] },
+    { name: 'B', first: 8, second: 4, deadline: 17, opts: [[4, 4, 3], [5, 3, 2], [5, 4, 1]] },
+    { name: 'C', first: 11, second: 6, deadline: 22, opts: [[6, 4, 3, 2], [5, 5, 4, 2], [6, 5, 4]] }
+  ];
+  const EFFECTS = ['fence', 'agent', 'park', 'pool', 'temp', 'bis'];
+  const EFFECT_COUNTS = [14, 14, 14, 13, 13, 13];
+  const NUM_COUNTS = [1, 2, 3, 4, 6, 7, 8, 9, 10, 9, 8, 6, 4, 3, 1]; // Nummern 1..15, zusammen 81
+  const GOAL = 50; // ab dieser Punktzahl gilt die Solo-Partie als gewonnen
+  const RANKS = [
+    [90, 'Musterstadt'],
+    [70, 'Gefragte Wohnlage'],
+    [50, 'Wachsendes Quartier'],
+    [30, 'Gemeinde im Aufbau'],
+    [-999, 'Erster Spatenstich']
+  ];
+
+  // ---------- Helfer ----------
+  function shuffle(a, rnd) {
+    rnd = rnd || Math.random;
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      const t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function makeDeck(rnd) {
+    const nums = [];
+    NUM_COUNTS.forEach((c, k) => { for (let j = 0; j < c; j++) nums.push(k + 1); });
+    const effs = [];
+    EFFECTS.forEach((e, k) => { for (let j = 0; j < EFFECT_COUNTS[k]; j++) effs.push(e); });
+    shuffle(nums, rnd); shuffle(effs, rnd);
+    return nums.map((n, i) => ({ n, e: effs[i] }));
+  }
+
+  function drawCard(st, s, rnd) {
+    if (!st.stacks[s].length) {
+      const pool = st.discard.splice(0);
+      shuffle(pool, rnd);
+      pool.forEach((c, i) => st.stacks[i % 3].push(c));
+    }
+    return st.stacks[s].pop();
+  }
+
+  // ---------- Regeln: Platzieren ----------
+  function canPlace(houses, s, i, n, ignore) {
+    const row = houses[s];
+    if (row[i] !== 0) return false;
+    if (n < 1 || n > MAXN) return false;
+    for (let j = 0; j < row.length; j++) {
+      if (j === i || j === ignore || row[j] === 0) continue;
+      if (j < i && row[j] >= n) return false;
+      if (j > i && row[j] <= n) return false;
+    }
+    return true;
+  }
+
+  function validSlots(st, n) {
+    const res = [];
+    for (let s = 0; s < 3; s++)
+      for (let i = 0; i < LEN[s]; i++)
+        if (canPlace(st.houses, s, i, n)) res.push([s, i]);
+    return res;
+  }
+
+  function hasSlot(houses, n) {
+    for (let s = 0; s < 3; s++)
+      for (let i = 0; i < LEN[s]; i++)
+        if (canPlace(houses, s, i, n)) return true;
+    return false;
+  }
+
+  function adjustOptions(st, c) {
+    const out = [];
+    const ds = c.e === 'temp' ? [-2, -1, 0, 1, 2] : [0];
+    ds.forEach(d => {
+      const n = c.n + d;
+      if (n >= 1 && n <= MAXN && hasSlot(st.houses, n)) out.push({ d, n });
+    });
+    return out;
+  }
+
+  function freeGaps(st, s) {
+    const r = [];
+    st.fences[s].forEach((f, g) => { if (!f) r.push(g); });
+    return r;
+  }
+
+  function agentSizes(st) {
+    const r = [];
+    for (let k = 0; k < 6; k++) if (st.marks[k] < EST_VALUES[k].length - 1) r.push(k + 1);
+    return r;
+  }
+
+  function dupTargets(st) {
+    if (!st.sel || !st.sel.pos) return [];
+    const { s, i } = st.sel.pos;
+    const res = [];
+    [i - 1, i + 1].forEach(k => {
+      if (k >= 0 && k < LEN[s] && canPlace(st.houses, s, k, st.sel.n, i)) res.push(k);
+    });
+    return res;
+  }
+
+  // ---------- Siedlungen & Pläne ----------
+  function estates(st, s) {
+    const res = [];
+    const n = LEN[s];
+    let a = 0;
+    for (let i = 0; i < n; i++) {
+      if (i === n - 1 || st.fences[s][i]) {
+        const slice = st.houses[s].slice(a, i + 1);
+        res.push({ s, a, b: i + 1, size: i + 1 - a, complete: slice.every(x => x > 0) });
+        a = i + 1;
+      }
+    }
+    return res;
+  }
+
+  function completedCounts(st) {
+    const c = [0, 0, 0, 0, 0, 0, 0];
+    for (let s = 0; s < 3; s++)
+      estates(st, s).forEach(e => { if (e.complete && e.size <= 6) c[e.size]++; });
+    return c;
+  }
+
+  function planReq(st, k) { return PLAN_LEVELS[k].opts[st.planOpt[k]]; }
+
+  function planProgress(st, k) {
+    const req = planReq(st, k);
+    const counts = completedCounts(st);
+    const used = {};
+    const filled = req.map(sz => {
+      used[sz] = (used[sz] || 0) + 1;
+      return counts[sz] >= used[sz];
+    });
+    return { req, filled, complete: filled.every(Boolean) };
+  }
+
+  function updatePlans(st) {
+    for (let k = 0; k < 3; k++) {
+      if (st.planDone[k]) continue;
+      if (planProgress(st, k).complete) {
+        const L = PLAN_LEVELS[k];
+        const early = st.round <= L.deadline;
+        st.planDone[k] = { round: st.round, early, pts: early ? L.first : L.second };
+      }
+    }
+  }
+
+  // ---------- Wertung ----------
+  function clampIdx(arr, v) { return arr[Math.min(v, arr.length - 1)]; }
+
+  function score(st) {
+    const lines = [];
+    let total = 0;
+    const add = (group, label, detail, pts) => { lines.push({ group, label, detail, pts }); total += pts; };
+
+    let plans = 0;
+    for (let k = 0; k < 3; k++) {
+      const d = st.planDone[k];
+      if (d) { plans += d.pts; add('plans', 'Stadtplan ' + PLAN_LEVELS[k].name, 'Runde ' + d.round + (d.early ? ' · rechtzeitig' : ' · verspätet'), d.pts); }
+      else add('plans', 'Stadtplan ' + PLAN_LEVELS[k].name, 'nicht erfüllt', 0);
+    }
+    let parks = 0;
+    for (let s = 0; s < 3; s++) {
+      const v = st.parks[s] ? PARK_VALUES[s][st.parks[s] - 1] : 0;
+      parks += v;
+      add('parks', 'Parks Straße ' + (s + 1), st.parks[s] + ' von ' + PARK_VALUES[s].length, v);
+    }
+    let poolCount = 0;
+    st.pools.forEach(r => r.forEach(p => { if (p) poolCount++; }));
+    const poolPts = clampIdx(POOL_SCORE, poolCount);
+    add('pools', 'Pools', poolCount + ' von 10', poolPts);
+
+    const counts = completedCounts(st);
+    let est = 0;
+    for (let k = 0; k < 6; k++) {
+      const size = k + 1;
+      const counted = Math.min(counts[size], EST_CAP[k]);
+      const v = EST_VALUES[k][st.marks[k]];
+      est += counted * v;
+      add('estates', 'Siedlungen Größe ' + size, counted + ' × ' + v, counted * v);
+    }
+    const tempPts = clampIdx(TEMP_SCORE, st.temps);
+    add('temps', 'Zeitarbeit', st.temps + '× genutzt', tempPts);
+    const bisPts = clampIdx(BIS_SCORE, st.bis);
+    add('bis', 'Doppelhäuser', st.bis + '× gebaut', bisPts);
+    const refPts = REFUSAL_TOTAL[Math.min(st.refusals, 3)];
+    add('refusals', 'Abgelehnte Anträge', st.refusals + ' von 3', refPts);
+
+    return { total, lines, plans, parks, pools: poolPts, estates: est, temps: tempPts, bis: bisPts, refusals: refPts, poolCount };
+  }
+
+  function rank(total) {
+    for (const [min, name] of RANKS) if (total >= min) return name;
+    return RANKS[RANKS.length - 1][1];
+  }
+
+  // ---------- Spielablauf ----------
+  function boardFull(st) {
+    return st.houses.every(r => r.every(v => v > 0));
+  }
+
+  function isOver(st) {
+    if (st.planDone.every(Boolean)) { st.endReason = 'plans'; return true; }
+    if (st.refusals >= 3) { st.endReason = 'refusals'; return true; }
+    if (boardFull(st)) { st.endReason = 'full'; return true; }
+    return false;
+  }
+
+  function startTurn(st, rnd) {
+    st.round++;
+    st.fresh = [0, 1, 2].map(s => drawCard(st, s, rnd));
+    st.combos = [0, 1, 2].map(s => ({ n: st.fresh[s].n, e: st.prev[s].e }));
+    st.sel = null;
+    st.phase = 'choose';
+  }
+
+  function finishTurn(st, rnd) {
+    updatePlans(st);
+    st.sel = null;
+    if (isOver(st)) { st.phase = 'over'; return; }
+    st.prev.forEach(c => st.discard.push(c));
+    st.prev = st.fresh.slice();
+    st.fresh = [null, null, null];
+    startTurn(st, rnd);
+  }
+
+  function newGame(rnd) {
+    rnd = rnd || Math.random;
+    const st = {
+      v: 1,
+      houses: LEN.map(n => Array(n).fill(0)),
+      dups: LEN.map(n => Array(n).fill(false)),
+      fences: LEN.map(n => Array(n - 1).fill(false)),
+      pools: LEN.map(n => Array(n).fill(false)),
+      parks: [0, 0, 0],
+      marks: [0, 0, 0, 0, 0, 0],
+      temps: 0, bis: 0, refusals: 0,
+      planOpt: PLAN_LEVELS.map(l => Math.floor(rnd() * l.opts.length)),
+      planDone: [null, null, null],
+      round: 0,
+      stacks: [[], [], []], discard: [],
+      prev: [null, null, null], fresh: [null, null, null],
+      combos: [], sel: null, phase: 'choose', endReason: null
+    };
+    makeDeck(rnd).forEach((c, i) => st.stacks[i % 3].push(c));
+    for (let s = 0; s < 3; s++) st.prev[s] = drawCard(st, s, rnd);
+    startTurn(st, rnd);
+    return st;
+  }
+
+  // ---------- Aktionen ----------
+  function choose(st, idx) {
+    if (st.phase !== 'choose') return false;
+    const c = st.combos[idx];
+    if (!c) return false;
+    const opts = adjustOptions(st, c);
+    if (!opts.length) return false;
+    st.sel = { idx, e: c.e, n: c.n, opts, tempUsed: false, pos: null };
+    st.phase = c.e === 'temp' ? 'adjust' : 'place';
+    return true;
+  }
+
+  function adjust(st, d) {
+    if (st.phase !== 'adjust') return false;
+    const o = st.sel.opts.find(x => x.d === d);
+    if (!o) return false;
+    st.sel.n = o.n;
+    if (d !== 0) { st.temps++; st.sel.tempUsed = true; }
+    st.phase = 'place';
+    return true;
+  }
+
+  function cancel(st) {
+    if (st.phase !== 'adjust' && st.phase !== 'place') return false;
+    if (st.sel && st.sel.tempUsed) st.temps--;
+    st.sel = null;
+    st.phase = 'choose';
+    return true;
+  }
+
+  function place(st, s, i, rnd) {
+    if (st.phase !== 'place') return false;
+    if (!canPlace(st.houses, s, i, st.sel.n)) return false;
+    st.houses[s][i] = st.sel.n;
+    st.sel.pos = { s, i };
+    const e = st.sel.e;
+    if (e === 'park') {
+      if (st.parks[s] < PARK_VALUES[s].length) st.parks[s]++;
+    } else if (e === 'pool') {
+      if (POOL_SPOTS[s].indexOf(i) >= 0) st.pools[s][i] = true;
+    } else if (e === 'fence') {
+      if (freeGaps(st, s).length) { st.phase = 'fence'; return true; }
+    } else if (e === 'agent') {
+      if (agentSizes(st).length) { st.phase = 'agent'; return true; }
+    } else if (e === 'bis') {
+      if (dupTargets(st).length) { st.phase = 'dup'; return true; }
+    }
+    finishTurn(st, rnd);
+    return true;
+  }
+
+  function placeFence(st, g, rnd) {
+    if (st.phase !== 'fence') return false;
+    const s = st.sel.pos.s;
+    if (st.fences[s][g] !== false) return false;
+    st.fences[s][g] = true;
+    finishTurn(st, rnd);
+    return true;
+  }
+
+  function markAgent(st, size, rnd) {
+    if (st.phase !== 'agent') return false;
+    if (agentSizes(st).indexOf(size) < 0) return false;
+    st.marks[size - 1]++;
+    finishTurn(st, rnd);
+    return true;
+  }
+
+  function placeDup(st, k, rnd) {
+    if (st.phase !== 'dup') return false;
+    if (dupTargets(st).indexOf(k) < 0) return false;
+    const s = st.sel.pos.s;
+    st.houses[s][k] = st.sel.n;
+    st.dups[s][k] = true;
+    st.bis++;
+    finishTurn(st, rnd);
+    return true;
+  }
+
+  function skip(st, rnd) {
+    if (st.phase !== 'fence' && st.phase !== 'agent' && st.phase !== 'dup') return false;
+    finishTurn(st, rnd);
+    return true;
+  }
+
+  function refuse(st, rnd) {
+    if (st.phase !== 'choose') return false;
+    st.refusals++;
+    finishTurn(st, rnd);
+    return true;
+  }
+
+  return {
+    GOAL, LEN, MAXN, PARK_VALUES, POOL_SPOTS, POOL_SCORE, TEMP_SCORE, BIS_SCORE, REFUSAL_TOTAL,
+    EST_VALUES, EST_CAP, PLAN_LEVELS, EFFECTS,
+    newGame, choose, adjust, cancel, place, placeFence, markAgent, placeDup, skip, refuse,
+    validSlots, adjustOptions, dupTargets, freeGaps, agentSizes,
+    estates, completedCounts, planProgress, planReq, score, rank, canPlace
+  };
+});
+
+</script>
+<script>
+(function () {
+  'use strict';
+  const G = window.Siedler;
+  const app = document.getElementById('app');
+  const SAVE = 'welcome-to:save';
+  const INBOX = 'spielregal:inbox:plays';
+  const INK = '#6B1324';
+  const NAMES = ['Lindenweg', 'Bachstraße', 'Kastanienallee'];
+  const U = { view: 'start', sheet: null, tut: null, arm: false };
+  let S = null;
+
+  // ---------- Zufall, Blobs, Strichschrift ----------
+  function rng(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  const f1 = n => Math.round(n * 10) / 10;
+  function blob(cx, cy, rx, ry, n, j, seed) {
+    const R = rng(seed), pts = [];
+    for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2, k = 1 + (R() - .5) * 2 * j; pts.push([cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]); }
+    const mid = (p, q) => [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
+    const m0 = mid(pts[n - 1], pts[0]);
+    let d = 'M' + f1(m0[0]) + ' ' + f1(m0[1]);
+    for (let i = 0; i < n; i++) { const p = pts[i], m = mid(p, pts[(i + 1) % n]); d += 'Q' + f1(p[0]) + ' ' + f1(p[1]) + ' ' + f1(m[0]) + ' ' + f1(m[1]); }
+    return d + 'Z';
+  }
+  function poly(pts, j, seed) {
+    const R = rng(seed);
+    return 'M' + pts.map(p => f1(p[0] + (R() - .5) * 2 * j) + ' ' + f1(p[1] + (R() - .5) * 2 * j)).join('L') + 'Z';
+  }
+  function burst(cx, cy, r1, r2, n, seed) {
+    const R = rng(seed), pts = [];
+    for (let i = 0; i < n * 2; i++) { const a = i / (n * 2) * Math.PI * 2 - Math.PI / 2, r = (i % 2 ? r1 : r2) * (1 + (R() - .5) * .16); pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]); }
+    return 'M' + pts.map(p => f1(p[0]) + ' ' + f1(p[1])).join('L') + 'Z';
+  }
+  function spiral(cx, cy, r0, turns) {
+    let d = '';
+    for (let t = 0; t <= turns * 6.283; t += .2) { const r = r0 * (t / (turns * 6.283)); d += (t ? 'L' : 'M') + f1(cx + Math.cos(t) * r) + ' ' + f1(cy + Math.sin(t) * r); }
+    return d;
+  }
+  // Strichschrift (nur die Zeichen, die das Cover braucht), Höhe 60, gleichmäßige Linie
+  const GL = {
+    S: { w: 38, d: ['M32 14C28 4 6 4 6 18C6 32 32 28 32 44C32 58 8 58 4 48'] },
+    i: { w: 14, d: ['M7 24L7 60', 'M7 7L7 8'] },
+    e: { w: 38, d: ['M6 42L32 42C32 28 24 24 19 24C10 24 6 32 6 42C6 52 12 60 21 60C27 60 31 57 33 53'] },
+    d: { w: 36, d: ['M30 0L30 60', 'M30 42C30 30 24 24 17 24C9 24 5 32 5 42C5 52 9 60 17 60C24 60 30 54 30 42'] },
+    l: { w: 14, d: ['M7 0L7 60'] },
+    r: { w: 32, d: ['M8 24L8 60', 'M8 38C8 28 16 24 28 26'] },
+    h: { w: 38, d: ['M8 0L8 60', 'M8 38C8 28 16 24 22 24C30 24 32 32 32 40L32 60'] },
+    a: { w: 36, d: ['M30 24L30 60', 'M30 42C30 30 24 24 17 24C9 24 5 32 5 42C5 52 9 60 17 60C24 60 30 54 30 42'] },
+    n: { w: 38, d: ['M8 24L8 60', 'M8 38C8 28 16 24 22 24C30 24 32 32 32 40L32 60'] },
+    '.': { w: 12, d: ['M6 58L6 60'] },
+    '1': { w: 24, d: ['M4 16L14 6L14 60'] },
+    '2': { w: 34, d: ['M5 16C5 4 29 4 29 18C29 30 7 44 5 58L31 58'] },
+    '3': { w: 34, d: ['M5 10C11 2 29 4 29 16C29 27 14 28 14 28C30 28 31 36 31 46C31 62 9 62 3 52'] },
+    '7': { w: 32, d: ['M5 6L30 6L15 60'] }
+  };
+  function glyphs(str, x, y, sc, sw, col) {
+    let cx = 0, out = '';
+    for (const ch of str) { const g = GL[ch]; if (!g) { cx += 14; continue; } out += g.d.map(d => '<path d="' + d + '" transform="translate(' + cx + ' 0)"/>').join(''); cx += g.w + 8; }
+    return '<g transform="translate(' + x + ' ' + y + ') scale(' + sc + ')" fill="none" stroke="' + col + '" stroke-width="' + sw + '" stroke-linecap="round" stroke-linejoin="round">' + out + '</g>';
+  }
+  function glyphWidth(str) { let w = 0; for (const ch of str) { const g = GL[ch]; w += (g ? g.w : 14) + 8; } return w - 8; }
+
+  // ---------- Bilder ----------
+  function house(x, base, w, h, body, roof, seed, num) {
+    const top = base - h, apex = top - w * .42;
+    let s = '<path d="' + poly([[x, base], [x, top], [x + w, top], [x + w, base]], 2.2, seed) + '" fill="' + body + '" stroke="' + INK + '" stroke-width="5" stroke-linejoin="round"/>';
+    s += '<path d="' + poly([[x - 9, top + 3], [x + w / 2, apex], [x + w + 9, top + 3]], 2.2, seed + 1) + '" fill="' + roof + '" stroke="' + INK + '" stroke-width="5" stroke-linejoin="round"/>';
+    s += '<path d="' + poly([[x + w * .62, base], [x + w * .62, base - h * .46], [x + w * .86, base - h * .46], [x + w * .86, base]], 1.6, seed + 2) + '" fill="#FFF8EE" stroke="' + INK + '" stroke-width="4"/>';
+    s += '<path d="' + poly([[x + w * .14, top + h * .22], [x + w * .14, top + h * .5], [x + w * .42, top + h * .5], [x + w * .42, top + h * .22]], 1.4, seed + 3) + '" fill="#8FD0EE" stroke="' + INK + '" stroke-width="4"/>';
+    const pw = glyphWidth(num) * .3 + 14, px = x + w * .5 - pw / 2 - 8, py = top + h * .56;
+    s += '<path d="' + poly([[px, py], [px, py + 25], [px + pw, py + 25], [px + pw, py]], 1.2, seed + 4) + '" fill="#FFF8EE" stroke="' + INK + '" stroke-width="3.5" stroke-linejoin="round"/>';
+    s += glyphs(num, px + 7, py + 4, .3, 6, INK);
+    return s;
+  }
+  function tree(cx, cy, r, seed, trunk) {
+    return '<path d="M' + cx + ' ' + (cy + r * .6) + 'L' + cx + ' ' + (cy + r * 1.7) + '" stroke="' + INK + '" stroke-width="7" stroke-linecap="round"/>' +
+      '<path d="' + blob(cx, cy, r, r * 1.08, 9, .14, seed) + '" fill="#63CE93" stroke="' + INK + '" stroke-width="5"/>' +
+      '<circle cx="' + (cx - r * .25) + '" cy="' + (cy - r * .1) + '" r="3.5" fill="' + INK + '"/><circle cx="' + (cx + r * .3) + '" cy="' + (cy + r * .25) + '" r="3.5" fill="' + INK + '"/>';
+  }
+  function coverSVG() {
+    let s = '<svg class="cover" id="coverArt" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bunte Häuser mit Nummernschildern, Bäumen und einem Pool">';
+    s += '<rect width="600" height="800" fill="#B8A2E6"/>';
+    // Hügel und Bogenwiese
+    s += '<path d="M0 520C90 470 190 545 300 505S520 470 600 520L600 800L0 800Z" fill="#F59AC4" stroke="' + INK + '" stroke-width="5"/>';
+    for (let x = -10; x < 640; x += 44) s += '<circle cx="' + (x + 22) + '" cy="668" r="24" fill="#8ED9B0" stroke="' + INK + '" stroke-width="5"/>';
+    s += '<rect x="-10" y="672" width="620" height="140" fill="#8ED9B0"/>';
+    for (let x = -10; x < 640; x += 44) s += '<path d="M' + (x - 2) + ' 668L' + (x - 2) + ' 672" stroke="#8ED9B0" stroke-width="6"/>';
+    // Sonne mit Zacken
+    s += '<path d="' + burst(486, 336, 70, 100, 13, 7) + '" fill="#F7A21B" stroke="' + INK + '" stroke-width="5" stroke-linejoin="round"/>';
+    s += '<circle cx="486" cy="336" r="46" fill="#FFD23F" stroke="' + INK + '" stroke-width="5"/>';
+    s += '<path d="M468 330Q476 322 484 330M492 330Q500 322 508 330" stroke="' + INK + '" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M474 350Q488 362 502 350" stroke="' + INK + '" stroke-width="5" fill="none" stroke-linecap="round"/>';
+    // Schnörkel und Blobs
+    s += '<path d="' + spiral(90, 410, 52, 2.6) + '" fill="none" stroke="#E0402F" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>';
+    s += '<path d="' + blob(250, 372, 78, 52, 9, .13, 3) + '" fill="#F59AC4" stroke="' + INK + '" stroke-width="5"/>';
+    s += '<path d="' + blob(250, 372, 38, 24, 7, .12, 4) + '" fill="#FFF8EE" stroke="' + INK + '" stroke-width="5"/>';
+    s += '<path d="' + burst(336, 456, 14, 28, 8, 11) + '" fill="#63CE93" stroke="' + INK + '" stroke-width="4.5" stroke-linejoin="round"/>';
+    s += '<path d="' + burst(160, 442, 11, 22, 7, 12) + '" fill="#FFD23F" stroke="' + INK + '" stroke-width="4.5" stroke-linejoin="round"/>';
+    // Häuser
+    s += house(26, 664, 112, 86, '#FFD23F', '#E0402F', 20, '12');
+    s += house(166, 664, 108, 104, '#8FD0EE', '#63CE93', 30, '3');
+    s += house(308, 664, 110, 80, '#F7A21B', '#B8A2E6', 40, '7');
+    s += house(452, 664, 114, 96, '#FFF8EE', '#F59AC4', 50, '1');
+    // Bäume, Pool, Zaun
+    s += tree(148, 596, 24, 61);
+    s += tree(436, 606, 22, 62);
+    s += '<path d="' + blob(300, 742, 92, 30, 10, .08, 70) + '" fill="#8FD0EE" stroke="' + INK + '" stroke-width="5"/>';
+    s += '<path d="M236 738Q254 726 272 738T308 738T344 738" fill="none" stroke="' + INK + '" stroke-width="4.5" stroke-linecap="round"/>';
+    for (let i = 0; i < 6; i++) { const x = 28 + i * 22; s += '<path d="' + poly([[x, 774], [x, 726], [x + 8, 716], [x + 16, 726], [x + 16, 774]], 1.3, 80 + i) + '" fill="#E0402F" stroke="' + INK + '" stroke-width="4" stroke-linejoin="round"/>'; }
+    s += '<path d="M24 736L148 736M24 758L148 758" stroke="' + INK + '" stroke-width="4.5" stroke-linecap="round"/>';
+    // Titel: gelber Versatz, darüber Weinrot
+    const t1 = 'Siedler', t2 = 'hain.';
+    const SC = 1.45, w1 = glyphWidth(t1) * SC, w2 = glyphWidth(t2) * SC, x1 = (600 - w1) / 2, x2 = (600 - w2) / 2;
+    [['#FFD23F', 5, 5, 13], [INK, 0, 0, 10.5]].forEach(([c, dx, dy, sw]) => {
+      s += glyphs(t1, x1 + dx, 70 + dy, SC, sw / SC, c);
+      s += glyphs(t2, x2 + dx, 70 + 60 * SC + 22 + dy, SC, sw / SC, c);
+    });
+    return s + '</svg>';
+  }
+  function birdSVG() {
+    return '<svg viewBox="0 0 64 64" aria-hidden="true">' +
+      '<path d="M26 8Q28 2 31 8Q34 1 37 9" fill="none" stroke="' + INK + '" stroke-width="3" stroke-linecap="round"/>' +
+      '<path d="M22 56L21 62M34 56L35 62M18 62H24M32 62H38" stroke="' + INK + '" stroke-width="3" stroke-linecap="round"/>' +
+      '<path d="' + blob(30, 34, 22, 21, 8, .06, 5) + '" fill="#F59AC4" stroke="' + INK + '" stroke-width="3"/>' +
+      '<path d="M46 30L61 33L47 40Z" fill="#F7A21B" stroke="' + INK + '" stroke-width="3" stroke-linejoin="round"/>' +
+      '<circle cx="38" cy="28" r="5" fill="#FFF8EE" stroke="' + INK + '" stroke-width="2.5"/><circle cx="39" cy="28.5" r="2" fill="' + INK + '"/>' +
+      '<path d="M14 34Q24 26 30 40Q22 48 14 42Z" fill="#B8A2E6" stroke="' + INK + '" stroke-width="3" stroke-linejoin="round"/></svg>';
+  }
+  const ICON = {
+    fence: '<path d="M3 20V9l2.5-2.5L8 9v11zM9.5 20V9L12 6.5 14.5 9v11zM16 20V9l2.5-2.5L21 9v11z" fill="#FFD23F"/><path d="M2 13h20M2 17h20"/>',
+    agent: '<circle cx="7.5" cy="12" r="4" fill="#FFD23F"/><path d="M11.5 12H21M17 12v3.5M20.5 12v2.5"/>',
+    park: '<path d="M12 14.5V21M9 21h6"/><circle cx="12" cy="9" r="6" fill="#63CE93"/>',
+    pool: '<path d="M2 9c3-3 5 3 8 0s5 3 8 0 3-1 4 0v10H2z" fill="#8FD0EE"/><path d="M2 14c3-3 5 3 8 0s5 3 8 0 3-1 4 0"/>',
+    temp: '<path d="M7 20V9L3.5 12.5M7 9l3.5 3.5" fill="none"/><path d="M8 3L3 9h10z" fill="#F59AC4"/><path d="M16 21l-5-6h10z" fill="#F59AC4"/><path d="M16 15V4"/>',
+    bis: '<path d="M2.5 20v-8L7 8l4.5 4v8z" fill="#F7A21B"/><path d="M12.5 20v-8L17 8l4.5 4v8z" fill="#B8A2E6"/>'
+  };
+  const EFF = {
+    fence: { name: 'Vermesser', act: 'Zaun in dieser Straße', info: 'Vermesser: Nach dem Bauen setzt du einen Zaun in dieselbe Straße. Zäune teilen die Straße in Siedlungen.' },
+    agent: { name: 'Makler', act: 'Siedlungswert steigern', info: 'Makler: Du erhöhst den Wert einer Siedlungsgröße. Jede fertige Siedlung dieser Größe zählt dann mehr.' },
+    park: { name: 'Gärtner', act: 'Park in dieser Straße', info: 'Gärtner: In der Straße, in der du baust, wird der nächste Park angelegt.' },
+    pool: { name: 'Poolbauer', act: 'Pool, wenn Poolplatz', info: 'Poolbauer: Steht dein Haus auf einem Feld mit Poolplatz (Ring unter der Straße), baust du dort einen Pool.' },
+    temp: { name: 'Zeitarbeit', act: 'Zahl um ±1 oder ±2', info: 'Zeitarbeit: Du darfst die Nummer um 1 oder 2 ändern, bevor du sie schreibst. Jede Änderung bringt Punkte.' },
+    bis: { name: 'Doppelhaus', act: 'Nummer auch daneben', info: 'Doppelhaus: Du darfst die Nummer zusätzlich auf ein freies Nachbarfeld schreiben. Das kostet Punkte.' }
+  };
+  const icon = e => '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">' + ICON[e] + '</svg>';
+  const sgn = v => (v > 0 ? '+' + v : v < 0 ? '−' + Math.abs(v) : '0');
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const inf = s => ' data-info="' + esc(s) + '"';
+
+  // ---------- Speichern und Melden ----------
+  function save() {
+    if (U.tut) return;
+    try { localStorage.setItem(SAVE, JSON.stringify({ screen: S && S.phase !== 'over' ? 'game' : 'start', st: S })); } catch (e) { /* ohne Speicher weiterspielen */ }
+  }
+  function load() {
+    try { const x = JSON.parse(localStorage.getItem(SAVE) || 'null'); return x && x.st && x.st.v === 1 && x.st.houses && x.st.phase !== 'over' ? x.st : null; } catch (e) { return null; }
+  }
+  function localDate() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function myName() {
+    try { const p = (JSON.parse(localStorage.getItem('spielregal:players') || '[]') || []).filter(x => x && x.name); return p.length ? p[0].name : 'Du'; } catch (e) { return 'Du'; }
+  }
+  function recordPlay() {
+    if (!S || S.phase !== 'over' || S.recorded || U.tut) return;
+    const total = G.score(S).total, nm = myName();
+    const entry = { id: 'welcome-to-' + S.id, source: 'welcome-to', app: 'Siedlerhain', bggId: '233867', gameName: 'Welcome To...', date: localDate(), human: nm, solo: true,
+      results: [{ name: nm, bot: false, total }], winners: total >= G.GOAL ? [nm] : [] };
+    try {
+      const inbox = JSON.parse(localStorage.getItem(INBOX) || '[]');
+      if (!inbox.some(e => e.id === entry.id)) inbox.push(entry);
+      localStorage.setItem(INBOX, JSON.stringify(inbox));
+      S.recorded = true;
+    } catch (e) { /* egal */ }
+  }
+  function newGame() { S = G.newGame(); S.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function themeFor(onStart) {
+    const dark = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches && document.documentElement.dataset.theme !== 'light';
+    const top = onStart ? (dark ? '#5C4A99' : '#B8A2E6') : (dark ? '#170F1F' : '#F5F2EE');
+    document.documentElement.style.backgroundColor = onStart ? top : '';
+    let tc = document.querySelector('meta[name="theme-color"]');
+    if (!tc) { tc = document.createElement('meta'); tc.name = 'theme-color'; document.head.appendChild(tc); }
+    tc.content = top;
+  }
+
+  // ---------- Lernspiel ----------
+  const TUT_COMBOS = [
+    [{ n: 4, e: 'park' }, { n: 9, e: 'fence' }, { n: 14, e: 'bis' }],
+    [{ n: 7, e: 'fence' }, { n: 2, e: 'pool' }, { n: 11, e: 'temp' }],
+    [{ n: 5, e: 'agent' }, { n: 12, e: 'park' }, { n: 8, e: 'bis' }]
+  ];
+  const TUT = [
+    { r: 1, k: 'info', t: 'Hallo, ich bin Zippel, der Zaunkönig. Ich zeige dir in drei Runden, wie Siedlerhain geht. Du schreibst Nummernschilder in drei Straßen und sammelst Punkte.' },
+    { r: 1, k: 'info', t: 'Jede Runde bekommst du drei Kombinationen aus Nummer und Effekt. Du nimmst genau eine davon.' },
+    { r: 1, k: 'act', acts: ['pick'], idx: 0, t: 'Tippe die 4 mit dem Gärtner.' },
+    { r: 1, k: 'act', acts: ['cell'], t: 'Schreibe die 4 auf ein gelbes Feld. In jeder Straße müssen die Nummern von links nach rechts größer werden. Kleine Zahlen gehören also nach links.' },
+    { r: 2, k: 'info', t: 'Der Gärtner hat in deiner Straße einen Park angelegt, den grünen Kreis oben rechts. Parks bringen Punkte, die Zahl im Kreis.' },
+    { r: 2, k: 'act', acts: ['pick'], idx: 0, t: 'Neue Runde. Nimm die 7 mit dem Vermesser. Er baut einen Zaun.' },
+    { r: 2, k: 'act', acts: ['cell'], t: 'Setze die 7 auf ein gelbes Feld, am besten rechts von der 4.' },
+    { r: 2, k: 'act', acts: ['gap'], t: 'Tippe jetzt eine gestrichelte Stelle. Dort kommt der Zaun hin. Zwischen zwei Zäunen liegt eine Siedlung. Unter der Straße steht ihre Größe.' },
+    { r: 3, k: 'info', t: 'Eine Siedlung zählt, sobald alle ihre Felder bebaut sind. Die Stadtpläne oben verlangen fertige Siedlungen bestimmter Größen. Je früher, desto mehr Punkte.' },
+    { r: 3, k: 'act', acts: ['pick'], idx: 2, t: 'Nimm die 8 mit dem Doppelhaus. Es schreibt die Nummer auf ein zweites Feld, kostet aber Punkte.' },
+    { r: 3, k: 'act', acts: ['cell'], t: 'Wähle ein gelbes Feld für die 8.' },
+    { r: 3, k: 'act', acts: ['dup', 'skip'], t: 'Soll die 8 auch auf ein Nachbarfeld? Das kostet einen Punkt. Du darfst auch überspringen.' },
+    { r: 4, k: 'info', last: true, t: 'Geschafft. Es gibt noch Makler, Poolbauer und Zeitarbeit. Wenn nichts passt, lehnst du den Antrag ab, aber nur dreimal. Viel Spaß beim Bauen!' }
+  ];
+  function tutSync() {
+    if (!U.tut || !S) return;
+    while (U.tut.step < TUT.length - 1 && TUT[U.tut.step].r < S.round) U.tut.step++;
+    if (S.phase === 'choose' && S.tutRound !== S.round && TUT_COMBOS[S.round - 1]) {
+      S.combos = TUT_COMBOS[S.round - 1].map(c => ({ n: c.n, e: c.e }));
+      S.tutRound = S.round;
+    }
+  }
+  function startTut() {
+    newGame(); S.id = 'tut'; U.tut = { step: 0 }; U.view = 'game'; U.sheet = null; tutSync();
+  }
+  function tutAllow(a, d) {
+    const st = TUT[U.tut.step];
+    if (a === 'tutnext' || a === 'tutquit') return true;
+    if (st.k !== 'act') return false;
+    if (!st.acts.includes(a)) return false;
+    return st.idx == null || +d.i === st.idx;
+  }
+
+  // ---------- Bausteine ----------
+  function header(sc) {
+    return '<div class="thead"><a class="leave" href="../" aria-label="Zurück zum Spielregal"' + inf('Zurück zum Spielregal') + '>‹</a><h1>Siedlerhain.</h1>' +
+      '<div class="pill"' + inf('Runde: So viele Anträge hast du bisher bearbeitet.') + '><b>' + S.round + '</b><small>Runde</small></div>' +
+      '<div class="pill pts"' + inf('Deine Punkte jetzt. Die Zwischenwertung findest du unten.') + '><b>' + sc.total + '</b><small>Punkte</small></div>' +
+      (U.tut ? '<button class="mbtn" data-a="tutquit" aria-label="Lernspiel beenden"' + inf('Lernspiel beenden') + '>✕</button>'
+        : '<button class="mbtn" data-a="menu" aria-label="Menü">☰</button>') + '</div>';
+  }
+
+  function plans() {
+    let h = '<section><p class="label">Stadtpläne: fertige Siedlungen dieser Größen</p><div class="plans">';
+    for (let k = 0; k < 3; k++) {
+      const L = G.PLAN_LEVELS[k], p = G.planProgress(S, k), d = S.planDone[k];
+      h += '<article class="plan' + (d ? ' done' : '') + '"' + inf('Plan ' + L.name + ': Baue fertige Siedlungen der Größen ' + p.req.join(', ') + '. Bis Runde ' + L.deadline + ' gibt es ' + L.first + ' Punkte, danach ' + L.second + '.') + '><div><b>Plan ' + L.name + '</b><span class="pd">' +
+        (d ? 'fertig in Runde ' + d.round + ': +' + d.pts : 'bis Runde ' + L.deadline + ': ' + L.first + ' Pkt, danach ' + L.second) + '</span></div><div class="req">' +
+        p.req.map((sz, i) => '<span class="sz' + (p.filled[i] ? ' ok' : '') + '">' + sz + '</span>').join('') + '</div></article>';
+    }
+    return h + '</div></section>';
+  }
+
+  function street(s) {
+    const n = G.LEN[s], row = S.houses[s], ph = S.phase;
+    const valid = new Set();
+    if (ph === 'place') G.validSlots(S, S.sel.n).forEach(p => { if (p[0] === s) valid.add(p[1]); });
+    if (ph === 'dup' && S.sel.pos.s === s) G.dupTargets(S).forEach(i => valid.add(i));
+    const fenceMode = ph === 'fence' && S.sel.pos.s === s;
+    let cells = '';
+    row.forEach((v, i) => {
+      const ok = valid.has(i);
+      const cls = 'house' + (v ? ' filled' : '') + (S.dups[s][i] ? ' dup' : '') + (ok ? ' ok' : '');
+      const inner = v ? v : (ok ? '<span class="ghost">' + S.sel.n + '</span>' : '');
+      const tip = v ? 'Nummernschild ' + v + ' in ' + NAMES[s] + '.' + (S.dups[s][i] ? ' Doppelhaus: kostet Punkte.' : '') : 'Freies Feld. Die Nummern müssen in dieser Straße von links nach rechts aufsteigen.';
+      cells += '<button class="' + cls + '" data-a="cell" data-s="' + s + '" data-i="' + i + '"' + inf(tip) + (ok ? '' : ' disabled tabindex="-1"') +
+        ' aria-label="' + NAMES[s] + ', Feld ' + (i + 1) + (v ? ', Nummer ' + v : ', frei') + '">' + inner + '</button>';
+    });
+    let fences = '';
+    S.fences[s].forEach((f, g) => {
+      if (f) fences += '<i class="fence" data-s="' + s + '" data-g="' + g + '" style="--k:' + (g + 1) + '"></i>';
+      else if (fenceMode) fences += '<button class="gap" data-a="gap" data-g="' + g + '" style="--k:' + (g + 1) + '" aria-label="Zaun zwischen Feld ' + (g + 1) + ' und ' + (g + 2) + '"></button>';
+    });
+    const pools = G.POOL_SPOTS[s].map(i => '<span class="pool' + (S.pools[s][i] ? ' on' : '') + '" style="grid-column:' + (i + 1) + '"' + inf(S.pools[s][i] ? 'Pool gebaut.' : 'Poolplatz: Mit dem Poolbauer baust du hier einen Pool, wenn dein Haus auf diesem Feld steht.') + '></span>').join('');
+    const ests = G.estates(S, s).map(e => '<span class="est' + (e.complete ? ' done' : '') + '" style="grid-column:' + (e.a + 1) + ' / span ' + e.size + '"' +
+      inf('Siedlung aus ' + e.size + ' Häusern' + (e.complete ? ', fertig bebaut.' : '. Sie zählt, sobald alle Felder bebaut sind.')) + '><b>' + e.size + '</b></span>').join('');
+    const ptoks = G.PARK_VALUES[s].map((v, k) => '<span class="ptok' + (k < S.parks[s] ? ' on' : '') + '"' + inf('Park ' + (k + 1) + ': Mit ' + (k + 1) + ' Parks in dieser Straße bekommst du ' + v + ' Punkte.') + '>' + v + '</span>').join('');
+    return '<section class="street" data-s="' + s + '"><div class="shead"><h3>' + NAMES[s] + '<span>' + n + ' Häuser</span></h3><div class="parks">' + ptoks + '</div></div>' +
+      '<div class="row" style="--n:' + n + '">' + cells + fences + '</div><div class="poolrow" style="--n:' + n + '">' + pools + '</div><div class="estrow" style="--n:' + n + '">' + ests + '</div></section>';
+  }
+
+  function lines(sc) {
+    return '<table class="lines">' + sc.lines.map(l => '<tr class="' + (l.pts < 0 ? 'neg' : '') + '"><td>' + l.label + '<span class="d">' + l.detail + '</span></td><td>' + sgn(l.pts) + '</td></tr>').join('') +
+      '<tr><td><b>Summe</b></td><td>' + sc.total + '</td></tr></table>';
+  }
+
+  function stats(sc) {
+    const counts = G.completedCounts(S);
+    let h = '<section class="stats"><p class="label">Siedlungswerte (der Makler erhöht sie)</p><div class="estgrid">';
+    for (let k = 0; k < 6; k++) {
+      const max = G.EST_VALUES[k].length - 1;
+      let pips = '';
+      for (let j = 0; j < max; j++) pips += '<i class="pip' + (j < S.marks[k] ? ' on' : '') + '"></i>';
+      h += '<div class="cell"' + inf('Fertige Siedlungen der Größe ' + (k + 1) + ' zählen je ' + G.EST_VALUES[k][S.marks[k]] + ' Punkte, höchstens ' + G.EST_CAP[k] + ' Stück. Die Punkte darunter zeigen, wie oft der Makler noch steigern kann.') + '><small>Größe ' + (k + 1) + '</small><b>' + G.EST_VALUES[k][S.marks[k]] + '</b><div class="pips">' + pips +
+        '</div><small>' + Math.min(counts[k + 1], G.EST_CAP[k]) + ' von ' + G.EST_CAP[k] + '</small></div>';
+    }
+    h += '</div><div class="cgrid">' +
+      '<div class="cell"' + inf('Pools: Je mehr du baust, desto mehr Punkte (bis 10 Pools).') + '><small>Pools</small><b>' + sc.poolCount + '</b><small>' + sgn(sc.pools) + ' Pkt</small></div>' +
+      '<div class="cell"' + inf('Zeitarbeit: Jede Nutzung bringt Punkte, und es werden immer mehr.') + '><small>Zeitarbeit</small><b>' + S.temps + '</b><small>' + sgn(sc.temps) + ' Pkt</small></div>' +
+      '<div class="cell"' + inf('Doppelhäuser kosten Punkte, und es werden immer mehr.') + '><small>Doppelhaus</small><b>' + S.bis + '</b><small>' + sgn(sc.bis) + ' Pkt</small></div>' +
+      '<div class="cell"' + inf('Abgelehnte Anträge: Der zweite kostet 3, der dritte 5 Punkte und beendet das Spiel.') + '><small>Abgelehnt</small><b>' + S.refusals + '</b><small>' + sgn(sc.refusals) + ' Pkt</small></div></div>' +
+      '<details><summary>Zwischenwertung</summary>' + lines(sc) + '</details></section>';
+    return h;
+  }
+
+  const REASON = { plans: 'Alle drei Stadtpläne sind erfüllt.', refusals: 'Dritter abgelehnter Antrag: Die Stadt stoppt den Bau.', full: 'Alle Grundstücke sind bebaut.' };
+  function result(sc) {
+    const won = sc.total >= G.GOAL;
+    return '<section class="result"><svg class="stern" viewBox="0 0 120 120" aria-hidden="true"><path d="' + burst(60, 60, 38, 58, 11, 9) + '" fill="#FFD23F" stroke="' + INK + '" stroke-width="4" stroke-linejoin="round"/></svg>' +
+      '<p class="eyebrow">Spiel beendet · Runde ' + S.round + '</p><h2>' + sc.total + ' Punkte</h2><p class="rank">' + G.rank(sc.total) + '</p>' +
+      '<p class="why">' + (REASON[S.endReason] || '') + ' ' + (won ? 'Ziel von ' + G.GOAL + ' Punkten erreicht.' : 'Das Ziel liegt bei ' + G.GOAL + ' Punkten.') + '</p>' + lines(sc) +
+      '<button class="btn pink" data-a="newyes">Neue Partie</button></section>';
+  }
+
+  function coach() {
+    if (!U.tut) return '';
+    const st = TUT[U.tut.step];
+    return '<div class="coach"><div class="cin">' + birdSVG() + '<div class="tx"><b>Zippel</b><span>' + esc(st.t) + '</span>' +
+      (st.k === 'info' ? '<div class="row2"><button class="btn sm pri" data-a="' + (st.last ? 'tutquit' : 'tutnext') + '">' + (st.last ? 'Fertig' : 'Weiter') + '</button></div>' : '') + '</div></div></div>';
+  }
+
+  function dock() {
+    const ph = S.phase, hl = U.tut && TUT[U.tut.step].k === 'act' ? TUT[U.tut.step] : null;
+    let body = '';
+    if (ph === 'over') {
+      body = '<div class="prompt"><p>Das Spiel ist beendet.</p><button class="btn sm pri" data-a="newyes">Neue Partie</button></div>';
+    } else if (ph === 'choose') {
+      const ok = S.combos.map(c => G.adjustOptions(S, c).length > 0);
+      const none = !ok.some(Boolean);
+      const next = S.refusals + 1, delta = G.REFUSAL_TOTAL[Math.min(next, 3)] - G.REFUSAL_TOTAL[S.refusals];
+      const armTxt = next >= 3 ? 'Beendet das Spiel (' + sgn(delta) + '). Ablehnen?' : 'Kostet ' + sgn(delta) + ' Pkt. Ablehnen?';
+      const refuse = '<button class="btn sm ' + (U.arm ? 'arm' : (none ? 'hot' : '')) + '" data-a="refuse"' + inf('Antrag ablehnen: Du baust in dieser Runde nichts. Die dritte Ablehnung beendet das Spiel.') + '>' + (U.arm ? armTxt : 'Ablehnen') + '</button>';
+      const cards = S.combos.map((c, i) => {
+        const m = EFF[c.e];
+        return '<button class="combo' + (ok[i] ? '' : ' dead') + (hl && hl.acts.includes('pick') && hl.idx === i ? ' tut-hl' : '') + '" data-a="pick" data-i="' + i + '"' + inf(m.info) + (ok[i] ? '' : ' disabled') + '>' +
+          '<span class="num">' + c.n + '</span><span class="eff">' + icon(c.e) + m.name + '</span><span class="act">' + m.act + '</span></button>';
+      }).join('');
+      body = '<div class="prompt"><p>' + (none ? 'Kein Bau möglich. Du musst ablehnen.' : 'Runde ' + S.round + ': Wähle ein Nummernschild.') + '</p>' + refuse + '</div><div class="combos">' + cards + '</div>';
+    } else {
+      const m = EFF[S.sel.e];
+      const cancel = U.tut ? '' : '<button class="btn sm" data-a="cancel">Zurück</button>';
+      if (ph === 'adjust') {
+        const chips = S.sel.opts.map(o => '<button class="chip" data-a="adj" data-d="' + o.d + '"><b>' + o.n + '</b><small>' + (o.d ? sgn(o.d) : 'unverändert') + '</small></button>').join('');
+        body = '<div class="prompt"><p>Zeitarbeit: Welche Nummer soll es sein?</p>' + cancel + '</div><div class="chips">' + chips + '</div>';
+      } else if (ph === 'place') {
+        body = '<div class="prompt"><p>Tippe ein gelbes Feld für die <b>' + S.sel.n + '</b> (' + G.validSlots(S, S.sel.n).length + ' möglich). Danach: ' + m.name + '.</p>' + cancel + '</div>';
+      } else {
+        const skip = '<button class="btn sm' + (hl && hl.acts.includes('skip') ? '' : '') + '" data-a="skip">Überspringen</button>';
+        if (ph === 'fence') body = '<div class="prompt"><p>Vermesser: Tippe eine gestrichelte Stelle in ' + NAMES[S.sel.pos.s] + '.</p>' + skip + '</div>';
+        else if (ph === 'dup') body = '<div class="prompt"><p>Doppelhaus: Die <b>' + S.sel.n + '</b> auch auf ein gelbes Nachbarfeld? Das kostet Punkte.</p>' + skip + '</div>';
+        else if (ph === 'agent') {
+          const av = G.agentSizes(S);
+          const chips = [1, 2, 3, 4, 5, 6].map(sz => { const can = av.indexOf(sz) >= 0;
+            return '<button class="chip" data-a="size" data-size="' + sz + '"' + (can ? '' : ' disabled') + '><b>' + sz + '</b><small>' + (can ? G.EST_VALUES[sz - 1][S.marks[sz - 1]] + ' → ' + G.EST_VALUES[sz - 1][S.marks[sz - 1] + 1] : 'voll') + '</small></button>'; }).join('');
+          body = '<div class="prompt"><p>Makler: Für welche Siedlungsgröße steigt der Wert?</p>' + skip + '</div><div class="chips">' + chips + '</div>';
+        }
+      }
+    }
+    return '<div class="dock"><div class="dinner">' + body + '</div></div>';
+  }
+
+  const RULES = '<div class="rules">' +
+    '<h3>So geht es</h3><ul>' +
+    '<li>Jede Runde zeigt drei Kombinationen aus Nummer und Effekt. Wähle eine und schreibe die Nummer auf ein freies Feld. In jeder Straße müssen die Nummern von links nach rechts aufsteigen. Lücken sind erlaubt.</li>' +
+    '<li>Danach wirkt der Effekt. Vermesser: Zaun in dieser Straße. Makler: Wert einer Siedlungsgröße erhöhen. Gärtner: nächster Park dieser Straße. Poolbauer: Pool, wenn das Feld einen Poolplatz hat. Zeitarbeit: Nummer vorher um 1 oder 2 ändern. Doppelhaus: Nummer zusätzlich auf ein Nachbarfeld.</li>' +
+    '<li>Eine Siedlung ist der Abschnitt zwischen zwei Zäunen oder dem Straßenende. Sie zählt, sobald alle ihre Felder bebaut sind. Die Zahl unter der Straße ist ihre Größe.</li>' +
+    '<li>Stadtpläne verlangen fertige Siedlungen bestimmter Größen. Wer sie vor der Frist schafft, bekommt mehr Punkte.</li>' +
+    '<li>Passt nichts oder willst du nicht bauen, lehnst du den Antrag ab. Die erste Ablehnung ist gratis, die zweite kostet 3 Punkte, die dritte 5 Punkte und beendet das Spiel.</li></ul>' +
+    '<h3>Ende und Wertung</h3><ul>' +
+    '<li>Das Spiel endet, wenn alle drei Pläne erfüllt sind, du dreimal abgelehnt hast oder alle Felder bebaut sind.</li>' +
+    '<li>Punkte gibt es für Stadtpläne, Parks, Pools, fertige Siedlungen und Zeitarbeit. Abzüge gibt es für Doppelhäuser und abgelehnte Anträge.</li>' +
+    '<li>Ab ' + 50 + ' Punkten gilt die Partie als gewonnen.</li></ul>' +
+    '<h3>Unterschiede zum Original</h3>' +
+    '<p class="fine">Siedlerhain ist eine eigene Solo-Umsetzung nach dem Prinzip von Welcome To…. Kartenverteilung, Planwerte, Wertungstabellen, Poolplätze und Effekte sind eigene Annäherungen, keine Abschrift der Regelhefte. Es gibt keine Kreisverkehre, keinen Mehrspielermodus und keinen Solo-Gegner.</p></div>';
+
+  function sheets() {
+    if (!U.sheet) return '';
+    const x = (t) => '<div class="sh"><h2 class="disp">' + t + '</h2><button class="xbtn" data-a="close" aria-label="Schließen">✕</button></div>';
+    if (U.sheet === 'menu') return '<div class="ov" data-a="close"><div class="sheet" data-stop="1">' + x('Menü') + '<div class="menu">' +
+      '<button class="btn" data-a="rules">Spielregeln</button><button class="btn" data-a="saveleave">Speichern und zum Spielregal</button><button class="btn" data-a="newask">Neustart</button><button class="tlink" data-a="reload">Neueste Version laden</button></div></div></div>';
+    if (U.sheet === 'rules') return '<div class="ov" data-a="close"><div class="sheet" data-stop="1">' + x('Spielregeln') + RULES + '</div></div>';
+    if (U.sheet === 'newask') return '<div class="ov" data-a="close"><div class="sheet" data-stop="1">' + x('Neue Partie?') + '<div class="menu"><p>' + (S && S.phase !== 'over' ? 'Die laufende Partie wird dabei überschrieben.' : 'Es startet eine frische Partie.') + '</p>' +
+      '<button class="btn pri" data-a="newyes">Ja, neue Partie</button><button class="btn" data-a="close">Weiterspielen</button></div></div></div>';
+    return '';
+  }
+
+  function startView() {
+    const saved = load();
+    return '<div class="start"><div class="stage">' + coverSVG() + '<a class="leave" href="../"' + inf('Zurück zum Spielregal') + '>‹ Spielregal</a></div><div class="sdock">' +
+      (saved ? '<button class="btn pri" data-a="resume">Partie fortsetzen</button><div class="two"><button class="btn pink" data-a="newask">Neue Partie</button><button class="btn" data-a="tut">Lernspiel</button></div>'
+        : '<div class="two"><button class="btn pri" data-a="start">Partie beginnen</button><button class="btn" data-a="tut">Lernspiel</button></div>') +
+      '<button class="tlink" data-a="rules">Spielregeln lesen</button></div>' + sheets() + '</div>';
+  }
+
+  function gameView() {
+    const sc = G.score(S);
+    return header(sc) + '<div class="main" id="sc"><div class="wrap">' + (S.phase === 'over' ? result(sc) : '') + plans() + [0, 1, 2].map(street).join('') + stats(sc) + '</div></div>' + coach() + dock() + sheets();
+  }
+
+  // ---------- Zeichnen ----------
+  let prev = null;
+  function render() {
+    tutSync();
+    const old = document.getElementById('sc'), top = old ? old.scrollTop : 0;
+    if (U.view === 'game' && S) { app.innerHTML = gameView(); themeFor(false); } else { app.innerHTML = startView(); themeFor(true); }
+    const nw = document.getElementById('sc'); if (nw) nw.scrollTop = top;
+    if (S && S.phase === 'over' && !S.recorded) { recordPlay(); save(); if (nw) nw.scrollTop = 0; }
+    fx();
+  }
+  function fx() {
+    if (!S || U.view !== 'game') { prev = null; return; }
+    const sc = G.score(S).total;
+    if (prev && prev.id === S.id) {
+      S.houses.forEach((r, s) => r.forEach((v, i) => { if (v && !prev.h[s][i]) { const el = app.querySelector('.house[data-s="' + s + '"][data-i="' + i + '"]'); if (el) el.classList.add('pop'); } }));
+      S.fences.forEach((r, s) => r.forEach((v, g) => { if (v && !prev.f[s][g]) { const el = app.querySelector('.fence[data-s="' + s + '"][data-g="' + g + '"]'); if (el) el.classList.add('pop'); } }));
+      if (sc !== prev.sc) {
+        const p = app.querySelector('.pill.pts'); if (p) { p.classList.add('bump'); const r = p.getBoundingClientRect(); floaty(sgn(sc - prev.sc), r.left + r.width / 2 - 10, r.bottom + 4); }
+      }
+    }
+    prev = { id: S.id, h: S.houses.map(r => r.slice()), f: S.fences.map(r => r.slice()), sc };
+  }
+  function floaty(txt, x, y) {
+    const e = document.createElement('div'); e.className = 'fl'; e.textContent = txt; e.style.left = x + 'px'; e.style.top = y + 'px';
+    document.body.appendChild(e); setTimeout(() => e.remove(), 1200);
+  }
+  let toastT = null;
+  function toast(msg) {
+    document.querySelectorAll('.toast').forEach(t => t.remove());
+    const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t);
+    clearTimeout(toastT); toastT = setTimeout(() => t.remove(), 2600);
+  }
+  function buzz() { try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) { /* egal */ } }
+
+  // ---------- Info-Blase per langem Drücken ----------
+  let lp = null, lpFired = false;
+  function hideInfo() { document.querySelectorAll('.bub').forEach(b => b.remove()); }
+  function showInfo(el) {
+    hideInfo();
+    const b = document.createElement('div'); b.className = 'bub'; b.textContent = el.dataset.info; document.body.appendChild(b);
+    const r = el.getBoundingClientRect(), w = b.offsetWidth, h = b.offsetHeight;
+    let x = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), window.innerWidth - w - 8), y = r.top - h - 10;
+    if (y < 8) y = r.bottom + 10;
+    b.style.left = x + 'px'; b.style.top = y + 'px';
+    setTimeout(hideInfo, 4200);
+  }
+  document.addEventListener('pointerdown', e => {
+    hideInfo();
+    const t = e.target.closest && e.target.closest('[data-info]');
+    if (!t) return;
+    lp = { x: e.clientX, y: e.clientY, id: setTimeout(() => { lpFired = true; showInfo(t); buzz(); }, 450) };
+  });
+  document.addEventListener('pointermove', e => { if (lp && Math.hypot(e.clientX - lp.x, e.clientY - lp.y) > 10) { clearTimeout(lp.id); lp = null; } });
+  ['pointerup', 'pointercancel'].forEach(ev => document.addEventListener(ev, () => { if (lp) { clearTimeout(lp.id); lp = null; } }));
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('click', e => { if (lpFired) { lpFired = false; e.stopPropagation(); e.preventDefault(); } }, true);
+
+  // ---------- Eingaben ----------
+  function act(a, d) {
+    if (a === 'cell' && S && S.phase === 'dup') a = 'dup';
+    if (U.tut && !tutAllow(a, d)) { toast(TUT[U.tut.step].k === 'act' ? TUT[U.tut.step].t : 'Tippe auf „Weiter“.'); return; }
+    if (a !== 'refuse') U.arm = false;
+    let ok = true;
+    const before = U.tut ? TUT[U.tut.step] : null;
+    switch (a) {
+      case 'pick': ok = G.choose(S, +d.i); break;
+      case 'adj': ok = G.adjust(S, +d.d); break;
+      case 'cancel': ok = G.cancel(S); break;
+      case 'cell': ok = G.place(S, +d.s, +d.i); break;
+      case 'dup': ok = G.placeDup(S, +d.i); break;
+      case 'gap': ok = G.placeFence(S, +d.g); break;
+      case 'size': ok = G.markAgent(S, +d.size); break;
+      case 'skip': ok = G.skip(S); break;
+      case 'refuse':
+        if (!U.arm) { U.arm = true; render(); return; }
+        U.arm = false; ok = G.refuse(S); break;
+      case 'menu': U.sheet = 'menu'; render(); return;
+      case 'rules': U.sheet = 'rules'; render(); return;
+      case 'close': U.sheet = null; render(); return;
+      case 'newask': U.sheet = 'newask'; render(); return;
+      case 'start': case 'newyes': U.tut = null; newGame(); U.view = 'game'; U.sheet = null; U.arm = false; save(); render(); return;
+      case 'resume': { const s = load(); if (s) { S = s; U.view = 'game'; } render(); return; }
+      case 'tut': startTut(); render(); return;
+      case 'tutnext': U.tut.step++; render(); return;
+      case 'tutquit': U.tut = null; S = null; U.view = 'start'; prev = null; render(); return;
+      case 'saveleave': save(); location.href = '../'; return;
+      case 'reload': save(); location.replace(location.pathname + '?v=' + Date.now() + '&resume=1'); return;
+    }
+    if (ok && U.tut && before && before.k === 'act' && before.acts.includes(a)) U.tut.step = Math.min(U.tut.step + 1, TUT.length - 1);
+    if (ok) { save(); buzz(); }
+    render();
+  }
+  app.addEventListener('click', ev => {
+    const stop = ev.target.closest('[data-stop]');
+    const t = ev.target.closest('[data-a]');
+    if (!t || t.disabled) return;
+    if (stop && t.classList.contains('ov')) return; // Klick im Fenster schließt nicht
+    act(t.dataset.a, t.dataset);
+  });
+
+  // ---------- Start ----------
+  (function init() {
+    const saved = load();
+    if (saved && /[?&]resume=1/.test(location.search)) { S = saved; U.view = 'game'; }
+    render();
+  })();
+})();
+</script>
+</body>
+</html>
