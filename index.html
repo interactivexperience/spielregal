@@ -4906,6 +4906,15 @@ const sortIdsByScore = (ids, scoresObj) => {
   const val = (id) => { const v = parseFloat(scoresObj[id]); return Number.isFinite(v) ? v : -Infinity; };
   return [...ids].sort((a, b) => val(b) - val(a));
 };
+// Alle Mitspieler mit der hoechsten eingetragenen Punktzahl (Gleichstand =
+// mehrere). Leer, solange noch keine gueltige Punktzahl da ist.
+const topScorerIds = (ids, scoresObj) => {
+  const val = (id) => { const v = parseFloat(scoresObj[id]); return Number.isFinite(v) ? v : null; };
+  const scored = ids.filter((id) => val(id) !== null);
+  if (scored.length === 0) return [];
+  const max = Math.max(...scored.map(val));
+  return scored.filter((id) => val(id) === max);
+};
 function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlayerPhoto, onUpdatePlayerName, onRemovePlayer, onReorderPlayers, initial, onClose, onSave, onDelete }) {
   const [editingPlayer, setEditingPlayer] = useState(null); // { id, name }
   const [playerOrderOpen, setPlayerOrderOpen] = useState(false);
@@ -4981,6 +4990,11 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
     const next = { ...scores, [id]: val };
     setScores(next);
     setPlayerIds((ids) => sortIdsByScore(ids, next));
+    // Krone folgt der hoechsten Punktzahl, bei Gleichstand bekommen alle
+    // Punktgleichen sie. Per Hand gesetzte Kronen (z.B. Spiele, bei denen die
+    // niedrigste Punktzahl gewinnt) bleiben bis zur naechsten Punkteaenderung.
+    const top = topScorerIds(playerIds, next);
+    if (top.length > 0) setWinnerIds(top);
   };
   const [notes, setNotes] = useState(initial ? initial.notes || "" : "");
   const notesRef = React.useRef(null);
