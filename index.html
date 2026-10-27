@@ -3861,6 +3861,55 @@ function GameGridCard({ game: g, expansions = [], playCounts = {}, gridCols = 2,
   );
 }
 
+/* ---------------- SPIELERPROFIL-FIGUREN ---------------- */
+// Jedes Profil ohne eigenes Foto zeigt eine kleine illustrierte Figur. Sie ist
+// nur eine Nummer am Profil (`avatar`), gezeichnet wird sie hier -- es wird also
+// kein Bild gespeichert oder synchronisiert. Ein hochgeladenes Foto hat Vorrang;
+// die Figur laesst sich im Mitspieler-Dialog jederzeit tauschen.
+const AVATARS = [
+  { bg: "#F6C6B8", skin: "#F6D2B0", hair: "#2B1B14", hs: "short",  shirt: "#C4452E" },
+  { bg: "#BFD9F2", skin: "#E8B58C", hair: "#6B3F22", hs: "long",   shirt: "#2F5BB0", glasses: true },
+  { bg: "#CDE7C4", skin: "#C98F63", hair: "#1E2A44", hs: "curly",  shirt: "#3B8546", stripes: true },
+  { bg: "#F7E0A3", skin: "#FAD9C1", hair: "#D9502F", hs: "bun",    shirt: "#7C5CC4" },
+  { bg: "#D9C8F0", skin: "#9A6641", hair: "#1E2A44", hs: "bald",   shirt: "#E2A21E", beard: true },
+  { bg: "#F2BFD8", skin: "#F6D2B0", hair: "#E8C86A", hs: "long",   shirt: "#2B3245", stripes: true },
+  { bg: "#B9E3E0", skin: "#6F4529", hair: "#2B1B14", hs: "curly",  shirt: "#D9735F" },
+  { bg: "#F5D3A6", skin: "#E8B58C", hair: "#8E8E93", hs: "short",  shirt: "#5B86B5", glasses: true },
+  { bg: "#C9D3F5", skin: "#C98F63", hair: "#2B1B14", hs: "cap",    shirt: "#F0643C", cap: "#2F5BB0" },
+  { bg: "#E6D3B8", skin: "#FAD9C1", hair: "#6B3F22", hs: "short",  shirt: "#3B8546", beard: true },
+  { bg: "#C5E8B7", skin: "#9A6641", hair: "#2B1B14", hs: "bun",    shirt: "#C4452E", glasses: true },
+  { bg: "#F0B7A4", skin: "#F6D2B0", hair: "#C98A3B", hs: "bob",    shirt: "#4B3A6E" },
+];
+const avatarSvg = (a) => {
+  const ink = "#2B1B14", hair = a.hair, front = {
+    short: `<path d="M27 44c-3-20 9-31 21-31s24 11 21 31c-3-8-9-14-21-14s-18 6-21 14z" fill="${hair}"/>`,
+    long: `<path d="M27 44c-3-20 9-31 21-31s24 11 21 31c-3-8-9-14-21-14s-18 6-21 14z" fill="${hair}"/>`,
+    bob: `<path d="M26 50c-4-24 8-37 22-37s26 13 22 37c-2-9-4-17-8-20-8 5-19 5-28 0-4 3-6 11-8 20z" fill="${hair}"/>`,
+    bun: `<circle cx="48" cy="12" r="8" fill="${hair}"/><path d="M27 44c-3-20 9-31 21-31s24 11 21 31c-3-8-9-14-21-14s-18 6-21 14z" fill="${hair}"/>`,
+    curly: [[30, 28], [38, 19], [48, 16], [58, 19], [66, 28], [28, 38], [68, 38]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="8" fill="${hair}"/>`).join(""),
+    cap: `<path d="M27 42c0-17 9-26 21-26s21 9 21 26z" fill="${a.cap}"/><path d="M25 42h48c0 4-4 6-10 6H35c-6 0-10-2-10-6z" fill="${a.cap}" opacity=".85"/>`,
+    bald: "",
+  }[a.hs];
+  const back = a.hs === "long" ? `<path d="M25 46c-4 26 0 40 6 46h34c6-6 10-20 6-46-3-20-14-27-23-27s-20 7-23 27z" fill="${hair}"/>` : "";
+  const beard = a.beard ? `<path d="M29 50c0 18 8 24 19 24s19-6 19-24c-4 8-10 11-19 11s-15-3-19-11z" fill="${a.hs === "bald" ? hair : hair}"/>` : "";
+  const glasses = a.glasses ? `<g fill="none" stroke="${ink}" stroke-width="1.8"><circle cx="40" cy="47" r="6"/><circle cx="56" cy="47" r="6"/><path d="M46 47h4"/></g>` : "";
+  const stripes = a.stripes ? `<path d="M22 82h52M18 89h60" stroke="#fff" stroke-opacity=".4" stroke-width="3"/>` : "";
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect width="96" height="96" fill="${a.bg}"/>${back}`
+    + `<path d="M10 96c2-18 17-26 38-26s36 8 38 26z" fill="${a.shirt}"/>${stripes}`
+    + `<rect x="42" y="60" width="12" height="14" rx="4" fill="${a.skin}"/><rect x="42" y="60" width="12" height="14" rx="4" fill="#000" opacity=".12"/>`
+    + `<circle cx="28" cy="47" r="4" fill="${a.skin}"/><circle cx="68" cy="47" r="4" fill="${a.skin}"/>`
+    + `<ellipse cx="48" cy="45" rx="20" ry="23" fill="${a.skin}"/>${beard}${front}`
+    + `<circle cx="40" cy="47" r="2.3" fill="${ink}"/><circle cx="56" cy="47" r="2.3" fill="${ink}"/>${glasses}`
+    + `<circle cx="35" cy="54" r="3.2" fill="#E8836F" opacity=".35"/><circle cx="61" cy="54" r="3.2" fill="#E8836F" opacity=".35"/>`
+    + `<path d="M42 56q6 5 12 0" stroke="${ink}" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`;
+};
+const avatarUriCache = {};
+const avatarUri = (i) => avatarUriCache[i] || (avatarUriCache[i] = `data:image/svg+xml;utf8,${encodeURIComponent(avatarSvg(AVATARS[i]))}`);
+const idHash = (id) => { let h = 0; for (const c of String(id || "")) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
+const avatarIndexOf = (p) => (Number.isInteger(p && p.avatar) && p.avatar >= 0 && p.avatar < AVATARS.length ? p.avatar : idHash(p && p.id) % AVATARS.length);
+// Bild eines Profils: eigenes Foto, sonst die Figur.
+const avatarSrc = (p) => (p && p.photo) || avatarUri(avatarIndexOf(p));
+
 const Cover = ({ game, size = "md", className: extraClass = "", compact = false }) => {
   const dims = size === "sm" ? "w-12 h-12" : size === "lg" ? "w-full aspect-square" : "w-16 h-16";
   const img = (game.images && game.images[0]) || game.image; // game.image kept as fallback for older saved entries
@@ -4878,7 +4927,7 @@ function PlayerOrderModal({ players, onSave, onClose }) {
                 transition: "border-color .15s, transform .15s, box-shadow .15s",
               }}>
               <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 bg-bg flex items-center justify-center">
-                {p.photo ? <img src={p.photo} alt={p.name} className="w-full h-full object-cover" /> : <Camera size={12} className="text-dim" />}
+                <img src={avatarSrc(p)} alt={p.name} className="w-full h-full object-cover" />
               </div>
               <span className="text-sm text-ink flex-1 truncate">{p.name}</span>
               <div
@@ -4955,7 +5004,7 @@ const topScorerIds = (ids, scoresObj) => {
   const max = Math.max(...scored.map(val));
   return scored.filter((id) => val(id) === max);
 };
-function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, onUpdatePlayerPhoto, onUpdatePlayerName, onRemovePlayer, onReorderPlayers, initial, onClose, onSave, onDelete }) {
+function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, onUpdatePlayerPhoto, onUpdatePlayerAvatar, onUpdatePlayerName, onRemovePlayer, onReorderPlayers, initial, onClose, onSave, onDelete }) {
   const [editingPlayer, setEditingPlayer] = useState(null); // { id, name }
   const [playerOrderOpen, setPlayerOrderOpen] = useState(false);
   const playerLongPressTimer = React.useRef(null);
@@ -5217,11 +5266,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, o
                           onTouchMove={cancelPlayerLongPress}
                           onContextMenu={(e) => e.preventDefault()}
                           className="relative w-14 h-14 rounded-full overflow-hidden border-2" style={{ borderColor: selected ? "rgb(var(--accent))" : "rgb(var(--line))" }}>
-                          {p.photo ? (
-                            <img src={p.photo} alt={p.name} className="w-full h-full block object-cover" />
-                          ) : (
-                            <div className="w-full h-full bg-surface flex items-center justify-center"><Camera size={20} className="text-dim" /></div>
-                          )}
+                          <img src={avatarSrc(p)} alt={p.name} className="w-full h-full block object-cover" />
                           {winnerIds.includes(p.id) ? (
                             <div className="absolute inset-0 bg-gold/35 flex items-center justify-center">
                               <Crown size={22} className="text-gold" fill="currentColor" />
@@ -5268,7 +5313,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, o
                             <GripVertical size={16} />
                           </div>
                           <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0">
-                            {p.photo ? <img src={p.photo} alt={p.name} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-bg flex items-center justify-center"><Camera size={12} className="text-dim" /></div>}
+                            <img src={avatarSrc(p)} alt={p.name} className="w-full h-full object-cover" />
                           </div>
                           <span className="text-sm text-ink flex-1 min-w-0 truncate">{p.name}</span>
                           <button type="button"
@@ -5369,18 +5414,30 @@ function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, o
               >
                 {(() => {
                   const p = playerProfiles.find((x) => x.id === editingPlayer.id);
-                  return p && p.photo ? (
-                    <img src={p.photo} alt={p.name} className="w-full h-full block object-cover" />
-                  ) : (
-                    <span className="text-dim font-display text-2xl tracking-[-0.025em] leading-tight">{editingPlayer.name.charAt(0).toUpperCase()}</span>
-                  );
+                  return <img src={avatarSrc(p || { id: editingPlayer.id })} alt={editingPlayer.name} className="w-full h-full block object-cover" />;
                 })()}
               </button>
               <span className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-accent border-2 border-bg flex items-center justify-center pointer-events-none">
                 <Camera size={13} className="text-white" />
               </span>
             </div>
-            <p className="text-xs text-dim text-center -mt-1">Foto antippen zum Ändern</p>
+            <p className="text-xs text-dim text-center -mt-1">Foto antippen zum Ändern — oder eine Figur wählen:</p>
+            {(() => {
+              const cur = playerProfiles.find((x) => x.id === editingPlayer.id) || { id: editingPlayer.id };
+              const curIdx = cur.photo ? -1 : avatarIndexOf(cur);
+              return (
+                <div className="grid grid-cols-6 gap-2" role="group" aria-label="Figur wählen">
+                  {AVATARS.map((_, i) => (
+                    <button key={i} type="button" data-avatar={i} aria-label={`Figur ${i + 1}`} aria-pressed={curIdx === i}
+                      onClick={() => { haptic(6); onUpdatePlayerAvatar && onUpdatePlayerAvatar(editingPlayer.id, i); }}
+                      className="aspect-square rounded-full overflow-hidden border-2"
+                      style={{ borderColor: curIdx === i ? "rgb(var(--accent))" : "rgb(var(--line))" }}>
+                      <img src={avatarUri(i)} alt="" className="w-full h-full block" />
+                    </button>
+                  ))}
+                </div>
+              );
+            })()}
             <input
               onFocus={handleFocusScroll}
               value={editingPlayer.name}
@@ -7465,7 +7522,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                     {i === 1 && <span className="self-start font-body text-xs text-dim shrink-0 pt-7">vs.</span>}
                     <button onClick={() => { haptic(6); setH2hPick(slot); }} className="flex-1 min-w-0 flex flex-col items-center">
                       <div className="w-16 h-16 rounded-full overflow-hidden bg-line/50 flex items-center justify-center mb-2.5">
-                        {prof && prof.photo ? <img src={prof.photo} alt={name} className="w-full h-full object-cover" /> : <Users size={24} className="text-dim" />}
+                        {prof ? <img src={avatarSrc(prof)} alt={name} className="w-full h-full object-cover" /> : <Users size={24} className="text-dim" />}
                       </div>
                       <p className="font-display text-[2.4rem] leading-none tracking-[-0.045em] text-ink">{wins === null || !name ? "—" : wins}</p>
                       <p className="text-dim text-xs font-body mt-2 truncate max-w-full flex items-center gap-0.5">
@@ -7618,7 +7675,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                     onClick={() => { haptic(6); (h2hPick === "a" ? setH2hA : setH2hB)(n); setH2hPick(null); }}
                     className={`w-full flex items-center gap-3 py-3 border-b border-line text-left ${belegt ? "opacity-35" : ""}`}>
                     <div className="w-9 h-9 rounded-full overflow-hidden bg-line/50 flex items-center justify-center shrink-0">
-                      {prof && prof.photo ? <img src={prof.photo} alt={n} className="w-full h-full object-cover" /> : <Users size={15} className="text-dim" />}
+                      {prof ? <img src={avatarSrc(prof)} alt={n} className="w-full h-full object-cover" /> : <Users size={15} className="text-dim" />}
                     </div>
                     <span className={`flex-1 min-w-0 truncate text-sm ${aktiv ? "text-ink font-medium" : "text-ink"}`}>{n}</span>
                     {aktiv && <Check size={16} className="text-accent shrink-0" />}
@@ -8845,11 +8902,19 @@ function App() {
     }));
   };
   const addPlayer = (name, photo, presetId) => {
-    const p = { id: presetId || uid(), name, photo: photo || "" };
-    setPlayersList((prev) => [...prev, p]);
-    return p.id;
+    const id = presetId || uid();
+    // Neue Profile bekommen eine noch freie Figur (Startpunkt aus der ID, dann der Reihe nach weiter).
+    setPlayersList((prev) => {
+      const used = new Set(prev.map((q) => avatarIndexOf(q)));
+      let a = idHash(id) % AVATARS.length;
+      for (let k = 0; k < AVATARS.length && used.has(a); k++) a = (a + 1) % AVATARS.length;
+      return [...prev, { id, name, photo: photo || "", avatar: a }];
+    });
+    return id;
   };
   const updatePlayerPhoto = (id, photo) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, photo } : p)));
+  // Figur waehlen ersetzt ein eventuell vorhandenes Foto (das Foto hat sonst immer Vorrang).
+  const updatePlayerAvatar = (id, avatar) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, avatar, photo: "" } : p)));
   const updatePlayerName = (id, name) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, name } : p)));
   const removePlayer = (id) => setPlayersList((prev) => prev.filter((p) => p.id !== id));
   const reorderPlayers = (orderedIds) => setPlayersList((prev) => orderedIds.map((id) => prev.find((p) => p.id === id)).filter(Boolean));
@@ -9378,7 +9443,7 @@ function App() {
           onAddExpansion={readOnly ? null : openMissingExpansion}
         />
       )}
-      {playModal && <PlayFormModal games={games} plays={plays} playerProfiles={displayPlayers} onAddGame={applyGameSave} onAddPlayer={addPlayer} onUpdatePlayerPhoto={updatePlayerPhoto} onUpdatePlayerName={updatePlayerName} onRemovePlayer={removePlayer} onReorderPlayers={reorderPlayers} initial={playModal.editing} onClose={() => setPlayModal(null)} onSave={savePlay} onDelete={deletePlay} />}
+      {playModal && <PlayFormModal games={games} plays={plays} playerProfiles={displayPlayers} onAddGame={applyGameSave} onAddPlayer={addPlayer} onUpdatePlayerPhoto={updatePlayerPhoto} onUpdatePlayerAvatar={updatePlayerAvatar} onUpdatePlayerName={updatePlayerName} onRemovePlayer={removePlayer} onReorderPlayers={reorderPlayers} initial={playModal.editing} onClose={() => setPlayModal(null)} onSave={savePlay} onDelete={deletePlay} />}
       {commandBarOpen && (
         <CommandBarModal
           games={displayGames}
