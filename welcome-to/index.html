@@ -3,35 +3,34 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#B8A2E6">
+<meta name="theme-color" content="#E8DDCB">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Siedlerhain">
 <title>Siedlerhain</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Lexend:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600&display=swap">
 <style>
-/* Siedlerhain (Welcome To…): Naive-Design-Stil nach den Moodboard-Referenzen des Owners.
-   Flache Farbblöcke, dunkles Weinrot als Linienfarbe, wacklige Umrisse, harte Versatzschatten,
-   Blob- und Zackenformen, Bogenkanten. Eigener Stil, nicht von anderen Spielen übernommen. */
+/* Siedlerhain, Variante „Editorial“: ruhig, bildstark, modern. Serifenschrift (Instrument Serif) + Inter Tight,
+   gedeckte Erdfarben, klare Architektur-Zeichnungen ohne Wackeln, große Hausnummern als Typografie, dünne Linien statt Versatzschatten. */
 :root{
-  --paper:#F5F2EE; --card:#FFFDF8; --ink:#6B1324; --ink2:#8E4A57;
-  --pink:#F59AC4; --lilac:#B8A2E6; --mint:#8ED9B0; --orange:#F7A21B; --yellow:#FFD23F; --red:#E0402F; --sky:#8FD0EE; --green:#63CE93;
-  --b0:var(--pink); --b1:var(--lilac); --b2:var(--mint);
-  --btn:#FFF8EE; --plate:#FFF8EE; --plate-ink:#6B1324; --dock:#FFD23F; --dock-ink:#6B1324; --hero:#B8A2E6;
-  --fd:'Dela Gothic One','Arial Black',system-ui,sans-serif;
-  --fb:'Lexend',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --paper:#F3EEE5; --card:#FBF8F2; --ink:#1F1B17; --ink2:#7B7066; --line:rgba(31,27,23,.16);
+  --acc:#C4543A; --accs:#F0D5CB; --sage:#7F9A82; --fix:#1F1B17;
+  --b0:#E7D9C3; --b1:#D5DECF; --b2:#D3DDE4;
+  --btn:#1F1B17; --btnt:#F7F1E6; --dock:#1F1B17; --dockt:#F3EEE5; --coach:#E6DAC6; --hero:#E8DDCB;
+  --fd:'Instrument Serif','Iowan Old Style','Palatino Linotype',Georgia,serif;
+  --fb:'Inter Tight',system-ui,-apple-system,'Segoe UI',sans-serif;
   --g:3px;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --paper:#170F1F; --card:#2A1B33; --ink:#F6E3DA; --ink2:#C9A9A6;
-    --b0:#9C3E70; --b1:#5C4A99; --b2:#2E7358; --red:#F0604B; --yellow:#E9BC22; --dock:#E9BC22; --hero:#5C4A99;
+    --paper:#171310; --card:#221D19; --ink:#F1E9DD; --ink2:#A89C8F; --line:rgba(241,233,221,.18); --accs:#4A2A21;
+    --b0:#2C2620; --b1:#242B25; --b2:#232A31; --btn:#F1E9DD; --btnt:#1F1B17; --dock:#0E0C0A; --dockt:#F1E9DD; --coach:#2B241E; --hero:#241E19;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --paper:#170F1F; --card:#2A1B33; --ink:#F6E3DA; --ink2:#C9A9A6;
-  --b0:#9C3E70; --b1:#5C4A99; --b2:#2E7358; --red:#F0604B; --yellow:#E9BC22; --dock:#E9BC22; --hero:#5C4A99;
+  --paper:#171310; --card:#221D19; --ink:#F1E9DD; --ink2:#A89C8F; --line:rgba(241,233,221,.18); --accs:#4A2A21;
+  --b0:#2C2620; --b1:#242B25; --b2:#232A31; --btn:#F1E9DD; --btnt:#1F1B17; --dock:#0E0C0A; --dockt:#F1E9DD; --coach:#2B241E; --hero:#241E19;
   color-scheme:dark;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -40,226 +39,203 @@ html,body{margin:0;position:fixed;inset:0;width:100%;height:100%;overflow:hidden
 h1,h2,h3,p{margin:0}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:inherit}
 button:disabled{cursor:default}
-button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 a{color:inherit}
 svg{display:block}
 #app{position:fixed;inset:0;display:flex;flex-direction:column}
 .disp{font-family:var(--fd);font-weight:400}
 
-/* Kopf */
-.thead{flex:none;background:var(--paper);border-bottom:2.5px solid var(--ink);display:flex;align-items:center;gap:8px;
-  padding:max(8px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px))}
-.leave{font:600 13px/1 var(--fb);text-decoration:none;color:var(--ink);padding:10px 4px;display:inline-block}
-.thead h1{font:400 19px/1 var(--fd);letter-spacing:-.01em;flex:1;min-width:0;white-space:nowrap}
-.pill{border:2px solid var(--ink);border-radius:999px;padding:3px 9px 4px;background:var(--card);box-shadow:2px 2px 0 var(--ink);
-  display:flex;flex-direction:column;align-items:center;min-width:50px}
-.pill b{font:400 15px/1.05 var(--fd)}
-.pill small{font:600 8px/1 var(--fb);letter-spacing:.09em;text-transform:uppercase;color:var(--ink2);margin-top:1px}
-.pill.pts{background:var(--pink);color:#6B1324}
-.pill.pts small{color:#6B1324;opacity:.8}
+.thead{flex:none;background:var(--paper);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;
+  padding:max(8px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px))}
+.leave{font:400 26px/1 var(--fd);text-decoration:none;color:var(--ink);padding:6px 6px 8px;display:inline-block}
+.thead h1{font:400 28px/1 var(--fd);letter-spacing:-.01em;flex:1;min-width:0;white-space:nowrap}
+.pill{display:flex;flex-direction:column;align-items:flex-end;min-width:34px}
+.pill b{font:400 24px/1 var(--fd)}
+.pill small{font:600 8.5px/1 var(--fb);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);margin-top:3px}
+.pill.pts b{color:var(--acc)}
 .pill.bump{animation:bump .5s ease-out}
-.mbtn{width:38px;height:38px;border:2.5px solid var(--ink);border-radius:50% 46% 52% 48%;background:var(--orange);color:#6B1324;font:400 17px/1 var(--fd);
-  box-shadow:2px 2px 0 var(--ink);display:grid;place-items:center;flex:none}
-.mbtn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+.mbtn{width:36px;height:36px;border:1px solid var(--ink);border-radius:50%;color:var(--ink);font:400 15px/1 var(--fb);display:grid;place-items:center;flex:none}
+.mbtn:active{background:var(--ink);color:var(--paper)}
 
-/* Spielfläche */
 .main{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
-  padding:14px max(12px,env(safe-area-inset-right,0px)) 22px max(12px,env(safe-area-inset-left,0px))}
-.wrap{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
-.label{font:600 11px/1 var(--fb);letter-spacing:.09em;text-transform:uppercase;color:var(--ink2)}
-.note{font-size:12.5px;line-height:1.35;color:var(--ink2);margin-top:8px}
+  padding:18px max(16px,env(safe-area-inset-right,0px)) 26px max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.label{font:600 10.5px/1 var(--fb);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.note{font-size:12.5px;line-height:1.4;color:var(--ink2);margin-top:10px}
 
-/* Stadtpläne */
-.plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
-.plan{position:relative;background:var(--card);border:2.5px solid var(--ink);border-radius:12px 14px 11px 15px/14px 11px 15px 12px;padding:7px 7px 8px;box-shadow:3px 3px 0 var(--ink);
-  display:flex;flex-direction:column;gap:6px;min-width:0;overflow:hidden}
-.plan.done{background:var(--green);color:#6B1324}
-.plan.late{opacity:.6}
-.plan .ph{display:flex;justify-content:space-between;align-items:center;gap:4px}
-.plan .ph b{font:400 12px/1 var(--fd)}
-.oct{min-width:30px;height:26px;padding:0 4px;display:grid;place-items:center;font:400 14px/1 var(--fd);color:#6B1324;background:var(--yellow);border:2px solid #6B1324;
-  clip-path:none;border-radius:8px 6px 9px 6px}
-.plan.done .oct{background:var(--btn)}
-.pest{display:flex;flex-direction:column;gap:5px}
-.pe{display:flex;gap:1px;align-items:flex-end;border-bottom:2.5px solid var(--ink);padding:0 1px 1px;position:relative;width:max-content;max-width:100%}
-.pe::before,.pe::after{content:"";position:absolute;bottom:-2px;height:9px;border-left:2.5px solid var(--ink)}
-.pe::before{left:-1px}.pe::after{right:-1px}
+.plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.plan{position:relative;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 8px 10px;display:flex;flex-direction:column;gap:9px;min-width:0;overflow:hidden}
+.plan.done{background:color-mix(in srgb,var(--sage) 28%,var(--card));border-color:var(--sage)}
+.plan.late{opacity:.55}
+.plan .ph{display:flex;justify-content:space-between;align-items:baseline;gap:4px}
+.plan .ph b{font:600 9.5px/1 var(--fb);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.oct{font:400 26px/.9 var(--fd);color:var(--acc)}
+.plan.done .oct{color:var(--ink)}
+.pest{display:flex;flex-direction:column;gap:7px}
+.pe{display:flex;gap:1px;align-items:flex-end;border-bottom:1.5px solid var(--ink);padding:0 1px 2px;position:relative;width:max-content;max-width:100%}
+.pe::before,.pe::after{content:"";position:absolute;bottom:-1px;height:6px;border-left:1.5px solid var(--ink)}
+.pe::before{left:0}.pe::after{right:0}
 .pe svg{width:12px;height:15px;flex:none}
-.pe.ok svg .w{fill:var(--green)}
-.plan.done .pe{border-color:#6B1324}
-.plan.done .pe::before,.plan.done .pe::after{border-color:#6B1324}
-.stamp{position:absolute;right:-6px;bottom:6px;transform:rotate(-14deg);border:2.5px solid var(--red);color:var(--red);border-radius:6px;padding:2px 6px;
-  font:400 10px/1.1 var(--fd);text-transform:uppercase;background:color-mix(in srgb,var(--card) 80%,transparent);letter-spacing:.03em;text-align:center}
+.pe.ok svg .w{fill:var(--sage)}
+.stamp{position:absolute;right:5px;bottom:6px;transform:rotate(-7deg);border:1px solid var(--acc);color:var(--acc);border-radius:3px;padding:2px 5px;
+  font:600 8.5px/1.1 var(--fb);text-transform:uppercase;letter-spacing:.12em}
 
-/* Straßen */
-.street{background:var(--bc);border:2.5px solid var(--ink);border-radius:16px 20px 14px 22px/20px 14px 22px 16px;padding:10px 8px 9px;box-shadow:4px 4px 0 var(--ink);
-  display:flex;flex-direction:column;gap:3px;color:var(--ink)}
+.street{background:var(--bc);border-radius:12px;padding:14px 10px 12px;display:flex;flex-direction:column;gap:4px;color:var(--ink)}
 .street[data-s="0"]{--bc:var(--b0)}.street[data-s="1"]{--bc:var(--b1)}.street[data-s="2"]{--bc:var(--b2)}
-.shead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
-.shead h3{font:400 14px/1.1 var(--fd)}
-.shead h3 span{font:500 11px/1 var(--fb);margin-left:6px;opacity:.8}
+.shead{display:flex;justify-content:space-between;align-items:flex-end;gap:8px;margin-bottom:8px;padding:0 2px}
+.shead h3{font:400 24px/1 var(--fd);letter-spacing:-.01em}
+.shead h3 span{display:block;font:600 9.5px/1 var(--fb);margin:6px 0 0;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
 .parks{display:flex;gap:4px}
-.ptok{width:24px;height:24px;display:grid;place-items:center;font:400 10.5px/1 var(--fd);color:var(--ink);position:relative}
+.ptok{width:26px;height:26px;display:grid;place-items:center;font:400 13px/1 var(--fd);color:var(--ink);position:relative}
 .ptok svg{position:absolute;inset:0;width:100%;height:100%}
-.ptok span{position:relative;top:-1px}
-.ptok.on span{color:#fff;text-shadow:0 0 2px #6B1324,0 0 2px #6B1324}
-.row{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));column-gap:var(--g);position:relative}
+.ptok span{position:relative}
+.ptok.on span{color:#fff}
+.row{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));column-gap:var(--g);position:relative;align-items:end;
+  border-bottom:1.5px solid var(--ink);padding-bottom:0}
 .house{position:relative;aspect-ratio:25/32;display:grid;place-items:center;min-width:0;padding:0}
-.house.empty{border-radius:6px 7px 5px 7px;border:1.5px dashed color-mix(in srgb,var(--ink) 55%,transparent);background:rgba(255,255,255,.28);
-  font:400 12px/1 var(--fd);color:var(--plate-ink)}
+.house.empty{border-radius:3px;border:1px dashed color-mix(in srgb,var(--ink) 38%,transparent);background:color-mix(in srgb,var(--card) 40%,transparent);
+  font:400 14px/1 var(--fd);color:var(--ink)}
 .house svg{width:100%;height:100%;overflow:visible}
-.house.ok.empty{border:2.5px solid #6B1324;background:var(--yellow);cursor:pointer;animation:wig 1.3s ease-in-out infinite}
-.house.ok.empty .ghost{opacity:.7}
-.house.ok.full{cursor:pointer;animation:wig 1.3s ease-in-out infinite;filter:drop-shadow(0 0 3px var(--yellow)) drop-shadow(0 0 1px var(--yellow))}
-.house.src{filter:drop-shadow(0 0 4px var(--orange)) drop-shadow(0 0 2px var(--orange))}
-.house.pop{animation:pop .45s cubic-bezier(.3,1.6,.5,1)}
-.tut-hl{outline:4px solid var(--red);outline-offset:3px;animation:wig 1.1s ease-in-out infinite}
-@keyframes wig{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg) translateY(-1px)}}
-@keyframes pop{0%{transform:scale(.3) rotate(-14deg)}100%{transform:none}}
-@keyframes bump{40%{transform:scale(1.18) rotate(-3deg)}}
-.fence{position:absolute;top:-5px;bottom:-4px;width:7px;transform:translateX(-50%);pointer-events:none;
+.house.ok.empty{border:1.5px solid var(--acc);background:var(--accs);cursor:pointer;animation:pulse 1.4s ease-in-out infinite;color:var(--acc)}
+.house.ok.empty .ghost{font:400 17px/1 var(--fd)}
+.house.ok.full{cursor:pointer;animation:pulse 1.4s ease-in-out infinite}
+.house.src{filter:drop-shadow(0 0 0 var(--acc)) drop-shadow(0 0 3px var(--acc))}
+.house.pop{animation:pop .45s cubic-bezier(.3,1.4,.5,1)}
+.tut-hl{outline:2px solid var(--acc);outline-offset:3px;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.62}}
+@keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:none;opacity:1}}
+@keyframes bump{40%{transform:scale(1.14)}}
+.fence{position:absolute;top:-6px;bottom:-1px;width:6px;transform:translateX(-50%);pointer-events:none;
   left:calc((100% - (var(--n) - 1) * var(--g)) / var(--n) * var(--k) + var(--g) * (var(--k) - .5))}
 .fence svg{width:100%;height:100%}
-.fence.pop{animation:pop .4s cubic-bezier(.3,1.6,.5,1)}
-.gap{position:absolute;top:-8px;bottom:-8px;width:22px;transform:translateX(-50%);z-index:2;
+.fence.pop{animation:pop .4s ease-out}
+.gap{position:absolute;top:-8px;bottom:-4px;width:22px;transform:translateX(-50%);z-index:2;
   left:calc((100% - (var(--n) - 1) * var(--g)) / var(--n) * var(--k) + var(--g) * (var(--k) - .5))}
-.gap::before{content:"";position:absolute;left:50%;top:5px;bottom:5px;border-left:3px dashed var(--red);transform:translateX(-50%);z-index:1}
-.gap::after{content:"";position:absolute;top:0;bottom:0;left:50%;width:10px;margin-left:-5px;background:var(--yellow);border:1.5px solid #6B1324;border-radius:6px;animation:wig 1.3s ease-in-out infinite}
+.gap::before{content:"";position:absolute;left:50%;top:4px;bottom:4px;border-left:1.5px dashed var(--acc);transform:translateX(-50%)}
+.gap::after{content:"";position:absolute;top:0;bottom:0;left:50%;width:8px;margin-left:-4px;background:var(--acc);border-radius:4px;opacity:.9;animation:pulse 1.2s ease-in-out infinite}
 .poolrow,.estrow{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));column-gap:var(--g);align-items:center}
-.poolrow{height:18px;margin-top:3px}
+.poolrow{height:18px;margin-top:5px}
 .pool{grid-row:1;justify-self:center;width:100%;max-width:26px;height:17px}
 .pool svg{width:100%;height:100%}
-.estrow{margin-top:2px}
-.est{grid-row:1;height:17px;position:relative;border-bottom:2px solid var(--ink);display:flex;justify-content:center;align-items:flex-start;font:400 11px/1 var(--fd);min-width:0}
-.est::before,.est::after{content:"";position:absolute;bottom:-5px;height:8px;border-left:2px solid var(--ink)}
+.estrow{margin-top:3px}
+.est{grid-row:1;height:20px;position:relative;border-bottom:1px solid var(--ink);display:flex;justify-content:center;align-items:flex-start;font:400 14px/1 var(--fd);min-width:0;opacity:.75}
+.est::before,.est::after{content:"";position:absolute;bottom:-1px;height:6px;border-left:1px solid var(--ink)}
 .est::before{left:0}.est::after{right:0}
-.est.done{color:#6B1324;border-color:#6B1324}
-.est.done::before,.est.done::after{border-color:#6B1324}
-.est.done b{background:var(--green);border:1.5px solid #6B1324;border-radius:8px;padding:2px 6px 1px;margin-top:-4px}
+.est.done{opacity:1}
+.est.done b{background:var(--ink);color:var(--paper);border-radius:99px;padding:3px 8px 2px;margin-top:-2px;font-weight:400}
 
-/* Zähler */
-.stats{display:flex;flex-direction:column;gap:9px}
+.stats{display:flex;flex-direction:column;gap:10px}
 .estgrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
 .cgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-.cell{background:var(--card);border:2px solid var(--ink);border-radius:10px 12px 9px 12px;padding:6px 3px 5px;text-align:center;display:flex;flex-direction:column;gap:2px;min-width:0;box-shadow:2px 2px 0 var(--ink)}
+.cell{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 3px 7px;text-align:center;display:flex;flex-direction:column;gap:3px;min-width:0}
 .cell small{font-size:10px;color:var(--ink2);line-height:1.2}
-.cell b{font:400 19px/1.05 var(--fd)}
-.pips{display:flex;justify-content:center;gap:3px;min-height:7px}
-.pip{width:7px;height:7px;border-radius:50%;border:1.5px solid var(--ink)}
-.pip.on{background:var(--orange)}
-details{background:var(--card);border:2px solid var(--ink);border-radius:12px;padding:10px 12px;box-shadow:3px 3px 0 var(--ink)}
-summary{cursor:pointer;font:400 14px/1.2 var(--fd)}
+.cell b{font:400 26px/1 var(--fd)}
+.pips{display:flex;justify-content:center;gap:3px;min-height:6px}
+.pip{width:6px;height:6px;border-radius:50%;border:1px solid var(--ink2)}
+.pip.on{background:var(--acc);border-color:var(--acc)}
+details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+summary{cursor:pointer;font:400 20px/1.2 var(--fd)}
 details[open] summary{margin-bottom:8px}
 .lines{width:100%;border-collapse:collapse;font-size:13px}
-.lines td{padding:4px 0;border-top:1.5px dashed color-mix(in srgb,var(--ink) 35%,transparent)}
-.lines td:last-child{text-align:right;font:400 15px/1 var(--fd)}
+.lines td{padding:6px 0;border-top:1px solid var(--line)}
+.lines td:last-child{text-align:right;font:400 20px/1 var(--fd)}
 .lines .d{color:var(--ink2);font-size:11.5px;padding-left:8px}
-.lines tr.neg td:last-child{color:var(--red)}
+.lines tr.neg td:last-child{color:var(--acc)}
 
-/* Ergebnis */
-.result{background:var(--orange);color:#6B1324;border:2.5px solid #6B1324;border-radius:20px 16px 22px 14px/16px 22px 14px 20px;padding:18px 16px 16px;box-shadow:5px 5px 0 #6B1324;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden}
-.result .eyebrow{font:600 11px/1 var(--fb);letter-spacing:.09em;text-transform:uppercase}
-.result h2{font:400 46px/1 var(--fd);letter-spacing:-.02em}
-.result .why{font-size:13px}
-.result .lines td{border-color:rgba(107,19,36,.35)}
-.result .lines .d{color:#6B1324;opacity:.8}
-.result .lines tr.neg td:last-child{color:#6B1324;text-decoration:underline wavy}
-.result .stern{position:absolute;right:-26px;top:-26px;width:120px;height:120px;opacity:.9}
+.result{background:var(--dock);color:var(--dockt);border-radius:14px;padding:22px 18px 18px;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden}
+.result .eyebrow{font:600 10.5px/1 var(--fb);letter-spacing:.14em;text-transform:uppercase;opacity:.7}
+.result h2{font:400 64px/.95 var(--fd);letter-spacing:-.02em}
+.result .why{font-size:13px;opacity:.85}
+.result .lines td{border-color:rgba(243,238,229,.2)}
+.result .lines .d{color:var(--dockt);opacity:.6}
+.result .lines tr.neg td:last-child{color:#F29E86}
+.result .stern{position:absolute;right:-30px;top:-30px;width:130px;height:130px;opacity:.9}
 
-/* Knöpfe */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:2.5px solid #6B1324;border-radius:999px;padding:11px 20px;font:400 15px/1 var(--fd);
-  background:var(--btn);color:#6B1324;box-shadow:3px 3px 0 #6B1324;text-align:center}
-.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #6B1324}
-.btn.pri{background:var(--orange)}
-.btn.pink{background:var(--pink)}
-.btn.sm{padding:7px 13px;font-size:12.5px;box-shadow:2px 2px 0 #6B1324}
-.btn.arm{background:var(--red);color:#fff}
-.btn.hot{background:var(--yellow)}
-.btn:disabled{opacity:.45}
-.tlink{font:600 13px/1 var(--fb);text-decoration:underline;text-underline-offset:3px;padding:8px;text-align:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--btn);border-radius:999px;padding:13px 22px;font:600 14px/1 var(--fb);letter-spacing:.01em;
+  background:var(--btn);color:var(--btnt);text-align:center}
+.btn:active{transform:scale(.97)}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn.pink{background:var(--dockt);border-color:var(--dockt);color:var(--dock)}
+.btn.sm{padding:9px 15px;font-size:12.5px}
+.btn.arm{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn.hot{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn:disabled{opacity:.4}
+.tlink{font:500 13px/1 var(--fb);text-decoration:underline;text-underline-offset:4px;padding:8px;text-align:center}
 
-/* Eingabeleiste */
-.dock{flex:none;position:relative;background:var(--dock);color:var(--dock-ink);margin-top:12px;
-  padding:12px max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
-.dock::before{content:"";position:absolute;left:0;right:0;top:-10px;height:10px;pointer-events:none;
-  background:radial-gradient(circle at 11px 11px,var(--dock) 10px,transparent 10.5px) 0 0/22px 10px repeat-x}
-.dinner{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:9px}
-.prompt{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13.5px;line-height:1.3;min-height:32px;font-weight:500}
-.prompt p{min-width:0}
-.prompt b{font:400 16px/1 var(--fd)}
+.dock{flex:none;position:relative;background:var(--dock);color:var(--dockt);border-radius:20px 20px 0 0;margin-top:10px;
+  padding:14px max(14px,env(safe-area-inset-right,0px)) max(14px,env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
+.dinner{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:11px}
+.prompt{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13.5px;line-height:1.35;min-height:30px}
+.prompt p{min-width:0;opacity:.92}
+.prompt b{font:400 19px/1 var(--fd);color:#F5B7A3}
+.dock .btn{background:transparent;border-color:rgba(243,238,229,.5);color:var(--dockt)}
+.dock .btn.pri,.dock .btn.hot{background:var(--acc);border-color:var(--acc);color:#fff}
 .hand{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.kard{position:relative;background:var(--plate);color:var(--plate-ink);border:2.5px solid #6B1324;border-radius:14px 12px 16px 12px/12px 16px 12px 14px;box-shadow:3px 3px 0 #6B1324;
-  padding:0;display:flex;flex-direction:column;min-width:0;overflow:hidden;text-align:center}
-.kard:not(:disabled):active{transform:translate(2px,2px);box-shadow:1px 1px 0 #6B1324}
+.kard{position:relative;background:#F7F1E6;color:#1F1B17;border-radius:10px;padding:0;display:flex;flex-direction:column;min-width:0;overflow:hidden;text-align:center}
+.kard:not(:disabled):active{transform:scale(.97)}
 .kard.dead{opacity:.45}
-.kard.chosen{box-shadow:0 0 0 3px var(--red),3px 3px 0 #6B1324}
+.kard.chosen{box-shadow:0 0 0 2px var(--acc)}
 .kard.dim{opacity:.55}
-.kard .scene{width:100%;aspect-ratio:120/84;border-bottom:2.5px solid #6B1324;background:#fff}
+.kard .scene{width:100%;aspect-ratio:120/84;display:block}
 .kard .scene svg{width:100%;height:100%}
-.kard .back{display:flex;align-items:center;gap:5px;padding:4px 5px 5px;min-height:38px;background:#FFF1D9}
-.kard .back svg{width:30px;height:30px;flex:none}
-.kard .back span{font:400 10px/1.1 var(--fd);text-align:left;min-width:0;hyphens:manual}
-.kard .tag{position:absolute;left:4px;top:4px;background:var(--red);color:#fff;border:2px solid #6B1324;border-radius:8px;padding:2px 6px;font:400 9.5px/1 var(--fd)}
-.kard.tut-hl{outline-offset:2px}
+.kard .back{display:flex;align-items:center;gap:6px;padding:6px 7px 7px;min-height:38px;border-top:1px solid rgba(31,27,23,.14)}
+.kard .back svg{width:26px;height:26px;flex:none}
+.kard .back span{font:400 14px/1 var(--fd);text-align:left;min-width:0;hyphens:manual}
+.kard .tag{position:absolute;left:5px;top:5px;background:var(--acc);color:#fff;border-radius:99px;padding:3px 7px;font:600 9px/1 var(--fb);letter-spacing:.06em}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
-.chip{border:2.5px solid #6B1324;border-radius:12px 14px 11px 13px;background:var(--plate);color:#6B1324;padding:6px 13px;display:flex;flex-direction:column;align-items:center;min-width:56px;box-shadow:2px 2px 0 #6B1324}
-.chip b{font:400 22px/1 var(--fd)}
-.chip small{font-size:10.5px;color:#8E4A57}
-.chip:disabled{opacity:.35}
-.chip:not(:disabled):active{transform:translate(1px,1px);box-shadow:1px 1px 0 #6B1324}
+.chip{border:1px solid rgba(243,238,229,.45);border-radius:10px;background:#F7F1E6;color:#1F1B17;padding:7px 14px;display:flex;flex-direction:column;align-items:center;min-width:60px}
+.chip b{font:400 26px/1 var(--fd)}
+.chip small{font-size:10.5px;color:#7B7066}
+.chip:disabled{opacity:.3}
+.chip:not(:disabled):active{transform:scale(.96)}
 
-/* Coach */
-.coach{flex:none;background:var(--lilac);color:#6B1324;border-top:2.5px solid #6B1324;padding:10px max(14px,env(safe-area-inset-right,0px)) 10px max(14px,env(safe-area-inset-left,0px))}
-.cin{max-width:520px;margin:0 auto;display:flex;gap:10px;align-items:flex-start}
-.cin svg{width:58px;height:58px;flex:none}
-.cin .tx{flex:1;min-width:0;font-size:13.5px;line-height:1.35;font-weight:500;display:flex;flex-direction:column;gap:8px}
-.cin .tx b{font:400 13px/1 var(--fd)}
+.coach{flex:none;background:var(--coach);color:var(--ink);border-top:1px solid var(--line);padding:12px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px))}
+.cin{max-width:520px;margin:0 auto;display:flex;gap:12px;align-items:flex-start}
+.cin svg{width:52px;height:52px;flex:none}
+.cin .tx{flex:1;min-width:0;font-size:13.5px;line-height:1.4;display:flex;flex-direction:column;gap:8px}
+.cin .tx b{font:400 20px/1 var(--fd)}
 .cin .row2{display:flex;gap:8px}
-.coach .btn{box-shadow:2px 2px 0 #6B1324}
 
-/* Fenster */
-.ov{position:fixed;inset:0;z-index:20;background:rgba(40,10,30,.55);display:flex;align-items:flex-end;justify-content:center}
-.sheet{width:100%;max-width:560px;max-height:88%;overflow-y:auto;background:var(--paper);border:2.5px solid var(--ink);border-bottom:0;border-radius:24px 24px 0 0;
-  padding:0 max(16px,env(safe-area-inset-right,0px)) max(18px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));animation:up .25s ease-out}
+.ov{position:fixed;inset:0;z-index:20;background:rgba(20,15,10,.5);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:560px;max-height:88%;overflow-y:auto;background:var(--paper);border-radius:22px 22px 0 0;
+  padding:0 max(20px,env(safe-area-inset-right,0px)) max(20px,env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));animation:up .25s ease-out}
 @keyframes up{from{transform:translateY(40px);opacity:0}}
-.sh{position:sticky;top:0;background:var(--paper);display:flex;justify-content:space-between;align-items:center;padding:14px 0 10px;z-index:1}
-.sh h2{font:400 22px/1 var(--fd)}
-.xbtn{width:36px;height:36px;border:2.5px solid var(--ink);border-radius:50%;display:grid;place-items:center;font:400 14px/1 var(--fd);background:var(--card);box-shadow:2px 2px 0 var(--ink)}
+.sh{position:sticky;top:0;background:var(--paper);display:flex;justify-content:space-between;align-items:center;padding:18px 0 12px;z-index:1}
+.sh h2{font:400 32px/1 var(--fd)}
+.xbtn{width:34px;height:34px;border:1px solid var(--ink);border-radius:50%;display:grid;place-items:center;font:400 13px/1 var(--fb)}
 .menu{display:flex;flex-direction:column;gap:10px;padding-bottom:6px}
-.menu .btn{width:100%;justify-content:flex-start;padding:13px 18px}
-.rules{display:flex;flex-direction:column;gap:12px;font-size:14px;line-height:1.45}
-.rules h3{font:400 15px/1.1 var(--fd);margin-top:4px}
+.menu .btn{width:100%;justify-content:flex-start;padding:15px 20px}
+.rules{display:flex;flex-direction:column;gap:12px;font-size:14px;line-height:1.5}
+.rules h3{font:400 22px/1.1 var(--fd);margin-top:8px}
 .rules ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
 .rules .fine{font-size:12.5px;color:var(--ink2)}
-.ring{display:inline-block;vertical-align:-5px;width:20px;height:20px}
 
-/* Info-Blase und Hinweis */
-.bub{position:fixed;z-index:40;max-width:250px;background:var(--ink);color:var(--paper);border-radius:12px 14px 12px 14px;padding:9px 12px;font-size:12.5px;line-height:1.35;box-shadow:3px 3px 0 var(--orange);pointer-events:none}
-.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 210px);transform:translateX(-50%);z-index:45;max-width:86%;background:var(--red);color:#fff;border:2.5px solid #6B1324;border-radius:14px;padding:9px 14px;
-  font-size:13px;font-weight:500;box-shadow:3px 3px 0 #6B1324;text-align:center;animation:up .2s ease-out}
-.toast.good{background:var(--green);color:#6B1324}
-.fl{position:fixed;z-index:35;font:400 20px/1 var(--fd);color:var(--orange);text-shadow:2px 2px 0 #6B1324;pointer-events:none;animation:fl 1.1s ease-out forwards}
+.bub{position:fixed;z-index:40;max-width:250px;background:var(--ink);color:var(--paper);border-radius:8px;padding:9px 12px;font-size:12.5px;line-height:1.4;pointer-events:none}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 210px);transform:translateX(-50%);z-index:45;max-width:86%;background:var(--acc);color:#fff;border-radius:10px;padding:10px 15px;
+  font-size:13px;font-weight:500;text-align:center;animation:up .2s ease-out}
+.toast.good{background:var(--ink);color:var(--paper)}
+.fl{position:fixed;z-index:35;font:400 28px/1 var(--fd);color:var(--acc);pointer-events:none;animation:fl 1.1s ease-out forwards}
 @keyframes fl{to{transform:translateY(-46px);opacity:0}}
 
-/* Startseite */
 .start{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--hero)}
 .stage{flex:1;min-height:0;position:relative;overflow:hidden}
 .stage svg.cover{position:absolute;inset:0;width:100%;height:100%;display:block}
-.start .leave{position:absolute;z-index:3;left:max(10px,env(safe-area-inset-left,0px));top:max(6px,env(safe-area-inset-top,0px));background:var(--btn);border:2.5px solid #6B1324;border-radius:999px;color:#6B1324;padding:9px 14px;box-shadow:2px 2px 0 #6B1324}
-.sdock{flex:none;position:relative;background:var(--paper);padding:16px max(16px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+.start .leave{position:absolute;z-index:3;left:max(10px,env(safe-area-inset-left,0px));top:max(6px,env(safe-area-inset-top,0px));font:600 12px/1 var(--fb);letter-spacing:.06em;
+  background:var(--paper);border-radius:999px;color:var(--ink);padding:9px 14px}
+.sdock{flex:none;position:relative;background:var(--paper);border-radius:20px 20px 0 0;margin-top:-20px;padding:20px max(18px,env(safe-area-inset-right,0px)) max(14px,env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px));
   display:flex;flex-direction:column;gap:10px;align-items:stretch}
-.sdock::before{content:"";position:absolute;left:0;right:0;top:-10px;height:10px;pointer-events:none;
-  background:radial-gradient(circle at 11px 11px,var(--paper) 10px,transparent 10.5px) 0 0/22px 10px repeat-x}
 .sdock .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.sdock .btn{width:100%}
+.sdock .btn{width:100%;flex-direction:column;gap:4px;padding:13px 14px}
+.sdock .btn.alt{background:transparent;color:var(--ink);border-color:var(--ink)}
 .sdock .links{display:flex;justify-content:center;gap:6px}
-.sdock .sub{display:block;font:500 10.5px/1.2 var(--fb);margin-top:3px;opacity:.85}
+.sdock .sub{display:block;font:500 10.5px/1.2 var(--fb);opacity:.75}
 
 @media (prefers-reduced-motion: reduce){
   .house.ok,.gap::after,.tut-hl,.pill.bump,.house.pop,.fence.pop,.sheet,.toast,.fl{animation:none!important}
 }
-@media (max-width:360px){.thead h1{font-size:17px}.plan{padding:6px 5px}}
+@media (max-width:360px){.thead h1{font-size:24px}.plan{padding:7px 5px}}
 </style>
+
 </head>
 <body>
 <div id="app"></div>
@@ -660,7 +636,7 @@ details[open] summary{margin-bottom:8px}
   const SAVE = 'welcome-to:save';
   const BEST = 'welcome-to:best';
   const INBOX = 'spielregal:inbox:plays';
-  const INK = '#6B1324';
+  const INK = '#1F1B17';
   const NAMES = ['Lindenweg', 'Bachstraße', 'Kastanienallee'];
   const U = { view: 'start', sheet: null, tut: null, mode: 'solo' };
   let S = null;
@@ -711,48 +687,60 @@ details[open] summary{margin-bottom:8px}
   }
   function glyphWidth(str) { let w = 0; for (const ch of str) { const g = GL[ch]; w += (g ? g.w : 14) + 8; } return w - 8; }
 
-  // ---------- Farben und Häuser ----------
-  const WALL = ['#FFD23F', '#8FD0EE', '#F7A21B', '#FFF8EE', '#F59AC4', '#8ED9B0'];
-  const ROOF = ['#E0402F', '#63CE93', '#B8A2E6', '#F59AC4', '#F7A21B', '#8FD0EE'];
-  const SKY = ['#FFF0C2', '#D9F2E3', '#FFE0EC', '#E3DAF8', '#D6EEF9'];
-  const FONT = 'font-family="Dela Gothic One, Arial Black, sans-serif"';
+  // ---------- Farben und Architektur-Zeichnungen (ruhig, geometrisch, ohne Wackeln) ----------
+  const WALL = ['#E9CBA7', '#DDA58D', '#BCCBB3', '#EFE6D3', '#A9BDCB', '#E4B96A'];
+  const ROOF = ['#B4472F', '#3F5D58', '#2F3F57', '#8A5A44', '#C98B3C', '#6F806B'];
+  const TINT = ['#EADFCB', '#D6DFCC', '#D3DEE5', '#EBD5CA', '#EBDCAF'];
+  const SERIF = 'font-family="Instrument Serif, Iowan Old Style, Georgia, serif"';
   function colors(v, seed) {
     const w = WALL[(v * 5 + seed) % 6];
     let r = ROOF[(v * 3 + seed * 2 + 1) % 6];
     if (r === w) r = ROOF[(v * 3 + seed * 2 + 2) % 6];
     return { w, r };
   }
-  // kleines Haus für die Straßen: Dach, Schornstein, Wand, Schild mit der Hausnummer
+  // Fassade im Aufriss: Satteldach, Schornstein, Tür, Fenster und die Hausnummer als große Ziffer
+  function elev(x, base, w, h, c, num, o) {
+    o = o || {};
+    const sw = o.sw || 2, top = base - h, ap = top - w * .4, N = String(num);
+    let s = '<rect x="' + f1(x + w * .70) + '" y="' + f1(ap + w * .1) + '" width="' + f1(w * .13) + '" height="' + f1(w * .3) + '" fill="' + c.r + '" stroke="' + INK + '" stroke-width="' + sw + '" stroke-linejoin="round"/>';
+    s += '<rect x="' + x + '" y="' + top + '" width="' + w + '" height="' + h + '" fill="' + c.w + '" stroke="' + INK + '" stroke-width="' + sw + '" stroke-linejoin="round"/>';
+    s += '<path d="M' + f1(x - w * .07) + ' ' + (top + 1) + 'L' + f1(x + w / 2) + ' ' + f1(ap) + 'L' + f1(x + w * 1.07) + ' ' + (top + 1) + 'Z" fill="' + c.r + '" stroke="' + INK + '" stroke-width="' + sw + '" stroke-linejoin="round"/>';
+    if (!o.plain) {
+      s += '<rect x="' + f1(x + w * .1) + '" y="' + f1(base - h * .56) + '" width="' + f1(w * .2) + '" height="' + f1(h * .56) + '" fill="' + INK + '"/>';
+      s += '<rect x="' + f1(x + w * .13) + '" y="' + f1(top + h * .16) + '" width="' + f1(w * .22) + '" height="' + f1(h * .26) + '" fill="#D7E4EA" stroke="' + INK + '" stroke-width="' + (sw * .7) + '"/>';
+    }
+    const fs = o.fs || (N.length > 1 ? h * .46 : h * .6), cx = o.plain ? x + w / 2 : x + w * .64, cy = o.plain ? base - h * .16 : base - h * .17;
+    s += '<text x="' + f1(cx) + '" y="' + f1(cy) + '" text-anchor="middle" font-size="' + f1(fs) + '" fill="' + INK + '" ' + SERIF + '>' + N + '</text>';
+    return s;
+  }
   function houseSVG(v, seed, flags) {
-    const c = colors(v, seed), sd = v * 13 + seed * 7 + 3;
-    const txt = String(v), fs = txt.length > 1 ? 17 : 23;
+    const c = colors(v, seed), N = String(v);
     let s = '<svg viewBox="0 0 50 64" aria-hidden="true">';
-    s += '<path d="' + poly([[36, 18], [36, 5], [43, 5], [43, 24]], .8, sd + 1) + '" fill="' + c.r + '" stroke="' + INK + '" stroke-width="3" stroke-linejoin="round"/>';
-    s += '<path d="' + poly([[5, 27], [5, 61], [45, 61], [45, 27]], 1.2, sd) + '" fill="' + c.w + '" stroke="' + INK + '" stroke-width="3" stroke-linejoin="round"/>';
-    s += '<path d="' + poly([[1, 29], [25, 4], [49, 29]], 1.2, sd + 2) + '" fill="' + c.r + '" stroke="' + INK + '" stroke-width="3" stroke-linejoin="round"/>';
-    s += '<path d="' + poly([[10, 35], [10, 58], [40, 58], [40, 35]], .8, sd + 3) + '" fill="#FFF8EE" stroke="' + INK + '" stroke-width="2" stroke-linejoin="round"/>';
-    s += '<text x="25" y="' + (txt.length > 1 ? 53 : 55) + '" text-anchor="middle" font-size="' + fs + '" fill="' + INK + '" ' + FONT + '>' + txt + '</text>';
-    if (flags && flags.bis) s += '<circle cx="42" cy="14" r="9" fill="#F59AC4" stroke="' + INK + '" stroke-width="2.5"/><text x="42" y="19" text-anchor="middle" font-size="13" fill="' + INK + '" ' + FONT + '>b</text>';
-    if (flags && flags.lock) s += '<path d="' + burst(8, 12, 5.5, 10, 6, sd) + '" fill="#63CE93" stroke="' + INK + '" stroke-width="2" stroke-linejoin="round"/>';
+    s += '<rect x="35" y="14" width="6" height="14" fill="' + c.r + '" stroke="' + INK + '" stroke-width="2"/>';
+    s += '<rect x="4" y="28" width="42" height="35" fill="' + c.w + '" stroke="' + INK + '" stroke-width="2.2" stroke-linejoin="round"/>';
+    s += '<path d="M1 29.5L25 6L49 29.5Z" fill="' + c.r + '" stroke="' + INK + '" stroke-width="2.2" stroke-linejoin="round"/>';
+    s += '<text x="25" y="' + (N.length > 1 ? 55 : 57) + '" text-anchor="middle" font-size="' + (N.length > 1 ? 27 : 34) + '" fill="' + INK + '" ' + SERIF + '>' + N + '</text>';
+    if (flags && flags.bis) s += '<rect x="30" y="31" width="16" height="11" rx="5.5" fill="' + INK + '"/><text x="38" y="39.5" text-anchor="middle" font-size="9.5" fill="#F3EEE5" font-family="Inter Tight, sans-serif" font-weight="600">bis</text>';
+    if (flags && flags.lock) s += '<circle cx="9" cy="14" r="6.5" fill="#7F9A82" stroke="' + INK + '" stroke-width="1.6"/><path d="M6 14l2.4 2.6L12.4 11.6" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
     return s + '</svg>';
   }
   function miniHouse(ok, seed) {
-    const sd = seed * 11 + 5;
-    return '<svg viewBox="0 0 12 15" aria-hidden="true"><path class="w" d="' + poly([[1.5, 7], [1.5, 14], [10.5, 14], [10.5, 7]], .2, sd) + '" fill="#FFF8EE" stroke="' + INK + '" stroke-width="1.3" stroke-linejoin="round"/>' +
-      '<path d="' + poly([[.5, 8], [6, 1.5], [11.5, 8]], .2, sd + 1) + '" fill="' + ROOF[seed % 6] + '" stroke="' + INK + '" stroke-width="1.3" stroke-linejoin="round"/></svg>';
+    const c = ROOF[seed % 6];
+    return '<svg viewBox="0 0 12 15" aria-hidden="true"><rect class="w" x="1.5" y="7" width="9" height="7" fill="#FBF8F2" stroke="' + INK + '" stroke-width="1.1"/>' +
+      '<path d="M.6 8L6 2L11.4 8Z" fill="' + c + '" stroke="' + INK + '" stroke-width="1.1" stroke-linejoin="round"/></svg>';
   }
   function fenceSVG() {
-    return '<svg viewBox="0 0 8 30" preserveAspectRatio="none" aria-hidden="true"><path d="M1 29V8L4 2L7 8V29Z" fill="#E0402F" stroke="' + INK + '" stroke-width="1.6" stroke-linejoin="round"/><path d="M1.5 14H6.5M1.5 21H6.5" stroke="#FFF8EE" stroke-width="1.6"/></svg>';
+    return '<svg viewBox="0 0 6 30" preserveAspectRatio="none" aria-hidden="true"><path d="M1 30V6L3 1L5 6V30Z" fill="' + INK + '"/></svg>';
   }
   function parkSVG(on, sd) {
-    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + blob(12, 11, 10, 10, 8, .1, sd) + '" fill="' + (on ? '#63CE93' : 'rgba(255,255,255,.5)') + '" stroke="' + INK + '" stroke-width="1.8"/></svg>';
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="' + (on ? '#5F8A66' : 'rgba(255,255,255,.45)') + '" stroke="' + INK + '" stroke-width="1.2"' + (on ? '' : ' stroke-dasharray="2.5 2"') + '/></svg>';
   }
   function poolSVG(on, sd) {
-    return '<svg viewBox="0 0 28 17" aria-hidden="true"><path d="' + blob(14, 8.5, 12, 6.2, 8, .1, sd) + '" fill="' + (on ? '#8FD0EE' : 'rgba(255,255,255,.35)') + '" stroke="' + INK + '" stroke-width="1.8"' + (on ? '' : ' stroke-dasharray="3 2"') + '/>' +
-      (on ? '<path d="M7 9Q10 6 13 9T19 9T23 8" fill="none" stroke="' + INK + '" stroke-width="1.4" stroke-linecap="round"/>' : '') + '</svg>';
+    return '<svg viewBox="0 0 28 17" aria-hidden="true"><rect x="1.5" y="1.5" width="25" height="14" rx="5" fill="' + (on ? '#7FB4CE' : 'rgba(255,255,255,.35)') + '" stroke="' + INK + '" stroke-width="1.2"' + (on ? '' : ' stroke-dasharray="3 2"') + '/>' +
+      (on ? '<path d="M6 9Q9 6 12 9T18 9T22 8" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>' : '') + '</svg>';
   }
 
-  // ---------- Bilder: Karten mit Hausnummer und Effekt-Figuren ----------
+  // ---------- Effekte: schlichte Piktogramme ----------
   const EF = {
     fence: { name: 'Geometer', act: 'Zaun in einer Straße', info: 'Geometer: Zieh einen Zaun zwischen zwei Bauplätzen einer Straße, egal wo. Zäune begrenzen die Siedlungen. Sie zählen am Ende, wenn alle Häuser dazwischen eine Nummer haben (höchstens 6).' },
     agent: { name: 'Immobilien­makler', act: 'Siedlungswert steigern', info: 'Immobilienmakler: Streiche in einer Spalte deiner Wahl den obersten Wert. Jede fertige Siedlung dieser Größe bringt am Ende den kleinsten noch sichtbaren Wert.' },
@@ -762,128 +750,53 @@ details[open] summary{margin-bottom:8px}
     bis: { name: 'Doppelte Nummer', act: 'Haus doppeln', info: 'Doppelte Hausnummern: Kopiere die Nummer irgendeines Hauses auf ein freies Nachbarfeld in derselben Siedlung. Das kostet am Ende Punkte, immer mehr.' }
   };
   const EFFECT_SVG = {
-    // Geometer: Männchen mit Helm und Messlatte
-    fence: function () {
-      return '<path d="M5 44V30" stroke="' + INK + '" stroke-width="3" stroke-linecap="round"/><path d="M5 38H14M5 32H14" stroke="#E0402F" stroke-width="3"/>' +
-        '<path d="M15 45V30Q15 24 24 24Q33 24 33 30V45Z" fill="#F7A21B" stroke="' + INK + '" stroke-width="2.5" stroke-linejoin="round"/>' +
-        '<circle cx="24" cy="15" r="8.5" fill="#FFD9B3" stroke="' + INK + '" stroke-width="2.5"/>' +
-        '<path d="M14.5 14Q14.5 5 24 5Q33.5 5 33.5 14Z" fill="#FFD23F" stroke="' + INK + '" stroke-width="2.5" stroke-linejoin="round"/>' +
-        '<circle cx="20.5" cy="16.5" r="1.4" fill="' + INK + '"/><circle cx="27.5" cy="16.5" r="1.4" fill="' + INK + '"/><path d="M21 20Q24 22.5 27 20" fill="none" stroke="' + INK + '" stroke-width="1.8" stroke-linecap="round"/>' +
-        '<path d="M33 36L44 36M39 36V44M35 36V44M43 36V44" stroke="' + INK + '" stroke-width="2.6" stroke-linecap="round"/><path d="M33 31H45V37H33Z" fill="#E0402F" stroke="' + INK + '" stroke-width="2.2" stroke-linejoin="round"/>';
-    },
-    // Immobilienmakler: Männchen im Anzug mit Schlüssel
-    agent: function () {
-      return '<path d="M14 45V30Q14 24 24 24Q34 24 34 30V45Z" fill="#8FD0EE" stroke="' + INK + '" stroke-width="2.5" stroke-linejoin="round"/>' +
-        '<path d="M24 25L21 29L24 41L27 29Z" fill="#E0402F" stroke="' + INK + '" stroke-width="2" stroke-linejoin="round"/>' +
-        '<circle cx="24" cy="14" r="8.5" fill="#FFD9B3" stroke="' + INK + '" stroke-width="2.5"/>' +
-        '<path d="M15 11Q15 4.5 24 4.5Q33 4.5 33 11Q28 8 24 9Q20 8 15 11Z" fill="' + INK + '"/>' +
-        '<circle cx="20.5" cy="15.5" r="1.4" fill="' + INK + '"/><circle cx="27.5" cy="15.5" r="1.4" fill="' + INK + '"/><path d="M20 19Q24 23 28 19" fill="none" stroke="' + INK + '" stroke-width="1.8" stroke-linecap="round"/>' +
-        '<circle cx="39" cy="33" r="4.5" fill="#FFD23F" stroke="' + INK + '" stroke-width="2.3"/><path d="M39 37.5V46M39 42H43M39 45H42" stroke="' + INK + '" stroke-width="2.3" stroke-linecap="round"/>';
-    },
-    // Landschaftsgärtner: Palme und Bäumchen
-    park: function () {
-      return '<path d="M14 45Q14 36 22 33Q30 36 30 45Z" fill="#B8A2E6" stroke="' + INK + '" stroke-width="2.5" stroke-linejoin="round"/>' +
-        '<path d="M22 33V19" stroke="' + INK + '" stroke-width="3" stroke-linecap="round"/>' +
-        '<path d="M22 19Q10 21 6 28Q14 24 22 20ZM22 19Q34 21 38 28Q30 24 22 20ZM22 19Q16 8 8 8Q14 12 22 18ZM22 19Q28 8 36 8Q30 12 22 18Z" fill="#63CE93" stroke="' + INK + '" stroke-width="2" stroke-linejoin="round"/>' +
-        '<circle cx="40" cy="38" r="5" fill="#F59AC4" stroke="' + INK + '" stroke-width="2.3"/><circle cx="40" cy="38" r="1.6" fill="#FFD23F"/><path d="M40 43V47" stroke="' + INK + '" stroke-width="2.2" stroke-linecap="round"/>';
-    },
-    // Swimmingpool: Becken mit Schwimmring
-    pool: function () {
-      return '<path d="' + blob(24, 33, 21, 11, 8, .06, 4) + '" fill="#8FD0EE" stroke="' + INK + '" stroke-width="2.6"/>' +
-        '<path d="M9 34Q14 29 19 34T29 34T39 33" fill="none" stroke="' + INK + '" stroke-width="2" stroke-linecap="round"/>' +
-        '<circle cx="30" cy="28" r="6" fill="none" stroke="#E0402F" stroke-width="4.6"/><circle cx="30" cy="28" r="6" fill="none" stroke="' + INK + '" stroke-width="1" stroke-dasharray="3 4"/>' +
-        '<path d="M10 22V11Q10 7 14 7M16 22V11" fill="none" stroke="' + INK + '" stroke-width="2.4" stroke-linecap="round"/><path d="M10 13H16M10 18H16" stroke="' + INK + '" stroke-width="2" stroke-linecap="round"/>';
-    },
-    // Zeitarbeit: orangefarbene Baustellenraute mit müdem Gesicht
-    temp: function () {
-      return '<path d="M24 3L45 24L24 45L3 24Z" fill="#F7A21B" stroke="' + INK + '" stroke-width="2.7" stroke-linejoin="round"/>' +
-        '<path d="M11 20H37V28H11Z" fill="#FFF8EE" stroke="' + INK + '" stroke-width="2.2" stroke-linejoin="round"/><path d="M16 20L21 28M24 20L29 28M32 20L37 28" stroke="#E0402F" stroke-width="3"/>' +
-        '<path d="M19 33Q24 37 29 33" fill="none" stroke="' + INK + '" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="13" r="1.4" fill="' + INK + '"/><circle cx="28" cy="13" r="1.4" fill="' + INK + '"/>';
-    },
-    // Doppelte Hausnummer: rosa Briefkasten mit Fähnchen
-    bis: function () {
-      return '<path d="M12 45V32" stroke="' + INK + '" stroke-width="3.2" stroke-linecap="round"/>' +
-        '<path d="M5 32V22Q5 11 18 11H30Q43 11 43 22V32Z" fill="#F59AC4" stroke="' + INK + '" stroke-width="2.7" stroke-linejoin="round"/>' +
-        '<path d="M36 11V3H44V8H36" fill="#E0402F" stroke="' + INK + '" stroke-width="2.2" stroke-linejoin="round"/>' +
-        '<text x="24" y="28" text-anchor="middle" font-size="12" fill="' + INK + '" ' + FONT + '>BIS</text>';
-    }
+    fence: () => '<path d="M9 42V15l4-6 4 6v27M31 42V15l4-6 4 6v27M5 23H43M5 33H43" fill="none" stroke="' + INK + '" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="19" y="21" width="10" height="14" rx="1.5" fill="#C4543A"/>',
+    agent: () => '<circle cx="15" cy="16" r="8" fill="#C4543A" stroke="' + INK + '" stroke-width="2.4"/><circle cx="15" cy="16" r="2.6" fill="#F7F1E6"/><path d="M21 22L41 42M33 34l5-5M37 38l4-4" fill="none" stroke="' + INK + '" stroke-width="2.6" stroke-linecap="round"/>',
+    park: () => '<circle cx="24" cy="18" r="12" fill="#5F8A66" stroke="' + INK + '" stroke-width="2.4"/><path d="M24 30V43M17 43H31" fill="none" stroke="' + INK + '" stroke-width="2.6" stroke-linecap="round"/><circle cx="20" cy="15" r="2" fill="#F7F1E6" opacity=".7"/>',
+    pool: () => '<rect x="5" y="17" width="38" height="24" rx="7" fill="#7FB4CE" stroke="' + INK + '" stroke-width="2.4"/><path d="M10 30Q14 25 18 30T26 30T34 30T40 29" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M31 17V9Q31 5 35 5M38 17V9" fill="none" stroke="' + INK + '" stroke-width="2.4" stroke-linecap="round"/>',
+    temp: () => '<path d="M6 17H40M32 9l8 8-8 8" fill="none" stroke="' + INK + '" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M42 33H8M16 25l-8 8 8 8" fill="none" stroke="#C4543A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>',
+    bis: () => '<path d="M5 41V25l9-9 9 9v16ZM25 41V25l9-9 9 9v16Z" fill="#E9CBA7" stroke="' + INK + '" stroke-width="2.4" stroke-linejoin="round"/><path d="M5 25L14 16L23 25M25 25L34 16L43 25" fill="#C4543A" stroke="' + INK + '" stroke-width="2.4" stroke-linejoin="round"/>'
   };
   const effSVG = e => '<svg viewBox="0 0 48 48" aria-hidden="true">' + EFFECT_SVG[e]() + '</svg>';
-  // Die Hausnummern-Seite der Baukarte: ein Häuschen mit Nummernschild und Kleinkram drumherum
+
+  // Bildseite der Baukarte: Plakat mit Haus, Sonne, Baum, riesiger Umrissziffer im Hintergrund
   function sceneSVG(n, seed) {
-    const sd = n * 17 + seed * 5 + 9, c = colors(n, seed), R = rng(sd);
-    const txt = String(n), fs = txt.length > 1 ? 25 : 32;
-    let s = '<svg viewBox="0 0 120 84" aria-hidden="true">';
-    s += '<rect width="120" height="84" fill="' + SKY[n % 5] + '"/>';
-    const k = n % 4;
-    if (k === 0 || k === 2) s += '<path d="' + burst(100, 14, 7, 13, 8, sd) + '" fill="#FFD23F" stroke="' + INK + '" stroke-width="2.4" stroke-linejoin="round"/>';
-    else s += '<path d="' + blob(98, 15, 15, 7.5, 7, .1, sd) + '" fill="#FFF8EE" stroke="' + INK + '" stroke-width="2.4"/>';
-    s += '<path d="M0 66Q30 58 60 64T120 62V84H0Z" fill="#8ED9B0" stroke="' + INK + '" stroke-width="2.6"/>';
-    // Baum links oder rechts
-    const tx = (n % 2) ? 12 : 108;
-    s += '<path d="M' + tx + ' 68V50" stroke="' + INK + '" stroke-width="4" stroke-linecap="round"/><path d="' + blob(tx, 40, 11, 12, 8, .12, sd + 4) + '" fill="#63CE93" stroke="' + INK + '" stroke-width="2.6"/>' +
-      '<circle cx="' + (tx - 3) + '" cy="38" r="1.6" fill="' + INK + '"/><circle cx="' + (tx + 4) + '" cy="44" r="1.6" fill="' + INK + '"/>';
-    // Haus
-    s += '<path d="' + poly([[80, 36], [80, 14], [90, 14], [90, 40]], .8, sd + 1) + '" fill="' + c.r + '" stroke="' + INK + '" stroke-width="2.6" stroke-linejoin="round"/>';
-    s += '<path d="' + poly([[28, 40], [28, 72], [92, 72], [92, 40]], 1.5, sd) + '" fill="' + c.w + '" stroke="' + INK + '" stroke-width="3" stroke-linejoin="round"/>';
-    s += '<path d="' + poly([[20, 42], [60, 8], [100, 42]], 1.5, sd + 2) + '" fill="' + c.r + '" stroke="' + INK + '" stroke-width="3" stroke-linejoin="round"/>';
-    // Rauchkringel
-    s += '<path d="M85 11Q80 6 85 2Q91 -1 88 -5" transform="translate(0 6)" fill="none" stroke="' + INK + '" stroke-width="2" stroke-linecap="round" opacity=".55"/>';
-    // Nummernschild
-    s += '<path d="' + poly([[38, 44], [38, 70], [82, 70], [82, 44]], 1, sd + 3) + '" fill="#FFF8EE" stroke="' + INK + '" stroke-width="2.6" stroke-linejoin="round"/>';
-    s += '<text x="60" y="' + (txt.length > 1 ? 66 : 68) + '" text-anchor="middle" font-size="' + fs + '" fill="' + INK + '" ' + FONT + '>' + txt + '</text>';
-    // Fensterchen mit Blümchen
-    s += '<path d="M30 27L42 27L42 35L30 35Z" fill="#8FD0EE" stroke="' + INK + '" stroke-width="2"/>';
-    // Extras je nach Nummer
-    if (k === 1) s += '<ellipse cx="26" cy="78" rx="9" ry="5" fill="#FFB86B" stroke="' + INK + '" stroke-width="2"/><path d="M19 74L21 69L24 73M29 73L32 69L33 74" fill="#FFB86B" stroke="' + INK + '" stroke-width="2" stroke-linejoin="round"/><circle cx="23" cy="77" r="1" fill="' + INK + '"/><circle cx="29" cy="77" r="1" fill="' + INK + '"/>';
-    if (k === 3) s += '<path d="M14 78V72M20 78V70M26 78V73" stroke="' + INK + '" stroke-width="2" stroke-linecap="round"/><circle cx="14" cy="70" r="3.2" fill="#F59AC4" stroke="' + INK + '" stroke-width="1.6"/><circle cx="20" cy="68" r="3.2" fill="#FFD23F" stroke="' + INK + '" stroke-width="1.6"/><circle cx="26" cy="71" r="3.2" fill="#B8A2E6" stroke="' + INK + '" stroke-width="1.6"/>';
-    if (k === 0 || k === 2) s += '<path d="M96 80Q103 74 108 80" fill="none" stroke="' + INK + '" stroke-width="2.2" stroke-linecap="round"/>';
+    const c = colors(n, seed), N = String(n), k = n % 4, tint = TINT[(n + seed) % 5];
+    let s = '<svg viewBox="0 0 120 84" preserveAspectRatio="xMidYMid slice" aria-hidden="true">';
+    s += '<rect width="120" height="84" fill="' + tint + '"/>';
+    s += '<text x="' + (k % 2 ? 4 : 116) + '" y="66" text-anchor="' + (k % 2 ? 'start' : 'end') + '" font-size="96" fill="none" stroke="' + INK + '" stroke-opacity=".22" stroke-width=".8" ' + SERIF + '>' + N + '</text>';
+    const sx = [96, 22, 100, 20][k], sy = [16, 17, 14, 15][k];
+    s += '<circle cx="' + sx + '" cy="' + sy + '" r="9" fill="' + (k < 2 ? '#C4543A' : '#E4B96A') + '"/>';
+    s += '<rect y="68" width="120" height="16" fill="' + ['#7F9A82', '#8FA58A', '#9DAF8E', '#86A08B'][k] + '"/><path d="M0 68H120" stroke="' + INK + '" stroke-width="1.6"/>';
+    const tx = (k % 2) ? 106 : 14;
+    s += '<path d="M' + tx + ' 68V52" stroke="' + INK + '" stroke-width="2.4"/><circle cx="' + tx + '" cy="44" r="10" fill="#5F8A66" stroke="' + INK + '" stroke-width="2"/>';
+    s += '<g transform="translate(' + (k % 2 ? -8 : 8) + ' 0)">' + elev(26, 68, 64, 45, c, n, { sw: 2 }) + '</g>';
+    if (k === 1 || k === 3) s += '<path d="M6 68V60M12 68V58M18 68V60" stroke="' + INK + '" stroke-width="1.6" stroke-linecap="round"/>';
     return s + '</svg>';
   }
   function birdSVG() {
-    return '<svg viewBox="0 0 64 64" aria-hidden="true">' +
-      '<path d="M26 8Q28 2 31 8Q34 1 37 9" fill="none" stroke="' + INK + '" stroke-width="3" stroke-linecap="round"/>' +
-      '<path d="M22 56L21 62M34 56L35 62M18 62H24M32 62H38" stroke="' + INK + '" stroke-width="3" stroke-linecap="round"/>' +
-      '<path d="' + blob(30, 34, 22, 21, 8, .06, 5) + '" fill="#F59AC4" stroke="' + INK + '" stroke-width="3"/>' +
-      '<path d="M46 30L61 33L47 40Z" fill="#F7A21B" stroke="' + INK + '" stroke-width="3" stroke-linejoin="round"/>' +
-      '<circle cx="38" cy="28" r="5" fill="#FFF8EE" stroke="' + INK + '" stroke-width="2.5"/><circle cx="39" cy="28.5" r="2" fill="' + INK + '"/>' +
-      '<path d="M14 34Q24 26 30 40Q22 48 14 42Z" fill="#B8A2E6" stroke="' + INK + '" stroke-width="3" stroke-linejoin="round"/></svg>';
+    return '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#F7F1E6" stroke="' + INK + '" stroke-width="1.6"/>' +
+      '<path d="M16 38Q16 22 31 22Q44 22 46 33L58 36L45 41Q42 50 31 50Q16 50 16 38Z" fill="#C4543A" stroke="' + INK + '" stroke-width="2.2" stroke-linejoin="round"/>' +
+      '<path d="M20 36Q27 29 33 40Q27 46 20 42Z" fill="#E9CBA7" stroke="' + INK + '" stroke-width="2" stroke-linejoin="round"/><circle cx="38" cy="29" r="2.2" fill="' + INK + '"/>' +
+      '<path d="M26 50L25 57M36 50L37 57" stroke="' + INK + '" stroke-width="2.2" stroke-linecap="round"/></svg>';
   }
   function coverSVG() {
-    let s = '<svg class="cover" id="coverArt" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bunte Häuser mit Nummernschildern, Bäumen und einem Pool">';
-    s += '<rect width="600" height="800" fill="#B8A2E6"/>';
-    s += '<path d="M0 520C90 470 190 545 300 505S520 470 600 520L600 800L0 800Z" fill="#F59AC4" stroke="' + INK + '" stroke-width="5"/>';
-    for (let x = -10; x < 640; x += 44) s += '<circle cx="' + (x + 22) + '" cy="668" r="24" fill="#8ED9B0" stroke="' + INK + '" stroke-width="5"/>';
-    s += '<rect x="-10" y="672" width="620" height="140" fill="#8ED9B0"/>';
-    s += '<path d="' + burst(486, 336, 70, 100, 13, 7) + '" fill="#F7A21B" stroke="' + INK + '" stroke-width="5" stroke-linejoin="round"/>';
-    s += '<circle cx="486" cy="336" r="46" fill="#FFD23F" stroke="' + INK + '" stroke-width="5"/>';
-    s += '<path d="M468 330Q476 322 484 330M492 330Q500 322 508 330" stroke="' + INK + '" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M474 350Q488 362 502 350" stroke="' + INK + '" stroke-width="5" fill="none" stroke-linecap="round"/>';
-    s += '<path d="' + spiral(90, 410, 52, 2.6) + '" fill="none" stroke="#E0402F" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>';
-    s += '<path d="' + blob(250, 372, 78, 52, 9, .13, 3) + '" fill="#F59AC4" stroke="' + INK + '" stroke-width="5"/>';
-    s += '<path d="' + blob(250, 372, 38, 24, 7, .12, 4) + '" fill="#FFF8EE" stroke="' + INK + '" stroke-width="5"/>';
-    s += '<path d="' + burst(336, 456, 14, 28, 8, 11) + '" fill="#63CE93" stroke="' + INK + '" stroke-width="4.5" stroke-linejoin="round"/>';
-    s += '<path d="' + burst(160, 442, 11, 22, 7, 12) + '" fill="#FFD23F" stroke="' + INK + '" stroke-width="4.5" stroke-linejoin="round"/>';
-    [[26, 12, 0], [166, 3, 1], [308, 7, 2], [452, 1, 3]].forEach(([x, num, i]) => {
-      const w = [112, 108, 110, 114][i], h = [86, 104, 80, 96][i], body = [WALL[0], WALL[1], WALL[2], WALL[3]][i], roof = [ROOF[0], ROOF[1], ROOF[2], ROOF[3]][i], base = 664, top = base - h, apex = top - w * .42, sd = 20 + i * 10;
-      s += '<path d="' + poly([[x, base], [x, top], [x + w, top], [x + w, base]], 2.2, sd) + '" fill="' + body + '" stroke="' + INK + '" stroke-width="5" stroke-linejoin="round"/>';
-      s += '<path d="' + poly([[x - 9, top + 3], [x + w / 2, apex], [x + w + 9, top + 3]], 2.2, sd + 1) + '" fill="' + roof + '" stroke="' + INK + '" stroke-width="5" stroke-linejoin="round"/>';
-      s += '<path d="' + poly([[x + w * .62, base], [x + w * .62, base - h * .46], [x + w * .86, base - h * .46], [x + w * .86, base]], 1.6, sd + 2) + '" fill="#FFF8EE" stroke="' + INK + '" stroke-width="4"/>';
-      s += '<path d="' + poly([[x + w * .12, top + h * .2], [x + w * .12, top + h * .52], [x + w * .42, top + h * .52], [x + w * .42, top + h * .2]], 1.4, sd + 3) + '" fill="#8FD0EE" stroke="' + INK + '" stroke-width="4"/>';
-      const pw = 46, px = x + w * .5 - pw / 2 - 6, py = top + h * .58;
-      s += '<path d="' + poly([[px, py], [px, py + 26], [px + pw, py + 26], [px + pw, py]], 1.2, sd + 4) + '" fill="#FFF8EE" stroke="' + INK + '" stroke-width="3.5" stroke-linejoin="round"/>';
-      s += '<text x="' + (px + pw / 2) + '" y="' + (py + 22) + '" text-anchor="middle" font-size="' + (String(num).length > 1 ? 21 : 25) + '" fill="' + INK + '" ' + FONT + '>' + num + '</text>';
+    let s = '<svg class="cover" id="coverArt" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Eine Reihe von Häusern mit großen Hausnummern vor einer tief stehenden Sonne">';
+    s += '<rect width="600" height="800" fill="#E8DDCB"/>';
+    s += '<circle cx="430" cy="470" r="150" fill="#C4543A"/>';
+    s += '<path d="M0 600Q150 540 300 580T600 560V800H0Z" fill="#B9C6B0"/>';
+    s += '<rect y="660" width="600" height="140" fill="#7F9A82"/><path d="M0 660H600" stroke="' + INK + '" stroke-width="3"/>';
+    [[24, 12, 0, 118, 92], [160, 3, 1, 108, 112], [290, 7, 2, 118, 84], [430, 1, 3, 120, 104]].forEach(([x, num, i, w, h]) => {
+      s += elev(x, 660, w, h, colors(num, i + 1), num, { sw: 3.5, fs: String(num).length > 1 ? h * .42 : h * .56 });
     });
-    s += '<path d="M148 650V624" stroke="' + INK + '" stroke-width="7" stroke-linecap="round"/><path d="' + blob(148, 596, 24, 26, 9, .14, 61) + '" fill="#63CE93" stroke="' + INK + '" stroke-width="5"/>';
-    s += '<path d="M436 660V634" stroke="' + INK + '" stroke-width="7" stroke-linecap="round"/><path d="' + blob(436, 606, 22, 24, 9, .14, 62) + '" fill="#63CE93" stroke="' + INK + '" stroke-width="5"/>';
-    s += '<path d="' + blob(300, 742, 92, 30, 10, .08, 70) + '" fill="#8FD0EE" stroke="' + INK + '" stroke-width="5"/>';
-    s += '<path d="M236 738Q254 726 272 738T308 738T344 738" fill="none" stroke="' + INK + '" stroke-width="4.5" stroke-linecap="round"/>';
-    for (let i = 0; i < 6; i++) { const x = 28 + i * 22; s += '<path d="' + poly([[x, 774], [x, 726], [x + 8, 716], [x + 16, 726], [x + 16, 774]], 1.3, 80 + i) + '" fill="#E0402F" stroke="' + INK + '" stroke-width="4" stroke-linejoin="round"/>'; }
-    s += '<path d="M24 736L148 736M24 758L148 758" stroke="' + INK + '" stroke-width="4.5" stroke-linecap="round"/>';
-    const t1 = 'Siedler', t2 = 'hain.', SC = 1.45, w1 = glyphWidth(t1) * SC, w2 = glyphWidth(t2) * SC, x1 = (600 - w1) / 2, x2 = (600 - w2) / 2;
-    [['#FFD23F', 5, 5, 13], [INK, 0, 0, 10.5]].forEach(([c, dx, dy, sw]) => {
-      s += glyphs(t1, x1 + dx, 70 + dy, SC, sw / SC, c);
-      s += glyphs(t2, x2 + dx, 70 + 60 * SC + 22 + dy, SC, sw / SC, c);
-    });
+    s += '<path d="M150 660V620" stroke="' + INK + '" stroke-width="5"/><circle cx="150" cy="590" r="30" fill="#5F8A66" stroke="' + INK + '" stroke-width="3.5"/>';
+    s += '<path d="M416 660V630" stroke="' + INK + '" stroke-width="5"/><circle cx="416" cy="606" r="24" fill="#5F8A66" stroke="' + INK + '" stroke-width="3.5"/>';
+    s += '<rect x="170" y="700" width="260" height="62" rx="22" fill="#7FB4CE" stroke="' + INK + '" stroke-width="3.5"/>';
+    s += '<path d="M200 732Q225 712 250 732T300 732T350 732T400 730" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>';
+    for (let i = 0; i < 7; i++) { const x = 24 + i * 16; s += '<path d="M' + x + ' 766V716L' + (x + 5) + ' 708L' + (x + 10) + ' 716V766Z" fill="#F3EEE5" stroke="' + INK + '" stroke-width="2.5" stroke-linejoin="round"/>'; }
+    s += '<text x="300" y="150" text-anchor="middle" font-size="104" fill="' + INK + '" ' + SERIF + ' letter-spacing="-2">Siedler</text>';
+    s += '<text x="300" y="244" text-anchor="middle" font-size="104" font-style="italic" fill="#C4543A" ' + SERIF + ' letter-spacing="-2">hain.</text>';
+    s += '<text x="300" y="290" text-anchor="middle" font-size="12" letter-spacing="2.4" fill="' + INK + '" font-family="Inter Tight, sans-serif" font-weight="600">HAUSNUMMERN · SIEDLUNGEN · POOLS</text>';
     return s + '</svg>';
   }
   const sgn = v => (v > 0 ? '+' + v : v < 0 ? '−' + Math.abs(v) : '0');
@@ -923,7 +836,7 @@ details[open] summary{margin-bottom:8px}
   function newGame(mode) { S = G.newGame(mode); S.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
   function themeFor(onStart) {
     const dark = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches && document.documentElement.dataset.theme !== 'light';
-    const top = onStart ? (dark ? '#5C4A99' : '#B8A2E6') : (dark ? '#170F1F' : '#F5F2EE');
+    const top = onStart ? (dark ? '#241E19' : '#E8DDCB') : (dark ? '#171310' : '#F3EEE5');
     document.documentElement.style.backgroundColor = onStart ? top : '';
     let tc = document.querySelector('meta[name="theme-color"]');
     if (!tc) { tc = document.createElement('meta'); tc.name = 'theme-color'; document.head.appendChild(tc); }
@@ -980,7 +893,7 @@ details[open] summary{margin-bottom:8px}
   // ---------- Bausteine ----------
   function header(sc) {
     const left = S.mode === 'solo' ? G.realLeft(S) : null;
-    return '<div class="thead"><a class="leave" href="../" aria-label="Zurück zum Spielregal"' + inf('Zurück zum Spielregal') + '>‹</a><h1>Siedlerhain.</h1>' +
+    return '<div class="thead"><a class="leave" href="../" aria-label="Zurück zum Spielregal"' + inf('Zurück zum Spielregal') + '>‹</a><h1>Siedlerhain</h1>' +
       '<div class="pill"' + inf(S.mode === 'solo' ? 'Runde. Es gibt 27 Runden, dann ist der Kartenstapel aufgebraucht.' : 'Runde: So viele Runden hast du schon gespielt.') + '><b>' + S.round + (S.mode === 'solo' ? '/27' : '') + '</b><small>Runde</small></div>' +
       '<div class="pill pts"' + inf('Deine Punkte jetzt. Die Zwischenwertung findest du unten.') + '><b>' + sc.total + '</b><small>Punkte</small></div>' +
       (U.tut ? '<button class="mbtn" data-a="tutquit" aria-label="Lernspiel beenden"' + inf('Lernspiel beenden') + '>✕</button>'
@@ -1114,7 +1027,7 @@ details[open] summary{margin-bottom:8px}
         const chips = G.adjustOptions(S).map(o => '<button class="chip" data-a="adj" data-d="' + o.d + '"><b>' + o.n + '</b><small>' + (o.d === 'x' ? 'ohne Zeitarbeit' : (o.d === 0 ? '±0, Zeitarbeiter' : sgn(o.d) + ', Zeitarbeiter')) + '</small></button>').join('');
         body = '<div class="prompt"><p>Zeitarbeit: Welche Nummer bekommt das Haus?</p>' + cancel + '</div><div class="chips">' + chips + '</div>';
       } else if (ph === 'place') {
-        body = '<div class="prompt"><p>Tippe ein gelbes Grundstück für die <b>' + S.sel.n + '</b> (' + G.validSlots(S, S.sel.n).length + ' möglich).' + (m ? ' Danach: ' + m.name + '.' : '') + '</p>' + cancel + '</div>';
+        body = '<div class="prompt"><p>Tippe ein markiertes Grundstück für die <b>' + S.sel.n + '</b> (' + G.validSlots(S, S.sel.n).length + ' möglich).' + (m ? ' Danach: ' + m.name + '.' : '') + '</p>' + cancel + '</div>';
       } else {
         const skip = '<button class="btn sm" data-a="skip">Überspringen</button>';
         if (ph === 'fence') body = '<div class="prompt"><p>Geometer: Tippe eine gestrichelte Stelle in ' + NAMES[S.sel.pos.s] + '.</p>' + skip + '</div>';
@@ -1175,7 +1088,7 @@ details[open] summary{margin-bottom:8px}
     const sm = saved ? (saved.mode === 'solo' ? 'Solo' : 'Basisspiel') + ', Runde ' + saved.round : '';
     return '<div class="start"><div class="stage">' + coverSVG() + '<a class="leave" href="../"' + inf('Zurück zum Spielregal') + '>‹ Spielregal</a></div><div class="sdock">' +
       (saved ? '<button class="btn pri" data-a="resume">Partie fortsetzen<span class="sub">' + sm + '</span></button>' : '') +
-      '<div class="two"><button class="btn ' + (saved ? '' : 'pri') + '" data-a="start" data-mode="solo">Solo<span class="sub">27 Runden, 3 Karten</span></button><button class="btn" data-a="start" data-mode="base">Basisspiel<span class="sub">3 Kombinationen</span></button></div>' +
+      '<div class="two"><button class="btn ' + (saved ? 'alt' : 'pri') + '" data-a="start" data-mode="solo">Solo<span class="sub">27 Runden, 3 Karten</span></button><button class="btn alt" data-a="start" data-mode="base">Basisspiel<span class="sub">3 Kombinationen</span></button></div>' +
       '<div class="links"><button class="tlink" data-a="tut">Lernspiel</button><button class="tlink" data-a="rules">Spielregeln lesen</button></div></div>' + sheets() + '</div>';
   }
 
