@@ -4902,6 +4902,46 @@ function PlayerOrderModal({ players, onSave, onClose }) {
 // Rangliste zu springen. Array.sort ist stabil (ES2019+), Gleichstand
 // behaelt also die bisherige Reihenfolge (z.B. eine bewusst per Hand
 // gesetzte Tie-Break-Reihenfolge aus einer frueheren Bearbeitung).
+// Wird ein Spiel geloescht, das Partien hat, behalten diese Partien eine Kopie
+// der Spieldaten (Name, BGG-ID, Cover) -- sonst stuende dort nur noch ein leerer
+// Platzhalter. Ein grosses hochgeladenes Cover (data:-URL) steht nur an der
+// neuesten Partie, damit es nicht pro Partie mitsynchronisiert wird.
+const gameSnapOf = (g) => ({ name: g.name, germanName: g.germanName || "", bggId: g.bggId || "", year: g.year || "", image: (g.images && g.images[0]) || g.image || "" });
+const snapPlaysOfDeletedGame = (plays, game) => {
+  const snap = gameSnapOf(game);
+  const mine = plays.filter((p) => p.gameId === game.id);
+  if (mine.length === 0) return plays;
+  const newest = mine.reduce((a, b) => ((b.date || "") > (a.date || "") ? b : a));
+  const big = snap.image.startsWith("data:");
+  return plays.map((p) => (p.gameId !== game.id ? p : { ...p, gameSnap: big && p.id !== newest.id ? { ...snap, image: "" } : snap }));
+};
+// Spiel-Ersatz fuer Partien, deren Spiel nicht (mehr) in der Sammlung steht.
+const ghostGameOf = (plays, gameId) => {
+  const snaps = plays.filter((p) => p.gameId === gameId && p.gameSnap).map((p) => p.gameSnap);
+  const snap = snaps.find((x) => x.image) || snaps[0];
+  return snap ? { id: gameId, name: snap.name, images: snap.image ? [snap.image] : [], ghost: true } : null;
+};
+// Wird ein Spiel (wieder) hinzugefuegt, haengen sich verwaiste Partien dran, die
+// dasselbe Spiel meinen: gleiche BGG-ID, oder -- wenn eine der beiden Seiten keine
+// hat -- gleicher Name (Original- oder deutscher Titel).
+const relinkOrphanPlays = (plays, game, existingGames) => {
+  const norm = (x) => (x || "").trim().toLowerCase();
+  const names = [game.name, game.germanName].map(norm).filter(Boolean);
+  let changed = false;
+  const next = plays.map((p) => {
+    if (p.gameId === game.id || existingGames.some((g) => g.id === p.gameId)) return p;
+    const s = p.gameSnap || {};
+    const theirBgg = s.bggId ? String(s.bggId) : "", myBgg = game.bggId ? String(game.bggId) : "";
+    let same;
+    if (theirBgg && myBgg) same = theirBgg === myBgg;
+    else same = [p.gameName, s.name, s.germanName].map(norm).filter(Boolean).some((n) => names.includes(n));
+    if (!same) return p;
+    changed = true;
+    const { gameSnap, ...rest } = p;
+    return { ...rest, gameId: game.id, gameName: game.name };
+  });
+  return changed ? next : plays;
+};
 const sortIdsByScore = (ids, scoresObj) => {
   const val = (id) => { const v = parseFloat(scoresObj[id]); return Number.isFinite(v) ? v : -Infinity; };
   return [...ids].sort((a, b) => val(b) - val(a));
@@ -4931,7 +4971,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, o
   const cancelPlayerLongPress = () => { if (playerLongPressTimer.current) clearTimeout(playerLongPressTimer.current); };
   const [gameQuery, setGameQuery] = useState("");
   const [selectedGame, setSelectedGame] = useState(() =>
-    initial ? (games.find(g => g.id === initial.gameId) || { id: initial.gameId, name: initial.gameName }) : null
+    initial ? (games.find(g => g.id === initial.gameId) || ghostGameOf(plays, initial.gameId) || { id: initial.gameId, name: initial.gameName }) : null
   );
   const [mode, setMode] = useState(initial ? initial.mode : "physical-owned");
   const [playerIds, setPlayerIds] = useState(() =>
@@ -5079,7 +5119,9 @@ function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, o
       }));
       onSave(batch);
     } else {
-      onSave({ id: initial ? initial.id : uid(), gameId: selectedGame.id, gameName: selectedGame.name, date, mode, players: mergedPlayers, playerIds, winner: winnerName, scores: cleanScores, notes, images });
+      // Spiel inzwischen geloescht: die gesicherte Spielkopie (Cover) der Partie behalten.
+      const keepSnap = initial && initial.gameSnap && initial.gameId === selectedGame.id && !games.some((g) => g.id === selectedGame.id) ? { gameSnap: initial.gameSnap } : {};
+      onSave({ id: initial ? initial.id : uid(), gameId: selectedGame.id, gameName: selectedGame.name, date, mode, players: mergedPlayers, playerIds, winner: winnerName, scores: cleanScores, notes, images, ...keepSnap });
     }
   };
 
@@ -7214,6 +7256,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
 
   // Expansions are grouped together with their base game in the play history,
   // so plays of "Ark Nova: Marine Worlds" show up under "Ark Nova".
+  const coverGameOf = (gameId) => games.find((x) => x.id === gameId) || ghostGameOf(plays, gameId);
   const rootGameId = (id) => {
     let current = id;
     for (let i = 0; i < 5; i++) {
@@ -7478,7 +7521,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
             <button key={date} onClick={() => setDetailEveningDate(date)} className="w-full text-left border-b border-line py-3 flex items-center gap-3">
               <div className="flex -space-x-3 shrink-0">
                 {distinctGames.slice(0, 3).map((p, i) => {
-                  const g = games.find((x) => x.id === p.gameId);
+                  const g = coverGameOf(p.gameId);
                   return g ? <Cover key={i} game={g} size="sm" className="!border-2 !border-surface" /> : <div key={i} className="w-12 h-12 rounded-lg bg-line/50 border-2 border-surface flex items-center justify-center text-dim"><Dices size={16} /></div>;
                 })}
               </div>
@@ -7497,7 +7540,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
           const first = group[0];
           const rootId = rootGameId(first.gameId) || first.gameId;
           const groupKey = rootId || first.gameName;
-          const game = games.find((g) => g.id === rootId);
+          const game = coverGameOf(rootId);
           return (
             <button key={groupKey} onClick={() => setDetailGroupKey(groupKey)} className="w-full text-left border-b border-line py-3 flex items-center gap-3">
               {game ? <Cover game={game} size="sm" /> : <div className="w-12 h-12 rounded-lg bg-line/50 flex items-center justify-center text-dim shrink-0"><Dices size={18} /></div>}
@@ -7637,7 +7680,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
             <h2 className="font-display text-2xl tracking-[-0.025em] leading-tight text-ink px-5 mb-4">{formatDate(date)}</h2>
             <div className="p-5 space-y-2">
               {dayPlays.map((p) => {
-                const game = games.find((g) => g.id === p.gameId);
+                const game = coverGameOf(p.gameId);
                 const IconC = modeIcon[p.mode] || Home;
                 return (
                   <SwipeableRow key={p.id} onDelete={() => onDelete(p.id)} disabled={demoMode}>
@@ -8915,6 +8958,8 @@ function App() {
   };
 
   const applyGameSave = (game) => {
+    // Neues Spiel: Partien, die dasselbe (frueher geloeschte) Spiel meinen, wieder anhaengen.
+    if (!games.some(g => g.id === game.id)) setPlays(prev => relinkOrphanPlays(prev, game, games));
     setGames(prev => {
       const exists = prev.find(g => g.id === game.id);
       let next = exists ? prev.map(g => g.id === game.id ? game : g) : [...prev, game];
@@ -8954,7 +8999,12 @@ function App() {
     if (nextIdx < 0 || nextIdx >= list.length) return; // stay put at the boundary
     setGameModal({ editing: list[nextIdx] });
   };
-  const deleteGame = (id) => { setGames(prev => prev.filter(g => g.id !== id)); setGameModal(null); };
+  const deleteGame = (id) => {
+    const g = games.find(x => x.id === id);
+    if (g) setPlays(prev => snapPlaysOfDeletedGame(prev, g));
+    setGames(prev => prev.filter(x => x.id !== id));
+    setGameModal(null);
+  };
   const mergeGames = (keepId, dropId) => {
     if (keepId === dropId) return;
     setPlays(prev => prev.map(p => (p.gameId === dropId ? { ...p, gameId: keepId, gameName: games.find(g => g.id === keepId)?.name || p.gameName } : p)));
