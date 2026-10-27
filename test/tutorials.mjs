@@ -55,6 +55,18 @@ for (const g of GAMES) {
     const hl = page.locator(".tut-hl");
     if (await hl.count()) {
       if (shots && [4, 6, 8].includes(maxStep)) await page.screenshot({ path: `${shots}/tut-${g.dir}-${maxStep}.png` });
+      // Das Spiel zentriert das markierte Element weich im inneren Scroller (#app);
+      // Playwrights Klick bricht diesen Scroll ab. Erst warten, bis das Element
+      // ruhig steht und nicht vom Coach verdeckt ist (ein Mensch tippt ohnehin später).
+      for (let w = 0, last = null; w < 25; w++) {
+        const cur = await page.evaluate(() => {
+          const h = document.querySelector(".tut-hl"); if (!h) return null;
+          const r = h.getBoundingClientRect(), at = document.elementFromPoint(r.left + r.width / 2, r.top + Math.min(r.height / 2, 40));
+          return `${Math.round(r.top)}|${!!(at && (at === h || h.contains(at)))}`;
+        });
+        if (cur !== null && cur === last && cur.endsWith("true")) break;
+        last = cur; await page.waitForTimeout(80);
+      }
       await hl.first().click({ force: true });
       if (await page.locator(".toast:has-text('Folge dem markierten')").count()) blocked++;
       await page.waitForTimeout(60);

@@ -21,9 +21,10 @@
   --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 -.25'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0}
+html,body{margin:0;position:fixed;inset:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
 body{background:var(--bg);color:var(--ink);font:15px/1.45 "DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior-y:contain;overflow-x:hidden}
-#app{position:relative}
+/* Seite scrollt nie selbst, nur #app (iOS: sonst Weichzeichner unter der Statusleiste) */
+#app{position:fixed;inset:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
 .hand{font-family:"DM Sans",system-ui,sans-serif;font-weight:700;letter-spacing:-.8px}
 .wrap{max-width:560px;margin:0 auto;padding:0 16px 120px}
@@ -474,6 +475,7 @@ button,[data-a]{transition:transform .18s cubic-bezier(.2,.9,.3,1.4),box-shadow 
 </svg>
 <div id="app"></div>
 <script>
+const SC = document.getElementById('app');
 'use strict';
 /* =====================================================================
    Drei Schwestern – ein Würfel-Gartenspiel nach dem Spielprinzip von
@@ -1830,8 +1832,8 @@ function pageSync(instant) {
 function pageOf(el) { const pg = el && el.closest && el.closest('.page'); return pg ? [...pg.parentElement.children].indexOf(pg) : -1; }
 function pageGo(i, smooth) {
   const pg = pagesEl(); if (!pg || i < 0) return;
-  const top = document.querySelector('.top:not(.coach)'), y0 = pg.getBoundingClientRect().top + window.scrollY - (top ? top.getBoundingClientRect().height : 0) - 8;
-  if (i !== U.page && window.scrollY > y0) window.scrollTo({ top: Math.max(0, y0) });
+  const top = document.querySelector('.top:not(.coach)'), y0 = pg.getBoundingClientRect().top + SC.scrollTop - (top ? top.getBoundingClientRect().height : 0) - 8;
+  if (i !== U.page && SC.scrollTop > y0) SC.scrollTo({ top: Math.max(0, y0) });
   U.page = i;
   if (smooth) pg.scrollTo({ left: i * pg.clientWidth, behavior: 'smooth' }); else pageSync(true);
   pageSync(false);
@@ -1880,7 +1882,7 @@ function goTo(sel) {
     const el = document.querySelector(sel); if (!el) return;
     const pi = pageOf(el); if (pi >= 0 && pi !== U.page) pageGo(pi, false);
     const top = document.querySelector('.top .tbanner') || document.querySelector('.top'), off = (top ? Math.min(top.getBoundingClientRect().bottom, 300) : 0) + 12;
-    window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - off), behavior: 'smooth' });
+    SC.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + SC.scrollTop - off), behavior: 'smooth' });
     el.classList.remove('goflash'); void el.offsetWidth; el.classList.add('goflash'); setTimeout(() => el.classList.remove('goflash'), 1300);
   }, 30);
 }
@@ -1896,11 +1898,11 @@ function stickBtns() {
 // Beim Scrollen: Menü und überflüssige Kopfzeile ausblenden (Owner: „beim Scrollen brauchen wir das Menü nicht“)
 const SCR = { on: false };
 function scrSync() { if (U.tut) SCR.on = false; const t = document.querySelector('.top:not(.coach)'); if (t) t.classList.toggle('scr', SCR.on); }
-addEventListener('scroll', () => {
+SC.addEventListener('scroll', () => {
   const t = document.querySelector('.top:not(.coach)'); if (!t) return;
   if (U.tut) { if (SCR.on) { SCR.on = false; t.classList.remove('scr'); } return; } // im Lernspiel bleibt der Kopf ruhig
-  if (!SCR.on && scrollY > 90) { SCR.on = true; t.classList.add('scr'); }
-  else if (SCR.on && scrollY < 12) { SCR.on = false; t.classList.remove('scr'); }
+  if (!SCR.on && SC.scrollTop > 90) { SCR.on = true; t.classList.add('scr'); }
+  else if (SCR.on && SC.scrollTop < 12) { SCR.on = false; t.classList.remove('scr'); }
 }, { passive: true });
 const HERO_TOP = '#F8ECE1';
 function render() {
@@ -1953,17 +1955,17 @@ function afterHumanTask() {
 }
 function gardenZone() { const t = human().tasks[0]; return t.t === 'garden' || t.t === 'pw' ? t.z : U.zone; }
 const H = {
-  leave: () => { if (!S || S.tut) return; save(); S = null; U.sheet = null; window.scrollTo(0, 0); toast('Partie gespeichert. Mit „Partie fortsetzen“ geht es weiter.'); },
+  leave: () => { if (!S || S.tut) return; save(); S = null; U.sheet = null; SC.scrollTo(0, 0); toast('Partie gespeichert. Mit „Partie fortsetzen“ geht es weiter.'); },
   discard: () => { if (confirm('Gespeicherte Partie wirklich verwerfen?')) clearSave(); },
-  tutorial: () => { U.page = 0; const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : U.setup.name; U.sheet = null; tutSetup(); U.tut = { i: 0 }; window.scrollTo(0, 0); },
+  tutorial: () => { U.page = 0; const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : U.setup.name; U.sheet = null; tutSetup(); U.tut = { i: 0 }; SC.scrollTo(0, 0); },
   tutnext: () => { if (U.tut) U.tut.i = Math.min(U.tut.i + 1, TUT_STEPS.length - 1); },
-  tutend: () => { U.tut = null; U.sheet = null; U.fast = fastPref(); S = null; window.scrollTo(0, 0); },
-  tutquit: () => { U.tut = null; U.sheet = null; U.fast = fastPref(); S = null; window.scrollTo(0, 0); },
+  tutend: () => { U.tut = null; U.sheet = null; U.fast = fastPref(); S = null; SC.scrollTo(0, 0); },
+  tutquit: () => { U.tut = null; U.sheet = null; U.fast = fastPref(); S = null; SC.scrollTo(0, 0); },
   bots: d => { U.setup.bots = +d.n; },
   pickname: d => { U.setup.name = d.n; const nm = document.getElementById('nm'); if (nm) nm.value = d.n; },
   setup: () => { U.sopen = true; },
   'setup-x': () => { const nm = document.getElementById('nm'); if (nm) U.setup.name = nm.value.trim(); U.sopen = false; },
-  start: () => { U.page = 0; const sv = load(); if (sv && sv.screen === 'game' && !confirm(`Es gibt eine gespeicherte Partie (Runde ${sv.round || 1}). Neue Partie starten und die gespeicherte verwerfen?`)) return; const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : ''; newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0, U.setup.bots === 0); window.scrollTo(0, 0); },
+  start: () => { U.page = 0; const sv = load(); if (sv && sv.screen === 'game' && !confirm(`Es gibt eine gespeicherte Partie (Runde ${sv.round || 1}). Neue Partie starten und die gespeicherte verwerfen?`)) return; const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : ''; newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0, U.setup.bots === 0); SC.scrollTo(0, 0); },
   resume: () => { U.page = 0; S = load(); U.sheet = null; },
   rules: () => { U.sheet = { type: 'rules' }; },
   menu: () => { U.sheet = { type: 'menu' }; },
@@ -2035,7 +2037,7 @@ const H = {
   document.addEventListener('pointermove', e => { if (Math.hypot(e.clientX - sx, e.clientY - sy) > 10) cancel(); }, true);
   document.addEventListener('click', e => { if (shown) { shown = false; e.preventDefault(); e.stopPropagation(); } }, true);
   document.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest('[data-info],[title]')) e.preventDefault(); });
-  addEventListener('scroll', hide, { passive: true });
+  SC.addEventListener('scroll', hide, { passive: true });
   // iOS: keine Textauswahl beim langen Drücken (außer in Eingabefeldern)
   document.addEventListener('selectstart', e => { const t = e.target.nodeType === 1 ? e.target : e.target.parentElement; if (!t || !t.closest('input,textarea')) e.preventDefault(); });
 })();

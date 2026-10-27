@@ -13,9 +13,10 @@
 <style>
 :root{--ink:#1A1A1A;--paper:#F8EEDC;--white:#FFF8EC;--gray:#EADFCB;--muted:#6b665d;--pink:#FF5FA8;--peach:#F6B48F;--blue:#4A8FE0;--orange:#F08A2E;--stamp:#D2452B}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0}
+html,body{margin:0;position:fixed;inset:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
 body{overflow-x:hidden;background:var(--paper);color:var(--ink);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior-y:contain}
-#app{position:relative}
+/* Seite scrollt nie selbst, nur #app (iOS: sonst Weichzeichner unter der Statusleiste) */
+#app{position:fixed;inset:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
 .hand{font-family:"Caveat Brush","Comic Sans MS",cursive}
 .mono{font-family:"Space Mono",ui-monospace,monospace}
@@ -260,6 +261,7 @@ button,[data-a]{transition:transform .18s cubic-bezier(.2,.9,.3,1.4),box-shadow 
 </svg>
 <div id="app"></div>
 <script>
+const SC = document.getElementById('app');
 'use strict';
 /* =====================================================================
    Prinzessinnenball – ein Stichspiel nach dem Spielprinzip von
@@ -1742,7 +1744,7 @@ function goTo(sel) {
   setTimeout(() => {
     const el = document.querySelector(sel); if (!el) return;
     const top = document.querySelector('.top'), off = (top ? top.getBoundingClientRect().bottom : 0) + 12;
-    window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - off), behavior: 'smooth' });
+    SC.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + SC.scrollTop - off), behavior: 'smooth' });
     el.classList.remove('goflash'); void el.offsetWidth; el.classList.add('goflash'); setTimeout(() => el.classList.remove('goflash'), 1300);
   }, 30);
 }
@@ -1758,11 +1760,11 @@ function stickBtns() {
 // Beim Scrollen: Menü und überflüssige Kopfzeile ausblenden (Owner: „beim Scrollen brauchen wir das Menü nicht“)
 const SCR = { on: false };
 function scrSync() { if (U.tut) SCR.on = false; const t = document.querySelector('.top:not(.coach)'); if (t) t.classList.toggle('scr', SCR.on); }
-addEventListener('scroll', () => {
+SC.addEventListener('scroll', () => {
   const t = document.querySelector('.top:not(.coach)'); if (!t) return;
   if (U.tut) { if (SCR.on) { SCR.on = false; t.classList.remove('scr'); } return; } // im Lernspiel bleibt der Kopf ruhig
-  if (!SCR.on && scrollY > 90) { SCR.on = true; t.classList.add('scr'); }
-  else if (SCR.on && scrollY < 12) { SCR.on = false; t.classList.remove('scr'); }
+  if (!SCR.on && SC.scrollTop > 90) { SCR.on = true; t.classList.add('scr'); }
+  else if (SCR.on && SC.scrollTop < 12) { SCR.on = false; t.classList.remove('scr'); }
 }, { passive: true });
 const HERO_TOP = '#F6B48F';
 function render() {
@@ -1800,25 +1802,25 @@ function pump() {
 }
 function resetSel() { U.sel = []; U.power = null; U.hg = null; }
 const H = {
-  leave: () => { if (!S || S.tut) return; save(); S = null; U.sheet = null; window.scrollTo(0, 0); toast('Partie gespeichert. Mit „Partie fortsetzen“ geht es weiter.'); },
+  leave: () => { if (!S || S.tut) return; save(); S = null; U.sheet = null; SC.scrollTo(0, 0); toast('Partie gespeichert. Mit „Partie fortsetzen“ geht es weiter.'); },
   discard: () => { if (confirm('Gespeicherte Partie wirklich verwerfen?')) clearSave(); },
-  tutorial: () => { const nmi = document.getElementById('nm'); U.setup.name = nmi ? nmi.value.trim() : U.setup.name; U.sheet = null; resetSel(); tutSetup(); U.tut = { i: 0 }; window.scrollTo(0, 0); },
+  tutorial: () => { const nmi = document.getElementById('nm'); U.setup.name = nmi ? nmi.value.trim() : U.setup.name; U.sheet = null; resetSel(); tutSetup(); U.tut = { i: 0 }; SC.scrollTo(0, 0); },
   tutnext: () => { if (U.tut) U.tut.i = Math.min(U.tut.i + 1, TUT_STEPS.length - 1); },
-  tutend: () => { U.tut = null; U.sheet = null; U.fast = fastPref(); S = null; window.scrollTo(0, 0); },
-  tutquit: () => { U.tut = null; U.sheet = null; U.fast = fastPref(); S = null; window.scrollTo(0, 0); },
+  tutend: () => { U.tut = null; U.sheet = null; U.fast = fastPref(); S = null; SC.scrollTo(0, 0); },
+  tutquit: () => { U.tut = null; U.sheet = null; U.fast = fastPref(); S = null; SC.scrollTo(0, 0); },
   bots: d => { U.setup.bots = +d.n; },
   mode: d => { U.setup.mode = d.m; },
   exp: () => { U.setup.exp = !U.setup.exp; },
   pickname: d => { U.setup.name = d.n; const nmi = document.getElementById('nm'); if (nmi) nmi.value = d.n; },
   setup: () => { U.sopen = true; },
   'setup-x': () => { const nm = document.getElementById('nm'); if (nm) U.setup.name = nm.value.trim(); U.sopen = false; },
-  start: () => { const sv = load(); if (sv && sv.screen === 'game' && !confirm(`Es gibt eine gespeicherte Partie (Ballnacht ${sv.round || 1}). Neue Partie starten und die gespeicherte verwerfen?`)) return; const nmi = document.getElementById('nm'); U.setup.name = nmi ? nmi.value.trim() : ''; U.pick = null; resetSel(); newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0, { mode: U.setup.mode, exp: U.setup.exp, rules: window.__forceRules }); window.scrollTo(0, 0); },
+  start: () => { const sv = load(); if (sv && sv.screen === 'game' && !confirm(`Es gibt eine gespeicherte Partie (Ballnacht ${sv.round || 1}). Neue Partie starten und die gespeicherte verwerfen?`)) return; const nmi = document.getElementById('nm'); U.setup.name = nmi ? nmi.value.trim() : ''; U.pick = null; resetSel(); newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0, { mode: U.setup.mode, exp: U.setup.exp, rules: window.__forceRules }); SC.scrollTo(0, 0); },
   resume: () => { S = load(); U.sheet = null; resetSel(); },
   rules: () => { U.sheet = { type: 'rules' }; },
   menu: () => { U.sheet = { type: 'menu' }; },
   scores: () => { U.sheet = { type: 'scores' }; },
   // Pflicht-Auswahl beim Spielstart verlassen: Partie verwerfen, zurück zum Startbildschirm
-  setupcancel: () => { clearSave(); S = null; U.sheet = null; window.scrollTo(0, 0); },
+  setupcancel: () => { clearSave(); S = null; U.sheet = null; SC.scrollTo(0, 0); },
   go: () => { if (U.tut) return goTo('.tut-hl'); const t = goTarget(); if (typeof t === 'function') t(); else goTo(t); },
   // Spiel neu laden (Cache umgehen); der Spielstand ist gespeichert und wird danach fortgesetzt
   reload: () => { try { save(); } catch (e) { } location.replace(location.pathname + '?v=' + Date.now() + '&resume=1'); },
@@ -1919,7 +1921,7 @@ CONT.rotback = (pi, sel) => { const p = S.players[pi], q = S.players[S.rotTo]; p
   document.addEventListener('pointermove', e => { if (Math.hypot(e.clientX - sx, e.clientY - sy) > 10) cancel(); }, true);
   document.addEventListener('click', e => { if (shown) { shown = false; e.preventDefault(); e.stopPropagation(); } }, true);
   document.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest('[data-info],[title]')) e.preventDefault(); });
-  addEventListener('scroll', hide, { passive: true });
+  SC.addEventListener('scroll', hide, { passive: true });
   // iOS: keine Textauswahl beim langen Drücken (außer in Eingabefeldern)
   document.addEventListener('selectstart', e => { const t = e.target.nodeType === 1 ? e.target : e.target.parentElement; if (!t || !t.closest('input,textarea')) e.preventDefault(); });
 })();

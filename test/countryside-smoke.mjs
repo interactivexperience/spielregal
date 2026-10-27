@@ -121,9 +121,9 @@ async function playUi(label, bots) {
       continue;
     }
     const mrk = page.locator(".fld.mpick");
-    if (await mrk.count()) { mr++; await mrk.nth(mr % (await mrk.count())).click({ force: true }); continue; }
+    if (await mrk.count()) { mr++; await mrk.nth(mr % (await mrk.count())).click({ force: true }).catch(() => page.waitForTimeout(400)); continue; }
     const mkt = page.locator(".market [data-a=askval]:not([disabled])");
-    if (await mkt.count()) { mk++; await mkt.nth(mk % (await mkt.count())).click({ force: true }); continue; }
+    if (await mkt.count()) { mk++; await mkt.nth(mk % (await mkt.count())).click({ force: true }).catch(() => page.waitForTimeout(400)); continue; }
     if (await page.locator("[data-a=askopen]").count()) { await page.locator("[data-a=askopen]").first().click({ force: true }); continue; }
     if (await page.locator("[data-a=endday]").count()) {
       acts++;
