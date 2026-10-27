@@ -8171,6 +8171,20 @@ function digitaleUmsetzung(game) {
 }
 
 const DIGITAL_INBOX_KEY = "spielregal:inbox:plays";
+// Cover einer Browser-Umsetzung (liegt neben dem Spiel, wie auf dem Dashboard).
+const digitalesCover = (u) => (u ? `${u.href}cover.jpg` : "");
+const hatBild = (g) => !!((g.images && g.images.length) || g.image);
+// Spiele, die nur durch eine Browser-Partie angelegt wurden ("Nur gespielt"),
+// haben kein Bild; sie bekommen das Cover der Umsetzung.
+function digitaleCoverNachtragen(games) {
+  const patch = {};
+  for (const g of games) {
+    if (g.status !== "none" || hatBild(g)) continue;
+    const c = digitalesCover(digitaleUmsetzung(g));
+    if (c) patch[g.id] = c;
+  }
+  return patch;
+}
 // Wandelt Eingangskorb-Einträge in Partien um. Das Spiel wird über
 // DIGITALE_UMSETZUNGEN gefunden (eigenes Exemplar bevorzugt); fehlt es in
 // der Sammlung, wird es wie beim BGG-Import als "gespielt" angelegt.
@@ -8190,7 +8204,7 @@ function digitalePartienUebernehmen(inbox, games, plays, players) {
       || alle.find((g) => passend(g));
     if (!game) {
       game = {
-        id: uid(), bggId: e.bggId || "", name: e.gameName || "Unbekannt", year: "", publishers: [], designers: [], images: [],
+        id: uid(), bggId: e.bggId || "", name: e.gameName || "Unbekannt", year: "", publishers: [], designers: [], images: umsetzung ? [digitalesCover(umsetzung)] : [],
         minPlayers: "", maxPlayers: "", bestPlayersMin: "", bestPlayersMax: "", minTime: "", maxTime: "", age: "",
         complexity: "", mechanisms: [], categories: [], playerTypes: [], status: "none", location: "", summary: "",
         notes: "", rating: "", addedDate: new Date().toISOString().slice(0, 10),
@@ -9133,6 +9147,8 @@ function App() {
   useEffect(() => {
     const importInbox = () => {
       if (demoMode || (syncUrl && !pulledOnceRef.current)) return;
+      const coverPatch = digitaleCoverNachtragen(latestRef.current.games);
+      if (Object.keys(coverPatch).length) setGames((prev) => prev.map((g) => (coverPatch[g.id] && g.status === "none" && !hatBild(g) ? { ...g, images: [coverPatch[g.id]] } : g)));
       const inbox = loadKey(DIGITAL_INBOX_KEY, []);
       if (!Array.isArray(inbox) || inbox.length === 0) return;
       const { games: gs, plays: ps, players: pls } = latestRef.current;
