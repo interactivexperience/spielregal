@@ -5013,21 +5013,59 @@ function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, o
   // Spiel, das (noch) nicht in der Sammlung steht, direkt aus dem Partie-Formular
   // anlegen: Status "Nur gespielt", also nicht im Regal und nicht in "Spiele im
   // Regal" gezaehlt, aber in der Sammlung unter diesem Filter auffindbar.
-  const createPlayedGame = () => {
-    const name = gameQuery.trim();
-    if (!name || !onAddGame) return;
+  const addPlayedGame = (extra) => {
     const game = {
-      id: uid(), bggId: "", name, germanName: "", primaryTitle: "original", year: "", publishers: [], designers: [], images: [],
+      id: uid(), bggId: "", name: "", germanName: "", primaryTitle: "original", year: "", publishers: [], designers: [], images: [],
       minPlayers: "", maxPlayers: "", bestPlayersMin: "", bestPlayersMax: "", minTime: "", maxTime: "", age: "",
       complexity: "", mechanisms: [], categories: [], playerTypes: [], status: "none", format: "analog", saleStatus: "",
       location: "", summary: "", notes: "", rating: "", addedDate: new Date().toISOString().slice(0, 10),
+      ...extra,
     };
     haptic(6);
     onAddGame(game);
     setSelectedGame(game);
   };
+  const createPlayedGame = () => {
+    const name = gameQuery.trim();
+    if (!name || !onAddGame) return;
+    addPlayedGame({ name });
+  };
   const queryIsNewName = gameQuery.trim() !== "" && !games.some((g) =>
     [g.name, g.germanName].some((n) => (n || "").trim().toLowerCase() === gameQuery.trim().toLowerCase()));
+
+  // BGG-Suche fuer Spiele ausserhalb der Sammlung: laeuft verzoegert nach dem
+  // Tippen (wie beim Hinzufuegen eines Spiels) und zeigt nur Treffer, die noch
+  // nicht in der Sammlung stehen (Abgleich ueber die BGG-ID).
+  const [bggHits, setBggHits] = useState([]);
+  const [bggStatus, setBggStatus] = useState("idle"); // idle | loading | error | done
+  const [bggPicking, setBggPicking] = useState("");
+  useEffect(() => {
+    const q = gameQuery.trim();
+    if (!onAddGame || q.length < 2) { setBggHits([]); setBggStatus("idle"); return; }
+    let cancelled = false;
+    setBggStatus("loading");
+    const timer = setTimeout(async () => {
+      try {
+        const r = await bggSearch(q);
+        if (!cancelled) { setBggHits(r); setBggStatus("done"); }
+      } catch { if (!cancelled) { setBggHits([]); setBggStatus("error"); } }
+    }, 500);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [gameQuery]);
+  const bggHitsNew = bggHits.filter((h) => !games.some((g) => String(g.bggId) === String(h.bggId)));
+  const pickBggHit = async (hit) => {
+    if (bggPicking) return;
+    setBggPicking(hit.bggId);
+    try {
+      const d = await bggThing(hit.bggId);
+      // Deutscher Titel wird wie beim normalen Hinzufuegen bewusst nicht uebernommen.
+      const { germanName: _ignoriert, complexity, ...rest } = d;
+      addPlayedGame({ ...rest, complexity: complexity ?? "" });
+    } catch {
+      // BGG-Details nicht erreichbar: wenigstens Name, Jahr und ID sichern.
+      addPlayedGame({ name: hit.name, year: hit.year, bggId: hit.bggId });
+    } finally { setBggPicking(""); }
+  };
 
   const save = () => {
     if (!selectedGame) return;
@@ -5065,15 +5103,26 @@ function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, o
                     <Cover game={g} size="sm" /><span className="text-ink">{gameSearchLabel(g)}</span>
                   </button>
                 ))}
+                {onAddGame && gameQuery.trim().length >= 2 && (bggHitsNew.length > 0 || bggStatus === "loading" || bggStatus === "error") && (
+                  <p className="text-[11px] text-dim px-1 pt-2">{bggStatus === "loading" && bggHitsNew.length === 0 ? "Suche auf BGG …" : bggStatus === "error" ? "BGG gerade nicht erreichbar — du kannst das Spiel auch von Hand anlegen." : "Auf BGG gefunden — nur gespielt, kommt nicht ins Regal"}</p>
+                )}
+                {onAddGame && bggHitsNew.map((h) => (
+                  <button key={h.bggId} type="button" data-bgg-hit={h.bggId} onClick={() => pickBggHit(h)} disabled={!!bggPicking}
+                    className="w-full text-left bg-surface hover:bg-surface2 border border-line rounded-[14px] px-4 py-2.5 flex items-center gap-3 disabled:opacity-60">
+                    <Plus size={18} className="text-accent shrink-0" />
+                    <span className="text-ink min-w-0">{h.name}{h.year ? <span className="text-dim"> ({h.year})</span> : null}</span>
+                    {bggPicking === h.bggId && <span className="text-[11px] text-dim ml-auto shrink-0">lädt …</span>}
+                  </button>
+                ))}
                 {queryIsNewName && onAddGame && (
                   <button type="button" onClick={createPlayedGame}
                     className="w-full text-left border border-dashed border-accent/50 bg-accent/5 rounded-[14px] px-4 py-2.5 flex items-center gap-3 text-ink">
                     <Plus size={18} className="text-accent shrink-0" />
-                    <span className="min-w-0"><span className="font-medium">„{gameQuery.trim()}“ neu anlegen</span><span className="block text-[11px] text-dim">Nur gespielt — kommt nicht ins Regal</span></span>
+                    <span className="min-w-0"><span className="font-medium">„{gameQuery.trim()}“ neu anlegen</span><span className="block text-[11px] text-dim">Von Hand, ohne BGG — nur gespielt, kommt nicht ins Regal</span></span>
                   </button>
                 )}
                 {filtered.length === 0 && !queryIsNewName && (
-                  <p className="text-sm text-dim px-1">Nicht in deiner Liste? Tippe oben den Namen ein, dann kannst du das Spiel direkt anlegen — auch ohne Besitz.</p>
+                  <p className="text-sm text-dim px-1">Nicht in deiner Liste? Tippe oben den Namen ein, dann suche ich auf BGG oder du legst das Spiel von Hand an — auch ohne Besitz.</p>
                 )}
               </div>
             </div>
