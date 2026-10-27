@@ -4915,7 +4915,7 @@ const topScorerIds = (ids, scoresObj) => {
   const max = Math.max(...scored.map(val));
   return scored.filter((id) => val(id) === max);
 };
-function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlayerPhoto, onUpdatePlayerName, onRemovePlayer, onReorderPlayers, initial, onClose, onSave, onDelete }) {
+function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, onUpdatePlayerPhoto, onUpdatePlayerName, onRemovePlayer, onReorderPlayers, initial, onClose, onSave, onDelete }) {
   const [editingPlayer, setEditingPlayer] = useState(null); // { id, name }
   const [playerOrderOpen, setPlayerOrderOpen] = useState(false);
   const playerLongPressTimer = React.useRef(null);
@@ -5010,6 +5010,25 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
     return sorted.filter((g) => gameMatchesQuery(g, gameQuery));
   }, [games, gameQuery]);
 
+  // Spiel, das (noch) nicht in der Sammlung steht, direkt aus dem Partie-Formular
+  // anlegen: Status "Nur gespielt", also nicht im Regal und nicht in "Spiele im
+  // Regal" gezaehlt, aber in der Sammlung unter diesem Filter auffindbar.
+  const createPlayedGame = () => {
+    const name = gameQuery.trim();
+    if (!name || !onAddGame) return;
+    const game = {
+      id: uid(), bggId: "", name, germanName: "", primaryTitle: "original", year: "", publishers: [], designers: [], images: [],
+      minPlayers: "", maxPlayers: "", bestPlayersMin: "", bestPlayersMax: "", minTime: "", maxTime: "", age: "",
+      complexity: "", mechanisms: [], categories: [], playerTypes: [], status: "none", format: "analog", saleStatus: "",
+      location: "", summary: "", notes: "", rating: "", addedDate: new Date().toISOString().slice(0, 10),
+    };
+    haptic(6);
+    onAddGame(game);
+    setSelectedGame(game);
+  };
+  const queryIsNewName = gameQuery.trim() !== "" && !games.some((g) =>
+    [g.name, g.germanName].some((n) => (n || "").trim().toLowerCase() === gameQuery.trim().toLowerCase()));
+
   const save = () => {
     if (!selectedGame) return;
     const profileNames = playerIds.map((id) => (playerProfiles.find((p) => p.id === id) || {}).name).filter(Boolean);
@@ -5046,8 +5065,15 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                     <Cover game={g} size="sm" /><span className="text-ink">{gameSearchLabel(g)}</span>
                   </button>
                 ))}
-                {filtered.length === 0 && (
-                  <p className="text-sm text-dim px-1">Nicht in deiner Liste? Lege es erst kurz über „Spiel hinzufügen" in der Sammlung an — auch ungespielt, ohne Besitz.</p>
+                {queryIsNewName && onAddGame && (
+                  <button type="button" onClick={createPlayedGame}
+                    className="w-full text-left border border-dashed border-accent/50 bg-accent/5 rounded-[14px] px-4 py-2.5 flex items-center gap-3 text-ink">
+                    <Plus size={18} className="text-accent shrink-0" />
+                    <span className="min-w-0"><span className="font-medium">„{gameQuery.trim()}“ neu anlegen</span><span className="block text-[11px] text-dim">Nur gespielt — kommt nicht ins Regal</span></span>
+                  </button>
+                )}
+                {filtered.length === 0 && !queryIsNewName && (
+                  <p className="text-sm text-dim px-1">Nicht in deiner Liste? Tippe oben den Namen ein, dann kannst du das Spiel direkt anlegen — auch ohne Besitz.</p>
                 )}
               </div>
             </div>
@@ -9237,7 +9263,7 @@ function App() {
           onAddExpansion={readOnly ? null : openMissingExpansion}
         />
       )}
-      {playModal && <PlayFormModal games={games} plays={plays} playerProfiles={displayPlayers} onAddPlayer={addPlayer} onUpdatePlayerPhoto={updatePlayerPhoto} onUpdatePlayerName={updatePlayerName} onRemovePlayer={removePlayer} onReorderPlayers={reorderPlayers} initial={playModal.editing} onClose={() => setPlayModal(null)} onSave={savePlay} onDelete={deletePlay} />}
+      {playModal && <PlayFormModal games={games} plays={plays} playerProfiles={displayPlayers} onAddGame={applyGameSave} onAddPlayer={addPlayer} onUpdatePlayerPhoto={updatePlayerPhoto} onUpdatePlayerName={updatePlayerName} onRemovePlayer={removePlayer} onReorderPlayers={reorderPlayers} initial={playModal.editing} onClose={() => setPlayModal(null)} onSave={savePlay} onDelete={deletePlay} />}
       {commandBarOpen && (
         <CommandBarModal
           games={displayGames}
