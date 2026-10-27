@@ -742,7 +742,7 @@ function prng(seed) {
 let S = null; // persistenter Spielzustand
 // Mitspieler-Tempo: Einstellung im Menü, gilt für alle Spiele und bleibt gespeichert
 const fastPref = () => { try { return localStorage.getItem('spielregal:botFast') === '1'; } catch { return false; } };
-const U = { fast: fastPref(), page: 0, sheet: null, toast: null, busy: false, setup: { name: '', bots: 2 }, logOpen: false };
+const U = { fast: fastPref(), page: 0, sheet: null, toast: null, busy: false, setup: { name: spielregalDefaultName(), bots: 2 }, logOpen: false };
 function rnd() {
   S.rng = (S.rng + 0x6D2B79F5) | 0;
   let t = Math.imul(S.rng ^ (S.rng >>> 15), 1 | S.rng);
@@ -1394,6 +1394,7 @@ function recordPlay() {
   } catch (e) { S.recorded = false; }
 }
 // Spielerprofile aus Spielregal (gleiche Origin), damit der Name passt
+function spielregalDefaultName() { try { const ps = spielregalProfiles(), last = localStorage.getItem('spielregal:lastPlayer'); return (last && ps.includes(last)) ? last : (ps[0] || ''); } catch (e) { return ''; } }
 function spielregalProfiles() { try { return (JSON.parse(localStorage.getItem('spielregal:players') || '[]') || []).filter(p => p && p.name).map(p => p.name); } catch (e) { return []; } }
 
 // ---------- Bots ----------
@@ -2333,7 +2334,7 @@ const H = {
   leolvl: d => { U.setup.leo = +d.n; },
   spsel: d => { const sp = S.staffPick, id = +d.id, k = sp.sel.indexOf(id); if (k >= 0) sp.sel.splice(k, 1); else if (sp.sel.length < 6) sp.sel.push(id); },
   spok: () => { const sp = S.staffPick; if (sp.sel.length !== 6) return; human().hand = sp.sel.slice(); S.staffDeck.push(...sp.ids.filter(id => !sp.sel.includes(id))); S.staffPick = null; U.sheet = null; },
-  pickname: d => { U.setup.name = d.n; const nm = document.getElementById('nm'); if (nm) nm.value = d.n; },
+  pickname: d => { U.setup.name = d.n; try { localStorage.setItem('spielregal:lastPlayer', d.n); } catch (e) {} const nm = document.getElementById('nm'); if (nm) nm.value = d.n; },
   setup: () => { U.sopen = true; },
   'setup-x': () => { const nm = document.getElementById('nm'); if (nm) U.setup.name = nm.value.trim(); U.sopen = false; },
   start: () => { U.page = 0; const sv = load(); if (sv && sv.screen === 'game' && !confirm(`Es gibt eine gespeicherte Partie (Runde ${sv.round || 1}). Neue Partie starten und die gespeicherte verwerfen?`)) return; const nm = document.getElementById('nm'); U.setup.name = nm ? nm.value.trim() : ''; U.fast = fastPref(); const solo = U.setup.bots === 0; newGame(U.setup.name || 'Du', solo ? 0 : U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0, solo ? (U.setup.leo ?? 1) : null); S.screen = 'game'; SC.scrollTo(0, 0); },

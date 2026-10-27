@@ -3908,7 +3908,9 @@ const avatarUri = (i) => avatarUriCache[i] || (avatarUriCache[i] = `data:image/s
 const idHash = (id) => { let h = 0; for (const c of String(id || "")) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
 const avatarIndexOf = (p) => (Number.isInteger(p && p.avatar) && p.avatar >= 0 && p.avatar < AVATARS.length ? p.avatar : idHash(p && p.id) % AVATARS.length);
 // Bild eines Profils: eigenes Foto, sonst die Figur.
-const avatarSrc = (p) => (p && p.photo) || avatarUri(avatarIndexOf(p));
+// Ein Foto bleibt am Profil gespeichert, auch wenn man zwischendurch eine Figur waehlt (`photoOff`).
+const usesPhoto = (p) => !!(p && p.photo && !p.photoOff);
+const avatarSrc = (p) => (usesPhoto(p) ? p.photo : avatarUri(avatarIndexOf(p)));
 
 const Cover = ({ game, size = "md", className: extraClass = "", compact = false }) => {
   const dims = size === "sm" ? "w-12 h-12" : size === "lg" ? "w-full aspect-square" : "w-16 h-16";
@@ -5004,7 +5006,7 @@ const topScorerIds = (ids, scoresObj) => {
   const max = Math.max(...scored.map(val));
   return scored.filter((id) => val(id) === max);
 };
-function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, onUpdatePlayerPhoto, onUpdatePlayerAvatar, onUpdatePlayerName, onRemovePlayer, onReorderPlayers, initial, onClose, onSave, onDelete }) {
+function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, onUpdatePlayerPhoto, onUpdatePlayerAvatar, onUsePlayerPhoto, onUpdatePlayerName, onRemovePlayer, onReorderPlayers, initial, onClose, onSave, onDelete }) {
   const [editingPlayer, setEditingPlayer] = useState(null); // { id, name }
   const [playerOrderOpen, setPlayerOrderOpen] = useState(false);
   const playerLongPressTimer = React.useRef(null);
@@ -5421,12 +5423,20 @@ function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, o
                 <Camera size={13} className="text-white" />
               </span>
             </div>
-            <p className="text-xs text-dim text-center -mt-1">Foto antippen zum Ändern — oder eine Figur wählen:</p>
+            <p className="text-xs text-dim text-center -mt-1">Figur wählen oder ein eigenes Foto hochladen:</p>
             {(() => {
               const cur = playerProfiles.find((x) => x.id === editingPlayer.id) || { id: editingPlayer.id };
-              const curIdx = cur.photo ? -1 : avatarIndexOf(cur);
+              const curIdx = usesPhoto(cur) ? -1 : avatarIndexOf(cur);
               return (
                 <div className="grid grid-cols-6 gap-2" role="group" aria-label="Figur wählen">
+                  {cur.photo && (
+                    <button type="button" data-own-photo aria-label="Eigenes Foto" aria-pressed={usesPhoto(cur)}
+                      onClick={() => { haptic(6); onUsePlayerPhoto && onUsePlayerPhoto(editingPlayer.id); }}
+                      className="aspect-square rounded-full overflow-hidden border-2"
+                      style={{ borderColor: usesPhoto(cur) ? "rgb(var(--accent))" : "rgb(var(--line))" }}>
+                      <img src={cur.photo} alt="" className="w-full h-full block object-cover" />
+                    </button>
+                  )}
                   {AVATARS.map((_, i) => (
                     <button key={i} type="button" data-avatar={i} aria-label={`Figur ${i + 1}`} aria-pressed={curIdx === i}
                       onClick={() => { haptic(6); onUpdatePlayerAvatar && onUpdatePlayerAvatar(editingPlayer.id, i); }}
@@ -5438,6 +5448,10 @@ function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, o
                 </div>
               );
             })()}
+            <button type="button" data-upload-photo onClick={() => setNewPlayerPhotoFor(editingPlayer.id)}
+              className="w-full h-11 rounded-[14px] border border-line bg-surface text-ink text-sm flex items-center justify-center gap-2">
+              <Camera size={15} /> Eigenes Foto hochladen
+            </button>
             <input
               onFocus={handleFocusScroll}
               value={editingPlayer.name}
@@ -8912,9 +8926,10 @@ function App() {
     });
     return id;
   };
-  const updatePlayerPhoto = (id, photo) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, photo } : p)));
-  // Figur waehlen ersetzt ein eventuell vorhandenes Foto (das Foto hat sonst immer Vorrang).
-  const updatePlayerAvatar = (id, avatar) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, avatar, photo: "" } : p)));
+  const updatePlayerPhoto = (id, photo) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, photo, photoOff: false } : p)));
+  // Figur waehlen blendet ein eigenes Foto nur aus -- es bleibt gespeichert und laesst sich wieder waehlen.
+  const updatePlayerAvatar = (id, avatar) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, avatar, photoOff: true } : p)));
+  const usePlayerPhotoAgain = (id) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, photoOff: false } : p)));
   const updatePlayerName = (id, name) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, name } : p)));
   const removePlayer = (id) => setPlayersList((prev) => prev.filter((p) => p.id !== id));
   const reorderPlayers = (orderedIds) => setPlayersList((prev) => orderedIds.map((id) => prev.find((p) => p.id === id)).filter(Boolean));
@@ -9443,7 +9458,7 @@ function App() {
           onAddExpansion={readOnly ? null : openMissingExpansion}
         />
       )}
-      {playModal && <PlayFormModal games={games} plays={plays} playerProfiles={displayPlayers} onAddGame={applyGameSave} onAddPlayer={addPlayer} onUpdatePlayerPhoto={updatePlayerPhoto} onUpdatePlayerAvatar={updatePlayerAvatar} onUpdatePlayerName={updatePlayerName} onRemovePlayer={removePlayer} onReorderPlayers={reorderPlayers} initial={playModal.editing} onClose={() => setPlayModal(null)} onSave={savePlay} onDelete={deletePlay} />}
+      {playModal && <PlayFormModal games={games} plays={plays} playerProfiles={displayPlayers} onAddGame={applyGameSave} onAddPlayer={addPlayer} onUpdatePlayerPhoto={updatePlayerPhoto} onUpdatePlayerAvatar={updatePlayerAvatar} onUsePlayerPhoto={usePlayerPhotoAgain} onUpdatePlayerName={updatePlayerName} onRemovePlayer={removePlayer} onReorderPlayers={reorderPlayers} initial={playModal.editing} onClose={() => setPlayModal(null)} onSave={savePlay} onDelete={deletePlay} />}
       {commandBarOpen && (
         <CommandBarModal
           games={displayGames}

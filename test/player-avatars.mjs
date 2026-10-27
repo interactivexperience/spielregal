@@ -1,6 +1,7 @@
 // Prueft: Spielerprofile ohne Foto zeigen eine illustrierte Figur (statt Kamera-Icon),
 // neue Profile bekommen eine noch freie Figur, die Figur laesst sich im
-// Mitspieler-Dialog jederzeit tauschen und ersetzt dabei ein Foto; ein Foto hat sonst Vorrang.
+// Mitspieler-Dialog jederzeit tauschen; ein eigenes Foto bleibt dabei gespeichert und laesst
+// sich wieder waehlen (und neu hochladen). Ein Foto hat sonst Vorrang.
 import { chromium } from "playwright";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -75,10 +76,20 @@ await page.keyboard.press("Escape");
 await page.locator('button:has-text("Speichern")').last().click().catch(() => {}); await page.waitForTimeout(500);
 console.log("Annas Bild hat sich geaendert (andere Figur):", (await src("Anna")) !== annaFirst || (annaFirst.includes(encodeURIComponent("#"))));
 
-// Figur ersetzt ein Foto
+// Figur blendet ein Foto nur aus, loescht es nicht
 await imgOf("Ben").dispatchEvent("touchstart"); await page.waitForTimeout(900);
-console.log("Ben (Foto): keine Figur vorausgewaehlt:", await grid.locator('button[aria-pressed="true"]').count() === 0);
+console.log("Ben (Foto): keine Figur vorausgewaehlt, Foto als erste Wahl markiert:", await grid.locator('button[data-avatar][aria-pressed="true"]').count() === 0 && await grid.locator('button[data-own-photo]').getAttribute("aria-pressed") === "true");
+console.log("Upload-Knopf 'Eigenes Foto hochladen' vorhanden:", await page.locator('button[data-upload-photo]').count() === 1);
 await grid.locator('button[data-avatar="3"]').click(); await page.waitForTimeout(400);
 st = await stored();
-console.log("Figur ersetzt das Foto (photo leer, avatar 3):", st.find((p) => p.id === "pb").photo === "" && st.find((p) => p.id === "pb").avatar === 3);
+const ben = st.find((p) => p.id === "pb");
+console.log("Figur gewaehlt: Foto bleibt gespeichert (nur ausgeblendet), avatar 3:", ben.photo === PHOTO && ben.photoOff === true && ben.avatar === 3);
+await page.keyboard.press("Escape");
+console.log("Ben zeigt jetzt die Figur statt des Fotos:", (await src("Ben")).startsWith("data:image/svg+xml;utf8"));
+await imgOf("Ben").dispatchEvent("touchstart"); await page.waitForTimeout(900);
+await grid.locator('button[data-own-photo]').click(); await page.waitForTimeout(400);
+st = await stored();
+console.log("Eigenes Foto wieder gewaehlt:", st.find((p) => p.id === "pb").photoOff === false);
+await page.keyboard.press("Escape");
+console.log("Ben zeigt wieder sein Foto:", (await src("Ben")) === PHOTO);
 await b.close(); server.close();
