@@ -1,7 +1,8 @@
-// Prueft: Spielerprofile ohne Foto zeigen eine illustrierte Figur (statt Kamera-Icon),
-// neue Profile bekommen eine noch freie Figur, die Figur laesst sich im
-// Mitspieler-Dialog jederzeit tauschen; ein eigenes Foto bleibt dabei gespeichert und laesst
-// sich wieder waehlen (und neu hochladen). Ein Foto hat sonst Vorrang.
+// Prueft: Spielerprofile ohne Foto zeigen eine selbst gestaltbare Figur (Fantasie
+// moeglich: Tierohren, Kopfschmuck, Haar-/Hautfarben). Neue Profile bekommen eine
+// zufaellige Startfigur. Im Mitspieler-Dialog laesst sich die Figur gestalten (Alter,
+// Geschlecht, Haarlaenge, Ohren, Brille, Bart, Kopfschmuck, Farben) mit Vorschau,
+// Zufall und Abbrechen. Ein eigenes Foto bleibt erhalten und ist jederzeit waehlbar.
 import { chromium } from "playwright";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -29,6 +30,7 @@ await page.route("**/fonts.googleapis.com/**", r => r.fulfill({ body: "", conten
 
 
 
+
 const PHOTO = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2'%3E%3Crect width='2' height='2' fill='%2300f'/%3E%3C/svg%3E";
 const players = [{ id: "pa", name: "Anna", photo: "" }, { id: "pb", name: "Ben", photo: PHOTO }, { id: "pc", name: "Clara" }];
 const games = [{ id: "g1", name: "Ark Nova", status: "owned", categories: [], mechanisms: [], publishers: [], designers: [], addedDate: "2026-01-01" }];
@@ -48,48 +50,74 @@ await page.locator('text=Ark Nova').first().click(); await page.waitForTimeout(6
 
 const imgOf = (name) => page.locator(`p:has-text("${name}")`).first().locator("xpath=preceding-sibling::button[1]").locator("img");
 const src = async (name) => (await imgOf(name).getAttribute("src")) || "";
-console.log("Anna (ohne Foto): Figur als SVG statt Kamera-Icon:", (await src("Anna")).startsWith("data:image/svg+xml"));
+console.log("Anna (ohne Foto): Figur als SVG:", (await src("Anna")).startsWith("data:image/svg+xml"));
 console.log("Clara (ohne Feld 'photo'): auch eine Figur:", (await src("Clara")).startsWith("data:image/svg+xml"));
 console.log("Ben (mit Foto): Foto hat Vorrang:", (await src("Ben")) === PHOTO);
-const annaFirst = await src("Anna");
-await page.screenshot({ path: "/tmp/claude-0/-home-user-spielregal/1b3178af-aefe-5c15-b39c-8a87c8dc09b0/scratchpad/avatars_row.png" });
 
-// Neues Profil: bekommt eine Figur, die von den vorhandenen verschieden ist
+// Neues Profil: zufaellige Startfigur wird gespeichert
 await page.locator('button.border-dashed').first().click(); await page.waitForTimeout(400);
 await page.locator('input[placeholder="Name"]').first().fill("Dora"); await page.locator('button:has-text("Anlegen")').click(); await page.waitForTimeout(600);
 let st = await stored();
 const dora = st.find((p) => p.name === "Dora");
-console.log("Neues Profil 'Dora' angelegt mit Figurennummer:", !!dora && Number.isInteger(dora.avatar));
-const idx = (p) => (Number.isInteger(p.avatar) ? p.avatar : null);
-console.log("Neue Figur ist keine der schon vergebenen (Anna/Clara per ID-Start, Ben Foto):", !!dora && await page.evaluate(([a]) => { const used = new Set(["pa", "pc"].map((id) => { let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h % 12; })); return !used.has(a); }, [dora ? dora.avatar : -1]));
+console.log("Neues Profil 'Dora' hat eine gespeicherte Startfigur (avatarCfg):", !!dora && !!dora.avatarCfg && ["age", "gender", "skin", "hair", "len", "ears"].every((k) => k in dora.avatarCfg));
 
-// Mitspieler-Dialog: lange druecken auf Anna
-await imgOf("Anna").dispatchEvent("touchstart"); await page.waitForTimeout(900);
-const grid = page.locator('[role=group][aria-label="Figur wählen"]');
-console.log("Dialog zeigt 12 Figuren zur Auswahl:", await grid.locator("button").count() === 12);
-await page.screenshot({ path: "/tmp/claude-0/-home-user-spielregal/1b3178af-aefe-5c15-b39c-8a87c8dc09b0/scratchpad/avatars_dialog.png" });
-await grid.locator('button[data-avatar="7"]').click(); await page.waitForTimeout(400);
+// Dialog
+const openDialog = async (name) => { await imgOf(name).dispatchEvent("touchstart"); await page.waitForTimeout(900); };
+await openDialog("Anna");
+console.log("Dialog: 'Figur gestalten' und 'Eigenes Foto hochladen' vorhanden:", await page.locator("button[data-design-avatar]").count() === 1 && await page.locator("button[data-upload-photo]").count() === 1);
+console.log("Dialog: keine feste Figurenauswahl mehr:", await page.locator("button[data-avatar]").count() === 0);
+console.log("Dialog: ohne Foto kein Foto/Figur-Umschalter:", await page.locator("button[data-own-photo]").count() === 0);
+await page.locator("button[data-design-avatar]").click(); await page.waitForTimeout(500);
+const prev = () => page.locator("img[data-avatar-preview]").getAttribute("src");
+const pick = async (k, v) => { await page.locator(`button[data-av="${k}"][data-v="${v}"]`).click(); await page.waitForTimeout(120); };
+const p0 = await prev();
+await page.screenshot({ path: "/tmp/claude-0/-home-user-spielregal/1b3178af-aefe-5c15-b39c-8a87c8dc09b0/scratchpad/avatar_editor.png" });
+
+// Abbrechen speichert nichts
+await pick("ears", "cat");
+console.log("Vorschau aendert sich live (Tierohren Katze):", (await prev()) !== p0);
+await page.locator('button:has-text("Abbrechen")').click(); await page.waitForTimeout(300);
 st = await stored();
-console.log("Gewaehlte Figur 7 an Anna gespeichert:", st.find((p) => p.id === "pa").avatar === 7);
-console.log("Dialog markiert Figur 7 als gewaehlt:", await grid.locator('button[data-avatar="7"]').getAttribute("aria-pressed") === "true");
-await page.keyboard.press("Escape");
-await page.locator('button:has-text("Speichern")').last().click().catch(() => {}); await page.waitForTimeout(500);
-console.log("Annas Bild hat sich geaendert (andere Figur):", (await src("Anna")) !== annaFirst || (annaFirst.includes(encodeURIComponent("#"))));
+console.log("Abbrechen: nichts gespeichert an Anna:", !st.find((p) => p.id === "pa").avatarCfg);
 
-// Figur blendet ein Foto nur aus, loescht es nicht
-await imgOf("Ben").dispatchEvent("touchstart"); await page.waitForTimeout(900);
-console.log("Ben (Foto): keine Figur vorausgewaehlt, Foto als erste Wahl markiert:", await grid.locator('button[data-avatar][aria-pressed="true"]').count() === 0 && await grid.locator('button[data-own-photo]').getAttribute("aria-pressed") === "true");
-console.log("Upload-Knopf 'Eigenes Foto hochladen' vorhanden:", await page.locator('button[data-upload-photo]').count() === 1);
-await grid.locator('button[data-avatar="3"]').click(); await page.waitForTimeout(400);
+// Gestalten + Fertig
+await page.locator("button[data-design-avatar]").click(); await page.waitForTimeout(400);
+await pick("age", "child"); 
+console.log("Kind: Reihe 'Bart' verschwindet:", await page.locator('button[data-av="facial"]').count() === 0);
+await pick("age", "adult");
+console.log("Erwachsen: Reihe 'Bart' ist da:", await page.locator('button[data-av="facial"]').count() === 3);
+await pick("gender", "f"); await pick("len", "3"); await pick("ears", "bunny"); await pick("glasses", "round"); await pick("head", "crown"); await pick("style", "curly");
+await pick("len", "0");
+console.log("Kahl: Reihe 'Haarstil' verschwindet:", await page.locator('button[data-av="style"]').count() === 0);
+await pick("len", "3");
+await page.locator('button[data-av-color="skin"][data-v="#9ED8A5"]').click(); await page.waitForTimeout(100);
+await page.locator('button[data-av-color="hair"][data-v="#E36FA6"]').click(); await page.waitForTimeout(100);
+const pBefore = await prev();
+await page.locator("button[data-avatar-random]").click(); await page.waitForTimeout(200);
+console.log("Zufall wuerfelt eine andere Figur:", (await prev()) !== pBefore);
+await pick("ears", "cat"); await pick("age", "old");
+await page.locator('button[data-av-color="skin"][data-v="#9ED8A5"]').click(); await page.waitForTimeout(100);
+await page.screenshot({ path: "/tmp/claude-0/-home-user-spielregal/1b3178af-aefe-5c15-b39c-8a87c8dc09b0/scratchpad/avatar_editor2.png" });
+await page.locator("button[data-avatar-done]").click(); await page.waitForTimeout(400);
+st = await stored();
+const c = (st.find((p) => p.id === "pa") || {}).avatarCfg || {};
+console.log("Fertig: Figur an Anna gespeichert (Alt, Katzenohren, gruene Haut):", c.age === "old" && c.ears === "cat" && c.skin === "#9ED8A5");
+await page.keyboard.press("Escape"); await page.waitForTimeout(200);
+await page.locator('button:has-text("Speichern")').last().click().catch(() => {}); await page.waitForTimeout(400);
+console.log("Annas Bild im Formular ist die neue Figur:", (await src("Anna")).startsWith("data:image/svg+xml") && (await src("Anna")).includes(encodeURIComponent("#9ED8A5")));
+
+// Foto bleibt erhalten und ist waehlbar
+await openDialog("Ben");
+console.log("Ben (Foto): Umschalter 'Mein Foto | Figur', Foto aktiv:", await page.locator("button[data-own-photo]").getAttribute("aria-pressed") === "true" && await page.locator("button[data-use-figure]").count() === 1);
+await page.locator("button[data-design-avatar]").click(); await page.waitForTimeout(400);
+await pick("ears", "bear");
+await page.locator("button[data-avatar-done]").click(); await page.waitForTimeout(400);
 st = await stored();
 const ben = st.find((p) => p.id === "pb");
-console.log("Figur gewaehlt: Foto bleibt gespeichert (nur ausgeblendet), avatar 3:", ben.photo === PHOTO && ben.photoOff === true && ben.avatar === 3);
-await page.keyboard.press("Escape");
-console.log("Ben zeigt jetzt die Figur statt des Fotos:", (await src("Ben")).startsWith("data:image/svg+xml;utf8"));
-await imgOf("Ben").dispatchEvent("touchstart"); await page.waitForTimeout(900);
-await grid.locator('button[data-own-photo]').click(); await page.waitForTimeout(400);
+console.log("Figur gestaltet: Foto bleibt gespeichert, Figur aktiv (photoOff):", ben.photo === PHOTO && ben.photoOff === true && ben.avatarCfg.ears === "bear");
+await page.locator("button[data-own-photo]").click(); await page.waitForTimeout(300);
 st = await stored();
-console.log("Eigenes Foto wieder gewaehlt:", st.find((p) => p.id === "pb").photoOff === false);
-await page.keyboard.press("Escape");
+console.log("'Mein Foto' waehlt das Foto wieder:", st.find((p) => p.id === "pb").photoOff === false);
+await page.keyboard.press("Escape"); await page.waitForTimeout(200);
 console.log("Ben zeigt wieder sein Foto:", (await src("Ben")) === PHOTO);
 await b.close(); server.close();

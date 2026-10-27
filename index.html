@@ -3862,55 +3862,114 @@ function GameGridCard({ game: g, expansions = [], playCounts = {}, gridCols = 2,
 }
 
 /* ---------------- SPIELERPROFIL-FIGUREN ---------------- */
-// Jedes Profil ohne eigenes Foto zeigt eine kleine illustrierte Figur. Sie ist
-// nur eine Nummer am Profil (`avatar`), gezeichnet wird sie hier -- es wird also
-// kein Bild gespeichert oder synchronisiert. Ein hochgeladenes Foto hat Vorrang;
-// die Figur laesst sich im Mitspieler-Dialog jederzeit tauschen.
-const AVATARS = [
-  { bg: "#F6C6B8", skin: "#F6D2B0", hair: "#2B1B14", hs: "short",  shirt: "#C4452E" },
-  { bg: "#BFD9F2", skin: "#E8B58C", hair: "#6B3F22", hs: "long",   shirt: "#2F5BB0", glasses: true },
-  { bg: "#CDE7C4", skin: "#C98F63", hair: "#1E2A44", hs: "curly",  shirt: "#3B8546", stripes: true },
-  { bg: "#F7E0A3", skin: "#FAD9C1", hair: "#D9502F", hs: "bun",    shirt: "#7C5CC4" },
-  { bg: "#D9C8F0", skin: "#9A6641", hair: "#1E2A44", hs: "bald",   shirt: "#E2A21E", beard: true },
-  { bg: "#F2BFD8", skin: "#F6D2B0", hair: "#E8C86A", hs: "long",   shirt: "#2B3245", stripes: true },
-  { bg: "#B9E3E0", skin: "#6F4529", hair: "#2B1B14", hs: "curly",  shirt: "#D9735F" },
-  { bg: "#F5D3A6", skin: "#E8B58C", hair: "#8E8E93", hs: "short",  shirt: "#5B86B5", glasses: true },
-  { bg: "#C9D3F5", skin: "#C98F63", hair: "#2B1B14", hs: "cap",    shirt: "#F0643C", cap: "#2F5BB0" },
-  { bg: "#E6D3B8", skin: "#FAD9C1", hair: "#6B3F22", hs: "short",  shirt: "#3B8546", beard: true },
-  { bg: "#C5E8B7", skin: "#9A6641", hair: "#2B1B14", hs: "bun",    shirt: "#C4452E", glasses: true },
-  { bg: "#F0B7A4", skin: "#F6D2B0", hair: "#C98A3B", hs: "bob",    shirt: "#4B3A6E" },
+// Jedes Profil ohne Foto zeigt eine selbst gestaltbare Figur (auch Fantasie:
+// Tierohren, Kopfschmuck, Haut- und Haarfarben von Gruen bis Pink). Gespeichert
+// wird nur die Einstellung (`avatarCfg`, wenige Felder), gezeichnet wird sie hier --
+// es wird also kein Bild gespeichert oder synchronisiert. Ein Foto hat Vorrang.
+const AV_SKIN = ["#F6D2B0", "#FAD9C1", "#E8B58C", "#C98F63", "#9A6641", "#6F4529", "#9ED8A5", "#A9C6F2", "#D3B8F0"];
+const AV_HAIR = ["#2B1B14", "#6B3F22", "#C98A3B", "#E8C86A", "#D9502F", "#8E8E93", "#F2F2F2", "#1E2A44", "#E36FA6", "#5B86B5", "#3FA66B", "#7C5CC4"];
+const AV_BG = ["#F6C6B8", "#BFD9F2", "#CDE7C4", "#F7E0A3", "#D9C8F0", "#F2BFD8", "#B9E3E0", "#F5D3A6", "#C9D3F5", "#E6D3B8"];
+const AV_SHIRT = ["#C4452E", "#2F5BB0", "#3B8546", "#7C5CC4", "#E2A21E", "#2B3245", "#D9735F", "#5B86B5", "#F0643C", "#4B3A6E"];
+const AV_OPTS = [
+  { key: "age", label: "Alter", opts: [["child", "Kind"], ["adult", "Erwachsen"], ["old", "Alt"]] },
+  { key: "gender", label: "Geschlecht", opts: [["f", "Weiblich"], ["m", "Männlich"], ["n", "Neutral"]] },
+  { key: "len", label: "Haarlänge", opts: [[0, "Kahl"], [1, "Kurz"], [2, "Mittel"], [3, "Lang"]] },
+  { key: "style", label: "Haarstil", opts: [["straight", "Glatt"], ["curly", "Lockig"], ["bun", "Dutt"]] },
+  { key: "ears", label: "Tierohren", opts: [["none", "Keine"], ["cat", "Katze"], ["dog", "Hund"], ["bunny", "Hase"], ["bear", "Bär"], ["elf", "Elf"]] },
+  { key: "glasses", label: "Brille", opts: [["none", "Keine"], ["round", "Rund"], ["sun", "Sonne"]] },
+  { key: "facial", label: "Bart", opts: [["none", "Keiner"], ["mustache", "Schnurrbart"], ["beard", "Vollbart"]] },
+  { key: "head", label: "Kopfschmuck", opts: [["none", "Keiner"], ["cap", "Mütze"], ["flower", "Blume"], ["crown", "Krone"]] },
 ];
-const avatarSvg = (a) => {
-  const ink = "#2B1B14", hair = a.hair, front = {
-    short: `<path d="M27 44c-3-20 9-31 21-31s24 11 21 31c-3-8-9-14-21-14s-18 6-21 14z" fill="${hair}"/>`,
-    long: `<path d="M27 44c-3-20 9-31 21-31s24 11 21 31c-3-8-9-14-21-14s-18 6-21 14z" fill="${hair}"/>`,
-    bob: `<path d="M26 50c-4-24 8-37 22-37s26 13 22 37c-2-9-4-17-8-20-8 5-19 5-28 0-4 3-6 11-8 20z" fill="${hair}"/>`,
-    bun: `<circle cx="48" cy="12" r="8" fill="${hair}"/><path d="M27 44c-3-20 9-31 21-31s24 11 21 31c-3-8-9-14-21-14s-18 6-21 14z" fill="${hair}"/>`,
-    curly: [[30, 28], [38, 19], [48, 16], [58, 19], [66, 28], [28, 38], [68, 38]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="8" fill="${hair}"/>`).join(""),
-    cap: `<path d="M27 42c0-17 9-26 21-26s21 9 21 26z" fill="${a.cap}"/><path d="M25 42h48c0 4-4 6-10 6H35c-6 0-10-2-10-6z" fill="${a.cap}" opacity=".85"/>`,
-    bald: "",
-  }[a.hs];
-  const back = a.hs === "long" ? `<path d="M25 46c-4 26 0 40 6 46h34c6-6 10-20 6-46-3-20-14-27-23-27s-20 7-23 27z" fill="${hair}"/>` : "";
-  const beard = a.beard ? `<path d="M29 50c0 18 8 24 19 24s19-6 19-24c-4 8-10 11-19 11s-15-3-19-11z" fill="${a.hs === "bald" ? hair : hair}"/>` : "";
-  const glasses = a.glasses ? `<g fill="none" stroke="${ink}" stroke-width="1.8"><circle cx="40" cy="47" r="6"/><circle cx="56" cy="47" r="6"/><path d="M46 47h4"/></g>` : "";
-  const stripes = a.stripes ? `<path d="M22 82h52M18 89h60" stroke="#fff" stroke-opacity=".4" stroke-width="3"/>` : "";
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect width="96" height="96" fill="${a.bg}"/>${back}`
-    + `<path d="M10 96c2-18 17-26 38-26s36 8 38 26z" fill="${a.shirt}"/>${stripes}`
-    + `<rect x="42" y="60" width="12" height="14" rx="4" fill="${a.skin}"/><rect x="42" y="60" width="12" height="14" rx="4" fill="#000" opacity=".12"/>`
-    + `<circle cx="28" cy="47" r="4" fill="${a.skin}"/><circle cx="68" cy="47" r="4" fill="${a.skin}"/>`
-    + `<ellipse cx="48" cy="45" rx="20" ry="23" fill="${a.skin}"/>${beard}${front}`
-    + `<circle cx="40" cy="47" r="2.3" fill="${ink}"/><circle cx="56" cy="47" r="2.3" fill="${ink}"/>${glasses}`
-    + `<circle cx="35" cy="54" r="3.2" fill="#E8836F" opacity=".35"/><circle cx="61" cy="54" r="3.2" fill="#E8836F" opacity=".35"/>`
-    + `<path d="M42 56q6 5 12 0" stroke="${ink}" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`;
+const AV_COLORS = [
+  { key: "skin", label: "Haut", list: AV_SKIN }, { key: "hair", label: "Haare", list: AV_HAIR },
+  { key: "shirt", label: "Oberteil", list: AV_SHIRT }, { key: "bg", label: "Hintergrund", list: AV_BG },
+];
+// Zufaellige, aber feste Figur aus einer Zahl (Startfigur jedes Profils, "Zufall"-Knopf).
+const avCfgFromSeed = (seed) => {
+  let t = (seed >>> 0) + 0x9E3779B9;
+  const r = () => { t = (t + 0x6D2B79F5) >>> 0; let x = Math.imul(t ^ (t >>> 15), 1 | t); x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x; return ((x ^ (x >>> 14)) >>> 0) / 4294967296; };
+  const pick = (a) => a[Math.floor(r() * a.length)];
+  const roll = r();
+  const age = roll < 0.18 ? "child" : roll < 0.3 ? "old" : "adult";
+  const gender = pick(["f", "m", "n"]);
+  const grown = age !== "child";
+  return {
+    age, gender, skin: pick(AV_SKIN.slice(0, 6)), hair: pick(AV_HAIR.slice(0, 8)), shirt: pick(AV_SHIRT), bg: pick(AV_BG),
+    len: gender === "m" ? pick([0, 1, 1, 1, 2]) : gender === "f" ? pick([1, 2, 2, 3, 3]) : pick([1, 2, 3]),
+    style: pick(["straight", "straight", "curly", "bun"]),
+    ears: r() < 0.22 ? pick(["cat", "dog", "bunny", "bear", "elf"]) : "none",
+    glasses: r() < 0.3 ? pick(["round", "sun"]) : "none",
+    facial: grown && gender === "m" && r() < 0.5 ? pick(["mustache", "beard"]) : "none",
+    head: r() < 0.15 ? pick(["cap", "flower", "crown"]) : "none",
+  };
+};
+const avatarSvg = (c) => {
+  const ink = "#2B1B14", hair = c.hair, skin = c.skin, child = c.age === "child", old = c.age === "old";
+  const dy = child ? 7 : 0, fy = child ? 3 : 0;
+  const rx = c.gender === "m" ? 21 : c.gender === "f" ? 19.5 : 20;
+  const top = "M27 44c-3-20 9-31 21-31s24 11 21 31c-3-8-9-14-21-14s-18 6-21 14z";
+  const len = c.len, tied = c.style === "bun" && len > 0;
+  // Haare hinter dem Kopf
+  let back = "";
+  if (!tied && len === 2) back = `<path d="M26 48c-3 14-1 22 5 26h34c6-4 8-12 5-26-3-18-12-26-22-26s-19 8-22 26z" fill="${hair}"/>`;
+  if (!tied && len === 3) back = `<path d="M25 46c-4 26 0 40 6 46h34c6-6 10-20 6-46-3-20-14-27-23-27s-20 7-23 27z" fill="${hair}"/>`;
+  // Haare vor dem Kopf
+  let front = "";
+  if (len > 0) {
+    if (c.style === "curly") {
+      const pts = [[30, 28], [38, 19], [48, 16], [58, 19], [66, 28], [28, 38], [68, 38]];
+      if (len >= 2) pts.push([26, 52], [70, 52]);
+      if (len >= 3) pts.push([25, 64], [71, 64], [27, 76], [69, 76]);
+      front = pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="8" fill="${hair}"/>`).join("");
+    } else front = `<path d="${top}" fill="${hair}"/>` + (tied ? `<circle cx="48" cy="11" r="8" fill="${hair}"/>` : "");
+  }
+  // Ohren: Tierohren oder normale Ohren
+  const pink = "#F2A8B8";
+  const ears = {
+    none: `<circle cx="28" cy="47" r="4" fill="${skin}"/><circle cx="68" cy="47" r="4" fill="${skin}"/>`,
+    elf: `<path d="M29 42L12 34l15 20z M67 42l17-8-15 20z" fill="${skin}"/>`,
+    cat: `<path d="M28 32L30 6l17 15z M68 32L66 6 49 21z" fill="${hair}"/><path d="M32 26l1-12 9 8z M64 26l-1-12-9 8z" fill="${pink}"/><circle cx="28" cy="47" r="4" fill="${skin}"/><circle cx="68" cy="47" r="4" fill="${skin}"/>`,
+    bear: `<circle cx="30" cy="25" r="9" fill="${hair}"/><circle cx="66" cy="25" r="9" fill="${hair}"/><circle cx="30" cy="25" r="4.5" fill="${pink}"/><circle cx="66" cy="25" r="4.5" fill="${pink}"/><circle cx="28" cy="47" r="4" fill="${skin}"/><circle cx="68" cy="47" r="4" fill="${skin}"/>`,
+    bunny: `<g transform="rotate(-10 38 20)"><ellipse cx="38" cy="10" rx="6.5" ry="16" fill="${hair}"/><ellipse cx="38" cy="11" rx="3" ry="11" fill="${pink}"/></g><g transform="rotate(10 58 20)"><ellipse cx="58" cy="10" rx="6.5" ry="16" fill="${hair}"/><ellipse cx="58" cy="11" rx="3" ry="11" fill="${pink}"/></g><circle cx="28" cy="47" r="4" fill="${skin}"/><circle cx="68" cy="47" r="4" fill="${skin}"/>`,
+    dog: `<path d="M29 24c-12 0-16 18-12 32 6-1 11-8 12-17z M67 24c12 0 16 18 12 32-6-1-11-8-12-17z" fill="${hair}"/>`,
+  }[c.ears] || "";
+  const ey = 47 + fy, my = 56 + fy;
+  const eyes = `<circle cx="40" cy="${ey}" r="${child ? 3 : old ? 2 : 2.3}" fill="${ink}"/><circle cx="56" cy="${ey}" r="${child ? 3 : old ? 2 : 2.3}" fill="${ink}"/>`
+    + (child || c.gender === "f" ? `<circle cx="39.2" cy="${ey - 0.9}" r="0.9" fill="#fff"/><circle cx="55.2" cy="${ey - 0.9}" r="0.9" fill="#fff"/>` : "");
+  const lashes = c.gender === "f" && !child ? `<path d="M35.5 ${ey - 1.5}l-3-1.5M60.5 ${ey - 1.5}l3-1.5" stroke="${ink}" stroke-width="1.4" stroke-linecap="round"/>` : "";
+  const brows = c.gender === "m" ? `<path d="M34.5 ${ey - 6}h10M51.5 ${ey - 6}h10" stroke="${ink}" stroke-width="2.8" stroke-linecap="round"/>`
+    : old ? `<path d="M35 ${ey - 5.5}q4.5-3 9 0M52 ${ey - 5.5}q4.5-3 9 0" stroke="#8E8E93" stroke-width="2" fill="none" stroke-linecap="round"/>`
+    : `<path d="M35 ${ey - 6}q4.5-2 9 0M52 ${ey - 6}q4.5-2 9 0" stroke="${ink}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
+  const wrinkles = old ? `<path d="M37 34q11-3 22 0M36 ${ey + 5}q-2 1-3 0M60 ${ey + 5}q2 1 3 0M34 ${my - 4}q-1 3 1 6M62 ${my - 4}q1 3-1 6" stroke="#000" stroke-opacity=".25" stroke-width="1.3" fill="none" stroke-linecap="round"/>` : "";
+  const blush = c.gender === "f" || child ? `<circle cx="35" cy="${ey + 7}" r="3.2" fill="#E8836F" opacity=".35"/><circle cx="61" cy="${ey + 7}" r="3.2" fill="#E8836F" opacity=".35"/>` : "";
+  const mouth = c.gender === "f" ? `<path d="M42 ${my}q6 5 12 0" stroke="#B5483A" stroke-width="2.6" fill="none" stroke-linecap="round"/>`
+    : `<path d="M42 ${my}q6 ${child ? 6 : 5} 12 0" stroke="${ink}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  const facial = child ? "" : c.facial === "beard" ? `<path d="M29 50c0 18 8 24 19 24s19-6 19-24c-4 8-10 11-19 11s-15-3-19-11z" fill="${hair}"/>`
+    : c.facial === "mustache" ? `<path d="M40 ${my - 2}q4-4 8-1q4-3 8 1q-3 4-8 2q-5 2-8-2z" fill="${hair}"/>` : "";
+  const glasses = c.glasses === "round" ? `<g fill="none" stroke="${ink}" stroke-width="1.8"><circle cx="40" cy="${ey}" r="6"/><circle cx="56" cy="${ey}" r="6"/><path d="M46 ${ey}h4M34 ${ey}l-5-2M62 ${ey}l5-2"/></g>`
+    : c.glasses === "sun" ? `<g><rect x="33" y="${ey - 5}" width="14" height="10" rx="4" fill="${ink}"/><rect x="49" y="${ey - 5}" width="14" height="10" rx="4" fill="${ink}"/><path d="M47 ${ey - 2}h2" stroke="${ink}" stroke-width="2"/><path d="M36 ${ey - 3}l3 0M52 ${ey - 3}l3 0" stroke="#fff" stroke-opacity=".5" stroke-width="1.5" stroke-linecap="round"/></g>` : "";
+  const headwear = c.head === "cap" ? `<path d="M27 42c0-17 9-26 21-26s21 9 21 26z" fill="${c.shirt}"/><path d="M25 42h48c0 4-4 6-10 6H35c-6 0-10-2-10-6z" fill="${c.shirt}" opacity=".85"/>`
+    : c.head === "crown" ? `<path d="M31 25L34 10 42 18 48 6 54 18 62 10 65 25z" fill="#F2B632" stroke="#C98A1B" stroke-width="1" stroke-linejoin="round"/>`
+    : c.head === "flower" ? `<g transform="translate(64 22)">${[0, 72, 144, 216, 288].map((a) => `<circle cx="0" cy="-4.5" r="3.4" fill="#F27BA7" transform="rotate(${a})"/>`).join("")}<circle r="2.6" fill="#F2B632"/></g>` : "";
+  const shoulders = child ? "M18 96c2-12 14-19 30-19s28 7 30 19z" : c.gender === "m" ? "M4 96c2-18 15-26 44-26s42 8 44 26z" : c.gender === "f" ? "M14 96c2-17 15-25 34-25s32 8 34 25z" : "M10 96c2-18 17-26 38-26s36 8 38 26z";
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect width="96" height="96" fill="${c.bg}"/>`
+    + `<path d="${shoulders}" fill="${c.shirt}"/>`
+    + `<rect x="42" y="${child ? 66 : 60}" width="12" height="${child ? 14 : 14}" rx="4" fill="${skin}"/><rect x="42" y="${child ? 66 : 60}" width="12" height="14" rx="4" fill="#000" opacity=".12"/>`
+    + `<g transform="translate(0 ${dy})">${back}${ears}<ellipse cx="48" cy="45" rx="${rx}" ry="${child ? 22 : 23}" fill="${skin}"/>${facial}${front}${headwear}`
+    + `${blush}${eyes}${lashes}${brows}${wrinkles}${glasses}${mouth}</g></svg>`;
 };
 const avatarUriCache = {};
-const avatarUri = (i) => avatarUriCache[i] || (avatarUriCache[i] = `data:image/svg+xml;utf8,${encodeURIComponent(avatarSvg(AVATARS[i]))}`);
+const avatarUri = (cfg) => {
+  const k = JSON.stringify(cfg);
+  return avatarUriCache[k] || (avatarUriCache[k] = `data:image/svg+xml;utf8,${encodeURIComponent(avatarSvg(cfg))}`);
+};
 const idHash = (id) => { let h = 0; for (const c of String(id || "")) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
-const avatarIndexOf = (p) => (Number.isInteger(p && p.avatar) && p.avatar >= 0 && p.avatar < AVATARS.length ? p.avatar : idHash(p && p.id) % AVATARS.length);
-// Bild eines Profils: eigenes Foto, sonst die Figur.
-// Ein Foto bleibt am Profil gespeichert, auch wenn man zwischendurch eine Figur waehlt (`photoOff`).
+// Einstellung eines Profils: gespeicherte Figur, sonst eine feste Startfigur aus der ID.
+const avatarCfgOf = (p) => ({ ...avCfgFromSeed(idHash(p && p.id)), ...((p && p.avatarCfg) || {}) });
+// Ein Foto bleibt am Profil gespeichert, auch wenn man zwischendurch die Figur waehlt (`photoOff`).
 const usesPhoto = (p) => !!(p && p.photo && !p.photoOff);
-const avatarSrc = (p) => (usesPhoto(p) ? p.photo : avatarUri(avatarIndexOf(p)));
+// Bild eines Profils: eigenes Foto, sonst die Figur.
+const avatarSrc = (p) => (usesPhoto(p) ? p.photo : avatarUri(avatarCfgOf(p)));
 
 const Cover = ({ game, size = "md", className: extraClass = "", compact = false }) => {
   const dims = size === "sm" ? "w-12 h-12" : size === "lg" ? "w-full aspect-square" : "w-16 h-16";
@@ -5006,8 +5065,59 @@ const topScorerIds = (ids, scoresObj) => {
   const max = Math.max(...scored.map(val));
   return scored.filter((id) => val(id) === max);
 };
-function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, onUpdatePlayerPhoto, onUpdatePlayerAvatar, onUsePlayerPhoto, onUpdatePlayerName, onRemovePlayer, onReorderPlayers, initial, onClose, onSave, onDelete }) {
+/* Figur gestalten: Vorschau oben, Auswahl darunter, "Zufall" wuerfelt neu. Gespeichert wird erst mit "Fertig". */
+function AvatarEditor({ player, onSave, onClose }) {
+  const [cfg, setCfg] = useState(() => avatarCfgOf(player));
+  const set = (k, v) => { haptic(4); setCfg((c) => ({ ...c, [k]: v })); };
+  return (
+    <div className="fixed top-0 left-0 right-0 bg-black/90 z-[70] flex items-end justify-center lg:items-center p-0" style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={onClose}>
+      <div className="glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top)-1rem)] flex flex-col overflow-hidden rise-in font-body" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
+        <div className="shrink-0 px-5 pt-1 pb-3 flex items-center gap-4">
+          <img data-avatar-preview src={avatarUri(cfg)} alt="Vorschau" className="w-24 h-24 rounded-full border-2 border-line block" />
+          <div className="flex-1 min-w-0">
+            <h3 className="font-display text-lg tracking-[-0.015em] text-ink">Figur gestalten</h3>
+            <p className="text-xs text-dim mb-2">{player.name}</p>
+            <button type="button" data-avatar-random onClick={() => { haptic(6); setCfg(avCfgFromSeed(Math.floor(Math.random() * 2147483647))); }}
+              className="h-9 px-3 rounded-full border border-line bg-surface text-ink text-sm flex items-center gap-1.5"><Sparkles size={14} /> Zufall</button>
+          </div>
+        </div>
+        <div className="px-5 pb-3 space-y-3.5 overflow-y-auto flex-1">
+          {AV_OPTS.filter((o) => !(o.key === "facial" && cfg.age === "child") && !(o.key === "style" && cfg.len === 0)).map((o) => (
+            <div key={o.key}>
+              <label className="block text-[11px] text-dim mb-1.5">{o.label}</label>
+              <div className="flex flex-wrap gap-1.5" role="group" aria-label={o.label}>
+                {o.opts.map(([v, label]) => (
+                  <button key={String(v)} type="button" data-av={o.key} data-v={String(v)} aria-pressed={cfg[o.key] === v} onClick={() => set(o.key, v)}
+                    className={`h-9 px-3 rounded-full border text-sm ${cfg[o.key] === v ? "border-accent bg-accent/10 text-ink font-medium" : "border-line bg-surface text-dim"}`}>{label}</button>
+                ))}
+              </div>
+            </div>
+          ))}
+          {AV_COLORS.map((o) => (
+            <div key={o.key}>
+              <label className="block text-[11px] text-dim mb-1.5">{o.label}</label>
+              <div className="flex flex-wrap gap-2" role="group" aria-label={o.label}>
+                {o.list.map((col) => (
+                  <button key={col} type="button" data-av-color={o.key} data-v={col} aria-label={`${o.label} ${col}`} aria-pressed={cfg[o.key] === col} onClick={() => set(o.key, col)}
+                    className="w-8 h-8 rounded-full border-2" style={{ background: col, borderColor: cfg[o.key] === col ? "rgb(var(--accent))" : "rgb(var(--line))", boxShadow: cfg[o.key] === col ? "0 0 0 2px rgb(var(--bg)) inset" : "none" }} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="shrink-0 px-5 pt-2 pb-5 grid grid-cols-2 gap-2" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
+          <button type="button" onClick={onClose} className="h-12 rounded-[14px] border border-line bg-surface text-ink">Abbrechen</button>
+          <button type="button" data-avatar-done onClick={() => { onSave(cfg); onClose(); }} className="h-12 rounded-[14px] bg-accent text-white font-medium">Fertig</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, onUpdatePlayerPhoto, onUpdatePlayerAvatar, onUsePlayerPhoto, onUsePlayerFigure, onUpdatePlayerName, onRemovePlayer, onReorderPlayers, initial, onClose, onSave, onDelete }) {
   const [editingPlayer, setEditingPlayer] = useState(null); // { id, name }
+  const [avatarEditorFor, setAvatarEditorFor] = useState(null); // Profil-ID
   const [playerOrderOpen, setPlayerOrderOpen] = useState(false);
   const playerLongPressTimer = React.useRef(null);
   const playerLongPressFired = React.useRef(false);
@@ -5396,6 +5506,10 @@ function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, o
           </div>
         </div>
       )}
+      {avatarEditorFor && (() => {
+        const ap = playerProfiles.find((x) => x.id === avatarEditorFor);
+        return ap ? <AvatarEditor player={ap} onSave={(c) => onUpdatePlayerAvatar && onUpdatePlayerAvatar(ap.id, c)} onClose={() => setAvatarEditorFor(null)} /> : null;
+      })()}
       {newPlayerPhotoFor && (
         <ImagePickerSheet onAdd={(img) => { onUpdatePlayerPhoto(newPlayerPhotoFor, Array.isArray(img) ? img[0] : img); setNewPlayerPhotoFor(null); }} onClose={() => setNewPlayerPhotoFor(null)} />
       )}
@@ -5423,35 +5537,29 @@ function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, o
                 <Camera size={13} className="text-white" />
               </span>
             </div>
-            <p className="text-xs text-dim text-center -mt-1">Figur wählen oder ein eigenes Foto hochladen:</p>
             {(() => {
               const cur = playerProfiles.find((x) => x.id === editingPlayer.id) || { id: editingPlayer.id };
-              const curIdx = usesPhoto(cur) ? -1 : avatarIndexOf(cur);
               return (
-                <div className="grid grid-cols-6 gap-2" role="group" aria-label="Figur wählen">
+                <div className="space-y-2">
                   {cur.photo && (
-                    <button type="button" data-own-photo aria-label="Eigenes Foto" aria-pressed={usesPhoto(cur)}
-                      onClick={() => { haptic(6); onUsePlayerPhoto && onUsePlayerPhoto(editingPlayer.id); }}
-                      className="aspect-square rounded-full overflow-hidden border-2"
-                      style={{ borderColor: usesPhoto(cur) ? "rgb(var(--accent))" : "rgb(var(--line))" }}>
-                      <img src={cur.photo} alt="" className="w-full h-full block object-cover" />
-                    </button>
+                    <div className="grid grid-cols-2 gap-2" role="group" aria-label="Bild wählen">
+                      <button type="button" data-own-photo aria-pressed={usesPhoto(cur)} onClick={() => { haptic(6); onUsePlayerPhoto && onUsePlayerPhoto(editingPlayer.id); }}
+                        className={`h-10 rounded-[12px] border text-sm ${usesPhoto(cur) ? "border-accent bg-accent/10 text-ink font-medium" : "border-line bg-surface text-dim"}`}>Mein Foto</button>
+                      <button type="button" data-use-figure aria-pressed={!usesPhoto(cur)} onClick={() => { haptic(6); onUsePlayerFigure && onUsePlayerFigure(editingPlayer.id); }}
+                        className={`h-10 rounded-[12px] border text-sm ${!usesPhoto(cur) ? "border-accent bg-accent/10 text-ink font-medium" : "border-line bg-surface text-dim"}`}>Figur</button>
+                    </div>
                   )}
-                  {AVATARS.map((_, i) => (
-                    <button key={i} type="button" data-avatar={i} aria-label={`Figur ${i + 1}`} aria-pressed={curIdx === i}
-                      onClick={() => { haptic(6); onUpdatePlayerAvatar && onUpdatePlayerAvatar(editingPlayer.id, i); }}
-                      className="aspect-square rounded-full overflow-hidden border-2"
-                      style={{ borderColor: curIdx === i ? "rgb(var(--accent))" : "rgb(var(--line))" }}>
-                      <img src={avatarUri(i)} alt="" className="w-full h-full block" />
-                    </button>
-                  ))}
+                  <button type="button" data-design-avatar onClick={() => setAvatarEditorFor(editingPlayer.id)}
+                    className="w-full h-11 rounded-[14px] bg-surface border border-line text-ink text-sm flex items-center justify-center gap-2">
+                    <Sparkles size={15} /> Figur gestalten
+                  </button>
+                  <button type="button" data-upload-photo onClick={() => setNewPlayerPhotoFor(editingPlayer.id)}
+                    className="w-full h-11 rounded-[14px] border border-line bg-surface text-ink text-sm flex items-center justify-center gap-2">
+                    <Camera size={15} /> Eigenes Foto hochladen
+                  </button>
                 </div>
               );
             })()}
-            <button type="button" data-upload-photo onClick={() => setNewPlayerPhotoFor(editingPlayer.id)}
-              className="w-full h-11 rounded-[14px] border border-line bg-surface text-ink text-sm flex items-center justify-center gap-2">
-              <Camera size={15} /> Eigenes Foto hochladen
-            </button>
             <input
               onFocus={handleFocusScroll}
               value={editingPlayer.name}
@@ -8917,18 +9025,14 @@ function App() {
   };
   const addPlayer = (name, photo, presetId) => {
     const id = presetId || uid();
-    // Neue Profile bekommen eine noch freie Figur (Startpunkt aus der ID, dann der Reihe nach weiter).
-    setPlayersList((prev) => {
-      const used = new Set(prev.map((q) => avatarIndexOf(q)));
-      let a = idHash(id) % AVATARS.length;
-      for (let k = 0; k < AVATARS.length && used.has(a); k++) a = (a + 1) % AVATARS.length;
-      return [...prev, { id, name, photo: photo || "", avatar: a }];
-    });
+    // Neue Profile bekommen eine zufaellige Startfigur, die sich jederzeit umgestalten laesst.
+    setPlayersList((prev) => [...prev, { id, name, photo: photo || "", avatarCfg: avCfgFromSeed(Math.floor(Math.random() * 2147483647)) }]);
     return id;
   };
   const updatePlayerPhoto = (id, photo) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, photo, photoOff: false } : p)));
   // Figur waehlen blendet ein eigenes Foto nur aus -- es bleibt gespeichert und laesst sich wieder waehlen.
-  const updatePlayerAvatar = (id, avatar) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, avatar, photoOff: true } : p)));
+  const updatePlayerAvatarCfg = (id, avatarCfg) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, avatarCfg, photoOff: true } : p)));
+  const usePlayerFigure = (id) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, photoOff: true } : p)));
   const usePlayerPhotoAgain = (id) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, photoOff: false } : p)));
   const updatePlayerName = (id, name) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, name } : p)));
   const removePlayer = (id) => setPlayersList((prev) => prev.filter((p) => p.id !== id));
@@ -9458,7 +9562,7 @@ function App() {
           onAddExpansion={readOnly ? null : openMissingExpansion}
         />
       )}
-      {playModal && <PlayFormModal games={games} plays={plays} playerProfiles={displayPlayers} onAddGame={applyGameSave} onAddPlayer={addPlayer} onUpdatePlayerPhoto={updatePlayerPhoto} onUpdatePlayerAvatar={updatePlayerAvatar} onUsePlayerPhoto={usePlayerPhotoAgain} onUpdatePlayerName={updatePlayerName} onRemovePlayer={removePlayer} onReorderPlayers={reorderPlayers} initial={playModal.editing} onClose={() => setPlayModal(null)} onSave={savePlay} onDelete={deletePlay} />}
+      {playModal && <PlayFormModal games={games} plays={plays} playerProfiles={displayPlayers} onAddGame={applyGameSave} onAddPlayer={addPlayer} onUpdatePlayerPhoto={updatePlayerPhoto} onUpdatePlayerAvatar={updatePlayerAvatarCfg} onUsePlayerPhoto={usePlayerPhotoAgain} onUsePlayerFigure={usePlayerFigure} onUpdatePlayerName={updatePlayerName} onRemovePlayer={removePlayer} onReorderPlayers={reorderPlayers} initial={playModal.editing} onClose={() => setPlayModal(null)} onSave={savePlay} onDelete={deletePlay} />}
       {commandBarOpen && (
         <CommandBarModal
           games={displayGames}
