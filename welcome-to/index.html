@@ -127,11 +127,24 @@ svg{display:block}
 .est.done b{background:var(--ink);color:var(--paper);border-radius:99px;padding:3px 8px 2px;margin-top:-2px;font-weight:400}
 
 .stats{display:flex;flex-direction:column;gap:10px}
-.estgrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.estgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.ecard{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 8px 9px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0}
+.ecard.has{border-color:var(--sage);background:color-mix(in srgb,var(--sage) 16%,var(--card))}
+.ecard .eh{display:flex;justify-content:space-between;align-items:baseline;width:100%;font:600 9.5px/1 var(--fb);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.ecard .eh b{font:400 15px/1 var(--fd);letter-spacing:0;color:var(--ink)}
+.ecard .pe{margin:2px 0 0}
+.ecard .pe svg{width:11px;height:14px}
+.eval{font:400 46px/.9 var(--fd);color:var(--acc);letter-spacing:-.02em}
+.elad{display:flex;flex-wrap:nowrap;gap:1px}
+.elad span{font:400 12.5px/1 var(--fd);padding:3px 4.5px 2px;border-radius:99px;color:var(--ink2)}
+.elad .past{text-decoration:line-through;opacity:.45}
+.elad .cur{background:var(--ink);color:var(--paper)}
+.ecard small{font-size:10.5px;color:var(--ink2)}
 .cgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
 .cell{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 3px 7px;text-align:center;display:flex;flex-direction:column;gap:3px;min-width:0}
 .cell small{font-size:10px;color:var(--ink2);line-height:1.2}
-.cell b{font:400 26px/1 var(--fd)}
+.cell b{font:400 28px/1 var(--fd)}
+.cell svg{width:32px;height:32px;margin:0 auto 3px;padding:4px;border-radius:50%;background:#F7F1E6}
 .pips{display:flex;justify-content:center;gap:3px;min-height:6px}
 .pip{width:6px;height:6px;border-radius:50%;border:1px solid var(--ink2)}
 .pip.on{background:var(--acc);border-color:var(--acc)}
@@ -797,7 +810,7 @@ details[open] summary{margin-bottom:8px}
     s += '<rect y="42" width="120" height="42" fill="' + lawn + '"/><path d="M0 42H120" stroke="' + INK + '" stroke-width="1.8"/>';
     s += '<path d="M52 84L56 44H64L68 84Z" fill="#EFE6D3" stroke="' + INK + '" stroke-width="1.4" stroke-linejoin="round"/>';
     s += '<path d="M54 74H66M55 62H65M56 52H64" stroke="' + INK + '" stroke-opacity=".25" stroke-width="1"/>';
-    s += '<rect x="56" y="56" width="8" height="20" fill="#8A5A44" stroke="' + INK + '" stroke-width="1.8"/>' + plaqueG(n, seed);
+    s += '<rect x="56" y="58" width="8" height="20" fill="#8A5A44" stroke="' + INK + '" stroke-width="1.8"/><g transform="translate(60 38) scale(.93) translate(-60 -34)">' + plaqueG(n, seed) + '</g>';
     // Beiwerk je Karte
     const tx = k % 2 ? 106 : 14;
     if (k < 2) s += '<path d="M' + tx + ' 70V54" stroke="' + INK + '" stroke-width="2.6"/><circle cx="' + tx + '" cy="48" r="10" fill="#5F8A66" stroke="' + INK + '" stroke-width="1.8"/>';
@@ -811,26 +824,44 @@ details[open] summary{margin-bottom:8px}
       '<path d="M20 36Q27 29 33 40Q27 46 20 42Z" fill="#E9CBA7" stroke="' + INK + '" stroke-width="2" stroke-linejoin="round"/><circle cx="38" cy="29" r="2.2" fill="' + INK + '"/>' +
       '<path d="M26 50L25 57M36 50L37 57" stroke="' + INK + '" stroke-width="2.2" stroke-linecap="round"/></svg>';
   }
+  // Cover: Luftbild eines Viertels wie im Spiel, drei Straßen mit Vorgärten, Hausnummernschildern in aufsteigender Reihenfolge, Pools, Bäumen und Zäunen
   function coverSVG() {
-    let s = '<svg class="cover" id="coverArt" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Hausnummernschilder in einem Vorgarten mit Hecke, Zaun und Sonne">';
+    const R = rng(23), GR = ['#B7CBA3', '#A9BF98', '#C2D2AD'], FL = ['#C4543A', '#E4B96A', '#F1E6D2', '#8FA8C4'];
+    let s = '<svg class="cover" id="coverArt" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Luftbild eines Viertels mit Vorgärten, Hausnummernschildern, Pools und Zäunen">';
     s += '<rect width="600" height="800" fill="#E8DDCB"/>';
-    s += '<circle cx="440" cy="390" r="150" fill="#C4543A"/>';
-    for (let x = -20; x < 640; x += 62) s += '<circle cx="' + x + '" cy="' + (468 + ((x / 62 | 0) % 2) * 8) + '" r="44" fill="' + ((x / 62 | 0) % 2 ? '#5F8A66' : '#4F7D5C') + '" stroke="' + INK + '" stroke-width="3.5"/>';
-    s += '<rect y="480" width="600" height="320" fill="#9DB48E"/><path d="M0 480H600" stroke="' + INK + '" stroke-width="3.5"/>';
-    s += '<path d="M245 800L284 480H316L355 800Z" fill="#EFE6D3" stroke="' + INK + '" stroke-width="3" stroke-linejoin="round"/>';
-    const fl = ['#C4543A', '#E4B96A', '#F1E6D2', '#8FA8C4'], R = rng(7);
-    for (let i = 0; i < 16; i++) { const x = 20 + R() * 560, y = 560 + R() * 220; if (x > 240 && x < 360) continue; s += '<path d="M' + f1(x) + ' ' + f1(y + 9) + 'V' + f1(y) + '" stroke="' + INK + '" stroke-width="2.4"/><circle cx="' + f1(x) + '" cy="' + f1(y) + '" r="6" fill="' + fl[i % 4] + '" stroke="' + INK + '" stroke-width="2.4"/>'; }
-    [[12, 112, 640, 1.9, 1], [3, 300, 580, 2.3, 2], [7, 488, 650, 1.9, 0]].forEach(([n, x, y, k, sd]) => {
-      const bottom = y + 28 * k;
-      s += '<rect x="' + (x - 6) + '" y="' + (bottom - 6) + '" width="12" height="' + (760 - bottom + 6) + '" fill="#8A5A44" stroke="' + INK + '" stroke-width="3"/>';
-      s += '<g transform="translate(' + x + ' ' + y + ') scale(' + k + ') translate(-60 -34)">' + plaqueG(n, sd) + '</g>';
+    s += '<circle cx="522" cy="352" r="96" fill="#C4543A"/>';
+    s += '<rect y="332" width="600" height="468" fill="#8FA886"/><path d="M0 332H600" stroke="' + INK + '" stroke-width="4"/>';
+    const rowsY = [352, 486, 618], H = 104, roadsY = [460, 594, 726], starts = [0, 2, 1];
+    roadsY.forEach(y => {
+      s += '<rect x="-10" y="' + y + '" width="620" height="22" fill="#5E5650"/><path d="M0 ' + (y + 11) + 'H600" stroke="#EFE6D3" stroke-width="2.4" stroke-dasharray="14 12"/>';
     });
-    s += '<path d="M40 790V760" stroke="' + INK + '" stroke-width="6"/><circle cx="40" cy="730" r="30" fill="#5F8A66" stroke="' + INK + '" stroke-width="3.5"/>';
-    for (let i = 0; i < 9; i++) { const x = 390 + i * 24; s += '<path d="M' + x + ' 790V738L' + (x + 8) + ' 726L' + (x + 16) + ' 738V790Z" fill="#F3EEE5" stroke="' + INK + '" stroke-width="3" stroke-linejoin="round"/>'; }
-    s += '<path d="M372 756H600M372 776H600" stroke="' + INK + '" stroke-width="3"/>';
+    rowsY.forEach((y, r) => {
+      let num = starts[r];
+      for (let i = 0; i < 9; i++) {
+        const x = -18 + 72 * i, W = 66, c = R();
+        s += '<rect x="' + x + '" y="' + y + '" width="' + W + '" height="' + H + '" rx="7" fill="' + GR[(i + r) % 3] + '" stroke="' + INK + '" stroke-width="2.6"/>';
+        if (c < .5) {
+          num = Math.min(17, num + 1 + (R() * 3 | 0));
+          for (let k = 0; k < 3; k++) s += '<circle cx="' + (x + 13 + k * 20) + '" cy="' + (y + 10) + '" r="9" fill="' + (k % 2 ? '#5F8A66' : '#4F7D5C') + '" stroke="' + INK + '" stroke-width="2"/>';
+          s += '<rect x="' + (x + 29) + '" y="' + (y + 72) + '" width="8" height="' + (H - 72) + '" fill="#EFE6D3"/>';
+          s += '<g transform="translate(' + (x + 33) + ' ' + (y + 54) + ') scale(.56) translate(-60 -34)">' + plaqueG(num, i + r) + '</g>';
+        } else if (c < .7) {
+          s += '<ellipse cx="' + (x + 38) + '" cy="' + (y + 60) + '" rx="24" ry="22" fill="#6E8566" opacity=".55"/>';
+          s += '<circle cx="' + (x + 33) + '" cy="' + (y + 50) + '" r="24" fill="#5F8A66" stroke="' + INK + '" stroke-width="2.6"/><circle cx="' + (x + 25) + '" cy="' + (y + 42) + '" r="6" fill="#7DA383" opacity=".8"/>';
+        } else if (c < .8) {
+          s += '<rect x="' + (x + 6) + '" y="' + (y + 24) + '" width="54" height="56" rx="12" fill="#EFE6D3" stroke="' + INK + '" stroke-width="2.2"/><rect x="' + (x + 11) + '" y="' + (y + 29) + '" width="44" height="46" rx="8" fill="#7FB4CE" stroke="' + INK + '" stroke-width="2.2"/>';
+          s += '<path d="M' + (x + 16) + ' ' + (y + 54) + 'Q' + (x + 22) + ' ' + (y + 46) + ' ' + (x + 28) + ' ' + (y + 54) + 'T' + (x + 40) + ' ' + (y + 54) + 'T' + (x + 50) + ' ' + (y + 52) + '" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>';
+        } else if (c < .92) {
+          for (let k = 0; k < 8; k++) { const fx = x + 14 + (k % 4) * 13, fy = y + 34 + (k / 4 | 0) * 30; s += '<path d="M' + fx + ' ' + fy + 'v8" stroke="' + INK + '" stroke-width="2"/><circle cx="' + fx + '" cy="' + fy + '" r="5.5" fill="' + FL[(k + i) % 4] + '" stroke="' + INK + '" stroke-width="2"/>'; }
+        } else {
+          s += '<rect x="' + (x + 9) + '" y="' + (y + 22) + '" width="48" height="60" rx="5" fill="none" stroke="' + INK + '" stroke-opacity=".5" stroke-width="2.2" stroke-dasharray="6 5"/>';
+        }
+        if (i < 8 && R() < .28) s += '<path d="M' + (x + W + 3) + ' ' + (y - 2) + 'V' + (y + H + 2) + '" stroke="' + INK + '" stroke-width="9" stroke-linecap="round"/><path d="M' + (x + W + 3) + ' ' + (y + 2) + 'V' + (y + H - 2) + '" stroke="#C4543A" stroke-width="4.6" stroke-linecap="round"/>';
+      }
+    });
     s += '<text x="300" y="150" text-anchor="middle" font-size="104" fill="' + INK + '" ' + SERIF + ' letter-spacing="-2">Siedler</text>';
     s += '<text x="300" y="244" text-anchor="middle" font-size="104" font-style="italic" fill="#C4543A" ' + SERIF + ' letter-spacing="-2">hain.</text>';
-    s += '<text x="300" y="290" text-anchor="middle" font-size="12" letter-spacing="2.4" fill="' + INK + '" font-family="Inter Tight, sans-serif" font-weight="600">HAUSNUMMERN · SIEDLUNGEN · POOLS</text>';
+    s += '<text x="300" y="296" text-anchor="middle" font-size="12" letter-spacing="2.4" fill="' + INK + '" font-family="Inter Tight, sans-serif" font-weight="600">HAUSNUMMERN · SIEDLUNGEN · POOLS</text>';
     return s + '</svg>';
   }
   const sgn = v => (v > 0 ? '+' + v : v < 0 ? '−' + Math.abs(v) : '0');
@@ -997,19 +1028,23 @@ details[open] summary{margin-bottom:8px}
 
   function stats(sc) {
     const counts = G.completedCounts(S);
-    let h = '<section class="stats"><p class="label">Siedlungswerte (der Makler erhöht sie)</p><div class="estgrid">';
+    let h = '<section class="stats"><p class="label">Siedlungswertung</p><div class="estgrid">';
     for (let k = 0; k < 6; k++) {
-      const max = G.EST_VALUES[k].length - 1;
-      let pips = '';
-      for (let j = 0; j < max; j++) pips += '<i class="pip' + (j < S.marks[k] ? ' on' : '') + '"></i>';
-      h += '<div class="cell"' + inf('Fertige Siedlungen der Größe ' + (k + 1) + ' zählen je ' + G.EST_VALUES[k][S.marks[k]] + ' Punkte. Die Punkte darunter zeigen, wie oft der Makler noch steigern kann.') + '><small>Größe ' + (k + 1) + '</small><b>' + G.EST_VALUES[k][S.marks[k]] + '</b><div class="pips">' + pips +
-        '</div><small>' + counts[k + 1] + ' fertig</small></div>';
+      const vals = G.EST_VALUES[k], cur = vals[S.marks[k]], c = counts[k + 1];
+      let houses = '';
+      for (let j = 0; j <= k; j++) houses += miniHouse(c > 0, k * 3 + j + 1);
+      const ladder = vals.map((v, j) => '<span class="' + (j < S.marks[k] ? 'past' : j === S.marks[k] ? 'cur' : '') + '">' + v + '</span>').join('');
+      h += '<div class="ecard' + (c > 0 ? ' has' : '') + '"' + inf('Fertige Siedlungen mit ' + (k + 1) + ' Häusern zählen je ' + cur + ' Punkte. Der Makler kann den Wert noch ' + (vals.length - 1 - S.marks[k]) + '-mal steigern (Leiter unten). Du hast ' + c + ' fertig.') + '>' +
+        '<div class="eh"><span>Größe ' + (k + 1) + '</span><b>' + c + '×</b></div><span class="pe' + (c > 0 ? ' ok' : '') + '">' + houses + '</span>' +
+        '<div class="eval">' + cur + '</div><div class="elad">' + ladder + '</div><small>' + (c ? '= ' + c * cur + ' Punkte' : 'noch keine fertig') + '</small></div>';
     }
+    const ico = e => effSVG(e);
+    const nope = '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="16" fill="none" stroke="' + INK + '" stroke-width="2.6"/><path d="M15 15L33 33" stroke="#C4543A" stroke-width="3.2" stroke-linecap="round"/></svg>';
     h += '</div><div class="cgrid">' +
-      '<div class="cell"' + inf('Swimmingpools: Je mehr du baust, desto mehr Punkte (bis 9 Pools).') + '><small>Pools</small><b>' + sc.poolCount + '</b><small>' + sgn(sc.pools) + ' Pkt</small></div>' +
-      '<div class="cell"' + inf('Zeitarbeit: Ab 6 Zeitarbeitern gibt es 7 Punkte, sonst keinen. Es gibt 11 Felder.') + '><small>Zeitarbeit</small><b>' + S.temps + '</b><small>' + sgn(sc.temps) + ' Pkt</small></div>' +
-      '<div class="cell"' + inf('Doppelte Hausnummern kosten Punkte, und es werden immer mehr.') + '><small>Doppelte</small><b>' + S.bis + '</b><small>' + sgn(sc.bis) + ' Pkt</small></div>' +
-      '<div class="cell"' + inf('Abgelehnte Bauanträge: Der erste kostet nichts, der zweite 3 Punkte, der dritte 5 Punkte und beendet das Spiel.') + '><small>Abgelehnt</small><b>' + S.refusals + '</b><small>' + sgn(sc.refusals) + ' Pkt</small></div></div>' +
+      '<div class="cell"' + inf('Swimmingpools: Je mehr du baust, desto mehr Punkte (bis 9 Pools).') + '>' + ico('pool') + '<b>' + sc.poolCount + '</b><small>Pools · ' + sgn(sc.pools) + ' Pkt</small></div>' +
+      '<div class="cell"' + inf('Zeitarbeit: Ab 6 Zeitarbeitern gibt es 7 Punkte, sonst keinen. Es gibt 11 Felder.') + '>' + ico('temp') + '<b>' + S.temps + '</b><small>Zeitarbeit · ' + sgn(sc.temps) + ' Pkt</small></div>' +
+      '<div class="cell"' + inf('Doppelte Hausnummern kosten Punkte, und es werden immer mehr.') + '>' + ico('bis') + '<b>' + S.bis + '</b><small>Doppelte · ' + sgn(sc.bis) + ' Pkt</small></div>' +
+      '<div class="cell"' + inf('Abgelehnte Bauanträge: Der erste kostet nichts, der zweite 3 Punkte, der dritte 5 Punkte und beendet das Spiel.') + '>' + nope + '<b>' + S.refusals + '</b><small>Abgelehnt · ' + sgn(sc.refusals) + ' Pkt</small></div></div>' +
       '<details><summary>Zwischenwertung</summary>' + lines(sc) + '</details></section>';
     return h;
   }
