@@ -90,14 +90,16 @@ svg{display:block}
 .ptok svg{position:absolute;inset:0;width:100%;height:100%}
 .ptok span{position:relative}
 .ptok.on span{color:#fff}
-.row{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));column-gap:var(--g);position:relative;align-items:end;
-  border-bottom:1.5px solid var(--ink);padding-bottom:0}
+.row{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));column-gap:var(--g);position:relative;align-items:end;margin-bottom:2px}
 .house{position:relative;aspect-ratio:25/32;display:grid;place-items:center;min-width:0;padding:0}
-.house.empty{border-radius:3px;border:1px dashed color-mix(in srgb,var(--ink) 38%,transparent);background:color-mix(in srgb,var(--card) 40%,transparent);
-  font:400 14px/1 var(--fd);color:var(--ink)}
+.house.empty{font:400 14px/1 var(--fd);color:var(--ink)}
+.house.empty.ok{border-radius:5px}
+.road{height:10px;margin:0 -4px;border-radius:3px;background:#5E5650;position:relative}
+.road::after{content:"";position:absolute;left:8px;right:8px;top:4px;height:2px;background:repeating-linear-gradient(90deg,#EFE6D3 0 9px,transparent 9px 18px)}
 .house svg{width:100%;height:100%;overflow:visible}
-.house.ok.empty{border:1.5px solid var(--acc);background:var(--accs);cursor:pointer;animation:pulse 1.4s ease-in-out infinite;color:var(--acc)}
-.house.ok.empty .ghost{font:400 17px/1 var(--fd)}
+.house.ok.empty{border:2px solid var(--acc);background:var(--accs);cursor:pointer;animation:pulse 1.4s ease-in-out infinite;color:var(--acc)}
+.house.ok.empty .ghost{font:400 17px/1 var(--fd);position:relative;z-index:1}
+.house.ok.empty svg.lot{position:absolute;inset:0;opacity:.55}
 .house.ok.full{cursor:pointer;animation:pulse 1.4s ease-in-out infinite}
 .house.src{filter:drop-shadow(0 0 0 var(--acc)) drop-shadow(0 0 3px var(--acc))}
 .house.pop{animation:pop .45s cubic-bezier(.3,1.4,.5,1)}
@@ -724,6 +726,13 @@ details[open] summary{margin-bottom:8px}
     if (flags && flags.lock) s += '<circle cx="9" cy="14" r="6.5" fill="#7F9A82" stroke="' + INK + '" stroke-width="1.6"/><path d="M6 14l2.4 2.6L12.4 11.6" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
     return s + '</svg>';
   }
+  function lotSVG(seed) {
+    const fl = ['#C4543A', '#E4B96A', '#F1E6D2', '#8FA8C4'];
+    return '<svg class="lot" viewBox="0 0 50 64" aria-hidden="true"><rect x="1" y="4" width="48" height="58" rx="4" fill="#BFD0AA" stroke="' + INK + '" stroke-opacity=".45" stroke-width="1.2"/>' +
+      '<circle cx="11" cy="11" r="6" fill="#6E9677"/><circle cx="25" cy="10" r="6.5" fill="#5F8A66"/><circle cx="39" cy="11" r="6" fill="#6E9677"/>' +
+      '<rect x="10" y="24" width="30" height="22" rx="3" fill="none" stroke="' + INK + '" stroke-opacity=".4" stroke-width="1.2" stroke-dasharray="3 2.4"/>' +
+      '<path d="M25 46V58" stroke="' + INK + '" stroke-opacity=".35" stroke-width="2"/><circle cx="10" cy="55" r="2.4" fill="' + fl[seed % 4] + '"/><circle cx="41" cy="54" r="2.4" fill="' + fl[(seed + 2) % 4] + '"/></svg>';
+  }
   function miniHouse(ok, seed) {
     const c = ROOF[seed % 6];
     return '<svg viewBox="0 0 12 15" aria-hidden="true"><rect class="w" x="1.5" y="7" width="9" height="7" fill="#FBF8F2" stroke="' + INK + '" stroke-width="1.1"/>' +
@@ -745,7 +754,7 @@ details[open] summary{margin-bottom:8px}
     fence: { name: 'Geometer', act: 'Zaun in einer Straße', info: 'Geometer: Zieh einen Zaun zwischen zwei Bauplätzen einer Straße, egal wo. Zäune begrenzen die Siedlungen. Sie zählen am Ende, wenn alle Häuser dazwischen eine Nummer haben (höchstens 6).' },
     agent: { name: 'Immobilien­makler', act: 'Siedlungswert steigern', info: 'Immobilienmakler: Streiche in einer Spalte deiner Wahl den obersten Wert. Jede fertige Siedlung dieser Größe bringt am Ende den kleinsten noch sichtbaren Wert.' },
     park: { name: 'Landschafts­gärtner', act: 'Park in dieser Straße', info: 'Landschaftsgärtner: Hake in der Straße, in der du gebaut hast, den nächsten Park ab (2, 4, 10 usw.).' },
-    pool: { name: 'Swimmingpool', act: 'Pool, wenn Poolplatz', info: 'Swimmingpool: Steht dein Haus auf einem Bauplatz mit Pool-Symbol (unter der Straße), wird der Pool gebaut und die nächste Poolzahl abgehakt.' },
+    pool: { name: 'Swimming­pool', act: 'Pool, wenn Poolplatz', info: 'Swimmingpool: Steht dein Haus auf einem Bauplatz mit Pool-Symbol (unter der Straße), wird der Pool gebaut und die nächste Poolzahl abgehakt.' },
     temp: { name: 'Zeitarbeit', act: 'Nummer ±1 oder ±2', info: 'Agentur für Zeitarbeit: Erhöhe oder verringere die Hausnummer um 1 oder 2 (0 bis 17 möglich). Jeder Zeitarbeiter wird gezählt. Ab 6 Zeitarbeitern gibt es 7 Punkte.' },
     bis: { name: 'Doppelte Nummer', act: 'Haus doppeln', info: 'Doppelte Hausnummern: Kopiere die Nummer irgendeines Hauses auf ein freies Nachbarfeld in derselben Siedlung. Das kostet am Ende Punkte, immer mehr.' }
   };
@@ -759,19 +768,28 @@ details[open] summary{margin-bottom:8px}
   };
   const effSVG = e => '<svg viewBox="0 0 48 48" aria-hidden="true">' + EFFECT_SVG[e]() + '</svg>';
 
-  // Bildseite der Baukarte: Plakat mit Haus, Sonne, Baum, riesiger Umrissziffer im Hintergrund
+  // Bildseite der Baukarte wie im Original: eine große Hausnummer im Vorgarten (Hecke, Rasen, Weg, Zaun, Blumen), kein Haus
   function sceneSVG(n, seed) {
-    const c = colors(n, seed), N = String(n), k = n % 4, tint = TINT[(n + seed) % 5];
+    const N = String(n), k = (n + seed) % 4, R = rng(n * 31 + seed * 7 + 5), tint = TINT[(n + seed) % 5];
+    const lawn = ['#9DB48E', '#8FAA86', '#A6B98F', '#94AE92'][k], hedge = ['#4F7D5C', '#5F8A66', '#46745A', '#587F53'][(n + k) % 4];
+    const fl = ['#C4543A', '#E4B96A', '#F1E6D2', '#8FA8C4', '#D98C7A'];
     let s = '<svg viewBox="0 0 120 84" preserveAspectRatio="xMidYMid slice" aria-hidden="true">';
     s += '<rect width="120" height="84" fill="' + tint + '"/>';
-    s += '<text x="' + (k % 2 ? 4 : 116) + '" y="66" text-anchor="' + (k % 2 ? 'start' : 'end') + '" font-size="96" fill="none" stroke="' + INK + '" stroke-opacity=".22" stroke-width=".8" ' + SERIF + '>' + N + '</text>';
-    const sx = [96, 22, 100, 20][k], sy = [16, 17, 14, 15][k];
-    s += '<circle cx="' + sx + '" cy="' + sy + '" r="9" fill="' + (k < 2 ? '#C4543A' : '#E4B96A') + '"/>';
-    s += '<rect y="68" width="120" height="16" fill="' + ['#7F9A82', '#8FA58A', '#9DAF8E', '#86A08B'][k] + '"/><path d="M0 68H120" stroke="' + INK + '" stroke-width="1.6"/>';
-    const tx = (k % 2) ? 106 : 14;
-    s += '<path d="M' + tx + ' 68V52" stroke="' + INK + '" stroke-width="2.4"/><circle cx="' + tx + '" cy="44" r="10" fill="#5F8A66" stroke="' + INK + '" stroke-width="2"/>';
-    s += '<g transform="translate(' + (k % 2 ? -8 : 8) + ' 0)">' + elev(26, 68, 64, 45, c, n, { sw: 2 }) + '</g>';
-    if (k === 1 || k === 3) s += '<path d="M6 68V60M12 68V58M18 68V60" stroke="' + INK + '" stroke-width="1.6" stroke-linecap="round"/>';
+    s += '<circle cx="' + [100, 18, 96, 22][k] + '" cy="13" r="7" fill="' + (k % 2 ? '#E4B96A' : '#C4543A') + '"/>';
+    for (let x = -6; x < 130; x += 15) s += '<circle cx="' + x + '" cy="' + (36 + (R() * 4 - 2)) + '" r="10" fill="' + hedge + '" stroke="' + INK + '" stroke-width="1.6"/>';
+    s += '<rect y="42" width="120" height="42" fill="' + lawn + '"/><path d="M0 42H120" stroke="' + INK + '" stroke-width="1.8"/>';
+    s += '<path d="M52 84L56 44H64L68 84Z" fill="#EFE6D3" stroke="' + INK + '" stroke-width="1.4" stroke-linejoin="round"/>';
+    s += '<path d="M54 74H66M55 62H65M56 52H64" stroke="' + INK + '" stroke-opacity=".25" stroke-width="1"/>';
+    // Nummernschild auf Pfosten
+    s += '<rect x="57" y="52" width="6" height="22" fill="#8A5A44" stroke="' + INK + '" stroke-width="1.6"/>';
+    s += '<rect x="30" y="12" width="60" height="44" rx="7" fill="#F7F1E6" stroke="' + INK + '" stroke-width="2.4"/>';
+    s += '<rect x="34" y="16" width="52" height="36" rx="4" fill="none" stroke="' + INK + '" stroke-opacity=".28" stroke-width="1"/>';
+    s += '<text x="60" y="' + (N.length > 1 ? 45 : 47) + '" text-anchor="middle" font-size="' + (N.length > 1 ? 34 : 42) + '" fill="' + INK + '" ' + SERIF + '>' + N + '</text>';
+    // Beiwerk je Karte
+    const tx = k % 2 ? 106 : 14;
+    if (k < 2) s += '<path d="M' + tx + ' 70V54" stroke="' + INK + '" stroke-width="2.6"/><circle cx="' + tx + '" cy="48" r="10" fill="#5F8A66" stroke="' + INK + '" stroke-width="1.8"/>';
+    else for (let i = 0; i < 7; i++) { const x = (k === 2 ? 6 : 78) + i * 5.4; s += '<path d="M' + x + ' 80V66L' + (x + 2) + ' 63L' + (x + 4) + ' 66V80Z" fill="#F7F1E6" stroke="' + INK + '" stroke-width="1.2" stroke-linejoin="round"/>'; }
+    for (let i = 0; i < 6; i++) { const x = (i < 3 ? 8 + i * 10 : 86 + (i - 3) * 11) + R() * 4, y = 74 + R() * 7; s += '<path d="M' + f1(x) + ' ' + f1(y + 4) + 'V' + f1(y) + '" stroke="' + INK + '" stroke-width="1"/><circle cx="' + f1(x) + '" cy="' + f1(y) + '" r="2.6" fill="' + fl[(n + i) % 5] + '" stroke="' + INK + '" stroke-width="1"/>'; }
     return s + '</svg>';
   }
   function birdSVG() {
@@ -938,7 +956,7 @@ details[open] summary{margin-bottom:8px}
       const ph2 = hl('cell', st => st.cell[0] === s && st.cell[1] === i);
       cls += ph2;
       const tip = full ? 'Hausnummer ' + v + ' in ' + NAMES[s] + '.' + (S.bisH[s][i] ? ' Doppelte Hausnummer: kostet Punkte.' : '') + (S.lock[s][i] ? ' Gehört zu einem erfüllten Stadtplan.' : '') : 'Freier Bauplatz. Die Nummern müssen in dieser Straße von links nach rechts aufsteigen.';
-      const inner = full ? houseSVG(v, s, { bis: S.bisH[s][i], lock: S.lock[s][i] }) : (ok ? '<span class="ghost">' + S.sel.n + '</span>' : '');
+      const inner = full ? houseSVG(v, s, { bis: S.bisH[s][i], lock: S.lock[s][i] }) : (ok ? lotSVG(s * 3 + i) + '<span class="ghost">' + S.sel.n + '</span>' : lotSVG(s * 3 + i));
       cells += '<button class="' + cls + '" data-a="cell" data-s="' + s + '" data-i="' + i + '" data-v="' + (full ? v : '') + '"' + inf(tip) + (ok ? '' : ' disabled tabindex="-1"') +
         ' aria-label="' + NAMES[s] + ', Feld ' + (i + 1) + (full ? ', Nummer ' + v : ', frei') + '">' + inner + '</button>';
     });
@@ -953,7 +971,7 @@ details[open] summary{margin-bottom:8px}
       inf('Siedlung aus ' + e.size + ' Häusern' + (e.complete ? ', fertig bebaut.' : '. Sie zählt, sobald alle Häuser eine Nummer haben.') + (e.size > 6 ? ' Mehr als 6 Häuser zählen nicht.' : '')) + '><b>' + e.size + '</b></span>').join('');
     const ptoks = G.PARK_VALUES[s].map((v, k) => '<span class="ptok' + (k < S.parks[s] ? ' on' : '') + '"' + inf('Park ' + (k + 1) + ': Mit ' + (k + 1) + ' Parks in dieser Straße bekommst du ' + v + ' Punkte.') + '>' + parkSVG(k < S.parks[s], s * 5 + k) + '<span>' + v + '</span></span>').join('');
     return '<section class="street" data-s="' + s + '"><div class="shead"><h3>' + NAMES[s] + '<span>' + n + ' Häuser</span></h3><div class="parks">' + ptoks + '</div></div>' +
-      '<div class="row" style="--n:' + n + '">' + cells + fences + '</div><div class="poolrow" style="--n:' + n + '">' + pools + '</div><div class="estrow" style="--n:' + n + '">' + ests + '</div></section>';
+      '<div class="row" style="--n:' + n + '">' + cells + fences + '</div><div class="road"></div><div class="poolrow" style="--n:' + n + '">' + pools + '</div><div class="estrow" style="--n:' + n + '">' + ests + '</div></section>';
   }
 
   function lines(sc) {
@@ -1046,7 +1064,7 @@ details[open] summary{margin-bottom:8px}
   const RULES = '<div class="rules">' +
     '<h3>Ziel</h3><p>Du bist Architekt in den 50ern und baust in drei Straßen (10, 11 und 12 Häuser) Siedlungen mit Parks und Pools. Wer die meisten Punkte sammelt, ist der Stararchitekt.</p>' +
     '<h3>Solo-Spiel (so wie in der Solo-Variante)</h3><ul>' +
-    '<li>81 Baukarten, 27 Runden. Jede Runde ziehst du drei Karten. Vorne steht eine Hausnummer, hinten ein Effekt.</li>' +
+    '<li>81 Baukarten, 27 Runden. Jede Runde ziehst du drei Karten. Vorne steht eine Hausnummer im Vorgarten, hinten ein Effekt.</li>' +
     '<li>Du nimmst zwei verschiedene Karten: eine für die Hausnummer, eine für den Effekt. Die dritte fällt weg.</li>' +
     '<li>Die Solo-Karte ist unter den Karten versteckt. Sobald sie auftaucht, gelten alle Stadtpläne, die du noch nicht erfüllt hast, als von der Konkurrenz erfüllt.</li>' +
     '<li>Zeitarbeit bringt nur 7 Punkte, wenn du mindestens 6 Zeitarbeiter eingestellt hast, sonst keinen.</li></ul>' +
