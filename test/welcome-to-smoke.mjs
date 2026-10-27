@@ -35,37 +35,36 @@ const cnt = (s) => page.locator(s).count();
 const tap = (s) => page.locator(s).first().dispatchEvent("click"); // dispatchEvent: Wackel-Animationen stören Playwrights Stabilitätsprüfung
 const pts = async () => +(await page.locator(".pill.pts b").innerText());
 
-// Eine Partie per Klick zu Ende spielen
-async function play(maxSteps = 600, quickRefuse = false) {
-  for (let i = 0; i < maxSteps; i++) {
-    if (await cnt(".result")) return true;
-    if (await cnt(".combo")) {
-      const alive = await page.locator(".combo:not([disabled])").count();
-      if (!alive || quickRefuse || i % 17 === 5) {
-        await tap('[data-a=refuse]'); if (await cnt(".btn.arm")) await tap('[data-a=refuse]');
-      } else await tap(".combo:not([disabled])");
-    } else if (await cnt(".chip[data-a=adj]")) await tap(".chip[data-a=adj]:not([disabled])");
-    else if (await cnt(".house.ok")) await tap(".house.ok");
-    else if (await cnt(".gap")) await tap(".gap");
-    else if (await cnt(".chip[data-a=size]:not([disabled])")) await tap(".chip[data-a=size]:not([disabled])");
-    else if (await cnt("[data-a=skip]")) await tap("[data-a=skip]");
-    else await page.waitForTimeout(20);
-  }
+// Ein Schritt der Partie per Klick
+async function step(i) {
+  if (await cnt("[data-a=reshufno]")) { await tap(i % 2 ? "[data-a=reshufyes]" : "[data-a=reshufno]"); return; }
+  if (await cnt(".kard[data-a=pick]:not([disabled])")) { await tap(".kard[data-a=pick]:not([disabled])"); return; }
+  if (await cnt(".kard[data-a=pickeff]:not([disabled])")) { await tap(i % 5 === 0 ? "[data-a=noeff]" : ".kard[data-a=pickeff]:not([disabled])"); return; }
+  if (await cnt("[data-a=refuse]")) { await tap("[data-a=refuse]"); return; }
+  if (await cnt(".chip[data-a=adj]:not([disabled])")) { await tap(".chip[data-a=adj]:not([disabled])"); return; }
+  if (await cnt(".house.ok")) { await tap(".house.ok"); return; }
+  if (await cnt(".gap")) { await tap(".gap"); return; }
+  if (await cnt(".chip[data-a=size]:not([disabled])")) { await tap(".chip[data-a=size]:not([disabled])"); return; }
+  if (await cnt("[data-a=skip]")) { await tap("[data-a=skip]"); return; }
+  await page.waitForTimeout(20);
+}
+async function play(maxSteps = 1500) {
+  for (let i = 0; i < maxSteps; i++) { if (await cnt(".result")) return true; await step(i); }
   return false;
 }
 
 try {
   await page.goto(url, { waitUntil: "load" });
   check(await cnt(".start") === 1 && await cnt("#coverArt") === 1, "Startseite oder Cover fehlt");
-  check(await cnt("[data-a=start]") === 1 && await cnt("[data-a=tut]") === 1, "Start-/Lernspiel-Knopf fehlt");
+  check(await cnt("[data-a=start]") === 2 && await cnt("[data-a=tut]") === 1, "Start-/Lernspiel-Knopf fehlt");
   // Spielregeln von der Startseite
   await tap("[data-a=rules]");
   check((await page.locator(".sheet").innerText()).includes("Ende und Wertung"), "Spielregeln fehlen");
   await tap(".xbtn");
 
   // Partie 1: spielen bis zum Ende
-  await tap("[data-a=start]");
-  check(await cnt(".street") === 3 && await cnt(".plan") === 3 && await cnt(".combo") === 3, "Spielfeld unvollständig");
+  await tap("[data-a=start][data-mode=solo]");
+  check(await cnt(".street") === 3 && await cnt(".plan") === 3 && await cnt(".kard") === 3, "Spielfeld unvollständig");
   check((await page.evaluate(() => localStorage.getItem("welcome-to:save"))) !== null, "kein Spielstand nach Start");
   // Info-Blase per langem Drücken
   const plan = page.locator(".plan").first(); const bb = await plan.boundingBox();
@@ -74,46 +73,47 @@ try {
   // Menü
   await tap("[data-a=menu]"); check(await cnt("[data-a=saveleave]") === 1, "Menü unvollständig"); await tap(".xbtn");
 
-  // ein paar Züge, dann Reload mit ?resume=1
-  for (let i = 0; i < 12; i++) { if (await cnt(".combo:not([disabled])")) await tap(".combo:not([disabled])"); else if (await cnt(".chip[data-a=adj]")) await tap(".chip[data-a=adj]:not([disabled])"); else if (await cnt(".house.ok")) await tap(".house.ok"); else if (await cnt(".gap")) await tap(".gap"); else if (await cnt(".chip[data-a=size]:not([disabled])")) await tap(".chip[data-a=size]:not([disabled])"); else if (await cnt("[data-a=skip]")) await tap("[data-a=skip]"); }
+  for (let i = 0; i < 14; i++) await step(i);
   const sv = await page.evaluate(() => JSON.parse(localStorage.getItem("welcome-to:save") || "null"));
   check(sv && sv.screen === "game", "Spielstand ohne screen:'game' (Dashboard-Kennung)");
-  const filled = await cnt(".house.filled");
+  const filled = await cnt(".house.full");
   await page.goto(url + "?resume=1", { waitUntil: "load" });
-  check(await cnt(".street") === 3 && await cnt(".house.filled") === filled, "Fortsetzen stellt Stand nicht wieder her");
+  check(await cnt(".street") === 3 && await cnt(".house.full") === filled, "Fortsetzen stellt Stand nicht wieder her");
   const rb = await page.locator(".pill b").first().innerText();
-  check(+rb >= 1, "Rundenzähler fehlt");
+  check(parseInt(rb, 10) >= 1, "Rundenzähler fehlt");
 
   check(await play(), "Partie 1 endet nicht");
+  check((await page.locator(".result .why").innerText()).length > 10, "Endgrund fehlt");
   check(await cnt(".result h2") === 1, "Ergebnis fehlt");
   const inbox = await page.evaluate(() => JSON.parse(localStorage.getItem("spielregal:inbox:plays") || "[]"));
-  check(inbox.length === 1 && inbox[0].source === "welcome-to" && inbox[0].human === "Mi" && inbox[0].solo === true && inbox[0].bggId === "233867", "Eingangskorb-Eintrag falsch: " + JSON.stringify(inbox));
+  check(inbox.length === 1 && inbox[0].source === "welcome-to" && inbox[0].human === "Mi" && inbox[0].solo === true && Array.isArray(inbox[0].winners) && inbox[0].winners.length === 0 && inbox[0].bggId === "233867", "Eingangskorb-Eintrag falsch: " + JSON.stringify(inbox));
   const shown = +(await page.locator(".result h2").innerText()).split(" ")[0];
   check(inbox[0] && inbox[0].results[0].total === shown, "gemeldete Punkte ≠ angezeigte Punkte");
 
-  // Neue Partie; schnell durch dreimaliges Ablehnen beenden
-  await tap(".result [data-a=newyes]");
-  check(await cnt(".result") === 0 && await cnt(".combo") === 3, "Neue Partie startet nicht");
-  check(await play(60, true), "Dreimal ablehnen beendet nicht");
-  check((await page.locator(".result .why").innerText()).includes("Ablehnung") || (await page.locator(".result .why").innerText()).includes("abgelehnt"), "Endgrund Ablehnung fehlt");
+  // Neue Partie, dann Basisspiel (drei Kombinationen, Neumischen), dann Dauertest
+  await tap(".result [data-a=newsame]");
+  check(await cnt(".result") === 0 && await cnt(".kard") === 3, "Neue Partie startet nicht");
+  check(await play(), "Partie 2 endet nicht");
   const inbox2 = await page.evaluate(() => JSON.parse(localStorage.getItem("spielregal:inbox:plays") || "[]"));
   check(inbox2.length === 2 && inbox2[1].id !== inbox2[0].id, "zweite Partie nicht einzeln gemeldet");
-
-  // weitere Partien als Dauertest
-  for (let g = 0; g < 4; g++) { await tap(".result [data-a=newyes]"); check(await play(), "Dauertest-Partie " + g + " endet nicht"); }
+  await page.goto(url, { waitUntil: "load" });
+  await page.evaluate(() => localStorage.removeItem("welcome-to:save"));
+  await page.goto(url, { waitUntil: "load" });
+  await tap("[data-a=start][data-mode=base]");
+  check(await cnt(".kard[data-a=pick]") === 3 && await cnt(".kard[data-a=pickeff]") === 0, "Basisspiel zeigt keine drei Kombinationen");
+  check(await play(), "Basisspiel endet nicht");
+  for (let g = 0; g < 3; g++) { await tap(".result [data-a=newsame]"); check(await play(), "Dauertest-Partie " + g + " endet nicht"); }
+  check((await page.evaluate(() => JSON.parse(localStorage.getItem("spielregal:inbox:plays") || "[]"))).length === 6, "Meldungen nach Dauertest falsch");
 
   // Lernspiel
   await page.goto(url, { waitUntil: "load" });
   await tap("[data-a=tut]");
   check(await cnt(".coach") === 1, "Lernspiel-Coach fehlt");
   const before = await page.evaluate(() => localStorage.getItem("welcome-to:save"));
-  for (let i = 0; i < 60 && await cnt(".coach"); i++) {
+  for (let i = 0; i < 80 && await cnt(".coach"); i++) {
     if (await cnt(".coach [data-a=tutnext]")) await tap(".coach [data-a=tutnext]");
     else if (await cnt(".coach [data-a=tutquit]")) { await tap(".coach [data-a=tutquit]"); break; }
-    else if (await cnt(".combo.tut-hl")) await tap(".combo.tut-hl");
-    else if (await cnt(".house.ok")) await tap(".house.ok");
-    else if (await cnt(".gap")) await tap(".gap");
-    else if (await cnt("[data-a=skip]")) await tap("[data-a=skip]");
+    else if (await cnt(".tut-hl")) await tap(".tut-hl");
     else await page.waitForTimeout(20);
   }
   check(await cnt(".coach") === 0 && await cnt(".start") === 1, "Lernspiel kommt nicht bis zum Ende");
