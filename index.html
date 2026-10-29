@@ -3861,6 +3861,116 @@ function GameGridCard({ game: g, expansions = [], playCounts = {}, gridCols = 2,
   );
 }
 
+/* ---------------- SPIELERPROFIL-FIGUREN ---------------- */
+// Jedes Profil ohne Foto zeigt eine selbst gestaltbare Figur (auch Fantasie:
+// Tierohren, Kopfschmuck, Haut- und Haarfarben von Gruen bis Pink). Gespeichert
+// wird nur die Einstellung (`avatarCfg`, wenige Felder), gezeichnet wird sie hier --
+// es wird also kein Bild gespeichert oder synchronisiert. Ein Foto hat Vorrang.
+const AV_SKIN = ["#F6D2B0", "#FAD9C1", "#E8B58C", "#C98F63", "#9A6641", "#6F4529", "#9ED8A5", "#A9C6F2", "#D3B8F0"];
+const AV_HAIR = ["#2B1B14", "#6B3F22", "#C98A3B", "#E8C86A", "#D9502F", "#8E8E93", "#F2F2F2", "#1E2A44", "#E36FA6", "#5B86B5", "#3FA66B", "#7C5CC4"];
+const AV_BG = ["#F6C6B8", "#BFD9F2", "#CDE7C4", "#F7E0A3", "#D9C8F0", "#F2BFD8", "#B9E3E0", "#F5D3A6", "#C9D3F5", "#E6D3B8"];
+const AV_SHIRT = ["#C4452E", "#2F5BB0", "#3B8546", "#7C5CC4", "#E2A21E", "#2B3245", "#D9735F", "#5B86B5", "#F0643C", "#4B3A6E"];
+const AV_OPTS = [
+  { key: "age", label: "Alter", opts: [["child", "Kind"], ["adult", "Erwachsen"], ["old", "Alt"]] },
+  { key: "gender", label: "Geschlecht", opts: [["f", "Weiblich"], ["m", "Männlich"], ["n", "Neutral"]] },
+  { key: "len", label: "Haarlänge", opts: [[0, "Kahl"], [1, "Kurz"], [2, "Mittel"], [3, "Lang"]] },
+  { key: "style", label: "Haarstil", opts: [["straight", "Glatt"], ["curly", "Lockig"], ["bun", "Dutt"]] },
+  { key: "ears", label: "Tierohren", opts: [["none", "Keine"], ["cat", "Katze"], ["dog", "Hund"], ["bunny", "Hase"], ["bear", "Bär"], ["elf", "Elf"]] },
+  { key: "glasses", label: "Brille", opts: [["none", "Keine"], ["round", "Rund"], ["sun", "Sonne"]] },
+  { key: "facial", label: "Bart", opts: [["none", "Keiner"], ["mustache", "Schnurrbart"], ["beard", "Vollbart"]] },
+  { key: "head", label: "Kopfschmuck", opts: [["none", "Keiner"], ["cap", "Mütze"], ["flower", "Blume"], ["crown", "Krone"]] },
+];
+const AV_COLORS = [
+  { key: "skin", label: "Haut", list: AV_SKIN }, { key: "hair", label: "Haare", list: AV_HAIR },
+  { key: "shirt", label: "Oberteil", list: AV_SHIRT }, { key: "bg", label: "Hintergrund", list: AV_BG },
+];
+// Zufaellige, aber feste Figur aus einer Zahl (Startfigur jedes Profils, "Zufall"-Knopf).
+const avCfgFromSeed = (seed) => {
+  let t = (seed >>> 0) + 0x9E3779B9;
+  const r = () => { t = (t + 0x6D2B79F5) >>> 0; let x = Math.imul(t ^ (t >>> 15), 1 | t); x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x; return ((x ^ (x >>> 14)) >>> 0) / 4294967296; };
+  const pick = (a) => a[Math.floor(r() * a.length)];
+  const roll = r();
+  const age = roll < 0.18 ? "child" : roll < 0.3 ? "old" : "adult";
+  const gender = pick(["f", "m", "n"]);
+  const grown = age !== "child";
+  return {
+    age, gender, skin: pick(AV_SKIN.slice(0, 6)), hair: pick(AV_HAIR.slice(0, 8)), shirt: pick(AV_SHIRT), bg: pick(AV_BG),
+    len: gender === "m" ? pick([0, 1, 1, 1, 2]) : gender === "f" ? pick([1, 2, 2, 3, 3]) : pick([1, 2, 3]),
+    style: pick(["straight", "straight", "curly", "bun"]),
+    ears: r() < 0.22 ? pick(["cat", "dog", "bunny", "bear", "elf"]) : "none",
+    glasses: r() < 0.3 ? pick(["round", "sun"]) : "none",
+    facial: grown && gender === "m" && r() < 0.5 ? pick(["mustache", "beard"]) : "none",
+    head: r() < 0.15 ? pick(["cap", "flower", "crown"]) : "none",
+  };
+};
+const avatarSvg = (c) => {
+  const ink = "#2B1B14", hair = c.hair, skin = c.skin, child = c.age === "child", old = c.age === "old";
+  const dy = child ? 7 : 0, fy = child ? 3 : 0;
+  const rx = c.gender === "m" ? 21 : c.gender === "f" ? 19.5 : 20;
+  const top = "M27 44c-3-20 9-31 21-31s24 11 21 31c-3-8-9-14-21-14s-18 6-21 14z";
+  const len = c.len, tied = c.style === "bun" && len > 0;
+  // Haare hinter dem Kopf
+  let back = "";
+  if (!tied && len === 2) back = `<path d="M26 48c-3 14-1 22 5 26h34c6-4 8-12 5-26-3-18-12-26-22-26s-19 8-22 26z" fill="${hair}"/>`;
+  if (!tied && len === 3) back = `<path d="M25 46c-4 26 0 40 6 46h34c6-6 10-20 6-46-3-20-14-27-23-27s-20 7-23 27z" fill="${hair}"/>`;
+  // Haare vor dem Kopf
+  let front = "";
+  if (len > 0) {
+    if (c.style === "curly") {
+      const pts = [[30, 28], [38, 19], [48, 16], [58, 19], [66, 28], [28, 38], [68, 38]];
+      if (len >= 2) pts.push([26, 52], [70, 52]);
+      if (len >= 3) pts.push([25, 64], [71, 64], [27, 76], [69, 76]);
+      front = pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="8" fill="${hair}"/>`).join("");
+    } else front = `<path d="${top}" fill="${hair}"/>` + (tied ? `<circle cx="48" cy="11" r="8" fill="${hair}"/>` : "");
+  }
+  // Ohren: Tierohren oder normale Ohren
+  const pink = "#F2A8B8";
+  const ears = {
+    none: `<circle cx="28" cy="47" r="4" fill="${skin}"/><circle cx="68" cy="47" r="4" fill="${skin}"/>`,
+    elf: `<path d="M29 42L12 34l15 20z M67 42l17-8-15 20z" fill="${skin}"/>`,
+    cat: `<path d="M28 32L30 6l17 15z M68 32L66 6 49 21z" fill="${hair}"/><path d="M32 26l1-12 9 8z M64 26l-1-12-9 8z" fill="${pink}"/><circle cx="28" cy="47" r="4" fill="${skin}"/><circle cx="68" cy="47" r="4" fill="${skin}"/>`,
+    bear: `<circle cx="30" cy="25" r="9" fill="${hair}"/><circle cx="66" cy="25" r="9" fill="${hair}"/><circle cx="30" cy="25" r="4.5" fill="${pink}"/><circle cx="66" cy="25" r="4.5" fill="${pink}"/><circle cx="28" cy="47" r="4" fill="${skin}"/><circle cx="68" cy="47" r="4" fill="${skin}"/>`,
+    bunny: `<g transform="rotate(-10 38 20)"><ellipse cx="38" cy="10" rx="6.5" ry="16" fill="${hair}"/><ellipse cx="38" cy="11" rx="3" ry="11" fill="${pink}"/></g><g transform="rotate(10 58 20)"><ellipse cx="58" cy="10" rx="6.5" ry="16" fill="${hair}"/><ellipse cx="58" cy="11" rx="3" ry="11" fill="${pink}"/></g><circle cx="28" cy="47" r="4" fill="${skin}"/><circle cx="68" cy="47" r="4" fill="${skin}"/>`,
+    dog: `<path d="M29 24c-12 0-16 18-12 32 6-1 11-8 12-17z M67 24c12 0 16 18 12 32-6-1-11-8-12-17z" fill="${hair}"/>`,
+  }[c.ears] || "";
+  const ey = 47 + fy, my = 56 + fy;
+  const eyes = `<circle cx="40" cy="${ey}" r="${child ? 3 : old ? 2 : 2.3}" fill="${ink}"/><circle cx="56" cy="${ey}" r="${child ? 3 : old ? 2 : 2.3}" fill="${ink}"/>`
+    + (child || c.gender === "f" ? `<circle cx="39.2" cy="${ey - 0.9}" r="0.9" fill="#fff"/><circle cx="55.2" cy="${ey - 0.9}" r="0.9" fill="#fff"/>` : "");
+  const lashes = c.gender === "f" && !child ? `<path d="M35.5 ${ey - 1.5}l-3-1.5M60.5 ${ey - 1.5}l3-1.5" stroke="${ink}" stroke-width="1.4" stroke-linecap="round"/>` : "";
+  const brows = c.gender === "m" ? `<path d="M34.5 ${ey - 6}h10M51.5 ${ey - 6}h10" stroke="${ink}" stroke-width="2.8" stroke-linecap="round"/>`
+    : old ? `<path d="M35 ${ey - 5.5}q4.5-3 9 0M52 ${ey - 5.5}q4.5-3 9 0" stroke="#8E8E93" stroke-width="2" fill="none" stroke-linecap="round"/>`
+    : `<path d="M35 ${ey - 6}q4.5-2 9 0M52 ${ey - 6}q4.5-2 9 0" stroke="${ink}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
+  const wrinkles = old ? `<path d="M37 34q11-3 22 0M36 ${ey + 5}q-2 1-3 0M60 ${ey + 5}q2 1 3 0M34 ${my - 4}q-1 3 1 6M62 ${my - 4}q1 3-1 6" stroke="#000" stroke-opacity=".25" stroke-width="1.3" fill="none" stroke-linecap="round"/>` : "";
+  const blush = c.gender === "f" || child ? `<circle cx="35" cy="${ey + 7}" r="3.2" fill="#E8836F" opacity=".35"/><circle cx="61" cy="${ey + 7}" r="3.2" fill="#E8836F" opacity=".35"/>` : "";
+  const mouth = c.gender === "f" ? `<path d="M42 ${my}q6 5 12 0" stroke="#B5483A" stroke-width="2.6" fill="none" stroke-linecap="round"/>`
+    : `<path d="M42 ${my}q6 ${child ? 6 : 5} 12 0" stroke="${ink}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  const facial = child ? "" : c.facial === "beard" ? `<path d="M29 50c0 18 8 24 19 24s19-6 19-24c-4 8-10 11-19 11s-15-3-19-11z" fill="${hair}"/>`
+    : c.facial === "mustache" ? `<path d="M40 ${my - 2}q4-4 8-1q4-3 8 1q-3 4-8 2q-5 2-8-2z" fill="${hair}"/>` : "";
+  const glasses = c.glasses === "round" ? `<g fill="none" stroke="${ink}" stroke-width="1.8"><circle cx="40" cy="${ey}" r="6"/><circle cx="56" cy="${ey}" r="6"/><path d="M46 ${ey}h4M34 ${ey}l-5-2M62 ${ey}l5-2"/></g>`
+    : c.glasses === "sun" ? `<g><rect x="33" y="${ey - 5}" width="14" height="10" rx="4" fill="${ink}"/><rect x="49" y="${ey - 5}" width="14" height="10" rx="4" fill="${ink}"/><path d="M47 ${ey - 2}h2" stroke="${ink}" stroke-width="2"/><path d="M36 ${ey - 3}l3 0M52 ${ey - 3}l3 0" stroke="#fff" stroke-opacity=".5" stroke-width="1.5" stroke-linecap="round"/></g>` : "";
+  const headwear = c.head === "cap" ? `<path d="M27 42c0-17 9-26 21-26s21 9 21 26z" fill="${c.shirt}"/><path d="M25 42h48c0 4-4 6-10 6H35c-6 0-10-2-10-6z" fill="${c.shirt}" opacity=".85"/>`
+    : c.head === "crown" ? `<path d="M31 25L34 10 42 18 48 6 54 18 62 10 65 25z" fill="#F2B632" stroke="#C98A1B" stroke-width="1" stroke-linejoin="round"/>`
+    : c.head === "flower" ? `<g transform="translate(64 22)">${[0, 72, 144, 216, 288].map((a) => `<circle cx="0" cy="-4.5" r="3.4" fill="#F27BA7" transform="rotate(${a})"/>`).join("")}<circle r="2.6" fill="#F2B632"/></g>` : "";
+  const shoulders = child ? "M18 96c2-12 14-19 30-19s28 7 30 19z" : c.gender === "m" ? "M4 96c2-18 15-26 44-26s42 8 44 26z" : c.gender === "f" ? "M14 96c2-17 15-25 34-25s32 8 34 25z" : "M10 96c2-18 17-26 38-26s36 8 38 26z";
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect width="96" height="96" fill="${c.bg}"/>`
+    + `<path d="${shoulders}" fill="${c.shirt}"/>`
+    + `<rect x="42" y="${child ? 66 : 60}" width="12" height="${child ? 14 : 14}" rx="4" fill="${skin}"/><rect x="42" y="${child ? 66 : 60}" width="12" height="14" rx="4" fill="#000" opacity=".12"/>`
+    + `<g transform="translate(0 ${dy})">${back}${ears}<ellipse cx="48" cy="45" rx="${rx}" ry="${child ? 22 : 23}" fill="${skin}"/>${facial}${front}${headwear}`
+    + `${blush}${eyes}${lashes}${brows}${wrinkles}${glasses}${mouth}</g></svg>`;
+};
+const avatarUriCache = {};
+const avatarUri = (cfg) => {
+  const k = JSON.stringify(cfg);
+  return avatarUriCache[k] || (avatarUriCache[k] = `data:image/svg+xml;utf8,${encodeURIComponent(avatarSvg(cfg))}`);
+};
+const idHash = (id) => { let h = 0; for (const c of String(id || "")) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
+// Einstellung eines Profils: gespeicherte Figur, sonst eine feste Startfigur aus der ID.
+const avatarCfgOf = (p) => ({ ...avCfgFromSeed(idHash(p && p.id)), ...((p && p.avatarCfg) || {}) });
+// Ein Foto bleibt am Profil gespeichert, auch wenn man zwischendurch die Figur waehlt (`photoOff`).
+const usesPhoto = (p) => !!(p && p.photo && !p.photoOff);
+// Bild eines Profils: eigenes Foto, sonst die Figur.
+const avatarSrc = (p) => (usesPhoto(p) ? p.photo : avatarUri(avatarCfgOf(p)));
+
 const Cover = ({ game, size = "md", className: extraClass = "", compact = false }) => {
   const dims = size === "sm" ? "w-12 h-12" : size === "lg" ? "w-full aspect-square" : "w-16 h-16";
   const img = (game.images && game.images[0]) || game.image; // game.image kept as fallback for older saved entries
@@ -4878,7 +4988,7 @@ function PlayerOrderModal({ players, onSave, onClose }) {
                 transition: "border-color .15s, transform .15s, box-shadow .15s",
               }}>
               <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 bg-bg flex items-center justify-center">
-                {p.photo ? <img src={p.photo} alt={p.name} className="w-full h-full object-cover" /> : <Camera size={12} className="text-dim" />}
+                <img src={avatarSrc(p)} alt={p.name} className="w-full h-full object-cover" />
               </div>
               <span className="text-sm text-ink flex-1 truncate">{p.name}</span>
               <div
@@ -4902,12 +5012,112 @@ function PlayerOrderModal({ players, onSave, onClose }) {
 // Rangliste zu springen. Array.sort ist stabil (ES2019+), Gleichstand
 // behaelt also die bisherige Reihenfolge (z.B. eine bewusst per Hand
 // gesetzte Tie-Break-Reihenfolge aus einer frueheren Bearbeitung).
+// Wird ein Spiel geloescht, das Partien hat, behalten diese Partien eine Kopie
+// der Spieldaten (Name, BGG-ID, Cover) -- sonst stuende dort nur noch ein leerer
+// Platzhalter. Ein grosses hochgeladenes Cover (data:-URL) steht nur an der
+// neuesten Partie, damit es nicht pro Partie mitsynchronisiert wird.
+const gameSnapOf = (g) => ({ name: g.name, germanName: g.germanName || "", bggId: g.bggId || "", year: g.year || "", image: (g.images && g.images[0]) || g.image || "" });
+const snapPlaysOfDeletedGame = (plays, game) => {
+  const snap = gameSnapOf(game);
+  const mine = plays.filter((p) => p.gameId === game.id);
+  if (mine.length === 0) return plays;
+  const newest = mine.reduce((a, b) => ((b.date || "") > (a.date || "") ? b : a));
+  const big = snap.image.startsWith("data:");
+  return plays.map((p) => (p.gameId !== game.id ? p : { ...p, gameSnap: big && p.id !== newest.id ? { ...snap, image: "" } : snap }));
+};
+// Spiel-Ersatz fuer Partien, deren Spiel nicht (mehr) in der Sammlung steht.
+const ghostGameOf = (plays, gameId) => {
+  const snaps = plays.filter((p) => p.gameId === gameId && p.gameSnap).map((p) => p.gameSnap);
+  const snap = snaps.find((x) => x.image) || snaps[0];
+  return snap ? { id: gameId, name: snap.name, images: snap.image ? [snap.image] : [], ghost: true } : null;
+};
+// Wird ein Spiel (wieder) hinzugefuegt, haengen sich verwaiste Partien dran, die
+// dasselbe Spiel meinen: gleiche BGG-ID, oder -- wenn eine der beiden Seiten keine
+// hat -- gleicher Name (Original- oder deutscher Titel).
+const relinkOrphanPlays = (plays, game, existingGames) => {
+  const norm = (x) => (x || "").trim().toLowerCase();
+  const names = [game.name, game.germanName].map(norm).filter(Boolean);
+  let changed = false;
+  const next = plays.map((p) => {
+    if (p.gameId === game.id || existingGames.some((g) => g.id === p.gameId)) return p;
+    const s = p.gameSnap || {};
+    const theirBgg = s.bggId ? String(s.bggId) : "", myBgg = game.bggId ? String(game.bggId) : "";
+    let same;
+    if (theirBgg && myBgg) same = theirBgg === myBgg;
+    else same = [p.gameName, s.name, s.germanName].map(norm).filter(Boolean).some((n) => names.includes(n));
+    if (!same) return p;
+    changed = true;
+    const { gameSnap, ...rest } = p;
+    return { ...rest, gameId: game.id, gameName: game.name };
+  });
+  return changed ? next : plays;
+};
 const sortIdsByScore = (ids, scoresObj) => {
   const val = (id) => { const v = parseFloat(scoresObj[id]); return Number.isFinite(v) ? v : -Infinity; };
   return [...ids].sort((a, b) => val(b) - val(a));
 };
-function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlayerPhoto, onUpdatePlayerName, onRemovePlayer, onReorderPlayers, initial, onClose, onSave, onDelete }) {
+// Alle Mitspieler mit der hoechsten eingetragenen Punktzahl (Gleichstand =
+// mehrere). Leer, solange noch keine gueltige Punktzahl da ist.
+const topScorerIds = (ids, scoresObj) => {
+  const val = (id) => { const v = parseFloat(scoresObj[id]); return Number.isFinite(v) ? v : null; };
+  const scored = ids.filter((id) => val(id) !== null);
+  if (scored.length === 0) return [];
+  const max = Math.max(...scored.map(val));
+  return scored.filter((id) => val(id) === max);
+};
+/* Figur gestalten: Vorschau oben, Auswahl darunter, "Zufall" wuerfelt neu. Gespeichert wird erst mit "Fertig". */
+function AvatarEditor({ player, onSave, onClose }) {
+  const [cfg, setCfg] = useState(() => avatarCfgOf(player));
+  const set = (k, v) => { haptic(4); setCfg((c) => ({ ...c, [k]: v })); };
+  return (
+    <div className="fixed top-0 left-0 right-0 bg-black/90 z-[70] flex items-end justify-center lg:items-center p-0" style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={onClose}>
+      <div className="glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top)-1rem)] flex flex-col overflow-hidden rise-in font-body" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-center pt-2 pb-1"><div className="w-9 h-1 rounded-full bg-line" /></div>
+        <div className="shrink-0 px-5 pt-1 pb-3 flex items-center gap-4">
+          <img data-avatar-preview src={avatarUri(cfg)} alt="Vorschau" className="w-24 h-24 rounded-full border-2 border-line block" />
+          <div className="flex-1 min-w-0">
+            <h3 className="font-display text-lg tracking-[-0.015em] text-ink">Figur gestalten</h3>
+            <p className="text-xs text-dim mb-2">{player.name}</p>
+            <button type="button" data-avatar-random onClick={() => { haptic(6); setCfg(avCfgFromSeed(Math.floor(Math.random() * 2147483647))); }}
+              className="h-9 px-3 rounded-full border border-line bg-surface text-ink text-sm flex items-center gap-1.5"><Sparkles size={14} /> Zufall</button>
+          </div>
+        </div>
+        <div className="px-5 pb-3 space-y-3.5 overflow-y-auto flex-1">
+          {AV_OPTS.filter((o) => !(o.key === "facial" && cfg.age === "child") && !(o.key === "style" && cfg.len === 0)).map((o) => (
+            <div key={o.key}>
+              <label className="block text-[11px] text-dim mb-1.5">{o.label}</label>
+              <div className="flex flex-wrap gap-1.5" role="group" aria-label={o.label}>
+                {o.opts.map(([v, label]) => (
+                  <button key={String(v)} type="button" data-av={o.key} data-v={String(v)} aria-pressed={cfg[o.key] === v} onClick={() => set(o.key, v)}
+                    className={`h-9 px-3 rounded-full border text-sm ${cfg[o.key] === v ? "border-accent bg-accent/10 text-ink font-medium" : "border-line bg-surface text-dim"}`}>{label}</button>
+                ))}
+              </div>
+            </div>
+          ))}
+          {AV_COLORS.map((o) => (
+            <div key={o.key}>
+              <label className="block text-[11px] text-dim mb-1.5">{o.label}</label>
+              <div className="flex flex-wrap gap-2" role="group" aria-label={o.label}>
+                {o.list.map((col) => (
+                  <button key={col} type="button" data-av-color={o.key} data-v={col} aria-label={`${o.label} ${col}`} aria-pressed={cfg[o.key] === col} onClick={() => set(o.key, col)}
+                    className="w-8 h-8 rounded-full border-2" style={{ background: col, borderColor: cfg[o.key] === col ? "rgb(var(--accent))" : "rgb(var(--line))", boxShadow: cfg[o.key] === col ? "0 0 0 2px rgb(var(--bg)) inset" : "none" }} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="shrink-0 px-5 pt-2 pb-5 grid grid-cols-2 gap-2" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
+          <button type="button" onClick={onClose} className="h-12 rounded-[14px] border border-line bg-surface text-ink">Abbrechen</button>
+          <button type="button" data-avatar-done onClick={() => { onSave(cfg); onClose(); }} className="h-12 rounded-[14px] bg-accent text-white font-medium">Fertig</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, onUpdatePlayerPhoto, onUpdatePlayerAvatar, onUsePlayerPhoto, onUsePlayerFigure, onUpdatePlayerName, onRemovePlayer, onReorderPlayers, initial, onClose, onSave, onDelete }) {
   const [editingPlayer, setEditingPlayer] = useState(null); // { id, name }
+  const [avatarEditorFor, setAvatarEditorFor] = useState(null); // Profil-ID
   const [playerOrderOpen, setPlayerOrderOpen] = useState(false);
   const playerLongPressTimer = React.useRef(null);
   const playerLongPressFired = React.useRef(false);
@@ -4922,7 +5132,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
   const cancelPlayerLongPress = () => { if (playerLongPressTimer.current) clearTimeout(playerLongPressTimer.current); };
   const [gameQuery, setGameQuery] = useState("");
   const [selectedGame, setSelectedGame] = useState(() =>
-    initial ? (games.find(g => g.id === initial.gameId) || { id: initial.gameId, name: initial.gameName }) : null
+    initial ? (games.find(g => g.id === initial.gameId) || ghostGameOf(plays, initial.gameId) || { id: initial.gameId, name: initial.gameName }) : null
   );
   const [mode, setMode] = useState(initial ? initial.mode : "physical-owned");
   const [playerIds, setPlayerIds] = useState(() =>
@@ -4981,6 +5191,11 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
     const next = { ...scores, [id]: val };
     setScores(next);
     setPlayerIds((ids) => sortIdsByScore(ids, next));
+    // Krone folgt der hoechsten Punktzahl, bei Gleichstand bekommen alle
+    // Punktgleichen sie. Per Hand gesetzte Kronen (z.B. Spiele, bei denen die
+    // niedrigste Punktzahl gewinnt) bleiben bis zur naechsten Punkteaenderung.
+    const top = topScorerIds(playerIds, next);
+    if (top.length > 0) setWinnerIds(top);
   };
   const [notes, setNotes] = useState(initial ? initial.notes || "" : "");
   const notesRef = React.useRef(null);
@@ -4996,6 +5211,63 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
     return sorted.filter((g) => gameMatchesQuery(g, gameQuery));
   }, [games, gameQuery]);
 
+  // Spiel, das (noch) nicht in der Sammlung steht, direkt aus dem Partie-Formular
+  // anlegen: Status "Nur gespielt", also nicht im Regal und nicht in "Spiele im
+  // Regal" gezaehlt, aber in der Sammlung unter diesem Filter auffindbar.
+  const addPlayedGame = (extra) => {
+    const game = {
+      id: uid(), bggId: "", name: "", germanName: "", primaryTitle: "original", year: "", publishers: [], designers: [], images: [],
+      minPlayers: "", maxPlayers: "", bestPlayersMin: "", bestPlayersMax: "", minTime: "", maxTime: "", age: "",
+      complexity: "", mechanisms: [], categories: [], playerTypes: [], status: "none", format: "analog", saleStatus: "",
+      location: "", summary: "", notes: "", rating: "", addedDate: new Date().toISOString().slice(0, 10),
+      ...extra,
+    };
+    haptic(6);
+    onAddGame(game);
+    setSelectedGame(game);
+  };
+  const createPlayedGame = () => {
+    const name = gameQuery.trim();
+    if (!name || !onAddGame) return;
+    addPlayedGame({ name });
+  };
+  const queryIsNewName = gameQuery.trim() !== "" && !games.some((g) =>
+    [g.name, g.germanName].some((n) => (n || "").trim().toLowerCase() === gameQuery.trim().toLowerCase()));
+
+  // BGG-Suche fuer Spiele ausserhalb der Sammlung: laeuft verzoegert nach dem
+  // Tippen (wie beim Hinzufuegen eines Spiels) und zeigt nur Treffer, die noch
+  // nicht in der Sammlung stehen (Abgleich ueber die BGG-ID).
+  const [bggHits, setBggHits] = useState([]);
+  const [bggStatus, setBggStatus] = useState("idle"); // idle | loading | error | done
+  const [bggPicking, setBggPicking] = useState("");
+  useEffect(() => {
+    const q = gameQuery.trim();
+    if (!onAddGame || q.length < 2) { setBggHits([]); setBggStatus("idle"); return; }
+    let cancelled = false;
+    setBggStatus("loading");
+    const timer = setTimeout(async () => {
+      try {
+        const r = await bggSearch(q);
+        if (!cancelled) { setBggHits(r); setBggStatus("done"); }
+      } catch { if (!cancelled) { setBggHits([]); setBggStatus("error"); } }
+    }, 500);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [gameQuery]);
+  const bggHitsNew = bggHits.filter((h) => !games.some((g) => String(g.bggId) === String(h.bggId)));
+  const pickBggHit = async (hit) => {
+    if (bggPicking) return;
+    setBggPicking(hit.bggId);
+    try {
+      const d = await bggThing(hit.bggId);
+      // Deutscher Titel wird wie beim normalen Hinzufuegen bewusst nicht uebernommen.
+      const { germanName: _ignoriert, complexity, ...rest } = d;
+      addPlayedGame({ ...rest, complexity: complexity ?? "" });
+    } catch {
+      // BGG-Details nicht erreichbar: wenigstens Name, Jahr und ID sichern.
+      addPlayedGame({ name: hit.name, year: hit.year, bggId: hit.bggId });
+    } finally { setBggPicking(""); }
+  };
+
   const save = () => {
     if (!selectedGame) return;
     const profileNames = playerIds.map((id) => (playerProfiles.find((p) => p.id === id) || {}).name).filter(Boolean);
@@ -5008,7 +5280,9 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
       }));
       onSave(batch);
     } else {
-      onSave({ id: initial ? initial.id : uid(), gameId: selectedGame.id, gameName: selectedGame.name, date, mode, players: mergedPlayers, playerIds, winner: winnerName, scores: cleanScores, notes, images });
+      // Spiel inzwischen geloescht: die gesicherte Spielkopie (Cover) der Partie behalten.
+      const keepSnap = initial && initial.gameSnap && initial.gameId === selectedGame.id && !games.some((g) => g.id === selectedGame.id) ? { gameSnap: initial.gameSnap } : {};
+      onSave({ id: initial ? initial.id : uid(), gameId: selectedGame.id, gameName: selectedGame.name, date, mode, players: mergedPlayers, playerIds, winner: winnerName, scores: cleanScores, notes, images, ...keepSnap });
     }
   };
 
@@ -5032,8 +5306,26 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                     <Cover game={g} size="sm" /><span className="text-ink">{gameSearchLabel(g)}</span>
                   </button>
                 ))}
-                {filtered.length === 0 && (
-                  <p className="text-sm text-dim px-1">Nicht in deiner Liste? Lege es erst kurz über „Spiel hinzufügen" in der Sammlung an — auch ungespielt, ohne Besitz.</p>
+                {onAddGame && gameQuery.trim().length >= 2 && (bggHitsNew.length > 0 || bggStatus === "loading" || bggStatus === "error") && (
+                  <p className="text-[11px] text-dim px-1 pt-2">{bggStatus === "loading" && bggHitsNew.length === 0 ? "Suche auf BGG …" : bggStatus === "error" ? "BGG gerade nicht erreichbar — du kannst das Spiel auch von Hand anlegen." : "Auf BGG gefunden — nur gespielt, kommt nicht ins Regal"}</p>
+                )}
+                {onAddGame && bggHitsNew.map((h) => (
+                  <button key={h.bggId} type="button" data-bgg-hit={h.bggId} onClick={() => pickBggHit(h)} disabled={!!bggPicking}
+                    className="w-full text-left bg-surface hover:bg-surface2 border border-line rounded-[14px] px-4 py-2.5 flex items-center gap-3 disabled:opacity-60">
+                    <Plus size={18} className="text-accent shrink-0" />
+                    <span className="text-ink min-w-0">{h.name}{h.year ? <span className="text-dim"> ({h.year})</span> : null}</span>
+                    {bggPicking === h.bggId && <span className="text-[11px] text-dim ml-auto shrink-0">lädt …</span>}
+                  </button>
+                ))}
+                {queryIsNewName && onAddGame && (
+                  <button type="button" onClick={createPlayedGame}
+                    className="w-full text-left border border-dashed border-accent/50 bg-accent/5 rounded-[14px] px-4 py-2.5 flex items-center gap-3 text-ink">
+                    <Plus size={18} className="text-accent shrink-0" />
+                    <span className="min-w-0"><span className="font-medium">„{gameQuery.trim()}“ neu anlegen</span><span className="block text-[11px] text-dim">Von Hand, ohne BGG — nur gespielt, kommt nicht ins Regal</span></span>
+                  </button>
+                )}
+                {filtered.length === 0 && !queryIsNewName && (
+                  <p className="text-sm text-dim px-1">Nicht in deiner Liste? Tippe oben den Namen ein, dann suche ich auf BGG oder du legst das Spiel von Hand an — auch ohne Besitz.</p>
                 )}
               </div>
             </div>
@@ -5086,11 +5378,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                           onTouchMove={cancelPlayerLongPress}
                           onContextMenu={(e) => e.preventDefault()}
                           className="relative w-14 h-14 rounded-full overflow-hidden border-2" style={{ borderColor: selected ? "rgb(var(--accent))" : "rgb(var(--line))" }}>
-                          {p.photo ? (
-                            <img src={p.photo} alt={p.name} className="w-full h-full block object-cover" />
-                          ) : (
-                            <div className="w-full h-full bg-surface flex items-center justify-center"><Camera size={20} className="text-dim" /></div>
-                          )}
+                          <img src={avatarSrc(p)} alt={p.name} className="w-full h-full block object-cover" />
                           {winnerIds.includes(p.id) ? (
                             <div className="absolute inset-0 bg-gold/35 flex items-center justify-center">
                               <Crown size={22} className="text-gold" fill="currentColor" />
@@ -5137,7 +5425,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
                             <GripVertical size={16} />
                           </div>
                           <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0">
-                            {p.photo ? <img src={p.photo} alt={p.name} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-bg flex items-center justify-center"><Camera size={12} className="text-dim" /></div>}
+                            <img src={avatarSrc(p)} alt={p.name} className="w-full h-full object-cover" />
                           </div>
                           <span className="text-sm text-ink flex-1 min-w-0 truncate">{p.name}</span>
                           <button type="button"
@@ -5218,6 +5506,10 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
           </div>
         </div>
       )}
+      {avatarEditorFor && (() => {
+        const ap = playerProfiles.find((x) => x.id === avatarEditorFor);
+        return ap ? <AvatarEditor player={ap} onSave={(c) => onUpdatePlayerAvatar && onUpdatePlayerAvatar(ap.id, c)} onClose={() => setAvatarEditorFor(null)} /> : null;
+      })()}
       {newPlayerPhotoFor && (
         <ImagePickerSheet onAdd={(img) => { onUpdatePlayerPhoto(newPlayerPhotoFor, Array.isArray(img) ? img[0] : img); setNewPlayerPhotoFor(null); }} onClose={() => setNewPlayerPhotoFor(null)} />
       )}
@@ -5238,18 +5530,36 @@ function PlayFormModal({ games, plays, playerProfiles, onAddPlayer, onUpdatePlay
               >
                 {(() => {
                   const p = playerProfiles.find((x) => x.id === editingPlayer.id);
-                  return p && p.photo ? (
-                    <img src={p.photo} alt={p.name} className="w-full h-full block object-cover" />
-                  ) : (
-                    <span className="text-dim font-display text-2xl tracking-[-0.025em] leading-tight">{editingPlayer.name.charAt(0).toUpperCase()}</span>
-                  );
+                  return <img src={avatarSrc(p || { id: editingPlayer.id })} alt={editingPlayer.name} className="w-full h-full block object-cover" />;
                 })()}
               </button>
               <span className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-accent border-2 border-bg flex items-center justify-center pointer-events-none">
                 <Camera size={13} className="text-white" />
               </span>
             </div>
-            <p className="text-xs text-dim text-center -mt-1">Foto antippen zum Ändern</p>
+            {(() => {
+              const cur = playerProfiles.find((x) => x.id === editingPlayer.id) || { id: editingPlayer.id };
+              return (
+                <div className="space-y-2">
+                  {cur.photo && (
+                    <div className="grid grid-cols-2 gap-2" role="group" aria-label="Bild wählen">
+                      <button type="button" data-own-photo aria-pressed={usesPhoto(cur)} onClick={() => { haptic(6); onUsePlayerPhoto && onUsePlayerPhoto(editingPlayer.id); }}
+                        className={`h-10 rounded-[12px] border text-sm ${usesPhoto(cur) ? "border-accent bg-accent/10 text-ink font-medium" : "border-line bg-surface text-dim"}`}>Mein Foto</button>
+                      <button type="button" data-use-figure aria-pressed={!usesPhoto(cur)} onClick={() => { haptic(6); onUsePlayerFigure && onUsePlayerFigure(editingPlayer.id); }}
+                        className={`h-10 rounded-[12px] border text-sm ${!usesPhoto(cur) ? "border-accent bg-accent/10 text-ink font-medium" : "border-line bg-surface text-dim"}`}>Figur</button>
+                    </div>
+                  )}
+                  <button type="button" data-design-avatar onClick={() => setAvatarEditorFor(editingPlayer.id)}
+                    className="w-full h-11 rounded-[14px] bg-surface border border-line text-ink text-sm flex items-center justify-center gap-2">
+                    <Sparkles size={15} /> Figur gestalten
+                  </button>
+                  <button type="button" data-upload-photo onClick={() => setNewPlayerPhotoFor(editingPlayer.id)}
+                    className="w-full h-11 rounded-[14px] border border-line bg-surface text-ink text-sm flex items-center justify-center gap-2">
+                    <Camera size={15} /> Eigenes Foto hochladen
+                  </button>
+                </div>
+              );
+            })()}
             <input
               onFocus={handleFocusScroll}
               value={editingPlayer.name}
@@ -5391,7 +5701,17 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
   }, [plays]);
   const lastPlays = [...plays].sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 6);
   const dustCollectors = owned.filter(g => !playCounts[g.id]).sort((a, b) => (a.addedDate || "").localeCompare(b.addedDate || "")).slice(0, 6);
-  const topRated = [...owned].filter(g => g.rating).sort((a, b) => parseInt(b.rating) - parseInt(a.rating)).slice(0, 10);
+  // Gleichstand bei der Bewertung: erst mehr Partien, dann zuletzt gespielt,
+  // dann Name -- sonst entscheidet nur die Reihenfolge in den Daten, wer bei
+  // mehreren gleich bewerteten Spielen auf Platz 10 landet.
+  const lastPlayedOn = {};
+  plays.forEach(p => { if (p.date && p.date > (lastPlayedOn[p.gameId] || "")) lastPlayedOn[p.gameId] = p.date; });
+  const topRated = [...owned].filter(g => g.rating).sort((a, b) =>
+    (parseInt(b.rating) - parseInt(a.rating))
+    || ((playCounts[b.id] || 0) - (playCounts[a.id] || 0))
+    || (lastPlayedOn[b.id] || "").localeCompare(lastPlayedOn[a.id] || "")
+    || a.name.localeCompare(b.name, "de")
+  ).slice(0, 10);
   const lentGames = owned.filter(g => g.lentTo && g.lentTo.trim());
   const complexGames = owned.filter(g => g.complexity);
   const avgComplexity = complexGames.length ? (complexGames.reduce((s, g) => s + parseFloat(g.complexity), 0) / complexGames.length).toFixed(1) : "—";
@@ -7115,6 +7435,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
 
   // Expansions are grouped together with their base game in the play history,
   // so plays of "Ark Nova: Marine Worlds" show up under "Ark Nova".
+  const coverGameOf = (gameId) => games.find((x) => x.id === gameId) || ghostGameOf(plays, gameId);
   const rootGameId = (id) => {
     let current = id;
     for (let i = 0; i < 5; i++) {
@@ -7323,7 +7644,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                     {i === 1 && <span className="self-start font-body text-xs text-dim shrink-0 pt-7">vs.</span>}
                     <button onClick={() => { haptic(6); setH2hPick(slot); }} className="flex-1 min-w-0 flex flex-col items-center">
                       <div className="w-16 h-16 rounded-full overflow-hidden bg-line/50 flex items-center justify-center mb-2.5">
-                        {prof && prof.photo ? <img src={prof.photo} alt={name} className="w-full h-full object-cover" /> : <Users size={24} className="text-dim" />}
+                        {prof ? <img src={avatarSrc(prof)} alt={name} className="w-full h-full object-cover" /> : <Users size={24} className="text-dim" />}
                       </div>
                       <p className="font-display text-[2.4rem] leading-none tracking-[-0.045em] text-ink">{wins === null || !name ? "—" : wins}</p>
                       <p className="text-dim text-xs font-body mt-2 truncate max-w-full flex items-center gap-0.5">
@@ -7379,7 +7700,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
             <button key={date} onClick={() => setDetailEveningDate(date)} className="w-full text-left border-b border-line py-3 flex items-center gap-3">
               <div className="flex -space-x-3 shrink-0">
                 {distinctGames.slice(0, 3).map((p, i) => {
-                  const g = games.find((x) => x.id === p.gameId);
+                  const g = coverGameOf(p.gameId);
                   return g ? <Cover key={i} game={g} size="sm" className="!border-2 !border-surface" /> : <div key={i} className="w-12 h-12 rounded-lg bg-line/50 border-2 border-surface flex items-center justify-center text-dim"><Dices size={16} /></div>;
                 })}
               </div>
@@ -7398,7 +7719,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
           const first = group[0];
           const rootId = rootGameId(first.gameId) || first.gameId;
           const groupKey = rootId || first.gameName;
-          const game = games.find((g) => g.id === rootId);
+          const game = coverGameOf(rootId);
           return (
             <button key={groupKey} onClick={() => setDetailGroupKey(groupKey)} className="w-full text-left border-b border-line py-3 flex items-center gap-3">
               {game ? <Cover game={game} size="sm" /> : <div className="w-12 h-12 rounded-lg bg-line/50 flex items-center justify-center text-dim shrink-0"><Dices size={18} /></div>}
@@ -7476,7 +7797,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                     onClick={() => { haptic(6); (h2hPick === "a" ? setH2hA : setH2hB)(n); setH2hPick(null); }}
                     className={`w-full flex items-center gap-3 py-3 border-b border-line text-left ${belegt ? "opacity-35" : ""}`}>
                     <div className="w-9 h-9 rounded-full overflow-hidden bg-line/50 flex items-center justify-center shrink-0">
-                      {prof && prof.photo ? <img src={prof.photo} alt={n} className="w-full h-full object-cover" /> : <Users size={15} className="text-dim" />}
+                      {prof ? <img src={avatarSrc(prof)} alt={n} className="w-full h-full object-cover" /> : <Users size={15} className="text-dim" />}
                     </div>
                     <span className={`flex-1 min-w-0 truncate text-sm ${aktiv ? "text-ink font-medium" : "text-ink"}`}>{n}</span>
                     {aktiv && <Check size={16} className="text-accent shrink-0" />}
@@ -7538,7 +7859,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
             <h2 className="font-display text-2xl tracking-[-0.025em] leading-tight text-ink px-5 mb-4">{formatDate(date)}</h2>
             <div className="p-5 space-y-2">
               {dayPlays.map((p) => {
-                const game = games.find((g) => g.id === p.gameId);
+                const game = coverGameOf(p.gameId);
                 const IconC = modeIcon[p.mode] || Home;
                 return (
                   <SwipeableRow key={p.id} onDelete={() => onDelete(p.id)} disabled={demoMode}>
@@ -8018,6 +8339,8 @@ const DIGITALE_UMSETZUNGEN = [
   { bggId: "", titel: /^saum\b/i, href: "saum/", name: "Saum", original: "Saum", art: "Plättchen & Ketten", source: "saum", saveKey: "saum:save", rounds: 0, unit: "", icon: "mill", color: "#3E5E8E" },
   // Glut: eigenes Spielkonzept (Würfel, die abbrennen; Fayence-Manufaktur), Prototyp gegen Bots
   { bggId: "", titel: /^glut\b/i, href: "glut/", name: "Glut", original: "Glut", art: "Würfel & Brennofen", source: "glut", saveKey: "glut:save", rounds: 0, unit: "", icon: "flame", color: "#2A2BC8" },
+  // Siedlerhain: eigene Solo-Umsetzung nach dem Prinzip von Welcome To… (Flip & Write, Naive-Stil)
+  { bggId: "233867", titel: /^welcome to\b/i, href: "welcome-to/", name: "Siedlerhain", original: "Welcome To...", art: "Flip & Write mit Häusern", source: "welcome-to", saveKey: "welcome-to:save", rounds: 0, unit: "", icon: "house", color: "#B8A2E6" },
 ];
 function digitaleUmsetzung(game) {
   // Erweiterungen (z.B. „Three Sisters: Rock Garden“) bekommen keinen Spiel-Link
@@ -8027,6 +8350,20 @@ function digitaleUmsetzung(game) {
 }
 
 const DIGITAL_INBOX_KEY = "spielregal:inbox:plays";
+// Cover einer Browser-Umsetzung (liegt neben dem Spiel, wie auf dem Dashboard).
+const digitalesCover = (u) => (u ? `${u.href}cover.jpg` : "");
+const hatBild = (g) => !!((g.images && g.images.length) || g.image);
+// Spiele, die nur durch eine Browser-Partie angelegt wurden ("Nur gespielt"),
+// haben kein Bild; sie bekommen das Cover der Umsetzung.
+function digitaleCoverNachtragen(games) {
+  const patch = {};
+  for (const g of games) {
+    if (g.status !== "none" || hatBild(g)) continue;
+    const c = digitalesCover(digitaleUmsetzung(g));
+    if (c) patch[g.id] = c;
+  }
+  return patch;
+}
 // Wandelt Eingangskorb-Einträge in Partien um. Das Spiel wird über
 // DIGITALE_UMSETZUNGEN gefunden (eigenes Exemplar bevorzugt); fehlt es in
 // der Sammlung, wird es wie beim BGG-Import als "gespielt" angelegt.
@@ -8046,7 +8383,7 @@ function digitalePartienUebernehmen(inbox, games, plays, players) {
       || alle.find((g) => passend(g));
     if (!game) {
       game = {
-        id: uid(), bggId: e.bggId || "", name: e.gameName || "Unbekannt", year: "", publishers: [], designers: [], images: [],
+        id: uid(), bggId: e.bggId || "", name: e.gameName || "Unbekannt", year: "", publishers: [], designers: [], images: umsetzung ? [digitalesCover(umsetzung)] : [],
         minPlayers: "", maxPlayers: "", bestPlayersMin: "", bestPlayersMax: "", minTime: "", maxTime: "", age: "",
         complexity: "", mechanisms: [], categories: [], playerTypes: [], status: "none", location: "", summary: "",
         notes: "", rating: "", addedDate: new Date().toISOString().slice(0, 10),
@@ -8687,11 +9024,16 @@ function App() {
     }));
   };
   const addPlayer = (name, photo, presetId) => {
-    const p = { id: presetId || uid(), name, photo: photo || "" };
-    setPlayersList((prev) => [...prev, p]);
-    return p.id;
+    const id = presetId || uid();
+    // Neue Profile bekommen eine zufaellige Startfigur, die sich jederzeit umgestalten laesst.
+    setPlayersList((prev) => [...prev, { id, name, photo: photo || "", avatarCfg: avCfgFromSeed(Math.floor(Math.random() * 2147483647)) }]);
+    return id;
   };
-  const updatePlayerPhoto = (id, photo) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, photo } : p)));
+  const updatePlayerPhoto = (id, photo) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, photo, photoOff: false } : p)));
+  // Figur waehlen blendet ein eigenes Foto nur aus -- es bleibt gespeichert und laesst sich wieder waehlen.
+  const updatePlayerAvatarCfg = (id, avatarCfg) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, avatarCfg, photoOff: true } : p)));
+  const usePlayerFigure = (id) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, photoOff: true } : p)));
+  const usePlayerPhotoAgain = (id) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, photoOff: false } : p)));
   const updatePlayerName = (id, name) => setPlayersList((prev) => prev.map((p) => (p.id === id ? { ...p, name } : p)));
   const removePlayer = (id) => setPlayersList((prev) => prev.filter((p) => p.id !== id));
   const reorderPlayers = (orderedIds) => setPlayersList((prev) => orderedIds.map((id) => prev.find((p) => p.id === id)).filter(Boolean));
@@ -8814,6 +9156,8 @@ function App() {
   };
 
   const applyGameSave = (game) => {
+    // Neues Spiel: Partien, die dasselbe (frueher geloeschte) Spiel meinen, wieder anhaengen.
+    if (!games.some(g => g.id === game.id)) setPlays(prev => relinkOrphanPlays(prev, game, games));
     setGames(prev => {
       const exists = prev.find(g => g.id === game.id);
       let next = exists ? prev.map(g => g.id === game.id ? game : g) : [...prev, game];
@@ -8853,7 +9197,12 @@ function App() {
     if (nextIdx < 0 || nextIdx >= list.length) return; // stay put at the boundary
     setGameModal({ editing: list[nextIdx] });
   };
-  const deleteGame = (id) => { setGames(prev => prev.filter(g => g.id !== id)); setGameModal(null); };
+  const deleteGame = (id) => {
+    const g = games.find(x => x.id === id);
+    if (g) setPlays(prev => snapPlaysOfDeletedGame(prev, g));
+    setGames(prev => prev.filter(x => x.id !== id));
+    setGameModal(null);
+  };
   const mergeGames = (keepId, dropId) => {
     if (keepId === dropId) return;
     setPlays(prev => prev.map(p => (p.gameId === dropId ? { ...p, gameId: keepId, gameName: games.find(g => g.id === keepId)?.name || p.gameName } : p)));
@@ -8982,6 +9331,8 @@ function App() {
   useEffect(() => {
     const importInbox = () => {
       if (demoMode || (syncUrl && !pulledOnceRef.current)) return;
+      const coverPatch = digitaleCoverNachtragen(latestRef.current.games);
+      if (Object.keys(coverPatch).length) setGames((prev) => prev.map((g) => (coverPatch[g.id] && g.status === "none" && !hatBild(g) ? { ...g, images: [coverPatch[g.id]] } : g)));
       const inbox = loadKey(DIGITAL_INBOX_KEY, []);
       if (!Array.isArray(inbox) || inbox.length === 0) return;
       const { games: gs, plays: ps, players: pls } = latestRef.current;
@@ -9211,7 +9562,7 @@ function App() {
           onAddExpansion={readOnly ? null : openMissingExpansion}
         />
       )}
-      {playModal && <PlayFormModal games={games} plays={plays} playerProfiles={displayPlayers} onAddPlayer={addPlayer} onUpdatePlayerPhoto={updatePlayerPhoto} onUpdatePlayerName={updatePlayerName} onRemovePlayer={removePlayer} onReorderPlayers={reorderPlayers} initial={playModal.editing} onClose={() => setPlayModal(null)} onSave={savePlay} onDelete={deletePlay} />}
+      {playModal && <PlayFormModal games={games} plays={plays} playerProfiles={displayPlayers} onAddGame={applyGameSave} onAddPlayer={addPlayer} onUpdatePlayerPhoto={updatePlayerPhoto} onUpdatePlayerAvatar={updatePlayerAvatarCfg} onUsePlayerPhoto={usePlayerPhotoAgain} onUsePlayerFigure={usePlayerFigure} onUpdatePlayerName={updatePlayerName} onRemovePlayer={removePlayer} onReorderPlayers={reorderPlayers} initial={playModal.editing} onClose={() => setPlayModal(null)} onSave={savePlay} onDelete={deletePlay} />}
       {commandBarOpen && (
         <CommandBarModal
           games={displayGames}

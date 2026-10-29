@@ -20,9 +20,10 @@
   --p-pink:#F6D6D1; --p-lav:#E3DCFB; --p-sage:#DFE8CF; --p-sky:#D6E4F2; --p-sun:#FCE7B0; --p-sand:#DDD3C7;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0}
+html,body{margin:0;position:fixed;inset:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
 body{background:var(--bg);color:var(--ink);font:15px/1.45 "Outfit",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior-y:contain;overflow-x:hidden}
-#app{position:relative}
+/* Seite scrollt nie selbst, nur #app (iOS: sonst Weichzeichner unter der Statusleiste) */
+#app{position:fixed;inset:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
 /* Schrift nach Owner-Referenz „Landgut Schrift“: kräftige Serife für Titel, orange Handschrift als Akzent, Grotesk für Text */
 .hand{font-family:"Fraunces",Georgia,"Times New Roman",serif;font-weight:700;letter-spacing:-.8px}
@@ -523,6 +524,7 @@ button,[data-a]{transition:transform .18s cubic-bezier(.2,.9,.3,1.4),box-shadow 
 </svg>
 <div id="app"></div>
 <script>
+const SC = document.getElementById('app');
 'use strict';
 /* =====================================================================
    Landgut – ein Kartenspiel nach den Regeln von „Countryside / Landgut“
@@ -929,7 +931,7 @@ let S = null;
 const PAGES = ['Auslage', 'Mein Hof', 'Arbeitsplan'];
 // Mitspieler-Tempo: Einstellung im Menü, gilt für alle Spiele und bleibt gespeichert
 const fastPref = () => { try { return localStorage.getItem('spielregal:botFast') === '1'; } catch { return false; } };
-const U = { page: 1, undo: [], sheet: null, toast: null, busy: false, setup: { name: '', bots: 1 }, fast: fastPref(), sel: [], tmp: {} };
+const U = { page: 1, undo: [], sheet: null, toast: null, busy: false, setup: { name: spielregalDefaultName(), bots: 1 }, fast: fastPref(), sel: [], tmp: {} };
 function rnd() { S.rng = (S.rng + 0x6D2B79F5) | 0; let t = Math.imul(S.rng ^ (S.rng >>> 15), 1 | S.rng); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function range(n) { return Array.from({ length: n }, (_, i) => i); }
@@ -1451,6 +1453,7 @@ function recordPlay() {
     S.recorded = true;
   } catch (e) { S.recorded = false; }
 }
+function spielregalDefaultName() { try { const ps = spielregalProfiles(), last = localStorage.getItem('spielregal:lastPlayer'); return (last && ps.includes(last)) ? last : (ps[0] || ''); } catch (e) { return ''; } }
 function spielregalProfiles() { try { return (JSON.parse(localStorage.getItem('spielregal:players') || '[]') || []).filter(p => p && p.name).map(p => p.name); } catch (e) { return []; } }
 const KEY = 'landgut-v1';
 // Speichern & Verlassen: Der Spielstand wird ohnehin nach jeder Aktion
@@ -1983,10 +1986,10 @@ function bubbleSync() {
   const t = document.querySelector('.top'), b = document.querySelector('.top .tbanner');
   if (!t || !b) return;
   document.documentElement.style.setProperty('--bnh', b.offsetHeight + 'px');
-  t.classList.toggle('bub', window.scrollY > 40);
+  t.classList.toggle('bub', SC.scrollTop > 40);
 }
 let bubY = 0;
-addEventListener('scroll', () => { const t = document.querySelector('.top'); if (!t) return; t.classList.toggle('bub', window.scrollY > 40); if (t.classList.contains('peek') && Math.abs(window.scrollY - bubY) > 30) t.classList.remove('peek'); }, { passive: true });
+SC.addEventListener('scroll', () => { const t = document.querySelector('.top'); if (!t) return; t.classList.toggle('bub', SC.scrollTop > 40); if (t.classList.contains('peek') && Math.abs(SC.scrollTop - bubY) > 30) t.classList.remove('peek'); }, { passive: true });
 // Drei Seiten (Auslage & Aufträge · Mein Hof · Arbeitsplan) zum Wischen; die aktive Seite bestimmt die Höhe
 const pagesEl = () => document.querySelector('.pages');
 function pageSync(instant) {
@@ -2000,8 +2003,8 @@ function pageSync(instant) {
 function pageOf(el) { const pg = el && el.closest('.page'); return pg ? [...pg.parentElement.children].indexOf(pg) : -1; }
 function pageGo(i, smooth) {
   const pg = pagesEl(); if (!pg || i < 0) return;
-  const top = document.querySelector('.top'), y0 = pg.getBoundingClientRect().top + window.scrollY - (top ? top.getBoundingClientRect().height : 0) - 8;
-  if (i !== U.page && window.scrollY > y0) window.scrollTo({ top: Math.max(0, y0) });
+  const top = document.querySelector('.top'), y0 = pg.getBoundingClientRect().top + SC.scrollTop - (top ? top.getBoundingClientRect().height : 0) - 8;
+  if (i !== U.page && SC.scrollTop > y0) SC.scrollTo({ top: Math.max(0, y0) });
   U.page = i;
   if (smooth) pg.scrollTo({ left: i * pg.clientWidth, behavior: 'smooth' }); else pageSync(true);
   pageSync(false);
@@ -2035,7 +2038,7 @@ function goTo(sel) {
     const el = document.querySelector(sel); if (!el) return;
     const pi = pageOf(el); if (pi >= 0 && pi !== U.page) pageGo(pi, false);
     const top = document.querySelector('.top .tbanner') || document.querySelector('.top'), off = (top ? Math.min(top.getBoundingClientRect().bottom, 260) : 0) + 12;
-    window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - off), behavior: 'smooth' });
+    SC.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + SC.scrollTop - off), behavior: 'smooth' });
     el.classList.remove('goflash'); void el.offsetWidth; el.classList.add('goflash'); setTimeout(() => el.classList.remove('goflash'), 1300);
   }, 30);
 }
@@ -2051,11 +2054,11 @@ function stickBtns() {
 // Beim Scrollen: Menü und überflüssige Kopfzeile ausblenden (Owner: „beim Scrollen brauchen wir das Menü nicht“)
 const SCR = { on: false };
 function scrSync() { if (U.tut) SCR.on = false; const t = document.querySelector('.top:not(.coach)'); if (t) t.classList.toggle('scr', SCR.on); }
-addEventListener('scroll', () => {
+SC.addEventListener('scroll', () => {
   const t = document.querySelector('.top:not(.coach)'); if (!t) return;
   if (U.tut) { if (SCR.on) { SCR.on = false; t.classList.remove('scr'); } return; } // im Lernspiel bleibt der Kopf ruhig
-  if (!SCR.on && scrollY > 90) { SCR.on = true; t.classList.add('scr'); }
-  else if (SCR.on && scrollY < 12) { SCR.on = false; t.classList.remove('scr'); }
+  if (!SCR.on && SC.scrollTop > 90) { SCR.on = true; t.classList.add('scr'); }
+  else if (SCR.on && SC.scrollTop < 12) { SCR.on = false; t.classList.remove('scr'); }
 }, { passive: true });
 const HERO_TOP = '#F2E8D3';
 function render() {
@@ -2116,17 +2119,17 @@ function undoCheck() {
 }
 
 const H = {
-  leave: () => { U.undo = []; if (!S || S.tut) return; save(); S = null; U.sheet = null; window.scrollTo(0, 0); toast('Partie gespeichert. Mit „Partie fortsetzen“ geht es weiter.'); },
+  leave: () => { U.undo = []; if (!S || S.tut) return; save(); S = null; U.sheet = null; SC.scrollTo(0, 0); toast('Partie gespeichert. Mit „Partie fortsetzen“ geht es weiter.'); },
   discard: () => { if (confirm('Gespeicherte Partie wirklich verwerfen?')) clearSave(); },
-  tutorial: () => { U.page = 1; U.undo = []; const nmi = document.getElementById('nm'); U.setup.name = nmi ? nmi.value.trim() : U.setup.name; U.sheet = null; resetTmp(); tutSetup(); U.tut = { i: 0 }; window.scrollTo(0, 0); },
+  tutorial: () => { U.page = 1; U.undo = []; const nmi = document.getElementById('nm'); U.setup.name = nmi ? nmi.value.trim() : U.setup.name; U.sheet = null; resetTmp(); tutSetup(); U.tut = { i: 0 }; SC.scrollTo(0, 0); },
   tutnext: () => { if (U.tut) U.tut.i = Math.min(U.tut.i + 1, TUT_STEPS.length - 1); },
-  tutend: () => { U.tut = null; U.sheet = null; U.fast = fastPref(); S = null; window.scrollTo(0, 0); },
-  tutquit: () => { U.tut = null; U.sheet = null; U.fast = fastPref(); S = null; window.scrollTo(0, 0); },
+  tutend: () => { U.tut = null; U.sheet = null; U.fast = fastPref(); S = null; SC.scrollTo(0, 0); },
+  tutquit: () => { U.tut = null; U.sheet = null; U.fast = fastPref(); S = null; SC.scrollTo(0, 0); },
   bots: d => { U.setup.bots = +d.n; },
-  pickname: d => { U.setup.name = d.n; const nmi = document.getElementById('nm'); if (nmi) nmi.value = d.n; },
+  pickname: d => { U.setup.name = d.n; try { localStorage.setItem('spielregal:lastPlayer', d.n); } catch (e) {} const nmi = document.getElementById('nm'); if (nmi) nmi.value = d.n; },
   setup: () => { U.sopen = true; },
   'setup-x': () => { const nm = document.getElementById('nm'); if (nm) U.setup.name = nm.value.trim(); U.sopen = false; },
-  start: () => { U.page = 1; const sv = load(); if (sv && sv.screen === 'game' && !confirm('Es gibt eine gespeicherte Partie. Neue Partie starten und die gespeicherte verwerfen?')) return; const nmi = document.getElementById('nm'); U.setup.name = nmi ? nmi.value.trim() : ''; resetTmp(); newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0); window.scrollTo(0, 0); },
+  start: () => { U.page = 1; const sv = load(); if (sv && sv.screen === 'game' && !confirm('Es gibt eine gespeicherte Partie. Neue Partie starten und die gespeicherte verwerfen?')) return; const nmi = document.getElementById('nm'); U.setup.name = nmi ? nmi.value.trim() : ''; resetTmp(); newGame(U.setup.name || 'Du', U.setup.bots, (Date.now() ^ (Math.random() * 1e9)) | 0); SC.scrollTo(0, 0); },
   resume: () => { U.page = 1; U.undo = []; S = load(); U.sheet = null; resetTmp(); },
   rules: () => { U.sheet = { type: 'rules' }; },
   menu: () => { U.sheet = { type: 'menu' }; },
@@ -2199,7 +2202,7 @@ const H = {
   document.addEventListener('pointermove', e => { if (Math.hypot(e.clientX - sx, e.clientY - sy) > 10) cancel(); }, true);
   document.addEventListener('click', e => { if (shown) { shown = false; e.preventDefault(); e.stopPropagation(); } }, true);
   document.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest('[data-info],[title]')) e.preventDefault(); });
-  addEventListener('scroll', hide, { passive: true });
+  SC.addEventListener('scroll', hide, { passive: true });
   // iOS: keine Textauswahl beim langen Drücken (außer in Eingabefeldern)
   document.addEventListener('selectstart', e => { const t = e.target.nodeType === 1 ? e.target : e.target.parentElement; if (!t || !t.closest('input,textarea')) e.preventDefault(); });
 })();
@@ -2210,7 +2213,7 @@ document.addEventListener('click', e => {
   if (el.disabled) return;
   if (U.tut && S && !tutAllowed(el.dataset.a, el.dataset)) { toast('Folge dem markierten Hinweis im Lernspiel.'); render(); return; }
   if (el.dataset.a === 'page') { pageGo(+el.dataset.p, true); return; }
-  if (el.dataset.a === 'bnub' || el.closest('.top.bub:not(.peek) .banner')) { const t = document.querySelector('.top'); t.classList.add('peek'); bubY = window.scrollY; clearTimeout(U.peekT); U.peekT = setTimeout(() => t.classList.remove('peek'), 5000); return; }
+  if (el.dataset.a === 'bnub' || el.closest('.top.bub:not(.peek) .banner')) { const t = document.querySelector('.top'); t.classList.add('peek'); bubY = SC.scrollTop; clearTimeout(U.peekT); U.peekT = setTimeout(() => t.classList.remove('peek'), 5000); return; }
   const fn = H[el.dataset.a]; if (!fn) return;
   fn(el.dataset); render();
 });
