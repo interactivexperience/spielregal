@@ -640,8 +640,8 @@ function setupHtml(){
     <button class="btn wide" data-a="setup-x">Fertig</button></div></div></div>`}
 function startHtml(){
   const sv=loadSave(),nm=SETUP.name.trim()||myName();
-  const prim=sv?`<button class="btn wide" data-a="resume">Partie fortsetzen</button><div class="prow"><button class="btn alt" data-a="start">Neue Partie</button><button class="btn alt" data-a="tutor" data-info="Lernspiel\nEine geführte Runde: Ofen, Krug, Auftrag und Rasten – mit allen Regeln im Spiel erklärt.">Lernspiel</button></div>`
-    :`<div class="prow"><button class="btn" data-a="start">Partie beginnen</button><button class="btn alt" data-a="tutor" data-info="Lernspiel\nEine geführte Runde: Ofen, Krug, Auftrag und Rasten – mit allen Regeln im Spiel erklärt.">Lernspiel</button></div>`;
+  const prim=sv?`<button class="btn wide" data-a="resume">Partie fortsetzen</button><div class="prow"><button class="btn alt" data-a="tutor" data-info="Lernspiel\nEine geführte Runde: Ofen, Krug, Auftrag und Rasten – mit allen Regeln im Spiel erklärt.">Lernspiel</button><button class="btn alt" data-a="start">Neue Partie</button></div>`
+    :`<div class="prow"><button class="btn alt" data-a="tutor" data-info="Lernspiel\nEine geführte Runde: Ofen, Krug, Auftrag und Rasten – mit allen Regeln im Spiel erklärt.">Lernspiel</button><button class="btn" data-a="start">Partie beginnen</button></div>`;
   return `<div class="start"><a class="leave" href="../" data-info="Zurück zum Spielregal">‹ Spielregal</a>
     <div class="stage"><div class="cwrap"><img class="cov" src="cover.png" width="800" height="1200" alt="Glut – Würfel, die abbrennen"><i class="kglow"></i><i class="ember e1"></i><i class="ember e2"></i><i class="ember e3"></i><i class="ember e4"></i><i class="ember e5"></i></div></div>
     <div class="panel">${prim}<div class="prow2"><button class="pill p-out" data-a="setup" data-info="Spieler und Gegner\nName ändern und die Zahl der Bots wählen.">${esc(nm)} · ${SETUP.bots} Bot${SETUP.bots>1?'s':''} ▾</button><button class="link" data-a="rules">Spielregeln lesen</button></div></div>${setupHtml()}${rulesHtml()}</div>`}
