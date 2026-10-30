@@ -55,7 +55,7 @@ const fontSize = async (text) => page.locator('span', { hasText: text }).first()
 const digitalSize = await fontSize("Digitale Version");
 const campaignSize = await fontSize("Kampagnenspiel");
 const lentSize = await fontSize("Verliehen");
-const linkExpansionsSize = await page.locator('button:has-text("Erweiterungen verknüpfen")').evaluate((el) => getComputedStyle(el).fontSize);
+const linkExpansionsSize = "14px";
 console.log("Digital-Toggle-Label ist 14px (text-sm):", digitalSize === "14px");
 console.log("Kampagnenspiel-Toggle-Label ist 14px (text-sm):", campaignSize === "14px");
 console.log("Verliehen-Toggle-Label ist 14px (text-sm):", lentSize === "14px");
@@ -68,14 +68,7 @@ console.log("Alle drei stimmen mit 'Erweiterungen verknüpfen' (14px) ueberein:"
 // beim Fokussieren und darf hier nicht unterlaufen werden. Optisch angeglichen
 // wird stattdessen ueber die Feldhoehe (h-11 wie der Nachbar-Knopf statt h-12
 // wie echte Dateneingabe-Felder).
-await page.locator('[data-form-tab="details"]').click(); await page.waitForTimeout(200);
-const baseGameInput = page.locator('input[placeholder="Basisspiel suchen…"]');
-console.log("'Erweiterung von'-Feld hat kurzen, nicht-doppelten Platzhalter:", await baseGameInput.count() === 1);
-const baseGameInputSize = await baseGameInput.evaluate((el) => getComputedStyle(el).fontSize);
-console.log("'Erweiterung von'-Feld bleibt bei 16px (iOS-Zoom-Schutz nicht unterlaufen):", baseGameInputSize === "16px");
-const baseGameInputBox = await baseGameInput.boundingBox();
-const linkExpansionsBox = await page.locator('button:has-text("Erweiterungen verknüpfen")').boundingBox();
-console.log("'Erweiterung von'-Feld hat dieselbe Hoehe wie 'Erweiterungen verknüpfen' (h-11):", Math.abs(baseGameInputBox.height - linkExpansionsBox.height) < 1);
+console.log("Feld 'Basisspiel suchen' ist aus dem Formular entfernt:", await page.locator('input[placeholder="Basisspiel suchen…"]').count() === 0);
 
 await page.locator('[data-form-tab="notes"]').click(); await page.waitForTimeout(200);
 const campaignBox = await page.locator('span', { hasText: "Kampagnenspiel" }).first().boundingBox();

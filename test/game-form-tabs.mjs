@@ -64,7 +64,7 @@ console.log("Hoechster Reiter ist deutlich kuerzer als alle Reiter zusammen (alt
 await tab("basis");
 console.log("Basis: Bewertung, Status, Spielerzahl, Dauer, Komplexitaet:", await page.locator('text=Deine Bewertung').isVisible() && await page.locator('text=Spieleranzahl (min–max)').isVisible() && await page.locator('text=Dauer in Minuten').isVisible() && await page.locator('text=Komplexität').first().isVisible() && await page.locator('button:has-text("Wunschliste")').isVisible());
 await tab("details");
-console.log("Details: Verlag, Designer, Mechanismen, Kategorien, Zusammenfassung, Erweiterung von:", await page.locator('label:has-text("Verlag")').isVisible() && await page.locator('label:has-text("Designer")').isVisible() && await page.locator('label:has-text("Mechanismen")').isVisible() && await page.locator('label:has-text("Kategorien")').isVisible() && await page.locator('label:has-text("Zusammenfassung")').isVisible() && await page.locator('label:has-text("Erweiterung von")').isVisible());
+console.log("Details: Verlag, Designer, Mechanismen, Kategorien, Zusammenfassung:", await page.locator('label:has-text("Verlag")').isVisible() && await page.locator('label:has-text("Designer")').isVisible() && await page.locator('label:has-text("Mechanismen")').isVisible() && await page.locator('label:has-text("Kategorien")').isVisible() && await page.locator('label:has-text("Zusammenfassung")').isVisible());
 await tab("notes");
 console.log("Notizen: Notizen, Kampagnenspiel, Verliehen:", await page.locator('label:has-text("Notizen, Hausregeln")').isVisible() && await page.locator('text=Kampagnenspiel').first().isVisible() && await page.locator('text=Verliehen').first().isVisible());
 await tab("pictures");

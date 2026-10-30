@@ -18,7 +18,7 @@ const server = http.createServer((req, res) => {
   res.writeHead(200, p.endsWith(".html") ? { "content-type": "text/html; charset=utf-8" } : {}); res.end(body);
 });
 await new Promise((r) => server.listen(0, "127.0.0.1", r));
-const url = `http://127.0.0.1:${server.address().port}/welcome-to/`;
+const url = `http://127.0.0.1:${server.address().port}/welcome-to/${process.env.WT_FILE || ""}`;
 const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH || "/opt/pw-browsers/chromium" });
 const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
 await ctx.addInitScript(() => { try { if (!sessionStorage.getItem("s")) { localStorage.setItem("spielregal:players", JSON.stringify([{ id: "p", name: "Mi" }])); sessionStorage.setItem("s", "1"); } } catch (_) {} });

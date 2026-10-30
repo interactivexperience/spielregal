@@ -1,0 +1,1306 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#B8A2E6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Siedlerhain">
+<title>Siedlerhain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Lexend:wght@400;500;600&display=swap">
+<style>
+/* Siedlerhain (Welcome To…): Naive-Design-Stil nach den Moodboard-Referenzen des Owners.
+   Flache Farbblöcke, dunkles Weinrot als Linienfarbe, wacklige Umrisse, harte Versatzschatten,
+   Blob- und Zackenformen, Bogenkanten. Eigener Stil, nicht von anderen Spielen übernommen. */
+:root{
+  --paper:#F5F2EE; --card:#FFFDF8; --ink:#6B1324; --ink2:#8E4A57;
+  --pink:#F59AC4; --lilac:#B8A2E6; --mint:#8ED9B0; --orange:#F7A21B; --yellow:#FFD23F; --red:#E0402F; --sky:#8FD0EE; --green:#63CE93;
+  --b0:var(--pink); --b1:var(--lilac); --b2:var(--mint);
+  --btn:#FFF8EE; --plate:#FFF8EE; --plate-ink:#6B1324; --dock:#FFD23F; --dock-ink:#6B1324; --hero:#B8A2E6;
+  --fd:'Dela Gothic One','Arial Black',system-ui,sans-serif;
+  --fb:'Lexend',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --g:3px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#170F1F; --card:#2A1B33; --ink:#F6E3DA; --ink2:#C9A9A6;
+    --b0:#9C3E70; --b1:#5C4A99; --b2:#2E7358; --red:#F0604B; --yellow:#E9BC22; --dock:#E9BC22; --hero:#5C4A99;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#170F1F; --card:#2A1B33; --ink:#F6E3DA; --ink2:#C9A9A6;
+  --b0:#9C3E70; --b1:#5C4A99; --b2:#2E7358; --red:#F0604B; --yellow:#E9BC22; --dock:#E9BC22; --hero:#5C4A99;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;position:fixed;inset:0;width:100%;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);
+  font:400 15px/1.4 var(--fb);-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-text-size-adjust:100%}
+h1,h2,h3,p{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:inherit}
+button:disabled{cursor:default}
+button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+a{color:inherit}
+svg{display:block}
+#app{position:fixed;inset:0;display:flex;flex-direction:column}
+.disp{font-family:var(--fd);font-weight:400}
+
+/* Kopf */
+.thead{flex:none;background:var(--paper);border-bottom:2.5px solid var(--ink);display:flex;align-items:center;gap:8px;
+  padding:max(8px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px))}
+.leave{font:600 13px/1 var(--fb);text-decoration:none;color:var(--ink);padding:10px 4px;display:inline-block}
+.thead h1{font:400 19px/1 var(--fd);letter-spacing:-.01em;flex:1;min-width:0;white-space:nowrap}
+.pill{border:2px solid var(--ink);border-radius:999px;padding:3px 9px 4px;background:var(--card);box-shadow:2px 2px 0 var(--ink);
+  display:flex;flex-direction:column;align-items:center;min-width:50px}
+.pill b{font:400 15px/1.05 var(--fd)}
+.pill small{font:600 8px/1 var(--fb);letter-spacing:.09em;text-transform:uppercase;color:var(--ink2);margin-top:1px}
+.pill.pts{background:var(--pink);color:#6B1324}
+.pill.pts small{color:#6B1324;opacity:.8}
+.pill.bump{animation:bump .5s ease-out}
+.mbtn{width:38px;height:38px;border:2.5px solid var(--ink);border-radius:50% 46% 52% 48%;background:var(--orange);color:#6B1324;font:400 17px/1 var(--fd);
+  box-shadow:2px 2px 0 var(--ink);display:grid;place-items:center;flex:none}
+.mbtn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+
+/* Spielfläche */
+.main{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  padding:14px max(12px,env(safe-area-inset-right,0px)) 22px max(12px,env(safe-area-inset-left,0px))}
+.wrap{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.label{font:600 11px/1 var(--fb);letter-spacing:.09em;text-transform:uppercase;color:var(--ink2)}
+.note{font-size:12.5px;line-height:1.35;color:var(--ink2);margin-top:8px}
+
+/* Stadtpläne */
+.plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
+.plan{position:relative;background:var(--card);border:2.5px solid var(--ink);border-radius:12px 14px 11px 15px/14px 11px 15px 12px;padding:7px 7px 8px;box-shadow:3px 3px 0 var(--ink);
+  display:flex;flex-direction:column;gap:6px;min-width:0;overflow:hidden}
+.plan.done{background:var(--green);color:#6B1324}
+.plan.late{opacity:.6}
+.plan .ph{display:flex;justify-content:space-between;align-items:center;gap:4px}
+.plan .ph b{font:400 12px/1 var(--fd)}
+.oct{min-width:30px;height:26px;padding:0 4px;display:grid;place-items:center;font:400 14px/1 var(--fd);color:#6B1324;background:var(--yellow);border:2px solid #6B1324;
+  clip-path:none;border-radius:8px 6px 9px 6px}
+.plan.done .oct{background:var(--btn)}
+.pest{display:flex;flex-direction:column;gap:5px}
+.pe{display:flex;gap:1px;align-items:flex-end;border-bottom:2.5px solid var(--ink);padding:0 1px 1px;position:relative;width:max-content;max-width:100%}
+.pe::before,.pe::after{content:"";position:absolute;bottom:-2px;height:9px;border-left:2.5px solid var(--ink)}
+.pe::before{left:-1px}.pe::after{right:-1px}
+.pe svg{width:12px;height:15px;flex:none}
+.pe.ok svg .w{fill:var(--green)}
+.plan.done .pe{border-color:#6B1324}
+.plan.done .pe::before,.plan.done .pe::after{border-color:#6B1324}
+.stamp{position:absolute;right:-6px;bottom:6px;transform:rotate(-14deg);border:2.5px solid var(--red);color:var(--red);border-radius:6px;padding:2px 6px;
+  font:400 10px/1.1 var(--fd);text-transform:uppercase;background:color-mix(in srgb,var(--card) 80%,transparent);letter-spacing:.03em;text-align:center}
+
+/* Straßen */
+.street{background:var(--bc);border:2.5px solid var(--ink);border-radius:16px 20px 14px 22px/20px 14px 22px 16px;padding:10px 8px 9px;box-shadow:4px 4px 0 var(--ink);
+  display:flex;flex-direction:column;gap:3px;color:var(--ink)}
+.street[data-s="0"]{--bc:var(--b0)}.street[data-s="1"]{--bc:var(--b1)}.street[data-s="2"]{--bc:var(--b2)}
+.shead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
+.shead h3{font:400 14px/1.1 var(--fd)}
+.shead h3 span{font:500 11px/1 var(--fb);margin-left:6px;opacity:.8}
+.parks{display:flex;gap:4px}
+.ptok{width:24px;height:24px;display:grid;place-items:center;font:400 10.5px/1 var(--fd);color:var(--ink);position:relative}
+.ptok svg{position:absolute;inset:0;width:100%;height:100%}
+.ptok span{position:relative;top:-1px}
+.ptok.on span{color:#fff;text-shadow:0 0 2px #6B1324,0 0 2px #6B1324}
+.row{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));column-gap:var(--g);position:relative}
+.house{position:relative;aspect-ratio:25/32;display:grid;place-items:center;min-width:0;padding:0}
+.house.empty{border-radius:6px 7px 5px 7px;border:1.5px dashed color-mix(in srgb,var(--ink) 55%,transparent);background:rgba(255,255,255,.28);
+  font:400 12px/1 var(--fd);color:var(--plate-ink)}
+.house svg{width:100%;height:100%;overflow:visible}
+.house.ok.empty{border:2.5px solid #6B1324;background:var(--yellow);cursor:pointer;animation:wig 1.3s ease-in-out infinite}
+.house.ok.empty .ghost{opacity:.7}
+.house.ok.full{cursor:pointer;animation:wig 1.3s ease-in-out infinite;filter:drop-shadow(0 0 3px var(--yellow)) drop-shadow(0 0 1px var(--yellow))}
+.house.src{filter:drop-shadow(0 0 4px var(--orange)) drop-shadow(0 0 2px var(--orange))}
+.house.pop{animation:pop .45s cubic-bezier(.3,1.6,.5,1)}
+.tut-hl{outline:4px solid var(--red);outline-offset:3px;animation:wig 1.1s ease-in-out infinite}
+@keyframes wig{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg) translateY(-1px)}}
+@keyframes pop{0%{transform:scale(.3) rotate(-14deg)}100%{transform:none}}
+@keyframes bump{40%{transform:scale(1.18) rotate(-3deg)}}
+.fence{position:absolute;top:-5px;bottom:-4px;width:7px;transform:translateX(-50%);pointer-events:none;
+  left:calc((100% - (var(--n) - 1) * var(--g)) / var(--n) * var(--k) + var(--g) * (var(--k) - .5))}
+.fence svg{width:100%;height:100%}
+.fence.pop{animation:pop .4s cubic-bezier(.3,1.6,.5,1)}
+.gap{position:absolute;top:-8px;bottom:-8px;width:22px;transform:translateX(-50%);z-index:2;
+  left:calc((100% - (var(--n) - 1) * var(--g)) / var(--n) * var(--k) + var(--g) * (var(--k) - .5))}
+.gap::before{content:"";position:absolute;left:50%;top:5px;bottom:5px;border-left:3px dashed var(--red);transform:translateX(-50%);z-index:1}
+.gap::after{content:"";position:absolute;top:0;bottom:0;left:50%;width:10px;margin-left:-5px;background:var(--yellow);border:1.5px solid #6B1324;border-radius:6px;animation:wig 1.3s ease-in-out infinite}
+.poolrow,.estrow{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));column-gap:var(--g);align-items:center}
+.poolrow{height:18px;margin-top:3px}
+.pool{grid-row:1;justify-self:center;width:100%;max-width:26px;height:17px}
+.pool svg{width:100%;height:100%}
+.estrow{margin-top:2px}
+.est{grid-row:1;height:17px;position:relative;border-bottom:2px solid var(--ink);display:flex;justify-content:center;align-items:flex-start;font:400 11px/1 var(--fd);min-width:0}
+.est::before,.est::after{content:"";position:absolute;bottom:-5px;height:8px;border-left:2px solid var(--ink)}
+.est::before{left:0}.est::after{right:0}
+.est.done{color:#6B1324;border-color:#6B1324}
+.est.done::before,.est.done::after{border-color:#6B1324}
+.est.done b{background:var(--green);border:1.5px solid #6B1324;border-radius:8px;padding:2px 6px 1px;margin-top:-4px}
+
+/* Zähler */
+.stats{display:flex;flex-direction:column;gap:9px}
+.estgrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.cgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.cell{background:var(--card);border:2px solid var(--ink);border-radius:10px 12px 9px 12px;padding:6px 3px 5px;text-align:center;display:flex;flex-direction:column;gap:2px;min-width:0;box-shadow:2px 2px 0 var(--ink)}
+.cell small{font-size:10px;color:var(--ink2);line-height:1.2}
+.cell b{font:400 19px/1.05 var(--fd)}
+.pips{display:flex;justify-content:center;gap:3px;min-height:7px}
+.pip{width:7px;height:7px;border-radius:50%;border:1.5px solid var(--ink)}
+.pip.on{background:var(--orange)}
+details{background:var(--card);border:2px solid var(--ink);border-radius:12px;padding:10px 12px;box-shadow:3px 3px 0 var(--ink)}
+summary{cursor:pointer;font:400 14px/1.2 var(--fd)}
+details[open] summary{margin-bottom:8px}
+.lines{width:100%;border-collapse:collapse;font-size:13px}
+.lines td{padding:4px 0;border-top:1.5px dashed color-mix(in srgb,var(--ink) 35%,transparent)}
+.lines td:last-child{text-align:right;font:400 15px/1 var(--fd)}
+.lines .d{color:var(--ink2);font-size:11.5px;padding-left:8px}
+.lines tr.neg td:last-child{color:var(--red)}
+
+/* Ergebnis */
+.result{background:var(--orange);color:#6B1324;border:2.5px solid #6B1324;border-radius:20px 16px 22px 14px/16px 22px 14px 20px;padding:18px 16px 16px;box-shadow:5px 5px 0 #6B1324;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden}
+.result .eyebrow{font:600 11px/1 var(--fb);letter-spacing:.09em;text-transform:uppercase}
+.result h2{font:400 46px/1 var(--fd);letter-spacing:-.02em}
+.result .why{font-size:13px}
+.result .lines td{border-color:rgba(107,19,36,.35)}
+.result .lines .d{color:#6B1324;opacity:.8}
+.result .lines tr.neg td:last-child{color:#6B1324;text-decoration:underline wavy}
+.result .stern{position:absolute;right:-26px;top:-26px;width:120px;height:120px;opacity:.9}
+
+/* Knöpfe */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:2.5px solid #6B1324;border-radius:999px;padding:11px 20px;font:400 15px/1 var(--fd);
+  background:var(--btn);color:#6B1324;box-shadow:3px 3px 0 #6B1324;text-align:center}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #6B1324}
+.btn.pri{background:var(--orange)}
+.btn.pink{background:var(--pink)}
+.btn.sm{padding:7px 13px;font-size:12.5px;box-shadow:2px 2px 0 #6B1324}
+.btn.arm{background:var(--red);color:#fff}
+.btn.hot{background:var(--yellow)}
+.btn:disabled{opacity:.45}
+.tlink{font:600 13px/1 var(--fb);text-decoration:underline;text-underline-offset:3px;padding:8px;text-align:center}
+
+/* Eingabeleiste */
+.dock{flex:none;position:relative;background:var(--dock);color:var(--dock-ink);margin-top:12px;
+  padding:12px max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+.dock::before{content:"";position:absolute;left:0;right:0;top:-10px;height:10px;pointer-events:none;
+  background:radial-gradient(circle at 11px 11px,var(--dock) 10px,transparent 10.5px) 0 0/22px 10px repeat-x}
+.dinner{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:9px}
+.prompt{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13.5px;line-height:1.3;min-height:32px;font-weight:500}
+.prompt p{min-width:0}
+.prompt b{font:400 16px/1 var(--fd)}
+.hand{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.kard{position:relative;background:var(--plate);color:var(--plate-ink);border:2.5px solid #6B1324;border-radius:14px 12px 16px 12px/12px 16px 12px 14px;box-shadow:3px 3px 0 #6B1324;
+  padding:0;display:flex;flex-direction:column;min-width:0;overflow:hidden;text-align:center}
+.kard:not(:disabled):active{transform:translate(2px,2px);box-shadow:1px 1px 0 #6B1324}
+.kard.dead{opacity:.45}
+.kard.chosen{box-shadow:0 0 0 3px var(--red),3px 3px 0 #6B1324}
+.kard.dim{opacity:.55}
+.kard .scene{width:100%;aspect-ratio:120/84;border-bottom:2.5px solid #6B1324;background:#fff}
+.kard .scene svg{width:100%;height:100%}
+.kard .back{display:flex;align-items:center;gap:5px;padding:4px 5px 5px;min-height:38px;background:#FFF1D9}
+.kard .back svg{width:30px;height:30px;flex:none}
+.kard .back span{font:400 10px/1.1 var(--fd);text-align:left;min-width:0;hyphens:manual}
+.kard .tag{position:absolute;left:4px;top:4px;background:var(--red);color:#fff;border:2px solid #6B1324;border-radius:8px;padding:2px 6px;font:400 9.5px/1 var(--fd)}
+.kard.tut-hl{outline-offset:2px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:2.5px solid #6B1324;border-radius:12px 14px 11px 13px;background:var(--plate);color:#6B1324;padding:6px 13px;display:flex;flex-direction:column;align-items:center;min-width:56px;box-shadow:2px 2px 0 #6B1324}
+.chip b{font:400 22px/1 var(--fd)}
+.chip small{font-size:10.5px;color:#8E4A57}
+.chip:disabled{opacity:.35}
+.chip:not(:disabled):active{transform:translate(1px,1px);box-shadow:1px 1px 0 #6B1324}
+
+/* Coach */
+.coach{flex:none;background:var(--lilac);color:#6B1324;border-top:2.5px solid #6B1324;padding:10px max(14px,env(safe-area-inset-right,0px)) 10px max(14px,env(safe-area-inset-left,0px))}
+.cin{max-width:520px;margin:0 auto;display:flex;gap:10px;align-items:flex-start}
+.cin svg{width:58px;height:58px;flex:none}
+.cin .tx{flex:1;min-width:0;font-size:13.5px;line-height:1.35;font-weight:500;display:flex;flex-direction:column;gap:8px}
+.cin .tx b{font:400 13px/1 var(--fd)}
+.cin .row2{display:flex;gap:8px}
+.coach .btn{box-shadow:2px 2px 0 #6B1324}
+
+/* Fenster */
+.ov{position:fixed;inset:0;z-index:20;background:rgba(40,10,30,.55);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:560px;max-height:88%;overflow-y:auto;background:var(--paper);border:2.5px solid var(--ink);border-bottom:0;border-radius:24px 24px 0 0;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) max(18px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));animation:up .25s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+.sh{position:sticky;top:0;background:var(--paper);display:flex;justify-content:space-between;align-items:center;padding:14px 0 10px;z-index:1}
+.sh h2{font:400 22px/1 var(--fd)}
+.xbtn{width:36px;height:36px;border:2.5px solid var(--ink);border-radius:50%;display:grid;place-items:center;font:400 14px/1 var(--fd);background:var(--card);box-shadow:2px 2px 0 var(--ink)}
+.menu{display:flex;flex-direction:column;gap:10px;padding-bottom:6px}
+.menu .btn{width:100%;justify-content:flex-start;padding:13px 18px}
+.rules{display:flex;flex-direction:column;gap:12px;font-size:14px;line-height:1.45}
+.rules h3{font:400 15px/1.1 var(--fd);margin-top:4px}
+.rules ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.rules .fine{font-size:12.5px;color:var(--ink2)}
+.ring{display:inline-block;vertical-align:-5px;width:20px;height:20px}
+
+/* Info-Blase und Hinweis */
+.bub{position:fixed;z-index:40;max-width:250px;background:var(--ink);color:var(--paper);border-radius:12px 14px 12px 14px;padding:9px 12px;font-size:12.5px;line-height:1.35;box-shadow:3px 3px 0 var(--orange);pointer-events:none}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 210px);transform:translateX(-50%);z-index:45;max-width:86%;background:var(--red);color:#fff;border:2.5px solid #6B1324;border-radius:14px;padding:9px 14px;
+  font-size:13px;font-weight:500;box-shadow:3px 3px 0 #6B1324;text-align:center;animation:up .2s ease-out}
+.toast.good{background:var(--green);color:#6B1324}
+.fl{position:fixed;z-index:35;font:400 20px/1 var(--fd);color:var(--orange);text-shadow:2px 2px 0 #6B1324;pointer-events:none;animation:fl 1.1s ease-out forwards}
+@keyframes fl{to{transform:translateY(-46px);opacity:0}}
+
+/* Startseite */
+.start{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--hero)}
+.stage{flex:1;min-height:0;position:relative;overflow:hidden}
+.stage svg.cover{position:absolute;inset:0;width:100%;height:100%;display:block}
+.start .leave{position:absolute;z-index:3;left:max(10px,env(safe-area-inset-left,0px));top:max(6px,env(safe-area-inset-top,0px));background:var(--btn);border:2.5px solid #6B1324;border-radius:999px;color:#6B1324;padding:9px 14px;box-shadow:2px 2px 0 #6B1324}
+.sdock{flex:none;position:relative;background:var(--paper);padding:16px max(16px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  display:flex;flex-direction:column;gap:10px;align-items:stretch}
+.sdock::before{content:"";position:absolute;left:0;right:0;top:-10px;height:10px;pointer-events:none;
+  background:radial-gradient(circle at 11px 11px,var(--paper) 10px,transparent 10.5px) 0 0/22px 10px repeat-x}
+.sdock .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sdock .btn{width:100%}
+.sdock .links{display:flex;justify-content:center;gap:6px}
+.sdock .sub{display:block;font:500 10.5px/1.2 var(--fb);margin-top:3px;opacity:.85}
+
+@media (prefers-reduced-motion: reduce){
+  .house.ok,.gap::after,.tut-hl,.pill.bump,.house.pop,.fence.pop,.sheet,.toast,.fl{animation:none!important}
+}
+@media (max-width:360px){.thead h1{font-size:17px}.plan{padding:6px 5px}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.Siedler = api;
+})(typeof window !== 'undefined' ? window : globalThis, function () {
+  'use strict';
+
+  // ---------- Konstanten (nach Spielzettel und Regelheft von Welcome To…) ----------
+  const LEN = [10, 11, 12];
+  const MAXN = 17;
+  const PARK_VALUES = [[2, 4, 10], [2, 4, 6, 14], [2, 4, 6, 8, 18]];          // nach 1, 2, 3 … Parks
+  const POOL_SPOTS = [[2, 6, 7], [0, 3, 7], [1, 6, 10]];                       // Felder mit Poolplatz (ab 0)
+  const POOL_SCORE = [0, 3, 6, 9, 13, 17, 21, 26, 31, 36];                     // nach 0 … 9 Pools
+  const BIS_SCORE = [0, -1, -3, -6, -9, -12, -16, -20, -24, -28];              // nach 0 … 9 Doppelten
+  const REFUSAL_TOTAL = [0, 0, -3, -5];                                        // nach 0 … 3 Ablehnungen
+  const TEMP_BOXES = 11;
+  const TEMP_NEEDED = 6;                                                       // Solo: ab 6 Zeitarbeitern 7 Punkte
+  const TEMP_POINTS = 7;
+  const EST_VALUES = [[1, 3], [2, 3, 4], [3, 4, 5, 6], [4, 5, 6, 7, 8], [5, 6, 7, 8, 10], [6, 7, 8, 10, 12]];
+  const EFFECTS = ['fence', 'agent', 'park', 'pool', 'temp', 'bis'];
+  // Kartenliste: je Hausnummer, wie oft welcher Effekt auf der Rückseite steht
+  // Reihenfolge: Geometer, Makler, Gärtner, Pool, Zeitarbeit, Doppelte Nummer (insgesamt 81 Karten)
+  const DECK_TABLE = {
+    1: [1, 1, 1, 0, 0, 0], 2: [1, 1, 1, 0, 0, 0], 3: [1, 0, 0, 1, 1, 1], 4: [0, 1, 1, 1, 1, 1], 5: [2, 2, 2, 0, 0, 0],
+    6: [2, 1, 1, 1, 1, 1], 7: [1, 2, 2, 1, 1, 1], 8: [2, 2, 2, 1, 1, 1], 9: [1, 2, 2, 1, 1, 1], 10: [2, 1, 1, 1, 1, 1],
+    11: [2, 2, 2, 0, 0, 0], 12: [0, 1, 1, 1, 1, 1], 13: [1, 0, 0, 1, 1, 1], 14: [1, 1, 1, 0, 0, 0], 15: [1, 1, 1, 0, 0, 0]
+  };
+  // Die 18 Stadtpläne der Basisversion: je Stufe (Nr. 1, 2, 3) sechs Karten; req = Siedlungsgrößen, first / second = Punkte
+  const PLAN_CARDS = [
+    [{ req: [6, 6], first: 10, second: 6 }, { req: [1, 1, 1, 1, 1, 1], first: 8, second: 4 }, { req: [2, 2, 2, 2], first: 8, second: 4 },
+      { req: [3, 3, 3], first: 8, second: 4 }, { req: [5, 5], first: 8, second: 4 }, { req: [4, 4], first: 6, second: 3 }],
+    [{ req: [4, 1, 1, 1], first: 9, second: 5 }, { req: [3, 3, 4], first: 12, second: 7 }, { req: [5, 2, 2], first: 10, second: 6 },
+      { req: [6, 1, 1, 1], first: 11, second: 6 }, { req: [4, 5], first: 9, second: 5 }, { req: [3, 6], first: 8, second: 4 }],
+    [{ req: [3, 4], first: 7, second: 3 }, { req: [2, 5], first: 7, second: 3 }, { req: [1, 4, 5], first: 13, second: 7 },
+      { req: [2, 3, 5], first: 13, second: 7 }, { req: [1, 2, 6], first: 12, second: 7 }, { req: [1, 2, 2, 3], first: 11, second: 6 }]
+  ];
+
+  // ---------- Hilfen ----------
+  function shuffle(a, rnd) {
+    rnd = rnd || Math.random;
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+  function buildDeck() {
+    const d = [];
+    for (let n = 1; n <= 15; n++) DECK_TABLE[n].forEach((c, k) => { for (let j = 0; j < c; j++) d.push({ n, e: EFFECTS[k] }); });
+    return d;
+  }
+  const grid = (v) => LEN.map(l => Array(l).fill(v));
+
+  function canPlace(houses, s, i, n) {
+    const row = houses[s];
+    if (i < 0 || i >= row.length || row[i] !== null) return false;
+    for (let k = i - 1; k >= 0; k--) if (row[k] !== null) { if (row[k] >= n) return false; break; }
+    for (let k = i + 1; k < row.length; k++) if (row[k] !== null) { if (row[k] <= n) return false; break; }
+    return true;
+  }
+  function validSlots(st, n) {
+    const r = [];
+    for (let s = 0; s < 3; s++) for (let i = 0; i < LEN[s]; i++) if (canPlace(st.houses, s, i, n)) r.push([s, i]);
+    return r;
+  }
+  const hasSlot = (st, n) => n >= 0 && n <= MAXN && validSlots(st, n).length > 0;
+
+  // ---------- Siedlungen & Pläne ----------
+  function estates(st, s) {
+    const res = [];
+    const n = LEN[s];
+    let a = 0;
+    for (let i = 0; i < n; i++) {
+      if (i === n - 1 || st.fences[s][i]) {
+        const slice = st.houses[s].slice(a, i + 1);
+        res.push({ s, a, b: i + 1, size: i + 1 - a, complete: slice.every(x => x !== null), locked: st.lock[s].slice(a, i + 1).some(Boolean) });
+        a = i + 1;
+      }
+    }
+    return res;
+  }
+  function completedCounts(st) {
+    const c = [0, 0, 0, 0, 0, 0, 0];
+    for (let s = 0; s < 3; s++) estates(st, s).forEach(e => { if (e.complete && e.size <= 6) c[e.size]++; });
+    return c;
+  }
+  const planCard = (st, k) => PLAN_CARDS[k][st.planPick[k]];
+  function planProgress(st, k) {
+    const req = planCard(st, k).req;
+    const counts = completedCounts(st);
+    const used = {};
+    const filled = req.map(sz => { used[sz] = (used[sz] || 0) + 1; return counts[sz] >= used[sz]; });
+    return { req, filled, complete: filled.every(Boolean) };
+  }
+  function tryPlan(st, k) {
+    const req = planCard(st, k).req;
+    const cand = [];
+    for (let s = 0; s < 3; s++) estates(st, s).forEach(e => { if (e.complete && !e.locked && e.size <= 6) cand.push(e); });
+    const take = [];
+    for (const sz of req) {
+      const idx = cand.findIndex(e => e.size === sz && take.indexOf(e) < 0);
+      if (idx < 0) return false;
+      take.push(cand[idx]);
+    }
+    take.forEach(e => { for (let i = e.a; i < e.b; i++) st.lock[e.s][i] = true; });
+    st.planDone[k] = { round: st.round, pts: planCard(st, k).first };
+    return true;
+  }
+  function updatePlans(st) {
+    if (st.soloSeen) return false;
+    let any = false;
+    for (let k = 0; k < 3; k++) if (!st.planDone[k] && tryPlan(st, k)) any = true;
+    return any;
+  }
+
+  // ---------- Wertung ----------
+  function score(st) {
+    const lines = [];
+    let total = 0;
+    const add = (group, label, detail, pts) => { lines.push({ group, label, detail, pts }); total += pts; };
+    let plans = 0;
+    for (let k = 0; k < 3; k++) {
+      const d = st.planDone[k];
+      if (d) { plans += d.pts; add('plans', 'Stadtplan ' + (k + 1), 'Runde ' + d.round, d.pts); }
+      else add('plans', 'Stadtplan ' + (k + 1), st.soloSeen ? 'Konkurrenz war schneller' : 'nicht erfüllt', 0);
+    }
+    let parks = 0;
+    st.parks.forEach((p, s) => { const v = p ? PARK_VALUES[s][p - 1] : 0; parks += v; add('parks', 'Parks, Straße ' + (s + 1), p + ' von ' + PARK_VALUES[s].length, v); });
+    let poolCount = 0;
+    st.pools.forEach(r => r.forEach(p => { if (p) poolCount++; }));
+    const poolPts = POOL_SCORE[poolCount];
+    add('pools', 'Pools', poolCount + ' von 9', poolPts);
+    const tempPts = st.temps >= TEMP_NEEDED ? TEMP_POINTS : 0;
+    add('temps', 'Zeitarbeit', st.temps + ' eingestellt, ab ' + TEMP_NEEDED + ' gibt es ' + TEMP_POINTS, tempPts);
+    const counts = completedCounts(st);
+    let est = 0;
+    for (let k = 0; k < 6; k++) {
+      const v = EST_VALUES[k][st.marks[k]], c = counts[k + 1];
+      est += v * c;
+      add('estates', 'Siedlungen mit ' + (k + 1) + (k ? ' Häusern' : ' Haus'), c + ' × ' + v, v * c);
+    }
+    const bisPts = BIS_SCORE[st.bis];
+    add('bis', 'Doppelte Hausnummern', st.bis + ' gebaut', bisPts);
+    const refPts = REFUSAL_TOTAL[st.refusals];
+    add('refusals', 'Abgelehnte Bauanträge', st.refusals + ' von 3', refPts);
+    return { total, lines, plans, parks, pools: poolPts, estates: est, temps: tempPts, bis: bisPts, refusals: refPts, poolCount };
+  }
+
+  // ---------- Spielaufbau ----------
+  function dealBase(st) {
+    st.combos = [0, 1, 2].map(i => ({ n: st.stacks[i][st.sp + 1].n, e: st.stacks[i][st.sp].e }));
+  }
+  function reshuffleBase(st, rnd) {
+    const all = [];
+    st.stacks.forEach(s => s.forEach(c => all.push(c)));
+    shuffle(all, rnd);
+    st.stacks = [all.slice(0, 27), all.slice(27, 54), all.slice(54, 81)];
+    st.sp = 0;
+  }
+  function realLeft(st) {
+    let n = 0;
+    for (let i = st.dp; i < st.deck.length; i++) if (!st.deck[i].solo) n++;
+    return n;
+  }
+  function dealSolo(st) {
+    if (realLeft(st) < 3) { st.hand = []; finishGame(st, 'deck'); return; }
+    const hand = [];
+    while (hand.length < 3) {
+      const c = st.deck[st.dp++];
+      if (c.solo) { st.soloSeen = true; continue; }
+      hand.push(c);
+    }
+    st.hand = hand;
+  }
+  function startRound(st, rnd) {
+    st.round++;
+    st.sel = null;
+    st.phase = 'pick';
+    if (st.mode === 'solo') dealSolo(st);
+    else {
+      if (st.sp + 1 >= 27) reshuffleBase(st, rnd);
+      dealBase(st);
+    }
+  }
+  function newGame(mode, rnd) {
+    mode = mode === 'base' ? 'base' : 'solo';
+    const deck = shuffle(buildDeck(), rnd);
+    const st = {
+      v: 2, mode, id: '', houses: grid(null), bisH: grid(false), lock: grid(false), pools: grid(false),
+      fences: LEN.map(l => Array(l - 1).fill(false)),
+      parks: [0, 0, 0], marks: [0, 0, 0, 0, 0, 0], temps: 0, bis: 0, refusals: 0,
+      planPick: [0, 1, 2].map(() => Math.floor((rnd || Math.random)() * 6)), planDone: [null, null, null],
+      soloSeen: false, round: 0, sel: null, phase: 'pick', endReason: null, reshuffled: false,
+      hand: [], combos: [], deck: [], dp: 0, stacks: [], sp: 0
+    };
+    if (mode === 'solo') {
+      const a = deck.slice(0, 40), b = deck.slice(40);
+      a.push({ solo: true });
+      shuffle(a, rnd);
+      st.deck = b.concat(a); // Stapel mit der Solo-Karte liegt unter dem anderen
+    } else {
+      st.stacks = [deck.slice(0, 27), deck.slice(27, 54), deck.slice(54, 81)];
+    }
+    startRound(st, rnd);
+    return st;
+  }
+
+  // ---------- Zugablauf ----------
+  function finishGame(st, why) { st.phase = 'over'; st.endReason = why; st.sel = null; }
+  function allBuilt(st) { return st.houses.every(r => r.every(x => x !== null)); }
+  function endTurn(st, rnd) {
+    const newPlan = updatePlans(st);
+    st.sel = null;
+    if (st.refusals >= 3) return finishGame(st, 'refusals');
+    if (st.planDone.every(Boolean)) return finishGame(st, 'plans');
+    if (allBuilt(st)) return finishGame(st, 'full');
+    if (st.mode === 'base') st.sp++;
+    if (newPlan && st.mode === 'base' && !st.reshuffled) { st.reshuffled = true; st.phase = 'reshuf'; return; }
+    startRound(st, rnd);
+  }
+  function reshuffle(st, yes, rnd) {
+    if (st.phase !== 'reshuf') return false;
+    if (yes) {
+      // alle 81 Karten neu mischen, drei neue Stapel
+      const all = [];
+      st.stacks.forEach(s => s.forEach(c => all.push(c)));
+      shuffle(all, rnd);
+      st.stacks = [all.slice(0, 27), all.slice(27, 54), all.slice(54, 81)];
+      st.sp = 0;
+    }
+    startRound(st, rnd);
+    return true;
+  }
+
+  function afterSelect(st) {
+    if (st.sel.e === 'temp' && st.temps < TEMP_BOXES) {
+      st.sel.base = st.sel.n;
+      if (adjustOptions(st).length) { st.phase = 'adjust'; return; }
+    }
+    st.phase = hasSlot(st, st.sel.n) ? 'place' : 'refuse';
+  }
+  function choose(st, i) {
+    if (st.phase !== 'pick') return false;
+    if (st.mode === 'solo') {
+      if (!st.hand[i]) return false;
+      st.sel = { card: i, n: st.hand[i].n, e: null, effCard: -1, tempUsed: false, pos: null, src: null };
+      st.phase = 'pickeff';
+      return true;
+    }
+    const c = st.combos[i];
+    if (!c) return false;
+    st.sel = { card: i, n: c.n, e: c.e, effCard: i, tempUsed: false, pos: null, src: null };
+    afterSelect(st);
+    return true;
+  }
+  function chooseEffect(st, j) {
+    if (st.phase !== 'pickeff') return false;
+    if (j >= 0 && (j === st.sel.card || !st.hand[j])) return false;
+    st.sel.effCard = j;
+    st.sel.e = j >= 0 ? st.hand[j].e : null;
+    afterSelect(st);
+    return true;
+  }
+  function adjustOptions(st) {
+    const base = st.sel.base !== undefined ? st.sel.base : st.sel.n;
+    const out = [];
+    if (hasSlot(st, base)) out.push({ d: 'x', n: base, temp: false });
+    if (st.temps < TEMP_BOXES) for (let d = -2; d <= 2; d++) { const n = base + d; if (hasSlot(st, n)) out.push({ d, n, temp: true }); }
+    return out;
+  }
+  function adjust(st, d) {
+    if (st.phase !== 'adjust') return false;
+    const o = adjustOptions(st).find(x => x.d === d);
+    if (!o) return false;
+    st.sel.n = o.n;
+    if (o.temp) { st.temps++; st.sel.tempUsed = true; }
+    st.phase = 'place';
+    return true;
+  }
+  function cancel(st) {
+    if (['pickeff', 'adjust', 'place', 'refuse'].indexOf(st.phase) < 0) return false;
+    if (st.sel && st.sel.tempUsed) st.temps--;
+    st.sel = null;
+    st.phase = 'pick';
+    return true;
+  }
+
+  function freeGaps(st, s) {
+    const r = [];
+    st.fences[s].forEach((f, g) => {
+      const pair = st.houses[s][g] !== null && st.houses[s][g] === st.houses[s][g + 1]; // Doppelte bleiben in einer Siedlung
+      if (!f && !pair && !(st.lock[s][g] && st.lock[s][g + 1])) r.push(g);
+    });
+    return r;
+  }
+  function agentSizes(st) {
+    const r = [];
+    for (let k = 0; k < 6; k++) if (st.marks[k] < EST_VALUES[k].length - 1) r.push(k + 1);
+    return r;
+  }
+  // Doppelte Hausnummer: jedes nummerierte Haus, daneben ein freies Feld ohne Zaun dazwischen
+  function bisTargets(st) {
+    const res = [];
+    for (let s = 0; s < 3; s++) {
+      for (let i = 0; i < LEN[s]; i++) {
+        const n = st.houses[s][i];
+        if (n === null) continue;
+        [-1, 1].forEach(dx => {
+          const q = i + dx;
+          if (q < 0 || q >= LEN[s] || st.houses[s][q] !== null) return;
+          if (st.fences[s][Math.min(i, q)]) return;
+          const row = st.houses[s];
+          if (dx === 1) { for (let k = q + 1; k < row.length; k++) if (row[k] !== null) { if (row[k] <= n) return; break; } }
+          else { for (let k = q - 1; k >= 0; k--) if (row[k] !== null) { if (row[k] >= n) return; break; } }
+          res.push({ s, i, q });
+        });
+      }
+    }
+    return res;
+  }
+  function afterPlace(st, rnd) {
+    const s = st.sel.pos.s, i = st.sel.pos.i;
+    switch (st.sel.e) {
+      case 'fence': if (freeGaps(st, s).length) { st.phase = 'fence'; return; } break;
+      case 'agent': if (agentSizes(st).length) { st.phase = 'agent'; return; } break;
+      case 'park': if (st.parks[s] < PARK_VALUES[s].length) { st.parks[s]++; st.sel.did = 'park'; } break;
+      case 'pool': if (POOL_SPOTS[s].indexOf(i) >= 0 && !st.pools[s][i]) { st.pools[s][i] = true; st.sel.did = 'pool'; } break;
+      case 'bis': if (st.bis < 9 && bisTargets(st).length) { st.phase = 'bis'; return; } break;
+    }
+    endTurn(st, rnd);
+  }
+  function place(st, s, i, rnd) {
+    if (st.phase !== 'place' || !canPlace(st.houses, s, i, st.sel.n)) return false;
+    st.houses[s][i] = st.sel.n;
+    st.sel.pos = { s, i };
+    afterPlace(st, rnd);
+    return true;
+  }
+  function placeFence(st, g, rnd) {
+    if (st.phase !== 'fence') return false;
+    const s = st.sel.pos.s;
+    if (freeGaps(st, s).indexOf(g) < 0) return false;
+    st.fences[s][g] = true;
+    endTurn(st, rnd);
+    return true;
+  }
+  function markAgent(st, size, rnd) {
+    if (st.phase !== 'agent' || agentSizes(st).indexOf(size) < 0) return false;
+    st.marks[size - 1]++;
+    endTurn(st, rnd);
+    return true;
+  }
+  function bisSource(st, s, i) {
+    if (st.phase !== 'bis') return false;
+    if (!bisTargets(st).some(t => t.s === s && t.i === i)) return false;
+    st.sel.src = { s, i };
+    return true;
+  }
+  function placeBis(st, q, rnd) {
+    if (st.phase !== 'bis' || !st.sel.src) return false;
+    const { s, i } = st.sel.src;
+    if (!bisTargets(st).some(t => t.s === s && t.i === i && t.q === q)) return false;
+    st.houses[s][q] = st.houses[s][i];
+    st.bisH[s][q] = true;
+    st.bis++;
+    endTurn(st, rnd);
+    return true;
+  }
+  function skip(st, rnd) {
+    if (['fence', 'agent', 'bis'].indexOf(st.phase) < 0) return false;
+    endTurn(st, rnd);
+    return true;
+  }
+  function refuse(st, rnd) {
+    if (st.phase !== 'refuse') return false;
+    if (st.sel && st.sel.tempUsed) st.temps--; // kann nicht vorkommen, zur Sicherheit
+    st.refusals++;
+    endTurn(st, rnd);
+    return true;
+  }
+
+  return {
+    LEN, MAXN, PARK_VALUES, POOL_SPOTS, POOL_SCORE, BIS_SCORE, REFUSAL_TOTAL, TEMP_BOXES, TEMP_NEEDED, TEMP_POINTS, EST_VALUES, EFFECTS,
+    DECK_TABLE, PLAN_CARDS, buildDeck,
+    newGame, choose, chooseEffect, adjust, cancel, place, placeFence, markAgent, bisSource, placeBis, skip, refuse, reshuffle,
+    validSlots, adjustOptions, freeGaps, agentSizes, bisTargets, hasSlot, realLeft,
+    estates, completedCounts, planProgress, planCard, score, canPlace
+  };
+});
+
+</script>
+<script>
+(function () {
+  'use strict';
+  const G = window.Siedler;
+  const app = document.getElementById('app');
+  const SAVE = 'welcome-to:save';
+  const BEST = 'welcome-to:best';
+  const INBOX = 'spielregal:inbox:plays';
+  const INK = '#6B1324';
+  const NAMES = ['Lindenweg', 'Bachstraße', 'Kastanienallee'];
+  const U = { view: 'start', sheet: null, tut: null, mode: 'solo' };
+  let S = null;
+
+  // ---------- Zufall, Blobs, Strichschrift ----------
+  function rng(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  const f1 = n => Math.round(n * 10) / 10;
+  function blob(cx, cy, rx, ry, n, j, seed) {
+    const R = rng(seed), pts = [];
+    for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2, k = 1 + (R() - .5) * 2 * j; pts.push([cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]); }
+    const mid = (p, q) => [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
+    const m0 = mid(pts[n - 1], pts[0]);
+    let d = 'M' + f1(m0[0]) + ' ' + f1(m0[1]);
+    for (let i = 0; i < n; i++) { const p = pts[i], m = mid(p, pts[(i + 1) % n]); d += 'Q' + f1(p[0]) + ' ' + f1(p[1]) + ' ' + f1(m[0]) + ' ' + f1(m[1]); }
+    return d + 'Z';
+  }
+  function poly(pts, j, seed) {
+    const R = rng(seed);
+    return 'M' + pts.map(p => f1(p[0] + (R() - .5) * 2 * j) + ' ' + f1(p[1] + (R() - .5) * 2 * j)).join('L') + 'Z';
+  }
+  function burst(cx, cy, r1, r2, n, seed) {
+    const R = rng(seed), pts = [];
+    for (let i = 0; i < n * 2; i++) { const a = i / (n * 2) * Math.PI * 2 - Math.PI / 2, r = (i % 2 ? r1 : r2) * (1 + (R() - .5) * .16); pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]); }
+    return 'M' + pts.map(p => f1(p[0]) + ' ' + f1(p[1])).join('L') + 'Z';
+  }
+  function spiral(cx, cy, r0, turns) {
+    let d = '';
+    for (let t = 0; t <= turns * 6.283; t += .2) { const r = r0 * (t / (turns * 6.283)); d += (t ? 'L' : 'M') + f1(cx + Math.cos(t) * r) + ' ' + f1(cy + Math.sin(t) * r); }
+    return d;
+  }
+  // Strichschrift (nur die Zeichen, die das Cover braucht), Höhe 60, gleichmäßige Linie
+  const GL = {
+    S: { w: 38, d: ['M32 14C28 4 6 4 6 18C6 32 32 28 32 44C32 58 8 58 4 48'] },
+    i: { w: 14, d: ['M7 24L7 60', 'M7 7L7 8'] },
+    e: { w: 38, d: ['M6 42L32 42C32 28 24 24 19 24C10 24 6 32 6 42C6 52 12 60 21 60C27 60 31 57 33 53'] },
+    d: { w: 36, d: ['M30 0L30 60', 'M30 42C30 30 24 24 17 24C9 24 5 32 5 42C5 52 9 60 17 60C24 60 30 54 30 42'] },
+    l: { w: 14, d: ['M7 0L7 60'] },
+    r: { w: 32, d: ['M8 24L8 60', 'M8 38C8 28 16 24 28 26'] },
+    h: { w: 38, d: ['M8 0L8 60', 'M8 38C8 28 16 24 22 24C30 24 32 32 32 40L32 60'] },
+    a: { w: 36, d: ['M30 24L30 60', 'M30 42C30 30 24 24 17 24C9 24 5 32 5 42C5 52 9 60 17 60C24 60 30 54 30 42'] },
+    n: { w: 38, d: ['M8 24L8 60', 'M8 38C8 28 16 24 22 24C30 24 32 32 32 40L32 60'] },
+    '.': { w: 12, d: ['M6 58L6 60'] }
+  };
+  function glyphs(str, x, y, sc, sw, col) {
+    let cx = 0, out = '';
+    for (const ch of str) { const g = GL[ch]; if (!g) { cx += 14; continue; } out += g.d.map(d => '<path d="' + d + '" transform="translate(' + cx + ' 0)"/>').join(''); cx += g.w + 8; }
+    return '<g transform="translate(' + x + ' ' + y + ') scale(' + sc + ')" fill="none" stroke="' + col + '" stroke-width="' + sw + '" stroke-linecap="round" stroke-linejoin="round">' + out + '</g>';
+  }
+  function glyphWidth(str) { let w = 0; for (const ch of str) { const g = GL[ch]; w += (g ? g.w : 14) + 8; } return w - 8; }
+
+  // ---------- Farben und Häuser ----------
+  const WALL = ['#FFD23F', '#8FD0EE', '#F7A21B', '#FFF8EE', '#F59AC4', '#8ED9B0'];
+  const ROOF = ['#E0402F', '#63CE93', '#B8A2E6', '#F59AC4', '#F7A21B', '#8FD0EE'];
+  const SKY = ['#FFF0C2', '#D9F2E3', '#FFE0EC', '#E3DAF8', '#D6EEF9'];
+  const FONT = 'font-family="Dela Gothic One, Arial Black, sans-serif"';
+  function colors(v, seed) {
+    const w = WALL[(v * 5 + seed) % 6];
+    let r = ROOF[(v * 3 + seed * 2 + 1) % 6];
+    if (r === w) r = ROOF[(v * 3 + seed * 2 + 2) % 6];
+    return { w, r };
+  }
+  // kleines Haus für die Straßen: Dach, Schornstein, Wand, Schild mit der Hausnummer
+  function houseSVG(v, seed, flags) {
+    const c = colors(v, seed), sd = v * 13 + seed * 7 + 3;
+    const txt = String(v), fs = txt.length > 1 ? 17 : 23;
+    let s = '<svg viewBox="0 0 50 64" aria-hidden="true">';
+    s += '<path d="' + poly([[36, 18], [36, 5], [43, 5], [43, 24]], .8, sd + 1) + '" fill="' + c.r + '" stroke="' + INK + '" stroke-width="3" stroke-linejoin="round"/>';
+    s += '<path d="' + poly([[5, 27], [5, 61], [45, 61], [45, 27]], 1.2, sd) + '" fill="' + c.w + '" stroke="' + INK + '" stroke-width="3" stroke-linejoin="round"/>';
+    s += '<path d="' + poly([[1, 29], [25, 4], [49, 29]], 1.2, sd + 2) + '" fill="' + c.r + '" stroke="' + INK + '" stroke-width="3" stroke-linejoin="round"/>';
+    s += '<path d="' + poly([[10, 35], [10, 58], [40, 58], [40, 35]], .8, sd + 3) + '" fill="#FFF8EE" stroke="' + INK + '" stroke-width="2" stroke-linejoin="round"/>';
+    s += '<text x="25" y="' + (txt.length > 1 ? 53 : 55) + '" text-anchor="middle" font-size="' + fs + '" fill="' + INK + '" ' + FONT + '>' + txt + '</text>';
+    if (flags && flags.bis) s += '<circle cx="42" cy="14" r="9" fill="#F59AC4" stroke="' + INK + '" stroke-width="2.5"/><text x="42" y="19" text-anchor="middle" font-size="13" fill="' + INK + '" ' + FONT + '>b</text>';
+    if (flags && flags.lock) s += '<path d="' + burst(8, 12, 5.5, 10, 6, sd) + '" fill="#63CE93" stroke="' + INK + '" stroke-width="2" stroke-linejoin="round"/>';
+    return s + '</svg>';
+  }
+  function miniHouse(ok, seed) {
+    const sd = seed * 11 + 5;
+    return '<svg viewBox="0 0 12 15" aria-hidden="true"><path class="w" d="' + poly([[1.5, 7], [1.5, 14], [10.5, 14], [10.5, 7]], .2, sd) + '" fill="#FFF8EE" stroke="' + INK + '" stroke-width="1.3" stroke-linejoin="round"/>' +
+      '<path d="' + poly([[.5, 8], [6, 1.5], [11.5, 8]], .2, sd + 1) + '" fill="' + ROOF[seed % 6] + '" stroke="' + INK + '" stroke-width="1.3" stroke-linejoin="round"/></svg>';
+  }
+  function fenceSVG() {
+    return '<svg viewBox="0 0 8 30" preserveAspectRatio="none" aria-hidden="true"><path d="M1 29V8L4 2L7 8V29Z" fill="#E0402F" stroke="' + INK + '" stroke-width="1.6" stroke-linejoin="round"/><path d="M1.5 14H6.5M1.5 21H6.5" stroke="#FFF8EE" stroke-width="1.6"/></svg>';
+  }
+  function parkSVG(on, sd) {
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + blob(12, 11, 10, 10, 8, .1, sd) + '" fill="' + (on ? '#63CE93' : 'rgba(255,255,255,.5)') + '" stroke="' + INK + '" stroke-width="1.8"/></svg>';
+  }
+  function poolSVG(on, sd) {
+    return '<svg viewBox="0 0 28 17" aria-hidden="true"><path d="' + blob(14, 8.5, 12, 6.2, 8, .1, sd) + '" fill="' + (on ? '#8FD0EE' : 'rgba(255,255,255,.35)') + '" stroke="' + INK + '" stroke-width="1.8"' + (on ? '' : ' stroke-dasharray="3 2"') + '/>' +
+      (on ? '<path d="M7 9Q10 6 13 9T19 9T23 8" fill="none" stroke="' + INK + '" stroke-width="1.4" stroke-linecap="round"/>' : '') + '</svg>';
+  }
+
+  // ---------- Bilder: Karten mit Hausnummer und Effekt-Figuren ----------
+  const EF = {
+    fence: { name: 'Geometer', act: 'Zaun in einer Straße', info: 'Geometer: Zieh einen Zaun zwischen zwei Bauplätzen einer Straße, egal wo. Zäune begrenzen die Siedlungen. Sie zählen am Ende, wenn alle Häuser dazwischen eine Nummer haben (höchstens 6).' },
+    agent: { name: 'Immobilien­makler', act: 'Siedlungswert steigern', info: 'Immobilienmakler: Streiche in einer Spalte deiner Wahl den obersten Wert. Jede fertige Siedlung dieser Größe bringt am Ende den kleinsten noch sichtbaren Wert.' },
+    park: { name: 'Landschafts­gärtner', act: 'Park in dieser Straße', info: 'Landschaftsgärtner: Hake in der Straße, in der du gebaut hast, den nächsten Park ab (2, 4, 10 usw.).' },
+    pool: { name: 'Swimmingpool', act: 'Pool, wenn Poolplatz', info: 'Swimmingpool: Steht dein Haus auf einem Bauplatz mit Pool-Symbol (unter der Straße), wird der Pool gebaut und die nächste Poolzahl abgehakt.' },
+    temp: { name: 'Zeitarbeit', act: 'Nummer ±1 oder ±2', info: 'Agentur für Zeitarbeit: Erhöhe oder verringere die Hausnummer um 1 oder 2 (0 bis 17 möglich). Jeder Zeitarbeiter wird gezählt. Ab 6 Zeitarbeitern gibt es 7 Punkte.' },
+    bis: { name: 'Doppelte Nummer', act: 'Haus doppeln', info: 'Doppelte Hausnummern: Kopiere die Nummer irgendeines Hauses auf ein freies Nachbarfeld in derselben Siedlung. Das kostet am Ende Punkte, immer mehr.' }
+  };
+  const EFFECT_SVG = {
+    // Geometer: Männchen mit Helm und Messlatte
+    fence: function () {
+      return '<path d="M5 44V30" stroke="' + INK + '" stroke-width="3" stroke-linecap="round"/><path d="M5 38H14M5 32H14" stroke="#E0402F" stroke-width="3"/>' +
+        '<path d="M15 45V30Q15 24 24 24Q33 24 33 30V45Z" fill="#F7A21B" stroke="' + INK + '" stroke-width="2.5" stroke-linejoin="round"/>' +
+        '<circle cx="24" cy="15" r="8.5" fill="#FFD9B3" stroke="' + INK + '" stroke-width="2.5"/>' +
+        '<path d="M14.5 14Q14.5 5 24 5Q33.5 5 33.5 14Z" fill="#FFD23F" stroke="' + INK + '" stroke-width="2.5" stroke-linejoin="round"/>' +
+        '<circle cx="20.5" cy="16.5" r="1.4" fill="' + INK + '"/><circle cx="27.5" cy="16.5" r="1.4" fill="' + INK + '"/><path d="M21 20Q24 22.5 27 20" fill="none" stroke="' + INK + '" stroke-width="1.8" stroke-linecap="round"/>' +
+        '<path d="M33 36L44 36M39 36V44M35 36V44M43 36V44" stroke="' + INK + '" stroke-width="2.6" stroke-linecap="round"/><path d="M33 31H45V37H33Z" fill="#E0402F" stroke="' + INK + '" stroke-width="2.2" stroke-linejoin="round"/>';
+    },
+    // Immobilienmakler: Männchen im Anzug mit Schlüssel
+    agent: function () {
+      return '<path d="M14 45V30Q14 24 24 24Q34 24 34 30V45Z" fill="#8FD0EE" stroke="' + INK + '" stroke-width="2.5" stroke-linejoin="round"/>' +
+        '<path d="M24 25L21 29L24 41L27 29Z" fill="#E0402F" stroke="' + INK + '" stroke-width="2" stroke-linejoin="round"/>' +
+        '<circle cx="24" cy="14" r="8.5" fill="#FFD9B3" stroke="' + INK + '" stroke-width="2.5"/>' +
+        '<path d="M15 11Q15 4.5 24 4.5Q33 4.5 33 11Q28 8 24 9Q20 8 15 11Z" fill="' + INK + '"/>' +
+        '<circle cx="20.5" cy="15.5" r="1.4" fill="' + INK + '"/><circle cx="27.5" cy="15.5" r="1.4" fill="' + INK + '"/><path d="M20 19Q24 23 28 19" fill="none" stroke="' + INK + '" stroke-width="1.8" stroke-linecap="round"/>' +
+        '<circle cx="39" cy="33" r="4.5" fill="#FFD23F" stroke="' + INK + '" stroke-width="2.3"/><path d="M39 37.5V46M39 42H43M39 45H42" stroke="' + INK + '" stroke-width="2.3" stroke-linecap="round"/>';
+    },
+    // Landschaftsgärtner: Palme und Bäumchen
+    park: function () {
+      return '<path d="M14 45Q14 36 22 33Q30 36 30 45Z" fill="#B8A2E6" stroke="' + INK + '" stroke-width="2.5" stroke-linejoin="round"/>' +
+        '<path d="M22 33V19" stroke="' + INK + '" stroke-width="3" stroke-linecap="round"/>' +
+        '<path d="M22 19Q10 21 6 28Q14 24 22 20ZM22 19Q34 21 38 28Q30 24 22 20ZM22 19Q16 8 8 8Q14 12 22 18ZM22 19Q28 8 36 8Q30 12 22 18Z" fill="#63CE93" stroke="' + INK + '" stroke-width="2" stroke-linejoin="round"/>' +
+        '<circle cx="40" cy="38" r="5" fill="#F59AC4" stroke="' + INK + '" stroke-width="2.3"/><circle cx="40" cy="38" r="1.6" fill="#FFD23F"/><path d="M40 43V47" stroke="' + INK + '" stroke-width="2.2" stroke-linecap="round"/>';
+    },
+    // Swimmingpool: Becken mit Schwimmring
+    pool: function () {
+      return '<path d="' + blob(24, 33, 21, 11, 8, .06, 4) + '" fill="#8FD0EE" stroke="' + INK + '" stroke-width="2.6"/>' +
+        '<path d="M9 34Q14 29 19 34T29 34T39 33" fill="none" stroke="' + INK + '" stroke-width="2" stroke-linecap="round"/>' +
+        '<circle cx="30" cy="28" r="6" fill="none" stroke="#E0402F" stroke-width="4.6"/><circle cx="30" cy="28" r="6" fill="none" stroke="' + INK + '" stroke-width="1" stroke-dasharray="3 4"/>' +
+        '<path d="M10 22V11Q10 7 14 7M16 22V11" fill="none" stroke="' + INK + '" stroke-width="2.4" stroke-linecap="round"/><path d="M10 13H16M10 18H16" stroke="' + INK + '" stroke-width="2" stroke-linecap="round"/>';
+    },
+    // Zeitarbeit: orangefarbene Baustellenraute mit müdem Gesicht
+    temp: function () {
+      return '<path d="M24 3L45 24L24 45L3 24Z" fill="#F7A21B" stroke="' + INK + '" stroke-width="2.7" stroke-linejoin="round"/>' +
+        '<path d="M11 20H37V28H11Z" fill="#FFF8EE" stroke="' + INK + '" stroke-width="2.2" stroke-linejoin="round"/><path d="M16 20L21 28M24 20L29 28M32 20L37 28" stroke="#E0402F" stroke-width="3"/>' +
+        '<path d="M19 33Q24 37 29 33" fill="none" stroke="' + INK + '" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="13" r="1.4" fill="' + INK + '"/><circle cx="28" cy="13" r="1.4" fill="' + INK + '"/>';
+    },
+    // Doppelte Hausnummer: rosa Briefkasten mit Fähnchen
+    bis: function () {
+      return '<path d="M12 45V32" stroke="' + INK + '" stroke-width="3.2" stroke-linecap="round"/>' +
+        '<path d="M5 32V22Q5 11 18 11H30Q43 11 43 22V32Z" fill="#F59AC4" stroke="' + INK + '" stroke-width="2.7" stroke-linejoin="round"/>' +
+        '<path d="M36 11V3H44V8H36" fill="#E0402F" stroke="' + INK + '" stroke-width="2.2" stroke-linejoin="round"/>' +
+        '<text x="24" y="28" text-anchor="middle" font-size="12" fill="' + INK + '" ' + FONT + '>BIS</text>';
+    }
+  };
+  const effSVG = e => '<svg viewBox="0 0 48 48" aria-hidden="true">' + EFFECT_SVG[e]() + '</svg>';
+  // Die Hausnummern-Seite der Baukarte: ein Häuschen mit Nummernschild und Kleinkram drumherum
+  function sceneSVG(n, seed) {
+    const sd = n * 17 + seed * 5 + 9, c = colors(n, seed), R = rng(sd);
+    const txt = String(n), fs = txt.length > 1 ? 25 : 32;
+    let s = '<svg viewBox="0 0 120 84" aria-hidden="true">';
+    s += '<rect width="120" height="84" fill="' + SKY[n % 5] + '"/>';
+    const k = n % 4;
+    if (k === 0 || k === 2) s += '<path d="' + burst(100, 14, 7, 13, 8, sd) + '" fill="#FFD23F" stroke="' + INK + '" stroke-width="2.4" stroke-linejoin="round"/>';
+    else s += '<path d="' + blob(98, 15, 15, 7.5, 7, .1, sd) + '" fill="#FFF8EE" stroke="' + INK + '" stroke-width="2.4"/>';
+    s += '<path d="M0 66Q30 58 60 64T120 62V84H0Z" fill="#8ED9B0" stroke="' + INK + '" stroke-width="2.6"/>';
+    // Baum links oder rechts
+    const tx = (n % 2) ? 12 : 108;
+    s += '<path d="M' + tx + ' 68V50" stroke="' + INK + '" stroke-width="4" stroke-linecap="round"/><path d="' + blob(tx, 40, 11, 12, 8, .12, sd + 4) + '" fill="#63CE93" stroke="' + INK + '" stroke-width="2.6"/>' +
+      '<circle cx="' + (tx - 3) + '" cy="38" r="1.6" fill="' + INK + '"/><circle cx="' + (tx + 4) + '" cy="44" r="1.6" fill="' + INK + '"/>';
+    // Haus
+    s += '<path d="' + poly([[80, 36], [80, 14], [90, 14], [90, 40]], .8, sd + 1) + '" fill="' + c.r + '" stroke="' + INK + '" stroke-width="2.6" stroke-linejoin="round"/>';
+    s += '<path d="' + poly([[28, 40], [28, 72], [92, 72], [92, 40]], 1.5, sd) + '" fill="' + c.w + '" stroke="' + INK + '" stroke-width="3" stroke-linejoin="round"/>';
+    s += '<path d="' + poly([[20, 42], [60, 8], [100, 42]], 1.5, sd + 2) + '" fill="' + c.r + '" stroke="' + INK + '" stroke-width="3" stroke-linejoin="round"/>';
+    // Rauchkringel
+    s += '<path d="M85 11Q80 6 85 2Q91 -1 88 -5" transform="translate(0 6)" fill="none" stroke="' + INK + '" stroke-width="2" stroke-linecap="round" opacity=".55"/>';
+    // Nummernschild
+    s += '<path d="' + poly([[38, 44], [38, 70], [82, 70], [82, 44]], 1, sd + 3) + '" fill="#FFF8EE" stroke="' + INK + '" stroke-width="2.6" stroke-linejoin="round"/>';
+    s += '<text x="60" y="' + (txt.length > 1 ? 66 : 68) + '" text-anchor="middle" font-size="' + fs + '" fill="' + INK + '" ' + FONT + '>' + txt + '</text>';
+    // Fensterchen mit Blümchen
+    s += '<path d="M30 27L42 27L42 35L30 35Z" fill="#8FD0EE" stroke="' + INK + '" stroke-width="2"/>';
+    // Extras je nach Nummer
+    if (k === 1) s += '<ellipse cx="26" cy="78" rx="9" ry="5" fill="#FFB86B" stroke="' + INK + '" stroke-width="2"/><path d="M19 74L21 69L24 73M29 73L32 69L33 74" fill="#FFB86B" stroke="' + INK + '" stroke-width="2" stroke-linejoin="round"/><circle cx="23" cy="77" r="1" fill="' + INK + '"/><circle cx="29" cy="77" r="1" fill="' + INK + '"/>';
+    if (k === 3) s += '<path d="M14 78V72M20 78V70M26 78V73" stroke="' + INK + '" stroke-width="2" stroke-linecap="round"/><circle cx="14" cy="70" r="3.2" fill="#F59AC4" stroke="' + INK + '" stroke-width="1.6"/><circle cx="20" cy="68" r="3.2" fill="#FFD23F" stroke="' + INK + '" stroke-width="1.6"/><circle cx="26" cy="71" r="3.2" fill="#B8A2E6" stroke="' + INK + '" stroke-width="1.6"/>';
+    if (k === 0 || k === 2) s += '<path d="M96 80Q103 74 108 80" fill="none" stroke="' + INK + '" stroke-width="2.2" stroke-linecap="round"/>';
+    return s + '</svg>';
+  }
+  function birdSVG() {
+    return '<svg viewBox="0 0 64 64" aria-hidden="true">' +
+      '<path d="M26 8Q28 2 31 8Q34 1 37 9" fill="none" stroke="' + INK + '" stroke-width="3" stroke-linecap="round"/>' +
+      '<path d="M22 56L21 62M34 56L35 62M18 62H24M32 62H38" stroke="' + INK + '" stroke-width="3" stroke-linecap="round"/>' +
+      '<path d="' + blob(30, 34, 22, 21, 8, .06, 5) + '" fill="#F59AC4" stroke="' + INK + '" stroke-width="3"/>' +
+      '<path d="M46 30L61 33L47 40Z" fill="#F7A21B" stroke="' + INK + '" stroke-width="3" stroke-linejoin="round"/>' +
+      '<circle cx="38" cy="28" r="5" fill="#FFF8EE" stroke="' + INK + '" stroke-width="2.5"/><circle cx="39" cy="28.5" r="2" fill="' + INK + '"/>' +
+      '<path d="M14 34Q24 26 30 40Q22 48 14 42Z" fill="#B8A2E6" stroke="' + INK + '" stroke-width="3" stroke-linejoin="round"/></svg>';
+  }
+  function coverSVG() {
+    let s = '<svg class="cover" id="coverArt" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bunte Häuser mit Nummernschildern, Bäumen und einem Pool">';
+    s += '<rect width="600" height="800" fill="#B8A2E6"/>';
+    s += '<path d="M0 520C90 470 190 545 300 505S520 470 600 520L600 800L0 800Z" fill="#F59AC4" stroke="' + INK + '" stroke-width="5"/>';
+    for (let x = -10; x < 640; x += 44) s += '<circle cx="' + (x + 22) + '" cy="668" r="24" fill="#8ED9B0" stroke="' + INK + '" stroke-width="5"/>';
+    s += '<rect x="-10" y="672" width="620" height="140" fill="#8ED9B0"/>';
+    s += '<path d="' + burst(486, 336, 70, 100, 13, 7) + '" fill="#F7A21B" stroke="' + INK + '" stroke-width="5" stroke-linejoin="round"/>';
+    s += '<circle cx="486" cy="336" r="46" fill="#FFD23F" stroke="' + INK + '" stroke-width="5"/>';
+    s += '<path d="M468 330Q476 322 484 330M492 330Q500 322 508 330" stroke="' + INK + '" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M474 350Q488 362 502 350" stroke="' + INK + '" stroke-width="5" fill="none" stroke-linecap="round"/>';
+    s += '<path d="' + spiral(90, 410, 52, 2.6) + '" fill="none" stroke="#E0402F" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>';
+    s += '<path d="' + blob(250, 372, 78, 52, 9, .13, 3) + '" fill="#F59AC4" stroke="' + INK + '" stroke-width="5"/>';
+    s += '<path d="' + blob(250, 372, 38, 24, 7, .12, 4) + '" fill="#FFF8EE" stroke="' + INK + '" stroke-width="5"/>';
+    s += '<path d="' + burst(336, 456, 14, 28, 8, 11) + '" fill="#63CE93" stroke="' + INK + '" stroke-width="4.5" stroke-linejoin="round"/>';
+    s += '<path d="' + burst(160, 442, 11, 22, 7, 12) + '" fill="#FFD23F" stroke="' + INK + '" stroke-width="4.5" stroke-linejoin="round"/>';
+    [[26, 12, 0], [166, 3, 1], [308, 7, 2], [452, 1, 3]].forEach(([x, num, i]) => {
+      const w = [112, 108, 110, 114][i], h = [86, 104, 80, 96][i], body = [WALL[0], WALL[1], WALL[2], WALL[3]][i], roof = [ROOF[0], ROOF[1], ROOF[2], ROOF[3]][i], base = 664, top = base - h, apex = top - w * .42, sd = 20 + i * 10;
+      s += '<path d="' + poly([[x, base], [x, top], [x + w, top], [x + w, base]], 2.2, sd) + '" fill="' + body + '" stroke="' + INK + '" stroke-width="5" stroke-linejoin="round"/>';
+      s += '<path d="' + poly([[x - 9, top + 3], [x + w / 2, apex], [x + w + 9, top + 3]], 2.2, sd + 1) + '" fill="' + roof + '" stroke="' + INK + '" stroke-width="5" stroke-linejoin="round"/>';
+      s += '<path d="' + poly([[x + w * .62, base], [x + w * .62, base - h * .46], [x + w * .86, base - h * .46], [x + w * .86, base]], 1.6, sd + 2) + '" fill="#FFF8EE" stroke="' + INK + '" stroke-width="4"/>';
+      s += '<path d="' + poly([[x + w * .12, top + h * .2], [x + w * .12, top + h * .52], [x + w * .42, top + h * .52], [x + w * .42, top + h * .2]], 1.4, sd + 3) + '" fill="#8FD0EE" stroke="' + INK + '" stroke-width="4"/>';
+      const pw = 46, px = x + w * .5 - pw / 2 - 6, py = top + h * .58;
+      s += '<path d="' + poly([[px, py], [px, py + 26], [px + pw, py + 26], [px + pw, py]], 1.2, sd + 4) + '" fill="#FFF8EE" stroke="' + INK + '" stroke-width="3.5" stroke-linejoin="round"/>';
+      s += '<text x="' + (px + pw / 2) + '" y="' + (py + 22) + '" text-anchor="middle" font-size="' + (String(num).length > 1 ? 21 : 25) + '" fill="' + INK + '" ' + FONT + '>' + num + '</text>';
+    });
+    s += '<path d="M148 650V624" stroke="' + INK + '" stroke-width="7" stroke-linecap="round"/><path d="' + blob(148, 596, 24, 26, 9, .14, 61) + '" fill="#63CE93" stroke="' + INK + '" stroke-width="5"/>';
+    s += '<path d="M436 660V634" stroke="' + INK + '" stroke-width="7" stroke-linecap="round"/><path d="' + blob(436, 606, 22, 24, 9, .14, 62) + '" fill="#63CE93" stroke="' + INK + '" stroke-width="5"/>';
+    s += '<path d="' + blob(300, 742, 92, 30, 10, .08, 70) + '" fill="#8FD0EE" stroke="' + INK + '" stroke-width="5"/>';
+    s += '<path d="M236 738Q254 726 272 738T308 738T344 738" fill="none" stroke="' + INK + '" stroke-width="4.5" stroke-linecap="round"/>';
+    for (let i = 0; i < 6; i++) { const x = 28 + i * 22; s += '<path d="' + poly([[x, 774], [x, 726], [x + 8, 716], [x + 16, 726], [x + 16, 774]], 1.3, 80 + i) + '" fill="#E0402F" stroke="' + INK + '" stroke-width="4" stroke-linejoin="round"/>'; }
+    s += '<path d="M24 736L148 736M24 758L148 758" stroke="' + INK + '" stroke-width="4.5" stroke-linecap="round"/>';
+    const t1 = 'Siedler', t2 = 'hain.', SC = 1.45, w1 = glyphWidth(t1) * SC, w2 = glyphWidth(t2) * SC, x1 = (600 - w1) / 2, x2 = (600 - w2) / 2;
+    [['#FFD23F', 5, 5, 13], [INK, 0, 0, 10.5]].forEach(([c, dx, dy, sw]) => {
+      s += glyphs(t1, x1 + dx, 70 + dy, SC, sw / SC, c);
+      s += glyphs(t2, x2 + dx, 70 + 60 * SC + 22 + dy, SC, sw / SC, c);
+    });
+    return s + '</svg>';
+  }
+  const sgn = v => (v > 0 ? '+' + v : v < 0 ? '−' + Math.abs(v) : '0');
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const inf = s => ' data-info="' + esc(s) + '"';
+
+  // ---------- Speichern und Melden ----------
+  function save() {
+    if (U.tut) return;
+    try { localStorage.setItem(SAVE, JSON.stringify({ screen: S && S.phase !== 'over' ? 'game' : 'start', st: S })); } catch (e) { /* ohne Speicher weiterspielen */ }
+  }
+  function load() {
+    try { const x = JSON.parse(localStorage.getItem(SAVE) || 'null'); return x && x.st && x.st.v === 2 && x.st.houses && x.st.phase !== 'over' ? x.st : null; } catch (e) { return null; }
+  }
+  function localDate() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function myName() {
+    try { const p = (JSON.parse(localStorage.getItem('spielregal:players') || '[]') || []).filter(x => x && x.name); return p.length ? p[0].name : 'Du'; } catch (e) { return 'Du'; }
+  }
+  function bestScore() { try { const b = parseInt(localStorage.getItem(BEST + ':' + (S ? S.mode : 'solo')), 10); return isNaN(b) ? null : b; } catch (e) { return null; } }
+  function recordPlay() {
+    if (!S || S.phase !== 'over' || S.recorded || U.tut) return;
+    const total = G.score(S).total, nm = myName();
+    try {
+      const key = BEST + ':' + S.mode, old = parseInt(localStorage.getItem(key), 10);
+      S.newBest = isNaN(old) || total > old; S.prevBest = isNaN(old) ? null : old;
+      if (S.newBest) localStorage.setItem(key, String(total));
+    } catch (e) { /* egal */ }
+    const entry = { id: 'welcome-to-' + S.id, source: 'welcome-to', app: 'Siedlerhain', bggId: '233867', gameName: 'Welcome To...', date: localDate(), human: nm, solo: true,
+      results: [{ name: nm, bot: false, total }], winners: [] };
+    try {
+      const inbox = JSON.parse(localStorage.getItem(INBOX) || '[]');
+      if (!inbox.some(e => e.id === entry.id)) inbox.push(entry);
+      localStorage.setItem(INBOX, JSON.stringify(inbox));
+      S.recorded = true;
+    } catch (e) { /* egal */ }
+  }
+  function newGame(mode) { S = G.newGame(mode); S.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function themeFor(onStart) {
+    const dark = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches && document.documentElement.dataset.theme !== 'light';
+    const top = onStart ? (dark ? '#5C4A99' : '#B8A2E6') : (dark ? '#170F1F' : '#F5F2EE');
+    document.documentElement.style.backgroundColor = onStart ? top : '';
+    let tc = document.querySelector('meta[name="theme-color"]');
+    if (!tc) { tc = document.createElement('meta'); tc.name = 'theme-color'; document.head.appendChild(tc); }
+    tc.content = top;
+  }
+
+  // ---------- Lernspiel ----------
+  const TUT_HANDS = [
+    [{ n: 4, e: 'park' }, { n: 9, e: 'fence' }, { n: 14, e: 'bis' }],
+    [{ n: 7, e: 'temp' }, { n: 5, e: 'park' }, { n: 12, e: 'bis' }],
+    [{ n: 8, e: 'agent' }, { n: 11, e: 'bis' }, { n: 3, e: 'temp' }],
+    [{ n: 6, e: 'pool' }, { n: 10, e: 'fence' }, { n: 13, e: 'agent' }]
+  ];
+  const TUT = [
+    { r: 1, k: 'info', t: 'Hallo, ich bin Zippel, der Zaunkönig. Ich zeige dir in drei Runden, wie Siedlerhain geht. Du baust in drei Straßen Häuser und schreibst ihre Hausnummern auf.' },
+    { r: 1, k: 'info', t: 'Jede Runde bekommst du drei Karten. Vorne steht ein Haus mit Hausnummer, hinten ein Effekt (der Streifen unten). Du nimmst zwei verschiedene Karten: eine für die Nummer, eine für den Effekt.' },
+    { r: 1, k: 'act', a: 'pick', idx: 0, t: 'Tippe die Karte mit der 4 als Hausnummer.' },
+    { r: 1, k: 'act', a: 'pickeff', idx: 1, t: 'Jetzt der Effekt: Nimm den Geometer von der Karte mit der 9.' },
+    { r: 1, k: 'act', a: 'cell', cell: [0, 1], t: 'Setze die 4 auf das markierte Grundstück. In jeder Straße müssen die Nummern von links nach rechts größer werden.' },
+    { r: 1, k: 'act', a: 'gap', gap: 2, t: 'Der Geometer setzt einen Zaun. Tippe die markierte Stelle. Häuser zwischen zwei Zäunen sind eine Siedlung, ihre Größe steht darunter.' },
+    { r: 2, k: 'info', t: 'Eine Siedlung zählt erst, wenn alle ihre Häuser eine Nummer haben. Die drei Stadtpläne oben verlangen fertige Siedlungen bestimmter Größen. Wer sie schafft, bekommt viele Punkte, solange die Solo-Karte nicht aufgetaucht ist.' },
+    { r: 2, k: 'act', a: 'pick', idx: 0, t: 'Neue Karten. Nimm die 7 als Hausnummer.' },
+    { r: 2, k: 'act', a: 'pickeff', idx: 1, t: 'Als Effekt nimmst du den Landschaftsgärtner von der 5.' },
+    { r: 2, k: 'act', a: 'cell', cell: [0, 2], t: 'Setze die 7 rechts neben die 4. Die Siedlung links vom Zaun ist dann fast fertig.' },
+    { r: 3, k: 'info', t: 'Der Gärtner hat in der Straße einen Park angelegt: Der erste Baum oben rechts ist abgehakt. Parks bringen am Ende Punkte, und es werden immer mehr.' },
+    { r: 3, k: 'act', a: 'pick', idx: 2, t: 'Nimm die 3 als Hausnummer. Sie passt ganz links.' },
+    { r: 3, k: 'act', a: 'pickeff', idx: 0, t: 'Als Effekt nimmst du den Immobilienmakler von der 8.' },
+    { r: 3, k: 'act', a: 'cell', cell: [0, 0], t: 'Setze die 3 ganz nach links. Damit ist die Siedlung mit drei Häusern fertig.' },
+    { r: 3, k: 'act', a: 'size', size: 3, t: 'Der Makler steigert den Wert einer Siedlungsgröße. Tippe die 3: Jede fertige Siedlung mit drei Häusern bringt jetzt mehr Punkte.' },
+    { r: 4, k: 'info', last: true, t: 'Geschafft. Es gibt noch Swimmingpools (Poolplätze unter der Straße), Zeitarbeit (Nummer ändern, ab 6 Zeitarbeitern 7 Punkte) und Doppelte Hausnummern (kosten Punkte). Passt eine Nummer nirgends, wird der Bauantrag abgelehnt. Viel Spaß beim Bauen!' }
+  ];
+  function tutSync() {
+    if (!U.tut || !S) return;
+    while (U.tut.step < TUT.length - 1 && TUT[U.tut.step].r < S.round) U.tut.step++;
+    if (S.phase === 'pick' && S.tutRound !== S.round && TUT_HANDS[S.round - 1]) {
+      S.hand = TUT_HANDS[S.round - 1].map(c => ({ n: c.n, e: c.e }));
+      S.tutRound = S.round;
+    }
+  }
+  function startTut() { newGame('solo'); S.id = 'tut'; S.soloSeen = false; U.tut = { step: 0 }; U.view = 'game'; U.sheet = null; tutSync(); }
+  function tutStep() { return U.tut ? TUT[U.tut.step] : null; }
+  function tutAllow(a, d) {
+    if (a === 'tutnext' || a === 'tutquit') return true;
+    const st = TUT[U.tut.step];
+    if (st.k !== 'act' || a !== st.a) return false;
+    if (st.idx != null) return +d.i === st.idx;
+    if (st.cell) return +d.s === st.cell[0] && +d.i === st.cell[1];
+    if (st.gap != null) return +d.g === st.gap;
+    if (st.size != null) return +d.size === st.size;
+    return true;
+  }
+  const hl = (a, test) => { const st = tutStep(); return st && st.k === 'act' && st.a === a && test(st) ? ' tut-hl' : ''; };
+
+  // ---------- Bausteine ----------
+  function header(sc) {
+    const left = S.mode === 'solo' ? G.realLeft(S) : null;
+    return '<div class="thead"><a class="leave" href="../" aria-label="Zurück zum Spielregal"' + inf('Zurück zum Spielregal') + '>‹</a><h1>Siedlerhain.</h1>' +
+      '<div class="pill"' + inf(S.mode === 'solo' ? 'Runde. Es gibt 27 Runden, dann ist der Kartenstapel aufgebraucht.' : 'Runde: So viele Runden hast du schon gespielt.') + '><b>' + S.round + (S.mode === 'solo' ? '/27' : '') + '</b><small>Runde</small></div>' +
+      '<div class="pill pts"' + inf('Deine Punkte jetzt. Die Zwischenwertung findest du unten.') + '><b>' + sc.total + '</b><small>Punkte</small></div>' +
+      (U.tut ? '<button class="mbtn" data-a="tutquit" aria-label="Lernspiel beenden"' + inf('Lernspiel beenden') + '>✕</button>'
+        : '<button class="mbtn" data-a="menu" aria-label="Menü">☰</button>') + '</div>';
+  }
+
+  function plans() {
+    let h = '<section><p class="label">Stadtpläne: fertige Siedlungen dieser Größen</p><div class="plans">';
+    for (let k = 0; k < 3; k++) {
+      const c = G.planCard(S, k), p = G.planProgress(S, k), d = S.planDone[k];
+      const late = !d && S.soloSeen;
+      const used = {};
+      const ests = p.req.map((sz, i) => {
+        let hs = '';
+        for (let j = 0; j < sz; j++) hs += miniHouse(p.filled[i] || !!d, k * 3 + j + sz);
+        return '<span class="pe' + (p.filled[i] || d ? ' ok' : '') + '">' + hs + '</span>';
+      }).join('');
+      h += '<article class="plan' + (d ? ' done' : '') + (late ? ' late' : '') + '"' + inf('Stadtplan ' + (k + 1) + ': Baue fertige Siedlungen der Größen ' + p.req.join(', ') + '. Das gibt ' + c.first + ' Punkte' +
+        (S.mode === 'solo' ? ', solange die Solo-Karte noch nicht aufgetaucht ist. Danach gilt der Plan als von der Konkurrenz erfüllt.' : '.')) + '><div class="ph"><b>Plan ' + (k + 1) + '</b><span class="oct">' + (d ? '+' + d.pts : c.first) + '</span></div><div class="pest">' + ests + '</div>' +
+        (late ? '<span class="stamp">Zu spät</span>' : '') + '</article>';
+    }
+    h += '</div>';
+    if (S.mode === 'solo') h += '<p class="note">' + (S.soloSeen ? 'Die Solo-Karte ist aufgetaucht: Die Konkurrenz hat alle offenen Pläne erfüllt.' : 'Pläne zählen nur, bis die Solo-Karte im Stapel auftaucht.') + '</p>';
+    return h + '</section>';
+  }
+
+  function street(s) {
+    const n = G.LEN[s], row = S.houses[s], ph = S.phase;
+    const valid = new Set(), srcs = new Set();
+    if (ph === 'place') G.validSlots(S, S.sel.n).forEach(p => { if (p[0] === s) valid.add(p[1]); });
+    if (ph === 'bis') {
+      const ts = G.bisTargets(S);
+      if (!S.sel.src) ts.forEach(t => { if (t.s === s) valid.add(t.i); });
+      else if (S.sel.src.s === s) ts.forEach(t => { if (t.s === s && t.i === S.sel.src.i) valid.add(t.q); });
+    }
+    const fenceMode = ph === 'fence' && S.sel.pos.s === s;
+    let cells = '';
+    row.forEach((v, i) => {
+      const ok = valid.has(i), full = v !== null;
+      const isSrc = ph === 'bis' && S.sel.src && S.sel.src.s === s && S.sel.src.i === i;
+      let cls = 'house ' + (full ? 'full' : 'empty') + (ok ? ' ok' : '') + (isSrc ? ' src' : '');
+      const ph2 = hl('cell', st => st.cell[0] === s && st.cell[1] === i);
+      cls += ph2;
+      const tip = full ? 'Hausnummer ' + v + ' in ' + NAMES[s] + '.' + (S.bisH[s][i] ? ' Doppelte Hausnummer: kostet Punkte.' : '') + (S.lock[s][i] ? ' Gehört zu einem erfüllten Stadtplan.' : '') : 'Freier Bauplatz. Die Nummern müssen in dieser Straße von links nach rechts aufsteigen.';
+      const inner = full ? houseSVG(v, s, { bis: S.bisH[s][i], lock: S.lock[s][i] }) : (ok ? '<span class="ghost">' + S.sel.n + '</span>' : '');
+      cells += '<button class="' + cls + '" data-a="cell" data-s="' + s + '" data-i="' + i + '" data-v="' + (full ? v : '') + '"' + inf(tip) + (ok ? '' : ' disabled tabindex="-1"') +
+        ' aria-label="' + NAMES[s] + ', Feld ' + (i + 1) + (full ? ', Nummer ' + v : ', frei') + '">' + inner + '</button>';
+    });
+    let fences = '';
+    const free = fenceMode ? G.freeGaps(S, s) : [];
+    S.fences[s].forEach((f, g) => {
+      if (f) fences += '<i class="fence" data-s="' + s + '" data-g="' + g + '" style="--k:' + (g + 1) + '">' + fenceSVG() + '</i>';
+      else if (fenceMode && free.indexOf(g) >= 0) fences += '<button class="gap' + hl('gap', st => st.gap === g) + '" data-a="gap" data-g="' + g + '" style="--k:' + (g + 1) + '" aria-label="Zaun zwischen Feld ' + (g + 1) + ' und ' + (g + 2) + '"></button>';
+    });
+    const pools = G.POOL_SPOTS[s].map(i => '<span class="pool" style="grid-column:' + (i + 1) + '"' + inf(S.pools[s][i] ? 'Pool gebaut.' : 'Poolplatz: Mit dem Swimmingpool-Effekt baust du hier einen Pool, wenn dein Haus auf diesem Bauplatz steht.') + '>' + poolSVG(S.pools[s][i], s * 9 + i) + '</span>').join('');
+    const ests = G.estates(S, s).map(e => '<span class="est' + (e.complete ? ' done' : '') + '" style="grid-column:' + (e.a + 1) + ' / span ' + e.size + '"' +
+      inf('Siedlung aus ' + e.size + ' Häusern' + (e.complete ? ', fertig bebaut.' : '. Sie zählt, sobald alle Häuser eine Nummer haben.') + (e.size > 6 ? ' Mehr als 6 Häuser zählen nicht.' : '')) + '><b>' + e.size + '</b></span>').join('');
+    const ptoks = G.PARK_VALUES[s].map((v, k) => '<span class="ptok' + (k < S.parks[s] ? ' on' : '') + '"' + inf('Park ' + (k + 1) + ': Mit ' + (k + 1) + ' Parks in dieser Straße bekommst du ' + v + ' Punkte.') + '>' + parkSVG(k < S.parks[s], s * 5 + k) + '<span>' + v + '</span></span>').join('');
+    return '<section class="street" data-s="' + s + '"><div class="shead"><h3>' + NAMES[s] + '<span>' + n + ' Häuser</span></h3><div class="parks">' + ptoks + '</div></div>' +
+      '<div class="row" style="--n:' + n + '">' + cells + fences + '</div><div class="poolrow" style="--n:' + n + '">' + pools + '</div><div class="estrow" style="--n:' + n + '">' + ests + '</div></section>';
+  }
+
+  function lines(sc) {
+    return '<table class="lines">' + sc.lines.map(l => '<tr class="' + (l.pts < 0 ? 'neg' : '') + '"><td>' + l.label + '<span class="d">' + l.detail + '</span></td><td>' + sgn(l.pts) + '</td></tr>').join('') +
+      '<tr><td><b>Summe</b></td><td>' + sc.total + '</td></tr></table>';
+  }
+
+  function stats(sc) {
+    const counts = G.completedCounts(S);
+    let h = '<section class="stats"><p class="label">Siedlungswerte (der Makler erhöht sie)</p><div class="estgrid">';
+    for (let k = 0; k < 6; k++) {
+      const max = G.EST_VALUES[k].length - 1;
+      let pips = '';
+      for (let j = 0; j < max; j++) pips += '<i class="pip' + (j < S.marks[k] ? ' on' : '') + '"></i>';
+      h += '<div class="cell"' + inf('Fertige Siedlungen der Größe ' + (k + 1) + ' zählen je ' + G.EST_VALUES[k][S.marks[k]] + ' Punkte. Die Punkte darunter zeigen, wie oft der Makler noch steigern kann.') + '><small>Größe ' + (k + 1) + '</small><b>' + G.EST_VALUES[k][S.marks[k]] + '</b><div class="pips">' + pips +
+        '</div><small>' + counts[k + 1] + ' fertig</small></div>';
+    }
+    h += '</div><div class="cgrid">' +
+      '<div class="cell"' + inf('Swimmingpools: Je mehr du baust, desto mehr Punkte (bis 9 Pools).') + '><small>Pools</small><b>' + sc.poolCount + '</b><small>' + sgn(sc.pools) + ' Pkt</small></div>' +
+      '<div class="cell"' + inf('Zeitarbeit: Ab 6 Zeitarbeitern gibt es 7 Punkte, sonst keinen. Es gibt 11 Felder.') + '><small>Zeitarbeit</small><b>' + S.temps + '</b><small>' + sgn(sc.temps) + ' Pkt</small></div>' +
+      '<div class="cell"' + inf('Doppelte Hausnummern kosten Punkte, und es werden immer mehr.') + '><small>Doppelte</small><b>' + S.bis + '</b><small>' + sgn(sc.bis) + ' Pkt</small></div>' +
+      '<div class="cell"' + inf('Abgelehnte Bauanträge: Der erste kostet nichts, der zweite 3 Punkte, der dritte 5 Punkte und beendet das Spiel.') + '><small>Abgelehnt</small><b>' + S.refusals + '</b><small>' + sgn(sc.refusals) + ' Pkt</small></div></div>' +
+      '<details><summary>Zwischenwertung</summary>' + lines(sc) + '</details></section>';
+    return h;
+  }
+
+  const REASON = { plans: 'Alle drei Stadtpläne sind erfüllt.', refusals: 'Dritter abgelehnter Bauantrag.', full: 'Alle Häuser sind gebaut.', deck: 'Der Kartenstapel ist aufgebraucht.' };
+  function result(sc) {
+    const best = S.prevBest;
+    return '<section class="result"><svg class="stern" viewBox="0 0 120 120" aria-hidden="true"><path d="' + burst(60, 60, 38, 58, 11, 9) + '" fill="#FFD23F" stroke="' + INK + '" stroke-width="4" stroke-linejoin="round"/></svg>' +
+      '<p class="eyebrow">Spiel beendet · Runde ' + S.round + (S.mode === 'solo' ? ' · Solo' : ' · Basisspiel') + '</p><h2>' + sc.total + ' Punkte</h2>' +
+      '<p class="why">' + (REASON[S.endReason] || '') + ' ' + (S.newBest ? (best === null ? 'Das ist dein erster Wert, der Bestwert startet hier.' : 'Neuer Bestwert! Vorher: ' + best + '.') : (best !== null ? 'Dein Bestwert: ' + best + '.' : '')) + '</p>' + lines(sc) +
+      '<button class="btn pink" data-a="newsame">Neue Partie</button></section>';
+  }
+
+  function coach() {
+    if (!U.tut) return '';
+    const st = TUT[U.tut.step];
+    return '<div class="coach"><div class="cin">' + birdSVG() + '<div class="tx"><b>Zippel</b><span>' + esc(st.t) + '</span>' +
+      (st.k === 'info' ? '<div class="row2"><button class="btn sm pri" data-a="' + (st.last ? 'tutquit' : 'tutnext') + '">' + (st.last ? 'Fertig' : 'Weiter') + '</button></div>' : '') + '</div></div></div>';
+  }
+
+  function kard(c, i, o) {
+    const m = EF[c.e];
+    return '<button class="kard' + (o.dead ? ' dead' : '') + (o.chosen ? ' chosen' : '') + (o.dim ? ' dim' : '') + (o.hl || '') + '" data-a="' + o.a + '" data-i="' + i + '"' + inf('Hausnummer ' + c.n + ' vorne. Hinten: ' + m.info) + (o.dead || o.off ? ' disabled' : '') + '>' +
+      (o.tag ? '<span class="tag">' + o.tag + '</span>' : '') +
+      '<span class="scene">' + sceneSVG(c.n, i) + '</span><span class="back">' + effSVG(c.e) + '<span>' + m.name + '</span></span></button>';
+  }
+
+  function dock() {
+    const ph = S.phase;
+    let body = '';
+    const cancel = U.tut ? '' : '<button class="btn sm" data-a="cancel">Zurück</button>';
+    if (ph === 'over') {
+      body = '<div class="prompt"><p>Das Spiel ist beendet.</p><button class="btn sm pri" data-a="newsame">Neue Partie</button></div>';
+    } else if (ph === 'reshuf') {
+      body = '<div class="prompt"><p><b>Erster Plan geschafft!</b> Du darfst die 81 Baukarten neu mischen und drei neue Stapel bilden.</p></div><div class="two chips"><button class="btn sm pri" data-a="reshufyes">Neu mischen</button><button class="btn sm" data-a="reshufno">Nein, weiter</button></div>';
+    } else if (ph === 'pick') {
+      const cards = S.mode === 'solo' ? S.hand : S.combos;
+      body = '<div class="prompt"><p>' + (S.mode === 'solo' ? 'Wähle die Karte für die <b>Hausnummer</b>. Eine andere gibt dir gleich den Effekt.' : 'Wähle eine Kombination aus Hausnummer und Effekt.') + '</p></div><div class="hand">' +
+        cards.map((c, i) => kard(c, i, { a: 'pick', hl: hl('pick', st => st.idx === i) })).join('') + '</div>';
+    } else if (ph === 'pickeff') {
+      body = '<div class="prompt"><p>Hausnummer <b>' + S.sel.n + '</b>. Welche Karte gibt den <b>Effekt</b>?</p>' + cancel + '</div><div class="hand">' +
+        S.hand.map((c, i) => kard(c, i, i === S.sel.card ? { a: 'x', off: true, chosen: true, tag: 'Nummer ' + c.n } : { a: 'pickeff', hl: hl('pickeff', st => st.idx === i) })).join('') + '</div>' +
+        (U.tut ? '' : '<div class="chips"><button class="btn sm" data-a="noeff">Ohne Effekt</button></div>');
+    } else if (ph === 'refuse') {
+      body = '<div class="prompt"><p>Die Nummer <b>' + S.sel.n + '</b> passt nirgends mehr hin. Dein Bauantrag wird abgelehnt (' + (S.refusals + 1) + '. von 3, ' + ['kostenlos', '\u22123 Punkte', '\u22125 Punkte, das Spiel endet'][S.refusals] + ').' + '</p></div><div class="chips"><button class="btn sm hot" data-a="refuse">Ablehnung eintragen</button>' + cancel + '</div>';
+    } else {
+      const m = S.sel.e ? EF[S.sel.e] : null;
+      if (ph === 'adjust') {
+        const chips = G.adjustOptions(S).map(o => '<button class="chip" data-a="adj" data-d="' + o.d + '"><b>' + o.n + '</b><small>' + (o.d === 'x' ? 'ohne Zeitarbeit' : (o.d === 0 ? '±0, Zeitarbeiter' : sgn(o.d) + ', Zeitarbeiter')) + '</small></button>').join('');
+        body = '<div class="prompt"><p>Zeitarbeit: Welche Nummer bekommt das Haus?</p>' + cancel + '</div><div class="chips">' + chips + '</div>';
+      } else if (ph === 'place') {
+        body = '<div class="prompt"><p>Tippe ein gelbes Grundstück für die <b>' + S.sel.n + '</b> (' + G.validSlots(S, S.sel.n).length + ' möglich).' + (m ? ' Danach: ' + m.name + '.' : '') + '</p>' + cancel + '</div>';
+      } else {
+        const skip = '<button class="btn sm" data-a="skip">Überspringen</button>';
+        if (ph === 'fence') body = '<div class="prompt"><p>Geometer: Tippe eine gestrichelte Stelle in ' + NAMES[S.sel.pos.s] + '.</p>' + skip + '</div>';
+        else if (ph === 'bis') body = '<div class="prompt"><p>' + (S.sel.src ? 'Tippe das freie Nachbarfeld für die Kopie.' : 'Doppelte Hausnummer: Tippe das Haus, das du verdoppeln willst.') + '</p>' + (S.sel.src ? '<button class="btn sm" data-a="bisback">Anderes Haus</button>' : skip) + '</div>';
+        else if (ph === 'agent') {
+          const av = G.agentSizes(S);
+          const chips = [1, 2, 3, 4, 5, 6].map(sz => { const can = av.indexOf(sz) >= 0;
+            return '<button class="chip' + hl('size', st => st.size === sz) + '" data-a="size" data-size="' + sz + '"' + (can ? '' : ' disabled') + '><b>' + sz + '</b><small>' + (can ? G.EST_VALUES[sz - 1][S.marks[sz - 1]] + ' → ' + G.EST_VALUES[sz - 1][S.marks[sz - 1] + 1] : 'voll') + '</small></button>'; }).join('');
+          body = '<div class="prompt"><p>Immobilienmakler: Für welche Siedlungsgröße steigt der Wert?</p>' + (U.tut ? '' : skip) + '</div><div class="chips">' + chips + '</div>';
+        }
+      }
+    }
+    return '<div class="dock"><div class="dinner">' + body + '</div></div>';
+  }
+
+  const RULES = '<div class="rules">' +
+    '<h3>Ziel</h3><p>Du bist Architekt in den 50ern und baust in drei Straßen (10, 11 und 12 Häuser) Siedlungen mit Parks und Pools. Wer die meisten Punkte sammelt, ist der Stararchitekt.</p>' +
+    '<h3>Solo-Spiel (so wie in der Solo-Variante)</h3><ul>' +
+    '<li>81 Baukarten, 27 Runden. Jede Runde ziehst du drei Karten. Vorne steht eine Hausnummer, hinten ein Effekt.</li>' +
+    '<li>Du nimmst zwei verschiedene Karten: eine für die Hausnummer, eine für den Effekt. Die dritte fällt weg.</li>' +
+    '<li>Die Solo-Karte ist unter den Karten versteckt. Sobald sie auftaucht, gelten alle Stadtpläne, die du noch nicht erfüllt hast, als von der Konkurrenz erfüllt.</li>' +
+    '<li>Zeitarbeit bringt nur 7 Punkte, wenn du mindestens 6 Zeitarbeiter eingestellt hast, sonst keinen.</li></ul>' +
+    '<h3>Basisspiel allein</h3><ul>' +
+    '<li>Drei Stapel mit je 27 Karten. Jede Runde wird die oberste Karte jedes Stapels umgedreht. Die Hausnummer der neuen obersten Karte und der Effekt der umgedrehten Karte bilden eine Kombination. Du wählst eine der drei.</li>' +
+    '<li>Du bist immer der Erste bei den Stadtplänen und bekommst die hohen Punkte. Nach dem ersten Plan darfst du die Karten neu mischen. Für Zeitarbeit gilt auch hier die Regel ab 6 Zeitarbeitern, weil es keine Mitspieler zum Vergleichen gibt.</li></ul>' +
+    '<h3>Hausnummer eintragen</h3><ul>' +
+    '<li>Schreibe die Nummer in ein freies Haus einer der drei Straßen. Die Nummern müssen von links nach rechts steigen. Lücken und übersprungene Nummern sind erlaubt. Dieselbe Nummer darf in einer Straße nicht zweimal stehen.</li>' +
+    '<li>Kannst du die Nummer nirgends eintragen, wird dein Bauantrag abgelehnt. Die erste Ablehnung kostet nichts, die zweite 3 Minuspunkte, die dritte 5 Minuspunkte und beendet das Spiel. Beim abgelehnten Antrag gibt es keinen Effekt.</li></ul>' +
+    '<h3>Die Effekte (nie Pflicht)</h3><ul>' +
+    '<li><b>Geometer:</b> Setze einen Zaun zwischen zwei Bauplätze einer Straße. Zäune begrenzen Siedlungen (an den Straßenenden stehen schon welche). Mehr als 6 Häuser zählen nicht.</li>' +
+    '<li><b>Immobilienmakler:</b> Steigere den Wert einer Siedlungsgröße. Normal gibt es 1 Punkt pro Haus.</li>' +
+    '<li><b>Landschaftsgärtner:</b> Lege in der Straße des neuen Hauses einen Park an (2, 4, 10 Punkte und so weiter).</li>' +
+    '<li><b>Swimmingpool:</b> Steht das Haus auf einem Bauplatz mit Poolplatz, baust du dort einen Pool (3, 6, 9, 13 … Punkte).</li>' +
+    '<li><b>Zeitarbeit:</b> Ändere die Nummer um 1 oder 2 (0 bis 17 sind möglich). Jeder Zeitarbeiter zählt.</li>' +
+    '<li><b>Doppelte Hausnummer:</b> Kopiere die Nummer irgendeines Hauses auf ein freies Nachbarfeld in derselben Siedlung. Das gibt Minuspunkte.</li></ul>' +
+    '<h3>Siedlungen und Stadtpläne</h3><ul>' +
+    '<li>Eine Siedlung zählt, wenn alle ihre Häuser eine Nummer haben. Ein Zaun darf später keine Siedlung teilen, die schon für einen Stadtplan verwendet wurde, und diese Siedlung kann nicht für einen zweiten Plan dienen.</li>' +
+    '<li>Ein Stadtplan wird sofort gewertet, sobald du seine Siedlungen fertig hast.</li></ul>' +
+    '<h3>Ende und Wertung</h3><ul>' +
+    '<li>Das Spiel endet, wenn du den dritten Bauantrag ablehnst, alle drei Pläne erfüllt hast, alle Häuser gebaut sind (oder im Solo-Spiel der Kartenstapel aufgebraucht ist).</li>' +
+    '<li>Punkte: Stadtpläne, Parks, Pools, Zeitarbeit, fertige Siedlungen. Abzug: doppelte Hausnummern und Ablehnungen.</li></ul>' +
+    '<h3>Unterschiede zum Original</h3>' +
+    '<p class="fine">Siedlerhain baut die Regeln, die Kartenliste (81 Karten), die Stadtpläne der Basisversion, die Poolplätze und die Wertungstabellen von Welcome To… nach. Nicht enthalten sind der Mehrspielermodus, die Fortgeschrittenen- und Expertenregeln (Kreisverkehre, zusätzliche Pläne, Karten wählen und weitergeben), Erweiterungen und das AAA-Solo. Die Zeichnungen sind eigene.</p></div>';
+
+  function sheets() {
+    if (!U.sheet) return '';
+    const x = (t) => '<div class="sh"><h2 class="disp">' + t + '</h2><button class="xbtn" data-a="close" aria-label="Schließen">✕</button></div>';
+    if (U.sheet === 'menu') return '<div class="ov" data-a="close"><div class="sheet" data-stop="1">' + x('Menü') + '<div class="menu">' +
+      '<button class="btn" data-a="rules">Spielregeln</button><button class="btn" data-a="saveleave">Speichern und zum Spielregal</button><button class="btn" data-a="newask" data-mode="' + (S ? S.mode : 'solo') + '">Neustart</button><button class="tlink" data-a="reload">Neueste Version laden</button></div></div></div>';
+    if (U.sheet === 'rules') return '<div class="ov" data-a="close"><div class="sheet" data-stop="1">' + x('Spielregeln') + RULES + '</div></div>';
+    if (U.sheet === 'newask') return '<div class="ov" data-a="close"><div class="sheet" data-stop="1">' + x('Neue Partie?') + '<div class="menu"><p>' + (S && S.phase !== 'over' && U.view === 'game' ? 'Die laufende Partie wird dabei überschrieben.' : 'Die gespeicherte Partie wird dabei überschrieben.') + '</p>' +
+      '<button class="btn pri" data-a="newyes" data-mode="' + U.mode + '">Ja, ' + (U.mode === 'solo' ? 'Solo' : 'Basisspiel') + ' starten</button><button class="btn" data-a="close">Weiterspielen</button></div></div></div>';
+    return '';
+  }
+
+  function startView() {
+    const saved = load();
+    const sm = saved ? (saved.mode === 'solo' ? 'Solo' : 'Basisspiel') + ', Runde ' + saved.round : '';
+    return '<div class="start"><div class="stage">' + coverSVG() + '<a class="leave" href="../"' + inf('Zurück zum Spielregal') + '>‹ Spielregal</a></div><div class="sdock">' +
+      (saved ? '<button class="btn pri" data-a="resume">Partie fortsetzen<span class="sub">' + sm + '</span></button>' : '') +
+      '<div class="two"><button class="btn ' + (saved ? '' : 'pri') + '" data-a="start" data-mode="solo">Solo<span class="sub">27 Runden, 3 Karten</span></button><button class="btn" data-a="start" data-mode="base">Basisspiel<span class="sub">3 Kombinationen</span></button></div>' +
+      '<div class="links"><button class="tlink" data-a="tut">Lernspiel</button><button class="tlink" data-a="rules">Spielregeln lesen</button></div></div>' + sheets() + '</div>';
+  }
+
+  function gameView() {
+    const sc = G.score(S);
+    return header(sc) + '<div class="main" id="sc"><div class="wrap">' + (S.phase === 'over' ? result(sc) : '') + plans() + [0, 1, 2].map(street).join('') + stats(sc) + '</div></div>' + coach() + dock() + sheets();
+  }
+
+  // ---------- Zeichnen ----------
+  let prev = null;
+  function render() {
+    tutSync();
+    const old = document.getElementById('sc'), top = old ? old.scrollTop : 0;
+    if (U.view === 'game' && S) { app.innerHTML = gameView(); themeFor(false); } else { app.innerHTML = startView(); themeFor(true); }
+    const nw = document.getElementById('sc'); if (nw) nw.scrollTop = top;
+    if (S && S.phase === 'over' && !S.recorded) { recordPlay(); save(); if (nw) nw.scrollTop = 0; app.innerHTML = gameView(); }
+    fx();
+  }
+  function fx() {
+    if (!S || U.view !== 'game') { prev = null; return; }
+    const sc = G.score(S).total;
+    const parks = S.parks.reduce((a, b) => a + b, 0), pools = S.pools.reduce((a, r) => a + r.filter(Boolean).length, 0);
+    if (prev && prev.id === S.id) {
+      S.houses.forEach((r, s) => r.forEach((v, i) => { if (v !== null && prev.h[s][i] === null) { const el = app.querySelector('.house[data-s="' + s + '"][data-i="' + i + '"]'); if (el) el.classList.add('pop'); } }));
+      S.fences.forEach((r, s) => r.forEach((v, g) => { if (v && !prev.f[s][g]) { const el = app.querySelector('.fence[data-s="' + s + '"][data-g="' + g + '"]'); if (el) el.classList.add('pop'); } }));
+      if (sc !== prev.sc) {
+        const p = app.querySelector('.pill.pts'); if (p) { p.classList.add('bump'); const r = p.getBoundingClientRect(); floaty(sgn(sc - prev.sc), r.left + r.width / 2 - 10, r.bottom + 4); }
+      }
+      if (parks > prev.parks) note('Park angelegt!');
+      else if (pools > prev.pools) note('Pool gebaut!');
+      if (S.soloSeen && !prev.soloSeen && S.mode === 'solo') toast('Die Solo-Karte ist aufgetaucht: Offene Pläne sind weg.');
+    }
+    prev = { id: S.id, h: S.houses.map(r => r.slice()), f: S.fences.map(r => r.slice()), sc, parks, pools, soloSeen: S.soloSeen };
+  }
+  function floaty(txt, x, y) {
+    const e = document.createElement('div'); e.className = 'fl'; e.textContent = txt; e.style.left = x + 'px'; e.style.top = y + 'px';
+    document.body.appendChild(e); setTimeout(() => e.remove(), 1200);
+  }
+  let toastT = null;
+  function toast(msg, good) {
+    document.querySelectorAll('.toast').forEach(t => t.remove());
+    const t = document.createElement('div'); t.className = 'toast' + (good ? ' good' : ''); t.textContent = msg; document.body.appendChild(t);
+    clearTimeout(toastT); toastT = setTimeout(() => t.remove(), 2600);
+  }
+  const note = msg => toast(msg, true);
+  function buzz() { try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) { /* egal */ } }
+
+  // ---------- Info-Blase per langem Drücken ----------
+  let lp = null, lpFired = false;
+  function hideInfo() { document.querySelectorAll('.bub').forEach(b => b.remove()); }
+  function showInfo(el) {
+    hideInfo();
+    const b = document.createElement('div'); b.className = 'bub'; b.textContent = el.dataset.info; document.body.appendChild(b);
+    const r = el.getBoundingClientRect(), w = b.offsetWidth, h = b.offsetHeight;
+    let x = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), window.innerWidth - w - 8), y = r.top - h - 10;
+    if (y < 8) y = r.bottom + 10;
+    b.style.left = x + 'px'; b.style.top = y + 'px';
+    setTimeout(hideInfo, 4200);
+  }
+  document.addEventListener('pointerdown', e => {
+    hideInfo();
+    const t = e.target.closest && e.target.closest('[data-info]');
+    if (!t) return;
+    lp = { x: e.clientX, y: e.clientY, id: setTimeout(() => { lpFired = true; showInfo(t); buzz(); }, 450) };
+  });
+  document.addEventListener('pointermove', e => { if (lp && Math.hypot(e.clientX - lp.x, e.clientY - lp.y) > 10) { clearTimeout(lp.id); lp = null; } });
+  ['pointerup', 'pointercancel'].forEach(ev => document.addEventListener(ev, () => { if (lp) { clearTimeout(lp.id); lp = null; } }));
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('click', e => { if (lpFired) { lpFired = false; e.stopPropagation(); e.preventDefault(); } }, true);
+
+  // ---------- Eingaben ----------
+  function act(a, d) {
+    if (a === 'cell' && S && S.phase === 'bis') a = d.v !== '' ? 'bissrc' : 'bisdst';
+    if (a === 'noeff') a = 'pickeff', d = { i: '-1' };
+    if (U.tut && !tutAllow(a, d)) { const st = TUT[U.tut.step]; toast(st.k === 'act' ? st.t : 'Tippe auf „Weiter“.'); return; }
+    let ok = true;
+    const before = U.tut ? TUT[U.tut.step] : null;
+    switch (a) {
+      case 'pick': ok = G.choose(S, +d.i); break;
+      case 'pickeff': ok = G.chooseEffect(S, +d.i); break;
+      case 'adj': ok = G.adjust(S, d.d === 'x' ? 'x' : +d.d); break;
+      case 'cancel': ok = G.cancel(S); break;
+      case 'cell': ok = G.place(S, +d.s, +d.i); break;
+      case 'bissrc': ok = G.bisSource(S, +d.s, +d.i); break;
+      case 'bisdst': ok = G.placeBis(S, +d.i); break;
+      case 'bisback': S.sel.src = null; break;
+      case 'gap': ok = G.placeFence(S, +d.g); break;
+      case 'size': ok = G.markAgent(S, +d.size); break;
+      case 'skip': ok = G.skip(S); break;
+      case 'refuse': ok = G.refuse(S); break;
+      case 'reshufyes': ok = G.reshuffle(S, true); break;
+      case 'reshufno': ok = G.reshuffle(S, false); break;
+      case 'menu': U.sheet = 'menu'; render(); return;
+      case 'rules': U.sheet = 'rules'; render(); return;
+      case 'close': U.sheet = null; render(); return;
+      case 'newask': U.mode = d.mode || U.mode; U.sheet = 'newask'; render(); return;
+      case 'start': U.mode = d.mode || 'solo'; if (load()) { U.sheet = 'newask'; render(); return; } /* fall through */
+      case 'newyes': U.tut = null; newGame(d.mode || U.mode); U.mode = S.mode; U.view = 'game'; U.sheet = null; save(); render(); return;
+      case 'newsame': U.tut = null; newGame(S ? S.mode : 'solo'); U.view = 'game'; U.sheet = null; save(); render(); return;
+      case 'resume': { const s = load(); if (s) { S = s; U.view = 'game'; } render(); return; }
+      case 'tut': startTut(); render(); return;
+      case 'tutnext': U.tut.step++; render(); return;
+      case 'tutquit': U.tut = null; S = null; U.view = 'start'; prev = null; render(); return;
+      case 'saveleave': save(); location.href = '../'; return;
+      case 'reload': save(); location.replace(location.pathname + '?v=' + Date.now() + '&resume=1'); return;
+    }
+    if (ok && U.tut && before && before.k === 'act' && before.a === a) U.tut.step = Math.min(U.tut.step + 1, TUT.length - 1);
+    if (ok) { save(); buzz(); }
+    render();
+  }
+  app.addEventListener('click', ev => {
+    const stop = ev.target.closest('[data-stop]');
+    const t = ev.target.closest('[data-a]');
+    if (!t || t.disabled) return;
+    if (stop && t.classList.contains('ov')) return; // Klick im Fenster schließt nicht
+    act(t.dataset.a, t.dataset);
+  });
+
+  // ---------- Start ----------
+  (function init() {
+    const saved = load();
+    if (saved && /[?&]resume=1/.test(location.search)) { S = saved; U.view = 'game'; }
+    render();
+  })();
+})();
+</script>
+</body>
+</html>
