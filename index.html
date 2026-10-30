@@ -4732,6 +4732,7 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
               </div>
             )}
 
+            {form.expansionOf && (
             <div>
               <label className="block text-[11px] text-dim mb-1.5">Erweiterung von <span className="text-[10px]">(optional — ein Basisspiel kann mehrere Erweiterungen haben)</span></label>
               <GameSearchPicker
@@ -4743,6 +4744,7 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
                 placeholder="Basisspiel suchen…"
               />
             </div>
+            )}
 
             {initial && !form.expansionOf && (onUpdateOtherGame || onAddExpansion) && (
               <div>
@@ -8719,16 +8721,6 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
             </div>
           )}
 
-{!hidePrices && !guestMode && (game.status === "owned" || game.status === "wishlist") && (game.purchasePrice || game.purchasePlace || (game.saleStatus === "sold" && game.salePrice)) && (
-            <div className="mb-6">
-              <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1.5">{game.status === "wishlist" ? "Preis" : game.saleStatus === "sold" ? "Verkauft" : game.saleStatus === "forSale" ? "Zum Verkauf" : "Kauf"}</p>
-              <div className="flex items-center gap-x-3 gap-y-1 flex-wrap">
-                {game.purchasePrice && <span className="text-xs text-dim">{game.status === "wishlist" ? "Preis" : "Kaufpreis"}: <span className="text-ink">{game.purchasePrice} €</span></span>}
-                {game.purchasePlace && <span className="text-xs text-dim">{game.status === "wishlist" ? "Kaufen bei" : "Gekauft bei"}: <span className="text-ink">{purchasePlaceLabel(game.purchasePlace)}</span></span>}
-                {game.status === "owned" && game.saleStatus === "sold" && game.salePrice && <span className="text-xs text-dim">Verkaufspreis: <span className="text-gold">{game.salePrice} €</span></span>}
-              </div>
-            </div>
-          )}
 
           <div>
             {detailsOpen && (
@@ -8769,6 +8761,16 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                     </div>
                   </div>
                 )}
+                {!hidePrices && !guestMode && (game.status === "owned" || game.status === "wishlist") && (game.purchasePrice || game.purchasePlace || (game.saleStatus === "sold" && game.salePrice)) && (
+                    <div>
+                      <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1.5">{game.status === "wishlist" ? "Preis" : game.saleStatus === "sold" ? "Verkauft" : game.saleStatus === "forSale" ? "Zum Verkauf" : "Kauf"}</p>
+                      <div className="flex items-center gap-x-3 gap-y-1 flex-wrap">
+                        {game.purchasePrice && <span className="text-xs text-dim">{game.status === "wishlist" ? "Preis" : "Kaufpreis"}: <span className="text-ink">{game.purchasePrice} €</span></span>}
+                        {game.purchasePlace && <span className="text-xs text-dim">{game.status === "wishlist" ? "Kaufen bei" : "Gekauft bei"}: <span className="text-ink">{purchasePlaceLabel(game.purchasePlace)}</span></span>}
+                        {game.status === "owned" && game.saleStatus === "sold" && game.salePrice && <span className="text-xs text-dim">Verkaufspreis: <span className="text-gold">{game.salePrice} €</span></span>}
+                      </div>
+                    </div>
+                  )}
                 {game.notes && (
                   <div>
                     <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1">Notizen</p>

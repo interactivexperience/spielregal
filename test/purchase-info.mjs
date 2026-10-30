@@ -51,7 +51,7 @@ if (await edit.count()) { await edit.click(); await page.waitForTimeout(1000); }
 
 
 let ok = true; const check = (c, m) => { console.log((c ? "OK   " : "FEHLER ") + m); if (!c) ok = false; };
-check(await page.locator('text=Gekauft bei').count() === 1, "Formular zeigt 'Gekauft bei'");
+check(await page.locator('text=Basisspiel suchen').count() === 0 && await page.locator('text=Gekauft bei').count() === 1, "Formular zeigt 'Gekauft bei'");
 for (const l of ["Gebraucht", "Onlineshop", "Spieleladen", "Spielemesse"]) check(await page.locator(`button:has-text("${l}")`).count() === 1, "Chip " + l);
 await page.locator('input[placeholder="0"]').first().fill("29,90");
 await page.locator('button:has-text("Spieleladen")').click();
@@ -63,6 +63,8 @@ if (!(await page.locator('button:has-text("Mehr Details")').count())) { await pa
 const more = page.locator('button:has-text("Mehr Details")');
 
 await page.waitForTimeout(400);
+check(await page.locator('text=Kaufpreis: ').count() === 0, "Preis ist zugeklappt versteckt");
+await more.click(); await page.waitForTimeout(400);
 check(await page.locator('text=Kaufpreis: ').count() > 0 && await page.locator('text=Spieleladen').count() > 0, "Detailseite zeigt Preis und Ort");
 await b.close(); server.close();
 process.exit(ok ? 0 : 1);
