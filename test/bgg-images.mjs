@@ -99,6 +99,7 @@ await page.locator('text=Handgemacht').first().click();
 await page.waitForTimeout(1000);
 let edit = page.locator('button[aria-label="Bearbeiten"], button:has-text("Bearbeiten")').first();
 if (await edit.count()) { await edit.click(); await page.waitForTimeout(1000); }
+await page.locator('[data-form-tab="pictures"]').click(); await page.waitForTimeout(200);
 const addPhotoBtn = page.locator('button[aria-label="Foto hinzufügen"]');
 await addPhotoBtn.click();
 await page.waitForTimeout(500);
@@ -114,6 +115,7 @@ await page.locator('text=Brass: Birmingham').first().click();
 await page.waitForTimeout(1000);
 edit = page.locator('button[aria-label="Bearbeiten"], button:has-text("Bearbeiten")').first();
 if (await edit.count()) { await edit.click(); await page.waitForTimeout(1000); }
+await page.locator('[data-form-tab="pictures"]').click(); await page.waitForTimeout(200);
 await page.locator('button[aria-label="Foto hinzufügen"]').click();
 await page.waitForTimeout(500);
 console.log("BGG-Knopf sichtbar mit bggId:", await page.locator('text=Bilder von BGG').count() > 0);

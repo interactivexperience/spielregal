@@ -48,6 +48,7 @@ await page.locator('text=Ark Nova').first().click();
 await page.waitForTimeout(1000);
 await page.locator('button[aria-label="Bearbeiten"], button:has-text("Bearbeiten")').first().click();
 await page.waitForTimeout(1000);
+await page.locator('[data-form-tab="pictures"]').click(); await page.waitForTimeout(200);
 await page.locator('text=Fotos verwalten').click();
 await page.waitForTimeout(500);
 await page.screenshot({ path: `${SP}/photo_select_all_before.png` });

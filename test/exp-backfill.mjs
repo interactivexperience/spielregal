@@ -67,7 +67,7 @@ if (await chip.count()) {
 
 // Auch im Bearbeiten-Formular sollte der Chip von selbst auftauchen.
 const edit = page.locator('button[aria-label="Bearbeiten"], button:has-text("Bearbeiten")').first();
-if (await edit.count()) { await edit.click(); await page.waitForTimeout(1500); }
+if (await edit.count()) { await edit.click(); await page.waitForTimeout(1500); await page.locator('[data-form-tab="details"]').click(); await page.waitForTimeout(200); }
 const lbl = page.locator('text=Erweiterungen dieses Spiels');
 if (await lbl.count()) { await lbl.first().scrollIntoViewIfNeeded(); await page.waitForTimeout(400); }
 console.log("Formular: Chip von selbst sichtbar:", await page.locator('button:has-text("Erweiterung"):has-text("gefunden")').count() > 0);

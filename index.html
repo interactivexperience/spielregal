@@ -4466,6 +4466,7 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
     }
   };
   const [formTitleCollapsed, setFormTitleCollapsed] = useState(false);
+  const [formTab, setFormTab] = useState("basis"); // basis | details | notes | pictures
   const formTitle = initial ? (form.name || "Spiel bearbeiten") : step === "search" ? "Spiel suchen" : (form.name || "Neues Spiel");
 
   if (step === "search") {
@@ -4511,18 +4512,27 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
         </div>
 
         {step === "manual" && (
-          <div className="p-5 space-y-4 font-body overflow-y-auto flex-1" onScroll={(e) => setFormTitleCollapsed(e.currentTarget.scrollTop > 24)}>
-            <PhotoGallerySection
-              images={form.images}
-              onAdd={(img) => setForm((f) => ({ ...f, images: [...f.images, ...(Array.isArray(img) ? img : [img])] }))}
-              onRemove={(i) => setForm((f) => ({ ...f, images: f.images.filter((_, idx) => idx !== i) }))}
-              onReplace={(i, img) => setForm((f) => ({ ...f, images: f.images.map((x, idx) => (idx === i ? img : x)) }))}
-              hero
-              bggId={form.bggId}
-            />
-
+          <div className="shrink-0 px-5 pt-1 pb-2 space-y-2.5">
+            <div className="flex items-center gap-3">
+              <button type="button" data-open-pictures onClick={() => setFormTab("pictures")} aria-label="Bilder" className="shrink-0 w-12 h-12 rounded-[12px] overflow-hidden border border-line bg-surface flex items-center justify-center text-dim">
+                {form.images && form.images[0] ? <img src={form.images[0]} alt="" className="w-full h-full object-cover" /> : <Camera size={18} />}
+              </button>
+              <div className="flex-1 min-w-0">
             <input value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="Titel *"
               className={`w-full h-12 border border-line rounded-[14px] px-3.5 text-ink text-base focus:outline-none focus:border-accent ${form.name ? "bg-surface" : "bg-transparent"}`} />
+              </div>
+            </div>
+            <div className="grid grid-cols-4 gap-1.5" role="tablist" aria-label="Bereiche">
+              {[["basis", "Basis"], ["details", "Details"], ["notes", "Notizen"], ["pictures", "Bilder"]].map(([k, label]) => (
+                <button key={k} type="button" role="tab" data-form-tab={k} aria-selected={formTab === k} onClick={() => { haptic(4); setFormTab(k); }}
+                  className={`h-9 rounded-full border text-sm ${formTab === k ? "border-accent bg-accent/10 text-ink font-medium" : "border-line bg-surface text-dim"}`}>{label}</button>
+              ))}
+            </div>
+          </div>
+        )}
+        {step === "manual" && (
+          <div className="p-5 pt-3 space-y-4 font-body overflow-y-auto flex-1" onScroll={(e) => setFormTitleCollapsed(e.currentTarget.scrollTop > 24)}>
+            <div data-tab-panel="basis" className={formTab === "basis" ? "space-y-4" : "hidden"}>
             <input value={form.germanName || ""} onChange={(e) => update("germanName", e.target.value)} placeholder="Deutscher Titel (optional)"
               className={`w-full h-12 border border-line rounded-[14px] px-3.5 text-ink text-base focus:outline-none focus:border-accent ${form.germanName ? "bg-surface" : "bg-transparent"}`} />
             {form.germanName && form.germanName.trim() && form.germanName.trim() !== form.name.trim() && (
@@ -4549,114 +4559,6 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
               value={form.status}
               onChange={(v) => update("status", v)}
             />
-
-            <div>
-              <label className="block text-[11px] text-dim">Zusammenfassung</label>
-              {pitchError && <p className="text-[11px] text-danger mt-1">{pitchError}</p>}
-              <div className="mt-1.5">
-                <RichTextEditor key={summaryVersion} value={form.summary} onChange={(html) => update("summary", html)} placeholder="Worum geht's in diesem Spiel?" />
-              </div>
-            </div>
-            <div>
-              <label className="block text-[11px] text-dim">Verlag</label>
-              <button type="button" onClick={() => setPickerOpen("publishers")}
-                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.publishers.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.publishers.length ? "bg-surface border-line" : "bg-transparent border-line text-dim text-base"}`}>
-                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 ${form.publishers.length === 1 ? "justify-center text-center" : "items-center"}`}>
-                  {form.publishers.length ? form.publishers.map((p) => <Pill key={p}>{p}</Pill>) : "Verlag auswählen…"}
-                </span>
-                <ChevronDown size={16} className="shrink-0 text-dim mt-1.5" />
-              </button>
-              {publisherTrimLoading && (
-                <p className="flex items-center gap-1 text-[11px] text-dim mt-2"><Loader2 size={11} /> Verlagsliste wird auf Original + Deutsch reduziert…</p>
-              )}
-              {germanLookupError && <p className="text-[11px] text-danger mt-1">{germanLookupError}</p>}
-            </div>
-            <div>
-              <label className="block text-[11px] text-dim">Designer</label>
-              <button type="button" onClick={() => setPickerOpen("designers")}
-                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.designers.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.designers.length ? "bg-surface border-line" : "bg-transparent border-line text-dim text-base"}`}>
-                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 ${form.designers.length === 1 ? "justify-center text-center" : "items-center"}`}>
-                  {form.designers.length ? form.designers.map((d) => <Pill key={d}>{d}</Pill>) : "Designer auswählen…"}
-                </span>
-                <ChevronDown size={16} className="shrink-0 text-dim mt-1.5" />
-              </button>
-            </div>
-
-            <div>
-              <label className="block text-[11px] text-dim">Spieleranzahl (min–max)</label>
-              <div className="flex items-center gap-2 mt-1.5">
-                <input value={form.minPlayers} onChange={(e) => update("minPlayers", e.target.value)} placeholder="min" inputMode="numeric"
-                  className={`w-full h-12 border border-line rounded-[14px] px-3.5 text-ink text-base text-center ${form.minPlayers ? "bg-surface" : "bg-transparent"}`} />
-                <span className="shrink-0 text-dim">–</span>
-                <input value={form.maxPlayers} onChange={(e) => update("maxPlayers", e.target.value)} placeholder="max" inputMode="numeric"
-                  className={`w-full h-12 border border-line rounded-[14px] px-3.5 text-ink text-base text-center ${form.maxPlayers ? "bg-surface" : "bg-transparent"}`} />
-              </div>
-            </div>
-            <div>
-              <label className="block text-[11px] text-dim">Beste Spieleranzahl (optional, von–bis)</label>
-              <div className="flex items-center gap-2 mt-1.5">
-                <input value={form.bestPlayersMin} onChange={(e) => update("bestPlayersMin", e.target.value)} placeholder="von" inputMode="numeric"
-                  className={`w-full h-12 border border-line rounded-[14px] px-3.5 text-ink text-base text-center ${form.bestPlayersMin ? "bg-surface" : "bg-transparent"}`} />
-                <span className="shrink-0 text-dim">–</span>
-                <input value={form.bestPlayersMax} onChange={(e) => update("bestPlayersMax", e.target.value)} placeholder="bis" inputMode="numeric"
-                  className={`w-full h-12 border border-line rounded-[14px] px-3.5 text-ink text-base text-center ${form.bestPlayersMax ? "bg-surface" : "bg-transparent"}`} />
-              </div>
-            </div>
-            <div>
-              <label className="block text-[11px] text-dim">Dauer in Minuten (min–max)</label>
-              <div className="flex items-center gap-2 mt-1.5">
-                <input value={form.minTime} onChange={(e) => update("minTime", e.target.value)} placeholder="min" inputMode="numeric"
-                  className={`w-full h-12 border border-line rounded-[14px] px-3.5 text-ink text-base text-center ${form.minTime ? "bg-surface" : "bg-transparent"}`} />
-                <span className="shrink-0 text-dim">–</span>
-                <input value={form.maxTime} onChange={(e) => update("maxTime", e.target.value)} placeholder="max" inputMode="numeric"
-                  className={`w-full h-12 border border-line rounded-[14px] px-3.5 text-ink text-base text-center ${form.maxTime ? "bg-surface" : "bg-transparent"}`} />
-              </div>
-            </div>
-            <div>
-              <label className="block text-[11px] text-dim">Komplexität</label>
-              <div className="mt-1.5">
-                <ComplexityPicker value={form.complexity} onChange={(v) => update("complexity", v)} />
-              </div>
-              {complexityLabel(form) && <p className="text-xs text-dim mt-1.5">→ {complexityLabel(form)}</p>}
-            </div>
-
-            <div>
-              <label className="block text-[11px] text-dim">Mechanismen</label>
-              <button type="button" onClick={() => setPickerOpen("mechanisms")}
-                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.mechanisms.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.mechanisms.length ? "bg-surface border-line" : "bg-transparent border-line text-dim text-base"}`}>
-                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 ${form.mechanisms.length === 1 ? "justify-center text-center" : "items-center"}`}>
-                  {form.mechanisms.length ? form.mechanisms.map((m) => {
-                    const MIcon = tagIcon(m);
-                    return <Pill key={m}><MIcon size={10} className="inline -mt-0.5 mr-0.5" />{m}</Pill>;
-                  }) : "Mechanismen auswählen…"}
-                </span>
-                <ChevronDown size={16} className="shrink-0 text-dim mt-1.5" />
-              </button>
-            </div>
-            <div>
-              <label className="block text-[11px] text-dim">Kategorien</label>
-              <button type="button" onClick={() => setPickerOpen("categories")}
-                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.categories.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.categories.length ? "bg-surface border-line" : "bg-transparent border-line text-dim text-base"}`}>
-                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 ${form.categories.length === 1 ? "justify-center text-center" : "items-center"}`}>
-                  {form.categories.length ? form.categories.map((c) => {
-                    const CIcon = tagIcon(c);
-                    return <Pill key={c}><CIcon size={10} className="inline -mt-0.5 mr-0.5" />{c}</Pill>;
-                  }) : "Kategorien auswählen…"}
-                </span>
-                <ChevronDown size={16} className="shrink-0 text-dim mt-1.5" />
-              </button>
-            </div>
-            <div>
-              <label className="block text-[11px] text-dim">Spielertyp</label>
-              <button type="button" onClick={() => setPickerOpen("playerTypes")}
-                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.playerTypes.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.playerTypes.length ? "bg-surface border-line" : "bg-transparent border-line text-dim text-base"}`}>
-                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 ${form.playerTypes.length === 1 ? "justify-center text-center" : "items-center"}`}>
-                  {form.playerTypes.length ? form.playerTypes.map((t) => <Pill key={t}>{t}</Pill>) : "Spielertyp auswählen…"}
-                </span>
-                <ChevronDown size={16} className="shrink-0 text-dim mt-1.5" />
-              </button>
-            </div>
-            {typesError && <p className="text-[11px] text-danger -mt-2">{typesError}</p>}
 
             {(form.status === "owned" || form.status === "none" || form.status === "wishlist") && (
               <ToggleRow
@@ -4703,6 +4605,116 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
                 )}
               </div>
             )}
+
+            <div>
+              <label className="block text-[11px] text-dim">Spieleranzahl (min–max)</label>
+              <div className="flex items-center gap-2 mt-1.5">
+                <input value={form.minPlayers} onChange={(e) => update("minPlayers", e.target.value)} placeholder="min" inputMode="numeric"
+                  className={`w-full h-12 border border-line rounded-[14px] px-3.5 text-ink text-base text-center ${form.minPlayers ? "bg-surface" : "bg-transparent"}`} />
+                <span className="shrink-0 text-dim">–</span>
+                <input value={form.maxPlayers} onChange={(e) => update("maxPlayers", e.target.value)} placeholder="max" inputMode="numeric"
+                  className={`w-full h-12 border border-line rounded-[14px] px-3.5 text-ink text-base text-center ${form.maxPlayers ? "bg-surface" : "bg-transparent"}`} />
+              </div>
+            </div>
+            <div>
+              <label className="block text-[11px] text-dim">Beste Spieleranzahl (optional, von–bis)</label>
+              <div className="flex items-center gap-2 mt-1.5">
+                <input value={form.bestPlayersMin} onChange={(e) => update("bestPlayersMin", e.target.value)} placeholder="von" inputMode="numeric"
+                  className={`w-full h-12 border border-line rounded-[14px] px-3.5 text-ink text-base text-center ${form.bestPlayersMin ? "bg-surface" : "bg-transparent"}`} />
+                <span className="shrink-0 text-dim">–</span>
+                <input value={form.bestPlayersMax} onChange={(e) => update("bestPlayersMax", e.target.value)} placeholder="bis" inputMode="numeric"
+                  className={`w-full h-12 border border-line rounded-[14px] px-3.5 text-ink text-base text-center ${form.bestPlayersMax ? "bg-surface" : "bg-transparent"}`} />
+              </div>
+            </div>
+            <div>
+              <label className="block text-[11px] text-dim">Dauer in Minuten (min–max)</label>
+              <div className="flex items-center gap-2 mt-1.5">
+                <input value={form.minTime} onChange={(e) => update("minTime", e.target.value)} placeholder="min" inputMode="numeric"
+                  className={`w-full h-12 border border-line rounded-[14px] px-3.5 text-ink text-base text-center ${form.minTime ? "bg-surface" : "bg-transparent"}`} />
+                <span className="shrink-0 text-dim">–</span>
+                <input value={form.maxTime} onChange={(e) => update("maxTime", e.target.value)} placeholder="max" inputMode="numeric"
+                  className={`w-full h-12 border border-line rounded-[14px] px-3.5 text-ink text-base text-center ${form.maxTime ? "bg-surface" : "bg-transparent"}`} />
+              </div>
+            </div>
+            <div>
+              <label className="block text-[11px] text-dim">Komplexität</label>
+              <div className="mt-1.5">
+                <ComplexityPicker value={form.complexity} onChange={(v) => update("complexity", v)} />
+              </div>
+              {complexityLabel(form) && <p className="text-xs text-dim mt-1.5">→ {complexityLabel(form)}</p>}
+            </div>
+            </div>
+
+            <div data-tab-panel="details" className={formTab === "details" ? "space-y-4" : "hidden"}>
+            <div>
+              <label className="block text-[11px] text-dim">Zusammenfassung</label>
+              {pitchError && <p className="text-[11px] text-danger mt-1">{pitchError}</p>}
+              <div className="mt-1.5">
+                <RichTextEditor key={summaryVersion} value={form.summary} onChange={(html) => update("summary", html)} placeholder="Worum geht's in diesem Spiel?" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-[11px] text-dim">Verlag</label>
+              <button type="button" onClick={() => setPickerOpen("publishers")}
+                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.publishers.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.publishers.length ? "bg-surface border-line" : "bg-transparent border-line text-dim text-base"}`}>
+                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 ${form.publishers.length === 1 ? "justify-center text-center" : "items-center"}`}>
+                  {form.publishers.length ? form.publishers.map((p) => <Pill key={p}>{p}</Pill>) : "Verlag auswählen…"}
+                </span>
+                <ChevronDown size={16} className="shrink-0 text-dim mt-1.5" />
+              </button>
+              {publisherTrimLoading && (
+                <p className="flex items-center gap-1 text-[11px] text-dim mt-2"><Loader2 size={11} /> Verlagsliste wird auf Original + Deutsch reduziert…</p>
+              )}
+              {germanLookupError && <p className="text-[11px] text-danger mt-1">{germanLookupError}</p>}
+            </div>
+            <div>
+              <label className="block text-[11px] text-dim">Designer</label>
+              <button type="button" onClick={() => setPickerOpen("designers")}
+                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.designers.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.designers.length ? "bg-surface border-line" : "bg-transparent border-line text-dim text-base"}`}>
+                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 ${form.designers.length === 1 ? "justify-center text-center" : "items-center"}`}>
+                  {form.designers.length ? form.designers.map((d) => <Pill key={d}>{d}</Pill>) : "Designer auswählen…"}
+                </span>
+                <ChevronDown size={16} className="shrink-0 text-dim mt-1.5" />
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-[11px] text-dim">Mechanismen</label>
+              <button type="button" onClick={() => setPickerOpen("mechanisms")}
+                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.mechanisms.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.mechanisms.length ? "bg-surface border-line" : "bg-transparent border-line text-dim text-base"}`}>
+                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 ${form.mechanisms.length === 1 ? "justify-center text-center" : "items-center"}`}>
+                  {form.mechanisms.length ? form.mechanisms.map((m) => {
+                    const MIcon = tagIcon(m);
+                    return <Pill key={m}><MIcon size={10} className="inline -mt-0.5 mr-0.5" />{m}</Pill>;
+                  }) : "Mechanismen auswählen…"}
+                </span>
+                <ChevronDown size={16} className="shrink-0 text-dim mt-1.5" />
+              </button>
+            </div>
+            <div>
+              <label className="block text-[11px] text-dim">Kategorien</label>
+              <button type="button" onClick={() => setPickerOpen("categories")}
+                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.categories.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.categories.length ? "bg-surface border-line" : "bg-transparent border-line text-dim text-base"}`}>
+                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 ${form.categories.length === 1 ? "justify-center text-center" : "items-center"}`}>
+                  {form.categories.length ? form.categories.map((c) => {
+                    const CIcon = tagIcon(c);
+                    return <Pill key={c}><CIcon size={10} className="inline -mt-0.5 mr-0.5" />{c}</Pill>;
+                  }) : "Kategorien auswählen…"}
+                </span>
+                <ChevronDown size={16} className="shrink-0 text-dim mt-1.5" />
+              </button>
+            </div>
+            <div>
+              <label className="block text-[11px] text-dim">Spielertyp</label>
+              <button type="button" onClick={() => setPickerOpen("playerTypes")}
+                className={`w-full min-h-[48px] border rounded-[14px] pl-3.5 pr-3 py-2 mt-1.5 text-left flex ${form.playerTypes.length === 1 ? "items-center" : "items-start"} gap-1.5 ${form.playerTypes.length ? "bg-surface border-line" : "bg-transparent border-line text-dim text-base"}`}>
+                <span className={`flex-1 min-w-0 flex flex-wrap gap-1.5 ${form.playerTypes.length === 1 ? "justify-center text-center" : "items-center"}`}>
+                  {form.playerTypes.length ? form.playerTypes.map((t) => <Pill key={t}>{t}</Pill>) : "Spielertyp auswählen…"}
+                </span>
+                <ChevronDown size={16} className="shrink-0 text-dim mt-1.5" />
+              </button>
+            </div>
+            {typesError && <p className="text-[11px] text-danger -mt-2">{typesError}</p>}
 
             <div>
               <label className="block text-[11px] text-dim mb-1.5">Erweiterung von <span className="text-[10px]">(optional — ein Basisspiel kann mehrere Erweiterungen haben)</span></label>
@@ -4767,7 +4779,9 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
                 )}
               </div>
             )}
+            </div>
 
+            <div data-tab-panel="notes" className={formTab === "notes" ? "space-y-4" : "hidden"}>
             <ToggleRow tone="accent" active={form.isCampaign} onClick={() => update("isCampaign", !form.isCampaign)} label="Kampagnenspiel (Fortschritts-Historie)" />
 
             <div>
@@ -4784,24 +4798,38 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
                 <RichTextEditor value={form.notes} onChange={(html) => update("notes", html)} placeholder="Notizen, Hausregeln…" />
               </div>
             </div>
+            </div>
+
+            <div data-tab-panel="pictures" className={formTab === "pictures" ? "space-y-4" : "hidden"}>
+            <PhotoGallerySection
+              images={form.images}
+              onAdd={(img) => setForm((f) => ({ ...f, images: [...f.images, ...(Array.isArray(img) ? img : [img])] }))}
+              onRemove={(i) => setForm((f) => ({ ...f, images: f.images.filter((_, idx) => idx !== i) }))}
+              onReplace={(i, img) => setForm((f) => ({ ...f, images: f.images.map((x, idx) => (idx === i ? img : x)) }))}
+              hero
+              bggId={form.bggId}
+            />
+            </div>
           </div>
         )}
         {step === "manual" && (
-          <div className="glass-strong shrink-0 border-t border-rim/10 p-4 space-y-2">
-            {form.name.trim() && (
-              <button type="button" onClick={() => setAiMenuOpen(true)}
-                className="glass w-full h-11 border border-rim/15 text-ink rounded-[14px] font-medium flex items-center justify-center gap-2 text-sm">
-                {aiWorkerUrl ? <Sparkles size={15} /> : <Globe size={15} />} {aiWorkerUrl ? "KI-Werkzeuge" : "BGG-Daten holen"}
+          <div className="glass-strong shrink-0 border-t border-rim/10 p-4 space-y-1">
+            <div className="flex gap-2">
+              {form.name.trim() && (
+                <button type="button" onClick={() => setAiMenuOpen(true)}
+                  className="glass shrink-0 h-12 px-4 border border-rim/15 text-ink rounded-[14px] font-medium flex items-center justify-center gap-2 text-sm">
+                  {aiWorkerUrl ? <Sparkles size={15} /> : <Globe size={15} />} {aiWorkerUrl ? "KI-Werkzeuge" : "BGG-Daten"}
+                </button>
+              )}
+              <button disabled={!form.name.trim()} onClick={handleSaveClick}
+                className={`flex-1 min-w-0 bg-accent disabled:opacity-40 text-white rounded-[14px] h-12 font-medium active:scale-[0.99] flex items-center justify-center gap-2 relative ${saveCelebrating ? "save-pop" : ""}`}>
+                {saveCelebrating && <span className="save-ring" />}
+                <Check size={18} /> Speichern
               </button>
-            )}
-            <button disabled={!form.name.trim()} onClick={handleSaveClick}
-              className={`w-full bg-accent disabled:opacity-40 text-white rounded-[14px] py-3 font-medium active:scale-[0.99] flex items-center justify-center gap-2 relative ${saveCelebrating ? "save-pop" : ""}`}>
-              {saveCelebrating && <span className="save-ring" />}
-              <Check size={18} /> Speichern
-            </button>
+            </div>
             {initial && (
-              <button onClick={() => onDelete(initial.id)} className="w-full text-danger text-sm font-body py-2 flex items-center justify-center gap-1.5">
-                <Trash2 size={14} /> Spiel entfernen
+              <button onClick={() => onDelete(initial.id)} className="w-full text-danger text-xs font-body py-1.5 flex items-center justify-center gap-1.5">
+                <Trash2 size={13} /> Spiel entfernen
               </button>
             )}
           </div>
