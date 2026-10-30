@@ -52,7 +52,7 @@ if (await edit.count()) { await edit.click(); await page.waitForTimeout(1000); }
 
 let ok = true; const check = (c, m) => { console.log((c ? "OK   " : "FEHLER ") + m); if (!c) ok = false; };
 check(await page.locator('text=Basisspiel suchen').count() === 0 && await page.locator('text=Gekauft bei').count() === 1, "Formular zeigt 'Gekauft bei'");
-for (const l of ["Gebraucht", "Onlineshop", "Spieleladen", "Spielemesse"]) check(await page.locator(`button:has-text("${l}")`).count() === 1, "Chip " + l);
+for (const l of ["Privat / Secondhand", "Onlineshop", "Spieleladen", "Spielemesse"]) check(await page.locator(`button:has-text("${l}")`).count() === 1, "Chip " + l);
 await page.locator('input[placeholder="0"]').first().fill("29,90");
 await page.locator('button:has-text("Spieleladen")').click();
 await page.locator('button:has-text("Speichern")').last().click();
