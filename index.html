@@ -4533,10 +4533,10 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
               className={`w-full h-12 border border-line rounded-[14px] px-3.5 text-ink text-base focus:outline-none focus:border-accent ${form.name ? "bg-surface" : "bg-transparent"}`} />
               </div>
             </div>
-            <div className="grid grid-cols-4 gap-1.5" role="tablist" aria-label="Bereiche">
+            <div className="grid grid-cols-4 border-b border-line" role="tablist" aria-label="Bereiche">
               {[["basis", "Basis"], ["details", "Details"], ["notes", "Notizen"], ["pictures", "Bilder"]].map(([k, label]) => (
                 <button key={k} type="button" role="tab" data-form-tab={k} aria-selected={formTab === k} onClick={() => { haptic(4); setFormTab(k); }}
-                  className={`h-9 rounded-full border text-sm ${formTab === k ? "border-accent bg-accent/10 text-ink font-medium" : "border-line bg-surface text-dim"}`}>{label}</button>
+                  className={`h-10 -mb-px text-sm border-b-2 transition-colors ${formTab === k ? "border-ink text-ink font-medium" : "border-transparent text-dim"}`}>{label}</button>
               ))}
             </div>
           </div>
