@@ -1552,6 +1552,14 @@ function SearchInput({ value, onChange, placeholder, autoFocus, className = "", 
 // Gleiche Formensprache wie die Navigationsleiste: runde Pille auf --surface,
 // aktiver Zustand als weiche Fuellung statt Glas mit Rahmen. Das alte glass +
 // backdrop-filter + rounded-[14px] stammte noch aus dem Stil davor.
+const PURCHASE_PLACES = [
+  { v: "used", label: "Gebraucht (eBay, Kleinanzeigen …)" },
+  { v: "online", label: "Onlineshop" },
+  { v: "store", label: "Spieleladen" },
+  { v: "fair", label: "Spielemesse" },
+];
+const purchasePlaceLabel = (v) => (PURCHASE_PLACES.find((o) => o.v === v) || {}).label || "";
+
 function Segmented({ options, value, onChange }) {
   const idx = Math.max(0, options.findIndex((o) => o.v === value));
   return (
@@ -4379,7 +4387,7 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
   const FORM_DEFAULTS = {
     id: uid(), bggId: "", name: "", germanName: "", primaryTitle: "original", year: "", publishers: [], designers: [], images: [],
     minPlayers: "", maxPlayers: "", bestPlayersMin: "", bestPlayersMax: "", minTime: "", maxTime: "", age: "",
-    complexity: "", mechanisms: [], categories: [], playerTypes: [], status: "owned", format: "analog", saleStatus: "", purchasePrice: "", salePrice: "", expansionOf: "",
+    complexity: "", mechanisms: [], categories: [], playerTypes: [], status: "owned", format: "analog", saleStatus: "", purchasePrice: "", purchasePlace: "", salePrice: "", expansionOf: "",
     location: "", summary: "", notes: "", rating: "", isCampaign: false, lentTo: "", addedDate: new Date().toISOString().slice(0, 10),
   };
   const [form, setForm] = useState(initial ? {
@@ -4681,7 +4689,7 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
               </div>
             )}
 
-            {form.status === "owned" && (form.saleStatus === "forSale" || form.saleStatus === "sold") && (
+            {form.status === "owned" && (
               <div className="flex gap-3">
                 <div className="flex-1 min-w-0">
                   <label className="block text-[11px] text-dim mb-1.5">Kaufpreis</label>
@@ -4701,6 +4709,23 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {form.status === "owned" && (
+              <div>
+                <label className="block text-[11px] text-dim mb-1.5">Gekauft bei <span className="text-[10px]">(optional)</span></label>
+                <div className="flex flex-wrap gap-2">
+                  {PURCHASE_PLACES.map((o) => {
+                    const sel = form.purchasePlace === o.v;
+                    return (
+                      <button key={o.v} type="button" onClick={() => update("purchasePlace", sel ? "" : o.v)}
+                        className={`h-10 px-3.5 rounded-full text-sm border ${sel ? "bg-accent text-bg border-accent font-medium" : "bg-surface border-line text-ink"}`}>
+                        {o.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
@@ -8745,11 +8770,12 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                     )}
                   </div>
                 )}
-                {!hidePrices && game.saleStatus && (game.purchasePrice || game.salePrice) && (
+                {!hidePrices && !guestMode && game.status === "owned" && (game.purchasePrice || game.purchasePlace || (game.saleStatus === "sold" && game.salePrice)) && (
                   <div>
-                    <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1.5">{game.saleStatus === "sold" ? "Verkauft" : "Zum Verkauf"}</p>
-                    <div className="flex items-center gap-3 flex-wrap">
+                    <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1.5">{game.saleStatus === "sold" ? "Verkauft" : game.saleStatus === "forSale" ? "Zum Verkauf" : "Kauf"}</p>
+                    <div className="flex items-center gap-x-3 gap-y-1 flex-wrap">
                       {game.purchasePrice && <span className="text-xs text-dim">Kaufpreis: <span className="text-ink">{game.purchasePrice} €</span></span>}
+                      {game.purchasePlace && <span className="text-xs text-dim">Gekauft bei: <span className="text-ink">{purchasePlaceLabel(game.purchasePlace)}</span></span>}
                       {game.saleStatus === "sold" && game.salePrice && <span className="text-xs text-dim">Verkaufspreis: <span className="text-gold">{game.salePrice} €</span></span>}
                     </div>
                   </div>
