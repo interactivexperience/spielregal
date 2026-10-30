@@ -61,7 +61,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("spielre
 check(saved.purchasePrice === "29,90" && saved.purchasePlace === "store", "gespeichert: " + saved.purchasePrice + " / " + saved.purchasePlace);
 if (!(await page.locator('button:has-text("Mehr Details")').count())) { await page.locator("text=Lairs").first().click(); await page.waitForTimeout(900); }
 const more = page.locator('button:has-text("Mehr Details")');
-if (await more.count()) await more.click();
+
 await page.waitForTimeout(400);
 check(await page.locator('text=Kaufpreis: ').count() > 0 && await page.locator('text=Spieleladen').count() > 0, "Detailseite zeigt Preis und Ort");
 await b.close(); server.close();
