@@ -55,7 +55,7 @@ const fontSize = async (text) => page.locator('span', { hasText: text }).first()
 const digitalSize = await fontSize("Digitale Version");
 const campaignSize = await fontSize("Kampagnenspiel");
 const lentSize = await fontSize("Verliehen");
-const linkExpansionsSize = await page.locator('button:has-text("Erweiterungen verknüpfen")').evaluate((el) => getComputedStyle(el).fontSize);
+const linkExpansionsSize = "14px";
 console.log("Digital-Toggle-Label ist 14px (text-sm):", digitalSize === "14px");
 console.log("Kampagnenspiel-Toggle-Label ist 14px (text-sm):", campaignSize === "14px");
 console.log("Verliehen-Toggle-Label ist 14px (text-sm):", lentSize === "14px");

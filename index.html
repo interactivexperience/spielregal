@@ -4746,58 +4746,6 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
             </div>
             )}
 
-            {initial && !form.expansionOf && (onUpdateOtherGame || onAddExpansion) && (
-              <div>
-                <label className="block text-[11px] text-dim mb-1.5">Erweiterungen dieses Spiels <span className="text-[10px]">(mehrere auf einmal verknüpfbar)</span></label>
-                {(childExpansions.length > 0 || expansionVorschlagCount > 0) && (
-                  <div className="flex flex-wrap gap-1.5 mb-2">
-                    {childExpansions.map((g) => (
-                      <span key={g.id} className="flex items-center gap-1.5 bg-surface border border-line rounded-full pl-3 pr-1.5 py-1 text-[11px] text-ink">
-                        {g.name}
-                        <button type="button" onClick={() => setExpansionLink(g.id, "")} className="w-5 h-5 flex items-center justify-center rounded-full text-dim active:bg-rim/5" aria-label={`${g.name} nicht mehr als Erweiterung verknüpfen`}>
-                          <X size={12} />
-                        </button>
-                      </span>
-                    ))}
-                    {expansionVorschlagCount > 0 && (
-                      <button type="button" onClick={() => setExpansionSheetOpen(true)}
-                        className="flex items-center gap-1 text-[11px] text-accent border border-accent/40 rounded-full px-3 py-1">
-                        <LinkIcon size={11} /> {expansionVorschlagCount} Erweiterung{expansionVorschlagCount === 1 ? "" : "en"} gefunden
-                      </button>
-                    )}
-                  </div>
-                )}
-                <button type="button" onClick={() => setExpansionPickerOpen(true)}
-                  className="w-full h-11 border border-dashed border-line rounded-[14px] text-sm text-dim flex items-center justify-center gap-1.5">
-                  <Plus size={14} /> Erweiterungen verknüpfen…
-                </button>
-                {expansionPickerOpen && (
-                  <MultiGamePickerSheet
-                    title="Erweiterungen verknüpfen"
-                    games={games}
-                    excludeId={form.id}
-                    filter={(g) => !g.expansionOf || g.expansionOf === form.id}
-                    initialSelected={childExpansions.map((g) => g.id)}
-                    onClose={() => setExpansionPickerOpen(false)}
-                    onConfirm={(selectedIds) => {
-                      const before = childExpansions.map((g) => g.id);
-                      before.filter((id) => !selectedIds.includes(id)).forEach((id) => setExpansionLink(id, ""));
-                      selectedIds.filter((id) => !before.includes(id)).forEach((id) => setExpansionLink(id, form.id));
-                    }}
-                  />
-                )}
-                {expansionSheetOpen && (
-                  <ExpansionSuggestionsSheet
-                    vorschlaege={erweiterungsVorschlaege}
-                    fehlende={fehlendeErweiterungenForm}
-                    onLink={(g) => setExpansionLink(g.id, form.id)}
-                    onAdd={(info) => onAddExpansion(form, info)}
-                    onClose={() => setExpansionSheetOpen(false)}
-                  />
-                )}
-              </div>
-            )}
-
             <ToggleRow tone="accent" active={form.isCampaign} onClick={() => update("isCampaign", !form.isCampaign)} label="Kampagnenspiel (Fortschritts-Historie)" />
 
             <div>
