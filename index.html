@@ -924,6 +924,41 @@ function fehlendeErweiterungen(spiel, games) {
   return list.filter((e) => e.id && e.name && !vorhanden.has(String(e.id)));
 }
 
+// Holt die BGG-Erweiterungsliste eines Spiels fuer die Detailseite. Zwei Luecken
+// stopften vorher die Erkennung: (1) eine einmal gespeicherte LEERE Liste wurde nie
+// wieder erneuert (BGG hatte kurz nichts geliefert, das Spiel blieb fuer immer
+// "ohne Erweiterungen"), (2) Spiele ohne BGG-ID (von Hand angelegt) wurden gar nicht
+// geprueft. Jetzt: leere Liste wird einmal pro Sitzung neu geholt, und ohne BGG-ID
+// gilt ein EINDEUTIGER Treffer mit exakt gleichem Titel. Die ID selbst wird dabei nicht
+// ins Spiel geschrieben (kein stilles Umhaengen auf ein womoeglich falsches Spiel).
+const expansionLookupDone = new Set();
+async function loadExpansionInfo(game) {
+  if (!game || game.expansionOf || expansionLookupDone.has(game.id)) return null;
+  const hasList = Array.isArray(game.expansionBggList) && game.expansionBggList.length > 0;
+  if (hasList) return null;
+  expansionLookupDone.add(game.id);
+  try {
+    let bggId = game.bggId;
+    if (!bggId) {
+      const name = (game.name || "").trim();
+      if (!name) return null;
+      const hits = await bggSearch(name);
+      const exact = hits.filter((h) => (h.name || "").trim().toLowerCase() === name.toLowerCase());
+      if (exact.length !== 1) return null;
+      bggId = exact[0].bggId;
+    }
+    const fresh = await bggThing(bggId);
+    return {
+      expansionBggList: fresh.expansionBggList || [],
+      expansionBggIds: fresh.expansionBggIds || [],
+      ...(fresh.baseGameBggId ? { baseGameBggId: fresh.baseGameBggId, baseGameName: fresh.baseGameName } : {}),
+    };
+  } catch (e) {
+    expansionLookupDone.delete(game.id); // Netzfehler: beim naechsten Oeffnen nochmal versuchen
+    return null;
+  }
+}
+
 function PipAvatar({ size = 36, sleeping = false }) {
   const strich = sleeping ? "rgb(var(--dim))" : "#fff";
   const breit = size >= 56;
@@ -8501,21 +8536,8 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
   // bliebe "Verknuepfen" fuer die komplette Bestandssammlung unsichtbar, bis
   // man manuell "BGG-Daten holen" antippt.
   useEffect(() => {
-    if (!onQuickUpdate || !game.bggId || Array.isArray(game.expansionBggList)) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const fresh = await bggThing(game.bggId);
-        if (!cancelled) {
-          onQuickUpdate(game.id, {
-            expansionBggList: fresh.expansionBggList || [],
-            expansionBggIds: fresh.expansionBggIds || [],
-            ...(fresh.baseGameBggId ? { baseGameBggId: fresh.baseGameBggId, baseGameName: fresh.baseGameName } : {}),
-          });
-        }
-      } catch { /* silent — best-effort, manuelles Verknuepfen bleibt trotzdem moeglich */ }
-    })();
-    return () => { cancelled = true; };
+    if (!onQuickUpdate) return;
+    loadExpansionInfo(game).then((patch) => { if (patch) onQuickUpdate(game.id, patch); }); // auch nach Schliessen speichern, sonst ginge das Ergebnis dieser Sitzung verloren
   }, [game.id, game.bggId]);
 
   const StatBlock = ({ icon: Icon, value, sub, iconSize = 16 }) => (
