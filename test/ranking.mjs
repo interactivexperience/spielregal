@@ -34,9 +34,10 @@ const names = Object.keys(strength);
 const base = { status: "owned", categories: [], mechanisms: [], publishers: [], designers: [], images: [], addedDate: "2026-01-01" };
 const games = [...names.map((n, i) => ({ ...base, id: "g" + i, name: n })),
   { ...base, id: "gx", name: "Ungespielt" },                                   // keine Partie -> nicht dabei
-  { ...base, id: "gexp", name: "Azul: Erweiterung", expansionOf: "g0" }];     // Partie zaehlt zum Basisspiel
+  { ...base, id: "gexp", name: "Azul: Erweiterung", expansionOf: "g0" },      // Partie zaehlt zum Basisspiel
+  { ...base, id: "gsaum", name: "Saum", status: "none" }];                    // nur Browser-Partie (selbst gebaut) -> zaehlt nicht
 const play = (id, gameId) => ({ id, gameId, gameName: gameId, date: "2026-09-01", mode: "physical-owned", players: "", playerIds: [], winner: "", scores: {}, notes: "", images: [] });
-const plays = [...names.map((n, i) => play("p" + i, "g" + i)), play("pe", "gexp")];
+const plays = [...names.map((n, i) => play("p" + i, "g" + i)), play("pe", "gexp"), { ...play("psaum", "gsaum"), mode: "bga", source: "saum" }];
 await page.addInitScript((d) => {
   if (localStorage.getItem("__seeded")) return; localStorage.setItem("__seeded", "1");
   localStorage.setItem("spielregal:games", JSON.stringify(d.games));
@@ -52,27 +53,30 @@ console.log("Dashboard: Karte 'Mein Ranking' mit 'Ranking starten':", await page
 await page.locator("[data-rank-start]").click(); await page.waitForTimeout(500);
 await page.screenshot({ path: `${SP}/ranking_duel.png` });
 const info = async () => ({ cur: (await page.locator("[data-rank-card] p.font-display").innerText()).trim(), ref: (await page.locator("[data-rank-ref] p.font-medium").innerText()).trim() });
-let duels = 0, undone = false;
+let duels = 0, undone = false, lastCard = null, lastRef = null, repeatCard = 0, repeatRef = 0, queueSteps = 0;
 const ansFor = (cur, ref) => (strength[cur] > strength[ref] ? "better" : strength[cur] < strength[ref] ? "worse" : "equal");
 for (let guard = 0; guard < 60; guard++) {
   if (await page.locator("[data-ranking-result]").count()) break;
   if (!(await card.count())) { await page.waitForTimeout(150); continue; }
   const { cur, ref } = await info();
   const a = ansFor(cur, ref);
+  const rk = (await stored()).filter((g) => Number.isInteger(g.rankPos)).length;
+  if (rk >= 3 && rk <= 6 && lastCard !== null) { queueSteps++; if (cur === lastCard) repeatCard++; if (ref === lastRef) repeatRef++; }
+  lastCard = cur; lastRef = ref;
   if (duels === 3 && !undone) {
     // Rueckgaengig: Antwort geben, zurueck, selbe Karte + selbe Referenz wieder da
     await page.locator(`[data-rank="${a}"]`).click(); await page.waitForTimeout(350);
     await page.locator("[data-rank-undo]").click(); await page.waitForTimeout(350);
     const again = await info();
     console.log("Rueckgaengig: dieselbe Karte und dasselbe Referenzspiel wie vorher:", again.cur === cur && again.ref === ref);
-    undone = true; continue;
+    undone = true; lastCard = null; lastRef = null; continue;
   }
-  if (duels === 5) {
+  if (duels === 5 && a !== "equal") {
     // Wischen per Zeiger: Karte nach rechts/links ziehen
     const box = await page.locator("[data-rank-card]").boundingBox();
     await page.mouse.move(box.x + box.width / 2, box.y + 60); await page.mouse.down();
     await page.mouse.move(box.x + box.width / 2 + (a === "worse" ? -170 : 170), box.y + 60, { steps: 6 }); await page.mouse.up();
-    if (a !== "equal") { duels++; await page.waitForTimeout(500); continue; }
+    duels++; lastCard = null; lastRef = null; await page.waitForTimeout(500); continue;
   }
   if (duels === 6) {
     // Neuladen mitten drin: Fortschritt bleibt, Duell geht weiter
@@ -81,7 +85,7 @@ for (let guard = 0; guard < 60; guard++) {
     const stillCard = await page.locator("[data-dash-ranking]").innerText();
     console.log("Neuladen: Dashboard zeigt Fortschritt '… von 8 Spielen eingeordnet':", /von 8 Spielen eingeordnet/.test(stillCard) && beforeRanked > 0);
     await page.locator("[data-rank-start]").click(); await page.waitForTimeout(500);
-    duels++; continue;
+    duels++; lastCard = null; lastRef = null; continue;
   }
   await page.locator(`[data-rank="${a}"]`).click(); await page.waitForTimeout(duels < 5 ? 300 : 250);
   duels++;
@@ -89,13 +93,15 @@ for (let guard = 0; guard < 60; guard++) {
 await page.waitForTimeout(600);
 const st = (await stored());
 const rankedGames = st.filter((g) => Number.isInteger(g.rankPos));
-console.log("8 Spiele eingeordnet; 'Ungespielt' und Erweiterung nicht:", rankedGames.length === 8 && !st.find((g) => g.id === "gx").rankPos && !st.find((g) => g.id === "gexp").rankPos);
+console.log("Nie dieselbe Karte direkt nacheinander (sobald mehrere Spiele warten):", repeatCard === 0 && queueSteps >= 2, "(" + queueSteps + " Duelle geprueft; gleiches Referenzspiel in Folge: " + repeatRef + "x)");
+console.log("8 Spiele eingeordnet; 'Ungespielt' und Erweiterung nicht:", rankedGames.length === 8 && !st.find((g) => g.id === "gx").rankPos && !st.find((g) => g.id === "gexp").rankPos && !st.find((g) => g.id === "gsaum").rankPos);
+console.log("Selbst gebaute Browser-Partie (Saum) zaehlt nicht:", !st.find((g) => g.id === "gsaum").rankPos);
 const order = [...rankedGames].sort((a, b) => a.rankPos - b.rankPos);
 const sortedTruth = [...names].sort((a, b) => strength[b] - strength[a]);
 const placeOf = (n) => rankedGames.find((g) => g.name === n).rankPos;
 console.log("Reihenfolge stimmt mit der wahren Vorliebe ueberein:", names.every((a) => names.every((b2) => strength[a] <= strength[b2] || placeOf(a) < placeOf(b2))));
 console.log("Dixit und Everdell (gleich gut) teilen sich einen Platz:", placeOf("Dixit") === placeOf("Everdell"));
-console.log("Anzahl Duelle klein (Binaersuche, nicht alle 28 Paare):", duels <= 18, "(" + duels + ")");
+console.log("Anzahl Duelle klein (Binaersuche, nicht alle 28 Paare):", duels <= 22, "(" + duels + ")");
 
 // Enthuellung
 console.log("Enthuellung startet bei Platz 10 -> hier der letzte Platz (8) zuerst:", await page.locator("[data-rank-reveal]").count() === 1 && (await page.locator("[data-rank-reveal]").innerText()).includes("Hanabi"));

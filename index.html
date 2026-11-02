@@ -5635,7 +5635,7 @@ function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, o
 // am Spiel und wird damit wie alle Spieldaten gespeichert und synchronisiert. Nur der
 // laufende Vergleich (Reihenfolge, Verlauf fuers Rueckgaengig) liegt lokal.
 const RANK_SESSION_KEY = "spielregal:rankingSession";
-// Basisspiele mit mind. 1 Partie; Partien einer Erweiterung zaehlen zum Basisspiel.
+// Basisspiele mit mind. 1 echten Partie; Partien einer Erweiterung zaehlen zum Basisspiel.
 function rankEligible(games, plays) {
   const isBase = (g) => !g.expansionOf || !games.some((x) => x.id === g.expansionOf);
   const rootId = (id) => {
@@ -5643,7 +5643,8 @@ function rankEligible(games, plays) {
     for (let i = 0; i < 5 && g && !isBase(g); i++) g = games.find((x) => x.id === g.expansionOf);
     return g ? g.id : id;
   };
-  const played = new Set(plays.map((p) => rootId(p.gameId)));
+  // Partien aus den selbst gebauten Browser-Spielen (Feld `source`) zaehlen vorerst nicht.
+  const played = new Set(plays.filter((p) => !p.source).map((p) => rootId(p.gameId)));
   return games.filter((g) => isBase(g) && played.has(g.id));
 }
 // [[Spiele], ...] beste Gruppe zuerst; Spiele in einer Gruppe sind "gleich gut".
@@ -5737,12 +5738,16 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
   const groups = useMemo(() => rankGroups(eligible), [eligible]);
   const byId = useMemo(() => Object.fromEntries(eligible.map((g) => [g.id, g])), [eligible]);
   const [sess, setSess] = useState(() => {
-    try { const s = JSON.parse(localStorage.getItem(RANK_SESSION_KEY) || "null"); if (s && typeof s.seed === "number") return { seed: s.seed, cur: s.cur || null, hist: Array.isArray(s.hist) ? s.hist : [], fine: s.fine || null, fineLast: s.fineLast || null }; } catch {}
-    return { seed: Math.floor(Math.random() * 1e9), cur: null, hist: [], fine: null, fineLast: null };
+    try { const s = JSON.parse(localStorage.getItem(RANK_SESSION_KEY) || "null"); if (s && typeof s.seed === "number") return { seed: s.seed, active: Array.isArray(s.active) ? s.active : (s.cur ? [s.cur] : []), lastRef: s.lastRef || null, hist: Array.isArray(s.hist) ? s.hist.filter((h) => Array.isArray(h.active)) : [], fine: s.fine || null, fineLast: s.fineLast || null }; } catch {}
+    return { seed: Math.floor(Math.random() * 1e9), active: [], lastRef: null, hist: [], fine: null, fineLast: null };
   });
   useEffect(() => { try { localStorage.setItem(RANK_SESSION_KEY, JSON.stringify({ ...sess, hist: sess.hist.slice(-40) })); } catch {} }, [sess]);
   const pending = useMemo(() => eligible.filter((g) => !Number.isInteger(g.rankPos)).sort((a, b) => idHash(a.id + sess.seed) - idHash(b.id + sess.seed)), [eligible, sess.seed]);
-  const curGame = sess.cur ? pending.find((g) => g.id === sess.cur.id) : null;
+  // Mehrere Spiele laufen gleichzeitig (Warteschlange): nach jedem Wisch kommt ein ANDERES Spiel dran.
+  const pendingIds = useMemo(() => new Set(pending.map((g) => g.id)), [pending]);
+  const activeLive = sess.active.filter((a) => pendingIds.has(a.id));
+  const cs = activeLive[0] || null;
+  const curGame = cs ? byId[cs.id] : null;
   const total = eligible.length, ranked = total - pending.length;
   const done = pending.length === 0 && groups.length > 0;
   const [view, setView] = useState(initialView); // null = automatisch | "reveal" | "list" | "duel"
@@ -5780,48 +5785,71 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
     } else setSess((s) => ({ ...s, fine: { ...f, idx, res } }));
   };
 
-  // Naechstes Spiel starten (das allererste wird ohne Vergleich einsortiert).
+  // Warteschlange auffuellen (das allererste Spiel wird ohne Vergleich einsortiert).
+  const ACTIVE_MAX = 3;
   useEffect(() => {
-    if (curGame || pending.length === 0) return;
-    const next = pending[0];
-    if (groups.length === 0) { onApply({ [next.id]: 1 }); return; }
-    setSess((s) => ({ ...s, cur: { id: next.id, lo: 0, hi: groups.length } }));
-  }, [curGame, pending, groups.length]);
+    if (pending.length === 0) return;
+    if (groups.length === 0) { onApply({ [pending[0].id]: 1 }); return; }
+    const have = new Set(activeLive.map((a) => a.id));
+    // Je groesser die Rangliste, desto mehr Spiele laufen parallel (bei 1-2 Gruppen gibt es kaum Abwechslung)
+    const maxActive = Math.min(ACTIVE_MAX, Math.max(1, Math.floor((groups.length + 1) / 2)));
+    const want = Math.min(maxActive, pending.length) - activeLive.length;
+    const add = want > 0 ? pending.filter((g) => !have.has(g.id)).slice(0, want).map((g) => ({ id: g.id, lo: 0, hi: groups.length })) : [];
+    if (add.length || activeLive.length !== sess.active.length) setSess((s) => ({ ...s, active: [...s.active.filter((a) => pendingIds.has(a.id)), ...add] }));
+  }, [pending, groups.length, activeLive.length, sess.active.length]);
 
-  const lo = curGame ? Math.min(sess.cur.lo, groups.length) : 0, hi = curGame ? Math.min(sess.cur.hi, groups.length) : 0;
-  const stale = curGame && lo >= hi; // Rangliste hat sich unter dem Vergleich veraendert
-  useEffect(() => { if (stale) setSess((s) => ({ ...s, cur: { id: curGame.id, lo: 0, hi: groups.length } })); }, [stale]);
-  const mid = (lo + hi) >> 1;
+  const lo = cs ? Math.min(cs.lo, groups.length) : 0, hi = cs ? Math.min(cs.hi, groups.length) : 0;
+  const stale = !!cs && lo >= hi; // Rangliste hat sich unter dem Vergleich veraendert
+  useEffect(() => { if (stale) setSess((s) => ({ ...s, active: s.active.map((a) => (a.id === cs.id ? { id: a.id, lo: 0, hi: groups.length } : a)) })); }, [stale]);
+  // Vergleichsspiel: nicht exakt die Mitte, sondern leicht versetzt (je Spiel anders), und nie zweimal hintereinander dasselbe
+  const mid = (() => {
+    if (!cs || stale) return 0;
+    const len = hi - lo; if (len <= 1) return lo;
+    const frac = 0.34 + ((idHash(cs.id + ":" + lo + ":" + hi + sess.seed) % 1000) / 1000) * 0.32;
+    let m = lo + Math.min(len - 1, Math.floor(len * frac));
+    if (groups[m] && groups[m][0].id === sess.lastRef) m = m + 1 < hi ? m + 1 : m - 1;
+    return m;
+  })();
   const ref = curGame && !stale && groups[mid] ? groups[mid][0] : null;
 
   const answer = (kind) => {
     if (!curGame || !ref) return;
-    let patch = {}, inv = {}, nextCur = null;
-    if (kind === "equal") { patch = { [curGame.id]: groups[mid][0].rankPos }; inv = { [curGame.id]: null }; }
+    let patch = {}, inv = {}, finished = false, nlo = lo, nhi = hi, insertAt = -1;
+    const seen = [...(cs.seen || []), ref.id];
+    if (kind === "equal") { patch = { [curGame.id]: groups[mid][0].rankPos }; inv = { [curGame.id]: null }; finished = true; }
     else {
-      const nlo = kind === "worse" ? mid + 1 : lo, nhi = kind === "better" ? mid : hi;
+      nlo = kind === "worse" ? mid + 1 : lo; nhi = kind === "better" ? mid : hi;
+      // Beide Nachbarn der Endposition muessen direkt verglichen worden sein, sonst bliebe ein
+      // "gleich gut" unentdeckt (passiert, wenn andere Spiele zwischendurch in den Bereich rutschen).
+      const unseen = (i) => i >= 0 && i < groups.length && !groups[i].some((g) => seen.includes(g.id));
+      if (nlo >= nhi && unseen(nlo - 1)) { nlo = nlo - 1; nhi = nlo + 1; }
+      else if (nlo >= nhi && unseen(nlo)) { nhi = nlo + 1; }
       if (nlo >= nhi) {
+        finished = true; insertAt = nlo;
         const ng = groups.map((grp) => grp.map((x) => x.id)); ng.splice(nlo, 0, [curGame.id]);
         ng.forEach((ids, i) => ids.forEach((gid) => { const g = byId[gid]; if (g.rankPos !== i + 1) { patch[gid] = i + 1; inv[gid] = Number.isInteger(g.rankPos) ? g.rankPos : null; } }));
-      } else nextCur = { id: curGame.id, lo: nlo, hi: nhi };
+      }
     }
     haptic(8);
     if (Object.keys(patch).length) onApply(patch);
-    setSess((s) => ({ ...s, cur: nextCur, hist: [...s.hist, { cur: s.cur, inv }] }));
-    if (!nextCur && pending.length === 1) setRevealed(false);
+    // Eine neue Gruppe verschiebt die Bereiche der anderen laufenden Spiele
+    const rest = activeLive.slice(1).map((a) => (insertAt < 0 ? a : insertAt < a.lo ? { ...a, lo: a.lo + 1, hi: a.hi + 1 } : insertAt <= a.hi ? { ...a, hi: a.hi + 1 } : a));
+    const nextActive = finished ? rest : [...rest, { id: curGame.id, lo: nlo, hi: nhi, seen }];
+    setSess((s) => ({ ...s, active: nextActive, lastRef: ref.id, hist: [...s.hist, { active: s.active, lastRef: s.lastRef, inv }] }));
+    if (finished && pending.length === 1) setRevealed(false);
   };
   const undo = () => {
     if (fineOn) { if (sess.fine.idx > 0) { haptic(6); setSess((s) => ({ ...s, fine: { ...s.fine, idx: s.fine.idx - 1, res: s.fine.res.slice(0, -1) } })); } return; }
     const h = sess.hist[sess.hist.length - 1]; if (!h) return;
     haptic(6);
     if (Object.keys(h.inv).length) onApply(h.inv);
-    setSess((s) => ({ ...s, cur: h.cur, hist: s.hist.slice(0, -1) }));
+    setSess((s) => ({ ...s, active: h.active, lastRef: h.lastRef, hist: s.hist.slice(0, -1) }));
   };
   const restart = () => {
     if (!window.confirm("Ranking wirklich neu starten? Alle bisherigen Duelle gehen verloren.")) return;
     const patch = {}; eligible.forEach((g) => { if (Number.isInteger(g.rankPos)) patch[g.id] = null; });
     if (Object.keys(patch).length) onApply(patch);
-    setSess({ seed: Math.floor(Math.random() * 1e9), cur: null, hist: [], fine: null, fineLast: null }); setView(null); setRevealed(false);
+    setSess({ seed: Math.floor(Math.random() * 1e9), active: [], lastRef: null, hist: [], fine: null, fineLast: null }); setView(null); setRevealed(false);
   };
 
   // Wischen (Zeigerereignisse, Maus und Touch)
