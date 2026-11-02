@@ -5688,13 +5688,41 @@ async function drawTop10Image(entries) {
   return new Promise((res, rej) => cv.toBlob((b) => (b ? res(b) : rej(new Error("toBlob"))), "image/png"));
 }
 
+// Feinrunde: die Spitze (Top 10) spielt "alle gegen alle". Paare aus derselben Gruppe
+// ("gleich gut") entfallen, sie hast du schon entschieden.
+function fineIds(groups, limit = 10) { return rankEntries(groups, limit).map((e) => e.game.id); }
+function finePairs(groups, seed) {
+  const ids = fineIds(groups), grpOf = {};
+  groups.forEach((grp, i) => grp.forEach((g) => { grpOf[g.id] = i; }));
+  const pairs = [];
+  for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) if (grpOf[ids[i]] !== grpOf[ids[j]]) pairs.push(idHash(ids[i] + ids[j] + seed) % 2 ? [ids[i], ids[j]] : [ids[j], ids[i]]);
+  return { ids, pairs: pairs.sort((a, b) => idHash(a.join() + seed) - idHash(b.join() + seed)) };
+}
+// Auswertung: Siege zaehlen (gleich gut = je ein halber), bei Gleichstand bleibt die alte Reihenfolge.
+// Wer vorher "gleich gut" war und jetzt gleich viele Punkte hat, bleibt gleichauf.
+function fineOutcome(groups, fine) {
+  const score = Object.fromEntries(fine.ids.map((id) => [id, 0]));
+  fine.pairs.forEach(([a, b], i) => { const r = fine.res[i]; if (r === "better") score[a] += 1; else if (r === "worse") score[b] += 1; else { score[a] += 0.5; score[b] += 0.5; } });
+  const all = groups.flat(), byId = Object.fromEntries(all.map((g) => [g.id, g]));
+  const sorted = [...fine.ids].sort((a, b) => score[b] - score[a] || fine.ids.indexOf(a) - fine.ids.indexOf(b));
+  const top = [];
+  sorted.forEach((id) => { const last = top[top.length - 1]; if (last && score[last[0]] === score[id] && byId[last[0]].rankPos === byId[id].rankPos) last.push(id); else top.push([id]); });
+  const rest = groups.map((grp) => grp.map((g) => g.id).filter((id) => !fine.ids.includes(id))).filter((a) => a.length);
+  const next = [...top, ...rest], patch = {}, moves = [];
+  const oldPlace = Object.fromEntries(rankEntries(groups).map((e) => [e.game.id, e.place]));
+  next.forEach((ids, i) => ids.forEach((id) => { if (byId[id].rankPos !== i + 1) patch[id] = i + 1; }));
+  const newPlace = {}; let before = 0; next.forEach((ids) => { ids.forEach((id) => { newPlace[id] = before + 1; }); before += ids.length; });
+  fine.ids.forEach((id) => { if (oldPlace[id] !== newPlace[id]) moves.push({ name: byId[id].name, from: oldPlace[id], to: newPlace[id] }); });
+  return { patch, moves: moves.sort((a, b) => a.to - b.to) };
+}
+
 function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
   const eligible = useMemo(() => rankEligible(games, plays), [games, plays]);
   const groups = useMemo(() => rankGroups(eligible), [eligible]);
   const byId = useMemo(() => Object.fromEntries(eligible.map((g) => [g.id, g])), [eligible]);
   const [sess, setSess] = useState(() => {
-    try { const s = JSON.parse(localStorage.getItem(RANK_SESSION_KEY) || "null"); if (s && typeof s.seed === "number") return { seed: s.seed, cur: s.cur || null, hist: Array.isArray(s.hist) ? s.hist : [] }; } catch {}
-    return { seed: Math.floor(Math.random() * 1e9), cur: null, hist: [] };
+    try { const s = JSON.parse(localStorage.getItem(RANK_SESSION_KEY) || "null"); if (s && typeof s.seed === "number") return { seed: s.seed, cur: s.cur || null, hist: Array.isArray(s.hist) ? s.hist : [], fine: s.fine || null }; } catch {}
+    return { seed: Math.floor(Math.random() * 1e9), cur: null, hist: [], fine: null };
   });
   useEffect(() => { try { localStorage.setItem(RANK_SESSION_KEY, JSON.stringify({ ...sess, hist: sess.hist.slice(-40) })); } catch {} }, [sess]);
   const pending = useMemo(() => eligible.filter((g) => !Number.isInteger(g.rankPos)).sort((a, b) => idHash(a.id + sess.seed) - idHash(b.id + sess.seed)), [eligible, sess.seed]);
@@ -5703,6 +5731,24 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
   const done = pending.length === 0 && groups.length > 0;
   const [view, setView] = useState(initialView); // null = automatisch | "reveal" | "list" | "duel"
   const [revealed, setRevealed] = useState(false);
+  const [fineSummary, setFineSummary] = useState(null);
+  // Feinrunde: Paar, das gerade zur Wahl steht (Karte gegen Referenz wie im normalen Duell)
+  const fineOn = view === "fine" && sess.fine && sess.fine.idx < sess.fine.pairs.length;
+  const fPair = fineOn ? sess.fine.pairs[sess.fine.idx] : null;
+  const fCur = fPair ? byId[fPair[0]] : null, fRef = fPair ? byId[fPair[1]] : null;
+  // Feinrunde verwerfen, wenn sich die Spiele darunter geaendert haben
+  useEffect(() => { if (sess.fine && sess.fine.ids.some((id) => !byId[id])) { setSess((s) => ({ ...s, fine: null })); setView((v) => (v === "fine" ? "list" : v)); } }, [byId, sess.fine]);
+  const startFine = () => { const f = finePairs(groups, sess.seed); setSess((s) => ({ ...s, fine: { ids: f.ids, pairs: f.pairs, idx: 0, res: [] } })); setFineSummary(null); setView("fine"); };
+  const answerFine = (kind) => {
+    const f = sess.fine; if (!f || !fPair) return;
+    haptic(8);
+    const res = [...f.res, kind], idx = f.idx + 1;
+    if (idx >= f.pairs.length) {
+      const out = fineOutcome(groups, { ...f, res });
+      if (Object.keys(out.patch).length) onApply(out.patch);
+      setFineSummary(out.moves); setSess((s) => ({ ...s, fine: null })); setView("list");
+    } else setSess((s) => ({ ...s, fine: { ...f, idx, res } }));
+  };
 
   // Naechstes Spiel starten (das allererste wird ohne Vergleich einsortiert).
   useEffect(() => {
@@ -5735,6 +5781,7 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
     if (!nextCur && pending.length === 1) setRevealed(false);
   };
   const undo = () => {
+    if (fineOn) { if (sess.fine.idx > 0) { haptic(6); setSess((s) => ({ ...s, fine: { ...s.fine, idx: s.fine.idx - 1, res: s.fine.res.slice(0, -1) } })); } return; }
     const h = sess.hist[sess.hist.length - 1]; if (!h) return;
     haptic(6);
     if (Object.keys(h.inv).length) onApply(h.inv);
@@ -5752,10 +5799,11 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
   const startX = React.useRef(null);
   const reduce = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
   const decide = (kind) => {
-    if (fly || !ref) return;
-    if (kind === "equal" || reduce) { answer(kind); setDx(0); return; }
+    if (fly || !(fineOn ? fRef : ref)) return;
+    const go = fineOn ? answerFine : answer;
+    if (kind === "equal" || reduce) { go(kind); setDx(0); return; }
     setFly(true); setDx(kind === "better" ? 700 : -700);
-    setTimeout(() => { answer(kind); setDx(0); setFly(false); }, 230);
+    setTimeout(() => { go(kind); setDx(0); setFly(false); }, 230);
   };
   useEffect(() => {
     const onKey = (e) => { if (e.key === "ArrowRight") decide("better"); else if (e.key === "ArrowLeft") decide("worse"); else if (e.key === "ArrowDown") decide("equal"); };
@@ -5769,10 +5817,10 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
     <div className="shrink-0 flex items-center gap-3 px-4" style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}>
       <button onClick={onClose} aria-label="Schließen" className="w-10 h-10 rounded-full border border-line bg-bg text-ink flex items-center justify-center"><X size={18} /></button>
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] text-dim font-body">{done ? "Alle eingeordnet" : `${ranked} von ${total} eingeordnet`}</p>
-        <div className="h-1.5 rounded-full bg-line overflow-hidden mt-1"><div className="h-full bg-accent transition-all" style={{ width: `${total ? (ranked / total) * 100 : 0}%` }} /></div>
+        <p className="text-[11px] text-dim font-body">{fineOn ? `Feinrunde: Duell ${sess.fine.idx + 1} von ${sess.fine.pairs.length}` : done ? "Alle eingeordnet" : `${ranked} von ${total} eingeordnet`}</p>
+        <div className="h-1.5 rounded-full bg-line overflow-hidden mt-1"><div className="h-full bg-accent transition-all" style={{ width: `${fineOn ? (sess.fine.idx / sess.fine.pairs.length) * 100 : total ? (ranked / total) * 100 : 0}%` }} /></div>
       </div>
-      <button data-rank-undo onClick={undo} disabled={!sess.hist.length} aria-label="Rückgängig" className="h-10 px-3 rounded-full border border-line bg-bg text-ink text-sm disabled:opacity-30">Rückgängig</button>
+      <button data-rank-undo onClick={undo} disabled={fineOn ? sess.fine.idx === 0 : !sess.hist.length} aria-label="Rückgängig" className="h-10 px-3 rounded-full border border-line bg-bg text-ink text-sm disabled:opacity-30">Rückgängig</button>
     </div>
   );
 
@@ -5784,9 +5832,11 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
     );
   }
   if (showResult) {
-    return <RankingResult groups={groups} done={done} pendingCount={pending.length} header={header} onContinue={() => setView("duel")} onRestart={restart} view={view} setView={setView} revealed={revealed} setRevealed={setRevealed} onClose={onClose} />;
+    return <RankingResult groups={groups} done={done} pendingCount={pending.length} header={header} onContinue={() => setView("duel")} onRestart={restart} view={view} setView={setView} revealed={revealed} setRevealed={setRevealed} onClose={onClose}
+      fine={sess.fine} finePairCount={finePairs(groups, sess.seed).pairs.length} onFine={() => (sess.fine ? setView("fine") : startFine())} fineSummary={fineSummary} />;
   }
-  if (!curGame || !ref) {
+  const dCur = fineOn ? fCur : curGame, dRef = fineOn ? fRef : ref;
+  if (!dCur || !dRef) {
     return <div className="fixed inset-0 z-[60] bg-bg flex flex-col font-body">{header}</div>;
   }
   const place = (g) => 1 + groups.slice(0, groups.findIndex((grp) => grp.includes(g))).reduce((a, grp) => a + grp.length, 0);
@@ -5797,25 +5847,25 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
       <div className="shrink-0 px-5 pt-3">
         <p className="text-[11px] text-dim uppercase tracking-[0.16em]">Mag ich lieber als …</p>
         <div className="flex items-center gap-3 mt-1.5 bg-surface border border-line rounded-[16px] p-2 pr-4" data-rank-ref>
-          <Cover game={ref} size="sm" />
-          <div className="min-w-0 flex-1"><p className="text-ink font-medium truncate">{ref.name}</p><p className="text-dim text-xs">aktuell Platz {place(ref)}{groups[mid].length > 1 ? " (gleichauf)" : ""}</p></div>
+          <Cover game={dRef} size="sm" />
+          <div className="min-w-0 flex-1"><p className="text-ink font-medium truncate">{dRef.name}</p><p className="text-dim text-xs">aktuell Platz {place(dRef)}{(groups.find((grp) => grp.includes(dRef)) || []).length > 1 ? " (gleichauf)" : ""}</p></div>
         </div>
       </div>
       <div className="flex-1 min-h-0 flex items-center justify-center px-5 py-3 overflow-hidden">
-        <div key={curGame.id} data-rank-card className="relative w-full max-w-[22rem] rounded-[24px] border border-line bg-surface shadow-xl overflow-hidden rise-in"
+        <div key={dCur.id + (fineOn ? "-" + sess.fine.idx : "")} data-rank-card className="relative w-full max-w-[22rem] rounded-[24px] border border-line bg-surface shadow-xl overflow-hidden rise-in"
           style={{ transform: `translateX(${dx}px) rotate(${dx / 22}deg)`, transition: startX.current === null ? "transform .22s ease-out" : "none", touchAction: "none", cursor: "grab" }}
           onPointerDown={(e) => { if (fly) return; startX.current = e.clientX; e.currentTarget.setPointerCapture(e.pointerId); }}
           onPointerMove={(e) => { if (startX.current !== null) setDx(e.clientX - startX.current); }}
           onPointerUp={() => { const d = dx; startX.current = null; if (d > 110) decide("better"); else if (d < -110) decide("worse"); else setDx(0); }}
           onPointerCancel={() => { startX.current = null; setDx(0); }}>
-          <Cover game={curGame} size="lg" className="!rounded-none !border-0" />
-          <div className="p-4"><p className="font-display text-xl tracking-[-0.02em] text-ink leading-tight">{curGame.name}</p>
-            <p className="text-dim text-xs mt-1">{[curGame.year, curGame.minPlayers && curGame.maxPlayers ? `${curGame.minPlayers}–${curGame.maxPlayers} Spieler` : "", curGame.minTime ? `${curGame.minTime}${curGame.maxTime && curGame.maxTime !== curGame.minTime ? `–${curGame.maxTime}` : ""} Min.` : ""].filter(Boolean).join(" · ")}</p></div>
+          <Cover game={dCur} size="lg" className="!rounded-none !border-0" />
+          <div className="p-4"><p className="font-display text-xl tracking-[-0.02em] text-ink leading-tight">{dCur.name}</p>
+            <p className="text-dim text-xs mt-1">{[dCur.year, dCur.minPlayers && dCur.maxPlayers ? `${dCur.minPlayers}–${dCur.maxPlayers} Spieler` : "", dCur.minTime ? `${dCur.minTime}${dCur.maxTime && dCur.maxTime !== dCur.minTime ? `–${dCur.maxTime}` : ""} Min.` : ""].filter(Boolean).join(" · ")}</p></div>
           <span className="absolute top-5 left-5 px-3 py-1 rounded-lg border-4 border-teal text-teal font-display text-2xl -rotate-12 bg-bg/70" style={{ opacity: dx > 0 ? strength : 0 }}>LIEBER</span>
           <span className="absolute top-5 right-5 px-3 py-1 rounded-lg border-4 border-danger text-danger font-display text-2xl rotate-12 bg-bg/70" style={{ opacity: dx < 0 ? strength : 0 }}>WENIGER</span>
         </div>
       </div>
-      <div className="shrink-0 px-5 pb-3 text-center"><p className="text-xs text-dim">Rechts wischen = lieber als {ref.name} · links = weniger gern</p></div>
+      <div className="shrink-0 px-5 pb-3 text-center"><p className="text-xs text-dim">Rechts wischen = lieber als {dRef.name} · links = weniger gern</p></div>
       <div className="shrink-0 grid grid-cols-3 gap-3 px-5" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
         <button data-rank="worse" onClick={() => decide("worse")} className="h-14 rounded-[16px] border-2 border-danger/60 text-danger font-medium">Weniger</button>
         <button data-rank="equal" onClick={() => decide("equal")} className="h-14 rounded-[16px] border border-line bg-surface text-ink text-sm">Gleich gut</button>
@@ -5826,7 +5876,7 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
 }
 
 // Enthuellung von Platz 10 bis 1, danach Top-10-Karte zum Teilen und die ganze Rangliste.
-function RankingResult({ groups, done, pendingCount, header, onContinue, onRestart, view, setView, revealed, setRevealed, onClose }) {
+function RankingResult({ groups, done, pendingCount, header, onContinue, onRestart, view, setView, revealed, setRevealed, onClose, fine, finePairCount, onFine, fineSummary }) {
   const top = useMemo(() => rankEntries(groups, 10), [groups]);
   const all = useMemo(() => rankEntries(groups), [groups]);
   const [step, setStep] = useState(view === "list" || revealed ? top.length : 0); // wie viele Plaetze schon gezeigt
@@ -5885,6 +5935,18 @@ function RankingResult({ groups, done, pendingCount, header, onContinue, onResta
             <button data-rank-share-text onClick={() => share(false)} className="h-12 rounded-[14px] border border-line bg-surface text-ink">Als Text teilen</button>
           </div>
           {msg && <p className="text-xs text-dim text-center mt-2">{msg}</p>}
+          {fineSummary && (
+            <div data-fine-summary className="mt-3 rounded-[16px] border border-accent/40 bg-accent/5 p-3 text-sm text-ink">
+              {fineSummary.length === 0 ? "Die Feinrunde bestätigt deine Rangliste – alles bleibt, wie es war."
+                : <><p className="font-medium mb-1">Feinrunde: {fineSummary.length} {fineSummary.length === 1 ? "Platz hat" : "Plätze haben"} sich geändert</p>
+                  <ul className="text-xs text-dim space-y-0.5">{fineSummary.map((m) => <li key={m.name}>{m.name}: Platz {m.from} → {m.to}</li>)}</ul></>}
+            </div>
+          )}
+          {done && (fine || finePairCount > 0) && (
+            <button data-rank-fine onClick={onFine} className="w-full h-12 mt-3 rounded-[14px] border border-line bg-surface text-ink text-sm">
+              {fine ? `Feinrunde fortsetzen (${fine.idx} von ${fine.pairs.length})` : `Feinrunde: Top ${Math.min(10, groups.flat().length)} gegeneinander prüfen (${finePairCount} Duelle)`}
+            </button>
+          )}
           {pendingCount > 0 && (
             <button data-rank-continue onClick={onContinue} className="w-full h-12 mt-3 rounded-[14px] border border-accent/50 text-accent font-medium">{pendingCount} {pendingCount === 1 ? "neues Spiel" : "neue Spiele"} einordnen</button>
           )}

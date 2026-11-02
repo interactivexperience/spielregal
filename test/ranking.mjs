@@ -126,4 +126,45 @@ await page.waitForTimeout(500);
 const st2 = await stored();
 console.log("Ingenious ganz oben einsortiert (immer 'lieber'), die anderen eine Stufe nach unten:", st2.find((g) => g.name === "Ingenious").rankPos === 1 && st2.find((g) => g.name === "Azul").rankPos === 2);
 console.log("Danach Rangliste statt leerer Seite:", await page.locator("[data-ranking-result]").count() === 1);
+
+// --- Feinrunde: Top 10 gegeneinander (hier 9 Spiele, 35 Paare ohne das gleichauf liegende Paar)
+if (await page.locator('button:has-text("Überspringen")').count()) await page.locator('button:has-text("Überspringen")').click();
+await page.waitForTimeout(500);
+const fineBtn = page.locator("[data-rank-fine]");
+console.log("Feinrunde: Knopf mit 35 Duelle:", await fineBtn.count() === 1 && (await fineBtn.innerText()).includes("35 Duelle"), await fineBtn.count(), JSON.stringify(await fineBtn.first().innerText()));
+const playTruth = async (truthMap) => {
+  let n = 0;
+  for (let g = 0; g < 90; g++) {
+    if (await page.locator("[data-ranking-result]").count()) break;
+    if (!(await card.count())) { await page.waitForTimeout(120); continue; }
+    const { cur, ref } = await info();
+    const a = truthMap[cur] > truthMap[ref] ? "better" : truthMap[cur] < truthMap[ref] ? "worse" : "equal";
+    await page.locator(`[data-rank="${a}"]`).click(); await page.waitForTimeout(260); n++;
+  }
+  return n;
+};
+await fineBtn.click(); await page.waitForTimeout(500);
+console.log("Feinrunde startet mit 'Duell 1 von 35':", (await page.locator("[data-ranking-duel]").innerText()).includes("Duell 1 von 35"));
+{
+  const first = await info();
+  await page.locator('[data-rank="better"]').click(); await page.waitForTimeout(350);
+  await page.locator("[data-rank-undo]").click(); await page.waitForTimeout(350);
+  const again = await info();
+  console.log("Feinrunde Rueckgaengig: dasselbe Duell wieder da:", again.cur === first.cur && again.ref === first.ref && (await page.locator("[data-ranking-duel]").innerText()).includes("Duell 1 von 35"));
+}
+// Wahre Vorliebe: Brass jetzt VOR Azul (Widerspruch zur bisherigen Reihenfolge)
+const truth2 = { Ingenious: 10, Brass: 9.5, Azul: 9, Catan: 7, Dixit: 6, Everdell: 6, Fluxx: 4, Gloomhaven: 3, Hanabi: 2 };
+const n2 = await playTruth(truth2);
+await page.waitForTimeout(500);
+const sum = await page.locator("[data-fine-summary]").innerText();
+console.log("Feinrunde nach 35 Duellen beendet, Zusammenfassung nennt Brass und Azul:", n2 === 35 && sum.includes("Brass: Platz 3 → 2") && sum.includes("Azul: Platz 2 → 3"), JSON.stringify(sum));
+await page.screenshot({ path: `${SP}/ranking_fine.png` });
+const st3 = await stored();
+const rp = (n) => st3.find((g) => g.name === n).rankPos;
+console.log("Gespeichert: Ingenious 1, Brass 2, Azul 3, Catan 4, Dixit = Everdell gleichauf:", rp("Ingenious") === 1 && rp("Brass") === 2 && rp("Azul") === 3 && rp("Catan") === 4 && rp("Dixit") === rp("Everdell"));
+// Zweite Feinrunde mit derselben Vorliebe bestaetigt alles
+await page.locator("[data-rank-fine]").click(); await page.waitForTimeout(400);
+await playTruth(truth2);
+await page.waitForTimeout(500);
+console.log("Zweite Feinrunde: 'bestaetigt deine Rangliste':", (await page.locator("[data-fine-summary]").innerText()).includes("bestätigt"));
 await b.close(); server.close();
