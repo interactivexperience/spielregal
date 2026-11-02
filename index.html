@@ -5627,8 +5627,288 @@ function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, o
   );
 }
 
+/* ---------------- RANKING (Duelle per Wischen -> Top 10) ---------------- */
+// Jedes neue Spiel wird per Binaersuche in die schon geordnete Rangliste einsortiert:
+// die Karte tritt gegen ein Referenzspiel aus der Mitte an, rechts wischen = "lieber",
+// links = "weniger gern". Nach etwa log2(n) Wischern steht der Platz fest (50 Spiele ~ 6).
+// Die Rangliste steht als `rankPos` (1 = beste Gruppe, gleiche Zahl = gleich gut) direkt
+// am Spiel und wird damit wie alle Spieldaten gespeichert und synchronisiert. Nur der
+// laufende Vergleich (Reihenfolge, Verlauf fuers Rueckgaengig) liegt lokal.
+const RANK_SESSION_KEY = "spielregal:rankingSession";
+// Basisspiele mit mind. 1 Partie; Partien einer Erweiterung zaehlen zum Basisspiel.
+function rankEligible(games, plays) {
+  const isBase = (g) => !g.expansionOf || !games.some((x) => x.id === g.expansionOf);
+  const rootId = (id) => {
+    let g = games.find((x) => x.id === id);
+    for (let i = 0; i < 5 && g && !isBase(g); i++) g = games.find((x) => x.id === g.expansionOf);
+    return g ? g.id : id;
+  };
+  const played = new Set(plays.map((p) => rootId(p.gameId)));
+  return games.filter((g) => isBase(g) && played.has(g.id));
+}
+// [[Spiele], ...] beste Gruppe zuerst; Spiele in einer Gruppe sind "gleich gut".
+function rankGroups(eligible) {
+  const by = new Map();
+  eligible.filter((g) => Number.isInteger(g.rankPos)).forEach((g) => { if (!by.has(g.rankPos)) by.set(g.rankPos, []); by.get(g.rankPos).push(g); });
+  return [...by.entries()].sort((a, b) => a[0] - b[0]).map(([, arr]) => arr.sort((a, b) => a.name.localeCompare(b.name, "de")));
+}
+// Eintraege mit Platz (gleich gut = gleicher Platz), maximal `limit` Spiele.
+function rankEntries(groups, limit = Infinity) {
+  const out = []; let before = 0;
+  for (const grp of groups) {
+    for (const g of grp) { if (out.length >= limit) return out; out.push({ game: g, place: before + 1, tie: grp.length > 1 }); }
+    before += grp.length;
+  }
+  return out;
+}
+const rankImg = (g) => (g.images && g.images[0]) || g.image || "";
+// Top 10 als Bild (Canvas). Fremde Cover ohne CORS-Freigabe laden nicht -> Platzhalter statt Absturz.
+async function drawTop10Image(entries) {
+  const W = 1080, rowH = 118, H = 250 + entries.length * rowH + 90;
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+  const c = cv.getContext("2d");
+  const grad = c.createLinearGradient(0, 0, 0, H); grad.addColorStop(0, "#2B1B14"); grad.addColorStop(1, "#14100E");
+  c.fillStyle = grad; c.fillRect(0, 0, W, H);
+  c.fillStyle = "#F4EDE4"; c.font = "700 84px system-ui, sans-serif"; c.fillText("Meine Top 10", 70, 130);
+  c.fillStyle = "#FF6F54"; c.font = "600 34px system-ui, sans-serif"; c.fillText("Brettspiele · Spielregal", 72, 190);
+  const load = (src) => new Promise((res) => { if (!src) return res(null); const im = new Image(); im.crossOrigin = "anonymous"; const t = setTimeout(() => res(null), 4000); im.onload = () => { clearTimeout(t); res(im); }; im.onerror = () => { clearTimeout(t); res(null); }; im.src = src; });
+  const imgs = await Promise.all(entries.map((e) => load(rankImg(e.game))));
+  entries.forEach((e, i) => {
+    const y = 240 + i * rowH;
+    c.fillStyle = e.place === 1 ? "#FF6F54" : "#F4EDE4"; c.font = "700 56px system-ui, sans-serif"; c.textAlign = "right";
+    c.fillText(String(e.place), 150, y + 70); c.textAlign = "left";
+    c.save(); c.beginPath(); c.roundRect(180, y + 8, 96, 96, 16); c.clip();
+    if (imgs[i]) c.drawImage(imgs[i], 180, y + 8, 96, 96); else { c.fillStyle = "#3B2E27"; c.fillRect(180, y + 8, 96, 96); }
+    c.restore();
+    c.fillStyle = "#F4EDE4"; c.font = "600 46px system-ui, sans-serif";
+    let name = e.game.name; while (c.measureText(name).width > 720 && name.length > 4) name = name.slice(0, -2);
+    if (name !== e.game.name) name += "…";
+    c.fillText(name, 306, y + 72);
+  });
+  return new Promise((res, rej) => cv.toBlob((b) => (b ? res(b) : rej(new Error("toBlob"))), "image/png"));
+}
+
+function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
+  const eligible = useMemo(() => rankEligible(games, plays), [games, plays]);
+  const groups = useMemo(() => rankGroups(eligible), [eligible]);
+  const byId = useMemo(() => Object.fromEntries(eligible.map((g) => [g.id, g])), [eligible]);
+  const [sess, setSess] = useState(() => {
+    try { const s = JSON.parse(localStorage.getItem(RANK_SESSION_KEY) || "null"); if (s && typeof s.seed === "number") return { seed: s.seed, cur: s.cur || null, hist: Array.isArray(s.hist) ? s.hist : [] }; } catch {}
+    return { seed: Math.floor(Math.random() * 1e9), cur: null, hist: [] };
+  });
+  useEffect(() => { try { localStorage.setItem(RANK_SESSION_KEY, JSON.stringify({ ...sess, hist: sess.hist.slice(-40) })); } catch {} }, [sess]);
+  const pending = useMemo(() => eligible.filter((g) => !Number.isInteger(g.rankPos)).sort((a, b) => idHash(a.id + sess.seed) - idHash(b.id + sess.seed)), [eligible, sess.seed]);
+  const curGame = sess.cur ? pending.find((g) => g.id === sess.cur.id) : null;
+  const total = eligible.length, ranked = total - pending.length;
+  const done = pending.length === 0 && groups.length > 0;
+  const [view, setView] = useState(initialView); // null = automatisch | "reveal" | "list" | "duel"
+  const [revealed, setRevealed] = useState(false);
+
+  // Naechstes Spiel starten (das allererste wird ohne Vergleich einsortiert).
+  useEffect(() => {
+    if (curGame || pending.length === 0) return;
+    const next = pending[0];
+    if (groups.length === 0) { onApply({ [next.id]: 1 }); return; }
+    setSess((s) => ({ ...s, cur: { id: next.id, lo: 0, hi: groups.length } }));
+  }, [curGame, pending, groups.length]);
+
+  const lo = curGame ? Math.min(sess.cur.lo, groups.length) : 0, hi = curGame ? Math.min(sess.cur.hi, groups.length) : 0;
+  const stale = curGame && lo >= hi; // Rangliste hat sich unter dem Vergleich veraendert
+  useEffect(() => { if (stale) setSess((s) => ({ ...s, cur: { id: curGame.id, lo: 0, hi: groups.length } })); }, [stale]);
+  const mid = (lo + hi) >> 1;
+  const ref = curGame && !stale && groups[mid] ? groups[mid][0] : null;
+
+  const answer = (kind) => {
+    if (!curGame || !ref) return;
+    let patch = {}, inv = {}, nextCur = null;
+    if (kind === "equal") { patch = { [curGame.id]: groups[mid][0].rankPos }; inv = { [curGame.id]: null }; }
+    else {
+      const nlo = kind === "worse" ? mid + 1 : lo, nhi = kind === "better" ? mid : hi;
+      if (nlo >= nhi) {
+        const ng = groups.map((grp) => grp.map((x) => x.id)); ng.splice(nlo, 0, [curGame.id]);
+        ng.forEach((ids, i) => ids.forEach((gid) => { const g = byId[gid]; if (g.rankPos !== i + 1) { patch[gid] = i + 1; inv[gid] = Number.isInteger(g.rankPos) ? g.rankPos : null; } }));
+      } else nextCur = { id: curGame.id, lo: nlo, hi: nhi };
+    }
+    haptic(8);
+    if (Object.keys(patch).length) onApply(patch);
+    setSess((s) => ({ ...s, cur: nextCur, hist: [...s.hist, { cur: s.cur, inv }] }));
+    if (!nextCur && pending.length === 1) setRevealed(false);
+  };
+  const undo = () => {
+    const h = sess.hist[sess.hist.length - 1]; if (!h) return;
+    haptic(6);
+    if (Object.keys(h.inv).length) onApply(h.inv);
+    setSess((s) => ({ ...s, cur: h.cur, hist: s.hist.slice(0, -1) }));
+  };
+  const restart = () => {
+    if (!window.confirm("Ranking wirklich neu starten? Alle bisherigen Duelle gehen verloren.")) return;
+    const patch = {}; eligible.forEach((g) => { if (Number.isInteger(g.rankPos)) patch[g.id] = null; });
+    if (Object.keys(patch).length) onApply(patch);
+    setSess({ seed: Math.floor(Math.random() * 1e9), cur: null, hist: [] }); setView(null); setRevealed(false);
+  };
+
+  // Wischen (Zeigerereignisse, Maus und Touch)
+  const [dx, setDx] = useState(0), [fly, setFly] = useState(false);
+  const startX = React.useRef(null);
+  const reduce = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const decide = (kind) => {
+    if (fly || !ref) return;
+    if (kind === "equal" || reduce) { answer(kind); setDx(0); return; }
+    setFly(true); setDx(kind === "better" ? 700 : -700);
+    setTimeout(() => { answer(kind); setDx(0); setFly(false); }, 230);
+  };
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "ArrowRight") decide("better"); else if (e.key === "ArrowLeft") decide("worse"); else if (e.key === "ArrowDown") decide("equal"); };
+    window.addEventListener("keydown", onKey); return () => window.removeEventListener("keydown", onKey);
+  });
+
+  // Nach dem Nachruecken neuer Spiele zurueck zur Rangliste statt zu einer leeren Seite
+  useEffect(() => { if (done && view === "duel") setView("list"); }, [done, view]);
+  const showResult = (view === "reveal" || view === "list") || (view === null && done);
+  const header = (
+    <div className="shrink-0 flex items-center gap-3 px-4" style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}>
+      <button onClick={onClose} aria-label="Schließen" className="w-10 h-10 rounded-full border border-line bg-bg text-ink flex items-center justify-center"><X size={18} /></button>
+      <div className="flex-1 min-w-0">
+        <p className="text-[11px] text-dim font-body">{done ? "Alle eingeordnet" : `${ranked} von ${total} eingeordnet`}</p>
+        <div className="h-1.5 rounded-full bg-line overflow-hidden mt-1"><div className="h-full bg-accent transition-all" style={{ width: `${total ? (ranked / total) * 100 : 0}%` }} /></div>
+      </div>
+      <button data-rank-undo onClick={undo} disabled={!sess.hist.length} aria-label="Rückgängig" className="h-10 px-3 rounded-full border border-line bg-bg text-ink text-sm disabled:opacity-30">Rückgängig</button>
+    </div>
+  );
+
+  if (total < 2) {
+    return (
+      <div className="fixed inset-0 z-[60] bg-bg flex flex-col font-body">{header}
+        <div className="flex-1 flex items-center justify-center p-8 text-center"><p className="text-ink">Für ein Ranking brauchst du mindestens zwei Spiele mit einer eingetragenen Partie.</p></div>
+      </div>
+    );
+  }
+  if (showResult) {
+    return <RankingResult groups={groups} done={done} pendingCount={pending.length} header={header} onContinue={() => setView("duel")} onRestart={restart} view={view} setView={setView} revealed={revealed} setRevealed={setRevealed} onClose={onClose} />;
+  }
+  if (!curGame || !ref) {
+    return <div className="fixed inset-0 z-[60] bg-bg flex flex-col font-body">{header}</div>;
+  }
+  const place = (g) => 1 + groups.slice(0, groups.findIndex((grp) => grp.includes(g))).reduce((a, grp) => a + grp.length, 0);
+  const strength = Math.min(1, Math.abs(dx) / 110);
+  return (
+    <div className="fixed inset-0 z-[60] bg-bg flex flex-col font-body select-none" data-ranking-duel>
+      {header}
+      <div className="shrink-0 px-5 pt-3">
+        <p className="text-[11px] text-dim uppercase tracking-[0.16em]">Mag ich lieber als …</p>
+        <div className="flex items-center gap-3 mt-1.5 bg-surface border border-line rounded-[16px] p-2 pr-4" data-rank-ref>
+          <Cover game={ref} size="sm" />
+          <div className="min-w-0 flex-1"><p className="text-ink font-medium truncate">{ref.name}</p><p className="text-dim text-xs">aktuell Platz {place(ref)}{groups[mid].length > 1 ? " (gleichauf)" : ""}</p></div>
+        </div>
+      </div>
+      <div className="flex-1 min-h-0 flex items-center justify-center px-5 py-3 overflow-hidden">
+        <div key={curGame.id} data-rank-card className="relative w-full max-w-[22rem] rounded-[24px] border border-line bg-surface shadow-xl overflow-hidden rise-in"
+          style={{ transform: `translateX(${dx}px) rotate(${dx / 22}deg)`, transition: startX.current === null ? "transform .22s ease-out" : "none", touchAction: "none", cursor: "grab" }}
+          onPointerDown={(e) => { if (fly) return; startX.current = e.clientX; e.currentTarget.setPointerCapture(e.pointerId); }}
+          onPointerMove={(e) => { if (startX.current !== null) setDx(e.clientX - startX.current); }}
+          onPointerUp={() => { const d = dx; startX.current = null; if (d > 110) decide("better"); else if (d < -110) decide("worse"); else setDx(0); }}
+          onPointerCancel={() => { startX.current = null; setDx(0); }}>
+          <Cover game={curGame} size="lg" className="!rounded-none !border-0" />
+          <div className="p-4"><p className="font-display text-xl tracking-[-0.02em] text-ink leading-tight">{curGame.name}</p>
+            <p className="text-dim text-xs mt-1">{[curGame.year, curGame.minPlayers && curGame.maxPlayers ? `${curGame.minPlayers}–${curGame.maxPlayers} Spieler` : "", curGame.minTime ? `${curGame.minTime}${curGame.maxTime && curGame.maxTime !== curGame.minTime ? `–${curGame.maxTime}` : ""} Min.` : ""].filter(Boolean).join(" · ")}</p></div>
+          <span className="absolute top-5 left-5 px-3 py-1 rounded-lg border-4 border-teal text-teal font-display text-2xl -rotate-12 bg-bg/70" style={{ opacity: dx > 0 ? strength : 0 }}>LIEBER</span>
+          <span className="absolute top-5 right-5 px-3 py-1 rounded-lg border-4 border-danger text-danger font-display text-2xl rotate-12 bg-bg/70" style={{ opacity: dx < 0 ? strength : 0 }}>WENIGER</span>
+        </div>
+      </div>
+      <div className="shrink-0 px-5 pb-3 text-center"><p className="text-xs text-dim">Rechts wischen = lieber als {ref.name} · links = weniger gern</p></div>
+      <div className="shrink-0 grid grid-cols-3 gap-3 px-5" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
+        <button data-rank="worse" onClick={() => decide("worse")} className="h-14 rounded-[16px] border-2 border-danger/60 text-danger font-medium">Weniger</button>
+        <button data-rank="equal" onClick={() => decide("equal")} className="h-14 rounded-[16px] border border-line bg-surface text-ink text-sm">Gleich gut</button>
+        <button data-rank="better" onClick={() => decide("better")} className="h-14 rounded-[16px] border-2 border-teal/70 text-teal font-medium">Lieber</button>
+      </div>
+    </div>
+  );
+}
+
+// Enthuellung von Platz 10 bis 1, danach Top-10-Karte zum Teilen und die ganze Rangliste.
+function RankingResult({ groups, done, pendingCount, header, onContinue, onRestart, view, setView, revealed, setRevealed, onClose }) {
+  const top = useMemo(() => rankEntries(groups, 10), [groups]);
+  const all = useMemo(() => rankEntries(groups), [groups]);
+  const [step, setStep] = useState(view === "list" || revealed ? top.length : 0); // wie viele Plaetze schon gezeigt
+  const [msg, setMsg] = useState("");
+  const revealing = view !== "list" && step < top.length;
+  useEffect(() => {
+    if (!revealing) { if (!revealed) setRevealed(true); return; }
+    const t = setTimeout(() => setStep((s) => s + 1), 1500);
+    return () => clearTimeout(t);
+  }, [revealing, step]);
+  const shown = [...top].reverse().slice(0, step); // bisher enthuellt (10 -> 1)
+  const current = revealing ? top[top.length - 1 - step] : null;
+  const text = "Meine Top 10 Brettspiele:\n" + top.map((e) => `${e.place}. ${e.game.name}`).join("\n");
+  const share = async (asImage) => {
+    try {
+      if (asImage) {
+        const blob = await drawTop10Image(top); const file = new File([blob], "top10.png", { type: "image/png" });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: "Meine Top 10" }); return; }
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "top10.png"; a.click(); setMsg("Bild gespeichert"); return;
+      }
+      if (navigator.share) { await navigator.share({ title: "Meine Top 10", text }); return; }
+      await navigator.clipboard.writeText(text); setMsg("Liste kopiert");
+    } catch (e) {
+      if (e && e.name === "AbortError") return;
+      try { await navigator.clipboard.writeText(text); setMsg("Als Text kopiert"); } catch { setMsg("Teilen nicht möglich"); }
+    }
+  };
+  return (
+    <div className="fixed inset-0 z-[60] bg-bg flex flex-col font-body" data-ranking-result>
+      {header}
+      {revealing ? (
+        <button data-rank-reveal type="button" onClick={() => setStep((s) => s + 1)} className="flex-1 min-h-0 flex flex-col items-center justify-center px-6 text-center">
+          <p className="text-dim text-xs uppercase tracking-[0.2em] mb-3">Platz</p>
+          <p key={step} className="font-display text-[7rem] leading-none tracking-[-0.06em] text-accent rise-in">{current.place}</p>
+          <div key={"c" + step} className="mt-5 w-56 rise-in"><Cover game={current.game} size="lg" /></div>
+          <p className="mt-4 font-display text-2xl text-ink rise-in">{current.game.name}</p>
+          <span className="mt-6 text-xs text-dim">Tippen für weiter</span>
+        </button>
+      ) : (
+        <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-6 pt-3">
+          <div className="rounded-[24px] p-5 text-[#F4EDE4]" style={{ background: "linear-gradient(180deg,#2B1B14,#14100E)" }} data-top10-card>
+            <p className="font-display text-3xl tracking-[-0.03em]">Meine Top 10</p>
+            <p className="text-[#FF6F54] text-xs font-medium mt-1 mb-4">Brettspiele · Spielregal</p>
+            <ol className="space-y-2.5">
+              {top.map((e) => (
+                <li key={e.game.id} className="flex items-center gap-3">
+                  <span className={`w-7 text-right font-display text-xl ${e.place === 1 ? "text-[#FF6F54]" : ""}`}>{e.place}</span>
+                  <Cover game={e.game} size="sm" />
+                  <span className="min-w-0 truncate">{e.game.name}{e.tie ? <span className="text-[#F4EDE4]/50 text-xs"> · gleichauf</span> : ""}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div className="grid grid-cols-2 gap-2 mt-3">
+            <button data-rank-share-image onClick={() => share(true)} className="h-12 rounded-[14px] bg-accent text-white font-medium">Als Bild teilen</button>
+            <button data-rank-share-text onClick={() => share(false)} className="h-12 rounded-[14px] border border-line bg-surface text-ink">Als Text teilen</button>
+          </div>
+          {msg && <p className="text-xs text-dim text-center mt-2">{msg}</p>}
+          {pendingCount > 0 && (
+            <button data-rank-continue onClick={onContinue} className="w-full h-12 mt-3 rounded-[14px] border border-accent/50 text-accent font-medium">{pendingCount} {pendingCount === 1 ? "neues Spiel" : "neue Spiele"} einordnen</button>
+          )}
+          <button onClick={() => { setStep(0); setView("reveal"); setRevealed(false); }} className="w-full h-11 mt-2 text-sm text-dim">Enthüllung noch einmal</button>
+          <h3 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mt-5 mb-2">Komplette Rangliste ({all.length})</h3>
+          <ol data-rank-all className="divide-y divide-line">
+            {all.map((e) => (
+              <li key={e.game.id} className="flex items-center gap-3 py-2">
+                <span className="w-8 text-right text-dim text-sm">{e.place}{e.tie ? "=" : ""}</span>
+                <Cover game={e.game} size="sm" />
+                <span className="min-w-0 truncate text-ink text-sm">{e.game.name}</span>
+              </li>
+            ))}
+          </ol>
+          <button onClick={onRestart} className="w-full h-11 mt-5 text-sm text-danger">Ranking neu starten</button>
+        </div>
+      )}
+      {revealing && <button onClick={() => { setStep(top.length); }} className="shrink-0 h-12 text-sm text-dim" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>Überspringen</button>}
+    </div>
+  );
+}
+
 /* ---------------- DASHBOARD ---------------- */
-const DEFAULT_DASHBOARD_ORDER = ["stats", "tip", "year", "taste", "browsergames", "month", "records", "bestof", "wishlist", "lent", "topRated", "dust", "digital"];
+const DEFAULT_DASHBOARD_ORDER = ["stats", "tip", "year", "ranking", "taste", "browsergames", "month", "records", "bestof", "wishlist", "lent", "topRated", "dust", "digital"];
 
 function DashboardReorderScreen({ order, sections, labels, hiddenSections = [], onToggleHidden, onSave, onClose }) {
   const [items, setItems] = useState(order.filter((key) => labels[key]));
@@ -5727,7 +6007,7 @@ function DashboardReorderScreen({ order, sections, labels, hiddenSections = [], 
   , document.body);
 }
 
-function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorder, hiddenSections = [], onToggleHidden, onSearch, aiWorkerUrl }) {
+function Dashboard({ games, plays, onQuickFilter, onView, onOpenRanking, sectionOrder, onReorder, hiddenSections = [], onToggleHidden, onSearch, aiWorkerUrl }) {
   // Bereits verkaufte UND zum Verkauf markierte Spiele stehen zwar noch mit
   // status "owned" da (der Verkauf(sprozess) loescht den Eintrag nicht),
   // sind aber in der Sammlung-Standardansicht ausgeblendet (dort erst per
@@ -6155,6 +6435,53 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
         </div>
       </div>
     ),
+    ranking: (() => {
+      const elig = rankEligible(games, plays), grp = rankGroups(elig);
+      const rankedN = grp.reduce((a, g) => a + g.length, 0), pendingN = elig.length - rankedN;
+      if (rankedN === 0 && (!onOpenRanking || elig.length < 2)) return null;
+      const top = rankEntries(grp, 10);
+      return (
+        <div key="ranking" className="border-t border-line pt-5" data-dash-ranking>
+          <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-3">Mein Ranking</h2>
+          {rankedN === 0 ? (
+            <>
+              <p className="text-sm text-ink">Vergleiche deine {elig.length} gespielten Spiele per Wischen: Was magst du lieber? Am Ende steht deine Top 10.</p>
+              <button data-rank-start onClick={() => onOpenRanking(null)} className="mt-3 h-11 px-5 rounded-full bg-accent text-white text-sm font-medium">Ranking starten</button>
+            </>
+          ) : (
+            <>
+              {pendingN > 0 && (
+                <div className="mb-3">
+                  <p className="text-xs text-ink mb-1.5">{rankedN} von {elig.length} Spielen eingeordnet</p>
+                  <div className="h-1.5 rounded-full bg-line overflow-hidden"><div className="h-full bg-accent" style={{ width: `${(rankedN / elig.length) * 100}%` }} /></div>
+                </div>
+              )}
+              {top.length >= 3 && (
+                <div key={top.map((e) => e.game.id).join()} className="flex gap-3 overflow-x-auto pb-1 pt-3" data-rank-top>
+                  {top.map((e) => {
+                    const img = (e.game.images && e.game.images[0]) || e.game.image;
+                    return (
+                      <button key={e.game.id} onClick={() => onView(e.game)} className="shrink-0 relative" style={{ width: "26%" }}>
+                        {img ? <img src={img} alt={e.game.name} className="w-full aspect-square block object-cover rounded-xl border border-line" /> : <div className="w-full aspect-square rounded-xl border border-line bg-surface2 flex items-center justify-center text-dim"><Dices size={18} /></div>}
+                        <span className="absolute top-1.5 left-1.5 min-w-5 h-5 px-1 rounded-full bg-accent text-bg text-[10px] font-display flex items-center justify-center border-2 border-bg shadow">{e.place}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {onOpenRanking && (
+                <div className="flex gap-2 mt-3">
+                  {pendingN > 0
+                    ? <button data-rank-start onClick={() => onOpenRanking(null)} className="h-10 px-4 rounded-full bg-accent text-white text-sm font-medium">{rankedN < 3 ? "Weiter vergleichen" : `${pendingN} ${pendingN === 1 ? "neues Spiel" : "neue Spiele"} einordnen`}</button>
+                    : null}
+                  <button data-rank-open onClick={() => onOpenRanking(pendingN > 0 ? "list" : "list")} className="h-10 px-4 rounded-full border border-line text-ink text-sm">Rangliste ansehen</button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      );
+    })(),
     topRated: topRated.length > 0 && (
       <div key="topRated" className="border-t border-line pt-5">
         <h2 className="font-body text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-3">Top 10 Spiele</h2>
@@ -6355,11 +6682,11 @@ function Dashboard({ games, plays, onQuickFilter, onView, sectionOrder, onReorde
   };
   const baseOrder = sectionOrder && sectionOrder.length ? sectionOrder : DEFAULT_DASHBOARD_ORDER;
   // Gespeicherte Reihenfolgen von vor dem Abschnitt kennen ihn nicht → vorne einsortieren
-  const order = [...["stats", "tip", "year", "taste", "browsergames"].filter((k) => !baseOrder.includes(k)), ...baseOrder];
+  const order = [...["stats", "tip", "year", "taste", "browsergames", "ranking"].filter((k) => !baseOrder.includes(k)), ...baseOrder];
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const sortMenuClose = useSheetClose(() => setSortMenuOpen(false));
   const [reorderScreenOpen, setReorderScreenOpen] = useState(false);
-  const SECTION_LABELS = { stats: "Sammlung & Komplexität", tip: "Tipp der Woche", year: "Dein Spieljahr", taste: "Dein Geschmack", browsergames: "Digital spielen", month: "Spiel des Monats", records: "Rekorde", wishlist: "Wunschliste", lent: "Verliehene Spiele", topRated: "Top 10 Spiele", dust: "Staubfänger", digital: "Digital vs. Physisch", bestof: "Best of" };
+  const SECTION_LABELS = { stats: "Sammlung & Komplexität", tip: "Tipp der Woche", year: "Dein Spieljahr", taste: "Dein Geschmack", browsergames: "Digital spielen", month: "Spiel des Monats", records: "Rekorde", wishlist: "Wunschliste", lent: "Verliehene Spiele", topRated: "Top 10 Spiele", ranking: "Mein Ranking", dust: "Staubfänger", digital: "Digital vs. Physisch", bestof: "Best of" };
   const PRESETS = [
     { key: "default", label: "Standard", icon: ListChecks, order: DEFAULT_DASHBOARD_ORDER },
     { key: "activity", label: "Nach Aktivität", icon: Sparkles, order: ["browsergames", "month", "dust", "topRated", "records", "bestof", "wishlist", "digital"] },
@@ -8986,6 +9313,7 @@ function App() {
   };
   const [gameModal, setGameModal] = useState(null);
   const [detailGame, setDetailGame] = useState(null);
+  const [ranking, setRanking] = useState(null); // { initialView } solange das Ranking offen ist
   // detailGame only tracks WHICH game is open (by identity at the time it was
   // opened) — always re-resolve the actual data to display from the live
   // array, so edits made while the detail view is open (photo, rating,
@@ -9217,6 +9545,12 @@ function App() {
     setDetailGame(null);
     setGameModal({ editing: null, prefillBgg: { bggId: info.id, name: info.name, expansionOf: baseGame.id } });
   };
+  // Rangliste speichern: patch = { spielId: rankPos | null } (null entfernt den Rang)
+  const rankApply = (patch) => setGames((prev) => prev.map((g) => {
+    if (!(g.id in patch)) return g;
+    if (patch[g.id] == null) { const { rankPos, ...rest } = g; return rest; }
+    return { ...g, rankPos: patch[g.id] };
+  }));
   const updateGameField = (id, patch) => setGames((prev) => prev.map((g) => (g.id === id ? { ...g, ...patch } : g)));
   const saveGameAndNavigate = (game, direction) => {
     applyGameSave(game);
@@ -9450,7 +9784,7 @@ function App() {
       >
         {ptr.anzeige}
         <div key={tab} className="tab-fade lg:max-w-3xl lg:mx-auto">
-          {tab === "dashboard" && <Dashboard games={displayGames} plays={displayPlays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} onView={(g) => setDetailGame(g)} sectionOrder={dashboardOrder} onReorder={setDashboardOrder} hiddenSections={hiddenDashboardSections} onToggleHidden={setHiddenDashboardSections} onSearch={() => setCommandBarOpen(true)} aiWorkerUrl={aiWorkerUrl} />}
+          {tab === "dashboard" && <Dashboard games={displayGames} plays={displayPlays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} onView={(g) => setDetailGame(g)} onOpenRanking={readOnly ? null : (v) => setRanking({ initialView: v })} sectionOrder={dashboardOrder} onReorder={setDashboardOrder} hiddenSections={hiddenDashboardSections} onToggleHidden={setHiddenDashboardSections} onSearch={() => setCommandBarOpen(true)} aiWorkerUrl={aiWorkerUrl} />}
           {tab === "collection" && <Collection games={displayGames} plays={displayPlays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => !readOnly && setGameModal({ editing: null })} onView={(g) => setDetailGame(g)} onEdit={(g) => setGameModal({ editing: g })} onDelete={(g) => deleteGame(g.id)} categoryOptions={categoryOptions} mechanismOptions={mechanismOptions} demoMode={readOnly} guestMode={guestMode} lists={displayLists} onCreateList={(name) => !readOnly && addList(name)} onOpenList={(l) => setDetailList(l)} />}
           {tab === "playlog" && <PlayLog plays={displayPlays} games={displayGames} onAdd={() => !readOnly && setPlayModal({ editing: null })} onEdit={(p) => !readOnly && setPlayModal({ editing: p })} onDelete={deletePlay} demoMode={readOnly} playerProfiles={displayPlayers} />}
           {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} onView={(g) => setDetailGame(g)} aiWorkerUrl={aiWorkerUrl} chatMessages={aiChatMessages} setChatMessages={setAiChatMessages} onAddWishlist={addToWishlistFromRecommendation} onSaveMechanismsNote={readOnly ? null : (id, text) => updateGameField(id, { mechanismsNote: text })} guestMode={guestMode} />}
@@ -9533,6 +9867,7 @@ function App() {
           </div>
         </div>
       </div>
+      {ranking && <RankingScreen games={games} plays={plays} onApply={rankApply} initialView={ranking.initialView} onClose={() => setRanking(null)} />}
       {detailGame && (
         <GameDetailModal
           game={liveDetailGame}
