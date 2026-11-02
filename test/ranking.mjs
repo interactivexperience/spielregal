@@ -167,4 +167,44 @@ await page.locator("[data-rank-fine]").click(); await page.waitForTimeout(400);
 await playTruth(truth2);
 await page.waitForTimeout(500);
 console.log("Zweite Feinrunde: 'bestaetigt deine Rangliste':", (await page.locator("[data-fine-summary]").innerText()).includes("bestätigt"));
+
+// --- Kreisurteile: Azul > Brass > Catan > Azul (widerspruechlich), Rest nach Staerke
+const cyc = { Azul: "Brass", Brass: "Catan", Catan: "Azul" };
+const playCycle = async (clarifyAnswers) => {
+  let n = 0;
+  for (let g = 0; g < 90; g++) {
+    if (await page.locator("[data-ranking-result]").count()) break;
+    if (!(await card.count())) { await page.waitForTimeout(120); continue; }
+    const { cur, ref } = await info();
+    let a;
+    if (clarifyAnswers) a = clarifyAnswers(cur, ref);
+    else if (cyc[cur] === ref) a = "better"; else if (cyc[ref] === cur) a = "worse";
+    else a = truth2[cur] > truth2[ref] ? "better" : truth2[cur] < truth2[ref] ? "worse" : "equal";
+    await page.locator(`[data-rank="${a}"]`).click(); await page.waitForTimeout(260); n++;
+  }
+  return n;
+};
+await page.locator("[data-rank-fine]").click(); await page.waitForTimeout(400);
+await playCycle(null);
+await page.waitForTimeout(600);
+const cycBox = page.locator("[data-fine-cycles]");
+console.log("Kreisurteil erkannt: Hinweis nennt Azul, Brass und Catan:", await cycBox.count() === 1 && ["Azul", "Brass", "Catan"].every(async () => true) && (await cycBox.innerText()).includes("Azul") && (await cycBox.innerText()).includes("Brass") && (await cycBox.innerText()).includes("Catan") && !(await cycBox.innerText()).includes("Dixit"));
+console.log("Zusammenfassung sagt NICHT 'bestaetigt', solange ein Kreisurteil offen ist:", !(await page.locator("[data-fine-summary]").innerText()).includes("bestätigt"));
+console.log("Klaerknopf zeigt '3' Duelle:", (await page.locator("[data-rank-clarify]").innerText()).includes("(3)"));
+await page.screenshot({ path: `${SP}/ranking_cycle.png` });
+await page.locator("[data-rank-clarify]").click(); await page.waitForTimeout(500);
+console.log("Klaerung startet mit 'Klaerung: Duell 1 von 3':", (await page.locator("[data-ranking-duel]").innerText()).includes("Klärung: Duell 1 von 3"));
+const pairKey = async () => { const { cur, ref } = await info(); return [cur, ref].sort().join("+"); };
+const seen = new Set(); for (let g = 0; g < 3; g++) { seen.add(await pairKey()); const { cur, ref } = await info(); await page.locator(`[data-rank="${truth2[cur] > truth2[ref] ? "better" : "worse"}"]`).click(); await page.waitForTimeout(300); }
+await page.waitForTimeout(500);
+console.log("Klaerung spielte genau die 3 Paare aus dem Kreis:", seen.size === 3 && [...seen].every((k) => k.split("+").every((n) => ["Azul", "Brass", "Catan"].includes(n))));
+console.log("Nach der Klaerung (jetzt widerspruchsfrei): Hinweis weg, Rangliste Brass 2, Azul 3, Catan 4:", await page.locator("[data-fine-cycles]").count() === 0 && await (async () => { const g = await stored(); const r = (n) => g.find((x) => x.name === n).rankPos; return r("Brass") === 2 && r("Azul") === 3 && r("Catan") === 4; })());
+// Gleich gut in der Klaerung: Kreis wieder erzeugen, dann alle drei Duelle "Gleich gut" -> gleichauf
+await page.locator("[data-rank-fine]").click(); await page.waitForTimeout(400);
+await playCycle(null); await page.waitForTimeout(600);
+await page.locator("[data-rank-clarify]").click(); await page.waitForTimeout(500);
+for (let g = 0; g < 3; g++) { await page.locator('[data-rank="equal"]').click(); await page.waitForTimeout(300); }
+await page.waitForTimeout(500);
+const g4 = await stored(); const r4 = (n) => g4.find((x) => x.name === n).rankPos;
+console.log("Alle drei 'Gleich gut': Azul, Brass, Catan teilen sich einen Platz:", r4("Azul") === r4("Brass") && r4("Brass") === r4("Catan") && await page.locator("[data-fine-cycles]").count() === 0);
 await b.close(); server.close();
