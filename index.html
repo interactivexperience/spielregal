@@ -488,6 +488,9 @@ const GripVertical = (p) => <Icon {...p}><circle cx="9" cy="6" r="1.3" fill="cur
 const GAMES_KEY = "spielregal:games";
 const PLAYS_KEY = "spielregal:plays";
 const SYNC_URL_KEY = "spielregal:syncUrl";
+// Gesetzt, solange lokale Aenderungen noch nicht erfolgreich in die Cloud gegangen sind. Beim naechsten
+// Start wird dann hochgeladen statt von der Cloud ueberschrieben (sonst waeren z.B. Ranking-Plaetze weg).
+const SYNC_DIRTY_KEY = "spielregal:syncDirty";
 const LOCAL_TS_KEY = "spielregal:localTs";
 const LISTS_KEY = "spielregal:lists";
 const PLAYERS_KEY = "spielregal:players";
@@ -3065,18 +3068,22 @@ async function getValidIdToken(apiKey) {
   return signInWithPassword(apiKey, email, password);
 }
 
-async function cloudPush(syncUrl, data, apiKey) {
+async function cloudPush(syncUrl, data, apiKey, opts = {}) {
   const base = normalizeSyncUrl(syncUrl);
   if (!base) return;
   const payload = { ...data, updatedAt: Date.now() };
   const token = await getValidIdToken(apiKey).catch(() => "");
   const url = base + "data.json" + (token ? `?auth=${token}` : "");
+  const body = JSON.stringify(payload);
   const res = await fetch(url, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    body,
+    // Beim Verlassen der Seite darf die Anfrage weiterlaufen (Browser-Grenze fuer keepalive: 64 KB)
+    ...(opts.keepalive && body.length < 60000 ? { keepalive: true } : {}),
   });
   if (!res.ok) throw new Error("Der Spielzug wurde nicht gewertet — Speichern in der Cloud fehlgeschlagen");
+  try { localStorage.removeItem(SYNC_DIRTY_KEY); } catch {}
   return payload.updatedAt;
 }
 async function cloudPull(syncUrl, apiKey) {
@@ -9527,6 +9534,8 @@ function App() {
   const reorderPlayers = (orderedIds) => setPlayersList((prev) => orderedIds.map((id) => prev.find((p) => p.id === id)).filter(Boolean));
   const skipNextPush = React.useRef(true);
   const pushTimer = React.useRef(null);
+  const pushPending = React.useRef(false);
+  const syncDataRef = React.useRef({});
   const scrollElRef = React.useRef(null);
   const ptr = usePullToRefresh();
 
@@ -9546,6 +9555,14 @@ function App() {
     if (!syncUrl) return;
     setSyncStatus("syncing");
     const localHadData = games.length > 0 || plays.length > 0;
+    // Ungesicherte lokale Aenderungen (letzter Upload ist nie angekommen): erst hochladen, nicht ueberschreiben
+    let dirty = false; try { dirty = localStorage.getItem(SYNC_DIRTY_KEY) === "1"; } catch {}
+    if (dirty && localHadData) {
+      cloudPush(syncUrl, { games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players }, apiKey)
+        .then(() => { setSyncStatus("synced"); setLastSynced(Date.now()); })
+        .catch(() => setSyncStatus("error"));
+      return;
+    }
     cloudPull(syncUrl, apiKey).then((remote) => {
       const remoteHasData = remote && ((remote.games && remote.games.length) || (remote.plays && remote.plays.length));
       if (!remoteHasData && localHadData) {
@@ -9575,7 +9592,10 @@ function App() {
     if (!syncUrl) return;
     if (skipNextPush.current) { skipNextPush.current = false; return; }
     if (pushTimer.current) clearTimeout(pushTimer.current);
+    try { localStorage.setItem(SYNC_DIRTY_KEY, "1"); } catch {}
+    pushPending.current = true;
     pushTimer.current = setTimeout(() => {
+      pushPending.current = false;
       setSyncStatus("syncing");
       cloudPush(syncUrl, { games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players }, apiKey).then(() => {
         setSyncStatus("synced");
@@ -9584,6 +9604,21 @@ function App() {
     }, 1200);
     return () => clearTimeout(pushTimer.current);
   }, [games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players, syncUrl, apiKey]);
+
+  // Beim Verlassen/Verstecken der App nicht auf die 1,2 s Wartezeit warten (iOS friert die Seite sonst ein,
+  // bevor der Upload losgeht): ausstehende Aenderungen sofort hochladen.
+  syncDataRef.current = { games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players };
+  useEffect(() => {
+    if (!syncUrl) return;
+    const flush = () => {
+      if (!pushPending.current) return;
+      pushPending.current = false; clearTimeout(pushTimer.current);
+      cloudPush(syncUrl, syncDataRef.current, apiKey, { keepalive: true }).catch(() => {});
+    };
+    const onHide = () => { if (document.visibilityState === "hidden") flush(); };
+    document.addEventListener("visibilitychange", onHide); window.addEventListener("pagehide", flush);
+    return () => { document.removeEventListener("visibilitychange", onHide); window.removeEventListener("pagehide", flush); };
+  }, [syncUrl, apiKey]);
 
   const saveSyncUrl = (url, key, email, password) => {
     const trimmed = url.trim();
