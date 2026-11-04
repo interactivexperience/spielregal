@@ -5988,9 +5988,9 @@ function RankingResult({ groups, done, pendingCount, header, onContinue, onResta
             <ol className="space-y-2.5">
               {top.map((e) => (
                 <li key={e.game.id} className="flex items-center gap-3">
-                  <span className={`w-7 text-right font-display text-xl ${e.place === 1 ? "text-[#FF6F54]" : ""}`}>{e.place}</span>
-                  <Cover game={e.game} size="sm" />
-                  <span className="min-w-0 truncate">{e.game.name}{e.tie ? <span className="text-[#F4EDE4]/50 text-xs"> · gleichauf</span> : ""}</span>
+                  <span className={`w-7 shrink-0 text-right font-display text-xl ${e.place === 1 ? "text-[#FF6F54]" : ""}`}>{e.place}</span>
+                  <span className="shrink-0 inline-flex"><Cover game={e.game} size="sm" /></span>
+                  <span className="min-w-0 line-clamp-2 leading-tight">{e.game.name}{e.tie ? <span className="text-[#F4EDE4]/50 text-xs"> · gleichauf</span> : ""}</span>
                 </li>
               ))}
             </ol>
@@ -6030,9 +6030,9 @@ function RankingResult({ groups, done, pendingCount, header, onContinue, onResta
           <ol data-rank-all className="divide-y divide-line">
             {all.map((e) => (
               <li key={e.game.id} className="flex items-center gap-3 py-2">
-                <span className="w-8 text-right text-dim text-sm">{e.place}{e.tie ? "=" : ""}</span>
-                <Cover game={e.game} size="sm" />
-                <span className="min-w-0 truncate text-ink text-sm">{e.game.name}</span>
+                <span className="w-8 shrink-0 text-right text-dim text-sm">{e.place}{e.tie ? "=" : ""}</span>
+                <span className="shrink-0 inline-flex"><Cover game={e.game} size="sm" /></span>
+                <span className="min-w-0 line-clamp-2 leading-tight text-ink text-sm">{e.game.name}</span>
               </li>
             ))}
           </ol>
