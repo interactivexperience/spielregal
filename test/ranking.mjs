@@ -216,4 +216,18 @@ for (let g = 0; g < 3; g++) { await pickBtn("equal").click(); await page.waitFor
 await page.waitForTimeout(500);
 const g4 = await stored(); const r4 = (n) => g4.find((x) => x.name === n).rankPos;
 console.log("Alle drei 'Gleich gut': Azul, Brass, Catan teilen sich einen Platz:", r4("Azul") === r4("Brass") && r4("Brass") === r4("Catan") && await page.locator("[data-fine-cycles]").count() === 0);
+
+// --- Gleichstaende in den Top 10 klaeren (Azul = Brass = Catan und Dixit = Everdell sind gleichauf)
+await page.waitForTimeout(500);
+const tieBtn = page.locator("[data-rank-ties]");
+console.log("Gleichstands-Knopf nennt 4 Duelle (3 + 1):", await tieBtn.count() === 1 && (await tieBtn.innerText()).includes("(4 Duelle)"), JSON.stringify(await tieBtn.first().innerText().catch(() => "")));
+await tieBtn.click(); await page.waitForTimeout(500);
+console.log("Runde startet mit 'Gleichstaende: Duell 1 von 4':", (await page.locator("[data-ranking-duel]").innerText()).includes("Gleichstände: Duell 1 von 4"));
+const nTies = await playTruth(truth2);
+await page.waitForTimeout(500);
+const g5 = await stored(); const r5 = (n) => g5.find((x) => x.name === n).rankPos;
+console.log("Gleichstaende aufgeloest: Brass 2, Azul 3, Catan 4 (nach Staerke), Dixit = Everdell bleibt gleichauf:", nTies === 4 && r5("Ingenious") === 1 && r5("Brass") === 2 && r5("Azul") === 3 && r5("Catan") === 4 && r5("Dixit") === r5("Everdell") && r5("Fluxx") === 6, JSON.stringify([nTies, r5("Ingenious"), r5("Brass"), r5("Azul"), r5("Catan"), r5("Dixit"), r5("Everdell"), r5("Fluxx")]));
+console.log("Zusammenfassung 'Gleichstaende geklaert' mit Platzaenderungen:", (await page.locator("[data-fine-summary]").innerText()).includes("Gleichstände geklärt"));
+console.log("Danach kein Gleichstands-Knopf fuer geloeste Gruppen (nur Dixit/Everdell: 1 Duell):", (await page.locator("[data-rank-ties]").innerText()).includes("(1 Duell)"));
+await page.screenshot({ path: `${SP}/ranking_ties.png` });
 await b.close(); server.close();
