@@ -45,11 +45,11 @@ for (let run = 1; run <= 4; run++) {
   for (let g = 0; g < 200; g++) {
     if (await page.locator("[data-ranking-result]").count()) break;
     if (!(await page.locator("[data-ranking-duel]").count())) { await page.waitForTimeout(100); continue; }
-    const cur = (await page.locator("[data-rank-card] p.font-display").innerText()).trim().slice(1);
-    const ref = (await page.locator("[data-rank-ref] p.font-medium").innerText()).trim().slice(1);
+    const cur = (await page.locator("[data-duel-cur] [data-name]").innerText()).trim().slice(1);
+    const ref = (await page.locator("[data-duel-ref] [data-name]").innerText()).trim().slice(1);
     if (last === cur) { run1++; maxRun = Math.max(maxRun, run1); } else run1 = 1; last = cur;
     const a = strength[cur] > strength[ref] ? "better" : strength[cur] < strength[ref] ? "worse" : "equal";
-    await page.locator(`[data-rank="${a}"]`).click(); await page.waitForTimeout(290); duels++;
+    await (a === "equal" ? page.locator('[data-rank="equal"]') : a === "better" ? page.locator("[data-duel-cur]") : page.locator("[data-duel-ref]")).click(); await page.waitForTimeout(430); duels++;
   }
   const st = await page.evaluate(() => JSON.parse(localStorage.getItem("spielregal:games")));
   const pos = (n) => st.find((x) => x.name === "G" + n).rankPos;

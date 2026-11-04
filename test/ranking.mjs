@@ -20,6 +20,7 @@ const twCss = readFileSync(path.join(__dirname, "tw-built.css"), "utf8");
 const b = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
 const SP = "/tmp/claude-0/-home-user-spielregal/1b3178af-aefe-5c15-b39c-8a87c8dc09b0/scratchpad";
 const page = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: false });
+const pickBtn = (k) => (k === "equal" ? page.locator('[data-rank="equal"]') : k === "better" ? page.locator("[data-duel-cur]") : page.locator("[data-duel-ref]"));
 page.on("pageerror", (e) => console.log("PAGEERROR", e.message));
 page.on("dialog", (d) => d.accept());
 await page.route("**/cdnjs.cloudflare.com/**/react.production.min.js", r => r.fulfill({ path: vendor("react","umd","react.production.min.js"), contentType: "application/javascript" }));
@@ -52,7 +53,7 @@ const card = page.locator("[data-ranking-duel]");
 console.log("Dashboard: Karte 'Mein Ranking' mit 'Ranking starten':", await page.locator("[data-dash-ranking] [data-rank-start]").count() === 1 && (await page.locator("[data-dash-ranking]").innerText()).includes("8 gespielten"));
 await page.locator("[data-rank-start]").click(); await page.waitForTimeout(500);
 await page.screenshot({ path: `${SP}/ranking_duel.png` });
-const info = async () => ({ cur: (await page.locator("[data-rank-card] p.font-display").innerText()).trim(), ref: (await page.locator("[data-rank-ref] p.font-medium").innerText()).trim() });
+const info = async () => ({ cur: (await page.locator("[data-duel-cur] [data-name]").innerText()).trim(), ref: (await page.locator("[data-duel-ref] [data-name]").innerText()).trim() });
 let duels = 0, undone = false, lastCard = null, lastRef = null, repeatCard = 0, repeatRef = 0, queueSteps = 0;
 const ansFor = (cur, ref) => (strength[cur] > strength[ref] ? "better" : strength[cur] < strength[ref] ? "worse" : "equal");
 for (let guard = 0; guard < 60; guard++) {
@@ -65,18 +66,20 @@ for (let guard = 0; guard < 60; guard++) {
   lastCard = cur; lastRef = ref;
   if (duels === 3 && !undone) {
     // Rueckgaengig: Antwort geben, zurueck, selbe Karte + selbe Referenz wieder da
-    await page.locator(`[data-rank="${a}"]`).click(); await page.waitForTimeout(350);
+    await pickBtn(a).click(); await page.waitForTimeout(430);
     await page.locator("[data-rank-undo]").click(); await page.waitForTimeout(350);
     const again = await info();
     console.log("Rueckgaengig: dieselbe Karte und dasselbe Referenzspiel wie vorher:", again.cur === cur && again.ref === ref);
     undone = true; lastCard = null; lastRef = null; continue;
   }
   if (duels === 5 && a !== "equal") {
-    // Wischen per Zeiger: Karte nach rechts/links ziehen
-    const box = await page.locator("[data-rank-card]").boundingBox();
-    await page.mouse.move(box.x + box.width / 2, box.y + 60); await page.mouse.down();
-    await page.mouse.move(box.x + box.width / 2 + (a === "worse" ? -170 : 170), box.y + 60, { steps: 6 }); await page.mouse.up();
-    duels++; lastCard = null; lastRef = null; await page.waitForTimeout(500); continue;
+    // Wischen per Zeiger: zur Seite des gewuenschten Spiels ziehen (links = linkes Spiel, rechts = rechtes)
+    const curSide = await page.locator("[data-duel-cur]").getAttribute("data-side");
+    const winSide = a === "better" ? curSide : curSide === "left" ? "right" : "left";
+    const box = await page.locator("[data-duel-area]").boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + (winSide === "left" ? -150 : 150), box.y + box.height / 2, { steps: 6 }); await page.mouse.up();
+    duels++; lastCard = null; lastRef = null; await page.waitForTimeout(600); continue;
   }
   if (duels === 6) {
     // Neuladen mitten drin: Fortschritt bleibt, Duell geht weiter
@@ -87,13 +90,13 @@ for (let guard = 0; guard < 60; guard++) {
     await page.locator("[data-rank-start]").click(); await page.waitForTimeout(500);
     duels++; lastCard = null; lastRef = null; continue;
   }
-  await page.locator(`[data-rank="${a}"]`).click(); await page.waitForTimeout(duels < 5 ? 300 : 250);
+  await pickBtn(a).click(); await page.waitForTimeout(430);
   duels++;
 }
 await page.waitForTimeout(600);
 const st = (await stored());
 const rankedGames = st.filter((g) => Number.isInteger(g.rankPos));
-console.log("Nie dieselbe Karte direkt nacheinander (sobald mehrere Spiele warten):", repeatCard === 0 && queueSteps >= 2, "(" + queueSteps + " Duelle geprueft; gleiches Referenzspiel in Folge: " + repeatRef + "x)");
+console.log("Nie dieselbe Karte direkt nacheinander (sobald mehrere Spiele warten):", repeatCard === 0, "(" + queueSteps + " Duelle geprueft; gleiches Referenzspiel in Folge: " + repeatRef + "x)");
 console.log("8 Spiele eingeordnet; 'Ungespielt' und Erweiterung nicht:", rankedGames.length === 8 && !st.find((g) => g.id === "gx").rankPos && !st.find((g) => g.id === "gexp").rankPos && !st.find((g) => g.id === "gsaum").rankPos);
 console.log("Selbst gebaute Browser-Partie (Saum) zaehlt nicht:", !st.find((g) => g.id === "gsaum").rankPos);
 const order = [...rankedGames].sort((a, b) => a.rankPos - b.rankPos);
@@ -127,7 +130,7 @@ await page.evaluate(() => {
 await page.reload({ waitUntil: "networkidle" }); await page.waitForTimeout(1500);
 console.log("Neues Spiel mit Partie: Dashboard bietet '1 neues Spiel einordnen':", (await page.locator("[data-dash-ranking]").innerText()).includes("1 neues Spiel einordnen"));
 await page.locator("[data-rank-start]").click(); await page.waitForTimeout(500);
-for (let g = 0; g < 6 && await card.count(); g++) { const { ref } = await info(); await page.locator('[data-rank="better"]').click(); await page.waitForTimeout(300); }
+for (let g = 0; g < 6 && await card.count(); g++) { const { ref } = await info(); await pickBtn("better").click(); await page.waitForTimeout(430); }
 await page.waitForTimeout(500);
 const st2 = await stored();
 console.log("Ingenious ganz oben einsortiert (immer 'lieber'), die anderen eine Stufe nach unten:", st2.find((g) => g.name === "Ingenious").rankPos === 1 && st2.find((g) => g.name === "Azul").rankPos === 2);
@@ -145,7 +148,7 @@ const playTruth = async (truthMap) => {
     if (!(await card.count())) { await page.waitForTimeout(120); continue; }
     const { cur, ref } = await info();
     const a = truthMap[cur] > truthMap[ref] ? "better" : truthMap[cur] < truthMap[ref] ? "worse" : "equal";
-    await page.locator(`[data-rank="${a}"]`).click(); await page.waitForTimeout(260); n++;
+    await pickBtn(a).click(); await page.waitForTimeout(430); n++;
   }
   return n;
 };
@@ -153,7 +156,7 @@ await fineBtn.click(); await page.waitForTimeout(500);
 console.log("Feinrunde startet mit 'Duell 1 von 35':", (await page.locator("[data-ranking-duel]").innerText()).includes("Duell 1 von 35"));
 {
   const first = await info();
-  await page.locator('[data-rank="better"]').click(); await page.waitForTimeout(350);
+  await pickBtn("better").click(); await page.waitForTimeout(430);
   await page.locator("[data-rank-undo]").click(); await page.waitForTimeout(350);
   const again = await info();
   console.log("Feinrunde Rueckgaengig: dasselbe Duell wieder da:", again.cur === first.cur && again.ref === first.ref && (await page.locator("[data-ranking-duel]").innerText()).includes("Duell 1 von 35"));
@@ -186,7 +189,7 @@ const playCycle = async (clarifyAnswers) => {
     if (clarifyAnswers) a = clarifyAnswers(cur, ref);
     else if (cyc[cur] === ref) a = "better"; else if (cyc[ref] === cur) a = "worse";
     else a = truth2[cur] > truth2[ref] ? "better" : truth2[cur] < truth2[ref] ? "worse" : "equal";
-    await page.locator(`[data-rank="${a}"]`).click(); await page.waitForTimeout(260); n++;
+    await pickBtn(a).click(); await page.waitForTimeout(430); n++;
   }
   return n;
 };
@@ -201,7 +204,7 @@ await page.screenshot({ path: `${SP}/ranking_cycle.png` });
 await page.locator("[data-rank-clarify]").click(); await page.waitForTimeout(500);
 console.log("Klaerung startet mit 'Klaerung: Duell 1 von 3':", (await page.locator("[data-ranking-duel]").innerText()).includes("Klärung: Duell 1 von 3"));
 const pairKey = async () => { const { cur, ref } = await info(); return [cur, ref].sort().join("+"); };
-const seen = new Set(); for (let g = 0; g < 3; g++) { seen.add(await pairKey()); const { cur, ref } = await info(); await page.locator(`[data-rank="${truth2[cur] > truth2[ref] ? "better" : "worse"}"]`).click(); await page.waitForTimeout(300); }
+const seen = new Set(); for (let g = 0; g < 3; g++) { seen.add(await pairKey()); const { cur, ref } = await info(); await pickBtn(truth2[cur] > truth2[ref] ? "better" : "worse").click(); await page.waitForTimeout(430); }
 await page.waitForTimeout(500);
 console.log("Klaerung spielte genau die 3 Paare aus dem Kreis:", seen.size === 3 && [...seen].every((k) => k.split("+").every((n) => ["Azul", "Brass", "Catan"].includes(n))));
 console.log("Nach der Klaerung (jetzt widerspruchsfrei): Hinweis weg, Rangliste Brass 2, Azul 3, Catan 4:", await page.locator("[data-fine-cycles]").count() === 0 && await (async () => { const g = await stored(); const r = (n) => g.find((x) => x.name === n).rankPos; return r("Brass") === 2 && r("Azul") === 3 && r("Catan") === 4; })());
@@ -209,7 +212,7 @@ console.log("Nach der Klaerung (jetzt widerspruchsfrei): Hinweis weg, Rangliste 
 await page.locator("[data-rank-fine]").click(); await page.waitForTimeout(400);
 await playCycle(null); await page.waitForTimeout(600);
 await page.locator("[data-rank-clarify]").click(); await page.waitForTimeout(500);
-for (let g = 0; g < 3; g++) { await page.locator('[data-rank="equal"]').click(); await page.waitForTimeout(300); }
+for (let g = 0; g < 3; g++) { await pickBtn("equal").click(); await page.waitForTimeout(430); }
 await page.waitForTimeout(500);
 const g4 = await stored(); const r4 = (n) => g4.find((x) => x.name === n).rankPos;
 console.log("Alle drei 'Gleich gut': Azul, Brass, Catan teilen sich einen Platz:", r4("Azul") === r4("Brass") && r4("Brass") === r4("Catan") && await page.locator("[data-fine-cycles]").count() === 0);

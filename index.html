@@ -5745,11 +5745,15 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
   const groups = useMemo(() => rankGroups(eligible), [eligible]);
   const byId = useMemo(() => Object.fromEntries(eligible.map((g) => [g.id, g])), [eligible]);
   const [sess, setSess] = useState(() => {
-    try { const s = JSON.parse(localStorage.getItem(RANK_SESSION_KEY) || "null"); if (s && typeof s.seed === "number") return { seed: s.seed, active: Array.isArray(s.active) ? s.active : (s.cur ? [s.cur] : []), lastRef: s.lastRef || null, hist: Array.isArray(s.hist) ? s.hist.filter((h) => Array.isArray(h.active)) : [], fine: s.fine || null, fineLast: s.fineLast || null }; } catch {}
-    return { seed: Math.floor(Math.random() * 1e9), active: [], lastRef: null, hist: [], fine: null, fineLast: null };
+    try { const s = JSON.parse(localStorage.getItem(RANK_SESSION_KEY) || "null"); if (s && typeof s.seed === "number") return { seed: s.seed, active: Array.isArray(s.active) ? s.active : (s.cur ? [s.cur] : []), lastRef: s.lastRef || null, parked: Array.isArray(s.parked) ? s.parked : [], hist: Array.isArray(s.hist) ? s.hist.filter((h) => Array.isArray(h.active)) : [], fine: s.fine || null, fineLast: s.fineLast || null }; } catch {}
+    return { seed: Math.floor(Math.random() * 1e9), active: [], lastRef: null, parked: [], hist: [], fine: null, fineLast: null };
   });
   useEffect(() => { try { localStorage.setItem(RANK_SESSION_KEY, JSON.stringify({ ...sess, hist: sess.hist.slice(-40) })); } catch {} }, [sess]);
-  const pending = useMemo(() => eligible.filter((g) => !Number.isInteger(g.rankPos)).sort((a, b) => idHash(a.id + sess.seed) - idHash(b.id + sess.seed)), [eligible, sess.seed]);
+  // Uebersprungene Spiele kommen erst nach allen anderen wieder dran
+  const pending = useMemo(() => {
+    const pk = (g) => sess.parked.indexOf(g.id);
+    return eligible.filter((g) => !Number.isInteger(g.rankPos)).sort((a, b) => (pk(a) < 0 ? -1 : 0) - (pk(b) < 0 ? -1 : 0) || (pk(a) < 0 && pk(b) < 0 ? idHash(a.id + sess.seed) - idHash(b.id + sess.seed) : pk(a) - pk(b)));
+  }, [eligible, sess.seed, sess.parked]);
   // Mehrere Spiele laufen gleichzeitig (Warteschlange): nach jedem Wisch kommt ein ANDERES Spiel dran.
   const pendingIds = useMemo(() => new Set(pending.map((g) => g.id)), [pending]);
   const activeLive = sess.active.filter((a) => pendingIds.has(a.id));
@@ -5842,7 +5846,7 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
     // Eine neue Gruppe verschiebt die Bereiche der anderen laufenden Spiele
     const rest = activeLive.slice(1).map((a) => (insertAt < 0 ? a : insertAt < a.lo ? { ...a, lo: a.lo + 1, hi: a.hi + 1 } : insertAt <= a.hi ? { ...a, hi: a.hi + 1 } : a));
     const nextActive = finished ? rest : [...rest, { id: curGame.id, lo: nlo, hi: nhi, seen }];
-    setSess((s) => ({ ...s, active: nextActive, lastRef: ref.id, hist: [...s.hist, { active: s.active, lastRef: s.lastRef, inv }] }));
+    setSess((s) => ({ ...s, active: nextActive, lastRef: ref.id, parked: s.parked.filter((id) => id !== curGame.id), hist: [...s.hist, { active: s.active, lastRef: s.lastRef, parked: s.parked, inv }] }));
     if (finished && pending.length === 1) setRevealed(false);
   };
   const undo = () => {
@@ -5850,28 +5854,40 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
     const h = sess.hist[sess.hist.length - 1]; if (!h) return;
     haptic(6);
     if (Object.keys(h.inv).length) onApply(h.inv);
-    setSess((s) => ({ ...s, active: h.active, lastRef: h.lastRef, hist: s.hist.slice(0, -1) }));
+    setSess((s) => ({ ...s, active: h.active, lastRef: h.lastRef, parked: h.parked || [], hist: s.hist.slice(0, -1) }));
   };
   const restart = () => {
     if (!window.confirm("Ranking wirklich neu starten? Alle bisherigen Duelle gehen verloren.")) return;
     const patch = {}; eligible.forEach((g) => { if (Number.isInteger(g.rankPos)) patch[g.id] = null; });
     if (Object.keys(patch).length) onApply(patch);
-    setSess({ seed: Math.floor(Math.random() * 1e9), active: [], lastRef: null, hist: [], fine: null, fineLast: null }); setView(null); setRevealed(false);
+    setSess({ seed: Math.floor(Math.random() * 1e9), active: [], lastRef: null, parked: [], hist: [], fine: null, fineLast: null }); setView(null); setRevealed(false);
   };
 
-  // Wischen (Zeigerereignisse, Maus und Touch)
-  const [dx, setDx] = useState(0), [fly, setFly] = useState(false);
+  // Duell: zwei Spiele nebeneinander. Tippen oder zur Seite wischen waehlt das linke/rechte Spiel;
+  // welches der beiden links steht, wird pro Duell gewuerfelt (damit "das neue" nicht immer links ist).
+  const pairA = fineOn ? fCur : curGame, pairB = fineOn ? fRef : ref;
+  const curLeft = pairA && pairB ? idHash(pairA.id + pairB.id + sess.seed + (fineOn ? sess.fine.idx : sess.hist.length)) % 2 === 0 : true;
+  const [dx, setDx] = useState(0), [picked, setPicked] = useState(null);
   const startX = React.useRef(null);
   const reduce = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
   const decide = (kind) => {
-    if (fly || !(fineOn ? fRef : ref)) return;
+    if (picked || !pairB) return;
     const go = fineOn ? answerFine : answer;
     if (kind === "equal" || reduce) { go(kind); setDx(0); return; }
-    setFly(true); setDx(kind === "better" ? 700 : -700);
-    setTimeout(() => { go(kind); setDx(0); setFly(false); }, 230);
+    setPicked((kind === "better") === curLeft ? "left" : "right");
+    setTimeout(() => { go(kind); setPicked(null); setDx(0); }, 300);
+  };
+  const choose = (side) => decide((side === "left") === curLeft ? "better" : "worse");
+  // Ueberspringen: Spiel erst spaeter wieder zeigen (in der Feinrunde: Duell ans Ende der Liste)
+  const skip = () => {
+    if (picked || !pairB) return;
+    haptic(6);
+    if (fineOn) { const f = sess.fine; if (f.idx >= f.pairs.length - 1) return; setSess((s) => ({ ...s, fine: { ...s.fine, pairs: [...f.pairs.slice(0, f.idx), ...f.pairs.slice(f.idx + 1), f.pairs[f.idx]] } })); return; }
+    if (!curGame) return;
+    setSess((s) => ({ ...s, active: s.active.filter((a) => a.id !== curGame.id), lastRef: ref.id, parked: [...s.parked.filter((id) => id !== curGame.id), curGame.id], hist: [...s.hist, { active: s.active, lastRef: s.lastRef, parked: s.parked, inv: {} }] }));
   };
   useEffect(() => {
-    const onKey = (e) => { if (e.key === "ArrowRight") decide("better"); else if (e.key === "ArrowLeft") decide("worse"); else if (e.key === "ArrowDown") decide("equal"); };
+    const onKey = (e) => { if (e.key === "ArrowLeft") choose("left"); else if (e.key === "ArrowRight") choose("right"); else if (e.key === "ArrowDown") decide("equal"); else if (e.key === "ArrowUp") skip(); };
     window.addEventListener("keydown", onKey); return () => window.removeEventListener("keydown", onKey);
   });
 
@@ -5905,36 +5921,52 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
     return <div className="fixed inset-0 z-[60] bg-bg flex flex-col font-body">{header}</div>;
   }
   const place = (g) => 1 + groups.slice(0, groups.findIndex((grp) => grp.includes(g))).reduce((a, grp) => a + grp.length, 0);
-  const strength = Math.min(1, Math.abs(dx) / 110);
+  const sideGame = (side) => ((side === "left") === curLeft ? dCur : dRef);
+  const info = (g) => [g.year, g.minPlayers && g.maxPlayers ? `${g.minPlayers}–${g.maxPlayers} Spieler` : ""].filter(Boolean).join(" · ");
+  const bias = Math.max(-1, Math.min(1, dx / 90)); // -1 = ganz nach links gezogen, +1 = nach rechts
+  const cardStyle = (side) => {
+    const lean = side === "left" ? -bias : bias; // >0: diese Karte wird gerade gewaehlt
+    if (picked) return picked === side ? { transform: "scale(1.07) translateY(-6px)", transition: "transform .3s, opacity .3s" } : { transform: "scale(.9)", opacity: 0.25, transition: "transform .3s, opacity .3s" };
+    return { transform: `scale(${1 + Math.max(lean, 0) * 0.07 - Math.max(-lean, 0) * 0.05})`, opacity: lean < 0 ? 1 + lean * 0.5 : 1, transition: startX.current === null ? "transform .2s, opacity .2s" : "none" };
+  };
+  const duelCard = (side) => {
+    const g = sideGame(side), isRef = g === dRef, lean = side === "left" ? -bias : bias;
+    return (
+      <div key={g.id} data-duel-card data-duel-cur={!isRef ? "" : undefined} data-duel-ref={isRef ? "" : undefined} data-side={side}
+        className={`relative min-w-0 rounded-[22px] border-2 bg-surface overflow-hidden shadow-xl ${picked === side || lean > 0.5 ? "border-accent" : "border-line"}`} style={cardStyle(side)}>
+        <Cover game={g} size="lg" className="!rounded-none !border-0" />
+        <div className="p-3">
+          <p data-name className="font-display text-base leading-tight tracking-[-0.01em] text-ink line-clamp-2 min-h-[2.5rem]">{g.name}</p>
+          <p className="text-dim text-[11px] mt-1 truncate">{isRef ? `aktuell Platz ${place(g)}${(groups.find((grp) => grp.includes(g)) || []).length > 1 ? " (gleichauf)" : ""}` : (info(g) || "neu im Ranking")}</p>
+        </div>
+      </div>
+    );
+  };
   return (
     <div className="fixed inset-0 z-[60] bg-bg flex flex-col font-body select-none" data-ranking-duel>
       {header}
-      <div className="shrink-0 px-5 pt-3">
-        <p className="text-[11px] text-dim uppercase tracking-[0.16em]">Lieber als …</p>
-        <div className="flex items-center gap-3 mt-1.5 bg-surface border border-line rounded-[16px] p-2 pr-4" data-rank-ref>
-          <Cover game={dRef} size="sm" />
-          <div className="min-w-0 flex-1"><p className="text-ink font-medium truncate">{dRef.name}</p><p className="text-dim text-xs">aktuell Platz {place(dRef)}{(groups.find((grp) => grp.includes(dRef)) || []).length > 1 ? " (gleichauf)" : ""}</p></div>
+      <p className="shrink-0 text-center text-ink font-display text-xl tracking-[-0.02em] pt-3 px-5">Welches magst du lieber?</p>
+      <div className="flex-1 min-h-0 flex items-center px-4 py-3 relative overflow-hidden" data-duel-area key={(pairA && pairA.id) + (pairB && pairB.id) + (fineOn ? sess.fine.idx : "")}
+        style={{ touchAction: "none", cursor: "grab" }}
+        onPointerDown={(e) => { if (picked) return; startX.current = e.clientX; }}
+        onPointerMove={(e) => { if (startX.current !== null) setDx(e.clientX - startX.current); }}
+        onPointerUp={(e) => {
+          if (startX.current === null) return;
+          const d = e.clientX - startX.current; startX.current = null;
+          if (Math.abs(d) > 60) choose(d < 0 ? "left" : "right");
+          else if (Math.abs(d) < 12) { const r = e.currentTarget.getBoundingClientRect(); choose(e.clientX < r.left + r.width / 2 ? "left" : "right"); }
+          else setDx(0);
+        }}
+        onPointerCancel={() => { startX.current = null; setDx(0); }}>
+        <div className="grid grid-cols-2 gap-3 w-full rise-in">
+          {duelCard("left")}
+          {duelCard("right")}
         </div>
+        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-bg border-2 border-line text-ink font-display text-lg flex items-center justify-center pointer-events-none shadow-lg" aria-hidden="true">VS</span>
       </div>
-      <div className="flex-1 min-h-0 flex items-center justify-center px-5 py-3 overflow-hidden">
-        <div key={dCur.id + (fineOn ? "-" + sess.fine.idx : "")} data-rank-card className="relative w-full max-w-[22rem] rounded-[24px] border border-line bg-surface shadow-xl overflow-hidden rise-in"
-          style={{ transform: `translateX(${dx}px) rotate(${dx / 22}deg)`, transition: startX.current === null ? "transform .22s ease-out" : "none", touchAction: "none", cursor: "grab" }}
-          onPointerDown={(e) => { if (fly) return; startX.current = e.clientX; e.currentTarget.setPointerCapture(e.pointerId); }}
-          onPointerMove={(e) => { if (startX.current !== null) setDx(e.clientX - startX.current); }}
-          onPointerUp={() => { const d = dx; startX.current = null; if (d > 110) decide("better"); else if (d < -110) decide("worse"); else setDx(0); }}
-          onPointerCancel={() => { startX.current = null; setDx(0); }}>
-          <Cover game={dCur} size="lg" className="!rounded-none !border-0" />
-          <div className="p-4"><p className="font-display text-xl tracking-[-0.02em] text-ink leading-tight">{dCur.name}</p>
-            <p className="text-dim text-xs mt-1">{[dCur.year, dCur.minPlayers && dCur.maxPlayers ? `${dCur.minPlayers}–${dCur.maxPlayers} Spieler` : "", dCur.minTime ? `${dCur.minTime}${dCur.maxTime && dCur.maxTime !== dCur.minTime ? `–${dCur.maxTime}` : ""} Min.` : ""].filter(Boolean).join(" · ")}</p></div>
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none" aria-hidden="true" style={{ opacity: strength, background: dx > 0 ? "rgb(var(--accent) / 0.22)" : "rgba(0,0,0,0.35)" }}>
-            {dx > 0 ? <Heart size={96} fill="currentColor" className="text-accent" /> : <X size={96} className="text-ink" strokeWidth={2.5} />}
-          </div>
-        </div>
-      </div>
-      <div className="shrink-0 flex items-center justify-center gap-7 px-5 pt-1" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
-        <button data-rank="worse" onClick={() => decide("worse")} aria-label="Weniger gern" className="w-16 h-16 rounded-full border-2 border-line bg-surface text-dim flex items-center justify-center active:scale-95"><X size={28} strokeWidth={2.5} /></button>
-        <button data-rank="equal" onClick={() => decide("equal")} aria-label="Gleich gut" className="w-11 h-11 rounded-full border border-line text-dim flex items-center justify-center text-lg active:scale-95">=</button>
-        <button data-rank="better" onClick={() => decide("better")} aria-label="Lieber" className="w-16 h-16 rounded-full bg-accent text-white flex items-center justify-center active:scale-95"><Heart size={28} fill="currentColor" /></button>
+      <div className="shrink-0 flex items-center justify-center gap-3 px-5 pt-1" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
+        <button data-rank="equal" onClick={() => decide("equal")} className="h-11 px-5 rounded-full border border-line bg-surface text-ink text-sm active:scale-95">Gleich gut</button>
+        <button data-rank="skip" onClick={skip} className="h-11 px-5 rounded-full border border-line text-dim text-sm active:scale-95">Überspringen</button>
       </div>
     </div>
   );

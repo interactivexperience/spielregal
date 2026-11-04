@@ -25,6 +25,7 @@ const games = Object.keys(strength).map((n, i) => ({ ...base, id: "g" + i, name:
 const plays = games.map((g, i) => ({ id: "p" + i, gameId: g.id, gameName: g.name, date: "2026-09-01", mode: "physical-owned", players: "", playerIds: [], winner: "", scores: {}, notes: "", images: [] }));
 const db = { data: { games, plays, updatedAt: 1 } }; let putMode = "fail", puts = 0;
 const page = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+const pickBtn = (k) => (k === "equal" ? page.locator('[data-rank="equal"]') : k === "better" ? page.locator("[data-duel-cur]") : page.locator("[data-duel-ref]"));
 page.on("pageerror", (e) => console.log("PAGEERROR", e.message));
 await page.route("**/cdnjs.cloudflare.com/**/react.production.min.js", r => r.fulfill({ path: vendor("react","umd","react.production.min.js"), contentType: "application/javascript" }));
 await page.route("**/cdnjs.cloudflare.com/**/react-dom.production.min.js", r => r.fulfill({ path: vendor("react-dom","umd","react-dom.production.min.js"), contentType: "application/javascript" }));
@@ -48,9 +49,9 @@ await page.locator("[data-rank-start]").click(); await page.waitForTimeout(400);
 for (let g = 0; g < 20; g++) {
   if (await page.locator("[data-ranking-result]").count()) break;
   if (!(await page.locator("[data-ranking-duel]").count())) { await page.waitForTimeout(100); continue; }
-  const cur = (await page.locator("[data-rank-card] p.font-display").innerText()).trim();
-  const ref = (await page.locator("[data-rank-ref] p.font-medium").innerText()).trim();
-  await page.locator(`[data-rank="${strength[cur] > strength[ref] ? "better" : "worse"}"]`).click(); await page.waitForTimeout(300);
+  const cur = (await page.locator("[data-duel-cur] [data-name]").innerText()).trim();
+  const ref = (await page.locator("[data-duel-ref] [data-name]").innerText()).trim();
+  await pickBtn(strength[cur] > strength[ref] ? "better" : "worse").click(); await page.waitForTimeout(430);
 }
 const ranked1 = (await local()).filter((g) => Number.isInteger(g.rankPos)).length;
 console.log("Lokal eingeordnet (3 Spiele):", ranked1 === 3);
