@@ -61,7 +61,7 @@ await page.goto(url, { waitUntil: "networkidle", timeout: 30000 }); await page.w
 await page.locator("[data-rank-start]").click(); await page.waitForTimeout(600);
 console.log("Zwei Karten nebeneinander mit VS:", await page.locator("[data-duel-card]").count() === 2 && (await page.locator("[data-ranking-duel]").innerText()).includes("VS"));
 const boxes = await page.locator("[data-duel-card]").evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.width)]; }));
-console.log("Beide Karten gleich breit und auf gleicher Hoehe:", boxes[0][2] === boxes[1][2] && boxes[0][1] === boxes[1][1] && boxes[0][0] < boxes[1][0], JSON.stringify(boxes));
+console.log("Diagonal: beide Karten volle Breite, linke oben, rechte unten, zusammen fast die ganze Hoehe:", boxes[0][2] === boxes[1][2] && boxes[0][0] === boxes[1][0] && boxes[0][1] < boxes[1][1] && boxes[0][2] >= 380, JSON.stringify(boxes));
 console.log("Knoepfe unten: 'Gleich gut' und 'Ueberspringen', kein Herz/Kreuz mehr:", await page.locator('[data-rank="equal"]').count() === 1 && await page.locator('[data-rank="skip"]').count() === 1 && await page.locator('[data-rank="better"], [data-rank="worse"]').count() === 0);
 // Antworten bis mind. 2 Spiele einsortiert, damit mehrere warten
 for (let i = 0; i < 2; i++) { await pickBtn("better").click(); await page.waitForTimeout(450); }

@@ -264,8 +264,8 @@
      das eigene Menue erschien. Unterdrueckt beides, ohne das Antippen
      selbst zu beeintraechtigen. */
   .no-callout { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; -webkit-user-select: none; }
-  @keyframes duelInL { from{opacity:0; transform:translateX(-70%) rotate(-24deg) scale(.8);} to{opacity:1; transform:none;} }
-  @keyframes duelInR { from{opacity:0; transform:translateX(70%) rotate(24deg) scale(.8);} to{opacity:1; transform:none;} }
+  @keyframes duelInL { from{opacity:0; transform:translate(-12%,-8%);} to{opacity:1; transform:none;} }
+  @keyframes duelInR { from{opacity:0; transform:translate(12%,8%);} to{opacity:1; transform:none;} }
   @keyframes duelVs { 0%{transform:translate(-50%,-50%) rotate(-8deg) scale(.4);opacity:0} 60%{transform:translate(-50%,-50%) rotate(-8deg) scale(1.25);opacity:1} 100%{transform:translate(-50%,-50%) rotate(-8deg) scale(1)} }
   .duel-in-l { animation: duelInL .5s cubic-bezier(.2,.9,.25,1.15) backwards; }
   .duel-in-r { animation: duelInR .5s cubic-bezier(.2,.9,.25,1.15) .06s backwards; }
@@ -5925,7 +5925,7 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
   const pairA = fineOn ? fCur : curGame, pairB = fineOn ? fRef : ref;
   const curLeft = pairA && pairB ? idHash(pairA.id + pairB.id + sess.seed + (fineOn ? sess.fine.idx : sess.hist.length)) % 2 === 0 : true;
   const [dx, setDx] = useState(0), [picked, setPicked] = useState(null);
-  const startX = React.useRef(null);
+  const startX = React.useRef(null), startY = React.useRef(0);
   const reduce = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
   const decide = (kind) => {
     if (picked || !pairB) return;
@@ -5991,54 +5991,62 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
   }
   const sideGame = (side) => ((side === "left") === curLeft ? dCur : dRef);
   const bias = Math.max(-1, Math.min(1, dx / 90)); // -1 = ganz nach links gezogen, +1 = nach rechts
-  // Karten: gross, leicht schraeg und am Rand angeschnitten; die gewaehlte richtet sich auf und springt vor
+  // Diagonales Duell: eine Diagonale teilt den Bildschirm, jedes Cover fuellt seine Haelfte bis zum Rand.
+  // "left" = Haelfte oben links, "right" = Haelfte unten rechts. Die Linie laeuft von (0, DY0) nach (Breite, DY1).
+  const DY0 = 0.74, DY1 = 0.22;
   const cardStyle = (side) => {
-    const sgn = side === "left" ? -1 : 1, lean = side === "left" ? -bias : bias; // lean > 0: diese Karte wird gerade gewaehlt
+    const sgn = side === "left" ? -1 : 1, lean = side === "left" ? -bias : bias; // lean > 0: diese Haelfte wird gerade gewaehlt
     if (picked) return picked === side
-      ? { transform: `translateX(${-sgn * 6}%) translateY(-3%) rotate(0deg) scale(1.1)`, zIndex: 30, transition: "transform .3s cubic-bezier(.2,.9,.3,1.2)" }
-      : { transform: `translateX(${sgn * 22}%) rotate(${sgn * 16}deg) scale(.8)`, opacity: 0.25, zIndex: 5, transition: "transform .3s ease-in, opacity .3s" };
-    const rot = sgn * (7 - Math.max(lean, 0) * 6 + Math.max(-lean, 0) * 4), sc = 1 + Math.max(lean, 0) * 0.08 - Math.max(-lean, 0) * 0.06, tx = -sgn * Math.max(lean, 0) * 5;
-    return { transform: `translateX(${tx}%) rotate(${rot}deg) scale(${sc})`, opacity: lean < 0 ? 1 + lean * 0.45 : 1, zIndex: lean > 0.2 ? 20 : 10, transition: startX.current === null ? "transform .25s cubic-bezier(.2,.9,.3,1.2), opacity .2s" : "none" };
+      ? { transform: "scale(1.06)", zIndex: 30, transition: "transform .3s cubic-bezier(.2,.9,.3,1.2)" }
+      : { transform: `translate(${sgn * 10}%, ${sgn * 6}%) scale(.92)`, opacity: 0.25, zIndex: 5, transition: "transform .3s ease-in, opacity .3s" };
+    const sc = 1 + Math.max(lean, 0) * 0.08 - Math.max(-lean, 0) * 0.06;
+    return { transform: `rotate(0deg) scale(${sc})`, opacity: lean < 0 ? 1 + lean * 0.45 : 1, zIndex: lean > 0.2 ? 20 : 10, transition: startX.current === null ? "transform .25s cubic-bezier(.2,.9,.3,1.2), opacity .2s" : "none" };
   };
   const duelCard = (side) => {
-    const g = sideGame(side), isRef = g === dRef, lean = side === "left" ? -bias : bias, img = rankImg(g);
+    const g = sideGame(side), isRef = g === dRef, img = rankImg(g);
     const left = side === "left";
+    // Die Box jeder Haelfte reicht nur so weit, dass ihre Mitte in der eigenen Haelfte liegt (Klicks/Tests treffen die richtige Karte).
+    const wrap = left ? { top: 0, height: `${DY0 * 100}%` } : { bottom: 0, height: `${(1 - DY1) * 100}%` };
+    const clip = left ? `polygon(0 0, 100% 0, 100% ${(DY1 / DY0) * 100}%, 0 100%)` : `polygon(100% 0, 100% 100%, 0 100%, 0 ${((DY0 - DY1) / (1 - DY1)) * 100}%)`;
     return (
-      <div key={g.id} className={`absolute top-1/2 w-[68%] ${left ? "-left-[14%] duel-in-l" : "-right-[14%] duel-in-r"}`} style={{ transform: "translateY(-50%)" }}>
+      <div key={g.id} className={`absolute inset-x-0 pointer-events-none ${left ? "duel-in-l" : "duel-in-r"}`} style={wrap}>
         <div data-duel-card data-duel-cur={!isRef ? "" : undefined} data-duel-ref={isRef ? "" : undefined} data-side={side}
-          className={`relative rounded-[26px] overflow-hidden border-[3px] bg-surface shadow-2xl aspect-[3/4] ${picked === side || lean > 0.5 ? "border-accent" : "border-black/40"}`} style={cardStyle(side)}>
+          className="absolute inset-0 overflow-hidden bg-surface pointer-events-auto" style={{ clipPath: clip, ...cardStyle(side) }}>
           {img ? <img src={img} alt="" draggable={false} className="absolute inset-0 w-full h-full object-cover" />
-            : <div className="absolute inset-0 flex items-center justify-center text-dim bg-surface2"><Dices size={56} /></div>}
-          <div className="absolute inset-x-0 bottom-0 pt-14 pb-4 bg-gradient-to-t from-black/85 via-black/50 to-transparent" style={{ paddingLeft: left ? "17%" : "24%", paddingRight: left ? "24%" : "17%", textAlign: left ? "left" : "right" }}>
-            <p data-name className="font-display text-[1.35rem] leading-[1.05] tracking-[-0.02em] text-white line-clamp-3">{g.name}</p>
+            : <div className="absolute inset-0 flex items-center justify-center text-dim bg-surface2"><Dices size={64} /></div>}
+          <div className={`absolute inset-x-0 ${left ? "top-0 pt-[7.5rem] pb-16 bg-gradient-to-b" : "bottom-0 pb-[6.5rem] pt-16 bg-gradient-to-t"} from-black/75 via-black/35 to-transparent`}
+            style={{ paddingLeft: left ? "1.25rem" : "30%", paddingRight: left ? "30%" : "1.25rem", textAlign: left ? "left" : "right" }}>
+            <p data-name className="font-display text-[1.9rem] leading-[1.02] tracking-[-0.025em] text-white line-clamp-3" style={{ textShadow: "0 2px 14px rgba(0,0,0,.6)" }}>{g.name}</p>
           </div>
         </div>
       </div>
     );
   };
   return (
-    <div className="fixed inset-0 z-[60] bg-bg flex flex-col font-body select-none" data-ranking-duel>
-      {header}
-      <p className="shrink-0 text-center text-ink font-display text-xl tracking-[-0.02em] pt-3 px-5">Welches magst du lieber?</p>
-      <div className="flex-1 min-h-0 relative overflow-hidden" data-duel-area key={(pairA && pairA.id) + (pairB && pairB.id) + (fineOn ? sess.fine.idx : "")}
+    <div className="fixed inset-0 z-[60] bg-bg font-body select-none overflow-hidden" data-ranking-duel>
+      <div className="absolute inset-0" data-duel-area key={(pairA && pairA.id) + (pairB && pairB.id) + (fineOn ? sess.fine.idx : "")}
         style={{ touchAction: "none", cursor: "grab" }}
-        onPointerDown={(e) => { if (picked) return; startX.current = e.clientX; }}
-        onPointerMove={(e) => { if (startX.current !== null) setDx(e.clientX - startX.current); }}
+        onPointerDown={(e) => { if (picked) return; startX.current = e.clientX; startY.current = e.clientY; }}
+        onPointerMove={(e) => { if (startX.current !== null) setDx((e.clientX - startX.current) + (e.clientY - startY.current)); }}
         onPointerUp={(e) => {
           if (startX.current === null) return;
-          const d = e.clientX - startX.current; startX.current = null;
-          if (Math.abs(d) > 60) choose(d < 0 ? "left" : "right");
-          else if (Math.abs(d) < 12) { const r = e.currentTarget.getBoundingClientRect(); choose(e.clientX < r.left + r.width / 2 ? "left" : "right"); }
+          const d = (e.clientX - startX.current) + (e.clientY - startY.current); startX.current = null;
+          if (Math.abs(d) > 60) choose(d < 0 ? "left" : "right"); // nach links oben = obere Haelfte, nach rechts unten = untere Haelfte
+          else if (Math.abs(d) < 12) { const r = e.currentTarget.getBoundingClientRect(); const lineY = r.top + r.height * (DY0 - (DY0 - DY1) * ((e.clientX - r.left) / r.width)); choose(e.clientY < lineY ? "left" : "right"); }
           else setDx(0);
         }}
         onPointerCancel={() => { startX.current = null; setDx(0); }}>
         {duelCard("left")}
         {duelCard("right")}
-        <span className="duel-vs absolute left-1/2 top-1/2 z-40 w-16 h-16 rounded-full bg-accent text-white font-display text-2xl flex items-center justify-center pointer-events-none shadow-2xl border-4 border-bg" style={{ transform: "translate(-50%,-50%) rotate(-8deg)" }} aria-hidden="true">VS</span>
+        <svg className="absolute inset-0 w-full h-full pointer-events-none z-[35]" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <line x1="0" y1={DY0 * 100} x2="100" y2={DY1 * 100} className="text-bg" stroke="currentColor" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 6 }} />
+        </svg>
+        <span className="duel-vs absolute left-1/2 z-40 w-16 h-16 rounded-full bg-accent text-white font-display text-2xl flex items-center justify-center pointer-events-none shadow-2xl border-4 border-bg" style={{ top: `${((DY0 + DY1) / 2) * 100}%`, transform: "translate(-50%,-50%) rotate(-8deg)" }} aria-hidden="true">VS</span>
       </div>
-      <div className="shrink-0 flex items-center justify-center gap-3 px-5 pt-2" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
+      <div className="absolute top-0 inset-x-0 z-50 pb-5 bg-gradient-to-b from-black/60 to-transparent">{header}</div>
+      <div className="absolute bottom-0 inset-x-0 z-50 flex items-center justify-center gap-3 px-5 pt-8 bg-gradient-to-t from-black/70 to-transparent" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
         <button data-rank="equal" onClick={() => decide("equal")} className="h-11 px-5 rounded-full border border-line bg-surface text-ink text-sm active:scale-95">Gleich gut</button>
-        <button data-rank="skip" onClick={skip} className="h-11 px-5 rounded-full border border-line text-dim text-sm active:scale-95">Überspringen</button>
+        <button data-rank="skip" onClick={skip} className="h-11 px-5 rounded-full border border-line bg-surface text-dim text-sm active:scale-95">Überspringen</button>
       </div>
     </div>
   );
