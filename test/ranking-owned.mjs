@@ -40,16 +40,16 @@ const stored = async () => Object.fromEntries((await page.evaluate(() => JSON.pa
 await page.waitForFunction(() => { const g = JSON.parse(localStorage.getItem("spielregal:games")).find((x) => x.id === "c"); return g && g.rankPos === undefined; }, null, { timeout: 8000 }).catch(() => {});
 const st = await stored();
 check("Verkauftes, Wunschlisten- und 'nur gespielt'-Spiel verlieren ihren Rang", st.c === undefined && st.e === undefined && st.d === undefined);
-check("Besessene (auch 'zum Verkauf') behalten ihren Rang", st.a === 1 && st.b === 2 && st.f === 3);
-check("Dashboard: 3 von 4 eingeordnet (nur besessene gespielte Spiele)", (await page.locator("[data-dash-ranking]").innerText()).includes("3 von 4"));
+check("Besessene behalten ihren Rang, 'zum Verkauf' markierte verlieren ihn", st.a === 1 && st.b === 2 && st.f === undefined);
+check("Dashboard: 2 von 3 eingeordnet (nur besessene, nicht zum Verkauf markierte Spiele)", (await page.locator("[data-dash-ranking]").innerText()).includes("2 von 3"));
 await page.locator("[data-rank-open]").click(); await page.waitForTimeout(600);
 const list = await page.locator("[data-rank-all]").innerText().catch(() => "");
-check("Rangliste enthaelt nur Besessene", list.includes("Azul") && list.includes("Fluxx") && !/Catan|Dixit|Everdell/.test(list));
+check("Rangliste enthaelt nur Besessene", list.includes("Azul") && list.includes("Brass") && !/Catan|Dixit|Everdell|Fluxx/.test(list));
 // Neues Spiel einordnen: nie die ausgeschlossenen Spiele im Duell
 await page.locator("[data-rank-continue]").click(); await page.waitForTimeout(500);
 let bad = false;
 for (let i = 0; i < 6 && await page.locator("[data-ranking-duel]").count(); i++) {
-  const t = await page.locator("[data-ranking-duel]").innerText(); if (/Catan|Dixit|Everdell/.test(t)) bad = true;
+  const t = await page.locator("[data-ranking-duel]").innerText(); if (/Catan|Dixit|Everdell|Fluxx/.test(t)) bad = true;
   await page.locator("[data-duel-cur]").click(); await page.waitForTimeout(450);
 }
 check("Im Duell tauchen keine ausgeschlossenen Spiele auf", !bad);

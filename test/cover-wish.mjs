@@ -41,12 +41,13 @@ check("Wunsch-Cover hat Markierung, besessenes und gespieltes nicht", await wrap
 check("Wunsch-Cover: Herz-Badge", await wrap("Wunsch Spiel").locator("[data-wish-badge]").count() === 1);
 const hb = await wrap("Wunsch Spiel").locator("[data-wish-badge]").evaluate((e) => ({ bg: getComputedStyle(e).backgroundColor, svgFill: getComputedStyle(e.querySelector("svg")).fill, color: getComputedStyle(e).color }));
 check("Herz ausgefuellt in Weiss, ohne Kreis (" + JSON.stringify(hb) + ")", hb.bg === "rgba(0, 0, 0, 0)" && hb.svgFill === hb.color && hb.color === "rgb(255, 255, 255)");
-const bs = await wrap("Wunsch Spiel").locator("span.border-dashed").evaluate((e) => [getComputedStyle(e).borderTopStyle, getComputedStyle(e).borderTopColor]);
-check("Wunsch-Cover: gestrichelter Rahmen in Coral " + bs, bs[0] === "dashed" && bs[1] === "rgb(255, 111, 97)");
+check("Wunsch-Cover: kein gestrichelter Rahmen", await wrap("Wunsch Spiel").locator("span.border-dashed").count() === 0);
+const gl = await wrap("Wunsch Spiel").locator("[data-wish-badge]").evaluate((e) => getComputedStyle(e).filter);
+check("Herz leuchtet mit Coral-Schatten (" + gl + ")", /rgb\(255, 111, 97\)/.test(gl) && (gl.match(/drop-shadow/g) || []).length >= 2);
 const fl = await page.locator('img[alt="Wunsch Spiel"]').first().evaluate((e) => getComputedStyle(e).filter);
 check(`Wunsch-Cover aufgehellt (${fl})`, /brightness\(1\.12\)/.test(fl));
 const fa = await page.locator('img[alt="Azul Besitz"]').first().evaluate((e) => getComputedStyle(e).filter);
 check("Besessenes Cover unveraendert", fa === "none");
-check("Wunsch ohne Bild: ebenfalls Rahmen und Herz", await page.locator("[data-wish-cover]:not(:has(img)) [data-wish-badge]").count() === 1);
+check("Wunsch ohne Bild: ebenfalls Herz", await page.locator("[data-wish-cover]:not(:has(img)) [data-wish-badge]").count() === 1);
 await b.close(); server.close();
 console.log(ok ? "Wunsch-Cover-Test bestanden: true" : "FEHLER"); process.exit(ok ? 0 : 1);
