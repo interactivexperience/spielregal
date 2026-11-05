@@ -264,12 +264,12 @@
      das eigene Menue erschien. Unterdrueckt beides, ohne das Antippen
      selbst zu beeintraechtigen. */
   .no-callout { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; -webkit-user-select: none; }
-  @keyframes duelInL { from{opacity:0; transform:translate(-12%,-8%);} to{opacity:1; transform:none;} }
-  @keyframes duelInR { from{opacity:0; transform:translate(12%,8%);} to{opacity:1; transform:none;} }
+  @keyframes duelInL { from{opacity:0; transform:translate(-5%,-3%);} to{opacity:1; transform:none;} }
+  @keyframes duelInR { from{opacity:0; transform:translate(5%,3%);} to{opacity:1; transform:none;} }
   @keyframes duelVs { 0%{transform:translate(-50%,-50%) rotate(-8deg) scale(.4);opacity:0} 60%{transform:translate(-50%,-50%) rotate(-8deg) scale(1.25);opacity:1} 100%{transform:translate(-50%,-50%) rotate(-8deg) scale(1)} }
-  .duel-in-l { animation: duelInL .5s cubic-bezier(.2,.9,.25,1.15) backwards; }
-  .duel-in-r { animation: duelInR .5s cubic-bezier(.2,.9,.25,1.15) .06s backwards; }
-  .duel-vs { animation: duelVs .5s .22s cubic-bezier(.2,.9,.3,1.3) backwards; }
+  .duel-in-l { animation: duelInL .24s cubic-bezier(.2,.8,.2,1) backwards; }
+  .duel-in-r { animation: duelInR .24s cubic-bezier(.2,.8,.2,1) backwards; }
+  .duel-vs { animation: duelVs .28s .06s cubic-bezier(.2,.9,.3,1.3) backwards; }
   @media (prefers-reduced-motion: reduce) { .duel-in-l,.duel-in-r,.duel-vs { animation: none; } }
   @keyframes riseIn { from{opacity:0; transform:translateY(24px);} to{opacity:1; transform:translateY(0);} }
   .rise-in { animation: riseIn .38s cubic-bezier(0.32, 0.72, 0, 1); }
@@ -5924,20 +5924,33 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
   // welches der beiden links steht, wird pro Duell gewuerfelt (damit "das neue" nicht immer links ist).
   const pairA = fineOn ? fCur : curGame, pairB = fineOn ? fRef : ref;
   const curLeft = pairA && pairB ? idHash(pairA.id + pairB.id + sess.seed + (fineOn ? sess.fine.idx : sess.hist.length)) % 2 === 0 : true;
-  const [dx, setDx] = useState(0), [picked, setPicked] = useState(null);
+  const cardEls = React.useRef({}), pickedRef = React.useRef(false);
   const startX = React.useRef(null), startY = React.useRef(0);
   const reduce = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Animationen laufen direkt am Element (ohne React-Neuzeichnen): beim Ziehen folgt die Karte dem Finger ruckelfrei.
+  const setCard = (side, o) => { const el = cardEls.current[side]; if (!el) return; Object.entries(o).forEach(([k, v]) => { el.style[k] = v; }); };
+  const lean = (d, snap) => { // d < 0: obere Haelfte, d > 0: untere Haelfte; null = zuruecksetzen
+    ["left", "right"].forEach((side) => {
+      const l = d === null ? 0 : Math.max(-1, Math.min(1, d / 90)) * (side === "left" ? -1 : 1);
+      setCard(side, { transition: snap ? "transform .16s ease-out, opacity .16s ease-out" : "none", transform: l > 0 ? `scale(${1 + l * 0.08})` : "", opacity: l < 0 ? String(1 + l * 0.5) : "", zIndex: l > 0.2 ? "20" : "" });
+    });
+  };
   const decide = (kind) => {
-    if (picked || !pairB) return;
+    if (pickedRef.current || !pairB) return;
     const go = fineOn ? answerFine : answer;
-    if (kind === "equal" || reduce) { go(kind); setDx(0); return; }
-    setPicked((kind === "better") === curLeft ? "left" : "right");
-    setTimeout(() => { go(kind); setPicked(null); setDx(0); }, 300);
+    if (reduce) { go(kind); return; }
+    pickedRef.current = true;
+    const T = "transform .17s cubic-bezier(.3,.7,.3,1), opacity .17s ease-out";
+    if (kind === "equal") ["left", "right"].forEach((sd) => setCard(sd, { transition: T, transform: "scale(1.03)", opacity: "0.7" }));
+    else { const win = (kind === "better") === curLeft ? "left" : "right", lose = win === "left" ? "right" : "left";
+      setCard(win, { transition: T, transform: "scale(1.06)", opacity: "1", zIndex: "30" });
+      setCard(lose, { transition: T, transform: "scale(1)", opacity: "0.2", zIndex: "5" }); }
+    setTimeout(() => { pickedRef.current = false; go(kind); lean(null); }, 180);
   };
   const choose = (side) => decide((side === "left") === curLeft ? "better" : "worse");
   // Ueberspringen: Spiel erst spaeter wieder zeigen (in der Feinrunde: Duell ans Ende der Liste)
   const skip = () => {
-    if (picked || !pairB) return;
+    if (pickedRef.current || !pairB) return;
     haptic(6);
     if (fineOn) { const f = sess.fine; if (f.idx >= f.pairs.length - 1) return; setSess((s) => ({ ...s, fine: { ...s.fine, pairs: [...f.pairs.slice(0, f.idx), ...f.pairs.slice(f.idx + 1), f.pairs[f.idx]] } })); return; }
     if (!curGame) return;
@@ -5990,18 +6003,9 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
     return <div className="fixed inset-0 z-[60] bg-bg flex flex-col font-body">{header}</div>;
   }
   const sideGame = (side) => ((side === "left") === curLeft ? dCur : dRef);
-  const bias = Math.max(-1, Math.min(1, dx / 90)); // -1 = ganz nach links gezogen, +1 = nach rechts
   // Diagonales Duell: eine Diagonale teilt den Bildschirm, jedes Cover fuellt seine Haelfte bis zum Rand.
   // "left" = Haelfte oben links, "right" = Haelfte unten rechts. Die Linie laeuft von (0, DY0) nach (Breite, DY1).
   const DY0 = 0.74, DY1 = 0.22;
-  const cardStyle = (side) => {
-    const sgn = side === "left" ? -1 : 1, lean = side === "left" ? -bias : bias; // lean > 0: diese Haelfte wird gerade gewaehlt
-    if (picked) return picked === side
-      ? { transform: "scale(1.06)", zIndex: 30, transition: "transform .3s cubic-bezier(.2,.9,.3,1.2)" }
-      : { transform: `translate(${sgn * 10}%, ${sgn * 6}%) scale(.92)`, opacity: 0.25, zIndex: 5, transition: "transform .3s ease-in, opacity .3s" };
-    const sc = 1 + Math.max(lean, 0) * 0.08 - Math.max(-lean, 0) * 0.06;
-    return { transform: `rotate(0deg) scale(${sc})`, opacity: lean < 0 ? 1 + lean * 0.45 : 1, zIndex: lean > 0.2 ? 20 : 10, transition: startX.current === null ? "transform .25s cubic-bezier(.2,.9,.3,1.2), opacity .2s" : "none" };
-  };
   const duelCard = (side) => {
     const g = sideGame(side), isRef = g === dRef, img = rankImg(g);
     const left = side === "left";
@@ -6011,7 +6015,7 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
     return (
       <div key={g.id} className={`absolute inset-x-0 pointer-events-none ${left ? "duel-in-l" : "duel-in-r"}`} style={wrap}>
         <div data-duel-card data-duel-cur={!isRef ? "" : undefined} data-duel-ref={isRef ? "" : undefined} data-side={side}
-          className="absolute inset-0 overflow-hidden bg-surface pointer-events-auto" style={{ clipPath: clip, ...cardStyle(side) }}>
+          ref={(el) => { cardEls.current[side] = el; }} className="absolute inset-0 overflow-hidden bg-surface pointer-events-auto" style={{ clipPath: clip, willChange: "transform, opacity" }}>
           {img ? <img src={img} alt="" draggable={false} className="absolute inset-0 w-full h-full object-cover" />
             : <div className="absolute inset-0 flex items-center justify-center text-dim bg-surface2"><Dices size={64} /></div>}
           <div className={`absolute inset-x-0 ${left ? "top-0 pt-[7.5rem] pb-16 bg-gradient-to-b" : "bottom-0 pb-[6.5rem] pt-16 bg-gradient-to-t"} from-black/75 via-black/35 to-transparent`}
@@ -6026,16 +6030,16 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
     <div className="fixed inset-0 z-[60] bg-bg font-body select-none overflow-hidden" data-ranking-duel>
       <div className="absolute inset-0" data-duel-area key={(pairA && pairA.id) + (pairB && pairB.id) + (fineOn ? sess.fine.idx : "")}
         style={{ touchAction: "none", cursor: "grab" }}
-        onPointerDown={(e) => { if (picked) return; startX.current = e.clientX; startY.current = e.clientY; }}
-        onPointerMove={(e) => { if (startX.current !== null) setDx((e.clientX - startX.current) + (e.clientY - startY.current)); }}
+        onPointerDown={(e) => { if (pickedRef.current) return; startX.current = e.clientX; startY.current = e.clientY; try { e.currentTarget.setPointerCapture(e.pointerId); } catch {} }}
+        onPointerMove={(e) => { if (startX.current !== null) lean((e.clientX - startX.current) + (e.clientY - startY.current)); }}
         onPointerUp={(e) => {
           if (startX.current === null) return;
           const d = (e.clientX - startX.current) + (e.clientY - startY.current); startX.current = null;
           if (Math.abs(d) > 60) choose(d < 0 ? "left" : "right"); // nach links oben = obere Haelfte, nach rechts unten = untere Haelfte
           else if (Math.abs(d) < 12) { const r = e.currentTarget.getBoundingClientRect(); const lineY = r.top + r.height * (DY0 - (DY0 - DY1) * ((e.clientX - r.left) / r.width)); choose(e.clientY < lineY ? "left" : "right"); }
-          else setDx(0);
+          else lean(null, true);
         }}
-        onPointerCancel={() => { startX.current = null; setDx(0); }}>
+        onPointerCancel={() => { startX.current = null; lean(null, true); }}>
         {duelCard("left")}
         {duelCard("right")}
         <svg className="absolute inset-0 w-full h-full pointer-events-none z-[35]" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
