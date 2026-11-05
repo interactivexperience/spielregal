@@ -1630,6 +1630,8 @@ const shopHref = (v) => {
   const u = /^[a-z][a-z0-9+.-]*:/i.test(t) ? t : "https://" + t;
   try { const x = new URL(u); return /^https?:$/.test(x.protocol) && x.hostname.includes(".") ? x.href : ""; } catch { return ""; }
 };
+// Im Gaestemodus ausgeblendet: Wunschliste, verkaufte und gerade verliehene Spiele.
+const guestHidden = (g) => g.status === "wishlist" || g.saleStatus === "sold" || !!(g.lentTo && String(g.lentTo).trim());
 const purchasePlaceLabel = (v) => (PURCHASE_PLACES.find((o) => o.v === v) || {}).label || "";
 
 function Segmented({ options, value, onChange }) {
@@ -7557,16 +7559,18 @@ function CollectionFilterModal({ categoryOptions, mechanismOptions, publisherOpt
               <option value="complexity-asc">Komplexität (niedrig → hoch)</option>
             </select>
           </div>
+          {!guestMode && (
           <div>
             <label className="block text-[11px] text-dim">Status</label>
             <div className="mt-1.5">
               <Segmented
-                options={guestMode ? [{ v: "owned", label: "Besitz" }] : [{ v: "owned", label: "Besitz" }, { v: "wishlist", label: "Wunschliste" }, { v: "all", label: "Alle" }]}
+                options={[{ v: "owned", label: "Besitz" }, { v: "wishlist", label: "Wunschliste" }, { v: "all", label: "Alle" }]}
                 value={statusFilter}
                 onChange={onChangeStatus}
               />
             </div>
           </div>
+          )}
           {statusFilter === "wishlist" && (
             <div>
               <p className="text-[11px] text-dim mb-1.5">Nur digital vorgemerkte <span className="text-[10px]">(standardmäßig ausgeblendet)</span></p>
@@ -7737,7 +7741,7 @@ function buildCollectionList(games, plays, { statusFilter, filters, sortBy, gues
   if (statusFilter === "wishlist" && !filters.showDigitalWishlist) list = list.filter((g) => g.format !== "digital");
   // Zugriffsbeschraenkung, kein gewoehnlicher Filter -- gilt immer, auch in
   // der ungefilterten "alles"-Ansicht.
-  if (guestMode) list = list.filter((g) => g.status !== "wishlist" && g.saleStatus !== "sold");
+  if (guestMode) list = list.filter((g) => !guestHidden(g));
   const playCounts = {};
   plays.forEach((p) => { playCounts[p.gameId] = (playCounts[p.gameId] || 0) + 1; });
   return [...list].sort((a, b) => {
@@ -7762,7 +7766,7 @@ function buildDetailNavList(games, plays, guestMode) {
   const statusFilter = loadKey("spielregal:collectionStatusFilter", "owned");
   const filters = loadKey("spielregal:collectionFilters", COLLECTION_FILTERS_DEFAULTS);
   if (collectionActiveFilterCount(statusFilter, filters) === 0) {
-    return games.filter((g) => !g.expansionOf && (!guestMode || (g.status !== "wishlist" && g.saleStatus !== "sold")));
+    return games.filter((g) => !g.expansionOf && (!guestMode || !guestHidden(g)));
   }
   const sortBy = loadKey("spielregal:collectionSortBy", "name-asc");
   return buildCollectionList(games, plays, { statusFilter, filters, sortBy, guestMode });
@@ -7857,7 +7861,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
   // Gästemodus: Wunschliste und verkaufte Spiele nie zeigen — egal welcher
   // Filter/welche Suche aktiv ist. Das ist eine Zugriffsbeschränkung, keine
   // gewöhnliche Standard-Einstellung, die man durch Filtern/Suchen umgehen kann.
-  if (guestMode) list = list.filter(g => g.status !== "wishlist" && g.saleStatus !== "sold");
+  if (guestMode) list = list.filter(g => !guestHidden(g));
 
   list = [...list].sort((a, b) => {
     switch (sortBy) {
@@ -9628,7 +9632,7 @@ function App() {
       return arr;
     });
   };
-  const displayGames = demoMode ? DEMO_GAMES : games;
+  const displayGames = demoMode ? DEMO_GAMES : guestMode ? games.filter((g) => !guestHidden(g)) : games;
   const displayPlays = demoMode ? DEMO_PLAYS : plays;
   const displayLists = demoMode ? DEMO_LISTS : lists;
   // Unlike games/plays/lists, newly created players can't collide with or
