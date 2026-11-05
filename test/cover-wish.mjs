@@ -40,9 +40,9 @@ const wrap = (name) => page.locator(`[data-wish-cover]:has(img[alt="${name}"])`)
 check("Wunsch-Cover hat Markierung, besessenes und gespieltes nicht", await wrap("Wunsch Spiel").count() === 1 && await page.locator('[data-wish-cover]:has(img[alt="Azul Besitz"]), [data-wish-cover]:has(img[alt="Brass NurGespielt"])').count() === 0);
 check("Wunsch-Cover: Herz-Badge", await wrap("Wunsch Spiel").locator("[data-wish-badge]").count() === 1);
 const hb = await wrap("Wunsch Spiel").locator("[data-wish-badge]").evaluate((e) => ({ bg: getComputedStyle(e).backgroundColor, svgFill: getComputedStyle(e.querySelector("svg")).fill, color: getComputedStyle(e).color }));
-check("Herz ausgefuellt in Coral #FF6F61, ohne Kreis (" + JSON.stringify(hb) + ")", hb.bg === "rgba(0, 0, 0, 0)" && hb.svgFill === hb.color && hb.color === "rgb(255, 111, 97)");
-const bs = await wrap("Wunsch Spiel").locator("span.border-dashed").evaluate((e) => getComputedStyle(e).borderTopStyle);
-check("Wunsch-Cover: gestrichelter Rahmen", bs === "dashed");
+check("Herz ausgefuellt in Weiss, ohne Kreis (" + JSON.stringify(hb) + ")", hb.bg === "rgba(0, 0, 0, 0)" && hb.svgFill === hb.color && hb.color === "rgb(255, 255, 255)");
+const bs = await wrap("Wunsch Spiel").locator("span.border-dashed").evaluate((e) => [getComputedStyle(e).borderTopStyle, getComputedStyle(e).borderTopColor]);
+check("Wunsch-Cover: gestrichelter Rahmen in Coral " + bs, bs[0] === "dashed" && bs[1] === "rgb(255, 111, 97)");
 const fl = await page.locator('img[alt="Wunsch Spiel"]').first().evaluate((e) => getComputedStyle(e).filter);
 check(`Wunsch-Cover aufgehellt (${fl})`, /brightness\(1\.12\)/.test(fl));
 const fa = await page.locator('img[alt="Azul Besitz"]').first().evaluate((e) => getComputedStyle(e).filter);
