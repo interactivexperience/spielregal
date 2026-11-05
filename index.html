@@ -467,6 +467,7 @@ const Settings = (p) => <Icon {...p}><circle cx="12" cy="12" r="3" /><path d="M1
 const Camera = (p) => <Icon {...p}><path d="M4 8a2 2 0 0 1 2-2h1.2a1 1 0 0 0 .8-.4l.9-1.2a1 1 0 0 1 .8-.4h4.6a1 1 0 0 1 .8.4l.9 1.2a1 1 0 0 0 .8.4H18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Z" /><circle cx="12" cy="13" r="3.5" /></Icon>;
 const Upload = (p) => <Icon {...p}><path d="M12 16V4M7 9l5-5 5 5" /><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" /></Icon>;
 const LinkIcon = (p) => <Icon {...p}><path d="M9 15 15 9" /><path d="M11 6.5 12.4 5a3.5 3.5 0 0 1 5 5L16 11.5" /><path d="M13 17.5 11.6 19a3.5 3.5 0 0 1-5-5L8 12.5" /></Icon>;
+const ExternalIcon = (p) => <Icon {...p}><path d="M14 4h6v6" /><path d="M20 4 11 13" /><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" /></Icon>;
 const Pencil = (p) => <Icon {...p}><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></Icon>;
 const StickyNote = (p) => <Icon {...p}><path d="M4 4h16v11l-5 5H4Z" /><path d="M15 20v-5h5" /></Icon>;
 const ChevronLeft = (p) => <Icon {...p}><path d="m15 6-6 6 6 6" /></Icon>;
@@ -1615,7 +1616,6 @@ const shopHref = (v) => {
   const u = /^[a-z][a-z0-9+.-]*:/i.test(t) ? t : "https://" + t;
   try { const x = new URL(u); return /^https?:$/.test(x.protocol) && x.hostname.includes(".") ? x.href : ""; } catch { return ""; }
 };
-const shopHost = (v) => { try { return new URL(shopHref(v)).hostname.replace(/^www\./, ""); } catch { return ""; } };
 const purchasePlaceLabel = (v) => (PURCHASE_PLACES.find((o) => o.v === v) || {}).label || "";
 
 function Segmented({ options, value, onChange }) {
@@ -9426,7 +9426,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                       <div className="flex items-center gap-x-3 gap-y-1 flex-wrap">
                         {game.purchasePrice && <span className="text-xs text-dim">{game.status === "wishlist" ? "Preis" : "Kaufpreis"}: <span className="text-ink">{game.purchasePrice} €</span></span>}
                         {game.purchasePlace && <span className="text-xs text-dim">{game.status === "wishlist" ? "Kaufen bei" : "Gekauft bei"}: <span className="text-ink">{purchasePlaceLabel(game.purchasePlace)}</span></span>}
-                        {shopHref(game.shopUrl) && <a data-shop-link href={shopHref(game.shopUrl)} target="_blank" rel="noopener noreferrer" className="text-xs text-accent underline underline-offset-2">Zum Onlineshop ({shopHost(game.shopUrl)}) ↗</a>}
+                        {shopHref(game.shopUrl) && <a data-shop-link href={shopHref(game.shopUrl)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-accent underline underline-offset-2">Zum Onlineshop <ExternalIcon size={12} /></a>}
                         {game.status === "owned" && game.saleStatus === "sold" && game.salePrice && <span className="text-xs text-dim">Verkaufspreis: <span className="text-gold">{game.salePrice} €</span></span>}
                       </div>
                     </div>

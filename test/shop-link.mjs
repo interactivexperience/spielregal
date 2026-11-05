@@ -55,7 +55,7 @@ check((await saved()).shopUrl === "https://www.spiel-shop.de/azul?ref=1", "Ohne 
 if (!(await page.locator('button:has-text("Mehr Details")').count())) { await page.locator('text=Lairs').first().click(); await page.waitForTimeout(900); }
 if (await page.locator('button:has-text("Mehr Details")').count()) { await page.locator('button:has-text("Mehr Details")').click(); await page.waitForTimeout(400); }
 const a = page.locator("[data-shop-link]");
-check(await a.count() === 1 && (await a.getAttribute("href")) === "https://www.spiel-shop.de/azul?ref=1" && (await a.getAttribute("target")) === "_blank" && /noopener/.test(await a.getAttribute("rel")) && (await a.innerText()).includes("spiel-shop.de"), "Detailansicht: Link zum Onlineshop (neuer Tab, noopener, Hostname sichtbar)");
+check(await a.count() === 1 && (await a.getAttribute("href")) === "https://www.spiel-shop.de/azul?ref=1" && (await a.getAttribute("target")) === "_blank" && /noopener/.test(await a.getAttribute("rel")) && (await a.innerText()).trim() === "Zum Onlineshop" && await a.locator("svg").count() === 1, "Detailansicht: Link heisst nur 'Zum Onlineshop' mit Icon (neuer Tab, noopener)");
 // Unzulaessige Eingabe wird nicht gespeichert
 const edit2 = page.locator('button[aria-label="Bearbeiten"], button:has-text("Bearbeiten")').first();
 await edit2.click(); await page.waitForTimeout(900);
