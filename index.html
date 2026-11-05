@@ -5656,6 +5656,8 @@ function loadRankArchive() {
 }
 function saveRankArchive(list) { try { localStorage.setItem(RANK_ARCHIVE_KEY, JSON.stringify(list)); } catch {} }
 // Basisspiele mit mind. 1 echten Partie; Partien einer Erweiterung zaehlen zum Basisspiel.
+// Nur Spiele, die du besitzt (nicht Wunschliste, nicht "nur gespielt", nicht verkauft).
+function rankOwned(g) { return g.status === "owned" && g.saleStatus !== "sold"; }
 function rankEligible(games, plays) {
   const isBase = (g) => !g.expansionOf || !games.some((x) => x.id === g.expansionOf);
   const rootId = (id) => {
@@ -5665,7 +5667,7 @@ function rankEligible(games, plays) {
   };
   // Partien aus den selbst gebauten Browser-Spielen (Feld `source`) zaehlen vorerst nicht.
   const played = new Set(plays.filter((p) => !p.source).map((p) => rootId(p.gameId)));
-  return games.filter((g) => isBase(g) && played.has(g.id));
+  return games.filter((g) => isBase(g) && played.has(g.id) && rankOwned(g));
 }
 // [[Spiele], ...] beste Gruppe zuerst; Spiele in einer Gruppe sind "gleich gut".
 function rankGroups(eligible) {
@@ -5990,7 +5992,7 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
   if (total < 2) {
     return (
       <div className="fixed inset-0 z-[60] bg-bg flex flex-col font-body">{header}
-        <div className="flex-1 flex items-center justify-center p-8 text-center"><p className="text-ink">Für ein Ranking brauchst du mindestens zwei Spiele mit einer eingetragenen Partie.</p></div>
+        <div className="flex-1 flex items-center justify-center p-8 text-center"><p className="text-ink">Für ein Ranking brauchst du mindestens zwei Spiele, die du besitzt und schon gespielt hast.</p></div>
       </div>
     );
   }
@@ -9879,6 +9881,13 @@ function App() {
     if (patch[g.id] == null) { const { rankPos, ...rest } = g; return rest; }
     return { ...g, rankPos: patch[g.id] };
   }));
+  // Wird ein Spiel verkauft oder ist es nicht (mehr) im Besitz, faellt es aus dem Ranking; der alte Rang wird entfernt,
+  // damit es bei einem spaeteren Wiedereinstieg als neues Spiel einsortiert wird statt mit einem veralteten Platz.
+  useEffect(() => {
+    if (readOnly) return;
+    const out = {}; games.forEach((g) => { if (Number.isInteger(g.rankPos) && !rankOwned(g)) out[g.id] = null; });
+    if (Object.keys(out).length) rankApply(out);
+  }, [games]);
   const updateGameField = (id, patch) => setGames((prev) => prev.map((g) => (g.id === id ? { ...g, ...patch } : g)));
   const saveGameAndNavigate = (game, direction) => {
     applyGameSave(game);
