@@ -69,7 +69,7 @@ const before = puts;
 await page.locator("[data-rank-open]").click(); await page.waitForTimeout(500);
 await page.locator("button[aria-label='Schließen']").click(); await page.waitForTimeout(300);
 await page.locator("[data-rank-open]").click(); await page.waitForTimeout(300);
-await page.locator('button:has-text("Ranking neu starten")').click().catch(() => {}); await page.waitForTimeout(300);
+await page.locator('button:has-text("Ranking neu starten")').click().catch(() => {}); await page.locator('[data-rank-restart-nosave]').click().catch(() => {}); await page.waitForTimeout(300);
 await page.reload({ waitUntil: "networkidle" }); await page.waitForTimeout(2500);
 const after2 = await local();
 const srv = db.data.games.filter((g) => Number.isInteger(g.rankPos)).length;

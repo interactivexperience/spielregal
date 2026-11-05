@@ -5649,6 +5649,12 @@ function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, o
 // am Spiel und wird damit wie alle Spieldaten gespeichert und synchronisiert. Nur der
 // laufende Vergleich (Reihenfolge, Verlauf fuers Rueckgaengig) liegt lokal.
 const RANK_SESSION_KEY = "spielregal:rankingSession";
+// Gespeicherte Staende alter Rankings (beim Neustart waehlbar). Nur lokal auf diesem Geraet.
+const RANK_ARCHIVE_KEY = "spielregal:rankingArchive";
+function loadRankArchive() {
+  try { const a = JSON.parse(localStorage.getItem(RANK_ARCHIVE_KEY) || "[]"); return Array.isArray(a) ? a.filter((x) => x && Array.isArray(x.entries)) : []; } catch { return []; }
+}
+function saveRankArchive(list) { try { localStorage.setItem(RANK_ARCHIVE_KEY, JSON.stringify(list)); } catch {} }
 // Basisspiele mit mind. 1 echten Partie; Partien einer Erweiterung zaehlen zum Basisspiel.
 function rankEligible(games, plays) {
   const isBase = (g) => !g.expansionOf || !games.some((x) => x.id === g.expansionOf);
@@ -5901,8 +5907,14 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
     if (Object.keys(h.inv).length) onApply(h.inv);
     setSess((s) => ({ ...s, active: h.active, lastRef: h.lastRef, parked: h.parked || [], hist: s.hist.slice(0, -1) }));
   };
-  const restart = () => {
-    if (!window.confirm("Ranking wirklich neu starten? Alle bisherigen Duelle gehen verloren.")) return;
+  const [askRestart, setAskRestart] = useState(false);
+  const restart = () => setAskRestart(true);
+  const doRestart = (save) => {
+    if (save && groups.length) {
+      const entry = { id: String(Date.now()), date: new Date().toISOString(), entries: rankEntries(groups).map((e) => ({ id: e.game.id, name: e.game.name, place: e.place, tie: e.tie })) };
+      saveRankArchive([entry, ...loadRankArchive()]);
+    }
+    setAskRestart(false);
     const patch = {}; eligible.forEach((g) => { if (Number.isInteger(g.rankPos)) patch[g.id] = null; });
     if (Object.keys(patch).length) onApply(patch);
     setSess({ seed: Math.floor(Math.random() * 1e9), active: [], lastRef: null, parked: [], hist: [], fine: null, fineLast: null }); setView(null); setRevealed(false);
@@ -5950,6 +5962,18 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
     </div>
   );
 
+  const restartDialog = askRestart ? (
+    <div data-rank-restart-dialog className="fixed inset-0 z-[70] bg-black/60 flex items-end sm:items-center justify-center p-4" onClick={() => setAskRestart(false)}>
+      <div className="w-full max-w-sm rounded-[24px] bg-bg border border-line p-5" onClick={(e) => e.stopPropagation()} style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>
+        <p className="font-display text-2xl tracking-[-0.02em] text-ink">Neues Ranking starten?</p>
+        <p className="text-sm text-dim mt-2">Alle bisherigen Duelle werden zurückgesetzt. Möchtest du den alten Stand ({rankEntries(groups).length} Spiele) vorher aufbewahren?</p>
+        <button data-rank-restart-save onClick={() => doRestart(true)} className="w-full h-12 mt-4 rounded-[14px] bg-accent text-white font-medium">Alten Stand speichern &amp; neu starten</button>
+        <button data-rank-restart-nosave onClick={() => doRestart(false)} className="w-full h-11 mt-2 rounded-[14px] border border-line text-danger text-sm">Ohne Speichern neu starten</button>
+        <button data-rank-restart-cancel onClick={() => setAskRestart(false)} className="w-full h-11 mt-1 text-sm text-dim">Abbrechen</button>
+      </div>
+    </div>
+  ) : null;
+  if (view === "archive") return <RankingArchive onBack={() => setView(null)} onClose={onClose} />;
   if (total < 2) {
     return (
       <div className="fixed inset-0 z-[60] bg-bg flex flex-col font-body">{header}
@@ -5958,8 +5982,8 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
     );
   }
   if (showResult) {
-    return <RankingResult groups={groups} done={done} pendingCount={pending.length} header={header} onContinue={() => setView("duel")} onRestart={restart} view={view} setView={setView} revealed={revealed} setRevealed={setRevealed} onClose={onClose}
-      fine={sess.fine} finePairCount={finePairs(groups, sess.seed).pairs.length} onFine={() => (sess.fine && !sess.fine.ties ? setView("fine") : startFine())} fineSummary={fineSummary} tieCount={tieCount} onTies={() => (sess.fine && sess.fine.ties ? setView("fine") : startTies())} cycles={lastCycles.map((c) => c.map((id) => byId[id].name))} clarifyCount={sess.fineLast ? sess.fineLast.pairs.filter(([a, b]) => lastCycles.some((c) => c.includes(a) && c.includes(b))).length : 0} onClarify={startClarify} />;
+    return <><RankingResult groups={groups} done={done} pendingCount={pending.length} header={header} onContinue={() => setView("duel")} onRestart={restart} view={view} setView={setView} revealed={revealed} setRevealed={setRevealed} onClose={onClose}
+      fine={sess.fine} finePairCount={finePairs(groups, sess.seed).pairs.length} onFine={() => (sess.fine && !sess.fine.ties ? setView("fine") : startFine())} fineSummary={fineSummary} tieCount={tieCount} onTies={() => (sess.fine && sess.fine.ties ? setView("fine") : startTies())} cycles={lastCycles.map((c) => c.map((id) => byId[id].name))} clarifyCount={sess.fineLast ? sess.fineLast.pairs.filter(([a, b]) => lastCycles.some((c) => c.includes(a) && c.includes(b))).length : 0} onClarify={startClarify} onArchive={() => setView("archive")} />{restartDialog}</>;
   }
   const dCur = fineOn ? fCur : curGame, dRef = fineOn ? fRef : ref;
   if (!dCur || !dRef) {
@@ -6021,7 +6045,43 @@ function RankingScreen({ games, plays, onApply, onClose, initialView = null }) {
 }
 
 // Enthuellung von Platz 10 bis 1, danach Top-10-Karte zum Teilen und die ganze Rangliste.
-function RankingResult({ groups, done, pendingCount, header, onContinue, onRestart, view, setView, revealed, setRevealed, onClose, fine, finePairCount, onFine, fineSummary, tieCount = 0, onTies, cycles = [], clarifyCount = 0, onClarify }) {
+function RankingArchive({ onBack, onClose }) {
+  const [list, setList] = useState(loadRankArchive);
+  const [open, setOpen] = useState(null);
+  const del = (id) => { if (!window.confirm("Diesen gespeicherten Stand löschen?")) return; const n = list.filter((x) => x.id !== id); setList(n); saveRankArchive(n); };
+  const fmt = (iso) => { try { return new Date(iso).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" }); } catch { return ""; } };
+  return (
+    <div className="fixed inset-0 z-[60] bg-bg flex flex-col font-body" data-ranking-archive>
+      <div className="shrink-0 flex items-center gap-3 px-4" style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}>
+        <button onClick={onClose} aria-label="Schließen" className="w-10 h-10 rounded-full border border-line bg-bg text-ink flex items-center justify-center"><X size={18} /></button>
+        <p className="flex-1 font-display text-xl tracking-[-0.02em] text-ink">Gespeicherte Stände</p>
+        <button data-rank-archive-back onClick={onBack} className="h-10 px-3 rounded-full border border-line bg-bg text-ink text-sm">Zurück</button>
+      </div>
+      <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-6 pt-4 space-y-3">
+        {list.length === 0 && <p className="text-sm text-dim text-center pt-10">Noch nichts gespeichert. Beim Neustart des Rankings kannst du den alten Stand aufbewahren.</p>}
+        {list.map((a) => (
+          <div key={a.id} data-rank-archive-item className="rounded-[18px] border border-line bg-surface">
+            <button onClick={() => setOpen(open === a.id ? null : a.id)} className="w-full text-left p-4">
+              <p className="text-ink font-medium">{fmt(a.date)}</p>
+              <p className="text-xs text-dim mt-0.5 line-clamp-2">{a.entries.slice(0, 3).map((e) => e.name).join(" · ")}{a.entries.length > 3 ? " …" : ""} <span className="whitespace-nowrap">({a.entries.length} Spiele)</span></p>
+            </button>
+            {open === a.id && (
+              <div className="px-4 pb-4">
+                <ol className="divide-y divide-line">
+                  {a.entries.map((e) => (
+                    <li key={e.id} className="flex items-center gap-3 py-1.5 text-sm"><span className="w-8 shrink-0 text-right text-dim">{e.place}{e.tie ? "=" : ""}</span><span className="text-ink min-w-0">{e.name}</span></li>
+                  ))}
+                </ol>
+                <button data-rank-archive-del onClick={() => del(a.id)} className="mt-3 text-sm text-danger">Diesen Stand löschen</button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+function RankingResult({ groups, done, pendingCount, header, onContinue, onRestart, view, setView, revealed, setRevealed, onClose, fine, finePairCount, onFine, fineSummary, tieCount = 0, onTies, cycles = [], clarifyCount = 0, onClarify, onArchive }) {
   const top = useMemo(() => rankEntries(groups, 10), [groups]);
   const all = useMemo(() => rankEntries(groups), [groups]);
   const [step, setStep] = useState(view === "list" || revealed ? top.length : 0); // wie viele Plaetze schon gezeigt
@@ -6124,7 +6184,8 @@ function RankingResult({ groups, done, pendingCount, header, onContinue, onResta
               </li>
             ))}
           </ol>
-          <button onClick={onRestart} className="w-full h-11 mt-5 text-sm text-danger">Ranking neu starten</button>
+          {loadRankArchive().length > 0 && <button data-rank-archive onClick={onArchive} className="w-full h-11 mt-5 rounded-[14px] border border-line bg-surface text-ink text-sm">Gespeicherte Stände ({loadRankArchive().length})</button>}
+          <button onClick={onRestart} className="w-full h-11 mt-2 text-sm text-danger">Ranking neu starten</button>
         </div>
       )}
       {revealing && <button onClick={() => { setStep(top.length); }} className="shrink-0 h-12 text-sm text-dim" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>Überspringen</button>}
@@ -6672,6 +6733,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, onOpenRanking, section
             <>
               <p className="text-sm text-ink">Vergleiche deine {elig.length} gespielten Spiele per Wischen: Was magst du lieber? Am Ende steht deine Top 10.</p>
               <button data-rank-start onClick={() => onOpenRanking(null)} className="mt-3 h-11 px-5 rounded-full bg-accent text-white text-sm font-medium">Ranking starten</button>
+              {onOpenRanking && loadRankArchive().length > 0 && <button data-rank-archive-open onClick={() => onOpenRanking("archive")} className="mt-3 ml-2 h-11 px-4 rounded-full border border-line text-ink text-sm">Gespeicherte Stände</button>}
             </>
           ) : (
             <>
@@ -6700,6 +6762,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, onOpenRanking, section
                     ? <button data-rank-start onClick={() => onOpenRanking(null)} className="h-10 px-4 rounded-full bg-accent text-white text-sm font-medium">{rankedN < 3 ? "Weiter vergleichen" : `${pendingN} ${pendingN === 1 ? "neues Spiel" : "neue Spiele"} einordnen`}</button>
                     : null}
                   <button data-rank-open onClick={() => onOpenRanking(pendingN > 0 ? "list" : "list")} className="h-10 px-4 rounded-full border border-line text-ink text-sm">Rangliste ansehen</button>
+                  {loadRankArchive().length > 0 && <button data-rank-archive-open onClick={() => onOpenRanking("archive")} className="h-10 px-4 rounded-full border border-line text-ink text-sm">Gespeicherte Stände</button>}
                 </div>
               )}
             </>
