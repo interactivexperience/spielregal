@@ -1609,6 +1609,13 @@ const PURCHASE_PLACES = [
   { v: "store", label: "Spieleladen" },
   { v: "fair", label: "Spielemesse" },
 ];
+// Optionaler Link zum Onlineshop: ohne Schema wird https:// ergaenzt; nur http(s) wird akzeptiert (sonst leer).
+const shopHref = (v) => {
+  const t = String(v || "").trim(); if (!t) return "";
+  const u = /^[a-z][a-z0-9+.-]*:/i.test(t) ? t : "https://" + t;
+  try { const x = new URL(u); return /^https?:$/.test(x.protocol) && x.hostname.includes(".") ? x.href : ""; } catch { return ""; }
+};
+const shopHost = (v) => { try { return new URL(shopHref(v)).hostname.replace(/^www\./, ""); } catch { return ""; } };
 const purchasePlaceLabel = (v) => (PURCHASE_PLACES.find((o) => o.v === v) || {}).label || "";
 
 function Segmented({ options, value, onChange }) {
@@ -4287,9 +4294,9 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
     if (!initial) {
       haptic([10, 30, 15]);
       setSaveCelebrating(true);
-      setTimeout(() => onSave(form), 380);
+      setTimeout(() => onSave({ ...form, shopUrl: shopHref(form.shopUrl) }), 380);
     } else {
-      onSave(form);
+      onSave({ ...form, shopUrl: shopHref(form.shopUrl) });
     }
   };
   const [typesLoading, setTypesLoading] = useState(false);
@@ -4455,7 +4462,7 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
   const FORM_DEFAULTS = {
     id: uid(), bggId: "", name: "", germanName: "", primaryTitle: "original", year: "", publishers: [], designers: [], images: [],
     minPlayers: "", maxPlayers: "", bestPlayersMin: "", bestPlayersMax: "", minTime: "", maxTime: "", age: "",
-    complexity: "", mechanisms: [], categories: [], playerTypes: [], status: "owned", format: "analog", saleStatus: "", purchasePrice: "", purchasePlace: "", salePrice: "", expansionOf: "",
+    complexity: "", mechanisms: [], categories: [], playerTypes: [], status: "owned", format: "analog", saleStatus: "", purchasePrice: "", purchasePlace: "", shopUrl: "", salePrice: "", expansionOf: "",
     location: "", summary: "", notes: "", rating: "", isCampaign: false, lentTo: "", addedDate: new Date().toISOString().slice(0, 10),
   };
   const [form, setForm] = useState(initial ? {
@@ -4679,6 +4686,15 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {(form.status === "owned" || form.status === "wishlist") && (
+              <div>
+                <label className="block text-[11px] text-dim mb-1.5">Link zum Onlineshop <span className="text-[10px]">(optional)</span></label>
+                <input data-shop-url type="url" inputMode="url" autoCapitalize="none" autoCorrect="off" value={form.shopUrl || ""} onChange={(e) => update("shopUrl", e.target.value)} placeholder="https://…"
+                  className={`w-full h-12 border border-line rounded-[14px] px-3.5 text-ink text-base focus:outline-none focus:border-accent ${form.shopUrl ? "bg-surface" : "bg-transparent"}`} />
+                {form.shopUrl && !shopHref(form.shopUrl) && <p className="text-[11px] text-danger mt-1">Das sieht nicht nach einem Link aus.</p>}
               </div>
             )}
 
@@ -9404,12 +9420,13 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                     </div>
                   </div>
                 )}
-                {!hidePrices && !guestMode && (game.status === "owned" || game.status === "wishlist") && (game.purchasePrice || game.purchasePlace || (game.saleStatus === "sold" && game.salePrice)) && (
+                {!hidePrices && !guestMode && (game.status === "owned" || game.status === "wishlist") && (game.purchasePrice || game.purchasePlace || shopHref(game.shopUrl) || (game.saleStatus === "sold" && game.salePrice)) && (
                     <div>
                       <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1.5">{game.status === "wishlist" ? "Preis" : game.saleStatus === "sold" ? "Verkauft" : game.saleStatus === "forSale" ? "Zum Verkauf" : "Kauf"}</p>
                       <div className="flex items-center gap-x-3 gap-y-1 flex-wrap">
                         {game.purchasePrice && <span className="text-xs text-dim">{game.status === "wishlist" ? "Preis" : "Kaufpreis"}: <span className="text-ink">{game.purchasePrice} €</span></span>}
                         {game.purchasePlace && <span className="text-xs text-dim">{game.status === "wishlist" ? "Kaufen bei" : "Gekauft bei"}: <span className="text-ink">{purchasePlaceLabel(game.purchasePlace)}</span></span>}
+                        {shopHref(game.shopUrl) && <a data-shop-link href={shopHref(game.shopUrl)} target="_blank" rel="noopener noreferrer" className="text-xs text-accent underline underline-offset-2">Zum Onlineshop ({shopHost(game.shopUrl)}) ↗</a>}
                         {game.status === "owned" && game.saleStatus === "sold" && game.salePrice && <span className="text-xs text-dim">Verkaufspreis: <span className="text-gold">{game.salePrice} €</span></span>}
                       </div>
                     </div>
