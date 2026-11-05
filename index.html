@@ -605,23 +605,35 @@ function extractDominantColor(src) {
       img.crossOrigin = "anonymous";
       img.onload = () => {
         try {
-          const size = 24;
+          const size = 32;
           const canvas = document.createElement("canvas");
           canvas.width = size; canvas.height = size;
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, size, size);
           const data = ctx.getImageData(0, 0, size, size).data;
-          let r = 0, g = 0, b = 0, count = 0;
+          // Dominante Farbe statt Durchschnitt: Pixel nach Farbton in 12 Gruppen, gewichtet nach Saettigung und Helligkeit.
+          // Die staerkste Gruppe gewinnt (ein grauer Rand oder weisser Hintergrund verwaessert die Farbe nicht mehr).
+          const B = 12, bk = Array.from({ length: B }, () => ({ w: 0, r: 0, g: 0, b: 0 }));
+          let mr = 0, mg = 0, mb = 0, mc = 0;
           for (let i = 0; i < data.length; i += 4) {
             if (data[i + 3] < 200) continue;
             const rr = data[i], gg = data[i + 1], bb = data[i + 2];
             const max = Math.max(rr, gg, bb), min = Math.min(rr, gg, bb);
-            if (max > 235 && min > 210) continue; // skip near-white
-            if (max < 30) continue; // skip near-black
-            r += rr; g += gg; b += bb; count++;
+            if (max > 235 && min > 210) continue; // fast weiss
+            if (max < 30) continue; // fast schwarz
+            mr += rr; mg += gg; mb += bb; mc++;
+            const d = max - min; if (d < 24) continue; // grau: zaehlt nur fuer den Durchschnitt
+            const sat = d / max;
+            let h = max === rr ? ((gg - bb) / d) % 6 : max === gg ? (bb - rr) / d + 2 : (rr - gg) / d + 4;
+            if (h < 0) h += 6;
+            const k = bk[Math.min(B - 1, Math.floor((h / 6) * B))], w = sat * (0.35 + max / 255);
+            k.w += w; k.r += rr * w; k.g += gg * w; k.b += bb * w;
           }
-          if (count === 0) { resolve(null); return; }
-          r = Math.round(r / count); g = Math.round(g / count); b = Math.round(b / count);
+          let best = null; bk.forEach((k) => { if (k.w > 0 && (!best || k.w > best.w)) best = k; });
+          let r, g, b;
+          if (best && best.w > mc * 0.04) { r = Math.round(best.r / best.w); g = Math.round(best.g / best.w); b = Math.round(best.b / best.w); }
+          else if (mc > 0) { r = Math.round(mr / mc); g = Math.round(mg / mc); b = Math.round(mb / mc); }
+          else { resolve(null); return; }
           resolve("#" + [r, g, b].map((x) => x.toString(16).padStart(2, "0")).join(""));
         } catch { resolve(null); }
       };
@@ -646,18 +658,19 @@ function fallbackAccentColor(seed) {
 // across different Dashboard sections (Top 10, Best of, Wishlist, etc).
 const dominantColorCache = new Map();
 function useDominantColor(src) {
-  const [color, setColor] = useState(() => (src && dominantColorCache.has(src) ? dominantColorCache.get(src) : null));
+  const [res, setRes] = useState(() => ({ src, color: src && dominantColorCache.has(src) ? dominantColorCache.get(src) : null }));
   useEffect(() => {
-    if (!src) { setColor(null); return; }
-    if (dominantColorCache.has(src)) { setColor(dominantColorCache.get(src)); return; }
+    if (!src) { setRes({ src, color: null }); return; }
+    if (dominantColorCache.has(src)) { setRes({ src, color: dominantColorCache.get(src) }); return; }
     let cancelled = false;
     extractDominantColor(src).then((c) => {
       if (c) dominantColorCache.set(src, c);
-      if (!cancelled) setColor(c);
+      if (!cancelled) setRes({ src, color: c });
     });
     return () => { cancelled = true; };
   }, [src]);
-  return color;
+  // Beim Wechsel des Covers nie kurz die Farbe des vorherigen zeigen
+  return res.src === src ? res.color : (src && dominantColorCache.has(src) ? dominantColorCache.get(src) : null);
 }
 
 function TopTenCarousel({ games, onView }) {
@@ -9170,17 +9183,10 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
   const tags = [...(game.categories || []), ...(game.mechanisms || [])];
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [listPickerOpen, setListPickerOpen] = useState(false);
-  const [accentColor, setAccentColor] = useState(() => fallbackAccentColor(game.id || game.name));
   const isDark = useIsDark();
-  useEffect(() => {
-    let cancelled = false;
-    if (images[0]) {
-      extractDominantColor(images[0]).then((color) => { if (!cancelled) setAccentColor(color || fallbackAccentColor(game.id || game.name)); });
-    } else {
-      setAccentColor(fallbackAccentColor(game.id || game.name));
-    }
-    return () => { cancelled = true; };
-  }, [images[0]]);
+  // Verlauf oben in der Farbe des Covers (ohne Cover: feste Ersatzfarbe; Farbe nicht lesbar: kein Verlauf)
+  const coverColor = useDominantColor(images[0] || null);
+  const accentColor = images[0] ? coverColor : fallbackAccentColor(game.id || game.name);
   const memberOfCount = lists ? lists.filter((l) => l.gameIds.includes(game.id)).length : 0;
   // Vorschlaege aus den BGG-Daten: Spiele der Sammlung, die zu diesem
   // Basisspiel gehoeren, aber noch nicht verknuepft sind — plus Erweiterungen,
@@ -9241,7 +9247,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
             <span className="glass text-[10px] text-ink px-2 py-1 border border-rim/15 rounded-full">{readOnlyLabel}</span>
           ) : null}
         </div>
-        <div ref={ptr.ref} onTouchStart={onDetailTouchStart} onTouchMove={ptr.handlers.onTouchMove} onTouchEnd={onDetailTouchEnd} className="overflow-y-auto flex-1 p-5 space-y-7" style={{ paddingTop: "calc(max(1rem, env(safe-area-inset-top)) + 3rem)", backgroundImage: isDark ? `linear-gradient(180deg, ${accentColor}35, transparent 220px)` : "none" }}>
+        <div ref={ptr.ref} onTouchStart={onDetailTouchStart} onTouchMove={ptr.handlers.onTouchMove} onTouchEnd={onDetailTouchEnd} className="overflow-y-auto flex-1 p-5 space-y-7" style={{ paddingTop: "calc(max(1rem, env(safe-area-inset-top)) + 3rem)", backgroundImage: accentColor ? `linear-gradient(180deg, ${accentColor}${isDark ? "40" : "38"}, transparent 260px)` : "none" }}>
           {ptr.anzeige}
           <div>
             {(() => {
