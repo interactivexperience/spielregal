@@ -1624,6 +1624,25 @@ const PURCHASE_PLACES = [
   { v: "store", label: "Spieleladen" },
   { v: "fair", label: "Spielemesse" },
 ];
+// Notfall: Sammlung wiederherstellen, wenn lokal keine Spiele mehr da sind, Partien aber schon.
+// Quelle 1: kleine lokale Sicherung (wird bei jeder Aenderung mitgeschrieben), Quelle 2: die Partien (Name, ggf. Bild).
+const GAMES_BACKUP_KEY = "spielregal:gamesBackup";
+const compactGame = (g) => ({ id: g.id, name: g.name, germanName: g.germanName || "", bggId: g.bggId || "", year: g.year || "", status: g.status || "owned", saleStatus: g.saleStatus || "", rating: g.rating || "", location: g.location || "", rankPos: Number.isInteger(g.rankPos) ? g.rankPos : undefined, lentTo: g.lentTo || "", expansionOf: g.expansionOf || "" });
+function rebuildGamesFromPlays(plays, backup = []) {
+  const byId = new Map();
+  (Array.isArray(backup) ? backup : []).forEach((b) => { if (b && b.id && b.name) byId.set(b.id, { categories: [], mechanisms: [], publishers: [], designers: [], images: [], playerTypes: [], format: "analog", notes: "", summary: "", addedDate: new Date().toISOString().slice(0, 10), ...b }); });
+  const byGame = new Map();
+  plays.forEach((p) => { if (p && p.gameId) { if (!byGame.has(p.gameId)) byGame.set(p.gameId, []); byGame.get(p.gameId).push(p); } });
+  byGame.forEach((ps, id) => {
+    if (byId.has(id)) return;
+    const snaps = ps.filter((p) => p.gameSnap).map((p) => p.gameSnap), snap = snaps.find((x) => x.image) || snaps[0] || {};
+    const name = snap.name || (ps.find((p) => p.gameName) || {}).gameName; if (!name) return;
+    const dates = ps.map((p) => p.date).filter(Boolean).sort();
+    byId.set(id, { id, name, germanName: snap.germanName || "", bggId: snap.bggId || "", year: snap.year || "", status: ps.some((p) => p.mode === "physical-owned") ? "owned" : "none", format: "analog", saleStatus: "",
+      categories: [], mechanisms: [], publishers: [], designers: [], playerTypes: [], images: snap.image ? [snap.image] : [], notes: "", summary: "", addedDate: dates[0] || new Date().toISOString().slice(0, 10) });
+  });
+  return [...byId.values()];
+}
 // Optionaler Link zum Onlineshop: ohne Schema wird https:// ergaenzt; nur http(s) wird akzeptiert (sonst leer).
 const shopHref = (v) => {
   const t = String(v || "").trim(); if (!t) return "";
@@ -7775,7 +7794,8 @@ function buildDetailNavList(games, plays, guestMode) {
   return buildCollectionList(games, plays, { statusFilter, filters, sortBy, guestMode });
 }
 
-function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit, onDelete, categoryOptions, mechanismOptions, demoMode, guestMode, lists, onCreateList, onOpenList }) {
+function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit, onDelete, categoryOptions, mechanismOptions, demoMode, guestMode, lists, onCreateList, onOpenList, onRestoreGames }) {
+  const [restoreBusy, setRestoreBusy] = useState(false), [restoreMsg, setRestoreMsg] = useState("");
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [gridCols, setGridCols] = useState(() => loadKey("spielregal:collectionGridCols", 2));
@@ -7939,7 +7959,15 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           <button onClick={clearFilter} className="shrink-0 px-3 py-1.5 rounded-full text-xs font-body border border-accent text-accent flex items-center gap-1"><X size={12} /> Filter</button>
         </div>
       )}
-      {list.length === 0 ? <p className="text-dim text-sm font-body mt-8 mb-12 text-center">Keine Spiele gefunden.</p> : (
+      {restoreMsg && <p data-restore-msg className="text-sm text-ink mt-4 rounded-[14px] border border-line bg-surface px-4 py-3">{restoreMsg}</p>}
+      {list.length === 0 && games.length === 0 && plays.length > 0 && onRestoreGames && !demoMode && !guestMode ? (
+        <div data-restore-games className="mt-8 mb-12 rounded-[20px] border border-line bg-surface p-5 text-center">
+          <p className="font-display text-xl tracking-[-0.02em] text-ink">Deine Spiele fehlen</p>
+          <p className="text-sm text-dim mt-2">Es gibt noch {plays.length} Partien, aber keine Spiele. Die Wiederherstellung holt sie zuerst aus der Cloud. Ist dort nichts, legt sie die Spiele aus deinen Partien neu an (nur Name und, falls vorhanden, Bild).</p>
+          <button data-restore-btn disabled={restoreBusy} onClick={async () => { setRestoreBusy(true); setRestoreMsg(""); try { setRestoreMsg(await onRestoreGames()); } finally { setRestoreBusy(false); } }}
+            className="mt-4 h-12 px-6 rounded-[14px] bg-accent text-white font-medium disabled:opacity-50">{restoreBusy ? "Stelle wieder her…" : "Sammlung wiederherstellen"}</button>
+        </div>
+      ) : list.length === 0 ? <p className="text-dim text-sm font-body mt-8 mb-12 text-center">Keine Spiele gefunden.</p> : (
         <>
         <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] pb-2.5 border-b border-line mt-4">
           {list.length} {list.length === 1 ? "Spiel" : "Spiele"}{SORT_LABEL[sortBy] ? ` · ${SORT_LABEL[sortBy]}` : ""}
@@ -9593,6 +9621,8 @@ function App() {
   // independent of whether cloud sync is set up. This is what makes "add a
   // player", "log a play", etc. actually stick across reloads.
   useEffect(() => { saveKey(GAMES_KEY, games); }, [games]);
+  // Kleine Sicherung der Spiele-Stammdaten (ohne Bilder/Texte), falls die eigentliche Liste einmal verloren geht
+  useEffect(() => { if (games.length > 0) saveKey(GAMES_BACKUP_KEY, games.map(compactGame)); }, [games]);
   useEffect(() => { saveKey(PLAYS_KEY, plays); }, [plays]);
   useEffect(() => { saveKey(LISTS_KEY, lists); }, [lists]);
   useEffect(() => { saveKey(PLAYERS_KEY, players); }, [players]);
@@ -9873,6 +9903,23 @@ function App() {
       setSyncStatus("synced");
       setLastSynced(Date.now());
     }).catch(() => setSyncStatus("error"));
+  };
+
+  // Sammlung wiederherstellen (nur bei leerer Spieleliste): erst Cloud, sonst Sicherung/Partien. Bei Cloud-Fehler wird abgebrochen,
+  // damit eine abgespeckte Liste nicht die echten Spiele in der Cloud ueberschreibt.
+  const restoreGames = async () => {
+    if (games.length > 0) return "Es sind schon Spiele da.";
+    if (syncUrl) {
+      let remote;
+      try { remote = await cloudPull(syncUrl, apiKey); }
+      catch { return "Die Cloud ist gerade nicht erreichbar. Bitte später noch einmal versuchen, damit nichts überschrieben wird."; }
+      const rg = remote && remote.games ? (Array.isArray(remote.games) ? remote.games : Object.values(remote.games)).filter(Boolean) : [];
+      if (rg.length > 0) { skipNextPush.current = true; setGames(rg); return `${rg.length} Spiele aus der Cloud wiederhergestellt.`; }
+    }
+    const rebuilt = rebuildGamesFromPlays(plays, loadKey(GAMES_BACKUP_KEY, []));
+    if (!rebuilt.length) return "Konnte nichts wiederherstellen: keine Sicherung und keine Partien mit Spielnamen gefunden.";
+    setGames(rebuilt);
+    return `${rebuilt.length} Spiele neu angelegt. Details (Cover, Verlag, Spielerzahl …) kannst du pro Spiel über „BGG-Daten holen“ nachladen.`;
   };
 
   const syncNow = () => {
@@ -10177,7 +10224,7 @@ function App() {
         {ptr.anzeige}
         <div key={tab} className="tab-fade lg:max-w-3xl lg:mx-auto">
           {tab === "dashboard" && <Dashboard games={displayGames} plays={displayPlays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} onView={(g) => setDetailGame(g)} onOpenRanking={readOnly ? null : (v) => setRanking({ initialView: v })} sectionOrder={dashboardOrder} onReorder={setDashboardOrder} hiddenSections={hiddenDashboardSections} onToggleHidden={setHiddenDashboardSections} onSearch={() => setCommandBarOpen(true)} aiWorkerUrl={aiWorkerUrl} />}
-          {tab === "collection" && <Collection games={displayGames} plays={displayPlays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => !readOnly && setGameModal({ editing: null })} onView={(g) => setDetailGame(g)} onEdit={(g) => setGameModal({ editing: g })} onDelete={(g) => deleteGame(g.id)} categoryOptions={categoryOptions} mechanismOptions={mechanismOptions} demoMode={readOnly} guestMode={guestMode} lists={displayLists} onCreateList={(name) => !readOnly && addList(name)} onOpenList={(l) => setDetailList(l)} />}
+          {tab === "collection" && <Collection games={displayGames} plays={displayPlays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => !readOnly && setGameModal({ editing: null })} onView={(g) => setDetailGame(g)} onEdit={(g) => setGameModal({ editing: g })} onDelete={(g) => deleteGame(g.id)} categoryOptions={categoryOptions} mechanismOptions={mechanismOptions} demoMode={readOnly} guestMode={guestMode} lists={displayLists} onCreateList={(name) => !readOnly && addList(name)} onOpenList={(l) => setDetailList(l)} onRestoreGames={restoreGames} />}
           {tab === "playlog" && <PlayLog plays={displayPlays} games={displayGames} onAdd={() => !readOnly && setPlayModal({ editing: null })} onEdit={(p) => !readOnly && setPlayModal({ editing: p })} onDelete={deletePlay} demoMode={readOnly} playerProfiles={displayPlayers} />}
           {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} onView={(g) => setDetailGame(g)} aiWorkerUrl={aiWorkerUrl} chatMessages={aiChatMessages} setChatMessages={setAiChatMessages} onAddWishlist={addToWishlistFromRecommendation} onSaveMechanismsNote={readOnly ? null : (id, text) => updateGameField(id, { mechanismsNote: text })} guestMode={guestMode} />}
           {tab === "settings" && (guestMode ? (
