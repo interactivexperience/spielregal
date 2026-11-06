@@ -3107,6 +3107,9 @@ async function getValidIdToken(apiKey) {
 async function cloudPush(syncUrl, data, apiKey, opts = {}) {
   const base = normalizeSyncUrl(syncUrl);
   if (!base) return;
+  // Sicherung: eine leere Spieleliste wird nie hochgeladen. Sie ueberschriebe sonst in der Cloud die komplette
+  // Sammlung (z.B. wenn lokal die Spiele verloren gingen, Partien und Listen aber noch da sind).
+  if (Array.isArray(data.games) && data.games.length === 0) throw new Error("Leere Spieleliste wird nicht in die Cloud geschrieben (Schutz vor Datenverlust)");
   const payload = { ...data, updatedAt: Date.now() };
   const token = await getValidIdToken(apiKey).catch(() => "");
   const url = base + "data.json" + (token ? `?auth=${token}` : "");
@@ -9765,7 +9768,8 @@ function App() {
     const localHadData = games.length > 0 || plays.length > 0;
     // Ungesicherte lokale Aenderungen (letzter Upload ist nie angekommen): erst hochladen, nicht ueberschreiben
     let dirty = false; try { dirty = localStorage.getItem(SYNC_DIRTY_KEY) === "1"; } catch {}
-    if (dirty && localHadData) {
+    // (nur mit Spielen: ohne sie wuerde "hochladen" die Sammlung in der Cloud leeren -- dann lieber abrufen)
+    if (dirty && localHadData && games.length > 0) {
       cloudPush(syncUrl, { games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players }, apiKey)
         .then(() => { setSyncStatus("synced"); setLastSynced(Date.now()); })
         .catch(() => setSyncStatus("error"));
@@ -9773,6 +9777,12 @@ function App() {
     }
     cloudPull(syncUrl, apiKey).then((remote) => {
       const remoteHasData = remote && ((remote.games && remote.games.length) || (remote.plays && remote.plays.length));
+      // Cloud hat Partien/Listen, aber keine Spiele, lokal gibt es Spiele: lokale Sammlung behalten und die Cloud damit wiederherstellen
+      if (remote && !(remote.games && remote.games.length) && games.length > 0) {
+        cloudPush(syncUrl, { games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players }, apiKey)
+          .then(() => { setSyncStatus("synced"); setLastSynced(Date.now()); }).catch(() => setSyncStatus("error"));
+        return;
+      }
       if (!remoteHasData && localHadData) {
         // Cloud kam leer zurueck, aber wir haben lokal echte Daten -- lieber
         // gar nichts tun und einen Fehler zeigen, als sie zu loeschen.
@@ -9846,7 +9856,9 @@ function App() {
     skipNextPush.current = true;
     setSyncStatus("syncing");
     cloudPull(trimmed, trimmedKey).then((remote) => {
-      if (remote && (remote.games || remote.plays)) {
+      if (remote && !(remote.games && remote.games.length) && games.length > 0) {
+        cloudPush(trimmed, { games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players }, trimmedKey).catch(() => {});
+      } else if (remote && (remote.games || remote.plays)) {
         setGames(remote.games || []);
         setPlays(remote.plays || []);
         setCustomCategories(remote.customCategories || []);
@@ -9856,7 +9868,7 @@ function App() {
         setLists(remote.lists || []);
         setPlayersList(remote.players || []);
       } else {
-        cloudPush(trimmed, { games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players }, trimmedKey);
+        cloudPush(trimmed, { games, plays, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions, lists, players }, trimmedKey).catch(() => {});
       }
       setSyncStatus("synced");
       setLastSynced(Date.now());
