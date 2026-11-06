@@ -1669,6 +1669,26 @@ async function bggEnrichOne(g) {
   if (d.expansionBggIds && !g.expansionBggIds) { merged.expansionBggIds = d.expansionBggIds; merged.expansionBggList = d.expansionBggList; }
   return merged;
 }
+// Sicherung als Datei: alle Daten in einer JSON-Datei, die du selbst ablegst (Dateien/iCloud Drive) und wieder einspielen kannst.
+const BACKUP_LAST_KEY = "spielregal:lastBackupAt", BACKUP_SINCE_KEY = "spielregal:backupSince", BACKUP_SNOOZE_KEY = "spielregal:backupSnoozeUntil", BACKUP_DAYS = 14;
+function buildBackup(data) {
+  let archive = []; try { archive = JSON.parse(localStorage.getItem("spielregal:rankingArchive") || "[]"); } catch {}
+  return { app: "spielregal", version: 1, savedAt: new Date().toISOString(), data, rankingArchive: Array.isArray(archive) ? archive : [] };
+}
+function parseBackup(text) {
+  let j; try { j = JSON.parse(text); } catch { throw new Error("Die Datei ist keine gültige Sicherung (kein JSON)."); }
+  if (!j || j.app !== "spielregal" || !j.data || typeof j.data !== "object") throw new Error("Das ist keine Spielregal-Sicherung.");
+  const d = j.data, arr = (x) => (Array.isArray(x) ? x : []);
+  if (!Array.isArray(d.games)) throw new Error("In der Sicherung fehlt die Spieleliste.");
+  return { savedAt: j.savedAt || "", rankingArchive: arr(j.rankingArchive), data: { games: d.games, plays: arr(d.plays), lists: arr(d.lists), players: arr(d.players), customCategories: arr(d.customCategories), customMechanisms: arr(d.customMechanisms), customPlayerTypes: arr(d.customPlayerTypes), customPlayerTypeDescriptions: d.customPlayerTypeDescriptions && typeof d.customPlayerTypeDescriptions === "object" ? d.customPlayerTypeDescriptions : {} } };
+}
+async function saveBackupFile(backup) {
+  const text = JSON.stringify(backup), name = `spielregal-sicherung-${new Date().toISOString().slice(0, 10)}.json`;
+  const file = new File([text], name, { type: "application/json" });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: "Spielregal-Sicherung" }); }
+  else { const a = document.createElement("a"); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
+  try { localStorage.setItem(BACKUP_LAST_KEY, new Date().toISOString()); } catch {}
+}
 // Optionaler Link zum Onlineshop: ohne Schema wird https:// ergaenzt; nur http(s) wird akzeptiert (sonst leer).
 const shopHref = (v) => {
   const t = String(v || "").trim(); if (!t) return "";
@@ -2633,9 +2653,54 @@ function MultiGamePickerSheet({ games, excludeId, filter, initialSelected = [], 
   );
 }
 
+function BackupView({ onBack, backupData, onRestore }) {
+  const [msg, setMsg] = useState(""), [pending, setPending] = useState(null), [busy, setBusy] = useState(false);
+  const last = (() => { try { return localStorage.getItem(BACKUP_LAST_KEY) || ""; } catch { return ""; } })();
+  const fmt = (iso) => { try { return new Date(iso).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" }); } catch { return ""; } };
+  const d = backupData || {};
+  const save = async () => {
+    setBusy(true); setMsg("");
+    try { await saveBackupFile(buildBackup(d)); setMsg("Sicherung erstellt. Lege die Datei in „Dateien“ oder iCloud Drive ab."); }
+    catch (e) { if (!(e && e.name === "AbortError")) setMsg("Sicherung konnte nicht erstellt werden."); }
+    finally { setBusy(false); }
+  };
+  const pick = async (e) => {
+    const f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) return;
+    try { setPending(parseBackup(await f.text())); setMsg(""); } catch (err) { setPending(null); setMsg(err.message); }
+  };
+  return (
+    <SettingsSubPage title="Sicherung" onBack={onBack}>
+      <div data-backup-view className="space-y-4">
+        <p className="text-sm text-dim">Eine Datei mit allen Spielen, Partien, Listen, Spielern und deinem Ranking. Du bewahrst sie selbst auf, zum Beispiel in iCloud Drive. Damit lässt sich die Sammlung auch nach einem geleerten Speicher oder auf einem neuen Gerät wiederherstellen.</p>
+        <div className="rounded-[16px] border border-line bg-surface p-4 text-sm text-ink">
+          <p>{(d.games || []).length} Spiele · {(d.plays || []).length} Partien · {(d.lists || []).length} Listen</p>
+          <p className="text-xs text-dim mt-1" data-backup-last>{last ? `Letzte Sicherung: ${fmt(last)}` : "Noch keine Sicherung erstellt."}</p>
+        </div>
+        <button data-backup-save disabled={busy} onClick={save} className="w-full h-12 rounded-[14px] bg-accent text-white font-medium disabled:opacity-50">Sicherung als Datei speichern</button>
+        <label className="block w-full h-12 rounded-[14px] border border-line bg-surface text-ink font-medium flex items-center justify-center cursor-pointer">
+          Aus Sicherung wiederherstellen
+          <input data-backup-file type="file" accept="application/json,.json" className="hidden" onChange={pick} />
+        </label>
+        {msg && <p data-backup-msg className="text-sm text-ink">{msg}</p>}
+        {pending && (
+          <div data-backup-confirm className="rounded-[16px] border border-accent/50 bg-accent/5 p-4">
+            <p className="font-medium text-ink">Sicherung einspielen?</p>
+            <p className="text-sm text-dim mt-1">Datei{pending.savedAt ? ` vom ${fmt(pending.savedAt)}` : ""}: {pending.data.games.length} Spiele, {pending.data.plays.length} Partien, {pending.data.lists.length} Listen.</p>
+            <p className="text-sm text-dim mt-1">Auf dem Gerät sind jetzt {(d.games || []).length} Spiele und {(d.plays || []).length} Partien. Sie werden durch den Inhalt der Datei <b>ersetzt</b>.</p>
+            <div className="flex gap-2 mt-3">
+              <button data-backup-apply onClick={() => { onRestore(pending); setPending(null); setMsg(`Sicherung eingespielt: ${pending.data.games.length} Spiele.`); }} className="h-11 px-5 rounded-full bg-accent text-white text-sm font-medium">Jetzt ersetzen</button>
+              <button data-backup-cancel onClick={() => setPending(null)} className="h-11 px-4 rounded-full border border-line text-ink text-sm">Abbrechen</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </SettingsSubPage>
+  );
+}
+
 function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, onAddCategory, onRemoveCategory, onAddMechanism, onRemoveMechanism, onAddPlayerType, onRemovePlayerType, demoMode, onToggleDemo, guestMode, onToggleGuest, syncUrl, syncStatus,
-  syncApiKey, syncEmail, syncLastSynced, onSaveSync, onSyncNow, onRemoveSync, bggImportStatus, bggImportResult, bggImportError, onImportBggPlays, games, plays, onMergeGames, aiWorkerUrl, onSaveAiWorkerUrl }) {
-  const [view, setView] = useState("menu"); // menu | sync | ai | bggImport | customize | duplicates | demo
+  syncApiKey, syncEmail, syncLastSynced, onSaveSync, onSyncNow, onRemoveSync, bggImportStatus, bggImportResult, bggImportError, onImportBggPlays, games, plays, onMergeGames, aiWorkerUrl, onSaveAiWorkerUrl, backupData, onRestoreBackup, initialView }) {
+  const [view, setView] = useState(initialView || "menu"); // menu | sync | ai | bggImport | customize | duplicates | demo
   const [aiUrlInput, setAiUrlInput] = useState(aiWorkerUrl || "");
   const [bggUsername, setBggUsername] = useState("");
   const duplicateGroups = useMemo(() => {
@@ -3034,6 +3099,10 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     );
   }
 
+  if (view === "backup") {
+    return <BackupView onBack={() => setView("menu")} backupData={backupData} onRestore={onRestoreBackup} />;
+  }
+
   if (view === "demo") {
     return (
       <SettingsSubPage title="Vorschau-Modus" onBack={() => setView("menu")}>
@@ -3072,6 +3141,7 @@ function SettingsPage({ customCategories, customMechanisms, customPlayerTypes, o
     <div className="p-5 font-body min-h-full flex flex-col" style={{ paddingBottom: "calc(8.5rem + env(safe-area-inset-bottom))" }}>
       <h1 className="font-display text-3xl tracking-[-0.03em] leading-[1.05] text-ink mb-2">Einstellungen</h1>
       <ThemeSetting />
+      <SettingsRow icon={FileText} label="Sicherung" sub="Als Datei speichern und wiederherstellen" onClick={() => setView("backup")} />
       <SettingsRow icon={Globe} label="Synchronisation" sub={syncUrl ? "Eingerichtet" : "Nicht eingerichtet"} onClick={() => setView("sync")} />
       <SettingsRow icon={Sparkles} label="KI-Assistent" sub={aiWorkerUrl ? "Eingerichtet" : "Nicht eingerichtet"} onClick={() => setView("ai")} />
       <SettingsRow icon={ListChecks} label="BGG-Partien importieren" onClick={() => setView("bggImport")} />
@@ -9992,6 +10062,27 @@ function App() {
     setEnrich({ running: false, done, total: todo.length, skipped, error: "" });
   };
 
+  // Sicherung einspielen: ersetzt die lokalen Daten; die Auto-Sync laedt sie danach auch in die Cloud
+  const restoreBackup = (b) => {
+    const d = b.data;
+    setGames(d.games); setPlays(d.plays); setLists(d.lists); setPlayersList(d.players);
+    setCustomCategories(d.customCategories); setCustomMechanisms(d.customMechanisms); setCustomPlayerTypes(d.customPlayerTypes); setCustomPlayerTypeDescriptions(d.customPlayerTypeDescriptions);
+    try { if (b.rankingArchive && b.rankingArchive.length) localStorage.setItem("spielregal:rankingArchive", JSON.stringify(b.rankingArchive)); } catch {}
+  };
+  // Erinnerung an die Sicherung: nach 14 Tagen ohne Sicherung (Zaehlung ab dem ersten Start mit dieser Funktion), 7 Tage Aufschub moeglich
+  const [settingsStart, setSettingsStart] = useState(null);
+  useEffect(() => { if (tab !== "settings") setSettingsStart(null); }, [tab]);
+  const [backupSnooze, setBackupSnooze] = useState(0);
+  const backupDue = (() => {
+    if (readOnly || games.length === 0) return false;
+    try {
+      let since = localStorage.getItem(BACKUP_SINCE_KEY); if (!since) { since = new Date().toISOString(); localStorage.setItem(BACKUP_SINCE_KEY, since); }
+      const ref = Math.max(Date.parse(since) || 0, Date.parse(localStorage.getItem(BACKUP_LAST_KEY) || "") || 0);
+      const snooze = Date.parse(localStorage.getItem(BACKUP_SNOOZE_KEY) || "") || 0;
+      return Date.now() - ref > BACKUP_DAYS * 86400000 && Date.now() > snooze;
+    } catch { return false; }
+  })();
+
   const syncNow = () => {
     if (!syncUrl) return;
     setSyncStatus("syncing");
@@ -10293,6 +10384,15 @@ function App() {
       >
         {ptr.anzeige}
         <div key={tab} className="tab-fade lg:max-w-3xl lg:mx-auto">
+          {tab === "dashboard" && backupDue && backupSnooze === 0 && (
+            <div data-backup-reminder className="mx-5 mt-4 rounded-[18px] border border-line bg-surface p-4">
+              <p className="text-sm text-ink">Seit über {BACKUP_DAYS} Tagen keine Sicherung deiner Sammlung.</p>
+              <div className="flex gap-2 mt-3">
+                <button data-backup-open onClick={() => { setSettingsStart("backup"); setTab("settings"); }} className="h-10 px-4 rounded-full bg-accent text-white text-sm font-medium">Jetzt sichern</button>
+                <button data-backup-snooze onClick={() => { try { localStorage.setItem(BACKUP_SNOOZE_KEY, new Date(Date.now() + 7 * 86400000).toISOString()); } catch {} setBackupSnooze(1); }} className="h-10 px-4 rounded-full border border-line text-ink text-sm">In 7 Tagen erinnern</button>
+              </div>
+            </div>
+          )}
           {tab === "dashboard" && <Dashboard games={displayGames} plays={displayPlays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} onView={(g) => setDetailGame(g)} onOpenRanking={readOnly ? null : (v) => setRanking({ initialView: v })} sectionOrder={dashboardOrder} onReorder={setDashboardOrder} hiddenSections={hiddenDashboardSections} onToggleHidden={setHiddenDashboardSections} onSearch={() => setCommandBarOpen(true)} aiWorkerUrl={aiWorkerUrl} />}
           {tab === "collection" && <Collection games={displayGames} plays={displayPlays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => !readOnly && setGameModal({ editing: null })} onView={(g) => setDetailGame(g)} onEdit={(g) => setGameModal({ editing: g })} onDelete={(g) => deleteGame(g.id)} categoryOptions={categoryOptions} mechanismOptions={mechanismOptions} demoMode={readOnly} guestMode={guestMode} lists={displayLists} onCreateList={(name) => !readOnly && addList(name)} onOpenList={(l) => setDetailList(l)} onRestoreGames={restoreGames} enrich={enrich} onEnrich={startEnrich} onEnrichCancel={() => { enrichCancel.current = true; }} />}
           {tab === "playlog" && <PlayLog plays={displayPlays} games={displayGames} onAdd={() => !readOnly && setPlayModal({ editing: null })} onEdit={(p) => !readOnly && setPlayModal({ editing: p })} onDelete={deletePlay} demoMode={readOnly} playerProfiles={displayPlayers} />}
@@ -10338,6 +10438,9 @@ function App() {
               onMergeGames={mergeGames}
               aiWorkerUrl={aiWorkerUrl}
               onSaveAiWorkerUrl={saveAiWorkerUrl}
+              backupData={{ games, plays, lists, players, customCategories, customMechanisms, customPlayerTypes, customPlayerTypeDescriptions }}
+              onRestoreBackup={restoreBackup}
+              initialView={settingsStart}
             />
           ))}
         </div>
