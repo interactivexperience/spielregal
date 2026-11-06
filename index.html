@@ -10046,18 +10046,27 @@ function App() {
     enrichCancel.current = false;
     setEnrich({ running: true, done: 0, total: todo.length, skipped: [], error: "" });
     const skipped = []; let done = 0;
+    let failedInRow = 0;
     for (const g of todo) {
       if (enrichCancel.current) break;
-      try {
-        const m = await bggEnrichOne(g);
-        if (m) setGames((prev) => prev.map((x) => (x.id === g.id ? { ...m, ...Object.fromEntries(["status", "saleStatus", "rating", "location", "notes", "lentTo", "rankPos", "addedDate"].filter((k) => x[k] !== undefined && x[k] !== "").map((k) => [k, x[k]])), needsBgg: false } : x)));
-        else skipped.push(g.name);
-      } catch (e) {
-        setEnrich({ running: false, done, total: todo.length, skipped, error: "BGG ist gerade nicht erreichbar. Später weitermachen: bereits geladene Spiele bleiben." });
-        return;
+      // BGG drosselt gern: bei Fehlern mit wachsender Pause erneut versuchen, erst nach mehreren Fehlschlaegen in Folge aufgeben
+      let m, failed = false;
+      for (const wait of [0, 3000, 9000]) {
+        if (wait) await new Promise((r) => setTimeout(r, wait));
+        if (enrichCancel.current) break;
+        try { m = await bggEnrichOne(g); failed = false; break; } catch { failed = true; }
       }
+      if (enrichCancel.current) break;
+      if (failed) {
+        failedInRow++;
+        if (failedInRow >= 2) { setEnrich({ running: false, done, total: todo.length, skipped, error: "BGG antwortet gerade nicht (zu viele Anfragen?). Warte ein paar Minuten und tippe dann auf „Weiter nachladen“, bereits geladene Spiele bleiben." }); return; }
+        continue;
+      }
+      failedInRow = 0;
+      if (m) setGames((prev) => prev.map((x) => (x.id === g.id ? { ...m, ...Object.fromEntries(["status", "saleStatus", "rating", "location", "notes", "lentTo", "rankPos", "addedDate"].filter((k) => x[k] !== undefined && x[k] !== "").map((k) => [k, x[k]])), needsBgg: false } : x)));
+      else skipped.push(g.name);
       done++; setEnrich({ running: true, done, total: todo.length, skipped, error: "" });
-      await new Promise((r) => setTimeout(r, 650));
+      await new Promise((r) => setTimeout(r, 1000));
     }
     setEnrich({ running: false, done, total: todo.length, skipped, error: "" });
   };

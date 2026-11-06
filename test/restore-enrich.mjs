@@ -33,9 +33,9 @@ await page.route("**/cdnjs.cloudflare.com/**/react-dom.production.min.js", r => 
 await page.route("**/cdnjs.cloudflare.com/**/babel.min.js", r => r.fulfill({ path: vendor("@babel","standalone","babel.min.js"), contentType: "application/javascript" }));
 await page.route("**/cdn.tailwindcss.com/**", r => r.fulfill({ contentType: "application/javascript", body: `window.tailwind={config:{}};(function(){var s=document.createElement("style");s.textContent=${JSON.stringify(twCss)};document.head.appendChild(s);})();` }));
 await page.route("**/fonts.googleapis.com/**", r => r.fulfill({ body: "", contentType: "text/css" }));
-let down = false, calls = 0;
+let down = false, calls = 0, flaky = 0;
 await page.route(WORKER, (r) => {
-  calls++; if (down) return r.abort();
+  calls++; if (down) return r.abort(); if (flaky > 0) { flaky--; return r.fulfill({ status: 503, body: "busy" }); }
   const u = new URL(r.request().url());
   if (u.pathname.endsWith("/search")) {
     const q = u.searchParams.get("query"); const c = catalog[q];
@@ -58,14 +58,15 @@ if (OLD) {
 }
 check("Hinweis 'noch keine Cover und BGG-Daten' fuer 3 Spiele", (await page.locator("[data-enrich]").innerText()).includes("3 Spiele haben noch keine"));
 // BGG gerade nicht erreichbar: sauberer Abbruch, nichts kaputt
-down = true; await page.locator("[data-enrich-start]").click(); await page.waitForTimeout(1200);
-check("BGG nicht erreichbar: Meldung, Spiele unveraendert", (await page.locator("[data-enrich]").innerText()).includes("nicht erreichbar") && (await page.evaluate(() => JSON.parse(localStorage.getItem("spielregal:games")).every((g) => g.needsBgg))));
-down = false; await page.locator("[data-enrich-start]").click(); await page.waitForTimeout(4500);
+down = true; await page.locator("[data-enrich-start]").click(); await page.waitForTimeout(28000);
+check("BGG antwortet nicht (nach Wiederholungen): Meldung, Spiele unveraendert", (await page.locator("[data-enrich]").innerText()).includes("antwortet gerade nicht") && (await page.evaluate(() => JSON.parse(localStorage.getItem("spielregal:games")).every((g) => g.needsBgg))));
+down = false; flaky = 1; await page.locator("[data-enrich-start]").click(); await page.waitForTimeout(12000);
 const gs = await page.evaluate(() => JSON.parse(localStorage.getItem("spielregal:games")));
 const az = gs.find((g) => g.id === "g0"), br = gs.find((g) => g.id === "g1"), un = gs.find((g) => g.id === "g2");
 check("Azul: BGG-Daten geladen, Bewertung/Status bleiben", az.bggId === "230802" && az.images[0] === "https://img.test/230802.jpg" && az.minPlayers === "2" && az.rating === "9" && az.status === "owned" && !az.needsBgg);
 check("Brass: Status Wunschliste bleibt erhalten", br.bggId === "28720" && br.status === "wishlist" && br.publishers[0] === "Verlag Brass");
 check("Unbekanntes Spiel: nicht geraten, bleibt markiert und wird gemeldet", un.needsBgg === true && !un.bggId && (await page.locator("[data-enrich-skipped]").innerText()).includes("Unbekanntes Spiel"));
+check("Kurze Stoerung (503) wird per Wiederholung ueberbrueckt: alle Treffer geladen (calls=" + calls + ")", az.bggId && br.bggId);
 check("Name der Spiele bleibt wie in den Partien", az.name === "Azul" && br.name === "Brass");
 await b.close(); server.close();
 console.log(ok ? "BGG-Nachladen-Test bestanden: true" : "FEHLER"); process.exit(ok ? 0 : 1);
