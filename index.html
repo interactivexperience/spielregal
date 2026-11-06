@@ -1645,7 +1645,7 @@ function rebuildGamesFromPlays(plays, backup = []) {
 }
 const needsBggData = (g) => !!g.needsBgg && !(g.bggId && g.images && g.images.length);
 // Wiederhergestellte Spiele (needsBgg) mit BGG-Daten auffuellen: Suche nach dem Namen, nur sichere Treffer, vorhandene eigene Angaben bleiben.
-const normBggName = (n) => String(n || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "");
+const normBggName = (n) => String(n || "").toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/[^a-z0-9]+/g, "");
 async function bggEnrichOne(g) {
   let id = g.bggId;
   if (!id) {
