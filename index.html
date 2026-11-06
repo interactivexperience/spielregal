@@ -1646,7 +1646,7 @@ function rebuildGamesFromPlays(plays, backup = []) {
 // "Nackte" Spiele (keine BGG-ID, kein Bild, weder Kategorien noch Verlag) zaehlen auch dann, wenn sie bei einer aelteren
 // Wiederherstellung noch keine Markierung bekommen haben.
 const isBareGame = (g) => !g.bggId && !(g.images && g.images.length) && !(g.categories && g.categories.length) && !(g.publishers && g.publishers.length);
-const needsBggData = (g) => (!!g.needsBgg || isBareGame(g)) && !(g.bggId && g.images && g.images.length);
+const needsBggData = (g) => !g.bggSkipped && (!!g.needsBgg || isBareGame(g)) && !(g.bggId && g.images && g.images.length);
 // Wiederhergestellte Spiele (needsBgg) mit BGG-Daten auffuellen: Suche nach dem Namen, nur sichere Treffer, vorhandene eigene Angaben bleiben.
 const normBggName = (n) => String(n || "").toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/[^a-z0-9]+/g, "");
 async function bggEnrichOne(g) {
@@ -7890,7 +7890,7 @@ function buildDetailNavList(games, plays, guestMode) {
   return buildCollectionList(games, plays, { statusFilter, filters, sortBy, guestMode });
 }
 
-function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit, onDelete, categoryOptions, mechanismOptions, demoMode, guestMode, lists, onCreateList, onOpenList, onRestoreGames, enrich, onEnrich, onEnrichCancel }) {
+function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit, onDelete, categoryOptions, mechanismOptions, demoMode, guestMode, lists, onCreateList, onOpenList, onRestoreGames, enrich, onEnrich, onEnrichCancel, onEnrichIgnore, onEnrichClose }) {
   const [restoreBusy, setRestoreBusy] = useState(false), [restoreMsg, setRestoreMsg] = useState("");
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -8068,7 +8068,9 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
               {games.some(needsBggData) && <p className="text-sm text-ink">{games.filter(needsBggData).length} Spiele haben noch keine Cover und BGG-Daten.</p>}
               {enrich.error && <p className="text-sm text-danger mt-1">{enrich.error}</p>}
               {enrich.skipped.length > 0 && <p data-enrich-skipped className="text-xs text-dim mt-1">Nicht sicher gefunden ({enrich.skipped.length}): {enrich.skipped.slice(0, 12).join(", ")}{enrich.skipped.length > 12 ? " …" : ""}. Diese kannst du einzeln über „BGG-Daten holen“ im Spiel nachladen.</p>}
+              {enrich.skipped.length > 0 && !games.some(needsBggData) && <button data-enrich-close onClick={onEnrichClose} className="mt-3 h-11 px-5 rounded-full bg-accent text-white text-sm font-medium">Verstanden</button>}
               {games.some(needsBggData) && <button data-enrich-start onClick={onEnrich} className="mt-3 h-11 px-5 rounded-full bg-accent text-white text-sm font-medium">{enrich.done > 0 || enrich.error ? "Weiter nachladen" : "Daten von BGG nachladen"}</button>}
+              {games.some(needsBggData) && <button data-enrich-ignore onClick={onEnrichIgnore} className="ml-3 text-sm text-dim underline underline-offset-2">Nicht mehr nachfragen</button>}
             </>
           )}
         </div>
@@ -10045,7 +10047,7 @@ function App() {
     if (!todo.length) return;
     enrichCancel.current = false;
     setEnrich({ running: true, done: 0, total: todo.length, skipped: [], error: "" });
-    const skipped = []; let done = 0;
+    const skipped = [], skippedIds = []; let done = 0;
     let failedInRow = 0;
     for (const g of todo) {
       if (enrichCancel.current) break;
@@ -10064,12 +10066,17 @@ function App() {
       }
       failedInRow = 0;
       if (m) setGames((prev) => prev.map((x) => (x.id === g.id ? { ...m, ...Object.fromEntries(["status", "saleStatus", "rating", "location", "notes", "lentTo", "rankPos", "addedDate"].filter((k) => x[k] !== undefined && x[k] !== "").map((k) => [k, x[k]])), needsBgg: false } : x)));
-      else skipped.push(g.name);
+      else { skipped.push(g.name); skippedIds.push(g.id); }
       done++; setEnrich({ running: true, done, total: todo.length, skipped, error: "" });
       await new Promise((r) => setTimeout(r, 1000));
     }
+    // Nicht sicher gefundene Spiele nicht immer wieder anbieten: sie gelten als erledigt (einzeln ueber "BGG-Daten holen" nachladbar)
+    if (skippedIds.length && !enrichCancel.current) setGames((prev) => prev.map((x) => (skippedIds.includes(x.id) ? { ...x, bggSkipped: true } : x)));
     setEnrich({ running: false, done, total: todo.length, skipped, error: "" });
   };
+  // "Nicht mehr nachfragen": alle noch offenen Spiele als erledigt markieren
+  const ignoreEnrich = () => { setGames((prev) => prev.map((x) => (needsBggData(x) ? { ...x, bggSkipped: true } : x))); setEnrich((e) => ({ ...e, error: "", skipped: e.skipped })); };
+  const closeEnrichInfo = () => setEnrich((e) => ({ ...e, skipped: [], error: "" }));
 
   // Sicherung einspielen: ersetzt die lokalen Daten; die Auto-Sync laedt sie danach auch in die Cloud
   const restoreBackup = (b) => {
@@ -10403,7 +10410,7 @@ function App() {
             </div>
           )}
           {tab === "dashboard" && <Dashboard games={displayGames} plays={displayPlays} onQuickFilter={(fn) => { setQuickFilter(() => fn); setTab("collection"); }} onView={(g) => setDetailGame(g)} onOpenRanking={readOnly ? null : (v) => setRanking({ initialView: v })} sectionOrder={dashboardOrder} onReorder={setDashboardOrder} hiddenSections={hiddenDashboardSections} onToggleHidden={setHiddenDashboardSections} onSearch={() => setCommandBarOpen(true)} aiWorkerUrl={aiWorkerUrl} />}
-          {tab === "collection" && <Collection games={displayGames} plays={displayPlays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => !readOnly && setGameModal({ editing: null })} onView={(g) => setDetailGame(g)} onEdit={(g) => setGameModal({ editing: g })} onDelete={(g) => deleteGame(g.id)} categoryOptions={categoryOptions} mechanismOptions={mechanismOptions} demoMode={readOnly} guestMode={guestMode} lists={displayLists} onCreateList={(name) => !readOnly && addList(name)} onOpenList={(l) => setDetailList(l)} onRestoreGames={restoreGames} enrich={enrich} onEnrich={startEnrich} onEnrichCancel={() => { enrichCancel.current = true; }} />}
+          {tab === "collection" && <Collection games={displayGames} plays={displayPlays} filterFn={quickFilter} clearFilter={() => setQuickFilter(null)} onAdd={() => !readOnly && setGameModal({ editing: null })} onView={(g) => setDetailGame(g)} onEdit={(g) => setGameModal({ editing: g })} onDelete={(g) => deleteGame(g.id)} categoryOptions={categoryOptions} mechanismOptions={mechanismOptions} demoMode={readOnly} guestMode={guestMode} lists={displayLists} onCreateList={(name) => !readOnly && addList(name)} onOpenList={(l) => setDetailList(l)} onRestoreGames={restoreGames} enrich={enrich} onEnrich={startEnrich} onEnrichCancel={() => { enrichCancel.current = true; }} onEnrichIgnore={ignoreEnrich} onEnrichClose={closeEnrichInfo} />}
           {tab === "playlog" && <PlayLog plays={displayPlays} games={displayGames} onAdd={() => !readOnly && setPlayModal({ editing: null })} onEdit={(p) => !readOnly && setPlayModal({ editing: p })} onDelete={deletePlay} demoMode={readOnly} playerProfiles={displayPlayers} />}
           {tab === "recommendations" && <Recommendations games={displayGames} plays={displayPlays} onView={(g) => setDetailGame(g)} aiWorkerUrl={aiWorkerUrl} chatMessages={aiChatMessages} setChatMessages={setAiChatMessages} onAddWishlist={addToWishlistFromRecommendation} onSaveMechanismsNote={readOnly ? null : (id, text) => updateGameField(id, { mechanismsNote: text })} guestMode={guestMode} />}
           {tab === "settings" && (guestMode ? (

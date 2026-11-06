@@ -54,6 +54,14 @@ if (OLD) {
   await page.locator("[data-enrich-start]").click(); await page.waitForTimeout(6000);
   const g2 = await page.evaluate(() => JSON.parse(localStorage.getItem("spielregal:games")));
   check("Aeltere Wiederherstellung: Azul/Brass/Catan geladen, X1-X3 gemeldet", ["g0","g1","g2"].every((id) => g2.find((g) => g.id === id).bggId) && (await page.locator("[data-enrich-skipped]").innerText()).includes("X1"));
+  await page.reload({ waitUntil: "networkidle" }); await page.waitForTimeout(1200);
+  await page.locator('button:has-text("Sammlung")').last().click(); await page.waitForTimeout(800);
+  check("Nach Neustart: Karte weg (X1-X3 gelten als erledigt)", (await page.locator("[data-enrich]").count()) === 0);
+  await page.evaluate(() => { const g = JSON.parse(localStorage.getItem("spielregal:games")).map((x) => ({ ...x, bggSkipped: undefined, needsBgg: x.bggId ? false : true })); localStorage.setItem("spielregal:games", JSON.stringify(g)); });
+  await page.reload({ waitUntil: "networkidle" }); await page.waitForTimeout(1200);
+  await page.locator('button:has-text("Sammlung")').last().click(); await page.waitForTimeout(800);
+  await page.locator("[data-enrich-ignore]").click(); await page.waitForTimeout(500);
+  check("'Nicht mehr nachfragen' blendet die Karte aus", (await page.locator("[data-enrich]").count()) === 0);
   await b.close(); server.close(); console.log(ok ? "BGG-Nachladen-Test (alt) bestanden: true" : "FEHLER"); process.exit(ok ? 0 : 1);
 }
 check("Hinweis 'noch keine Cover und BGG-Daten' fuer 3 Spiele", (await page.locator("[data-enrich]").innerText()).includes("3 Spiele haben noch keine"));
@@ -65,8 +73,10 @@ const gs = await page.evaluate(() => JSON.parse(localStorage.getItem("spielregal
 const az = gs.find((g) => g.id === "g0"), br = gs.find((g) => g.id === "g1"), un = gs.find((g) => g.id === "g2");
 check("Azul: BGG-Daten geladen, Bewertung/Status bleiben", az.bggId === "230802" && az.images[0] === "https://img.test/230802.jpg" && az.minPlayers === "2" && az.rating === "9" && az.status === "owned" && !az.needsBgg);
 check("Brass: Status Wunschliste bleibt erhalten", br.bggId === "28720" && br.status === "wishlist" && br.publishers[0] === "Verlag Brass");
-check("Unbekanntes Spiel: nicht geraten, bleibt markiert und wird gemeldet", un.needsBgg === true && !un.bggId && (await page.locator("[data-enrich-skipped]").innerText()).includes("Unbekanntes Spiel"));
+check("Unbekanntes Spiel: nicht geraten, als erledigt markiert und gemeldet", un.bggSkipped === true && !un.bggId && (await page.locator("[data-enrich-skipped]").innerText()).includes("Unbekanntes Spiel"));
 check("Kurze Stoerung (503) wird per Wiederholung ueberbrueckt: alle Treffer geladen (calls=" + calls + ")", az.bggId && br.bggId);
+await page.locator("[data-enrich-close]").click(); await page.waitForTimeout(300);
+check("Nach 'Verstanden' verschwindet die Karte, obwohl 1 Spiel nicht ladbar war", (await page.locator("[data-enrich]").count()) === 0);
 check("Name der Spiele bleibt wie in den Partien", az.name === "Azul" && br.name === "Brass");
 await b.close(); server.close();
 console.log(ok ? "BGG-Nachladen-Test bestanden: true" : "FEHLER"); process.exit(ok ? 0 : 1);
