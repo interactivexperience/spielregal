@@ -44,10 +44,18 @@ await page.route(WORKER, (r) => {
   const id = u.searchParams.get("id"); const n = Object.keys(catalog).find((k) => catalog[k].id === id);
   return r.fulfill({ contentType: "text/xml", body: `<items><item id="${id}"><name type="primary" value="${n}"/><yearpublished value="${catalog[n].y}"/><image>https://img.test/${id}.jpg</image><minplayers value="2"/><maxplayers value="4"/><minplaytime value="30"/><maxplaytime value="60"/><minage value="8"/><link type="boardgamemechanic" value="Tile Placement"/><link type="boardgamepublisher" value="Verlag ${n}"/><description>Beschreibung</description><statistics><ratings><averageweight value="2.0"/></ratings></statistics></item></items>` });
 });
-const restored = [{ id: "g0", name: "Azul", status: "owned", rating: "9", needsBgg: true }, { id: "g1", name: "Brass", status: "wishlist", needsBgg: true }, { id: "g2", name: "Unbekanntes Spiel", status: "owned", needsBgg: true }].map((g) => ({ ...base, ...g }));
+const OLD = process.env.OLD === "1";
+const restored = OLD ? ["Azul","Brass","Catan","X1","X2","X3"].map((n, i) => ({ ...base, id: "g" + i, name: n, status: "owned" })) : [{ id: "g0", name: "Azul", status: "owned", rating: "9", needsBgg: true }, { id: "g1", name: "Brass", status: "wishlist", needsBgg: true }, { id: "g2", name: "Unbekanntes Spiel", status: "owned", needsBgg: true }].map((g) => ({ ...base, ...g }));
 await page.addInitScript((d) => { if (localStorage.getItem("__seeded")) return; localStorage.setItem("__seeded", "1"); localStorage.setItem("spielregal:games", JSON.stringify(d.games)); localStorage.setItem("spielregal:plays", JSON.stringify(d.plays)); localStorage.setItem("spielregal:theme", "dark"); }, { games: restored, plays });
 await page.goto(url, { waitUntil: "networkidle" }); await page.waitForTimeout(1500);
 await page.locator('button:has-text("Sammlung")').last().click(); await page.waitForTimeout(800);
+if (OLD) {
+  check("Aeltere Wiederherstellung (ohne Markierung): Karte erscheint ab 5 nackten Spielen", (await page.locator("[data-enrich]").count()) === 1 && (await page.locator("[data-enrich]").innerText()).includes("6 Spiele haben noch keine"));
+  await page.locator("[data-enrich-start]").click(); await page.waitForTimeout(6000);
+  const g2 = await page.evaluate(() => JSON.parse(localStorage.getItem("spielregal:games")));
+  check("Aeltere Wiederherstellung: Azul/Brass/Catan geladen, X1-X3 gemeldet", ["g0","g1","g2"].every((id) => g2.find((g) => g.id === id).bggId) && (await page.locator("[data-enrich-skipped]").innerText()).includes("X1"));
+  await b.close(); server.close(); console.log(ok ? "BGG-Nachladen-Test (alt) bestanden: true" : "FEHLER"); process.exit(ok ? 0 : 1);
+}
 check("Hinweis 'noch keine Cover und BGG-Daten' fuer 3 Spiele", (await page.locator("[data-enrich]").innerText()).includes("3 Spiele haben noch keine"));
 // BGG gerade nicht erreichbar: sauberer Abbruch, nichts kaputt
 down = true; await page.locator("[data-enrich-start]").click(); await page.waitForTimeout(1200);

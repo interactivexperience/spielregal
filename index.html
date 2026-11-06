@@ -1643,7 +1643,10 @@ function rebuildGamesFromPlays(plays, backup = []) {
   });
   return [...byId.values()];
 }
-const needsBggData = (g) => !!g.needsBgg && !(g.bggId && g.images && g.images.length);
+// "Nackte" Spiele (keine BGG-ID, kein Bild, weder Kategorien noch Verlag) zaehlen auch dann, wenn sie bei einer aelteren
+// Wiederherstellung noch keine Markierung bekommen haben.
+const isBareGame = (g) => !g.bggId && !(g.images && g.images.length) && !(g.categories && g.categories.length) && !(g.publishers && g.publishers.length);
+const needsBggData = (g) => (!!g.needsBgg || isBareGame(g)) && !(g.bggId && g.images && g.images.length);
 // Wiederhergestellte Spiele (needsBgg) mit BGG-Daten auffuellen: Suche nach dem Namen, nur sichere Treffer, vorhandene eigene Angaben bleiben.
 const normBggName = (n) => String(n || "").toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/[^a-z0-9]+/g, "");
 async function bggEnrichOne(g) {
@@ -7982,7 +7985,7 @@ function Collection({ games, plays, filterFn, clearFilter, onAdd, onView, onEdit
           <button onClick={clearFilter} className="shrink-0 px-3 py-1.5 rounded-full text-xs font-body border border-accent text-accent flex items-center gap-1"><X size={12} /> Filter</button>
         </div>
       )}
-      {enrich && onEnrich && !demoMode && !guestMode && (games.some(needsBggData) || enrich.running || enrich.skipped.length > 0 || enrich.error) && (
+      {enrich && onEnrich && !demoMode && !guestMode && (games.some((g) => g.needsBgg && needsBggData(g)) || games.filter(needsBggData).length >= 5 || enrich.running || enrich.skipped.length > 0 || enrich.error) && (
         <div data-enrich className="mt-4 rounded-[18px] border border-line bg-surface p-4">
           {enrich.running ? (
             <>
