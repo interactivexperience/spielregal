@@ -9790,7 +9790,13 @@ function App() {
   // instead of hiding them — otherwise "add a player" would silently never
   // work for anyone testing with demo mode on.
   const displayPlayers = demoMode ? [...DEMO_PLAYERS, ...players] : players;
-  const [tab, setTab] = useState("dashboard");
+  // Pull-to-Refresh laedt die Seite neu (?refresh=...): dabei auf der aktuellen Seite bleiben statt zur Uebersicht zu springen.
+  // Ein normales Oeffnen der App beginnt weiter auf der Uebersicht.
+  const [tab, setTab] = useState(() => {
+    try { if (/[?&]refresh=/.test(location.search)) { const t = localStorage.getItem("spielregal:lastTab"); if (["dashboard", "collection", "playlog", "recommendations", "settings"].includes(t)) return t; } } catch {}
+    return "dashboard";
+  });
+  useEffect(() => { try { localStorage.setItem("spielregal:lastTab", tab); } catch {} }, [tab]);
   // Übersicht und Partien gibt's im Gästemodus nicht (keine Statistiken/Verlauf
   // für Gäste) — falls man genau dort steht, wenn der Modus aktiviert wird,
   // auf einen noch vorhandenen Tab ausweichen, statt eine leere/kaputte Seite zu zeigen.
