@@ -9793,7 +9793,7 @@ function App() {
   // Pull-to-Refresh laedt die Seite neu (?refresh=...): dabei auf der aktuellen Seite bleiben statt zur Uebersicht zu springen.
   // Ein normales Oeffnen der App beginnt weiter auf der Uebersicht.
   const [tab, setTab] = useState(() => {
-    try { if (/[?&]refresh=/.test(location.search)) { const t = localStorage.getItem("spielregal:lastTab"); if (["dashboard", "collection", "playlog", "recommendations", "settings"].includes(t)) return t; } } catch {}
+    try { if (/[?&](refresh|_cb)=/.test(location.search)) { const t = localStorage.getItem("spielregal:lastTab"); if (["dashboard", "collection", "playlog", "recommendations", "settings"].includes(t)) return t; } } catch {}
     return "dashboard";
   });
   useEffect(() => { try { localStorage.setItem("spielregal:lastTab", tab); } catch {} }, [tab]);
@@ -10612,7 +10612,9 @@ createRoot(document.getElementById("root")).render(<ErrorBoundary><App /></Error
 (function () {
   var meta = document.querySelector('meta[name="app-build"]');
   var CURRENT_BUILD = meta ? meta.content : "";
-  if (!CURRENT_BUILD || CURRENT_BUILD.indexOf("__BUILD_ID__") === 0) return; // unstamped local/dev copy
+  // (Platzhalter hier bewusst NICHT vollstaendig ausschreiben: der Deploy ersetzt jedes Vorkommen per sed -- auch dieses --
+  //  und die Pruefung wuerde dann im Livebetrieb immer "unstamped" melden und die Update-Erkennung abschalten.)
+  if (!CURRENT_BUILD || CURRENT_BUILD.indexOf("__BUILD_") === 0) return; // unstamped local/dev copy
 
   function checkForUpdate() {
     var url = location.pathname + "?_cb=" + Date.now();
