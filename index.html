@@ -9583,7 +9583,7 @@ function GameDetailModal({ game, games, plays, lists, onToggleList, onCreateList
                       <p className="text-[10px] font-semibold text-dim uppercase tracking-[0.16em] mb-1.5">{game.status === "wishlist" ? "Preis" : game.saleStatus === "sold" ? "Verkauft" : game.saleStatus === "forSale" ? "Zum Verkauf" : "Kauf"}</p>
                       <div className="flex items-center gap-x-3 gap-y-1 flex-wrap">
                         {game.purchasePrice && <span className="text-xs text-dim">{game.status === "wishlist" ? "Preis" : "Kaufpreis"}: <span className="text-ink">{game.purchasePrice} €</span></span>}
-                        {game.purchasePlace && <span className="text-xs text-dim">{game.status === "wishlist" ? "Kaufen bei" : "Gekauft bei"}: <span className="text-ink">{purchasePlaceLabel(game.purchasePlace)}</span></span>}
+                        {game.purchasePlace && !(game.purchasePlace === "online" && shopHref(game.shopUrl)) && <span className="text-xs text-dim">{game.status === "wishlist" ? "Kaufen bei" : "Gekauft bei"}: <span className="text-ink">{purchasePlaceLabel(game.purchasePlace)}</span></span>}
                         {shopHref(game.shopUrl) && <a data-shop-link href={shopHref(game.shopUrl)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-accent underline underline-offset-2">Zum Onlineshop <ExternalIcon size={12} /></a>}
                         {game.status === "owned" && game.saleStatus === "sold" && game.salePrice && <span className="text-xs text-dim">Verkaufspreis: <span className="text-gold">{game.salePrice} €</span></span>}
                       </div>

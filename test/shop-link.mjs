@@ -47,6 +47,7 @@ if (await edit.count()) { await edit.click(); await page.waitForTimeout(1000); }
 let ok = true; const check = (c, m) => { console.log((c ? "OK   " : "FEHLER ") + m); if (!c) ok = false; };
 const shopInput = page.locator("input[data-shop-url]");
 check(await shopInput.count() === 1 && (await page.locator("text=Link zum Onlineshop").count()) === 1, "Formular zeigt optionales Feld 'Link zum Onlineshop'");
+await page.locator('button:has-text("Onlineshop")').first().click();
 await shopInput.fill("www.spiel-shop.de/azul?ref=1");
 await page.locator('button:has-text("Speichern")').last().click(); await page.waitForTimeout(800);
 const saved = async () => page.evaluate(() => JSON.parse(localStorage.getItem("spielregal:games")).find(g => g.id === "g1"));
@@ -56,6 +57,7 @@ if (!(await page.locator('button:has-text("Mehr Details")').count())) { await pa
 if (await page.locator('button:has-text("Mehr Details")').count()) { await page.locator('button:has-text("Mehr Details")').click(); await page.waitForTimeout(400); }
 const a = page.locator("[data-shop-link]");
 check(await a.count() === 1 && (await a.getAttribute("href")) === "https://www.spiel-shop.de/azul?ref=1" && (await a.getAttribute("target")) === "_blank" && /noopener/.test(await a.getAttribute("rel")) && (await a.innerText()).trim() === "Zum Onlineshop" && await a.locator("svg").count() === 1, "Detailansicht: Link heisst nur 'Zum Onlineshop' mit Icon (neuer Tab, noopener)");
+check((await page.locator("text=Gekauft bei:").count()) === 0, "Mit Link: keine Zeile 'Gekauft bei: Onlineshop' in den Details");
 // Unzulaessige Eingabe wird nicht gespeichert
 const edit2 = page.locator('button[aria-label="Bearbeiten"], button:has-text("Bearbeiten")').first();
 await edit2.click(); await page.waitForTimeout(900);
@@ -66,5 +68,6 @@ check((await saved()).shopUrl === "", "javascript:-Link wird verworfen");
 if (!(await page.locator('button:has-text("Mehr Details")').count())) { await page.locator('text=Lairs').first().click(); await page.waitForTimeout(800); }
 if (await page.locator('button:has-text("Mehr Details")').count()) { await page.locator('button:has-text("Mehr Details")').click(); await page.waitForTimeout(300); }
 check(await page.locator("[data-shop-link]").count() === 0, "Kein Link ohne gueltige Adresse");
+check((await page.locator("text=Gekauft bei:").count()) === 1, "Ohne Link steht 'Gekauft bei: Onlineshop' weiter da");
 await b.close(); server.close();
 console.log(ok ? "Shop-Link-Test bestanden" : "FEHLER"); process.exit(ok ? 0 : 1);
