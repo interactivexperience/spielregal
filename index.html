@@ -4463,6 +4463,7 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
     finally { setBggFetchLoading(false); }
   };
   const applyBggMerge = (selected) => {
+    aiMark("bgg");
     setForm((f) => {
       const next = { ...f };
       Object.keys(selected).forEach((key) => { if (selected[key]) {
@@ -4482,19 +4483,23 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
     setBggMergeData(null);
   };
   const [aiMenuOpen, setAiMenuOpen] = useState(false);
+  // Fertig-Status je Werkzeug (gruenes Haekchen), bis es erneut gestartet wird
+  const [aiDone, setAiDone] = useState({});
+  const aiMark = (k, v = true) => setAiDone((d) => ({ ...d, [k]: v }));
   const aiMenuClose = useSheetClose(() => setAiMenuOpen(false));
 
   const runElevatorPitch = async () => {
-    setPitchLoading(true); setPitchError("");
+    setPitchLoading(true); setPitchError(""); aiMark("pitch", false);
     try {
       const pitch = await aiElevatorPitch(aiWorkerUrl, form.name || "dieses Spiel", form.summary || "");
       update("summary", pitch);
       setSummaryVersion((v) => v + 1);
+      aiMark("pitch");
     } catch (e) { setPitchError(e.message || "Fehlgeschlagen"); }
     finally { setPitchLoading(false); }
   };
   const runTagsSuggest = async () => {
-    setTypesLoading(true); setTypesError("");
+    setTypesLoading(true); setTypesError(""); aiMark("tags", false);
     try {
       const result = await aiSuggestGameTags(aiWorkerUrl, form, categoryOptions || [], mechanismOptions || [], playerTypeOptions || []);
       result.categories.forEach((c) => { if (!(categoryOptions || []).includes(c)) onAddCategory(c); });
@@ -4506,11 +4511,12 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
         mechanisms: [...new Set([...f.mechanisms, ...result.mechanisms])],
         playerTypes: [...new Set([...f.playerTypes, ...result.playerTypes])],
       }));
+      aiMark("tags");
     } catch (e) { setTypesError(e.message || "Fehlgeschlagen"); }
     finally { setTypesLoading(false); }
   };
   const runGermanLookup = async () => {
-    setGermanLookupLoading(true); setGermanLookupError("");
+    setGermanLookupLoading(true); setGermanLookupError(""); aiMark("german", false);
     try {
       let guess = { germanName: null, germanPublishers: [], originalPublisher: null };
       if (form.bggId) {
@@ -4535,7 +4541,7 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
         germanName: guess.germanName || f.germanName,
         publishers: newPublishers.length ? [...new Set([...f.publishers, ...newPublishers])] : f.publishers,
       }));
-      if (!guess.germanName && !guess.originalPublisher && guess.germanPublishers.length === 0) setGermanLookupError("Nichts gefunden.");
+      if (!guess.germanName && !guess.originalPublisher && guess.germanPublishers.length === 0) setGermanLookupError("Nichts gefunden."); else aiMark("german");
     } catch (e) { setGermanLookupError(e.message || "Fehlgeschlagen"); }
     finally { setGermanLookupLoading(false); }
   };
@@ -5010,7 +5016,7 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
               {form.name.trim() && (
                 <button type="button" onClick={() => setAiMenuOpen(true)}
                   className="glass shrink-0 h-12 px-4 border border-rim/15 text-ink rounded-[14px] font-medium flex items-center justify-center gap-2 text-sm">
-                  {aiWorkerUrl ? <Sparkles size={15} /> : <Globe size={15} />} {aiWorkerUrl ? "KI-Werkzeuge" : "BGG-Daten"}
+                  {(pitchLoading || typesLoading || germanLookupLoading || bggFetchLoading) ? <Loader2 size={15} className="text-info" /> : Object.values(aiDone).some(Boolean) ? <span data-ai-done-footer className="inline-flex text-teal"><Check size={15} /></span> : aiWorkerUrl ? <Sparkles size={15} /> : <Globe size={15} />} {aiWorkerUrl ? "KI-Werkzeuge" : "BGG-Daten"}
                 </button>
               )}
               <button disabled={!form.name.trim()} onClick={handleSaveClick}
@@ -5039,26 +5045,26 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
                 <>
                   <button onClick={runElevatorPitch} disabled={pitchLoading}
                     className="w-full flex items-center gap-3 px-3.5 py-3 rounded-[14px] bg-surface border border-line text-left disabled:opacity-50">
-                    {pitchLoading ? <Loader2 size={16} className="text-info" /> : <Sparkles size={16} className="text-info" />}
-                    <span className="text-sm text-ink">Elevator-Pitch generieren</span>
+                    {pitchLoading ? <Loader2 size={16} className="text-info" /> : aiDone.pitch ? <span data-ai-done="pitch" className="inline-flex text-teal"><Check size={16} /></span> : <Sparkles size={16} className="text-info" />}
+                    <span className="text-sm text-ink">Elevator-Pitch generieren{aiDone.pitch && <span className="text-teal text-xs"> · fertig</span>}</span>
                   </button>
                   <button onClick={runTagsSuggest} disabled={typesLoading}
                     className="w-full flex items-center gap-3 px-3.5 py-3 rounded-[14px] bg-surface border border-line text-left disabled:opacity-50">
-                    {typesLoading ? <Loader2 size={16} className="text-info" /> : <Sparkles size={16} className="text-info" />}
-                    <span className="text-sm text-ink">Kategorien, Mechanismen &amp; Spielertyp vorschlagen</span>
+                    {typesLoading ? <Loader2 size={16} className="text-info" /> : aiDone.tags ? <span data-ai-done="tags" className="inline-flex text-teal"><Check size={16} /></span> : <Sparkles size={16} className="text-info" />}
+                    <span className="text-sm text-ink">Kategorien, Mechanismen &amp; Spielertyp vorschlagen{aiDone.tags && <span className="text-teal text-xs"> · fertig</span>}</span>
                   </button>
                   <button onClick={runGermanLookup} disabled={germanLookupLoading}
                     className="w-full flex items-center gap-3 px-3.5 py-3 rounded-[14px] bg-surface border border-line text-left disabled:opacity-50">
-                    {germanLookupLoading ? <Loader2 size={16} className="text-info" /> : <Sparkles size={16} className="text-info" />}
-                    <span className="text-sm text-ink">{form.bggId ? "Deutschen Titel/Verlag nachträglich suchen" : "Deutschen Titel/Verlag erraten lassen"}</span>
+                    {germanLookupLoading ? <Loader2 size={16} className="text-info" /> : aiDone.german ? <span data-ai-done="german" className="inline-flex text-teal"><Check size={16} /></span> : <Sparkles size={16} className="text-info" />}
+                    <span className="text-sm text-ink">{form.bggId ? "Deutschen Titel/Verlag nachträglich suchen" : "Deutschen Titel/Verlag erraten lassen"}{aiDone.german && <span className="text-teal text-xs"> · fertig</span>}</span>
                   </button>
                 </>
               )}
               <button onClick={startBggFetch} disabled={bggFetchLoading}
                 className="w-full flex items-center gap-3 px-3.5 py-3 rounded-[14px] bg-surface border border-line text-left disabled:opacity-50">
-                {bggFetchLoading ? <Loader2 size={16} className="text-info" /> : <Globe size={16} className="text-info" />}
+                {bggFetchLoading ? <Loader2 size={16} className="text-info" /> : aiDone.bgg ? <span data-ai-done="bgg" className="inline-flex text-teal"><Check size={16} /></span> : <Globe size={16} className="text-info" />}
                 <div>
-                  <p className="text-sm text-ink">BGG-Daten {form.bggId ? "aktualisieren" : "nachträglich holen"}</p>
+                  <p className="text-sm text-ink">BGG-Daten {form.bggId ? "aktualisieren" : "nachträglich holen"}{aiDone.bgg && <span className="text-teal text-xs"> · fertig</span>}</p>
                   <p className="text-[11px] text-dim">Zeigt eine Auswahl, was übernommen wird</p>
                 </div>
               </button>
