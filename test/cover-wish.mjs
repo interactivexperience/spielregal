@@ -39,9 +39,10 @@ await page.locator('button:has-text("Sammlung")').last().click(); await page.wai
 const wrap = (name) => page.locator(`[data-wish-cover]:has(img[alt="${name}"])`);
 check("Wunsch-Cover hat Markierung, besessenes und gespieltes nicht", await wrap("Wunsch Spiel").count() === 1 && await page.locator('[data-wish-cover]:has(img[alt="Azul Besitz"]), [data-wish-cover]:has(img[alt="Brass NurGespielt"])').count() === 0);
 check("Wunsch-Cover: Herz-Badge", await wrap("Wunsch Spiel").locator("[data-wish-badge]").count() === 1);
-const hb = await wrap("Wunsch Spiel").locator("[data-wish-badge]").evaluate((e) => ({ bg: getComputedStyle(e).backgroundColor, rad: getComputedStyle(e).borderTopLeftRadius, w: e.getBoundingClientRect().width, h: e.getBoundingClientRect().height, left: e.getBoundingClientRect().left - e.parentElement.getBoundingClientRect().left, svgFill: getComputedStyle(e.querySelector("svg")).fill }));
-check("Herz weiss in coralfarbenem Kreis (" + JSON.stringify(hb) + ")", hb.bg === "rgb(255, 111, 97)" && hb.svgFill === "rgb(255, 255, 255)" && Math.abs(hb.w - hb.h) < 1 && parseFloat(hb.rad) >= hb.w / 2 - 1);
-check("Abstand zum Rand mindestens 10 px", hb.left >= 10);
+const hb = await wrap("Wunsch Spiel").locator("[data-wish-badge]").evaluate((e) => ({ bg: getComputedStyle(e).backgroundColor, svgFill: getComputedStyle(e.querySelector("svg")).fill, filter: getComputedStyle(e).filter, left: e.getBoundingClientRect().left - e.parentElement.getBoundingClientRect().left }));
+check("Weisses Herz ohne Kreis (" + hb.bg + ", " + hb.svgFill + ")", hb.bg === "rgba(0, 0, 0, 0)" && hb.svgFill === "rgb(255, 255, 255)");
+check("Herz leuchtet mit Coral-Schein", /rgb\(255, 111, 97\)/.test(hb.filter) && (hb.filter.match(/drop-shadow/g) || []).length >= 2);
+check("Abstand zum Rand 6-8 px (" + hb.left + ")", hb.left >= 6 && hb.left <= 8);
 check("Wunsch-Cover: kein gestrichelter Rahmen", await wrap("Wunsch Spiel").locator("span.border-dashed").count() === 0);
 const fl = await page.locator('img[alt="Wunsch Spiel"]').first().evaluate((e) => getComputedStyle(e).filter);
 check(`Wunsch-Cover aufgehellt (${fl})`, /brightness\(1\.12\)/.test(fl));
