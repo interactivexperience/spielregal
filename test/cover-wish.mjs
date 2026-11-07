@@ -49,5 +49,12 @@ check(`Wunsch-Cover aufgehellt (${fl})`, /brightness\(1\.12\)/.test(fl));
 const fa = await page.locator('img[alt="Azul Besitz"]').first().evaluate((e) => getComputedStyle(e).filter);
 check("Besessenes Cover unveraendert", fa === "none");
 check("Wunsch ohne Bild: ebenfalls Herz", await page.locator("[data-wish-cover]:not(:has(img)) [data-wish-badge]").count() === 1);
+// Kleine Rasteransicht (4 Spalten): Herz naeher am Rand und kleiner
+await page.locator('button:has(svg)').filter({ has: page.locator("rect") }).nth(1).click().catch(() => {});
+await page.evaluate(() => localStorage.setItem("spielregal:collectionGridCols", "4"));
+await page.reload({ waitUntil: "networkidle" }); await page.waitForTimeout(1200);
+await page.locator('button:has-text("Sammlung")').last().click(); await page.waitForTimeout(900);
+const hs = await page.locator("[data-wish-cover]:has(img[alt='Wunsch Spiel']) [data-wish-badge]").evaluate((e) => ({ off: e.getBoundingClientRect().left - e.parentElement.getBoundingClientRect().left, w: e.getBoundingClientRect().width, cw: e.parentElement.getBoundingClientRect().width }));
+check("4-Spalten-Ansicht: Zellen klein (" + Math.round(hs.cw) + " px), Herz naeher am Rand (" + hs.off + " px) und kleiner (" + Math.round(hs.w) + " px)", hs.cw < 100 && hs.off >= 2 && hs.off <= 4 && hs.w <= 15);
 await b.close(); server.close();
 console.log(ok ? "Wunsch-Cover-Test bestanden: true" : "FEHLER"); process.exit(ok ? 0 : 1);
