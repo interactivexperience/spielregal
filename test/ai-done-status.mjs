@@ -43,16 +43,14 @@ const edit = page.locator('button[aria-label="Bearbeiten"], button:has-text("Bea
 if (await edit.count()) { await edit.click(); await page.waitForTimeout(1000); }
 check("Anfangs kein Haekchen am KI-Knopf", (await page.locator("[data-ai-done-footer]").count()) === 0);
 await page.locator('button:has-text("KI-Werkzeuge")').click(); await page.waitForTimeout(500);
-await page.locator("text=Deutschen Titel/Verlag erraten lassen").click(); await page.waitForTimeout(250);
-check("Waehrend die KI arbeitet: kein Haekchen", (await page.locator('[data-ai-done="german"]').count()) === 0);
+check("Entfernt: 'Deutschen Titel/Verlag' und 'Kategorien, Mechanismen & Spielertyp' sind nicht mehr im Menue", (await page.locator("text=Deutschen Titel").count()) === 0 && (await page.locator("text=Kategorien, Mechanismen").count()) === 0);
+check("Geblieben: Elevator-Pitch und BGG-Daten", (await page.locator("text=Elevator-Pitch generieren").count()) === 1 && (await page.locator("text=BGG-Daten").count()) >= 1);
+await page.locator("text=Elevator-Pitch generieren").click(); await page.waitForTimeout(250);
+check("Waehrend die KI arbeitet: kein Haekchen", (await page.locator('[data-ai-done="pitch"]').count()) === 0);
 await page.waitForTimeout(1500);
-check("Fertig: gruenes Haekchen am Werkzeug + 'fertig'", (await page.locator('[data-ai-done="german"]').count()) === 1 && (await page.locator("text=· fertig").count()) === 1);
-const col = await page.locator('[data-ai-done="german"]').evaluate((e) => getComputedStyle(e).color);
+check("Pitch fertig: gruenes Haekchen am Werkzeug + 'fertig'", (await page.locator('[data-ai-done="pitch"]').count()) === 1 && (await page.locator("text=· fertig").count()) === 1);
+const col = await page.locator('[data-ai-done="pitch"]').evaluate((e) => getComputedStyle(e).color);
 check("Haekchen ist gruen (" + col + ")", (() => { const m = col.match(/\d+/g).map(Number); return m[1] > m[0] && m[1] >= m[2]; })());
-await page.locator('text=Elevator-Pitch generieren').click(); await page.waitForTimeout(250);
-check("Zweites Werkzeug laeuft: sein Haekchen fehlt noch, das erste bleibt", (await page.locator('[data-ai-done="pitch"]').count()) === 0 && (await page.locator('[data-ai-done="german"]').count()) === 1);
-await page.waitForTimeout(1500);
-check("Pitch fertig: auch hier Haekchen", (await page.locator('[data-ai-done="pitch"]').count()) === 1);
 await page.mouse.click(20, 20); await page.waitForTimeout(500);
 check("Nach dem Schliessen: gruenes Haekchen am Knopf 'KI-Werkzeuge'", (await page.locator("[data-ai-done-footer]").count()) === 1);
 await b.close(); server.close();

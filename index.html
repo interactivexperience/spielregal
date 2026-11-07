@@ -3566,38 +3566,6 @@ Antworte NUR mit einer kommagetrennten Liste der gewählten Typen, sonst nichts.
 // erkannt, damit echte Titel wie "Keine Panik" nicht wegfallen.
 const AI_NONE_ANSWER = /^["'„“”]*\s*(kein|keine|keiner|keinem|keinen|keines|none|n\/a|unbekannt|-+|—)(\s+(deutscher|deutsche|deutschen)?\s*(titel|verlag|verlage)?\s*(vorhanden|bekannt)?)?\s*[.!]?\s*["'„“”]*$/i;
 const cleanAiAnswer = (v) => { const t = (v || "").trim(); return (!t || AI_NONE_ANSWER.test(t)) ? null : t; };
-async function aiIdentifyGameInfoFromName(workerUrl, gameName, existingPublishers) {
-  const prompt = `Brettspiel: "${gameName}"
-Bereits eingetragene Verlage: ${(existingPublishers || []).join(", ") || "(keine)"}
-
-Dieses Spiel hat keinen BGG-Datensatz verknüpft — nutze dein eigenes Wissen über das Spiel. Falls du das Spiel nicht kennst oder dir nicht sicher bist, schreib "keiner" statt zu raten.
-
-1. Wie heißt der ORIGINAL-Verlag (Erstveröffentlichung, egal welches Land)? Nur nennen, wenn er nicht schon in "Bereits eingetragene Verlage" steht.
-2. Wie lautet der deutsche Titel des Spiels (falls anders als der eingegebene Name)? Der Titel muss WIRKLICH auf Deutsch sein — nicht Englisch, Niederländisch, Französisch, Skandinavisch oder eine andere Sprache, auch wenn sie ähnlich klingt. Wenn du dir über die Sprache nicht sicher bist oder keine eigenständige deutschsprachige Ausgabe existiert, schreib "keiner" statt zu raten.
-3. Welche(r) deutsche(n) Verlag(e) haben es veröffentlicht (Deutschland/Österreich/Schweiz)?
-
-Antworte NUR in exakt diesem Format:
-ORIGINALVERLAG: <Name oder "keiner">
-TITEL: <deutscher Titel oder "keiner">
-VERLAGE: <deutsche(r) Verlag(e), kommagetrennt, oder "keiner">`;
-
-  const res = await fetch(workerUrl.replace(/\/$/, ""), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
-  });
-  if (!res.ok) throw new Error(`KI-Worker Fehler ${res.status}`);
-  const json = await res.json();
-  if (json.error) throw new Error(json.error);
-  const raw = (json.text || "").trim();
-  const clean = cleanAiAnswer;
-  const origMatch = raw.match(/ORIGINALVERLAG:\s*(.+)/i);
-  const titleMatch = raw.match(/TITEL:\s*(.+)/i);
-  const publisherMatch = raw.match(/VERLAGE?:\s*(.+)/i);
-  const publisherRaw = clean(publisherMatch && publisherMatch[1]);
-  const germanPublishers = publisherRaw ? publisherRaw.split(",").map((s) => s.trim()).filter(Boolean) : [];
-  return { originalPublisher: clean(origMatch && origMatch[1]), germanName: clean(titleMatch && titleMatch[1]), germanPublishers };
-}
 
 async function aiIdentifyGermanInfo(workerUrl, gameName, alternateNames, publishers) {
   const prompt = `Brettspiel: "${gameName}"
@@ -3629,49 +3597,6 @@ VERLAGE: <deutsche(r) Verlag(e), kommagetrennt, oder "keiner">`;
   return { germanName, germanPublisher: germanPublishers[0] || null, germanPublishers };
 }
 
-async function aiSuggestGameTags(workerUrl, game, existingCategories, existingMechanisms, existingPlayerTypes) {
-  const prompt = `Du hilfst dabei, ein Brettspiel korrekt einzuordnen: passende Kategorien, Mechanismen und Spielertypen (Zielgruppen-Etiketten).
-
-Bestehende Kategorien in der Sammlung: ${existingCategories.join(", ") || "(noch keine)"}
-Bestehende Mechanismen in der Sammlung: ${existingMechanisms.join(", ") || "(noch keine)"}
-Bestehende Spielertypen in der Sammlung: ${existingPlayerTypes.join(", ") || "(noch keine)"}
-
-Spiel: "${game.name}"
-Komplexität: ${game.complexity || "unbekannt"}/5
-Bereits gesetzte Kategorien: ${(game.categories || []).join(", ") || "-"}
-Bereits gesetzte Mechanismen: ${(game.mechanisms || []).join(", ") || "-"}
-Beschreibung: ${(game.summary || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 600)}
-
-Wähle für jede der drei Listen 1-4 passende Einträge — bevorzuge IMMER bestehende Einträge aus der Sammlung oben, statt neue zu erfinden. Nur wenn wirklich nichts passt, darfst du pro Liste maximal einen neuen, kurzen Begriff ergänzen.
-
-Antworte NUR in exakt diesem Format, sonst nichts:
-KATEGORIEN: Begriff1, Begriff2
-MECHANISMEN: Begriff1, Begriff2
-SPIELERTYPEN: Begriff1, Begriff2`;
-
-  const res = await fetch(workerUrl.replace(/\/$/, ""), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
-  });
-  if (!res.ok) {
-    let detail = "";
-    try { detail = (await res.text()).slice(0, 150); } catch { /* ignore */ }
-    throw new Error(`KI-Worker antwortete mit Fehler ${res.status}${detail ? ": " + detail : ""}`);
-  }
-  const json = await res.json();
-  if (json.error) throw new Error(json.error);
-  const raw = (json.text || "").trim();
-  const parseLine = (label) => {
-    const m = raw.match(new RegExp(`${label}:\\s*(.+)`, "i"));
-    return m ? m[1].split(",").map((s) => s.trim()).filter(Boolean).slice(0, 4) : [];
-  };
-  return {
-    categories: parseLine("KATEGORIEN"),
-    mechanisms: parseLine("MECHANISMEN"),
-    playerTypes: parseLine("SPIELERTYPEN"),
-  };
-}
 
 // Builds a compact text summary of the collection + recent play history to
 // give the AI real context, without sending full game objects.
@@ -4432,8 +4357,6 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
       onSave({ ...form, shopUrl: shopHref(form.shopUrl) });
     }
   };
-  const [typesLoading, setTypesLoading] = useState(false);
-  const [germanLookupLoading, setGermanLookupLoading] = useState(false);
   const [publisherTrimLoading, setPublisherTrimLoading] = useState(false);
   const [bggFetchLoading, setBggFetchLoading] = useState(false);
   const [bggFetchError, setBggFetchError] = useState("");
@@ -4498,53 +4421,6 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
     } catch (e) { setPitchError(e.message || "Fehlgeschlagen"); }
     finally { setPitchLoading(false); }
   };
-  const runTagsSuggest = async () => {
-    setTypesLoading(true); setTypesError(""); aiMark("tags", false);
-    try {
-      const result = await aiSuggestGameTags(aiWorkerUrl, form, categoryOptions || [], mechanismOptions || [], playerTypeOptions || []);
-      result.categories.forEach((c) => { if (!(categoryOptions || []).includes(c)) onAddCategory(c); });
-      result.mechanisms.forEach((m) => { if (!(mechanismOptions || []).includes(m)) onAddMechanism(m); });
-      result.playerTypes.forEach((t) => { if (!(playerTypeOptions || []).includes(t)) onAddPlayerType(t, ""); });
-      setForm((f) => ({
-        ...f,
-        categories: [...new Set([...f.categories, ...result.categories])],
-        mechanisms: [...new Set([...f.mechanisms, ...result.mechanisms])],
-        playerTypes: [...new Set([...f.playerTypes, ...result.playerTypes])],
-      }));
-      aiMark("tags");
-    } catch (e) { setTypesError(e.message || "Fehlgeschlagen"); }
-    finally { setTypesLoading(false); }
-  };
-  const runGermanLookup = async () => {
-    setGermanLookupLoading(true); setGermanLookupError(""); aiMark("german", false);
-    try {
-      let guess = { germanName: null, germanPublishers: [], originalPublisher: null };
-      if (form.bggId) {
-        const fresh = await bggThing(form.bggId);
-        const needsGermanName = !fresh.germanName && (fresh.alternateNames || []).length > 0;
-        const needsGermanPublisher = !(fresh.allPublishers || []).some(p => form.publishers.includes(p)) && (fresh.allPublishers || []).length > 0;
-        const needsOriginalPublisher = form.publishers.length === 0 && (fresh.allPublishers || []).length > 0;
-        guess.germanName = fresh.germanName;
-        if (needsOriginalPublisher) guess.originalPublisher = fresh.allPublishers[0];
-        if (needsGermanName || needsGermanPublisher) {
-          const aiGuess = await aiIdentifyGermanInfo(aiWorkerUrl, fresh.name, fresh.alternateNames, fresh.allPublishers);
-          guess.germanName = guess.germanName || aiGuess.germanName;
-          guess.germanPublishers = aiGuess.germanPublishers || [];
-        }
-      } else {
-        const aiGuess = await aiIdentifyGameInfoFromName(aiWorkerUrl, form.name, form.publishers);
-        guess = { germanName: aiGuess.germanName, germanPublishers: aiGuess.germanPublishers || [], originalPublisher: form.publishers.length === 0 ? aiGuess.originalPublisher : null };
-      }
-      const newPublishers = [guess.originalPublisher, ...guess.germanPublishers].filter(Boolean);
-      setForm((f) => ({
-        ...f,
-        germanName: guess.germanName || f.germanName,
-        publishers: newPublishers.length ? [...new Set([...f.publishers, ...newPublishers])] : f.publishers,
-      }));
-      if (!guess.germanName && !guess.originalPublisher && guess.germanPublishers.length === 0) setGermanLookupError("Nichts gefunden."); else aiMark("german");
-    } catch (e) { setGermanLookupError(e.message || "Fehlgeschlagen"); }
-    finally { setGermanLookupLoading(false); }
-  };
 
   useEffect(() => {
     if (!aiWorkerUrl || !initial || !initial.bggId || (initial.publishers || []).length <= 2) return;
@@ -4586,8 +4462,6 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
     })();
     return () => { cancelled = true; };
   }, [initial]);
-  const [germanLookupError, setGermanLookupError] = useState("");
-  const [typesError, setTypesError] = useState("");
   const [summaryVersion, setSummaryVersion] = useState(0);
   const [pitchError, setPitchError] = useState("");
   const [step, setStep] = useState(initial || prefillBgg ? "manual" : "search");
@@ -4913,7 +4787,6 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
               {publisherTrimLoading && (
                 <p className="flex items-center gap-1 text-[11px] text-dim mt-2"><Loader2 size={11} /> Verlagsliste wird auf Original + Deutsch reduziert…</p>
               )}
-              {germanLookupError && <p className="text-[11px] text-danger mt-1">{germanLookupError}</p>}
             </div>
             <div>
               <label className="block text-[11px] text-dim">Designer</label>
@@ -4962,7 +4835,6 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
                 <ChevronDown size={16} className="shrink-0 text-dim mt-1.5" />
               </button>
             </div>
-            {typesError && <p className="text-[11px] text-danger -mt-2">{typesError}</p>}
 
             {form.expansionOf && (
             <div>
@@ -5016,7 +4888,7 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
               {form.name.trim() && (
                 <button type="button" onClick={() => setAiMenuOpen(true)}
                   className="glass shrink-0 h-12 px-4 border border-rim/15 text-ink rounded-[14px] font-medium flex items-center justify-center gap-2 text-sm">
-                  {(pitchLoading || typesLoading || germanLookupLoading || bggFetchLoading) ? <Loader2 size={15} className="text-info" /> : Object.values(aiDone).some(Boolean) ? <span data-ai-done-footer className="inline-flex text-teal"><Check size={15} /></span> : aiWorkerUrl ? <Sparkles size={15} /> : <Globe size={15} />} {aiWorkerUrl ? "KI-Werkzeuge" : "BGG-Daten"}
+                  {(pitchLoading || bggFetchLoading) ? <Loader2 size={15} className="text-info" /> : Object.values(aiDone).some(Boolean) ? <span data-ai-done-footer className="inline-flex text-teal"><Check size={15} /></span> : aiWorkerUrl ? <Sparkles size={15} /> : <Globe size={15} />} {aiWorkerUrl ? "KI-Werkzeuge" : "BGG-Daten"}
                 </button>
               )}
               <button disabled={!form.name.trim()} onClick={handleSaveClick}
@@ -5048,16 +4920,6 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
                     {pitchLoading ? <Loader2 size={16} className="text-info" /> : aiDone.pitch ? <span data-ai-done="pitch" className="inline-flex text-teal"><Check size={16} /></span> : <Sparkles size={16} className="text-info" />}
                     <span className="text-sm text-ink">Elevator-Pitch generieren{aiDone.pitch && <span className="text-teal text-xs"> · fertig</span>}</span>
                   </button>
-                  <button onClick={runTagsSuggest} disabled={typesLoading}
-                    className="w-full flex items-center gap-3 px-3.5 py-3 rounded-[14px] bg-surface border border-line text-left disabled:opacity-50">
-                    {typesLoading ? <Loader2 size={16} className="text-info" /> : aiDone.tags ? <span data-ai-done="tags" className="inline-flex text-teal"><Check size={16} /></span> : <Sparkles size={16} className="text-info" />}
-                    <span className="text-sm text-ink">Kategorien, Mechanismen &amp; Spielertyp vorschlagen{aiDone.tags && <span className="text-teal text-xs"> · fertig</span>}</span>
-                  </button>
-                  <button onClick={runGermanLookup} disabled={germanLookupLoading}
-                    className="w-full flex items-center gap-3 px-3.5 py-3 rounded-[14px] bg-surface border border-line text-left disabled:opacity-50">
-                    {germanLookupLoading ? <Loader2 size={16} className="text-info" /> : aiDone.german ? <span data-ai-done="german" className="inline-flex text-teal"><Check size={16} /></span> : <Sparkles size={16} className="text-info" />}
-                    <span className="text-sm text-ink">{form.bggId ? "Deutschen Titel/Verlag nachträglich suchen" : "Deutschen Titel/Verlag erraten lassen"}{aiDone.german && <span className="text-teal text-xs"> · fertig</span>}</span>
-                  </button>
                 </>
               )}
               <button onClick={startBggFetch} disabled={bggFetchLoading}
@@ -5069,8 +4931,8 @@ function GameFormModal({ initial, prefillBgg, categoryOptions, mechanismOptions,
                 </div>
               </button>
             </div>
-            {(pitchError || typesError || germanLookupError || bggFetchError) && (
-              <p className="text-[11px] text-danger px-5 pb-3">{pitchError || typesError || germanLookupError || bggFetchError}</p>
+            {(pitchError || bggFetchError) && (
+              <p className="text-[11px] text-danger px-5 pb-3">{pitchError || bggFetchError}</p>
             )}
           </div>
         </div>
