@@ -106,6 +106,7 @@ console.log("Bart bleibt danach von Hand waehlbar:", await pressed("facial", "mu
   const n = (k) => page.locator(`button[data-av="${k}"]`).count();
   console.log("Fantasie: Kopfschmuck hat 12 Auswahlen, Ruecken 6, Gesicht 8 (" + await n("head") + "/" + await n("back") + "/" + await n("face") + ")", await n("head") === 12 && await n("back") === 6 && await n("face") === 8);
   const sv = async () => decodeURIComponent((await prev()).replace(/^data:image\/svg\+xml;utf8,/, ""));
+  await pick("head", "none"); await pick("back", "none"); await pick("face", "none");
   const base = await sv();
   let allDiff = true;
   for (const [k, vals] of [["head", ["horns", "unicorn", "halo", "antennae", "mushroom", "wizard", "pirate", "headphones"]], ["back", ["fairy", "dragon", "angel", "butterfly", "cape"]], ["face", ["freckles", "stars", "bolt", "scar", "clown", "cyclops", "fangs"]]]) {
