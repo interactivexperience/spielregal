@@ -104,12 +104,12 @@ console.log("Bart bleibt danach von Hand waehlbar:", await pressed("facial", "mu
   const svgOf = async () => decodeURIComponent((await prev()).replace(/^data:image\/svg\+xml;utf8,/, ""));
   { // Fantasie: neue Kopfteile, Ruecken und Gesicht
   const n = (k) => page.locator(`button[data-av="${k}"]`).count();
-  console.log("Fantasie: Kopfschmuck hat 12 Auswahlen, Ruecken 6, Gesicht 8 (" + await n("head") + "/" + await n("back") + "/" + await n("face") + ")", await n("head") === 12 && await n("back") === 6 && await n("face") === 8);
+  console.log("Fantasie: Kopfschmuck 12, Ruecken 6, Gesicht 7 (ohne Clown), Kleidung 8 (" + await n("head") + "/" + await n("back") + "/" + await n("face") + ")", await n("head") === 12 && await n("back") === 6 && await n("face") === 7 && await n("outfit") === 8 && (await page.locator('button[data-av="face"][data-v="clown"]').count()) === 0);
   const sv = async () => decodeURIComponent((await prev()).replace(/^data:image\/svg\+xml;utf8,/, ""));
   await pick("head", "none"); await pick("back", "none"); await pick("face", "none");
   const base = await sv();
   let allDiff = true;
-  for (const [k, vals] of [["head", ["horns", "unicorn", "halo", "antennae", "mushroom", "wizard", "pirate", "headphones"]], ["back", ["fairy", "dragon", "angel", "butterfly", "cape"]], ["face", ["freckles", "stars", "bolt", "scar", "clown", "cyclops", "fangs"]]]) {
+  for (const [k, vals] of [["head", ["horns", "unicorn", "halo", "antennae", "mushroom", "wizard", "pirate", "headphones"]], ["back", ["fairy", "dragon", "angel", "butterfly", "cape"]], ["face", ["freckles", "stars", "bolt", "scar", "cyclops", "fangs"]]]) {
     for (const v of vals) { await pick(k, v); const s = await sv(); if (s === base) allDiff = false; await pick(k, "none"); }
   }
   console.log("Fantasie: jede neue Auswahl veraendert die Figur sichtbar:", allDiff);
@@ -117,6 +117,25 @@ console.log("Bart bleibt danach von Hand waehlbar:", await pressed("facial", "mu
   const cy = await sv();
   console.log("Zyklop: ein grosses Auge statt zwei (gruene Iris, nur ein Auge):", (cy.match(/fill="#3FA66B"/g) || []).length === 1);
   await pick("face", "none");
+  // Kleidung passend zur Figur
+  const pr = async (k, v) => (await page.locator(`button[data-av="${k}"][data-v="${v}"]`).getAttribute("aria-pressed")) === "true";
+  await pick("gender", "m"); await pick("outfit", "shirt"); await pick("head", "none");
+  await pick("head", "wizard");
+  console.log("Zauberhut waehlt automatisch das Zaubergewand:", await pr("outfit", "robe"));
+  await pick("outfit", "hoodie"); await pick("head", "pirate");
+  console.log("Von Hand gewaehlte Kleidung (Kapuzenpulli) wird nicht ueberschrieben:", await pr("outfit", "hoodie"));
+  await pick("outfit", "shirt"); await pick("head", "none"); await pick("gender", "f");
+  console.log("Weiblich: T-Shirt wird zum Kleid:", await pr("outfit", "dress"));
+  await pick("outfit", "shirt");
+  const base2 = await sv();
+  for (const v of ["hoodie", "dress", "suit", "robe", "armor", "striped", "overalls"]) { await pick("outfit", v); if ((await sv()) === base2) console.log("Kleidung ohne sichtbare Wirkung: false", v); }
+  await pick("outfit", "robe");
+  const rb = await sv();
+  console.log("Kleidung wird auf die Schulterform beschnitten (clipPath) und wirkt:", rb.includes("clip-path") && rb.includes("#F2C94C"));
+  await pick("back", "cape");
+  const cp = await sv();
+  console.log("Umhang sitzt tief (Oberkante y=66, nicht ueber den Schultern):", cp.includes("M7 96C9 76 26 66 48 66"));
+  await pick("back", "none");
 }
 await pick("gender", "f"); await pick("len", "3"); await pick("style", "straight");
   const sv = await svgOf();

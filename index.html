@@ -4011,8 +4011,9 @@ const AV_OPTS = [
   { key: "glasses", label: "Brille", opts: [["none", "Keine"], ["round", "Rund"], ["sun", "Sonne"]] },
   { key: "facial", label: "Bart", opts: [["none", "Keiner"], ["mustache", "Schnurrbart"], ["beard", "Vollbart"]] },
   { key: "head", label: "Kopfschmuck", opts: [["none", "Keiner"], ["cap", "Mütze"], ["flower", "Blume"], ["crown", "Krone"], ["horns", "Hörner"], ["unicorn", "Einhorn"], ["halo", "Heiligenschein"], ["antennae", "Fühler"], ["mushroom", "Pilzhut"], ["wizard", "Zauberer"], ["pirate", "Pirat"], ["headphones", "Kopfhörer"]] },
+  { key: "outfit", label: "Kleidung", opts: [["shirt", "T-Shirt"], ["hoodie", "Kapuzenpulli"], ["dress", "Kleid"], ["suit", "Anzug"], ["robe", "Zaubergewand"], ["armor", "Rüstung"], ["striped", "Ringelshirt"], ["overalls", "Latzhose"]] },
   { key: "back", label: "Rücken", opts: [["none", "Keiner"], ["fairy", "Feenflügel"], ["dragon", "Drachenflügel"], ["angel", "Engelsflügel"], ["butterfly", "Schmetterling"], ["cape", "Umhang"]] },
-  { key: "face", label: "Gesicht", opts: [["none", "Normal"], ["freckles", "Sommersprossen"], ["stars", "Sterne"], ["bolt", "Blitz"], ["scar", "Narbe"], ["clown", "Clown"], ["cyclops", "Zyklop"], ["fangs", "Vampirzähne"]] },
+  { key: "face", label: "Gesicht", opts: [["none", "Normal"], ["freckles", "Sommersprossen"], ["stars", "Sterne"], ["bolt", "Blitz"], ["scar", "Narbe"], ["cyclops", "Zyklop"], ["fangs", "Vampirzähne"]] },
 ];
 const AV_COLORS = [
   { key: "skin", label: "Haut", list: AV_SKIN }, { key: "hair", label: "Haare", list: AV_HAIR },
@@ -4022,6 +4023,8 @@ const AV_COLORS = [
 const AV_STYLES_F = ["straight", "straight", "wavy", "curly", "bangs", "sidepart", "bob", "bun", "ponytail", "pigtails", "braid"];
 const AV_STYLES_M = ["straight", "straight", "curly", "bangs", "sidepart", "spiky", "mohawk", "afro"];
 const AV_STYLES_N = ["straight", "wavy", "curly", "bangs", "sidepart", "bob", "bun", "ponytail", "spiky", "afro"];
+// Kleidung, die zum Kopfschmuck passt (Voreinstellung im Editor und bei Zufallsfiguren)
+const AV_OUTFIT_FOR_HEAD = { wizard: "robe", pirate: "striped", crown: "robe", halo: "robe", horns: "suit", mushroom: "overalls", headphones: "hoodie", cap: "hoodie", antennae: "armor", unicorn: "dress" };
 const AV_OWN_STYLES = ["ponytail", "pigtails", "braid", "bob", "afro", "mohawk", "spiky"];
 // Zufaellige, aber feste Figur aus einer Zahl (Startfigur jedes Profils, "Zufall"-Knopf).
 const avCfgFromSeed = (seed) => {
@@ -4032,7 +4035,7 @@ const avCfgFromSeed = (seed) => {
   const age = roll < 0.18 ? "child" : roll < 0.3 ? "old" : "adult";
   const gender = pick(["f", "m", "n"]);
   const grown = age !== "child";
-  return {
+  const cfg = {
     age, gender, skin: pick(AV_SKIN.slice(0, 6)), hair: pick(AV_HAIR.slice(0, 8)), shirt: pick(AV_SHIRT), bg: pick(AV_BG),
     len: gender === "m" ? pick([0, 1, 1, 1, 2]) : gender === "f" ? pick([1, 2, 2, 3, 3]) : pick([1, 2, 3]),
     style: gender === "f" ? pick(AV_STYLES_F) : gender === "m" ? pick(AV_STYLES_M) : pick(AV_STYLES_N),
@@ -4040,11 +4043,14 @@ const avCfgFromSeed = (seed) => {
     glasses: r() < 0.3 ? pick(["round", "sun"]) : "none",
     facial: grown && gender === "m" && r() < 0.5 ? pick(["mustache", "beard"]) : "none",
     head: r() < 0.15 ? pick(["cap", "flower", "crown"]) : "none",
-    // Fantasie (am Ende, damit Startfiguren bestehender Profile unveraendert bleiben)
+    // Fantasie (am Ende, damit die uebrigen Werte der Startfiguren bestehender Profile unveraendert bleiben)
     back: r() < 0.1 ? pick(["fairy", "dragon", "angel", "butterfly", "cape"]) : "none",
     face: r() < 0.25 ? pick(["freckles", "freckles", "stars", "bolt", "fangs"]) : "none",
     ...(r() < 0.1 ? { head: pick(["horns", "unicorn", "halo", "antennae", "mushroom", "wizard", "pirate", "headphones"]) } : {}),
   };
+  // Kleidung passend zur Figur: Kopfschmuck-Motiv zuerst, sonst nach Alter und Geschlecht
+  cfg.outfit = AV_OUTFIT_FOR_HEAD[cfg.head] || (age === "child" ? pick(["shirt", "shirt", "hoodie", "overalls"]) : gender === "f" ? pick(["shirt", "dress", "dress", "hoodie", "striped"]) : gender === "m" ? pick(["shirt", "hoodie", "suit", "overalls", "striped"]) : pick(["shirt", "hoodie", "overalls", "striped"]));
+  return cfg;
 };
 const avatarSvg = (c) => {
   const ink = "#2B1B14", hair = c.hair, skin = c.skin, child = c.age === "child", old = c.age === "old";
@@ -4129,7 +4135,6 @@ const avatarSvg = (c) => {
     stars: star(34, ey + 7, 3.6, "#F2C94C") + star(62, ey + 7, 3.6, "#F27BA7"),
     bolt: `<path d="M35 ${ey + 1}l-4 7h3.4l-2.2 7 7-9h-3.6l2.6-5z" fill="#F2C94C" stroke="#C98A1B" stroke-width=".8" stroke-linejoin="round"/>`,
     scar: `<path d="M33 ${ey - 8}l7 20" stroke="#A04040" stroke-width="1.6" stroke-linecap="round"/><path d="M31.6 ${ey - 3}l4-1.4M33.4 ${ey + 3}l4-1.4M35.2 ${ey + 8}l4-1.4" stroke="#A04040" stroke-width="1.1" stroke-linecap="round"/>`,
-    clown: `<circle cx="48" cy="${ey + 8}" r="4.6" fill="#E5383B"/><path d="M33 ${ey - 8}l4-5 4 5zM55 ${ey - 8}l4-5 4 5z" fill="#2F7FD6"/><circle cx="34" cy="${ey + 8}" r="3" fill="#F27BA7" opacity=".7"/><circle cx="62" cy="${ey + 8}" r="3" fill="#F27BA7" opacity=".7"/>`,
     cyclops: "",
     fangs: `<path d="M43.4 ${my + 0.6}l1.7 4.6 1.7-4.6zM49.2 ${my + 0.6}l1.7 4.6 1.7-4.6z" fill="#fff" stroke="${ink}" stroke-width=".6" stroke-linejoin="round"/>` }[c.face] || "";
   // Rueckenteile (hinter Oberteil und Haaren): Fluegel, Umhang
@@ -4138,12 +4143,27 @@ const avatarSvg = (c) => {
     dragon: wing(`<path d="M44 72C34 52 18 40 3 36c4 10 3 16 9 20-2 8 3 14 11 16-1 7 6 12 15 8z" fill="#7C3F9E"/><path d="M44 72C34 52 18 40 3 36M12 56l31 16M23 72l20 0" stroke="#4B2268" stroke-width="1.2" fill="none"/>`),
     angel: wing(`<path d="M44 70C30 64 12 52 8 28c-2 10 0 20 6 28-6-2-9-6-10-6 4 16 18 28 32 30z" fill="#fff" stroke="#E5E8F0" stroke-width="1"/><path d="M40 78C28 76 18 70 14 62c2 10 10 20 26 24z" fill="#F3F5FA"/>`),
     butterfly: wing(`<path d="M44 66C28 56 8 46 6 30c14 0 32 12 38 30z" fill="#F27BA7"/><path d="M44 72C32 74 16 80 14 90c12 0 26-6 30-18z" fill="#7C5CC4"/><circle cx="20" cy="40" r="3.4" fill="#fff" opacity=".85"/><circle cx="24" cy="84" r="2.4" fill="#fff" opacity=".85"/>`),
-    cape: `<path d="M6 96C8 62 26 50 48 50s40 12 42 46z" fill="${c.shirt}"/><path d="M6 96C8 62 26 50 48 50s40 12 42 46z" fill="#000" opacity=".28"/>` }[c.back] || "";
+    cape: `<path d="M7 96C9 76 26 66 48 66s37 10 41 30z" fill="${c.shirt}"/><path d="M7 96C9 76 26 66 48 66s37 10 41 30z" fill="#000" opacity=".28"/>` }[c.back] || "";
   const shoulders = child ? "M18 96c2-12 14-19 30-19s28 7 30 19z" : c.gender === "m" ? "M4 96c2-18 15-26 44-26s42 8 44 26z" : c.gender === "f" ? "M14 96c2-17 15-25 34-25s32 8 34 25z" : "M10 96c2-18 17-26 38-26s36 8 38 26z";
+  // Kleidung (Grundflaeche in Oberteil-Farbe, Details fest; alles auf die Schulterform beschnitten)
+  const of = c.outfit || "shirt", sy = child ? 6 : 0;
+  const dk = (o) => `fill="#000" opacity="${o}"`;
+  const outfitArt = {
+    hoodie: `<path d="M44 72v14M52 72v14" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="44" cy="87" r="1.6" fill="#fff"/><circle cx="52" cy="87" r="1.6" fill="#fff"/><path d="M34 96q14-7 28 0" stroke="#000" stroke-opacity=".22" stroke-width="1.6" fill="none"/>`,
+    dress: `<path d="M35 71q13 17 26 0z" fill="${skin}"/><path d="M35 71q13 17 26 0" stroke="#fff" stroke-opacity=".85" stroke-width="2.2" fill="none"/>${[[22, 88], [32, 93], [64, 93], [74, 88], [48, 96], [16, 94]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.7" fill="#fff" opacity=".7"/>`).join("")}`,
+    suit: `<path d="M38 71l10 26 10-26z" fill="#fff"/><path d="M45.6 76h4.8l2.4 19-4.8 3-4.8-3z" fill="#C4452E"/><path d="M38 71l-5 9 15 17zM58 71l5 9-15 17z" ${dk(0.25)}/>`,
+    robe: `<path d="M33 71q15 15 30 0" stroke="#F2C94C" stroke-width="3.6" fill="none" stroke-linecap="round"/>${star(22, 86, 3.4, "#F2C94C")}${star(74, 88, 3, "#F2C94C")}${star(48, 90, 2.6, "#F2C94C")}`,
+    striped: [78, 84, 90].map((y) => `<rect x="0" y="${y}" width="96" height="3" fill="#fff" opacity=".85"/>`).join("") + `<path d="M44 71l4 7 4-7" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"/>`,
+    overalls: `<g fill="#4A6FA5"><rect x="33" y="80" width="30" height="17"/><path d="M33 70h6l1 12h-8zM57 70h6l1 12h-8z"/></g><circle cx="36" cy="82" r="1.7" fill="#F2C94C"/><circle cx="60" cy="82" r="1.7" fill="#F2C94C"/><path d="M33 80h30" stroke="#000" stroke-opacity=".2"/>`,
+    armor: `<path d="M26 96c1-13 8-19 22-19s21 6 22 19" stroke="#6C7585" stroke-width="2.2" fill="none"/><path d="M48 78v19" stroke="#6C7585" stroke-width="2.2"/><circle cx="32" cy="90" r="1.8" fill="#6C7585"/><circle cx="64" cy="90" r="1.8" fill="#6C7585"/><path d="M36 71q12 9 24 0" stroke="${c.shirt}" stroke-width="3.4" fill="none" stroke-linecap="round"/>`,
+  }[of] || "";
+  const hood = of === "hoodie" ? `<path d="M25 84C25 62 35 55 48 55s23 7 23 29z" fill="${c.shirt}"/><path d="M25 84C25 62 35 55 48 55s23 7 23 29z" ${dk(0.24)}/>` : "";
+  const baseFill = of === "armor" ? "#AEB6C4" : c.shirt;
+  const bodyArt = hood + `<defs><clipPath id="sh"><path d="${shoulders}"/></clipPath></defs><path d="${shoulders}" fill="${baseFill}"/>` + (outfitArt ? `<g clip-path="url(#sh)"><g transform="translate(0 ${sy})">${outfitArt}</g></g>` : "");
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect width="96" height="96" fill="${c.bg}"/>`
     + `<g transform="translate(0 ${dy})">${backArt}</g>`
     + `<g transform="translate(0 ${dy})">${back}</g>`
-    + `<path d="${shoulders}" fill="${c.shirt}"/>`
+    + bodyArt
     + `<rect x="42" y="${child ? 66 : 60}" width="12" height="${child ? 14 : 14}" rx="4" fill="${skin}"/><rect x="42" y="${child ? 66 : 60}" width="12" height="14" rx="4" fill="#000" opacity=".12"/>`
     + `<g transform="translate(0 ${dy})">${backFront}${ears}<ellipse cx="48" cy="45" rx="${rx}" ry="${child ? 22 : 23}" fill="${skin}"/>${facial}${front}${headwear}`
     + `${blush}${eyes}${lashes}${brows}${wrinkles}${glasses}${mouth}${faceArt}</g></svg>`;
@@ -5223,7 +5243,10 @@ function AvatarEditor({ player, onSave, onClose }) {
         if (next.len < 2) next.len = 2;
         if (["spiky", "mohawk"].includes(next.style)) next.style = "straight";
         next.facial = "none";
+        if (!next.outfit || next.outfit === "shirt") next.outfit = "dress";
       }
+      // Kleidung passend zum Kopfschmuck (Zauberhut -> Gewand, Piratentuch -> Ringelshirt ...), solange noch das Standard-T-Shirt traegt
+      if (k === "head" && AV_OUTFIT_FOR_HEAD[v] && (!next.outfit || next.outfit === "shirt")) next.outfit = AV_OUTFIT_FOR_HEAD[v];
       return next;
     });
   };
