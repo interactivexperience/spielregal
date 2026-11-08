@@ -4006,7 +4006,7 @@ const AV_OPTS = [
   { key: "age", label: "Alter", opts: [["child", "Kind"], ["adult", "Erwachsen"], ["old", "Alt"]] },
   { key: "gender", label: "Geschlecht", opts: [["f", "Weiblich"], ["m", "Männlich"], ["n", "Neutral"]] },
   { key: "len", label: "Haarlänge", opts: [[0, "Kahl"], [1, "Kurz"], [2, "Mittel"], [3, "Lang"]] },
-  { key: "style", label: "Haarstil", opts: [["straight", "Glatt"], ["curly", "Lockig"], ["bun", "Dutt"]] },
+  { key: "style", label: "Frisur", opts: [["straight", "Glatt"], ["wavy", "Wellig"], ["curly", "Lockig"], ["bangs", "Pony"], ["sidepart", "Seitenscheitel"], ["bob", "Bob"], ["bun", "Dutt"], ["ponytail", "Zopf"], ["pigtails", "Zöpfe"], ["braid", "Geflochten"], ["spiky", "Stachelig"], ["mohawk", "Irokese"], ["afro", "Afro"]] },
   { key: "ears", label: "Tierohren", opts: [["none", "Keine"], ["cat", "Katze"], ["dog", "Hund"], ["bunny", "Hase"], ["bear", "Bär"], ["elf", "Elf"]] },
   { key: "glasses", label: "Brille", opts: [["none", "Keine"], ["round", "Rund"], ["sun", "Sonne"]] },
   { key: "facial", label: "Bart", opts: [["none", "Keiner"], ["mustache", "Schnurrbart"], ["beard", "Vollbart"]] },
@@ -4016,6 +4016,11 @@ const AV_COLORS = [
   { key: "skin", label: "Haut", list: AV_SKIN }, { key: "hair", label: "Haare", list: AV_HAIR },
   { key: "shirt", label: "Oberteil", list: AV_SHIRT }, { key: "bg", label: "Hintergrund", list: AV_BG },
 ];
+// Frisuren je Geschlecht fuer Startfigur/Zufall; beim Wechsel auf "weiblich" im Editor werden Frisur und Bart passend vorbelegt.
+const AV_STYLES_F = ["straight", "straight", "wavy", "curly", "bangs", "sidepart", "bob", "bun", "ponytail", "pigtails", "braid"];
+const AV_STYLES_M = ["straight", "straight", "curly", "bangs", "sidepart", "spiky", "mohawk", "afro"];
+const AV_STYLES_N = ["straight", "wavy", "curly", "bangs", "sidepart", "bob", "bun", "ponytail", "spiky", "afro"];
+const AV_OWN_STYLES = ["ponytail", "pigtails", "braid", "bob", "afro", "mohawk", "spiky"];
 // Zufaellige, aber feste Figur aus einer Zahl (Startfigur jedes Profils, "Zufall"-Knopf).
 const avCfgFromSeed = (seed) => {
   let t = (seed >>> 0) + 0x9E3779B9;
@@ -4028,7 +4033,7 @@ const avCfgFromSeed = (seed) => {
   return {
     age, gender, skin: pick(AV_SKIN.slice(0, 6)), hair: pick(AV_HAIR.slice(0, 8)), shirt: pick(AV_SHIRT), bg: pick(AV_BG),
     len: gender === "m" ? pick([0, 1, 1, 1, 2]) : gender === "f" ? pick([1, 2, 2, 3, 3]) : pick([1, 2, 3]),
-    style: pick(["straight", "straight", "curly", "bun"]),
+    style: gender === "f" ? pick(AV_STYLES_F) : gender === "m" ? pick(AV_STYLES_M) : pick(AV_STYLES_N),
     ears: r() < 0.22 ? pick(["cat", "dog", "bunny", "bear", "elf"]) : "none",
     glasses: r() < 0.3 ? pick(["round", "sun"]) : "none",
     facial: grown && gender === "m" && r() < 0.5 ? pick(["mustache", "beard"]) : "none",
@@ -4040,20 +4045,36 @@ const avatarSvg = (c) => {
   const dy = child ? 7 : 0, fy = child ? 3 : 0;
   const rx = c.gender === "m" ? 21 : c.gender === "f" ? 19.5 : 20;
   const top = "M27 44c-3-20 9-31 21-31s24 11 21 31c-3-8-9-14-21-14s-18 6-21 14z";
-  const len = c.len, tied = c.style === "bun" && len > 0;
+  const len = c.len, st = c.style, tied = st === "bun" && len > 0, own = AV_OWN_STYLES.includes(st);
   // Haare hinter dem Kopf
   let back = "";
-  if (!tied && len === 2) back = `<path d="M26 48c-3 14-1 22 5 26h34c6-4 8-12 5-26-3-18-12-26-22-26s-19 8-22 26z" fill="${hair}"/>`;
-  if (!tied && len === 3) back = `<path d="M25 46c-4 26 0 40 6 46h34c6-6 10-20 6-46-3-20-14-27-23-27s-20 7-23 27z" fill="${hair}"/>`;
+  if (!tied && !own && len === 2) back = `<path d="M26 48c-3 14-1 22 5 26h34c6-4 8-12 5-26-3-18-12-26-22-26s-19 8-22 26z" fill="${hair}"/>`;
+  if (!tied && !own && len === 3) back = `<path d="M25 46c-4 26 0 40 6 46h34c6-6 10-20 6-46-3-20-14-27-23-27s-20 7-23 27z" fill="${hair}"/>`;
+  const band = (x, y) => `<circle cx="${x}" cy="${y}" r="3" fill="${c.shirt}"/>`;
+  const L = [0, 10, 17, 25][len] || 0; // Laenge von Zopf/Zoepfen/Geflochtenem
+  if (len > 0) {
+    if (st === "bob") back = `<path d="M25 46c-2 14 0 22 4 26 6 2 12 2 19 2s13 0 19-2c4-4 6-12 4-26-3-18-12-26-23-26s-20 8-23 26z" fill="${hair}"/>`;
+    if (st === "ponytail") back = `<ellipse cx="75" cy="${40 + L * 0.6}" rx="7" ry="${L + 6}" transform="rotate(-10 75 40)" fill="${hair}"/>${band(68, 29)}`;
+    if (st === "pigtails") back = [[22, -1], [74, 1]].map(([x, d]) => `<ellipse cx="${x}" cy="${50 + L * 0.5}" rx="6" ry="${L + 5}" transform="rotate(${d * 8} ${x} 50)" fill="${hair}"/>`).join("") + band(27, 40) + band(69, 40);
+    if (st === "braid") back = Array.from({ length: Math.round(L / 3.4) + 3 }, (_, i) => `<circle cx="${70 + (i % 2 ? 2 : -1)}" cy="${54 + i * 5.2}" r="4.2" fill="${hair}"/>`).join("") + band(70, 54 + (Math.round(L / 3.4) + 3) * 5.2);
+    if (st === "afro") back = `<circle cx="48" cy="38" r="${[0, 25, 29, 33][len]}" fill="${hair}"/>`;
+  }
   // Haare vor dem Kopf
   let front = "";
   if (len > 0) {
-    if (c.style === "curly") {
+    if (st === "curly") {
       const pts = [[30, 28], [38, 19], [48, 16], [58, 19], [66, 28], [28, 38], [68, 38]];
       if (len >= 2) pts.push([26, 52], [70, 52]);
       if (len >= 3) pts.push([25, 64], [71, 64], [27, 76], [69, 76]);
       front = pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="8" fill="${hair}"/>`).join("");
-    } else front = `<path d="${top}" fill="${hair}"/>` + (tied ? `<circle cx="48" cy="11" r="8" fill="${hair}"/>` : "");
+    } else if (st === "wavy") {
+      front = `<path d="${top}" fill="${hair}"/>` + (len >= 2 ? [[26, 52], [70, 52], [25, 62], [71, 62]].concat(len >= 3 ? [[26, 72], [70, 72], [28, 82], [68, 82]] : []).map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5.5" fill="${hair}"/>`).join("") : "");
+    } else if (st === "bangs") front = `<path d="${top}" fill="${hair}"/><path d="M27 44c-3-20 9-31 21-31s24 11 21 31q-3-8-8-11q-13-5-26 0q-5 3-8 11z" fill="${hair}"/>`;
+    else if (st === "sidepart") front = `<path d="${top}" fill="${hair}"/><path d="M28 40c-1-16 8-27 21-27 14 0 22 12 20 30-2-7-4-11-8-14-9 2-19-1-26-8-1 8-4 14-7 19z" fill="${hair}"/>`;
+    else if (st === "bob") front = `<path d="${top}" fill="${hair}"/><path d="M28 42c0-16 8-27 20-27s20 11 20 27q-4-9-9-12q-11-4-22 0q-6 3-9 12z" fill="${hair}"/>`;
+    else if (st === "spiky") front = `<path d="M28 40l-2-16 8 6 3-17 8 11 3-16 5 16 8-11 3 16 8-6-2 16c-6-7-14-10-20-10s-14 3-20 10z" fill="${hair}"/>`;
+    else if (st === "mohawk") { const ty = [0, 14, 8, 2][len]; front = `<path d="M39 33C38 ${ty + 12} 42 ${ty} 48 ${ty}C54 ${ty} 58 ${ty + 12} 57 33Q48 26 39 33z" fill="${hair}"/>`; }
+    else front = `<path d="${top}" fill="${hair}"/>` + (tied ? `<circle cx="48" cy="11" r="8" fill="${hair}"/>` : "");
   }
   // Ohren: Tierohren oder normale Ohren
   const pink = "#F2A8B8";
@@ -5156,7 +5177,19 @@ const topScorerIds = (ids, scoresObj) => {
 /* Figur gestalten: Vorschau oben, Auswahl darunter, "Zufall" wuerfelt neu. Gespeichert wird erst mit "Fertig". */
 function AvatarEditor({ player, onSave, onClose }) {
   const [cfg, setCfg] = useState(() => avatarCfgOf(player));
-  const set = (k, v) => { haptic(4); setCfg((c) => ({ ...c, [k]: v })); };
+  const set = (k, v) => {
+    haptic(4);
+    setCfg((c) => {
+      const next = { ...c, [k]: v };
+      // Weiblich: weiblichere Voreinstellung (laengere Haare, passende Frisur) und kein Bart; weiter alles aenderbar
+      if (k === "gender" && v === "f") {
+        if (next.len < 2) next.len = 2;
+        if (["spiky", "mohawk"].includes(next.style)) next.style = "straight";
+        next.facial = "none";
+      }
+      return next;
+    });
+  };
   return (
     <div className="fixed top-0 left-0 right-0 bg-black/90 z-[70] flex items-end justify-center lg:items-center p-0" style={{ height: "var(--app-height, 100dvh)", top: "var(--app-offset-top, 0px)" }} onClick={onClose}>
       <div className="glass border border-rim/10 rounded-t-[28px] w-full lg:rounded-[28px] lg:max-w-[440px] max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-top)-1rem)] flex flex-col overflow-hidden rise-in font-body" onClick={(e) => e.stopPropagation()}>
