@@ -102,7 +102,22 @@ await pick("facial", "mustache");
 console.log("Bart bleibt danach von Hand waehlbar:", await pressed("facial", "mustache"));
 { // Lange Haare fallen HINTER das Oberteil: das Oberteil steht im SVG nach den Haaren
   const svgOf = async () => decodeURIComponent((await prev()).replace(/^data:image\/svg\+xml;utf8,/, ""));
-  await pick("gender", "f"); await pick("len", "3"); await pick("style", "straight");
+  { // Fantasie: neue Kopfteile, Ruecken und Gesicht
+  const n = (k) => page.locator(`button[data-av="${k}"]`).count();
+  console.log("Fantasie: Kopfschmuck hat 12 Auswahlen, Ruecken 6, Gesicht 8 (" + await n("head") + "/" + await n("back") + "/" + await n("face") + ")", await n("head") === 12 && await n("back") === 6 && await n("face") === 8);
+  const sv = async () => decodeURIComponent((await prev()).replace(/^data:image\/svg\+xml;utf8,/, ""));
+  const base = await sv();
+  let allDiff = true;
+  for (const [k, vals] of [["head", ["horns", "unicorn", "halo", "antennae", "mushroom", "wizard", "pirate", "headphones"]], ["back", ["fairy", "dragon", "angel", "butterfly", "cape"]], ["face", ["freckles", "stars", "bolt", "scar", "clown", "cyclops", "fangs"]]]) {
+    for (const v of vals) { await pick(k, v); const s = await sv(); if (s === base) allDiff = false; await pick(k, "none"); }
+  }
+  console.log("Fantasie: jede neue Auswahl veraendert die Figur sichtbar:", allDiff);
+  await pick("face", "cyclops");
+  const cy = await sv();
+  console.log("Zyklop: ein grosses Auge statt zwei (gruene Iris, nur ein Auge):", (cy.match(/fill="#3FA66B"/g) || []).length === 1);
+  await pick("face", "none");
+}
+await pick("gender", "f"); await pick("len", "3"); await pick("style", "straight");
   const sv = await svgOf();
   const iShirt = sv.indexOf('d="M14 96'), iHair = sv.indexOf('d="M25 46c-4 26');
   console.log("Lange Haare liegen hinter dem Oberteil (Haare vor Oberteil im SVG):", iHair > -1 && iShirt > -1 && iHair < iShirt);
