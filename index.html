@@ -4047,7 +4047,7 @@ const avatarSvg = (c) => {
   const top = "M27 44c-3-20 9-31 21-31s24 11 21 31c-3-8-9-14-21-14s-18 6-21 14z";
   const len = c.len, st = c.style, tied = st === "bun" && len > 0, own = AV_OWN_STYLES.includes(st);
   // Haare hinter dem Kopf
-  let back = "";
+  let back = "", backFront = ""; // back: hinter dem Oberteil (lange Haare fallen hinter die Kleidung), backFront: liegt ueber der Schulter (Zoepfe, Geflochtenes)
   if (!tied && !own && len === 2) back = `<path d="M26 48c-3 14-1 22 5 26h34c6-4 8-12 5-26-3-18-12-26-22-26s-19 8-22 26z" fill="${hair}"/>`;
   if (!tied && !own && len === 3) back = `<path d="M25 46c-4 26 0 40 6 46h34c6-6 10-20 6-46-3-20-14-27-23-27s-20 7-23 27z" fill="${hair}"/>`;
   const band = (x, y) => `<circle cx="${x}" cy="${y}" r="3" fill="${c.shirt}"/>`;
@@ -4055,8 +4055,8 @@ const avatarSvg = (c) => {
   if (len > 0) {
     if (st === "bob") back = `<path d="M25 46c-2 14 0 22 4 26 6 2 12 2 19 2s13 0 19-2c4-4 6-12 4-26-3-18-12-26-23-26s-20 8-23 26z" fill="${hair}"/>`;
     if (st === "ponytail") back = `<ellipse cx="75" cy="${40 + L * 0.6}" rx="7" ry="${L + 6}" transform="rotate(-10 75 40)" fill="${hair}"/>${band(68, 29)}`;
-    if (st === "pigtails") back = [[22, -1], [74, 1]].map(([x, d]) => `<ellipse cx="${x}" cy="${50 + L * 0.5}" rx="6" ry="${L + 5}" transform="rotate(${d * 8} ${x} 50)" fill="${hair}"/>`).join("") + band(27, 40) + band(69, 40);
-    if (st === "braid") back = Array.from({ length: Math.round(L / 3.4) + 3 }, (_, i) => `<circle cx="${70 + (i % 2 ? 2 : -1)}" cy="${54 + i * 5.2}" r="4.2" fill="${hair}"/>`).join("") + band(70, 54 + (Math.round(L / 3.4) + 3) * 5.2);
+    if (st === "pigtails") backFront = [[22, -1], [74, 1]].map(([x, d]) => `<ellipse cx="${x}" cy="${50 + L * 0.5}" rx="6" ry="${L + 5}" transform="rotate(${d * 8} ${x} 50)" fill="${hair}"/>`).join("") + band(27, 40) + band(69, 40);
+    if (st === "braid") backFront = Array.from({ length: Math.round(L / 3.4) + 3 }, (_, i) => `<circle cx="${70 + (i % 2 ? 2 : -1)}" cy="${54 + i * 5.2}" r="4.2" fill="${hair}"/>`).join("") + band(70, 54 + (Math.round(L / 3.4) + 3) * 5.2);
     if (st === "afro") back = `<circle cx="48" cy="38" r="${[0, 25, 29, 33][len]}" fill="${hair}"/>`;
   }
   // Haare vor dem Kopf
@@ -4066,9 +4066,13 @@ const avatarSvg = (c) => {
       const pts = [[30, 28], [38, 19], [48, 16], [58, 19], [66, 28], [28, 38], [68, 38]];
       if (len >= 2) pts.push([26, 52], [70, 52]);
       if (len >= 3) pts.push([25, 64], [71, 64], [27, 76], [69, 76]);
-      front = pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="8" fill="${hair}"/>`).join("");
+      // untere Locken fallen hinter das Oberteil, obere stehen vor dem Kopf
+      const circ = ([x, y]) => `<circle cx="${x}" cy="${y}" r="8" fill="${hair}"/>`;
+      front = pts.filter(([, y]) => y < 60).map(circ).join(""); back += pts.filter(([, y]) => y >= 60).map(circ).join("");
     } else if (st === "wavy") {
-      front = `<path d="${top}" fill="${hair}"/>` + (len >= 2 ? [[26, 52], [70, 52], [25, 62], [71, 62]].concat(len >= 3 ? [[26, 72], [70, 72], [28, 82], [68, 82]] : []).map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5.5" fill="${hair}"/>`).join("") : "");
+      const wv = len >= 2 ? [[26, 52], [70, 52], [25, 62], [71, 62]].concat(len >= 3 ? [[26, 72], [70, 72], [28, 82], [68, 82]] : []) : [];
+      const wc = ([x, y]) => `<circle cx="${x}" cy="${y}" r="5.5" fill="${hair}"/>`;
+      front = `<path d="${top}" fill="${hair}"/>` + wv.filter(([, y]) => y < 60).map(wc).join(""); back += wv.filter(([, y]) => y >= 60).map(wc).join("");
     } else if (st === "bangs") front = `<path d="${top}" fill="${hair}"/><path d="M27 44c-3-20 9-31 21-31s24 11 21 31q-3-8-8-11q-13-5-26 0q-5 3-8 11z" fill="${hair}"/>`;
     else if (st === "sidepart") front = `<path d="${top}" fill="${hair}"/><path d="M28 40c-1-16 8-27 21-27 14 0 22 12 20 30-2-7-4-11-8-14-9 2-19-1-26-8-1 8-4 14-7 19z" fill="${hair}"/>`;
     else if (st === "bob") front = `<path d="${top}" fill="${hair}"/><path d="M28 42c0-16 8-27 20-27s20 11 20 27q-4-9-9-12q-11-4-22 0q-6 3-9 12z" fill="${hair}"/>`;
@@ -4106,9 +4110,10 @@ const avatarSvg = (c) => {
     : c.head === "flower" ? `<g transform="translate(64 22)">${[0, 72, 144, 216, 288].map((a) => `<circle cx="0" cy="-4.5" r="3.4" fill="#F27BA7" transform="rotate(${a})"/>`).join("")}<circle r="2.6" fill="#F2B632"/></g>` : "";
   const shoulders = child ? "M18 96c2-12 14-19 30-19s28 7 30 19z" : c.gender === "m" ? "M4 96c2-18 15-26 44-26s42 8 44 26z" : c.gender === "f" ? "M14 96c2-17 15-25 34-25s32 8 34 25z" : "M10 96c2-18 17-26 38-26s36 8 38 26z";
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect width="96" height="96" fill="${c.bg}"/>`
+    + `<g transform="translate(0 ${dy})">${back}</g>`
     + `<path d="${shoulders}" fill="${c.shirt}"/>`
     + `<rect x="42" y="${child ? 66 : 60}" width="12" height="${child ? 14 : 14}" rx="4" fill="${skin}"/><rect x="42" y="${child ? 66 : 60}" width="12" height="14" rx="4" fill="#000" opacity=".12"/>`
-    + `<g transform="translate(0 ${dy})">${back}${ears}<ellipse cx="48" cy="45" rx="${rx}" ry="${child ? 22 : 23}" fill="${skin}"/>${facial}${front}${headwear}`
+    + `<g transform="translate(0 ${dy})">${backFront}${ears}<ellipse cx="48" cy="45" rx="${rx}" ry="${child ? 22 : 23}" fill="${skin}"/>${facial}${front}${headwear}`
     + `${blush}${eyes}${lashes}${brows}${wrinkles}${glasses}${mouth}</g></svg>`;
 };
 const avatarUriCache = {};

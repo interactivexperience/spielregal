@@ -100,6 +100,15 @@ await pick("gender", "n"); await pick("gender", "f");
 console.log("Weiblich erneut gewaehlt: gewaehlte weibliche Frisur (Geflochten) bleibt:", await pressed("style", "braid") && await pressed("len", "3"));
 await pick("facial", "mustache");
 console.log("Bart bleibt danach von Hand waehlbar:", await pressed("facial", "mustache"));
+{ // Lange Haare fallen HINTER das Oberteil: das Oberteil steht im SVG nach den Haaren
+  const svgOf = async () => decodeURIComponent((await prev()).replace(/^data:image\/svg\+xml;utf8,/, ""));
+  await pick("gender", "f"); await pick("len", "3"); await pick("style", "straight");
+  const sv = await svgOf();
+  const iShirt = sv.indexOf('d="M14 96'), iHair = sv.indexOf('d="M25 46c-4 26');
+  console.log("Lange Haare liegen hinter dem Oberteil (Haare vor Oberteil im SVG):", iHair > -1 && iShirt > -1 && iHair < iShirt);
+  await pick("style", "curly"); const sc = await svgOf();
+  console.log("Lockig/lang: untere Locken hinter dem Oberteil, obere vor dem Kopf:", sc.indexOf('cy="76"') > -1 && sc.indexOf('cy="76"') < sc.indexOf('d="M14 96') && sc.indexOf('cy="16"') > sc.indexOf('d="M14 96'));
+}
 await pick("gender", "f"); await pick("len", "3"); await pick("ears", "bunny"); await pick("glasses", "round"); await pick("head", "crown"); await pick("style", "curly");
 await pick("len", "0");
 console.log("Kahl: Reihe 'Haarstil' verschwindet:", await page.locator('button[data-av="style"]').count() === 0);
