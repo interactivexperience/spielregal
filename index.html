@@ -5385,6 +5385,11 @@ function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, o
   }, []);
   const [images, setImages] = useState(initial ? initial.images || [] : []);
   const [quantity, setQuantity] = useState(1);
+  // Erweiterungen, mit denen gespielt wurde (nur verknuepfte Erweiterungen des gewaehlten Spiels)
+  const [expansionIds, setExpansionIds] = useState(initial ? initial.expansionIds || [] : []);
+  const gameExpansions = selectedGame ? games.filter((g) => g.expansionOf === selectedGame.id).sort((a, b) => a.name.localeCompare(b.name, "de")) : [];
+  const toggleExpansion = (id) => { haptic(6); setExpansionIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])); };
+  useEffect(() => { setExpansionIds((prev) => { const ok = prev.filter((id) => gameExpansions.some((g) => g.id === id)); return ok.length === prev.length ? prev : ok; }); }, [selectedGame && selectedGame.id]);
 
   const filtered = useMemo(() => {
     const sorted = [...games].sort((a, b) => a.name.localeCompare(b.name, "de"));
@@ -5455,15 +5460,16 @@ function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, o
     const mergedPlayers = profileNames.join(", ");
     const winnerName = winnerIds.map((id) => (playerProfiles.find((p) => p.id === id) || {}).name).filter(Boolean).join(", ");
     const cleanScores = Object.fromEntries(Object.entries(scores).filter(([id, v]) => playerIds.includes(id) && String(v).trim() !== ""));
+    const expField = expansionIds.length ? { expansionIds: expansionIds.filter((id) => gameExpansions.some((g) => g.id === id)) } : {};
     if (!initial && quantity > 1) {
       const batch = Array.from({ length: quantity }, () => ({
-        id: uid(), gameId: selectedGame.id, gameName: selectedGame.name, date, mode, players: mergedPlayers, playerIds, winner: winnerName, scores: cleanScores, notes, images,
+        id: uid(), gameId: selectedGame.id, gameName: selectedGame.name, date, mode, players: mergedPlayers, playerIds, winner: winnerName, scores: cleanScores, notes, images, ...expField,
       }));
       onSave(batch);
     } else {
       // Spiel inzwischen geloescht: die gesicherte Spielkopie (Cover) der Partie behalten.
       const keepSnap = initial && initial.gameSnap && initial.gameId === selectedGame.id && !games.some((g) => g.id === selectedGame.id) ? { gameSnap: initial.gameSnap } : {};
-      onSave({ id: initial ? initial.id : uid(), gameId: selectedGame.id, gameName: selectedGame.name, date, mode, players: mergedPlayers, playerIds, winner: winnerName, scores: cleanScores, notes, images, ...keepSnap });
+      onSave({ id: initial ? initial.id : uid(), gameId: selectedGame.id, gameName: selectedGame.name, date, mode, players: mergedPlayers, playerIds, winner: winnerName, scores: cleanScores, notes, images, ...expField, ...keepSnap });
     }
   };
 
@@ -5631,6 +5637,22 @@ function PlayFormModal({ games, plays, playerProfiles, onAddGame, onAddPlayer, o
                             <Crown size={15} fill={isWinner ? "currentColor" : "none"} />
                           </button>
                         </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              {gameExpansions.length > 0 && (
+                <div data-play-expansions>
+                  <label className="block text-[11px] text-dim mb-1.5">Erweiterungen <span className="text-[10px]">({expansionIds.length === 0 ? "ohne Erweiterung gespielt" : `mit ${expansionIds.length} ${expansionIds.length === 1 ? "Erweiterung" : "Erweiterungen"} gespielt`})</span></label>
+                  <div className="flex flex-wrap gap-2">
+                    {gameExpansions.map((g) => {
+                      const sel = expansionIds.includes(g.id);
+                      return (
+                        <button key={g.id} type="button" data-play-exp={g.id} aria-pressed={sel} onClick={() => toggleExpansion(g.id)}
+                          className={`min-h-10 px-3.5 py-1.5 rounded-full text-sm border text-left ${sel ? "bg-accent text-bg border-accent font-medium" : "bg-surface border-line text-ink"}`}>
+                          {sel && <Check size={13} className="inline -mt-0.5 mr-1" />}{g.name}
+                        </button>
                       );
                     })}
                   </div>
@@ -8661,6 +8683,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                       <div className="flex-1 min-w-0">
                         <p className="text-ink font-body truncate">{formatDate(p.date)}{p.gameId !== rootId ? ` · ${p.gameName}` : ""}</p>
                         <p className="text-dim text-xs font-body">{modeLabel[p.mode]}{p.winner ? <> · Sieger: <span className="text-info font-medium">{p.winner}</span></> : ""}</p>
+                        {playExpansionLine(p, games) && <p data-play-exp-line className="text-dim text-xs font-body mt-0.5">{playExpansionLine(p, games)}</p>}
                         {p.notes && p.notes.trim() && <p className="text-ink text-xs font-body mt-0.5">{p.notes}</p>}
                       </div>
                       <ChevronRight size={16} className="text-dim shrink-0" />
@@ -8696,6 +8719,7 @@ function PlayLog({ plays, games, onAdd, onEdit, onDelete, demoMode, playerProfil
                       <div className="flex-1 min-w-0">
                         <p className="text-ink font-body truncate">{p.gameName}</p>
                         <p className="text-dim text-xs font-body">{modeLabel[p.mode]}{p.winner ? <> · Sieger: <span className="text-info font-medium">{p.winner}</span></> : ""}</p>
+                        {playExpansionLine(p, games) && <p data-play-exp-line className="text-dim text-xs font-body mt-0.5">{playExpansionLine(p, games)}</p>}
                         {p.notes && p.notes.trim() && <p className="text-ink text-xs font-body mt-0.5">{p.notes}</p>}
                       </div>
                       <ChevronRight size={16} className="text-dim shrink-0" />
@@ -9177,6 +9201,12 @@ function digitaleUmsetzung(game) {
     (game.bggId && u.bggId && String(game.bggId) === u.bggId) || u.titel.test(game.name || "") || u.titel.test(game.germanName || "")) || null;
 }
 
+// Erweiterungen einer Partie als Text ("mit 2 Erweiterungen: A, B"); leer, wenn ohne
+const playExpansionLine = (p, games) => {
+  const ids = (p && p.expansionIds) || []; if (!ids.length) return "";
+  const names = ids.map((id) => ((games || []).find((g) => g.id === id) || {}).name).filter(Boolean);
+  return `mit ${ids.length} ${ids.length === 1 ? "Erweiterung" : "Erweiterungen"}${names.length ? ": " + names.join(", ") : ""}`;
+};
 const DIGITAL_INBOX_KEY = "spielregal:inbox:plays";
 // Selbst gebaute Browser-Spiele (nur durch Browser-Partien angelegt, Status "Nur gespielt") gehoeren nicht in die
 // Spielesammlung: weder angezeigt noch mitgezaehlt. Echte Exemplare (Besitz) und normal gespielte Spiele bleiben.
