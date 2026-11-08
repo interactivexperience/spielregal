@@ -1245,7 +1245,7 @@ const PLAYER_TYPE_DESCRIPTIONS = {
 
 /* ---------------- COMPLEXITY CLASSIFICATION ---------------- */
 // Based on community consensus around BGG's "weight" (1-5): under ~2.0 reads as a family
-// game, ~2.0-3.5 as an enthusiast ("Kenner") game, above that as an expert game. Party games
+// game, ~2.0-3.65 as an enthusiast ("Kenner") game, above that as an expert game (Ark Nova ~3.8 gilt als Expertenspiel). Party games
 // are classified by genre (BGG category) rather than weight, since they're often light but
 // play very differently from a family strategy game.
 function formatBestPlayers(game) {
@@ -1263,9 +1263,9 @@ function complexityLabel(game) {
   if (w < 2.0) return "Familienspiel";
   if (w < 2.5) return "Gehobenes Familienspiel";
   if (w < 3.0) return "Leichtes Kennerspiel";
-  if (w < 3.5) return "Kennerspiel";
-  if (w < 4.0) return "Anspruchsvolles Kennerspiel";
-  return "Expertenspiel";
+  if (w < 3.4) return "Kennerspiel";
+  if (w < 3.65) return "Anspruchsvolles Kennerspiel";
+  return "Expertenspiel"; // z.B. Ark Nova (BGG ~3,8), Bitoku, Brass, Gloomhaven
 }
 const COMPLEXITY_TONE = {
   Einsteigerspiel: "teal", Familienspiel: "teal", "Gehobenes Familienspiel": "teal",
@@ -6561,7 +6561,7 @@ function Dashboard({ games, plays, onQuickFilter, onView, onOpenRanking, section
     let complexitySum = 0, complexityCount = 0;
     playedGames.forEach(g => { if (g.complexity) { const c = plays.filter(p => p.gameId === g.id).length; complexitySum += parseFloat(g.complexity) * c; complexityCount += c; } });
     const avgPlayedComplexity = complexityCount ? complexitySum / complexityCount : null;
-    const complexityLabelFromValue = avgPlayedComplexity == null ? null : avgPlayedComplexity < 2 ? "Familienspiel" : avgPlayedComplexity < 3.5 ? "Kennerspiel" : "Expertenspiel";
+    const complexityLabelFromValue = avgPlayedComplexity == null ? null : avgPlayedComplexity < 2 ? "Familienspiel" : avgPlayedComplexity < 3.65 ? "Kennerspiel" : "Expertenspiel";
 
     return { topYear, favCount: favCountEntry ? { count: favCountEntry[0], times: favCountEntry[1] } : null, favCat, favMech, complexityLabel: complexityLabelFromValue, avgPlayedComplexity };
   }, [plays, games]);
