@@ -480,6 +480,10 @@ function scene(k){
     o+='<path d="M140 90l8-14M150 90l8-16M160 90l8-14M132 70l6-10M142 66l6-12" stroke="'+I+'" stroke-width="1.600" fill="none" stroke-linecap="round" opacity=".55"/>';
     o+='<path d="M124 22V4" stroke="'+I+'" stroke-width="2.600"/><path d="M124 4l20 6-20 6z" fill="#E2566B"'+st+'/>';
   }
+  o=o.replace(/<(path|rect|circle|ellipse)([^>]*?) fill="(#[0-9A-Fa-f]{6})" stroke="#2B2535" stroke-width="2.600"([^>]*)\/>/g,function(m,tag,pre,fc,post){
+    var keep=(parseInt(fc.slice(1),16)%3===0),col=keep?I:cmix(fc,'#1d1730',.55),alt=keep?cmix(fc,'#1d1730',.55):I;
+    return '<'+tag+pre+' fill="'+fc+'" stroke="'+col+'" stroke-width="2.600"'+post+'/><'+tag+pre+' fill="none" stroke="'+alt+'" stroke-width="1.100" opacity=".55" transform="translate(1.200 1) rotate(.8 100 55)"'+post+'/>';
+  });
   return '<svg class="scene" viewBox="0 0 200 110" aria-hidden="true">'+o+'</svg>';
 }
 var PIECE={pawn:1,rook:1,bishop:1,knight:1,queen:1,king:1};
