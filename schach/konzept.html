@@ -135,13 +135,16 @@ svg.i.out{stroke:var(--ink);stroke-width:1.1;stroke-linejoin:round}
 .lifeflash svg{font-size:24px}
 
 /* Worlds */
-.worlds{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
-.world{display:flex;gap:14px;align-items:flex-start;background:var(--card);border:3px solid var(--line);border-radius:20px;padding:14px;box-shadow:4px 4px 0 var(--line)}
-.world .em{flex:none;width:58px;height:58px;border-radius:16px;border:3px solid var(--line);display:grid;place-items:center;font-size:34px}
-.world h3{font-size:19px}
-.world .n{font:800 11px Nunito;letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
-.world p{font-size:14px;color:#4a4052}
-.boss{display:inline-block;margin-top:6px;font:800 12px Nunito;background:var(--berry);color:#fff;border-radius:99px;padding:1px 10px;border:2px solid var(--line)}
+.worlds{display:grid;gap:26px 20px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));padding:8px 8px 4px}
+.world{display:flex;flex-direction:column;background:#FFFCF5;border-radius:10px;overflow:hidden;box-shadow:0 0 0 5px #fff,0 0 0 7px var(--ink),6px 10px 0 7px rgba(43,37,53,.22)}
+.world .wh{background:#2D3050;color:#fff;padding:5px 12px;display:flex;justify-content:space-between;align-items:baseline;font:700 17px 'Baloo 2'}
+.world .wh span{font:700 12px Nunito;opacity:.75}
+.world .wart{height:118px;display:grid;place-items:center;border-bottom:3px solid var(--ink);position:relative;overflow:hidden}
+.world .wart:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,transparent 0 9px,rgba(43,37,53,.07) 9px 10px)}
+.world .wart .chr{height:104px;width:auto;position:relative;filter:drop-shadow(3px 4px 0 rgba(43,37,53,.2))}
+.world .wart .scene{height:112px;width:auto;position:relative}
+.world .wb{padding:9px 12px 12px;font-size:14px;color:#4a4052;line-height:1.35}
+.boss{display:inline-block;margin-top:8px;font:800 12px Nunito;background:#D2452B;color:#fff;padding:2px 10px;border-radius:4px;transform:rotate(-1.500deg);box-shadow:2px 2px 0 var(--ink)}
 
 /* Loop */
 .loop{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch}
@@ -439,8 +442,42 @@ var WORLDS=[
  {n:'Eröffnungshafen',ic:'anchor',t:'sky',bg:'#BFE0F5',d:'Die 3 Eröffnungsregeln (Mitte, Entwickeln, Rochieren), 3 einfache Aufbauten.',b:'Kapitän Kreuz'},
  {n:'Endspiel-Gipfel',ic:'mountain',t:'plum',bg:'#E7D7C3',d:'Matt mit Dame+König, Turm-Endspiele, Bauernrennen. Finale: volle Partie gegen „Meister Matt“.',b:'Finale'}
 ];
+
+function scene(k){
+  var I='#2B2535',st=' stroke="'+I+'" stroke-width="2.600" stroke-linejoin="round" stroke-linecap="round"',o='';
+  function nest(c,x,y,w,h){return chr(c).replace('<svg class="chr"','<svg x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'"')}
+  if(k==='grid'){
+    o+='<g transform="translate(100 66) skewX(-16) scale(1 .6)">';
+    for(var a=0;a<8;a++)for(var b=0;b<8;b++)o+='<rect x="'+(-48+a*12)+'" y="'+(-48+b*12)+'" width="12" height="12" fill="'+((a+b)%2?'#6FB24A':'#E3F0A8')+'"/>';
+    o+='<rect x="-48" y="-48" width="96" height="96" fill="none" stroke="'+I+'" stroke-width="3.600"/></g>'+nest('pawn',66,10,34,46)+nest('knight',100,12,34,46);
+  }
+  if(k==='swords'){
+    o+='<ellipse cx="100" cy="66" rx="82" ry="30" fill="#E4D2B0"'+st+'/><ellipse cx="100" cy="62" rx="64" ry="20" fill="#EBCB82"'+st+'/>';
+    o+='<g transform="translate(100 62) skewX(-14) scale(1 .45)">';
+    for(var c=0;c<4;c++)for(var d=0;d<4;d++)o+='<rect x="'+(-28+c*14)+'" y="'+(-28+d*14)+'" width="14" height="14" fill="'+((c+d)%2?'#C9A26B':'#F7E9C8')+'"/>';
+    o+='</g>';
+    for(var i=-3;i<=3;i++)o+='<path d="M'+(100+i*20-4)+' '+(88+Math.abs(i)*-1)+'v-9a4 4 0 0 1 8 0v9z" fill="#5B4B6B"/>';
+    o+='<path d="M18 62V30M182 62V30" stroke="'+I+'" stroke-width="2.600"/><path d="M18 30l22 7-22 7z" fill="#E2566B"'+st+'/><path d="M182 30l-22 7 22 7z" fill="#6CB4EE"'+st+'/>';
+  }
+  if(k==='anchor'){
+    o+='<path d="M0 78Q20 70 40 78T80 78T120 78T160 78T200 78V110H0z" fill="#4FB8D6"'+st+'/><path d="M10 92q8-5 16 0t16 0M90 98q8-5 16 0t16 0" stroke="#E8FAFF" stroke-width="2.400" fill="none" stroke-linecap="round"/>';
+    o+='<path d="M60 70L108 52L112 62L66 82Z" fill="#C99A64"'+st+'/>';
+    o+='<path d="M150 80V28H166V80z" fill="#fff"'+st+'/><path d="M150 40H166V52H150zM150 62H166V74H150z" fill="#E2566B"/><path d="M146 28L158 8 170 28z" fill="#D2452B"'+st+'/><path d="M148 80h20" stroke="'+I+'" stroke-width="3"/>';
+    o+='<path d="M24 82q14 6 30 0l-4-9H28z" fill="#F2A66E"'+st+'/><path d="M40 73V44l16 24z" fill="#fff"'+st+'/>';
+  }
+  if(k==='mountain'){
+    o+='<ellipse cx="100" cy="100" rx="96" ry="9" fill="'+I+'" opacity=".25"/>';
+    o+='<path d="M10 100L58 44L96 100Z" fill="#E88A5C"'+st+'/><path d="M58 44L96 100L72 100z" fill="#B44B38"/><path d="M58 44L46 62l8-3 6 5 6-4z" fill="#fff"'+st+'/>';
+    o+='<path d="M64 100L124 22L190 100Z" fill="#E88A5C"'+st+'/><path d="M124 22L190 100L132 100z" fill="#B44B38"/><path d="M124 22L106 50l10-4 8 7 9-6z" fill="#fff"'+st+'/>';
+    o+='<path d="M140 90l8-14M150 90l8-16M160 90l8-14M132 70l6-10M142 66l6-12" stroke="'+I+'" stroke-width="1.600" fill="none" stroke-linecap="round" opacity=".55"/>';
+    o+='<path d="M124 22V4" stroke="'+I+'" stroke-width="2.600"/><path d="M124 4l20 6-20 6z" fill="#E2566B"'+st+'/>';
+  }
+  return '<svg class="scene" viewBox="0 0 200 110" aria-hidden="true">'+o+'</svg>';
+}
+var PIECE={pawn:1,rook:1,bishop:1,knight:1,queen:1,king:1};
 document.getElementById('worldlist').innerHTML=WORLDS.map(function(w,i){
-  return '<div class="world"><div class="em" style="background:'+w.bg+'">'+icon(w.ic,w.t)+'</div><div><div class="n">Welt '+(i+1)+'</div><h3>'+w.n+'</h3><p>'+w.d+'</p><span class="boss">Boss: '+w.b+'</span></div></div>';
+  var art=PIECE[w.ic]?chr(w.ic):scene(w.ic);
+  return '<div class="world"><div class="wh">'+w.n+'<span>Welt '+(i+1)+'</span></div><div class="wart" style="background:'+w.bg+'">'+art+'</div><div class="wb">'+w.d+'<br><span class="boss">Boss: '+w.b+'</span></div></div>';
 }).join('');
 
 /* ---------- Welt-Generator ---------- */
@@ -537,6 +574,17 @@ document.getElementById('worldlist').innerHTML=WORLDS.map(function(w,i){
     else TX.push('<path d="M'+f(tx)+' '+f(ty)+'v-4M'+f(tx-2)+' '+f(ty)+'l-1-3M'+f(tx+2)+' '+f(ty)+'l1-3" stroke="'+dk+'" stroke-width="1" fill="none" stroke-linecap="round" opacity=".5"/>');
   }
   G.push(TX.join(''));
+  function mass(cx,cy,rx,ry,n){
+    var d='',d2='',k;
+    for(k=0;k<n;k++){var a=R()*6.283,r=Math.sqrt(R()),x=cx+Math.cos(a)*rx*r,y=cy+Math.sin(a)*ry*r;
+      if(x<4||x>W-4||y<4||y>H-4||water(x,y,2)||mount(x,y)||dpath(road.S,x,y)<9)continue;
+      var zz=false;for(var q=0;q<ZONES.length;q++){if(dist(x,y,ZONES[q][0],ZONES[q][1])<ZONES[q][2]-6){zz=true;break}}if(zz)continue;
+      var h=4+R()*4.500;d+='M'+f(x)+' '+f(y)+'l'+f(-h*.4)+' '+f(-h)+'l'+f(h*.4)+' '+f(h*.3)+'l'+f(h*.4)+' '+f(-h*.3)+'z';d2+='M'+f(x-h*.2)+' '+f(y-h*.25)+'l'+f(-h*.2)+' '+f(-h*.55);
+    }
+    var base=colorAt(cy);
+    return '<path d="'+d+'" fill="'+mix(base,'#0e1a22',.62)+'" opacity=".82"/><path d="'+d2+'" stroke="'+mix(base,'#ffffff',.4)+'" stroke-width=".8" fill="none" opacity=".65" stroke-linecap="round"/>';
+  }
+  [[75,300,62,40,170],[300,372,84,50,230],[540,330,40,52,130],[70,560,62,62,210],[300,560,72,62,190],[540,722,52,72,210],[92,782,60,42,130],[430,900,132,102,440],[300,1062,82,62,210],[102,1282,72,62,170],[330,1392,72,42,150],[500,1192,62,52,150],[40,1452,60,40,110],[500,560,52,52,120],[240,722,62,42,130],[182,952,62,52,130],[250,200,46,30,90],[60,440,34,40,80]].forEach(function(m){G.push(mass(m[0],m[1],m[2],m[3],m[4]))});
   // Papierkorn (ein Pfad, viele Punkte)
   var gd='',gl='';
   for(i=0;i<2600;i++){var gx=rr(2,W-2),gy=rr(2,H-2);if(R()<.7)gd+='M'+f(gx)+' '+f(gy)+'h.1';else gl+='M'+f(gx)+' '+f(gy)+'h.1'}
