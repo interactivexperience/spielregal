@@ -149,7 +149,7 @@ Bei richtigem Zug: Puls, Ton, Fortschrittsbalken.
 
 | # | Inhalt | Abnahme |
 |---|---|---|
-| M1 | Engine + Perft-Tests + Bot-Stufen | `schach-engine.mjs` grün |
+| M1 ✓ | Engine + Perft-Tests + Bot-Stufen | `schach-engine.mjs` grün (267 Prüfungen, mit `PERFT_DEEP=1` 273) |
 | M2 | Brett-UI: Tippen-Tippen, Animationen, Töne, Sandbox-Stellungen | im Browser spielbar |
 | M3 | Lektionsplayer + Daten Welt 1 + Belohnung | `schach-lessons.mjs` + Smoke grün |
 | M4 | Welt 2 + Bauern-Duell + Bosse | Smoke grün |
