@@ -1,7 +1,13 @@
 <!doctype html>
 <html lang="de">
 <head>
+
 <meta charset="utf-8">
+<script>/* Theme der Spielregal-App übernehmen (spielregal:theme = light | dark | system) */
+(function(){var K="spielregal:theme";function r(){try{return localStorage.getItem(K)||"system"}catch(e){return"system"}}
+function a(){var m=r(),d=m==="dark"||(m==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light"}
+a();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",a)}catch(e){}
+addEventListener("storage",function(e){if(e.key===K)a()});addEventListener("pageshow",a)})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#F8EEDC">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,6 +18,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Caveat+Brush&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#1A1A1A;--paper:#F8EEDC;--white:#FFF8EC;--gray:#EADFCB;--muted:#6b665d;--pink:#FF5FA8;--peach:#F6B48F;--blue:#4A8FE0;--orange:#F08A2E;--stamp:#D2452B}
+/* --- Dark Mode (folgt der Spielregal-App): Kreidetafel --- */
+:root[data-theme="dark"]{color-scheme:dark;--ink:#F3EBDC;--paper:#1C1A17;--white:#2A2622;--gray:#38332C;--muted:#ABA392}
+:root[data-theme="dark"] .btn,:root[data-theme="dark"] .chip.on{color:#1A1A1A}
+:root[data-theme="dark"] .btn.white{color:var(--ink)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;position:fixed;inset:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
 body{overflow-x:hidden;background:var(--paper);color:var(--ink);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior-y:contain}
@@ -69,7 +79,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .card.open{box-shadow:0 0 0 2px #F4A6B8}
 .cards.wrapc{flex-wrap:wrap;overflow:visible;justify-content:center;gap:6px}
 .valrow{display:flex;gap:5px;flex-wrap:wrap}
-.vb{min-width:34px;height:34px;border:2px solid var(--ink);border-radius:8px;background:#fff;font-weight:800}
+.vb{min-width:34px;height:34px;border:2px solid var(--ink);border-radius:8px;background:var(--white);font-weight:800}
 .vb.on{background:var(--ink);color:#fff}
 .tp.selc .card{outline:3px solid #F4A6B8;outline-offset:2px}
 .si{display:inline-block;width:18px;height:18px;vertical-align:middle;margin-right:4px}
@@ -1534,7 +1544,7 @@ function viewGame() {
   <div class="wrap">
     <div class="opps">${S.players.map(oppRow).join('')}</div>
     <div class="table"><span class="lbl">${live ? 'Stich' : 'letzter Stich'}</span>${pen ? `<span class="pen">${pen > 0 ? '+' : ''}${pen} Antr.</span>` : ''}
-      <div class="trick">${shown.trick.map(t => `<div class="tp ${t.pi === shown.w && shown.done ? 'win' : ''}">${tcard(t)}<div class="who">${esc(short(nm(t.pi)))}</div>${t.zero ? '<span class="pw">= 0</span>' : ''}</div>`).join('') || `<p style="text-align:center;font-size:13px;margin-top:40px;background:#fff">${S.broken ? 'Die Prinzen haben sich auf den Ball geschlichen.' : 'Noch keine Karte gespielt. Prinzen dürfen noch nicht ausgespielt werden.'}</p>`}</div>
+      <div class="trick">${shown.trick.map(t => `<div class="tp ${t.pi === shown.w && shown.done ? 'win' : ''}">${tcard(t)}<div class="who">${esc(short(nm(t.pi)))}</div>${t.zero ? '<span class="pw">= 0</span>' : ''}</div>`).join('') || `<p style="text-align:center;font-size:13px;margin-top:40px;background:var(--white)">${S.broken ? 'Die Prinzen haben sich auf den Ball geschlichen.' : 'Noch keine Karte gespielt. Prinzen dürfen noch nicht ausgespielt werden.'}</p>`}</div>
       ${shown.trick.length && !shown.trick.some(t => t.down) ? `<p class="why">${shown.alice ? 'Alice hat den Stich zurückverteilt.' : trickWhy(shown.trick, shown.w, shown.done)}</p>` : ''}
       ${S.gift && S.gift.length ? `<p class="why">Hochzeitsgeschenk: ${S.gift.length} verdeckte Karten gehen an den Gewinn dieses Stichs.</p>` : ''}
       ${S.target != null ? `<p class="why">Zielsumme ${S.target} · im Stich bisher ${S.trick.reduce((s, t) => s + (t.zero ? 0 : val(t.c)), 0)}</p>` : ''}

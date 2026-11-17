@@ -1,7 +1,13 @@
 <!doctype html>
 <html lang="de">
 <head>
+
 <meta charset="utf-8">
+<script>/* Theme der Spielregal-App übernehmen (spielregal:theme = light | dark | system) */
+(function(){var K="spielregal:theme";function r(){try{return localStorage.getItem(K)||"system"}catch(e){return"system"}}
+function a(){var m=r(),d=m==="dark"||(m==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light"}
+a();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",a)}catch(e){}
+addEventListener("storage",function(e){if(e.key===K)a()});addEventListener("pageshow",a)})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#F8ECE1">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,6 +26,17 @@
   --leaf:#5BA35A; --sage:#A8C66C; --mint:#DCE3EC; --forest:#2B3245; --sky:#9CC3EC; --blue:#3E64B8; --teal:#7FC9C9; --orange:#F07A2A;
   --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 -.25'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
 }
+/* --- Dark Mode (folgt der Spielregal-App) --- */
+:root[data-theme="dark"]{color-scheme:dark;--bg:#14161D;--cream:#1F2330;--card:#1F2330;--ink:#E6E8F1;--muted:#98A0B6;--line:#313647;--navy:#E6E8F1;--forest:#E6E8F1;--mint:#2A3142;--dusk:#4B6489;--slate:#8FA3D6}
+:root[data-theme="dark"] .btn{color:#14161D}
+:root[data-theme="dark"] .btn.white{color:var(--ink)}
+:root[data-theme="dark"] .banner.mine{color:#fff}
+:root[data-theme="dark"] .bar{background:rgba(31,35,48,.96);box-shadow:0 -4px 20px rgba(0,0,0,.35)}
+:root[data-theme="dark"] .rondel .trk{border-color:#262B3A}
+:root[data-theme="dark"] .rondel .space,:root[data-theme="dark"] .zone{color:#2B3245}
+:root[data-theme="dark"] .space .sn,:root[data-theme="dark"] .scene .scap{color:#2B3245}
+:root[data-theme="dark"] .scene .scap span{color:#2B3245}
+:root[data-theme="dark"] .banner.mine .small{color:#DCE6F5}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;position:fixed;inset:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
 body{background:var(--bg);color:var(--ink);font:15px/1.45 "DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior-y:contain;overflow-x:hidden}
@@ -284,7 +301,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .top .banner.mine{background:rgba(142,169,200,.8)}
 .pickhint{font-size:13px;margin:2px 0 10px}
 .bogen{background:var(--bg);border-radius:22px;padding:2px 10px 12px;margin:0 -6px}
-.box.live{background:#fff;color:var(--navy);box-shadow:0 0 0 2.5px var(--navy);animation:boxpulse 1.2s ease-in-out infinite;cursor:pointer;position:relative;z-index:1}
+.box.live{background:var(--card);color:var(--navy);box-shadow:0 0 0 2.5px var(--navy);animation:boxpulse 1.2s ease-in-out infinite;cursor:pointer;position:relative;z-index:1}
 @keyframes boxpulse{50%{box-shadow:0 0 0 2.5px var(--navy),0 0 0 6px rgba(127,163,198,.55)}}
 .nopick{opacity:.38;filter:grayscale(.7)}
 .pick > .rh, .per.pick b{color:var(--navy)}

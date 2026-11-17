@@ -1,7 +1,13 @@
 <!doctype html>
 <html lang="de">
 <head>
+
 <meta charset="utf-8">
+<script>/* Theme der Spielregal-App übernehmen (spielregal:theme = light | dark | system) */
+(function(){var K="spielregal:theme";function r(){try{return localStorage.getItem(K)||"system"}catch(e){return"system"}}
+function a(){var m=r(),d=m==="dark"||(m==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light"}
+a();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",a)}catch(e){}
+addEventListener("storage",function(e){if(e.key===K)a()});addEventListener("pageshow",a)})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#F7EBDD">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,6 +21,10 @@
   --h0:#D6CEEA;--h1:#F6A8BE;--h2:#F58FA0;--h3:#F7794F;--h4:#F2502E;--h5:#E0371F;--h6:#B81E1A;
   --r-pill:999px;--r-card:24px;--r-die:15px;
 }
+/* --- Dark Mode (folgt der Spielregal-App): Weinkeller --- */
+:root[data-theme="dark"]{color-scheme:dark;--ground:#3A1D27;--paper:#24121A;--ink:#F7E6D6}
+:root[data-theme="dark"] .btn{color:#fff}
+:root[data-theme="dark"] .btn.alt{background:var(--paper);color:var(--ink)}
 *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
 html{background:var(--paper)}
 /* Seite selbst scrollt nie (nur Bereiche darin): kein Bounce, kein iOS-Weichzeichner unter der Statusleiste */
@@ -197,6 +207,9 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .coach{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
 .coach button,.coach a{touch-action:manipulation;cursor:pointer}
 .coach::before{content:"";position:absolute;top:4px;left:50%;width:32px;height:4px;margin-left:-16px;border-radius:4px;background:currentColor;opacity:.22;pointer-events:none}
+/* Dark Mode: Text auf farbigen Flächen bleibt dunkel */
+:where(:root[data-theme="dark"]) :is(.ann,.opp.cur,.plc.pick,.ord.can,.card.can,.p-pink,.p-lilac,.p-lime,.bchips .pill.on,.die.h1,.die.h2,.die.h3,.opt:active,.chip.on){color:#3B1220}
+:where(:root[data-theme="dark"]) .ann.me,:where(:root[data-theme="dark"]) .opp.cur{color:#3B1220}
 </style>
 </head>
 <body>

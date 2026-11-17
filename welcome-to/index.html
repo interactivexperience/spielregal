@@ -1,7 +1,13 @@
 <!doctype html>
 <html lang="de">
 <head>
+
 <meta charset="utf-8">
+<script>/* Theme der Spielregal-App übernehmen (spielregal:theme = light | dark | system) */
+(function(){var K="spielregal:theme";function r(){try{return localStorage.getItem(K)||"system"}catch(e){return"system"}}
+function a(){var m=r(),d=m==="dark"||(m==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light"}
+a();try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",a)}catch(e){}
+addEventListener("storage",function(e){if(e.key===K)a()});addEventListener("pageshow",a)})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#E8DDCB">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -900,7 +906,7 @@ details[open] summary{margin-bottom:8px}
   }
   function newGame(mode) { S = G.newGame(mode); S.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
   function themeFor(onStart) {
-    const dark = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches && document.documentElement.dataset.theme !== 'light';
+    const dark = document.documentElement.dataset.theme === 'dark';
     const top = onStart ? (dark ? '#241E19' : '#E8DDCB') : (dark ? '#171310' : '#F3EEE5');
     document.documentElement.style.backgroundColor = onStart ? top : '';
     let tc = document.querySelector('meta[name="theme-color"]');
