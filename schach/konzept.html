@@ -33,7 +33,7 @@ symbol .s{fill:none;stroke:var(--c1,#3B2A55);stroke-width:1.8;stroke-linecap:rou
 symbol .s2{fill:none;stroke:var(--c2,#CDBBF0);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 svg.i.t-plum{--c1:#3B2A55;--c2:#CDBBF0}svg.i.t-berry{--c1:#C23B55;--c2:#F7B8C3}svg.i.t-moss{--c1:#2F7A3A;--c2:#B5E3A8}
 svg.i.t-sun{--c1:#B9770A;--c2:#FFD971}svg.i.t-sky{--c1:#1F6FB8;--c2:#B7DBF7}svg.i.t-ink{--c1:#2B2233;--c2:#D8CFC0}
-svg.i.t-w{--c1:#fff;--c2:rgba(255,255,255,.6)}svg.i.t-white{--c1:#FFF8E6;--c2:#E3D5B5}svg.i.t-black{--c1:#2B2233;--c2:#6A5887}
+svg.i.t-w{--c1:#fff;--c2:rgba(255,255,255,.6)}svg.i.t-dflame{--c1:#FF5A73;--c2:#FFC1CB}svg.i.t-dbolt{--c1:#4DA3FF;--c2:#BCDDFF}svg.i.t-dcoin{--c1:#FFA91F;--c2:#FFE08A}svg.i.t-dheart{--c1:#FF5A73;--c2:#FFC1CB}svg.i.t-white{--c1:#FFF8E6;--c2:#E3D5B5}svg.i.t-black{--c1:#2B2233;--c2:#6A5887}
 svg.i.out{stroke:var(--ink);stroke-width:1.1;stroke-linejoin:round}
 .dim{opacity:.28}
 
@@ -72,12 +72,12 @@ b,strong{font-family:'Londrina Solid',Delius,cursive;font-weight:700}
 .cap{position:absolute;bottom:0;left:0;right:0;text-align:center;font-weight:800;font-size:14px;color:var(--soft)}
 .phones{display:flex;flex-wrap:wrap;gap:28px;justify-content:center;align-items:flex-start;padding-bottom:10px}
 .hud{display:flex;gap:10px;padding:16px 14px 10px;align-items:center;background:var(--paper);z-index:3;position:relative}
-.die{display:inline-grid;place-items:center;width:1.55em;height:1.55em;border-radius:.36em;background:var(--dc,#E2566B);box-shadow:inset 0 -.16em 0 rgba(0,0,0,.24),inset 0 .1em 0 rgba(255,255,255,.4),0 0 0 .11em var(--ink);flex:none}
-.die svg{font-size:.95em;margin:0;--c1:#fff;--c2:rgba(0,0,0,.3)}
+.die{display:inline-grid;place-items:center;flex:none;line-height:1}
+.die svg{margin:0;filter:drop-shadow(0 1px 0 rgba(0,0,0,.35))}
 .chip{display:flex;align-items:center;gap:7px;border:2.5px solid var(--ink);border-radius:8px;padding:3px 12px 3px 4px;font:700 16px 'Londrina Solid';background:#2D3050;color:#fff;box-shadow:0 0 0 2px #fff,0 0 0 4px var(--ink)}
-.chip .die{font-size:14px}
+.chip .die,.rrow .die{font-size:26px}
 .chip svg{font-size:inherit}
-.chip.hearts{padding:3px 5px;gap:4px}
+.chip.hearts{padding:3px 8px;gap:3px}
 .grow{flex:1}
 .tabbar{display:flex;justify-content:space-around;padding:8px 6px 12px;border-top:3px solid var(--line);background:var(--card);font-size:28px;z-index:3;position:relative}
 .tabbar svg{transition:transform .3s cubic-bezier(.3,1.6,.5,1)}
@@ -144,7 +144,7 @@ b,strong{font-family:'Londrina Solid',Delius,cursive;font-weight:700}
 @keyframes fall{to{transform:translateY(640px) rotate(540deg)}}
 .rows{width:100%;display:grid;gap:12px;margin-top:16px;padding:0 4px}
 .rrow{display:flex;justify-content:space-between;align-items:center;background:#2D3050;color:#fff;border:2.5px solid var(--ink);border-radius:8px;padding:5px 12px 5px 6px;font-weight:800;box-shadow:0 0 0 2px #fff,0 0 0 4px var(--ink)}
-.rrow span{display:flex;gap:8px;align-items:center}.rrow .die{font-size:14px}
+.rrow span{display:flex;gap:8px;align-items:center}
 .card-new{margin-top:12px;width:130px;border:3px solid var(--line);border-radius:16px;background:var(--card);box-shadow:4px 4px 0 var(--line);padding:8px;transform:rotate(-4deg);animation:flip 3.6s ease-in-out infinite}
 .card-new .chr{font-size:84px;display:block;margin:0 auto}
 @keyframes flip{0%,60%{transform:rotate(-4deg)}70%{transform:rotate(-4deg) rotateY(180deg)}80%,100%{transform:rotate(-4deg) rotateY(360deg)}}
@@ -258,7 +258,7 @@ footer{padding:50px 0 60px;text-align:center;color:var(--soft);font-size:14px}
   <div class="mapsec">
     <div class="pwrap"><div class="phone big">
       <div class="hud">
-        <div class="chip"><span class="die" style="--dc:#E2566B"><i data-i="flame" data-t="w"></i></span>12</div><div class="chip"><span class="die" style="--dc:#3F8FD6"><i data-i="bolt" data-t="w"></i></span>840</div><div class="grow"></div><div class="chip"><span class="die" style="--dc:#E8921F"><i data-i="coin" data-t="w"></i></span>215</div>
+        <div class="chip"><span class="die"><i data-i="flame" data-t="dflame"></i></span>12</div><div class="chip"><span class="die"><i data-i="bolt" data-t="dbolt"></i></span>840</div><div class="grow"></div><div class="chip"><span class="die"><i data-i="coin" data-t="dcoin"></i></span>215</div>
       </div>
       <div class="scroller" id="scroller"><div id="mapmount"></div></div>
       <div class="tabbar"><i class="on" data-i="map" data-t="moss"></i><i data-i="puzzle" data-t="plum"></i><i data-i="village" data-t="sun"></i><i data-i="trophy" data-t="berry"></i></div>
@@ -281,7 +281,7 @@ footer{padding:50px 0 60px;text-align:center;color:var(--soft);font-size:14px}
   <p class="lead">Die Belohnung zeigt, was sich in der Landschaft verändert hat, und springt auf Wunsch direkt dorthin.</p>
   <div class="phones">
     <div class="pwrap"><div class="phone">
-      <div class="hud"><i data-i="close" data-t="ink"></i><div class="prog"><i></i></div><div class="chip hearts"><span class="die" style="--dc:#E2566B"><i data-i="heart" data-t="w"></i></span><span class="die" style="--dc:#E2566B"><i data-i="heart" data-t="w"></i></span><span class="die" style="--dc:#E2566B"><i data-i="heart" data-t="w"></i></span></div></div>
+      <div class="hud"><i data-i="close" data-t="ink"></i><div class="prog"><i></i></div><div class="chip hearts"><span class="die"><i data-i="heart" data-t="dheart"></i></span><span class="die"><i data-i="heart" data-t="dheart"></i></span><span class="die"><i data-i="heart" data-t="dheart"></i></span></div></div>
       <div class="coach"><div class="face"><i data-c="knight"></i></div><div class="bubble">Ich bin Sprotte! Ich hüpfe in einem <b>L</b>: zwei vor, einen zur Seite. Hol dir den Apfel!</div></div>
       <div class="task">Führe den Springer zum Apfel</div>
       <div class="board" id="b1"></div>
@@ -296,9 +296,9 @@ footer{padding:50px 0 60px;text-align:center;color:var(--soft);font-size:14px}
         <div class="disp" style="font-size:34px;margin-top:10px">Geschafft!</div>
         <div class="stars"><i data-i="star" data-t="sun"></i><i data-i="star" data-t="sun"></i><i data-i="star" data-t="sun"></i></div>
         <div class="rows">
-          <div class="rrow"><span><span class="die" style="--dc:#3F8FD6"><i data-i="bolt" data-t="w"></i></span>Erfahrung</span><span>+45</span></div>
-          <div class="rrow"><span><span class="die" style="--dc:#E8921F"><i data-i="coin" data-t="w"></i></span>Münzen</span><span>+12</span></div>
-          <div class="rrow"><span><span class="die" style="--dc:#E2566B"><i data-i="flame" data-t="w"></i></span>Serie</span><span>13 Tage</span></div>
+          <div class="rrow"><span><span class="die"><i data-i="bolt" data-t="dbolt"></i></span>Erfahrung</span><span>+45</span></div>
+          <div class="rrow"><span><span class="die"><i data-i="coin" data-t="dcoin"></i></span>Münzen</span><span>+12</span></div>
+          <div class="rrow"><span><span class="die"><i data-i="flame" data-t="dflame"></i></span>Serie</span><span>13 Tage</span></div>
         </div>
         <div class="card-new"><i data-c="knight"></i><div class="disp" style="font-size:15px">Sprotte</div><div style="font-size:11px;font-weight:800;color:var(--berry)">NEUE SAMMELKARTE</div></div>
         <div class="lifeflash"><i data-i="bird" data-t="sky"></i>Im Tal sind die ersten Vögel eingezogen!</div>
