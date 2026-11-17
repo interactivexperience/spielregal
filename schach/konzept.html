@@ -857,12 +857,34 @@ document.getElementById('worldlist').innerHTML=WORLDS.map(function(w,i){
   B.push('<rect x="'+(c[0]+6)+'" y="'+(c[1]+38)+'" width="24" height="7" rx="3" fill="#6EB4E0"'+ST2+'/>');
   L.push(life(2,500,smoke(c[0]-28,c[1]-34,.9)));
 
-  /* 6 Palast */
+  /* 6 Königinnenpalast: Mittelbau mit Kuppel, Seitenflügel, Ecktürme, Garten */
   c=SC[5];y0=c[1]+30;
-  [[-62,-2],[62,-2]].forEach(function(h){B.push('<path d="'+blob(c[0]+h[0],y0+h[1]-8,20,12,8,.12)+'" fill="#3F9A48"'+ST+'/><circle cx="'+(c[0]+h[0]-6)+'" cy="'+(y0+h[1]-10)+'" r="2.200" fill="#F7B8C3"/><circle cx="'+(c[0]+h[0]+7)+'" cy="'+(y0+h[1]-6)+'" r="2.200" fill="#FFD971"/>')});
-  B.push(shadow(c[0],y0,50)+skRect(c[0]-44,y0-28,88,28,'#F8DCE0',1)+hat(c[0],y0-28,44,28,6,.4));
-  for(i=-3;i<=3;i++)B.push('<path d="M'+(c[0]+i*11-3)+' '+y0+'v-9a3 3 0 0 1 6 0v9z" fill="#7B5EA7"'+ST2+'/>');
-  B.push(domeP(c[0]-30,y0-28,12,'#E2566B')+domeP(c[0]+30,y0-28,12,'#E2566B')+domeP(c[0],y0-28,16,'#7B5EA7'));
+  var px=c[0],WIN=function(wx,wy,ww,hh){return '<path d="M'+f(wx)+' '+f(wy)+'v'+f(-hh)+'a'+f(ww/2)+' '+f(ww/2)+' 0 0 1 '+f(ww)+' 0v'+f(hh)+'z" fill="#3B3A66" stroke="'+INK+'" stroke-width=".7"/><path d="M'+f(wx+ww/2)+' '+f(wy-1)+'v'+f(-hh)+'" stroke="#FFE98A" stroke-width="1.500"/>'};
+  // Gartenhecken mit Blumen und Formbäumchen
+  [-1,1].forEach(function(sd){
+    var hx0=px+sd*78;
+    B.push('<path d="'+blob(hx0,y0-2,15,9,9,.12)+'" fill="#3F9A48"'+ST+'/>'+hat(hx0-8,y0-9,16,10,4,.5)+'<circle cx="'+f(hx0-5)+'" cy="'+f(y0-5)+'" r="1.800" fill="#F7B8C3"/><circle cx="'+f(hx0+4)+'" cy="'+f(y0-1)+'" r="1.800" fill="#FFD971"/><circle cx="'+f(hx0+7)+'" cy="'+f(y0-6)+'" r="1.600" fill="#fff"/>');
+    B.push(bushP(px+sd*70,y0-18,5.500));
+  });
+  B.push(shadow(px,y0,82));
+  // Seitenflügel mit Walmdach und Fenstern
+  [-1,1].forEach(function(sd){
+    var xl=sd<0?px-58:px+20;
+    B.push(skRect(xl,y0-24,38,24,'#F8DCE0',1)+hat(xl+19,y0-24,19,24,4,.4));
+    B.push(sk([[xl-3,y0-24],[xl+6,y0-35],[xl+32,y0-35],[xl+41,y0-24]],true,.8,'#8A6BB8',1.500)+hat(xl+8,y0-35,26,11,6,.45));
+    for(var k=0;k<3;k++)B.push(WIN(xl+5+k*11,y0-4,7,10));
+  });
+  // Mittelbau: Portal, Balkon, Fensterreihe, Giebel, Trommel, Kuppel
+  B.push(skRect(px-22,y0-42,44,42,'#FBE3E6',1)+hat(px,y0-42,22,42,6,.4));
+  B.push(WIN(px-18,y0-24,6,9)+WIN(px+12,y0-24,6,9)+WIN(px-18,y0-37,6,8)+WIN(px+12,y0-37,6,8));
+  B.push(skRect(px-14,y0-27,28,3.500,'#C9A26B',.4)+'<path d="M'+(px-12)+' '+(y0-27)+'v-4M'+(px-6)+' '+(y0-27)+'v-4M'+px+' '+(y0-27)+'v-4M'+(px+6)+' '+(y0-27)+'v-4M'+(px+12)+' '+(y0-27)+'v-4" stroke="'+INK+'" stroke-width=".8"/>');
+  B.push('<path d="M'+(px-8)+' '+y0+'v-14a8 8 0 0 1 16 0v14z" fill="#4A3A6B" stroke="'+INK+'" stroke-width=".9"/><path d="M'+px+' '+y0+'v-20" stroke="#FFC83D" stroke-width="1"/>');
+  B.push(sk([[px-27,y0-42],[px,y0-57],[px+27,y0-42]],true,.8,'#F4C9D2',1.500)+'<circle cx="'+px+'" cy="'+(y0-47)+'" r="4.200" fill="#FFE98A" stroke="'+INK+'" stroke-width=".8"/><path d="M'+px+' '+(y0-47)+'v-3M'+px+' '+(y0-47)+'l2 1.500" stroke="'+INK+'" stroke-width=".8" stroke-linecap="round"/>');
+  B.push(skRect(px-10,y0-66,20,9,'#F8DCE0',.5)+'<path d="M'+(px-5)+' '+(y0-58)+'v-6M'+px+' '+(y0-58)+'v-6M'+(px+5)+' '+(y0-58)+'v-6" stroke="#4A3A6B" stroke-width="2"/>');
+  B.push(domeP(px,y0-66,15,'#7B5EA7'));
+  // Ecktürme mit Fahnen
+  [-1,1].forEach(function(sd){B.push(towerP(px+sd*62,y0-2,12,44,'#FBE3E6',true,'#E2566B')+flagP(px+sd*62,y0-2-44-12,'#FFC83D',10))});
+  B.push(flagP(px,y0-66-16-8,'#E2566B',12));
 
   /* 7 Königsfestung */
   c=SC[6];y0=c[1]+30;
