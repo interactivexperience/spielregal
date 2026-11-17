@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Schachdorf – Konzept</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FBF3E4; --card:#FFFCF5; --ink:#2B2233; --soft:#7A6E80;
+  --moss:#5FA55A; --moss-d:#3F7D3F; --berry:#E2566B; --sun:#FFC83D; --sky:#6CB4EE; --plum:#7B5EA7;
+  --sq-l:#F6E7C8; --sq-d:#C9A26B; --line:#2B2233;
+}
+*{box-sizing:border-box;margin:0}
+html{background:var(--paper)}
+body{font:16px/1.5 Nunito,system-ui,sans-serif;color:var(--ink);background:var(--paper);-webkit-text-size-adjust:100%}
+h1,h2,h3,.disp{font-family:'Baloo 2',Nunito,sans-serif;line-height:1.1;font-weight:800}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+section{padding:44px 0 8px}
+h2{font-size:clamp(28px,5vw,40px);margin-bottom:6px}
+h2 small{display:block;font:700 13px Nunito;letter-spacing:.14em;text-transform:uppercase;color:var(--berry);margin-bottom:6px}
+.lead{color:var(--soft);max-width:60ch;margin-bottom:22px}
+.pill{display:inline-block;border:2.5px solid var(--line);border-radius:99px;padding:3px 12px;font-weight:800;font-size:14px;background:var(--card);box-shadow:3px 3px 0 var(--line)}
+
+/* Hero */
+.hero{padding:40px 0 20px;text-align:center;position:relative;overflow:hidden}
+.hero h1{font-size:clamp(48px,11vw,96px);letter-spacing:-.01em}
+.hero h1 span{color:var(--berry)}
+.hero p{max-width:46ch;margin:12px auto 20px;color:var(--soft);font-size:18px}
+.heroboard{display:flex;justify-content:center;gap:10px;margin-top:22px;font-size:54px}
+.heroboard i{font-style:normal;display:inline-block;animation:bob 2.4s ease-in-out infinite;filter:drop-shadow(3px 4px 0 rgba(43,34,51,.25))}
+.heroboard i:nth-child(2){animation-delay:.2s}.heroboard i:nth-child(3){animation-delay:.4s}
+.heroboard i:nth-child(4){animation-delay:.6s}.heroboard i:nth-child(5){animation-delay:.8s}.heroboard i:nth-child(6){animation-delay:1s}
+@keyframes bob{50%{transform:translateY(-10px) rotate(-4deg)}}
+
+/* Cards */
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.card{background:var(--card);border:3px solid var(--line);border-radius:22px;padding:18px;box-shadow:5px 5px 0 var(--line)}
+.card h3{font-size:22px;margin-bottom:4px}
+.card .ic{font-size:34px;display:block;margin-bottom:4px}
+.card p,.card li{font-size:15px;color:#4a4052}
+.card ul{padding-left:18px}
+
+/* Phones */
+.phones{display:flex;flex-wrap:wrap;gap:28px;justify-content:center;align-items:flex-start}
+.phone{width:300px;height:620px;background:var(--paper);border:4px solid var(--line);border-radius:38px;box-shadow:8px 8px 0 var(--line);overflow:hidden;position:relative;display:flex;flex-direction:column}
+.phone .cap{position:absolute;bottom:-34px;left:0;right:0;text-align:center;font-weight:800;font-size:14px;color:var(--soft)}
+.pwrap{position:relative;padding-bottom:40px}
+.hud{display:flex;gap:8px;padding:14px 14px 8px;align-items:center}
+.chip{display:flex;align-items:center;gap:5px;border:2.5px solid var(--line);border-radius:99px;padding:2px 10px 2px 7px;font:800 14px 'Baloo 2';background:var(--card)}
+.chip.fire{background:#FFE3C2}.chip.xp{background:#E7F3FF}.chip.coin{background:#FFF1B8}
+.grow{flex:1}
+
+/* World map */
+.map{position:relative;flex:1;overflow:hidden;background:
+  radial-gradient(circle at 20% 15%,#CFE9B8 0 18%,transparent 19%),
+  radial-gradient(circle at 85% 40%,#CFE9B8 0 16%,transparent 17%),
+  radial-gradient(circle at 15% 78%,#BFE0F5 0 20%,transparent 21%),
+  #E4F2CE}
+.path{position:absolute;inset:0}
+.node{position:absolute;width:62px;height:62px;border-radius:50%;border:3px solid var(--line);display:grid;place-items:center;font-size:30px;background:var(--card);box-shadow:3px 4px 0 var(--line);transform:translate(-50%,-50%)}
+.node.done{background:var(--moss)}.node.cur{background:var(--sun);animation:pulse 1.8s ease-in-out infinite}
+.node.lock{background:#D9D2C6;filter:grayscale(1);opacity:.85}
+.node b{position:absolute;bottom:-20px;font:800 11px Nunito;white-space:nowrap;background:var(--card);border:2px solid var(--line);border-radius:8px;padding:0 6px}
+.node .st{position:absolute;top:-12px;font-size:12px;letter-spacing:-1px;background:var(--card);border:2px solid var(--line);border-radius:99px;padding:0 5px}
+@keyframes pulse{50%{transform:translate(-50%,-50%) scale(1.1);box-shadow:0 0 0 10px rgba(255,200,61,.35),3px 4px 0 var(--line)}}
+.cloud{position:absolute;font-size:34px;opacity:.9;animation:drift 14s linear infinite}
+@keyframes drift{from{transform:translateX(-60px)}to{transform:translateX(340px)}}
+.tabbar{display:flex;justify-content:space-around;padding:8px 6px 12px;border-top:3px solid var(--line);background:var(--card);font-size:24px}
+.tabbar span.on{transform:translateY(-4px) scale(1.15)}
+
+/* Lesson */
+.coach{display:flex;gap:10px;align-items:flex-end;padding:6px 14px}
+.coach .face{font-size:44px;animation:bob 2.6s ease-in-out infinite}
+.bubble{position:relative;background:var(--card);border:3px solid var(--line);border-radius:18px;padding:8px 12px;font-weight:700;font-size:14px;line-height:1.35;box-shadow:3px 3px 0 var(--line)}
+.bubble:before{content:"";position:absolute;left:-10px;bottom:12px;border:8px solid transparent;border-right-color:var(--line);border-left:0}
+.prog{height:14px;border:3px solid var(--line);border-radius:99px;background:var(--card);margin:0 14px;overflow:hidden}
+.prog i{display:block;height:100%;width:62%;background:repeating-linear-gradient(45deg,var(--moss) 0 10px,#78C173 10px 20px);border-right:3px solid var(--line)}
+.board{--s:33px;display:grid;grid-template-columns:repeat(8,var(--s));border:3px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:4px 4px 0 var(--line);margin:0 auto;width:max-content;background:var(--sq-l)}
+.board .q{width:var(--s);height:var(--s);display:grid;place-items:center;position:relative;font-size:25px;line-height:1}
+.board .q.d{background:var(--sq-d)}
+.board .q.hl{background:#9AD66B}
+.board .q.dot:after{content:"";width:11px;height:11px;border-radius:50%;background:rgba(63,125,63,.75);position:absolute;animation:dotpop 1.6s ease-in-out infinite}
+.board .q.goal:after{content:"🍎";position:absolute;font-size:20px;background:none;width:auto;height:auto;border-radius:0;animation:dotpop 1.2s ease-in-out infinite}
+.board .q.foe{color:#2B2233}
+@keyframes dotpop{50%{transform:scale(1.35)}}
+.pc{filter:drop-shadow(1px 2px 0 rgba(43,34,51,.35));position:relative;z-index:1}
+.pc.w{color:#fff;-webkit-text-stroke:1.5px var(--ink)}.pc.b{color:var(--ink)}
+.pc.hop{animation:hop 1.2s ease-in-out infinite}
+@keyframes hop{40%{transform:translateY(-6px) rotate(-6deg)}}
+.task{margin:10px 14px;text-align:center;font:800 17px 'Baloo 2'}
+.hearts{letter-spacing:2px}
+.btn{display:block;margin:10px 14px 14px;padding:11px;text-align:center;font:800 18px 'Baloo 2';border:3px solid var(--line);border-radius:16px;background:var(--moss);color:#fff;box-shadow:0 5px 0 var(--moss-d),0 5px 0 3px var(--line);-webkit-text-stroke:.5px var(--ink)}
+.btn.alt{background:var(--card);color:var(--ink);box-shadow:0 5px 0 #ddd,0 5px 0 3px var(--line);-webkit-text-stroke:0}
+.hint{display:flex;justify-content:space-between;margin:6px 14px 0;font-size:13px;font-weight:800;color:var(--soft)}
+
+/* Reward */
+.reward{flex:1;display:flex;flex-direction:column;align-items:center;padding:20px 16px;text-align:center;background:radial-gradient(circle at 50% 30%,#FFF1B8 0 30%,transparent 31%),var(--paper);position:relative;overflow:hidden}
+.stars{font-size:52px;letter-spacing:4px;margin-top:6px}
+.stars span{display:inline-block;animation:starin 2.8s cubic-bezier(.3,1.6,.5,1) infinite}
+.stars span:nth-child(2){animation-delay:.25s;font-size:1.3em;position:relative;top:-8px}.stars span:nth-child(3){animation-delay:.5s}
+@keyframes starin{0%{transform:scale(0) rotate(-120deg)}25%,85%{transform:scale(1) rotate(0)}100%{transform:scale(1)}}
+.conf i{position:absolute;top:-10px;width:8px;height:14px;animation:fall 3s linear infinite}
+@keyframes fall{to{transform:translateY(640px) rotate(540deg)}}
+.rows{width:100%;display:grid;gap:8px;margin-top:14px}
+.rrow{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:3px solid var(--line);border-radius:14px;padding:6px 12px;font-weight:800}
+.card-new{margin-top:12px;width:130px;border:3px solid var(--line);border-radius:16px;background:var(--card);box-shadow:4px 4px 0 var(--line);padding:8px;transform:rotate(-4deg);animation:flip 3.6s ease-in-out infinite}
+.card-new .big{font-size:56px;line-height:1}
+@keyframes flip{0%,60%{transform:rotate(-4deg)}70%{transform:rotate(-4deg) rotateY(180deg)}80%,100%{transform:rotate(-4deg) rotateY(360deg)}}
+
+/* Worlds list */
+.worlds{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.world{display:flex;gap:14px;align-items:flex-start;background:var(--card);border:3px solid var(--line);border-radius:20px;padding:14px;box-shadow:4px 4px 0 var(--line)}
+.world .em{flex:none;width:58px;height:58px;border-radius:16px;border:3px solid var(--line);display:grid;place-items:center;font-size:32px}
+.world h3{font-size:19px}
+.world .n{font:800 11px Nunito;letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
+.world p{font-size:14px;color:#4a4052}
+.world ul{font-size:13px;padding-left:16px;color:#4a4052;margin-top:4px}
+.boss{display:inline-block;margin-top:6px;font:800 12px Nunito;background:var(--berry);color:#fff;border-radius:99px;padding:1px 10px;border:2px solid var(--line)}
+
+/* Loop */
+.loop{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch}
+.step{flex:1 1 150px;background:var(--card);border:3px solid var(--line);border-radius:18px;padding:12px;position:relative;box-shadow:4px 4px 0 var(--line)}
+.step .no{position:absolute;top:-14px;left:12px;background:var(--sun);border:3px solid var(--line);border-radius:99px;width:30px;height:30px;display:grid;place-items:center;font:800 15px 'Baloo 2'}
+.step h3{font-size:18px;margin-top:6px}.step p{font-size:14px;color:#4a4052}
+
+table{width:100%;border-collapse:collapse;background:var(--card);border:3px solid var(--line);border-radius:18px;overflow:hidden;font-size:14px}
+th,td{text-align:left;padding:9px 12px;border-bottom:2px solid #eadfc9;vertical-align:top}
+th{background:var(--sun);font:800 14px 'Baloo 2';border-bottom:3px solid var(--line)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:800;white-space:nowrap}
+
+.q-list li{margin:6px 0 6px 18px}
+footer{padding:50px 0 60px;text-align:center;color:var(--soft);font-size:14px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="hero wrap">
+  <span class="pill">Konzept · Stand 0 · rein statisch</span>
+  <h1 style="margin-top:14px">Schach<span>dorf</span></h1>
+  <p>Lerne Schach, indem du ein Dorf rettest: jede Figur ist ein Bewohner mit Charakter, jede Welt ein neues Kapitel, jedes Rätsel ein kleines Erfolgserlebnis.</p>
+  <div class="heroboard" aria-hidden="true"><i>♟</i><i>♜</i><i>♝</i><i>♞</i><i>♛</i><i>♚</i></div>
+</header>
+
+<main class="wrap">
+
+<section>
+  <h2><small>Die Idee</small>Schach lernen ohne Lehrbuchgefühl</h2>
+  <p class="lead">Nicht „Regeln auswendig lernen“, sondern ausprobieren, gewinnen, sammeln. Der Spieler lernt in 10 Welten von „Wie steht das Brett?“ bis „Ich gewinne eine Partie gegen den Bot“ – in 2–4-Minuten-Häppchen.</p>
+  <div class="grid">
+    <div class="card"><span class="ic">🧠</span><h3>Eine Idee pro Lektion</h3><p>Jede Lektion bringt genau eine neue Fähigkeit. Erst sehen, dann tun, dann anwenden, dann sich beweisen.</p></div>
+    <div class="card"><span class="ic">🎭</span><h3>Figuren mit Charakter</h3><p>Bauer Bruno ist schüchtern, Springerin Sprotte kann nicht geradeaus gehen. Der Charakter erklärt die Zugregel – das merkt man sich.</p></div>
+    <div class="card"><span class="ic">🎁</span><h3>Fehler sind okay</h3><p>Keine Strafen, die Spaß kosten. „Mut-Herzen“ regenerieren, der Coach hilft mit Hinweisen statt „Falsch!“.</p></div>
+    <div class="card"><span class="ic">📱</span><h3>Handy zuerst</h3><p>Hochformat, Daumenbedienung, Tippen-Tippen-Züge, Wischen für Hinweise. Passt zu Spielregal.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2><small>Die Screens</small>So fühlt es sich an</h2>
+  <p class="lead">Drei Kernscreens als statische Entwürfe. Pulsieren, Hüpfen und Konfetti laufen im Mock bereits, damit die Stimmung sichtbar wird.</p>
+  <div class="phones" style="padding-bottom:40px">
+
+    <!-- 1 Weltkarte -->
+    <div class="pwrap"><div class="phone">
+      <div class="hud">
+        <div class="chip fire">🔥 12</div><div class="chip xp">⚡ 840</div><div class="grow"></div><div class="chip coin">🪙 215</div>
+      </div>
+      <div class="map">
+        <span class="cloud" style="top:30px">☁️</span><span class="cloud" style="top:300px;animation-delay:-7s">☁️</span>
+        <svg class="path" viewBox="0 0 300 470" preserveAspectRatio="none"><path d="M60 420 C 150 400, 240 390, 230 330 S 70 300, 90 240 S 230 210, 210 150 S 110 90, 150 40" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-dasharray="1 22"/><path d="M60 420 C 150 400, 240 390, 230 330 S 70 300, 90 240" fill="none" stroke="#F0C98A" stroke-width="10" stroke-linecap="round" opacity=".0"/></svg>
+        <div class="node done" style="left:60px;top:420px">🟩<span class="st">★★★</span><b>Brettwiese</b></div>
+        <div class="node done" style="left:230px;top:335px">♟<span class="st">★★☆</span><b>Bauernhof</b></div>
+        <div class="node cur" style="left:90px;top:245px">♞<span class="st">★☆☆</span><b>Rösserhof</b></div>
+        <div class="node lock" style="left:210px;top:150px">♜<b>Turmburg</b></div>
+        <div class="node lock" style="left:150px;top:55px">♝<b>Läuferwald</b></div>
+      </div>
+      <div class="tabbar"><span class="on">🗺️</span><span>🧩</span><span>🏘️</span><span>🏆</span></div>
+    </div><div class="cap" style="bottom:0">① Weltkarte</div></div>
+
+    <!-- 2 Lektion -->
+    <div class="pwrap"><div class="phone">
+      <div class="hud"><span>✕</span><div class="prog" style="flex:1;margin:0"><i></i></div><div class="chip hearts">❤️❤️❤️</div></div>
+      <div class="coach"><div class="face">🐴</div><div class="bubble">Ich bin Sprotte! Ich hüpfe in einem <b>L</b>: zwei vor, einen zur Seite. Hol dir den Apfel! 🍎</div></div>
+      <div class="task">Führe den Springer zum Apfel</div>
+      <div class="board" id="b1"></div>
+      <div class="hint"><span>💡 Hinweis (2)</span><span>Aufgabe 3 / 5</span></div>
+      <div style="flex:1"></div>
+      <div class="btn alt">Überspringen</div>
+    </div><div class="cap" style="bottom:0">② Lektion: Springer</div></div>
+
+    <!-- 3 Belohnung -->
+    <div class="pwrap"><div class="phone">
+      <div class="reward">
+        <div class="conf" aria-hidden="true"></div>
+        <div class="disp" style="font-size:34px;margin-top:10px">Geschafft!</div>
+        <div class="stars"><span>⭐</span><span>⭐</span><span>⭐</span></div>
+        <div class="rows">
+          <div class="rrow"><span>⚡ Erfahrung</span><span>+45</span></div>
+          <div class="rrow"><span>🪙 Münzen</span><span>+12</span></div>
+          <div class="rrow"><span>🔥 Serie</span><span>13 Tage!</span></div>
+        </div>
+        <div class="card-new"><div class="big">🐴</div><div class="disp" style="font-size:15px">Sprotte</div><div style="font-size:11px;font-weight:800;color:var(--berry)">NEUE SAMMELKARTE</div></div>
+        <div style="flex:1"></div>
+        <div class="btn" style="width:100%;margin:6px 0 0">Weiter</div>
+      </div>
+    </div><div class="cap" style="bottom:0">③ Belohnung</div></div>
+  </div>
+</section>
+
+<section>
+  <h2><small>Die Levels</small>10 Welten · vom Brett zum Matt</h2>
+  <p class="lead">Jede Welt = eine Figur oder ein Konzept, 5–7 Lektionen, am Ende ein Boss. Reihenfolge nach Lernlogik: erst Figuren einzeln, dann zusammen, dann Taktik, dann ganze Partien.</p>
+  <div class="worlds">
+    <div class="world"><div class="em" style="background:#CFE9B8">🟩</div><div><div class="n">Welt 1</div><h3>Brettwiese</h3><p>Brett, Felder, Reihen und Linien, Aufstellung, Koordinaten (a1–h8).</p><span class="boss">Boss: Felder-Fangen</span></div></div>
+    <div class="world"><div class="em" style="background:#FFE3C2">♟</div><div><div class="n">Welt 2</div><h3>Bauernhof</h3><p>Bauer: Schritt, Doppelschritt, Schlagen, Umwandlung.</p><span class="boss">Boss: Rübenräuber</span></div></div>
+    <div class="world"><div class="em" style="background:#D9CBF2">♜</div><div><div class="n">Welt 3</div><h3>Turmburg</h3><p>Turm: gerade Linien, Schlagen, Blockaden.</p><span class="boss">Boss: Burgvogt</span></div></div>
+    <div class="world"><div class="em" style="background:#BFE0F5">♝</div><div><div class="n">Welt 4</div><h3>Läuferwald</h3><p>Läufer: Diagonalen, helle/dunkle Felder, Läufer + Turm im Team.</p><span class="boss">Boss: Waldgeist</span></div></div>
+    <div class="world"><div class="em" style="background:#FFF1B8">♞</div><div><div class="n">Welt 5</div><h3>Rösserhof</h3><p>Springer: der L-Zug, Überspringen, Gabel-Vorgeschmack.</p><span class="boss">Boss: Stalltor-Rätsel</span></div></div>
+    <div class="world"><div class="em" style="background:#F7C6D0">♛</div><div><div class="n">Welt 6</div><h3>Königinnenpalast</h3><p>Dame = Turm + Läufer, Wert der Figuren (1/3/3/5/9), Tauschen lernen.</p><span class="boss">Boss: Hofdame Dora</span></div></div>
+    <div class="world"><div class="em" style="background:#FFD9A8">♚</div><div><div class="n">Welt 7</div><h3>Königsfestung</h3><p>König, Schach, Schachmatt, Patt, Rochade, en passant.</p><span class="boss">Boss: Matt in 1</span></div></div>
+    <div class="world"><div class="em" style="background:#C9E8E0">⚔️</div><div><div class="n">Welt 8</div><h3>Taktik-Arena</h3><p>Gabel, Fesselung, Spieß, Abzug – jeweils als Puzzle-Serie.</p><span class="boss">Boss: Taktik-Turnier</span></div></div>
+    <div class="world"><div class="em" style="background:#E7D7C3">🏔️</div><div><div class="n">Welt 9</div><h3>Eröffnungshafen</h3><p>Die 3 Eröffnungsregeln (Mitte, Entwickeln, Rochieren), 3 einfache Aufbauten.</p><span class="boss">Boss: Kapitän Kreuz</span></div></div>
+    <div class="world"><div class="em" style="background:#F5E27B">🏆</div><div><div class="n">Welt 10</div><h3>Endspiel-Gipfel</h3><p>Matt mit Dame+König, Turm-Endspiele, Bauernrennen. Abschluss: eine volle Partie gegen Bot-Boss „Meister Matt“.</p><span class="boss">Finale</span></div></div>
+  </div>
+</section>
+
+<section>
+  <h2><small>Der Lernloop</small>Jede Lektion in 5 Schritten</h2>
+  <p class="lead">Wiederholbar, kurz, mit Aha-Moment und Belohnung. Das Muster bleibt gleich, der Inhalt wechselt.</p>
+  <div class="loop">
+    <div class="step"><span class="no">1</span><h3>Zeigen</h3><p>Die Figur hüpft über das Brett, Felder leuchten auf. Kein Text-Wall, max. 2 Sätze.</p></div>
+    <div class="step"><span class="no">2</span><h3>Ausprobieren</h3><p>Freies Spielen: Figur antippen, Zielfeld antippen. Falsche Felder wackeln freundlich.</p></div>
+    <div class="step"><span class="no">3</span><h3>Aufgaben</h3><p>5 kurze Rätsel: Apfel holen, Gegner schlagen, Weg frei machen, Matt in 1.</p></div>
+    <div class="step"><span class="no">4</span><h3>Mini-Duell</h3><p>Kleine Stellung gegen den Bot (z. B. nur Bauern). Wende das Gelernte an.</p></div>
+    <div class="step"><span class="no">5</span><h3>Belohnung</h3><p>Sterne, XP, Münzen, Sammelkarte. Danach öffnet sich der nächste Knoten auf der Karte.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2><small>Gamification</small>Was dich zurückkommen lässt</h2>
+  <p class="lead">Drei Schichten: sofortiger Spaß (Sekunden), Fortschritt (Tage), Sammeln und Gestalten (Wochen).</p>
+  <div class="grid">
+    <div class="card"><span class="ic">⭐</span><h3>Sterne</h3><p>1–3 pro Lektion: 1 = geschafft, 2 = ohne Hinweis, 3 = ohne Fehler. Wiederholen lohnt, aber nie Pflicht.</p></div>
+    <div class="card"><span class="ic">⚡</span><h3>XP & Titel</h3><p>XP schalten Titel frei: Bauernlehrling → Springer → Turmwächter → Schachmeister. Level-Up mit Fanfare.</p></div>
+    <div class="card"><span class="ic">🔥</span><h3>Serie</h3><p>Täglich spielen hält die Flamme. Ein „Frostschutz“ pro Woche rettet die Serie nach einem verpassten Tag.</p></div>
+    <div class="card"><span class="ic">❤️</span><h3>Mut-Herzen</h3><p>3 Herzen pro Lektion. Verlust = Hinweisangebot, nicht Abbruch. Regeneration über Zeit oder kurze Übung.</p></div>
+    <div class="card"><span class="ic">🏘️</span><h3>Dorf aufbauen</h3><p>Münzen kaufen Häuser, Bäume, Brunnen. Das Dorf wird mit deinem Fortschritt lebendiger – Meta-Ziel neben dem Lernen.</p></div>
+    <div class="card"><span class="ic">🃏</span><h3>Sammelkarten</h3><p>Jede Figur, jeder Boss, jede Taktik hat eine Karte mit Seltenheit. Doppelte werden zu Münzen.</p></div>
+    <div class="card"><span class="ic">🎯</span><h3>Tagesquest</h3><p>3 kleine Ziele pro Tag („3 Rätsel lösen“, „Springer-Gabel finden“). Truhe nach allen dreien.</p></div>
+    <div class="card"><span class="ic">🥇</span><h3>Abzeichen</h3><p>Über 40 Erfolge: „Erstes Matt“, „Dame gerettet“, „7-Tage-Flamme“, „Bot-Sieg ohne Figurenverlust“.</p></div>
+    <div class="card"><span class="ic">🤝</span><h3>Freunde & Liga</h3><p>Optional später: Wochenliga mit Freunden, Spielregal-Profile. Zuerst solo.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2><small>Animationen & Transitions</small>Alles federt, nichts springt</h2>
+  <p class="lead">Leitprinzip: jede Eingabe bekommt in unter 100 ms eine sichtbare und fühlbare Antwort. Alles abschaltbar (<code>prefers-reduced-motion</code>).</p>
+  <table>
+    <tr><th>Moment</th><th>Animation</th><th>Sound / Haptik</th></tr>
+    <tr><td>Figur antippen</td><td>Hebt ab, leichter Schatten, mögliche Felder poppen nacheinander als Punkte auf</td><td>Klick, kurze Vibration</td></tr>
+    <tr><td>Zug ausführen</td><td>Figur gleitet mit Bogen und landet mit „Squash“; Springer springt wirklich über Figuren</td><td>Holz-Tock</td></tr>
+    <tr><td>Schlagen</td><td>Geschlagene Figur wirbelt als Sternchen davon, Staubwolke</td><td>Plopp</td></tr>
+    <tr><td>Falscher Zug</td><td>Figur wackelt „Nein“, Coach zieht Augenbrauen hoch, sanfter Hinweis</td><td>Weiches Brummen</td></tr>
+    <tr><td>Richtige Antwort</td><td>Grüner Puls vom Zielfeld, Fortschrittsbalken füllt sich mit Glanz</td><td>Aufsteigender Ton (steigt pro Serie)</td></tr>
+    <tr><td>Schach / Matt</td><td>Brett zittert kurz, König blinkt rot; bei Matt Zeitlupe und Königskrone fällt</td><td>Gong</td></tr>
+    <tr><td>Lektion fertig</td><td>Sterne fliegen ein (Overshoot), Konfetti, Zahlen zählen hoch, Karte dreht sich um</td><td>Fanfare</td></tr>
+    <tr><td>Weltkarte</td><td>Weg zeichnet sich zum nächsten Knoten, Figur läuft hin, Wolken ziehen</td><td>Schritte, Vogelzwitschern</td></tr>
+    <tr><td>Seitenwechsel</td><td>Karte „klappt“ als Buchseite auf, Coach rutscht seitlich herein</td><td>Papierrascheln</td></tr>
+    <tr><td>Idle</td><td>Figuren atmen, blinzeln, Coach winkt nach 8 s ohne Eingabe</td><td>–</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2><small>Look & Feel</small>Charmant, warm, handgemacht</h2>
+  <div class="grid">
+    <div class="card"><h3>Palette</h3><p>
+      <span class="pill" style="background:#FBF3E4">Papier</span>
+      <span class="pill" style="background:#5FA55A;color:#fff">Moos</span>
+      <span class="pill" style="background:#E2566B;color:#fff">Beere</span>
+      <span class="pill" style="background:#FFC83D">Sonne</span>
+      <span class="pill" style="background:#6CB4EE">Himmel</span></p></div>
+    <div class="card"><h3>Form</h3><p>Dicke dunkle Konturen, harter Versatzschatten, große Radien, Figuren mit Gesicht (Augen, Wangen). Weiche Papierfarben statt Neon.</p></div>
+    <div class="card"><h3>Typografie</h3><p>Baloo 2 für Titel und Zahlen, Nunito für Text. Freundlich, rund, gut lesbar auf kleinen Screens.</p></div>
+    <div class="card"><h3>Ton</h3><p>Duzen, kurze Sätze, Wortwitz, nie belehrend. „Autsch, der Turm steht im Weg!“ statt „Ungültiger Zug.“</p></div>
+  </div>
+</section>
+
+<section>
+  <h2><small>Technik & Einbindung</small>Passt in Spielregal</h2>
+  <div class="grid">
+    <div class="card"><h3>Format</h3><p>Wie die anderen Spiele: <code>schach/index.html</code>, Vanilla JS, kein Build. Eigene Regel-Engine (Zuggenerator inkl. Rochade, en passant, Matt-Erkennung) und einfacher Bot (Minimax, Tiefe 1–3).</p></div>
+    <div class="card"><h3>Spielregal-Anbindung</h3><p>Beenden-Link „‹ Spielregal“, Speicherstand <code>schach:save</code>, Partien über <code>spielregal:inbox:plays</code> mit <code>source: 'schach'</code>, Menü ☰.</p></div>
+    <div class="card"><h3>Inhalte</h3><p>Lektionen und Rätsel als Daten (FEN + Zielzüge), leicht erweiterbar. Rätsel von Hand kuratiert, damit Schwierigkeit und Erklärung stimmen.</p></div>
+    <div class="card"><h3>Test</h3><p>Perft-Test für den Zuggenerator + Smoke-Test <code>schach-smoke.mjs</code> (Lektion durchspielen, Speichern/Fortsetzen).</p></div>
+  </div>
+</section>
+
+<section>
+  <h2><small>Annahmen & offene Fragen</small>Was ich von dir brauche</h2>
+  <ul class="q-list">
+    <li><b>Zielgruppe:</b> Annahme: Erwachsene und Jugendliche ohne Vorwissen. Für Kinder (6–10) würde ich Text weiter kürzen und mehr Vorlesen/Bilder einbauen.</li>
+    <li><b>Stil:</b> Dieser Look ist mein Vorschlag, nicht deine Referenz. Hast du Bilder, an denen ich mich (wie bei den anderen Spielen) orientieren soll?</li>
+    <li><b>Name:</b> „Schachdorf“ ist ein Arbeitstitel.</li>
+    <li><b>Umfang v1:</b> Vorschlag: Welt 1–7 plus Bot-Partie. Taktik, Eröffnungen und Endspiele danach.</li>
+    <li><b>Herzen:</b> Mit Strafmechanik (Herzen) oder ganz ohne? Ich empfehle weich: Hinweise statt Game Over.</li>
+    <li><b>Sprache:</b> Nur Deutsch, oder von Anfang an mehrsprachig?</li>
+  </ul>
+</section>
+
+</main>
+<footer>Schachdorf · statisches Konzept · Entwurf</footer>
+
+<script>
+// Mini-Brett: Springer auf d4, Apfel auf e6, Dornen/Gegner als Hindernis
+(function(){
+  var rows = [
+    "........",
+    "........",
+    "....A...",   /* A = Apfel-Ziel (e6) */
+    "..p.....",
+    "...N....",
+    "........",
+    ".P......",
+    "........"
+  ];
+  var sq = {'P':'♙','N':'♘','p':'♟'};
+  // Zielfelder des Springers auf d4 (Spalte 3, Zeile 4)
+  var moves=[[2,2],[4,2],[1,3],[5,3],[1,5],[5,5],[2,6],[4,6]];
+  var b=document.getElementById('b1'), h='';
+  for(var r=0;r<8;r++)for(var c=0;c<8;c++){
+    var ch=rows[r][c], dark=(r+c)%2===1, cls='q'+(dark?' d':'');
+    var isMove=moves.some(function(m){return m[0]===c&&m[1]===r});
+    var goal=(ch==='A');
+    if(isMove) cls+=' dot';
+    if(goal) cls+=' goal';
+    var piece='';
+    if(ch==='N') piece='<span class="pc w hop">♞</span>';
+    else if(ch==='P') piece='<span class="pc w">♟</span>';
+    else if(ch==='p') piece='<span class="pc b">♟</span>';
+    h+='<div class="'+cls+'">'+piece+'</div>';
+  }
+  b.innerHTML=h;
+  // Konfetti
+  var conf=document.querySelector('.conf'), cols=['#E2566B','#FFC83D','#6CB4EE','#5FA55A','#7B5EA7'], s='';
+  for(var i=0;i<26;i++){
+    s+='<i style="left:'+(i*4+Math.random()*3)+'%;background:'+cols[i%5]+';animation-delay:'+(-Math.random()*3).toFixed(2)+'s;animation-duration:'+(2.4+Math.random()*1.8).toFixed(2)+'s"></i>';
+  }
+  conf.innerHTML=s;
+})();
+</script>
+</body>
+</html>
