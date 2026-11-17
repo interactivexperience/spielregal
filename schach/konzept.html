@@ -39,7 +39,8 @@ svg.i.out{stroke:var(--ink);stroke-width:1.1;stroke-linejoin:round}
 .hero h1{font:400 clamp(56px,13vw,112px)/1 'Kaushan Script','Baloo 2',cursive;letter-spacing:0;transform:rotate(-2deg)}
 .hero h1 span{color:var(--berry)}
 .hero p{max-width:46ch;margin:12px auto 20px;color:var(--soft);font-size:18px}
-.heroboard{display:flex;justify-content:center;gap:12px;margin-top:22px;font-size:58px}
+.heroboard{display:flex;justify-content:center;align-items:flex-end;gap:6px;margin-top:22px;font-size:78px}
+.chr{width:.77em;height:1em;display:inline-block;overflow:visible}
 .heroboard svg{animation:bob 2.4s ease-in-out infinite;filter:drop-shadow(3px 4px 0 rgba(43,34,51,.22))}
 .heroboard svg:nth-child(2){animation-delay:.2s}.heroboard svg:nth-child(3){animation-delay:.4s}
 .heroboard svg:nth-child(4){animation-delay:.6s}.heroboard svg:nth-child(5){animation-delay:.8s}.heroboard svg:nth-child(6){animation-delay:1s}
@@ -95,7 +96,7 @@ svg.i.out{stroke:var(--ink);stroke-width:1.1;stroke-linejoin:round}
 
 /* Lesson */
 .coach{display:flex;gap:10px;align-items:flex-end;padding:6px 14px}
-.coach .face{font-size:48px;animation:bob 2.6s ease-in-out infinite}
+.coach .face{font-size:58px;animation:bob 2.6s ease-in-out infinite}
 .bubble{position:relative;background:var(--card);border:3px solid var(--line);border-radius:18px;padding:8px 12px;font-weight:700;font-size:14px;line-height:1.35;box-shadow:3px 3px 0 var(--line)}
 .bubble:before{content:"";position:absolute;left:-10px;bottom:12px;border:8px solid transparent;border-right-color:var(--line);border-left:0}
 .prog{height:14px;border:3px solid var(--line);border-radius:99px;background:var(--card);overflow:hidden;flex:1}
@@ -128,7 +129,7 @@ svg.i.out{stroke:var(--ink);stroke-width:1.1;stroke-linejoin:round}
 .rrow{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:3px solid var(--line);border-radius:14px;padding:6px 12px;font-weight:800}
 .rrow span{display:flex;gap:6px;align-items:center}.rrow svg{font-size:20px}
 .card-new{margin-top:12px;width:130px;border:3px solid var(--line);border-radius:16px;background:var(--card);box-shadow:4px 4px 0 var(--line);padding:8px;transform:rotate(-4deg);animation:flip 3.6s ease-in-out infinite}
-.card-new svg{font-size:56px}
+.card-new .chr{font-size:84px;display:block;margin:0 auto}
 @keyframes flip{0%,60%{transform:rotate(-4deg)}70%{transform:rotate(-4deg) rotateY(180deg)}80%,100%{transform:rotate(-4deg) rotateY(360deg)}}
 .lifeflash{margin-top:10px;display:flex;gap:8px;align-items:center;background:#E4F2CE;border:3px solid var(--line);border-radius:14px;padding:6px 12px;font-weight:800;font-size:13px;text-align:left}
 .lifeflash svg{font-size:24px}
@@ -210,11 +211,11 @@ footer{padding:50px 0 60px;text-align:center;color:var(--soft);font-size:14px}
 </defs></svg>
 
 <header class="hero wrap">
-  <span class="pill">Konzept v2 · rein statisch</span>
+  <span class="pill">Konzept v4 · rein statisch</span>
   <h1 style="margin-top:14px">Schach<span>dorf</span></h1>
   <p>Lerne Schach, indem du ein Tal zum Leben erweckst: Jede Welt ist ein handgemalter Ort aus der Vogelperspektive, jede Errungenschaft füllt ihn mit mehr Natur, Tieren und Leben.</p>
   <div class="heroboard" aria-hidden="true">
-    <i data-i="pawn" data-t="moss"></i><i data-i="rook" data-t="plum"></i><i data-i="bishop" data-t="sky"></i><i data-i="knight" data-t="sun"></i><i data-i="queen" data-t="berry"></i><i data-i="king" data-t="ink"></i>
+    <i data-c="pawn"></i><i data-c="rook"></i><i data-c="bishop"></i><i data-c="knight"></i><i data-c="queen"></i><i data-c="king"></i>
   </div>
 </header>
 
@@ -259,7 +260,7 @@ footer{padding:50px 0 60px;text-align:center;color:var(--soft);font-size:14px}
   <div class="phones">
     <div class="pwrap"><div class="phone">
       <div class="hud"><i data-i="close" data-t="ink"></i><div class="prog"><i></i></div><div class="chip hearts"><i data-i="heart" data-t="berry"></i><i data-i="heart" data-t="berry"></i><i data-i="heart" data-t="berry"></i></div></div>
-      <div class="coach"><div class="face"><i data-i="knight" data-t="sun" class="out"></i></div><div class="bubble">Ich bin Sprotte! Ich hüpfe in einem <b>L</b>: zwei vor, einen zur Seite. Hol dir den Apfel!</div></div>
+      <div class="coach"><div class="face"><i data-c="knight"></i></div><div class="bubble">Ich bin Sprotte! Ich hüpfe in einem <b>L</b>: zwei vor, einen zur Seite. Hol dir den Apfel!</div></div>
       <div class="task">Führe den Springer zum Apfel</div>
       <div class="board" id="b1"></div>
       <div class="hint"><span><i data-i="bulb" data-t="sun"></i>Hinweis (2)</span><span>Aufgabe 3 / 5</span></div>
@@ -277,7 +278,7 @@ footer{padding:50px 0 60px;text-align:center;color:var(--soft);font-size:14px}
           <div class="rrow"><span><i data-i="coin" data-t="sun"></i>Münzen</span><span>+12</span></div>
           <div class="rrow"><span><i data-i="flame" data-t="berry"></i>Serie</span><span>13 Tage</span></div>
         </div>
-        <div class="card-new"><i data-i="knight" data-t="sun" class="out"></i><div class="disp" style="font-size:15px">Sprotte</div><div style="font-size:11px;font-weight:800;color:var(--berry)">NEUE SAMMELKARTE</div></div>
+        <div class="card-new"><i data-c="knight"></i><div class="disp" style="font-size:15px">Sprotte</div><div style="font-size:11px;font-weight:800;color:var(--berry)">NEUE SAMMELKARTE</div></div>
         <div class="lifeflash"><i data-i="bird" data-t="sky"></i>Im Tal sind die ersten Vögel eingezogen!</div>
         <div style="flex:1"></div>
         <div class="btn" style="width:100%;margin:6px 0 0">Weiter</div>
@@ -384,7 +385,25 @@ footer{padding:50px 0 60px;text-align:center;color:var(--soft);font-size:14px}
 function icon(name,tone,extra){
   return '<svg class="i t-'+(tone||'plum')+(extra?' '+extra:'')+'" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-'+name+'"/></svg>';
 }
+/* ---------- Figuren (Illustrationen, Tusche + flache Farbe) ---------- */
+var INKC='#2B2535';
+function chr(kind){
+  var P={pawn:['#7CC25A','#4FA03A'],rook:['#A58BDB','#7459B0'],bishop:['#62B4EC','#3A8AC6'],knight:['#F7B93F','#D98A1F'],queen:['#F4738D','#CC4768'],king:['#52497A','#322B54']}[kind];
+  var c1=P[0],c2=P[1],S=' stroke="'+INKC+'" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"',
+  base='<ellipse cx="52" cy="125" rx="34" ry="4" fill="'+INKC+'" opacity=".22"/><rect x="24" y="108" width="52" height="16" rx="8" fill="'+c2+'"'+S+'/><path d="M32 114h36" stroke="#fff" stroke-width="2" opacity=".5" stroke-linecap="round"/>',
+  face=function(x,y){return '<circle cx="'+(x-8)+'" cy="'+y+'" r="3.200" fill="'+INKC+'"/><circle cx="'+(x+8)+'" cy="'+y+'" r="3.200" fill="'+INKC+'"/><circle cx="'+(x-7)+'" cy="'+(y-1.200)+'" r="1" fill="#fff"/><circle cx="'+(x+9)+'" cy="'+(y-1.200)+'" r="1" fill="#fff"/><ellipse cx="'+(x-14)+'" cy="'+(y+7)+'" rx="4.200" ry="2.800" fill="#FF8FA3" opacity=".85"/><ellipse cx="'+(x+14)+'" cy="'+(y+7)+'" rx="4.200" ry="2.800" fill="#FF8FA3" opacity=".85"/><path d="M'+(x-4)+' '+(y+7)+'q4 5 8 0" fill="none" stroke="'+INKC+'" stroke-width="2.600" stroke-linecap="round"/>'},
+  hatch=function(x,y,n){var d='';for(var k=0;k<n;k++)d+='M'+(x+k*5)+' '+(y+k*1.500)+'l-5 13';return '<path d="'+d+'" stroke="'+INKC+'" stroke-width="1.600" opacity=".4" fill="none" stroke-linecap="round"/>'},
+  gold='#FFC83D',b='';
+  if(kind==='pawn')b=base+'<path d="M35 108C37 86 41 70 43 58H59C61 70 65 86 67 108Z" fill="'+c1+'"'+S+'/>'+hatch(57,72,3)+'<ellipse cx="51" cy="58" rx="19" ry="7" fill="'+c2+'"'+S+'/><circle cx="51" cy="34" r="21" fill="'+c1+'"'+S+'/><path d="M62 26q5 8 1 17" fill="none" stroke="'+INKC+'" stroke-width="1.600" opacity=".4"/>'+face(51,36);
+  if(kind==='rook')b=base+'<path d="M30 62L34 108H70L74 62Z" fill="'+c1+'"'+S+'/>'+hatch(60,74,3)+'<path d="M26 62V20H38V30H45V20H57V30H64V20H76V62Z" fill="'+c1+'"'+S+'/><path d="M26 62H76" stroke="'+INKC+'" stroke-width="3"/><path d="M30 52h8M62 52h8M50 40h8M33 40h8" stroke="'+INKC+'" stroke-width="1.600" opacity=".35"/>'+face(51,44)+'<path d="M45 108v-14a6 6 0 0 1 12 0v14z" fill="'+c2+'"'+S+'/>';
+  if(kind==='bishop')b=base+'<path d="M38 66L42 108H62L66 66Z" fill="'+c1+'"'+S+'/>'+hatch(58,76,3)+'<ellipse cx="52" cy="66" rx="20" ry="7" fill="'+c2+'"'+S+'/><path d="M52 8C74 22 80 46 68 62H36C24 46 30 22 52 8Z" fill="'+c1+'"'+S+'/><circle cx="52" cy="8" r="6" fill="'+gold+'"'+S+'/><path d="M52 18v12M46 24h12" stroke="'+INKC+'" stroke-width="3" stroke-linecap="round"/>'+face(52,48)+hatch(60,32,3);
+  if(kind==='knight')b=base+'<path d="M72 108C72 78 80 52 64 30L68 12 54 22C40 20 26 36 20 58L24 70C28 74 36 70 42 64C44 74 36 84 32 108Z" fill="'+c1+'"'+S+'/><path d="M64 30C70 44 74 60 72 84M58 26C68 38 70 58 70 76" fill="none" stroke="'+c2+'" stroke-width="7" stroke-linecap="round"/><path d="M64 30C70 44 74 60 72 84M58 26C68 38 70 58 70 76" fill="none" stroke="'+INKC+'" stroke-width="1.600" opacity=".55" stroke-dasharray="3 5"/><circle cx="43" cy="42" r="3.600" fill="'+INKC+'"/><circle cx="44" cy="41" r="1.100" fill="#fff"/><circle cx="25" cy="62" r="2" fill="'+INKC+'"/><ellipse cx="36" cy="54" rx="4.400" ry="2.800" fill="#FF8FA3" opacity=".85"/><path d="M26 69q6 3 12-1" fill="none" stroke="'+INKC+'" stroke-width="2.400" stroke-linecap="round"/><path d="M60 22L63 8 68 18" fill="'+c2+'"'+S+'/>';
+  if(kind==='queen')b=base+'<path d="M34 108C36 86 40 66 38 52H66C64 66 68 86 70 108Z" fill="'+c1+'"'+S+'/>'+hatch(60,74,3)+'<ellipse cx="52" cy="52" rx="18" ry="6" fill="'+c2+'"'+S+'/><path d="M32 48L26 20 40 32 52 12 64 32 78 20 72 48Z" fill="'+gold+'"'+S+'/><circle cx="26" cy="18" r="4.200" fill="'+c2+'"'+S+'/><circle cx="52" cy="10" r="4.200" fill="'+c2+'"'+S+'/><circle cx="78" cy="18" r="4.200" fill="'+c2+'"'+S+'/>'+face(52,70);
+  if(kind==='king')b=base+'<path d="M34 108C36 88 40 70 38 56H66C64 70 68 88 70 108Z" fill="'+c1+'"'+S+'/>'+hatch(60,76,3)+'<ellipse cx="52" cy="56" rx="18" ry="6" fill="'+gold+'"'+S+'/><path d="M30 52C30 34 74 34 74 52Z" fill="'+gold+'"'+S+'/><path d="M48 4h8v8h8v8h-8v8h-8v-8h-8v-8h8z" fill="'+gold+'"'+S+'/>'+face(52,76).replace(/#FF8FA3/g,'#FF8FA3')+'<path d="M40 86q12 10 24 0" fill="none" stroke="#E8E2F5" stroke-width="3" stroke-linecap="round" opacity=".0"/>';
+  return '<svg class="chr" viewBox="8 0 90 130" aria-hidden="true">'+b+'</svg>';
+}
 function hydrate(root){
+  (root||document).querySelectorAll('i[data-c]').forEach(function(el){var d=document.createElement('span');d.innerHTML=chr(el.dataset.c);el.replaceWith(d.firstChild)});
   (root||document).querySelectorAll('i[data-i]').forEach(function(el){
     var d=document.createElement('span');
     d.innerHTML=icon(el.dataset.i,el.dataset.t,el.className.indexOf('out')>-1?'out':'');
@@ -516,6 +535,21 @@ document.getElementById('worldlist').innerHTML=WORLDS.map(function(w,i){
     else TX.push('<path d="M'+f(tx)+' '+f(ty)+'v-4M'+f(tx-2)+' '+f(ty)+'l-1-3M'+f(tx+2)+' '+f(ty)+'l1-3" stroke="'+dk+'" stroke-width="1" fill="none" stroke-linecap="round" opacity=".5"/>');
   }
   G.push(TX.join(''));
+  // Papierkorn (ein Pfad, viele Punkte)
+  var gd='',gl='';
+  for(i=0;i<2600;i++){var gx=rr(2,W-2),gy=rr(2,H-2);if(R()<.7)gd+='M'+f(gx)+' '+f(gy)+'h.1';else gl+='M'+f(gx)+' '+f(gy)+'h.1'}
+  G.push('<path d="'+gd+'" stroke="'+INK+'" stroke-width="1.300" stroke-linecap="round" opacity=".16"/><path d="'+gl+'" stroke="#fff" stroke-width="1.300" stroke-linecap="round" opacity=".3"/>');
+  // schraffierte Hügel in den goldenen Landstrichen
+  for(i=0;i<30;i++){var hX=rr(20,W-20),hy=rr(430,980);
+    if(water(hX,hy,16)||dpath(road.S,hX,hy)<24)continue;var zz=false;for(var q=0;q<ZONES.length;q++){if(dist(hX,hy,ZONES[q][0],ZONES[q][1])<ZONES[q][2]+14)zz=true}if(zz)continue;
+    var hw=rr(14,24),hc=mix(colorAt(hy),'#7a5a2a',.22),hh='';
+    for(var k=0;k<5;k++)hh+='M'+f(hX+hw*.1+k*hw*.15)+' '+f(hy-2-k*1.200)+'l'+f(hw*.12)+' '+f(-hw*.3);
+    G.push('<ellipse cx="'+f(hX+hw*.3)+'" cy="'+f(hy+1)+'" rx="'+f(hw*1.100)+'" ry="3" fill="'+INK+'" opacity=".2"/><path d="M'+f(hx-hw)+' '+f(hy)+'q'+f(hw)+' '+f(-hw*1.100)+' '+f(hw*2)+' 0z" fill="'+hc+'"'+ST+'/><path d="'+hh+'" stroke="'+INK+'" stroke-width="1" fill="none" opacity=".6"/>');
+  }
+  // Regionennamen in Pinselschrift
+  [['Grüne Felder',300,1478,-3],['Goldene Hügel',290,842,-4],['Türkisküste',60,336,-5],['Rote Gipfel',300,236,-4]].forEach(function(r){
+    G.push('<text x="'+r[1]+'" y="'+r[2]+'" transform="rotate('+r[3]+' '+r[1]+' '+r[2]+')" font-family="Kaushan Script,Baloo 2,cursive" font-size="40" fill="#fff" fill-opacity=".62" stroke="'+INK+'" stroke-width="1.100" stroke-opacity=".55" paint-order="stroke">'+r[0]+'</text>');
+  });
 
   /* ----- Wasser ----- */
   var seaD='M'+SEA.map(function(p){return p.join(' ')}).join('L')+'Z';
@@ -564,7 +598,7 @@ document.getElementById('worldlist').innerHTML=WORLDS.map(function(w,i){
   function smoke(x,y,d){var o='';for(var q=0;q<3;q++){var b=(q*1.2+d);o+='<circle cx="'+x+'" cy="'+y+'" r="2" fill="#fff" stroke="'+INK+'" stroke-width=".8" opacity="0"><animate attributeName="cy" values="'+y+';'+(y-24)+'" dur="3.600s" begin="'+b+'s" repeatCount="indefinite"/><animate attributeName="cx" values="'+x+';'+(x+10)+'" dur="3.600s" begin="'+b+'s" repeatCount="indefinite"/><animate attributeName="r" values="2;6" dur="3.600s" begin="'+b+'s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;.9;0" dur="3.600s" begin="'+b+'s" repeatCount="indefinite"/></circle>'}return o}
 
   /* ----- Berge oben rechts (Tuschezeichnung) ----- */
-  var peaks=[[318,128,40,76],[482,110,54,100],[552,176,36,56],[270,176,30,48],[400,190,30,40],[520,92,28,42]];
+  var peaks=[[318,134,52,100],[482,120,70,132],[554,184,44,76],[262,184,38,62],[400,196,40,56],[524,98,38,56],[220,206,30,44],[580,126,28,48]];
   peaks.sort(function(a,b){return a[1]-b[1]});
   peaks.forEach(function(p){
     var x=p[0],y=p[1],w=p[2],h=p[3],ax=x,ay=y-h;
@@ -597,14 +631,30 @@ document.getElementById('worldlist').innerHTML=WORLDS.map(function(w,i){
   function forestPt(){var a=R()*6.283,d=Math.sqrt(R())*150;return [430+Math.cos(a)*d*1.1,905+Math.sin(a)*d]}
   function anyPt(){return [rr(14,W-14),rr(200,H-14)]}
   var baseTrees=[],lifeTrees=[],cnt,p;
-  for(cnt=0;cnt<42;cnt++){p=spot(10,forestPt);if(p)baseTrees.push([p[0],p[1],rr(.9,1.250),'pine'])}
+  for(cnt=0;cnt<170;cnt++){p=spot(8,forestPt);if(p)baseTrees.push([p[0],p[1],rr(.65,1.050),R()<.8?'pine':'round'])}
   for(cnt=0;cnt<30;cnt++){p=spot(10,anyPt);if(p)baseTrees.push([p[0],p[1],rr(.8,1.150),R()<.3?'pine':'round'])}
   for(cnt=0;cnt<64;cnt++){p=spot(10,forestPt);if(p)lifeTrees.push([p[0],p[1],rr(.9,1.250),R()<.6?'pine':'round'])}
   for(cnt=0;cnt<90;cnt++){p=spot(10,anyPt);if(p)lifeTrees.push([p[0],p[1],rr(.8,1.150),R()<.35?'pine':'round'])}
+  // Waldklumpen mit dunklem Unterholz in allen Regionen
+  function clump(cx,cy,n,sp,kind,sc){
+    var bl='<path d="'+blob(cx,cy,sp*1.100,sp*.75,10,.2)+'" fill="'+mix(colorAt(cy),'#10201a',.55)+'" opacity=".38"/>',hh='';
+    for(var k=0;k<14;k++)hh+='M'+f(cx+rr(-sp,sp))+' '+f(cy+rr(-sp*.5,sp*.6))+'l3-6';
+    B.push(bl+'<path d="'+hh+'" stroke="'+INK+'" stroke-width="1" opacity=".4" fill="none"/>');
+    for(var j=0;j<n;j++){var a=R()*6.283,d=Math.sqrt(R())*sp,x=cx+Math.cos(a)*d*1.200,y=cy+Math.sin(a)*d*.8;
+      if(ok(x,y,5,8))baseTrees.push([x,y,rr(sc*.8,sc*1.200),kind==='mix'?(R()<.7?'pine':'round'):kind])}
+  }
+  clump(70,330,26,48,'pine',.8);clump(300,360,22,44,'pine',.8);clump(520,300,16,34,'pine',.8);
+  clump(64,640,20,44,'round',.9);clump(300,560,24,46,'round',.9);clump(540,720,20,40,'round',.9);clump(100,760,14,34,'round',.9);
+  clump(300,1070,18,42,'mix',.9);clump(90,1290,14,36,'mix',.9);clump(330,1380,16,40,'mix',.9);clump(480,1180,14,34,'mix',.9);
   baseTrees.sort(function(a,b){return a[1]-b[1]});
   // Bergkiefern
   for(i=0;i<12;i++){var px=rr(240,570),py=rr(150,215);if(!water(px,py,8)&&dpath(road.S,px,py)>40)baseTrees.push([px,py,rr(.7,.9),'pine'])}
   baseTrees.forEach(function(t){B.push(treeP(t[0],t[1],t[2],t[3]))});
+  var WALL=['#F3E3C3','#F7D9C4','#E9EBC8','#DCE9F2'],ROOF=[['#E8744F','#C95A3B'],['#4A88B8','#2F6B98'],['#E2A63C','#C5851E'],['#9A7BCB','#7458A8']];
+  [[290,1380,340,1420],[60,1220,120,1290],[270,1040,340,1090],[60,700,110,760],[300,520,350,570],[80,410,130,460],[490,600,540,650],[240,720,300,760]].forEach(function(v,vi){
+    for(var t2=0;t2<3;t2++){var q2=spot(14,function(){return [rr(v[0],v[2]),rr(v[1],v[3])]},25);if(q2){var rf=pick(ROOF);
+      var hs=houseP(q2[0],q2[1],rr(22,30),rr(24,30),pick(WALL),rf[0],rf[1]);B.push(hs);if(t2==0)L.push(life(2,vi*120,smoke(q2[0]+4,q2[1]-26,vi*.3)))}}
+  });
   lifeTrees.forEach(function(t,i){L.push(life(1,i*18,treeP(t[0],t[1],t[2],t[3])))});
   for(cnt=0;cnt<50;cnt++){p=spot(7,anyPt,30);if(p)L.push(life(1,cnt*30,bushP(p[0],p[1],rr(4,6.500))))}
   var fcol=['#FFF6D6','#F7B8C3','#FFD971','#D9C8F5','#FFFFFF','#F58A7E'];
