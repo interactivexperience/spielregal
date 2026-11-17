@@ -127,8 +127,8 @@ Bei richtigem Zug: Puls, Ton, Fortschrittsbalken.
 - **Weltkarte:** Der Generator aus dem Konzept wird übernommen. **Risiko iOS/Performance:** Die Karte hat mehrere tausend
   Pfadelemente und animierte Ebenen. Maßnahmen: bewusst keine SVG-Filter, Textur-Glyphen auf rund die Hälfte reduzieren,
   Lebens-Ebenen erst ab ihrer Stufe rendern, auf einem echten iPhone testen.
-- **Schriften:** Kalam, Patrick Hand und Permanent Marker sind eingebettet (rund 150 KB). Option: auf die genutzten
-  Zeichen reduzieren (Subset), das spart etwa die Hälfte.
+- **Schriften:** Londrina Solid (Überschriften, Zahlen, Beschriftungen, auch der Titel, kein eigenes Logo) und Delius
+  (Fließtext) sind eingebettet (rund 60 KB). Ein Subset auf die genutzten Zeichen wäre möglich, lohnt sich bei dieser Größe kaum.
 - **Dateigröße:** Konzept 340 KB, Spiel mit Engine und Inhalten wohl 450–600 KB. Das ist für eine Einzeldatei vertretbar,
   soll aber beobachtet werden.
 
@@ -169,7 +169,7 @@ Bei richtigem Zug: Puls, Ton, Fortschrittsbalken.
 2. **Zielgruppe:** Erwachsene und Jugendliche (Annahme). Bei Kindern müssten Texte kürzer und vorlesbar werden.
 3. **Partie-Meldung:** Nur Duelle und Bosse melden (Vorschlag) oder auch Lektionen?
 4. **Mut-Herzen:** weich (Hinweise statt Game Over, Vorschlag) oder echte Begrenzung?
-5. **Schriften:** komplett einbetten (einfach, 150 KB) oder reduzieren (aufwendiger, etwa die Hälfte)?
+5. ~~Schriften~~ entschieden: Londrina Solid + Delius, eingebettet, kein Logo.
 6. **Branch:** Soll ich für `schach/` direkt auf `main` pushen (wie in der CLAUDE.md für Updates festgelegt) oder weiter auf dem Branch bleiben, bis das erste Spiel steht?
 
 ## 11. Fertig, wenn
