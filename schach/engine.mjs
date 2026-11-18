@@ -1,4 +1,4 @@
-// Schachdorf – Regel-Engine (DOM-frei, läuft im Browser und in Node)
+// Spiegelschach – Regel-Engine (DOM-frei, läuft im Browser und in Node)
 //
 // Brett: Array mit 64 Zeichen in FEN-Reihenfolge (0 = a8 … 63 = h1), '.' = leer,
 // Großbuchstaben = Weiß (P N B R Q K), Kleinbuchstaben = Schwarz.

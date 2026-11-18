@@ -61,7 +61,7 @@ try {
   check(await page.locator('a[href^="grand-austria-hotel/?v="]:has-text("Partie läuft")').count() === 1, "laufende Grand-Hotel-Partie nicht angezeigt");
   check(await page.locator('a[href^="three-sisters/?v="]:has-text("Partie läuft")').count() === 0, "Drei Schwestern fälschlich als laufend markiert");
   if (process.env.SHOT) { await page.emulateMedia({ colorScheme: "dark" }); await page.locator("text=Digital spielen").first().scrollIntoViewIfNeeded(); await page.waitForTimeout(400); await page.screenshot({ path: process.env.SHOT }); }
-  for (const n of ["Grand Hotel Wien", "Drei Schwestern", "Prinzessinnenball", "Landgut", "Saum", "Glut", "Siedlerhain", "Schachdorf"]) check(await page.locator(`a:has-text("${n}")`).count() >= 1, `Name ${n} fehlt`);
+  for (const n of ["Grand Hotel Wien", "Drei Schwestern", "Prinzessinnenball", "Landgut", "Saum", "Glut", "Siedlerhain", "Spiegelschach"]) check(await page.locator(`a:has-text("${n}")`).count() >= 1, `Name ${n} fehlt`);
   await page.locator('button:has-text("Sammlung")').last().click();
   await page.waitForTimeout(500);
   await page.locator("text=Three Sisters: Harvest Edition").first().click();

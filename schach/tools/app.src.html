@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#FBF3E4">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Schachdorf">
-<title>Schachdorf</title>
+<meta name="apple-mobile-web-app-title" content="Spiegelschach">
+<title>Spiegelschach</title>
 <style>
 /*@FONTS@*/
 :root{--paper:#FBF3E4;--card:#FFFCF5;--ink:#2B2535;--soft:#7A6E80;--navy:#2D3050;--berry:#E2566B;--sun:#FFC83D;--moss:#5FA55A;--moss-d:#3F7D3F;--sq-l:#F6E7C8;--sq-d:#C9A26B;--sky:#6CB4EE}
@@ -182,7 +182,7 @@ function myName(){try{const p=(JSON.parse(lsGet('spielregal:players','[]'))||[])
 function recordPlay(){
   if(!S||!S.over||S.recorded)return;
   const me=myName(),bot=BOTS[S.level].name,pts=S.over.res==='win'?1:S.over.res==='draw'?.5:0;
-  const entry={id:'schach-'+S.seed,source:'schach',app:'Schachdorf',bggId:'',gameName:'Schachdorf',date:localDate(),human:me,
+  const entry={id:'schach-'+S.seed,source:'schach',app:'Spiegelschach',bggId:'',gameName:'Spiegelschach',date:localDate(),human:me,
     results:[{name:me,bot:false,total:pts},{name:bot,bot:true,total:1-pts}],winners:S.over.res==='win'?[me]:S.over.res==='loss'?[bot]:[]};
   try{const inbox=JSON.parse(lsGet(INBOX_KEY,'[]'));if(!inbox.some(e=>e.id===entry.id))inbox.push(entry);lsSet(INBOX_KEY,JSON.stringify(inbox));S.recorded=true}catch(e){}
 }
@@ -282,7 +282,7 @@ function startHTML(){
   const lv=l=>{const b=BOTS[l];return '<button class="opp frame'+(U.lvl===l?' sel':'')+'" data-a="lvl" data-n="'+l+'" data-info="'+esc(b.desc)+'"><span class="chr-wrap">'+window.chr(b.kind)+'</span><span><b>Stufe '+l+': '+b.name+'</b><span class="t">'+esc(b.desc)+'</span></span><span class="tick">'+icon('check','moss')+'</span></button>'};
   const col=(c,l)=>'<button class="chip'+(U.col===c?' sel':'')+'" data-a="col" data-n="'+c+'">'+l+'</button>';
   return '<div class="top"><a class="leave" href="../" data-info="Zurück zu Spielregal">'+icon('chevron','ink')+'Spielregal</a></div>'+
-    '<div class="hero"><h1>Schach<span>dorf</span></h1><p>Im Land hinter dem Spiegel.</p></div>'+
+    '<div class="hero"><h1>Spiegel<span>schach</span></h1><p>Alice lernt Schach im Wunderland.</p></div>'+
     '<div class="cast">'+['alice','rabbit','cat','wknight','rqueen','king'].map(k=>window.chr(k)).join('')+'</div>'+
     (sv?'<button class="btn" data-a="resume" style="margin-bottom:6px">Partie fortsetzen</button><p class="foot" style="margin:0 0 10px">gegen '+BOTS[sv.level].name+', '+Math.ceil(sv.moves.length/2)+' Züge gespielt</p>':'')+
     '<div class="sec"><h2>Partie gegen Bot</h2>'+lv(1)+lv(2)+lv(3)+

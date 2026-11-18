@@ -1,4 +1,4 @@
-// Smoke-Test für schach/index.html („Schachdorf“, Partie gegen den Bot).
+// Smoke-Test für schach/index.html („Spiegelschach“, Partie gegen den Bot).
 // 1. Lädt die Seite im iPhone-Format und prüft auf JS-Fehler, 404 und den Beenden-Link.
 // 2. Spielt per Tippen Züge (Weiß), prüft Bot-Antwort, Zugliste, Zug zurück, Speichern/Fortsetzen.
 // 3. Spielt als Schwarz (gedrehtes Brett), prüft Aufgeben, Spielstand-Kennung und den Spielregal-Eingangskorb.
@@ -101,7 +101,7 @@ try {
   check(await page.locator(".sheet .end").count() === 1, "Ergebnisblatt erscheint");
   await snap("6-ende");
   const inbox = await page.evaluate(() => JSON.parse(localStorage.getItem("spielregal:inbox:plays") || "[]"));
-  check(inbox.length === 1 && inbox[0].source === "schach" && inbox[0].gameName === "Schachdorf", "Eingangskorb enthält genau eine Schach-Partie");
+  check(inbox.length === 1 && inbox[0].source === "schach" && inbox[0].gameName === "Spiegelschach", "Eingangskorb enthält genau eine Schach-Partie");
   check(inbox[0] && inbox[0].winners.length === 1 && inbox[0].winners[0] !== inbox[0].human, "Sieger ist der Bot");
   const afterEnd = await page.evaluate(() => JSON.parse(localStorage.getItem("schach:save")));
   check(afterEnd.screen === "start", "nach dem Ende steht schach:save auf 'start'");
@@ -178,4 +178,4 @@ try {
 if (errors.length) { fehler += errors.length; for (const e of errors) console.log("FEHLER: " + e); }
 await browser.close(); server.close();
 if (fehler) { console.log(`${fehler} Fehler.`); process.exit(1); }
-console.log("OK – Schachdorf: Start, Partie, Speichern, Aufgeben, Matt und Eingangskorb funktionieren.");
+console.log("OK – Spiegelschach: Start, Partie, Speichern, Aufgeben, Matt und Eingangskorb funktionieren.");
