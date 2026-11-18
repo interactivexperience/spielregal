@@ -178,6 +178,13 @@ svg.i.out{stroke:var(--ink);stroke-width:1.1;stroke-linejoin:round}
 .conf{position:absolute;inset:0;overflow:hidden;pointer-events:none;border-radius:22px 22px 0 0}
 .conf i{position:absolute;top:-12px;width:8px;height:14px;animation:cfall 2.8s linear infinite}
 @keyframes cfall{to{transform:translateY(560px) rotate(540deg)}}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 2px 14px}
+.cc{padding:8px 6px;background:var(--card);border-radius:12px;box-shadow:0 0 0 3px #fff,0 0 0 5px #2A3377,3px 5px 0 5px rgba(42,51,119,.18);text-align:center}
+.cc small{display:block;font:900 11px/1.1 'Londrina Solid',cursive;color:var(--berry)}
+.cc .chr{font-size:70px;display:block;margin:4px auto}
+.cc b{display:block;font-size:15px;line-height:1.05}
+.cc.lock .chr{filter:brightness(0) opacity(.22)}
+.cc.lock b{color:var(--soft)}
 .ccard{margin:10px auto 14px;width:150px;padding:8px;background:var(--card);border-radius:12px;box-shadow:0 0 0 3px #fff,0 0 0 5px #2A3377,4px 7px 0 5px rgba(42,51,119,.2);transform:rotate(-3deg);animation:cflip 1.1s cubic-bezier(.3,1.4,.5,1) .4s backwards}
 .ccard .chr{font-size:88px;display:block;margin:0 auto}
 .ccard b{display:block;font-size:17px;line-height:1.05}
@@ -447,7 +454,7 @@ function mapHTML(){
   if(pts.length>1&&!rm())alice='<g><animateMotion dur="'+(pts.length*7)+'s" repeatCount="indefinite" calcMode="linear" keyPoints="0;1;1;0;0" keyTimes="0;.45;.5;.95;1" path="'+spl(pts)+'"/><ellipse cx="1" cy="1" rx="11" ry="3" fill="#2A3377" opacity=".2"/>'+ai+'</g>';
   else alice='<g transform="translate('+(NODES[ci][0]+34)+' '+(NODES[ci][1]-16)+')"><ellipse cx="1" cy="1" rx="11" ry="3" fill="#2A3377" opacity=".2"/>'+ai+'</g>';
   const found=Object.keys(P.eggs).length;
-  return '<div class="top"><button class="leave" data-a="home" data-info="Zum Startbildschirm">'+icon('chevron','ink')+'Start</button><div class="grow"></div><div class="bar eggc" data-info="Versteckte Überraschungen aus den Büchern. Tippe auf der Karte, wenn du eins findest.">'+icon('star','sun')+found+'/'+EGGS.length+'</div>'+xpBar()+'</div>'+
+  return '<div class="top"><button class="leave" data-a="home" data-info="Zum Startbildschirm">'+icon('chevron','ink')+'Start</button><div class="grow"></div><div class="bar eggc" data-info="Versteckte Überraschungen aus den Büchern. Tippe auf der Karte, wenn du eins findest.">'+icon('star','sun')+found+'/'+EGGS.length+'</div><button class="bar eggc" data-a="cards" data-info="Deine Sammelkarten: eine für jeden besiegten Boss.">'+icon('trophy','sun')+Object.keys(P.cards).length+'/'+LSN_DATA.length+'</button>'+xpBar()+'</div>'+
     '<div class="mapwrap"><img src="art/map.jpg" alt="Karte des Landes hinter dem Spiegel" draggable="false"><svg class="ov" viewBox="0 0 600 1500">'+st+ov+'</svg>'+nodes+
     '<svg class="ova" viewBox="0 0 600 1500" aria-hidden="true">'+alice+'</svg></div>';
 }
@@ -472,6 +479,10 @@ function lessonEnd(){
     (last&&wd&&!nextW?'<button class="btn" data-a="finale">Partie gegen die Rote Königin</button>':'')+
     (!last?'<button class="btn" data-a="lnext">Nächste Lektion</button>':'<button class="btn" data-a="lback">Zur Karte</button>')+
     '<button class="btn alt" data-a="lagain">Nochmal</button>'+(!last?'<button class="btn alt" data-a="lback">Zur Karte</button>':'')+'</div></div>';
+}
+function cardsSheet(){
+  const items=LSN_DATA.map((w,wi)=>{const l=w.lessons.find(x=>x.card);return l?{wi,w,l,got:!!P.cards[l.id]}:null}).filter(Boolean),n=items.filter(x=>x.got).length;
+  return '<div class="scrim" data-a="close"></div><div class="sheet"><h3>Sammelkarten '+n+'/'+items.length+'</h3><p style="margin:0 4px 10px;color:#4a4052">Für jeden besiegten Boss gibt es eine Karte.</p><div class="cgrid">'+items.map(x=>x.got?'<div class="cc"><small>'+esc(x.w.name)+'</small>'+window.chr(x.l.card.kind)+'<b>'+esc(x.l.card.name)+'</b></div>':'<div class="cc lock"><small>'+esc(x.w.name)+'</small>'+window.chr(x.l.card.kind)+'<b>Noch verborgen</b></div>').join('')+'</div><button class="btn alt" data-a="close">Okay</button></div>';
 }
 function worldSheet(){
   const wi=U.world,w=LSN_DATA[wi];
@@ -530,6 +541,7 @@ function sheetHTML(){
   if(!U.sheet)return '';
   const scrim='<div class="scrim" data-a="close"></div>';
   if(U.sheet==='world')return worldSheet();
+  if(U.sheet==='cards')return cardsSheet();
   if(U.sheet==='lend'&&LSN)return lessonEnd();
   if(U.sheet==='promo'){
     const w=U.view==='lesson'?true:S.human==='w';
@@ -588,6 +600,7 @@ APP.addEventListener('click',e=>{
   if(a==='lstart'){LSN.phase='task';loadTask();render();return}
   if(a==='lhint'){lessonHint();return}
   if(a==='lback'){U.view='map';U.sheet=null;LSN=null;mapFocus=false;render();return}
+  if(a==='cards'){U.sheet='cards';render();return}
   if(a==='finale'){U.lvl=3;U.col='rnd';U.sheet=null;newGame();return}
   if(a==='lnext'){const w=LSN.w,i=LSN.li+1;U.sheet=null;openLesson(w,i);return}
   if(a==='lagain'){const w=LSN.w,i=LSN.li;U.sheet=null;openLesson(w,i);return}
