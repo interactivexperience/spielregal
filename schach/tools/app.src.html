@@ -143,7 +143,7 @@ const E=window.SchachEngine;
 const {START_FEN,parseFEN,legalMoves,makeMove,inCheck,isMate,isStalemate,isDraw,insufficientMaterial,positionKey,toSAN,moveKey,moveFromUCI,bestMove,sqName,sqIndex}=E;
 const SAVE_KEY='schach:save',INBOX_KEY='spielregal:inbox:plays',SOUND_KEY='schach:sound',FAST_KEY='spielregal:botFast';
 const APP=document.getElementById('app');
-const BOTS={1:{name:'Bruno',kind:'pawn',desc:'Bruno der Bauer patzt gern und freut sich über jede geschenkte Figur.'},2:{name:'Sprotte',kind:'knight',desc:'Sprotte denkt zwei Züge voraus und springt dir gern in die Quere.'},3:{name:'Meister Matt',kind:'king',desc:'Meister Matt rechnet drei Züge voraus. Hier musst du aufpassen.'}};
+const BOTS={1:{name:'Weißes Kaninchen',kind:'rabbit',desc:'Immer in Eile: Das Kaninchen patzt gern und freut sich über jede geschenkte Figur.'},2:{name:'Grinsekatze',kind:'cat',desc:'Die Grinsekatze denkt zwei Züge voraus und taucht genau dort auf, wo du sie nicht erwartest.'},3:{name:'Rote Königin',kind:'rqueen',desc:"Die Rote Königin rechnet drei Züge voraus. „Kopf ab!“ – hier musst du aufpassen."}};
 const NAMES={p:'Bauer',n:'Springer',b:'Läufer',r:'Turm',q:'Dame',k:'König'};
 const ICON={p:'pawn',n:'knight',b:'bishop',r:'rook',q:'queen',k:'king'};
 const icon=(n,tone,extra)=>'<svg class="i t-'+(tone||'plum')+(extra?' '+extra:'')+'" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-'+n+'"/></svg>';
@@ -282,8 +282,8 @@ function startHTML(){
   const lv=l=>{const b=BOTS[l];return '<button class="opp frame'+(U.lvl===l?' sel':'')+'" data-a="lvl" data-n="'+l+'" data-info="'+esc(b.desc)+'"><span class="chr-wrap">'+window.chr(b.kind)+'</span><span><b>Stufe '+l+': '+b.name+'</b><span class="t">'+esc(b.desc)+'</span></span><span class="tick">'+icon('check','moss')+'</span></button>'};
   const col=(c,l)=>'<button class="chip'+(U.col===c?' sel':'')+'" data-a="col" data-n="'+c+'">'+l+'</button>';
   return '<div class="top"><a class="leave" href="../" data-info="Zurück zu Spielregal">'+icon('chevron','ink')+'Spielregal</a></div>'+
-    '<div class="hero"><h1>Schach<span>dorf</span></h1><p>Schach spielen, Figur für Figur.</p></div>'+
-    '<div class="cast">'+['pawn','rook','bishop','knight','queen','king'].map(k=>window.chr(k)).join('')+'</div>'+
+    '<div class="hero"><h1>Schach<span>dorf</span></h1><p>Im Land hinter dem Spiegel.</p></div>'+
+    '<div class="cast">'+['alice','rabbit','cat','wknight','rqueen','king'].map(k=>window.chr(k)).join('')+'</div>'+
     (sv?'<button class="btn" data-a="resume" style="margin-bottom:6px">Partie fortsetzen</button><p class="foot" style="margin:0 0 10px">gegen '+BOTS[sv.level].name+', '+Math.ceil(sv.moves.length/2)+' Züge gespielt</p>':'')+
     '<div class="sec"><h2>Partie gegen Bot</h2>'+lv(1)+lv(2)+lv(3)+
     '<h2 style="font-size:22px;margin:4px 0 8px">Du spielst</h2><div class="chips">'+col('w','Weiß')+col('b','Schwarz')+col('rnd','Zufall')+'</div>'+
