@@ -107,8 +107,8 @@ await page.evaluate(([TITLE, SUB]) => {
     ${card(106, 316, -12, 's', DEEP)}${card(374, 316, 12, 'h', RED)}
     ${alice()}
     ${sparkle}<g clip-path="url(#inner)">${crayon}</g>
-    <text x="240" y="132" text-anchor="middle" font-family="Londrina Solid, cursive" font-weight="900" font-size="70" fill="${DEEP}" transform="translate(4 5)" opacity=".55">${TITLE}</text>
-    <text x="240" y="132" text-anchor="middle" font-family="Londrina Solid, cursive" font-weight="900" font-size="70" fill="${CREAM}">${TITLE}</text>
+    <text x="240" y="116" text-anchor="middle" font-family="Londrina Solid, cursive" font-weight="900" font-size="70" fill="${DEEP}" transform="translate(4 5)" opacity=".55">${TITLE}</text>
+    <text x="240" y="116" text-anchor="middle" font-family="Londrina Solid, cursive" font-weight="900" font-size="70" fill="${CREAM}">${TITLE}</text>
     <path d="M110 150h96M274 150h96" stroke="${CREAM}" stroke-width="1.500" opacity=".8"/>${heart(240, 150, 1.600, RED)}
     <text x="240" y="178" text-anchor="middle" font-family="Delius, sans-serif" font-size="17" fill="${CREAM}">${SUB}</text>
   </svg>`;

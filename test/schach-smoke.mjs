@@ -37,6 +37,56 @@ const waitBot = async () => { await page.waitForFunction(() => { const s = windo
 const play = async (from, to) => { await page.click(sq(from)); await page.click(sq(to)); };
 
 try {
+  // ---- Lernpfad: Karte, Lektion spielen, Fortschritt ----
+  const lessonFlow = async () => {
+    await page.emulateMedia({ reducedMotion: "reduce" });   // pulsierende Marker sind sonst nicht „stabil“ genug zum Klicken
+    await page.click("[data-a=map]");
+    check(await page.locator(".mapwrap .node").count() === 10, "Karte zeigt zehn Ortsmarker");
+    check(await page.locator(".mapwrap .node.cur").count() === 1 && await page.locator(".mapwrap .alice").count() === 1, "aktuelle Welt und Alice auf der Karte");
+    await page.click('.node[data-node="2"]');
+    check(await page.locator(".sheet .lrow").count() === 0, "gesperrte Welt zeigt keine Lektionen");
+    await page.click(".scrim", { position: { x: 20, y: 20 } });
+    await page.click('.node[data-node="0"]');
+    check(await page.locator(".sheet .lrow").count() === 5 && await page.locator(".sheet .lrow:not([disabled])").count() === 1, "Welt 1: fünf Lektionen, nur die erste offen");
+    await page.click('.sheet .lrow[data-l="0"]');
+    await page.click("[data-a=lstart]");
+    for (let n = 0; n < 12; n++) {
+      if (await page.locator(".sheet .end").count()) break;
+      const st = await page.evaluate(() => { const w = window.__schach, E = w.E, L = w.LSN, { LESSONS } = { LESSONS: null };
+        const t = window.SchachLessons.WORLDS[L.w].lessons[L.li].tasks[L.ti], g = t.goal; let moves = null;
+        if (g.t === "tap") return { tap: g.sqs[0] };
+        const mv = E.legalMoves(w.G.pos).find(m => g.t === "to" ? g.sqs.includes(E.sqName(m.to)) : g.t === "cap" ? !!m.cap : (m.cap && E.sqName(m.to) === g.sq));
+        return { from: E.sqName(mv.from), to: E.sqName(mv.to), promo: !!mv.promo }; });
+      if (st.tap) await page.click(sq(st.tap)); else { await page.click(sq(st.from)); await page.click(sq(st.to)); if (st.promo) await page.click(".promo [data-n=q]"); }
+      await page.waitForTimeout(900);
+    }
+    check(await page.locator(".sheet .end .stars3").count() === 1, "Lektion endet mit Sternen");
+    const pr = await page.evaluate(() => JSON.parse(localStorage.getItem("schach:progress")));
+    check(pr && pr.l["w1-l1"] === 3 && pr.xp >= 40, "Fortschritt gespeichert (3 Sterne, XP)");
+    await snap("10-lektion-ende");
+    await page.click("[data-a=lnext]");
+    // falscher Zug kostet ein Herz, Hinweis zeigt Text
+    await page.click("[data-a=lstart]");
+    await page.click(sq("a1"));
+    check((await page.evaluate(() => window.__schach.LSN.hearts)) === 2, "Fehler kostet ein Herz");
+    await page.waitForTimeout(800);
+    await page.click("[data-a=lhint]");
+    check((await page.evaluate(() => window.__schach.LSN.hints)) === 1, "Hinweis wird gezählt");
+    await snap("11-lektion");
+    await page.click("[data-a=lback]");
+    await page.click('.node[data-node="0"]');
+    check(await page.locator(".sheet .lrow:not([disabled])").count() === 2, "nach Lektion 1 ist Lektion 2 offen");
+    await snap("12-karte");
+    await page.click(".scrim", { position: { x: 20, y: 20 } });
+    await page.click("[data-a=home]");
+    await page.evaluate(() => localStorage.removeItem("schach:progress"));
+    await page.reload({ waitUntil: "load" });
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+  };
+  await page.addInitScript(() => { try { localStorage.setItem("schach:sound", "0"); localStorage.setItem("spielregal:botFast", "1"); } catch (e) {} });
+  await page.goto(url, { waitUntil: "load" });
+  await lessonFlow();
+
   // ---- Quelltext und Datei stimmen überein ----
   try { execFileSync("node", [path.join(repoRoot, "schach/tools/build-index.mjs"), "--check"], { stdio: "pipe" }); }
   catch (e) { check(false, "schach/index.html ist nicht aktuell (build-index.mjs --check): " + String(e.stderr || e.message).trim()); }

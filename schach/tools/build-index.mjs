@@ -19,12 +19,17 @@ export function buildIndex() {
   const engine = 'window.SchachEngine=(function(){\n' + engineSrc.replace(/^export (const|function)/gm, '$1') +
     '\nreturn {' + names.join(',') + '};\n})();';
 
+  // Lektionen (ESM -> window.SchachLessons)
+  const lessonsSrc = read('lessons.mjs');
+  const lnames = [...lessonsSrc.matchAll(/^export (?:const|function) (\w+)/gm)].map(m => m[1]);
+  const lessons = 'window.SchachLessons=(function(){\n' + lessonsSrc.replace(/^export (const|function)/gm, '$1') + '\nreturn {' + lnames.join(',') + '};\n})();';
+
   // Schriften aus dem freigegebenen Konzept
   const fonts = (concept.match(/@font-face\{[^\n]*\n/g) || []).join('');
   if (!fonts) throw new Error('Keine @font-face-Blöcke im Konzept gefunden');
 
   // Duotone-Icons aus dem Konzept + neue für die Bedienung
-  const take = ['pawn', 'rook', 'bishop', 'knight', 'queen', 'king', 'trophy', 'star', 'flag', 'users', 'close', 'check', 'lock', 'bolt'];
+  const take = ['pawn', 'rook', 'bishop', 'knight', 'queen', 'king', 'trophy', 'star', 'flag', 'users', 'close', 'check', 'lock', 'bolt', 'heart', 'bulb', 'book', 'map'];
   let symbols = take.map(n => {
     const m = concept.match(new RegExp('<symbol id="i-' + n + '"[\\s\\S]*?</symbol>'));
     if (!m) throw new Error('Icon fehlt im Konzept: ' + n);
@@ -49,7 +54,7 @@ export function buildIndex() {
   symbols = pats + '\n' + symbols;
 
   return html.replace('/*@FONTS@*/', () => fonts).replace('/*@SYMBOLS@*/', () => symbols)
-    .replace('/*@ENGINE@*/', () => engine).replace('/*@CHR@*/', () => chr);
+    .replace('/*@ENGINE@*/', () => engine).replace('/*@CHR@*/', () => chr).replace('/*@LESSONS@*/', () => lessons);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

@@ -122,6 +122,44 @@ svg.i.out{stroke:var(--ink);stroke-width:1.1;stroke-linejoin:round}
 .bubble{position:fixed;z-index:40;max-width:260px;background:var(--navy);color:#fff;border-radius:10px;padding:8px 12px;font-size:16px;line-height:1.25;box-shadow:0 0 0 2px #fff,0 0 0 4px var(--ink);pointer-events:none;animation:fade .15s}
 @keyframes fade{from{opacity:0}}
 @keyframes up{from{transform:translateY(40px);opacity:0}}
+.mapwrap{position:relative;margin:6px -14px 0;aspect-ratio:600/1500}
+.mapwrap>img{position:absolute;inset:0;width:100%;height:100%;display:block}
+.node{position:absolute;transform:translate(-50%,-50%);width:11.5%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-size:clamp(22px,7vw,34px);z-index:2;background:#FFF6E3;box-shadow:0 0 0 3px #fff,0 0 0 5px #2A3377,3px 6px 0 5px rgba(42,51,119,.25);transition:transform .15s}
+.node:active{transform:translate(-50%,-50%) scale(.93)}
+.node.done{background:#BFE8C8}.node.cur{background:#FFE08A;animation:nodep 1.8s ease-in-out infinite}.node.lock{background:#E3DCEF;opacity:.92}
+@keyframes nodep{50%{transform:translate(-50%,-50%) scale(1.09)}}
+.nlab{position:absolute;transform:translateX(-50%);z-index:2;white-space:nowrap;font:900 clamp(12px,3.6vw,16px) 'Londrina Solid',cursive;color:#2A3377;background:#FFF6E3;border-radius:99px;padding:1px 10px;box-shadow:0 0 0 2px #fff,2px 3px 0 2px rgba(42,51,119,.22);pointer-events:none}
+.nstars{position:absolute;transform:translateX(-50%);z-index:2;display:flex;gap:1px;font-size:14px;pointer-events:none}
+.alice{position:absolute;z-index:3;width:12%;transform:translate(35%,-95%);pointer-events:none;filter:drop-shadow(2px 3px 0 rgba(42,51,119,.25));animation:walk .8s ease-in-out infinite}
+.alice .chr{width:100%;height:auto}
+@keyframes walk{50%{transform:translate(35%,-100%)}}
+.xpchip{display:flex;align-items:center;gap:6px;padding:3px 12px 3px 8px;font:900 17px 'Londrina Solid',cursive}
+.coach{display:flex;gap:10px;align-items:flex-end;margin:8px 4px 6px}
+.coach .chr-wrap .chr{font-size:62px}
+.coach .say{flex:1;position:relative;background:var(--card);border-radius:14px;padding:9px 12px;font-size:17px;line-height:1.28;box-shadow:0 0 0 3px #fff,0 0 0 5px var(--ink)}
+.prompt{margin:10px 18px 4px;text-align:center;padding:5px 10px;font:900 19px 'Londrina Solid',cursive}
+.dots{display:flex;gap:6px;flex:1;padding:0 8px}
+.dots i{flex:1;height:10px;border-radius:99px;background:#E3DCEF;transition:background .3s}
+.dots i.on{background:var(--moss)}
+.hrow{display:flex;align-items:center;gap:10px;margin:12px 6px 0}
+.hrow .hearts{display:flex;gap:2px;font-size:26px}
+.hrow .hearts svg.dim{opacity:.25}
+.hrow .btn{flex:1;font-size:19px;padding:8px}
+.q.hintq::before{content:"";position:absolute;inset:0;background:rgba(255,200,61,.6);animation:pulse 1s ease-in-out infinite}
+.q.ok::before{content:"";position:absolute;inset:0;background:rgba(95,165,90,.6)}
+.q.bad::before{content:"";position:absolute;inset:0;background:rgba(226,86,107,.55)}
+.stars3{display:flex;justify-content:center;gap:6px;font-size:54px;margin:4px 0 8px}
+.stars3 svg{animation:starin .6s cubic-bezier(.3,1.6,.5,1) backwards}
+.stars3 svg:nth-child(2){animation-delay:.18s}.stars3 svg:nth-child(3){animation-delay:.36s}
+.stars3 svg.dim{opacity:.22}
+@keyframes starin{from{transform:scale(0) rotate(-90deg)}}
+.lrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:9px 12px;margin:0 0 10px;border-radius:10px;background:var(--card);box-shadow:0 0 0 3px #fff,0 0 0 5px var(--ink)}
+.lrow[disabled]{opacity:.5}
+.lrow b{font-size:19px;line-height:1.05;display:block}
+.lrow .boss{font:900 12px 'Londrina Solid',cursive;background:#D2452B;color:#fff;border-radius:4px;padding:0 7px;margin-left:6px;vertical-align:middle}
+.lrow .ss{margin-left:auto;display:flex;font-size:20px}
+.lrow .ss svg.dim{opacity:.22}
+.lrow .ic{font-size:26px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -135,6 +173,9 @@ svg.i.out{stroke:var(--ink);stroke-width:1.1;stroke-linejoin:round}
 </script>
 <script>
 /*@CHR@*/
+</script>
+<script>
+/*@LESSONS@*/
 </script>
 <script>
 (function(){
@@ -157,6 +198,18 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 let S=null;              // Partie: {seed,level,human,moves:[uci],over,recorded}
 let G=null;              // abgeleitet: {pos,keys,sans,posList}
 let U={view:'start',sel:null,legal:[],lvl:2,col:'rnd',sheet:null,promo:null,last:null,busy:false,anim:null};
+const LSN_DATA=window.SchachLessons.WORLDS,NODES=[[150,1390],[430,1270],[170,1110],[430,960],[170,810],[430,660],[170,510],[430,380],[180,245],[420,110]],
+  WNAMES=['Hinter dem Spiegel','Garten der Blumen','Das Kartenschloss','Wald ohne Namen','Der Weiße Ritter','Rasen der Roten Königin','Der schlafende König','Krocketplatz','Der Tränensee','Die achte Reihe'],
+  WICON=['flag','pawn','rook','bishop','knight','queen','king','bolt','users','trophy'];
+const PROG_KEY='schach:progress';
+let P=(()=>{try{const x=JSON.parse(lsGet(PROG_KEY,'null'));return x&&x.l?x:{l:{},xp:0}}catch(e){return {l:{},xp:0}}})();
+const saveProg=()=>lsSet(PROG_KEY,JSON.stringify(P));
+let LSN=null,mapFocus=true;
+const wDone=w=>LSN_DATA[w]&&LSN_DATA[w].lessons.every(l=>P.l[l.id]>0);
+const wOpen=w=>w===0||(w<LSN_DATA.length&&wDone(w-1));
+const curWorld=()=>{for(let w=0;w<LSN_DATA.length;w++)if(!wDone(w))return w;return LSN_DATA.length};
+const lOpen=(w,i)=>wOpen(w)&&(i===0||P.l[LSN_DATA[w].lessons[i-1].id]>0);
+const wStars=w=>LSN_DATA[w].lessons.reduce((a,l)=>a+(P.l[l.id]||0),0);
 let sound=lsGet(SOUND_KEY,'1')==='1';
 const fastPref=()=>lsGet(FAST_KEY,'0')==='1';
 let toastT=null,botT=null;
@@ -240,9 +293,67 @@ function undo(){
 }
 function resign(){if(!S||S.over)return;S.over={res:'loss',why:'Aufgegeben'};recordPlay();save();U.sheet='end';SND.lose();render()}
 
+/* ---------- Lernpfad ---------- */
+function lessonTask(){return LSN_DATA[LSN.w].lessons[LSN.li].tasks[LSN.ti]}
+function loadTask(){const t=lessonTask();G={pos:E.parseFEN(t.fen),keys:[],sans:[],posList:[]};U.sel=null;U.legal=[];U.last=null;U.hintSq=null;U.flash=null;U.promo=null;LSN.msg=null;LSN.hint=0;LSN.busy=false}
+function openLesson(w,i){LSN={w,li:i,ti:0,hearts:3,hints:0,mist:0,phase:'intro',stars:0,gain:0};const t=LSN_DATA[w].lessons[i].tasks[0];G={pos:E.parseFEN(t.fen),keys:[],sans:[],posList:[]};U.view='lesson';U.sheet=null;U.sel=null;U.legal=[];U.last=null;U.hintSq=null;U.flash=null;render();APP.scrollTop=0}
+function solutionSquares(){
+  const t=lessonTask(),g=t.goal;
+  if(g.t==='tap')return [sqIndex(g.sqs[0])];
+  const mv=legalMoves(G.pos).filter(m=>g.t==='to'?g.sqs.includes(sqName(m.to)):g.t==='cap'?!!m.cap:(m.cap&&sqName(m.to)===g.sq));
+  return mv.length?[mv[0].from,mv[0].to]:[];
+}
+function goalMet(mv){const g=lessonTask().goal;return g.t==='to'?g.sqs.includes(sqName(mv.to)):g.t==='cap'?!!mv.cap:g.t==='capto'?(!!mv.cap&&sqName(mv.to)===g.sq):false}
+function lessonOk(sq){
+  LSN.busy=true;U.flash=sq!=null?{sq,ok:true}:null;SND.win&&tone(784,.14,'triangle',.18);tone(988,.2,'triangle',.16,.1);buzz(15);
+  const msgs=['Genau!','Sehr gut!','Richtig!','Das sitzt!'];LSN.msg=msgs[(LSN.ti+LSN.li)%msgs.length];render();
+  setTimeout(()=>{
+    const l=LSN_DATA[LSN.w].lessons[LSN.li];LSN.ti++;
+    if(LSN.ti>=l.tasks.length){
+      LSN.phase='done';const st=LSN.hints>0?1:LSN.mist>0?2:3,old=P.l[l.id]||0,gain=(old?0:10*l.tasks.length)+Math.max(0,st-old)*5;
+      LSN.stars=st;LSN.gain=gain;P.l[l.id]=Math.max(old,st);P.xp+=gain;saveProg();U.sheet='lend';SND.win();buzz([30,50,30]);U.flash=null;LSN.ti=l.tasks.length-1;render();
+    }else{loadTask();render()}
+  },750);
+}
+function lessonBad(sq,why){
+  LSN.mist++;LSN.hearts=Math.max(0,LSN.hearts-1);SND.bad();buzz(20);
+  LSN.msg=why||'Nicht ganz. Versuch es noch einmal.';U.flash=sq!=null?{sq,ok:false}:null;U.sel=null;U.legal=[];
+  if(LSN.hearts===0&&!U.hintSq){U.hintSq=solutionSquares()}
+  render();
+  const t=lessonTask(),fen=t.fen;
+  setTimeout(()=>{if(!LSN||LSN.phase!=='task')return;G={pos:E.parseFEN(fen),keys:[],sans:[],posList:[]};U.flash=null;U.last=null;render()},650);
+}
+function lessonSquare(i){
+  if(!LSN||LSN.phase!=='task'||LSN.busy||U.sheet)return;
+  const t=lessonTask(),g=t.goal,piece=G.pos.board[i];
+  if(g.t==='tap'){if(g.sqs.includes(sqName(i)))lessonOk(i);else lessonBad(i,'Das ist '+sqName(i)+'. Gesucht ist ein anderes Feld.');return}
+  if(U.sel!=null){
+    const cands=U.legal.filter(m=>m.to===i);
+    if(cands.length){
+      if(cands[0].promo){U.promo=cands;U.sheet='promo';render();return}
+      lessonMove(cands[0]);return;
+    }
+  }
+  const own=piece!=='.'&&piece===piece.toUpperCase();
+  if(own){if(U.sel===i){U.sel=null;U.legal=[]}else{U.sel=i;U.legal=legalMoves(G.pos).filter(m=>m.from===i);SND.tap();buzz(6);if(!U.legal.length)toast(NAMES[piece.toLowerCase()]+' kann hier nicht ziehen.')}}
+  else if(U.sel!=null){U.sel=null;U.legal=[];SND.bad()}
+  render();
+}
+function lessonMove(mv){
+  const first=boardSnapshot();
+  if(!goalMet(mv)){lessonBad(mv.to,'Das geht, ist aber nicht die Aufgabe. Lies den Text noch einmal.');return}
+  G.pos=makeMove(G.pos,mv);U.last=[mv.from,mv.to];U.sel=null;U.legal=[];U.anim={mv,first};(mv.cap?SND.capture:SND.move)();
+  lessonOk(mv.to);
+}
+function lessonHint(){
+  if(!LSN||LSN.phase!=='task'||LSN.busy)return;
+  const t=lessonTask();LSN.hints++;const k=Math.min(LSN.hint,t.hints.length-1);LSN.msg=t.hints[k];LSN.hint++;
+  if(LSN.hint>=t.hints.length)U.hintSq=solutionSquares();
+  tone(660,.12,'sine',.12);render();
+}
 /* ---------- Eingabe ---------- */
 function onSquare(i){
-  if(!S||S.over||U.busy||!myTurn()||U.sheet)return;
+  if(U.view!=='game'||!S||S.over||U.busy||!myTurn()||U.sheet)return;
   const piece=G.pos.board[i];
   if(U.sel!=null){
     const cands=U.legal.filter(m=>m.to===i);
@@ -262,7 +373,7 @@ function onSquare(i){
 /* ---------- Darstellung ---------- */
 function toast(t){clearTimeout(toastT);let el=document.querySelector('.toast');if(el)el.remove();el=document.createElement('div');el.className='toast';el.textContent=t;document.body.appendChild(el);toastT=setTimeout(()=>el.remove(),1800)}
 function boardSnapshot(){const m={};document.querySelectorAll('#board .q').forEach(q=>{const r=q.getBoundingClientRect();m[q.dataset.sq]={x:r.left,y:r.top}});return m}
-function view(){return S&&S.human==='b'?[...Array(64).keys()].reverse():[...Array(64).keys()]}
+function view(){return U.view==='game'&&S&&S.human==='b'?[...Array(64).keys()].reverse():[...Array(64).keys()]}
 function captured(){
   // Welche Figuren fehlen gegenüber der Grundstellung? (Anzeige „geschlagen“)
   const start={p:8,n:2,b:2,r:2,q:1},cnt={w:{p:0,n:0,b:0,r:0,q:0},b:{p:0,n:0,b:0,r:0,q:0}};
@@ -277,6 +388,45 @@ function statusText(){
   if(U.busy||!myTurn())return {t:bot+' überlegt …',alert:false};
   return {t:chk?'Schach! Rette deinen König.':'Du bist dran',alert:chk};
 }
+function xpBar(){return '<div class="bar xpchip" data-info="Erfahrungspunkte aus Lektionen">'+icon('bolt','sky','')+P.xp+'</div>'}
+function mapHTML(){
+  const cw=curWorld();let nodes='';
+  NODES.forEach((n,i)=>{
+    const open=i<LSN_DATA.length&&wOpen(i),done=i<LSN_DATA.length&&wDone(i),cur=i===cw,x=(n[0]/6).toFixed(2),y=(n[1]/15).toFixed(2);
+    const tone=done?'moss':cur?'sun':'ink';
+    nodes+='<button class="node'+(done?' done':cur?' cur':' lock')+'" style="left:'+x+'%;top:'+y+'%" data-a="node" data-n="'+i+'" aria-label="'+WNAMES[i]+'" data-info="'+(open?WNAMES[i]+(done?' – geschafft':''):WNAMES[i]+' – kommt bald')+'" data-node="'+i+'">'+icon(open?WICON[i]:'lock',open?tone:'ink')+'</button>'+
+      '<div class="nlab" style="left:'+x+'%;top:calc('+y+'% + 6.6vw)">'+esc(WNAMES[i])+'</div>';
+    if(i<LSN_DATA.length&&open){const st=wStars(i);nodes+='<div class="nstars" style="left:'+x+'%;top:calc('+y+'% + 11.4vw)">'+[0,1,2,3,4].map(k=>'<span style="opacity:'+(k*3<st?1:.22)+'">'+icon('star','sun')+'</span>').join('')+'</div>'}
+  });
+  const a=NODES[Math.min(cw,LSN_DATA.length-1)];
+  return '<div class="top"><button class="leave" data-a="home" data-info="Zum Startbildschirm">'+icon('chevron','ink')+'Start</button><div class="grow"></div>'+xpBar()+'</div>'+
+    '<div class="mapwrap"><img src="art/map.jpg" alt="Karte des Landes hinter dem Spiegel" draggable="false">'+nodes+
+    '<div class="alice" style="left:'+(a[0]/6)+'%;top:'+(a[1]/15)+'%">'+window.chr('alice')+'</div></div>';
+}
+function lessonHTML(){
+  const w=LSN_DATA[LSN.w],l=w.lessons[LSN.li],t=l.tasks[LSN.ti],intro=LSN.phase==='intro';
+  const dots='<div class="dots">'+l.tasks.map((_,i)=>'<i class="'+(i<LSN.ti||LSN.phase==='done'?'on':'')+'"></i>').join('')+'</div>';
+  const say=intro?l.intro:LSN.msg||t.prompt;
+  let h='<div class="top"><button class="leave" data-a="lback" data-info="Zurück zur Karte">'+icon('chevron','ink')+'Karte</button>'+dots+xpBar()+'</div>'+
+    '<div class="coach"><span class="chr-wrap">'+window.chr(l.coach||w.coach)+'</span><div class="say" role="status">'+esc(say)+'</div></div>';
+  if(intro)return h+'<div style="margin:22px 8px 0"><h2 style="font-size:32px;margin:0 0 4px">'+esc(l.title)+'</h2><p style="color:var(--soft);margin-bottom:18px">'+l.tasks.length+' Aufgaben'+(l.boss?' · Boss':'')+'</p><button class="btn" data-a="lstart">Los geht’s</button></div>';
+  h+='<div class="prompt bar">'+esc(t.prompt)+'</div><div class="boardwrap">'+boardHTML()+'</div>'+
+    '<div class="hrow"><div class="hearts" data-info="Mut-Herzen: Fehler kosten ein Herz, aber nie die Lektion.">'+[0,1,2].map(i=>icon('heart','berry',i<LSN.hearts?'':'dim')).join('')+'</div><button class="btn alt" data-a="lhint" data-info="Zeigt einen Hinweis"><span class="ic">'+icon('bulb','sun')+'</span>Hinweis</button></div>';
+  return h;
+}
+function lessonEnd(){
+  const l=LSN_DATA[LSN.w].lessons[LSN.li],st=LSN.stars,last=LSN.li===LSN_DATA[LSN.w].lessons.length-1,wd=wDone(LSN.w),nextW=LSN.w+1<LSN_DATA.length;
+  return '<div class="scrim" data-a="none"></div><div class="sheet"><div class="end"><div class="stars3">'+[1,2,3].map(k=>icon('star','sun',k<=st?'':'dim')).join('')+'</div><h3>'+(l.boss?'Boss besiegt!':'Geschafft!')+'</h3><p>'+(st===3?'Fehlerfrei und ohne Hinweis.':st===2?'Ohne Hinweis geschafft.':'Geschafft. Mit weniger Hinweisen gibt es mehr Sterne.')+' <b>+'+LSN.gain+' XP</b></p>'+
+    (last&&wd?'<p><b>'+esc(LSN_DATA[LSN.w].name)+' ist geschafft.</b> '+(nextW?'Die nächste Welt öffnet sich.':'Weitere Welten folgen bald.')+'</p>':'')+
+    (!last?'<button class="btn" data-a="lnext">Nächste Lektion</button>':'<button class="btn" data-a="lback">Zur Karte</button>')+
+    '<button class="btn alt" data-a="lagain">Nochmal</button>'+(!last?'<button class="btn alt" data-a="lback">Zur Karte</button>':'')+'</div></div>';
+}
+function worldSheet(){
+  const wi=U.world,w=LSN_DATA[wi];
+  if(!w||!wOpen(wi))return '<div class="scrim" data-a="close"></div><div class="sheet"><h3>'+esc(WNAMES[wi])+'</h3><p style="margin:0 4px 12px;color:#4a4052">'+(w?'Schaff zuerst die Welt davor.':'Diese Welt entsteht noch. Hier lernst du bald mehr.')+'</p><button class="btn alt" data-a="close">Okay</button></div>';
+  return '<div class="scrim" data-a="close"></div><div class="sheet"><h3>'+esc(w.name)+'</h3>'+w.lessons.map((l,i)=>{const op=lOpen(wi,i),st=P.l[l.id]||0;
+    return '<button class="lrow" data-a="lesson" data-n="'+wi+'" data-l="'+i+'"'+(op?'':' disabled')+'><span class="ic">'+icon(op?(l.boss?'trophy':'book'):'lock',op?'plum':'ink')+'</span><span><b>'+esc(l.title)+(l.boss?'<span class="boss">Boss</span>':'')+'</b></span><span class="ss">'+[1,2,3].map(k=>icon('star','sun',k<=st?'':'dim')).join('')+'</span></button>'}).join('')+'</div>';
+}
 function startHTML(){
   const sv=load();
   const lv=l=>{const b=BOTS[l];return '<button class="opp frame'+(U.lvl===l?' sel':'')+'" data-a="lvl" data-n="'+l+'" data-info="'+esc(b.desc)+'"><span class="chr-wrap">'+window.chr(b.kind)+'</span><span><b>Stufe '+l+': '+b.name+'</b><span class="t">'+esc(b.desc)+'</span></span><span class="tick">'+icon('check','moss')+'</span></button>'};
@@ -285,14 +435,14 @@ function startHTML(){
     '<div class="hero"><h1>Spiegel<span>schach</span></h1><p>Alice lernt Schach im Wunderland.</p></div>'+
     '<div class="cast">'+['alice','rabbit','cat','wknight','rqueen','king'].map(k=>window.chr(k)).join('')+'</div>'+
     (sv?'<button class="btn" data-a="resume" style="margin-bottom:6px">Partie fortsetzen</button><p class="foot" style="margin:0 0 10px">gegen '+BOTS[sv.level].name+', '+Math.ceil(sv.moves.length/2)+' Züge gespielt</p>':'')+
+    '<button class="opp frame" data-a="map" style="margin-top:6px" data-info="Alice lernt Schach: Welten, Lektionen, Bosse."><span class="chr-wrap">'+window.chr('alice')+'</span><span><b>Lernpfad</b><span class="t">'+(()=>{const n=LSN_DATA.reduce((a,w)=>a+w.lessons.filter(l=>P.l[l.id]>0).length,0),m=LSN_DATA.reduce((a,w)=>a+w.lessons.length,0);return n?n+' von '+m+' Lektionen geschafft':'Von den Feldern bis zur ersten Partie.'})()+'</span></span><span class="tick" style="opacity:1">'+icon('map','moss')+'</span></button>'+
     '<div class="sec"><h2>Partie gegen Bot</h2>'+lv(1)+lv(2)+lv(3)+
     '<h2 style="font-size:22px;margin:4px 0 8px">Du spielst</h2><div class="chips">'+col('w','Weiß')+col('b','Schwarz')+col('rnd','Zufall')+'</div>'+
     '<button class="btn" data-a="new">Partie beginnen</button></div>'+
-    '<div class="frame soon" data-info="Der Lernpfad mit Welten, Lektionen und Bossen kommt als nächster Schritt."><span class="ic">'+icon('lock','plum')+'</span><div><b>Lernpfad</b><span>Welt 1 und 2 kommen bald.</span></div></div>'+
     '<p class="foot">Dein Fortschritt liegt auf diesem Gerät.</p>';
 }
 function boardHTML(){
-  const flip=S.human==='b',cells=view(),last=U.last||[],kingChk=inCheck(G.pos)?E.kingSquare(G.pos.board,G.pos.turn):-1;
+  const flip=U.view==='game'&&S&&S.human==='b',cells=view(),last=U.last||[],kingChk=inCheck(G.pos)?E.kingSquare(G.pos.board,G.pos.turn):-1;
   const targets=new Map(U.legal.map(m=>[m.to,m]));
   let h='<div id="board" role="grid" aria-label="Schachbrett">';
   for(const i of cells){
@@ -300,6 +450,8 @@ function boardHTML(){
     let cls='q'+(dark?' d':'');
     if(last.includes(i))cls+=' last';
     if(U.sel===i)cls+=' sel';
+    if(U.hintSq&&U.hintSq.includes(i))cls+=' hintq';
+    if(U.flash&&U.flash.sq===i)cls+=U.flash.ok?' ok':' bad';
     if(targets.has(i))cls+=targets.get(i).cap||targets.get(i).ep?' cap':' dot';
     if(i===kingChk)cls+=' chk';
     const colIdx=flip?7-f:f,rowIdx=flip?7-r:r;
@@ -325,8 +477,10 @@ function gameHTML(){
 function sheetHTML(){
   if(!U.sheet)return '';
   const scrim='<div class="scrim" data-a="close"></div>';
+  if(U.sheet==='world')return worldSheet();
+  if(U.sheet==='lend'&&LSN)return lessonEnd();
   if(U.sheet==='promo'){
-    const w=S.human==='w';
+    const w=U.view==='lesson'?true:S.human==='w';
     return scrim+'<div class="sheet"><h3>Wohin verwandelt sich dein Bauer?</h3><div class="promo">'+['q','r','b','n'].map(t=>'<button data-a="promo" data-n="'+t+'" aria-label="'+NAMES[t]+'">'+pieceIcon(w?t.toUpperCase():t)+'</button>').join('')+'</div></div>';
   }
   if(U.sheet==='end'&&S&&S.over){
@@ -347,11 +501,12 @@ function sheetHTML(){
 function themeFor(onStart){document.documentElement.style.backgroundColor='';const tc=document.querySelector('meta[name="theme-color"]');if(tc)tc.content='#FBF3E4'}
 function render(){
   const keep=APP.scrollTop;
-  const game=U.view==='game'&&S;
-  APP.innerHTML=(game?gameHTML():startHTML())+sheetHTML();
+  const game=U.view==='game'&&S,les=U.view==='lesson'&&LSN,map=U.view==='map';
+  APP.innerHTML=(game?gameHTML():les?lessonHTML():map?mapHTML():startHTML())+sheetHTML();
   APP.scrollTop=keep;
   themeFor(!game);
-  if(game&&U.anim)runAnim();
+  if(map&&mapFocus){mapFocus=false;const n=APP.querySelector('.node.cur')||APP.querySelector('.node');if(n)n.scrollIntoView({block:'center'})}
+  if((game||les)&&U.anim)runAnim();
   const mvs=document.getElementById('moves');if(mvs)mvs.scrollLeft=mvs.scrollWidth;
 }
 function runAnim(){
@@ -374,19 +529,28 @@ function runAnim(){
 APP.addEventListener('click',e=>{
   const el=e.target.closest('[data-a]');if(!el)return;
   const a=el.dataset.a,n=el.dataset.n;
-  if(a==='sq'){onSquare(+el.dataset.sq);return}
+  if(a==='sq'){if(U.view==='lesson')lessonSquare(+el.dataset.sq);else onSquare(+el.dataset.sq);return}
+  if(a==='map'){U.view='map';mapFocus=true;U.sheet=null;render();APP.scrollTop=0;mapFocus=true;render();return}
+  if(a==='node'){U.world=+n;U.sheet='world';render();return}
+  if(a==='lesson'){openLesson(+n,+el.dataset.l);return}
+  if(a==='lstart'){LSN.phase='task';loadTask();render();return}
+  if(a==='lhint'){lessonHint();return}
+  if(a==='lback'){U.view='map';U.sheet=null;LSN=null;mapFocus=false;render();return}
+  if(a==='lnext'){const w=LSN.w,i=LSN.li+1;U.sheet=null;openLesson(w,i);return}
+  if(a==='lagain'){const w=LSN.w,i=LSN.li;U.sheet=null;openLesson(w,i);return}
+  if(a==='none')return;
   if(a==='lvl'){U.lvl=+n;render();return}
   if(a==='col'){U.col=n;render();return}
   if(a==='new'||a==='again'){newGame();return}
   if(a==='resume'){const x=load();if(x)resume(x);return}
-  if(a==='home'){if(S&&!S.over)save();U.view='start';U.sheet=null;clearTimeout(botT);render();return}
+  if(a==='home'){if(S&&!S.over)save();U.view='start';U.sheet=null;LSN=null;clearTimeout(botT);render();return}
   if(a==='menu'){U.sheet='menu';render();return}
   if(a==='close'){if(U.sheet==='end'){U.sheet=null;render();return}U.sheet=null;U.promo=null;render();return}
   if(a==='sound'){sound=!sound;lsSet(SOUND_KEY,sound?'1':'0');if(sound)SND.tap();render();return}
   if(a==='fast'){lsSet(FAST_KEY,fastPref()?'0':'1');render();return}
   if(a==='undo'){U.sheet=null;undo();return}
   if(a==='resign'){U.sheet=null;if(confirm('Partie wirklich aufgeben?'))resign();else render();return}
-  if(a==='promo'){const mv=(U.promo||[]).find(m=>m.promo===n);U.promo=null;U.sheet=null;if(mv)doMove(mv);else render();return}
+  if(a==='promo'){const mv=(U.promo||[]).find(m=>m.promo===n);U.promo=null;U.sheet=null;if(mv){if(U.view==='lesson')lessonMove(mv);else doMove(mv)}else render();return}
   if(a==='reload'){save();location.replace(location.pathname+'?v='+Date.now()+'&resume=1');return}
 });
 // Langes Drücken auf Elemente mit data-info zeigt eine Info-Blase
@@ -406,7 +570,7 @@ window.addEventListener('pagehide',()=>{if(S&&!S.over)save()});
 const params=new URLSearchParams(location.search);
 const sv=load();
 if(params.get('resume')==='1'&&sv)resume(sv);else render();
-window.__schach={get S(){return S},get G(){return G},get U(){return U},E,render,onSquare};
+window.__schach={get S(){return S},get G(){return G},get U(){return U},get LSN(){return LSN},get P(){return P},E,render,onSquare};
 })();
 </script>
 </body>
