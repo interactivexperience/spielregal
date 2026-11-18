@@ -36,7 +36,7 @@ export const WORLDS = [
         t('3p4/8/8/8/3R4/8/8/8 w - - 0 1', 'Schlag den schwarzen Bauern.', { t: 'capto', sq: 'd8' }, ['Der Bauer steht auf derselben Linie wie dein Turm.', 'Der Weg dorthin ist frei.', 'Tippe den Turm, dann d8.']),
         t('8/8/8/8/p7/8/8/R7 w - - 0 1', 'Schlag den Bauern auf a4.', { t: 'capto', sq: 'a4' }, ['Er steht auf der Linie a, über deinem Turm.', 'Dazwischen ist alles frei.', 'Tippe den Turm, dann a4.']),
       ] },
-      { id: 'w1-l5', title: 'Das Weiße Kaninchen', boss: true, coach: 'rabbit', intro: 'Fang mich, wenn du kannst! Zeig, was du gelernt hast: Felder finden, ziehen, schlagen.', tasks: [
+      { id: 'w1-l5', title: 'Das Weiße Kaninchen', boss: true, card: { kind: 'rabbit', name: 'Das Weiße Kaninchen' }, coach: 'rabbit', intro: 'Fang mich, wenn du kannst! Zeig, was du gelernt hast: Felder finden, ziehen, schlagen.', tasks: [
         t(EMPTY, 'Tippe das Feld f6.', { t: 'tap', sqs: ['f6'] }, ['f ist die sechste Spalte.', '6 ist die sechste Reihe von unten.', 'Gesucht: sechste Spalte, sechste Reihe.']),
         t('8/8/8/8/8/8/1R6/8 w - - 0 1', 'Zieh den Turm nach b7.', { t: 'to', sqs: ['b7'] }, ['Der Turm bleibt auf seiner Linie b.', 'Er zieht nach oben.', 'Tippe den Turm, dann b7.']),
         t('7p/8/8/8/8/8/8/7R w - - 0 1', 'Schlag den Bauern auf h8.', { t: 'capto', sq: 'h8' }, ['Dein Turm steht auf der Linie h.', 'Der Bauer ganz oben auf derselben Linie.', 'Tippe den Turm, dann h8.']),
@@ -67,7 +67,7 @@ export const WORLDS = [
         t('8/8/8/8/8/pp6/P7/8 w - - 0 1', 'Schlag den Bauern auf b3.', { t: 'capto', sq: 'b3' }, ['Geradeaus steht a3 im Weg.', 'Schräg vor a2 liegt b3.', 'Tippe den Bauern, dann b3.']),
         t('8/8/8/8/8/3pp3/3P4/8 w - - 0 1', 'Schlag den Bauern auf e3.', { t: 'capto', sq: 'e3' }, ['Geradeaus steht d3 im Weg.', 'Schräg vor d2 liegt e3.', 'Tippe den Bauern, dann e3.']),
       ] },
-      { id: 'w2-l5', title: 'Die Tigerlilie', boss: true, coach: 'rabbit', intro: 'Wer die achte Reihe erreicht, wird verwandelt, meistens in eine Dame. So wird Alice zur Königin.', tasks: [
+      { id: 'w2-l5', title: 'Die Tigerlilie', boss: true, card: { kind: 'alice', name: 'Alice im Garten' }, coach: 'rabbit', intro: 'Wer die achte Reihe erreicht, wird verwandelt, meistens in eine Dame. So wird Alice zur Königin.', tasks: [
         t('8/P7/8/8/8/8/8/8 w - - 0 1', 'Zieh den Bauern auf die letzte Reihe.', { t: 'to', sqs: ['a8'] }, ['Der Bauer steht auf a7, ein Feld vor dem Ziel.', 'Ein Feld vor ist a8.', 'Tippe den Bauern, dann a8, dann wähle die Dame.']),
         t('8/6P1/8/8/8/8/8/8 w - - 0 1', 'Verwandle diesen Bauern.', { t: 'to', sqs: ['g8'] }, ['Er steht auf g7, ein Feld vor dem Ziel.', 'Ein Feld vor ist g8.', 'Tippe den Bauern, dann g8, dann wähle eine Figur.']),
         t('1r6/P7/8/8/8/8/8/8 w - - 0 1', 'Schlag die Burg und verwandle dich.', { t: 'capto', sq: 'b8' }, ['Schräg vor a7 liegt b8.', 'Dort steht ein schwarzer Turm.', 'Tippe den Bauern, dann b8, dann die Dame.']),

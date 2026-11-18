@@ -42,7 +42,7 @@ try {
     await page.emulateMedia({ reducedMotion: "reduce" });   // pulsierende Marker sind sonst nicht „stabil“ genug zum Klicken
     await page.click("[data-a=map]");
     check(await page.locator(".mapwrap .node").count() === 10, "Karte zeigt zehn Ortsmarker");
-    check(await page.locator(".mapwrap .node.cur").count() === 1 && await page.locator(".mapwrap .alice").count() === 1, "aktuelle Welt und Alice auf der Karte");
+    check(await page.locator(".mapwrap .node.cur").count() === 1 && await page.locator(".mapwrap .ova").count() === 1, "aktuelle Welt und Alice auf der Karte");
     await page.click('.node[data-node="2"]');
     check(await page.locator(".sheet .lrow").count() === 0, "gesperrte Welt zeigt keine Lektionen");
     await page.click(".scrim", { position: { x: 20, y: 20 } });
