@@ -16,6 +16,10 @@ ein Browserspiel im Spielregal-Stil (eine Datei, Vanilla JS, kein Build).
 
 **Nicht drin (später)**: Welten 3–10, Tal-Stufen 2–5, Wahrzeichen, Sammelkarten, Tagesquest, Liga, Mehrspieler, Eröffnungsbuch.
 
+## 1b. Thema: Alice hinter den Spiegeln (Owner-Vorgabe Nov. 2026)
+
+Die Welt ist im Konzept (`konzept.html`, v13) als Wunderland gestaltet: Alice ist der Bauer und wird auf der achten Reihe zur Königin, Bots sind Weißes Kaninchen (Stufe 1), Grinsekatze (2) und Rote Königin (3, Finale), Weißer Ritter lehrt den Springer. Alle Weltnamen siehe CLAUDE.md. **Noch nicht in der App:** Bot-Namen und -Figuren (`BOTS` in `app.src.html`), Startseite, Cover. Das folgt nach Freigabe des Konzepts.
+
 ## 1a. Pfad-Struktur (Owner-Vorgabe)
 
 Das Spiel hat **zwei Lernpfade** hintereinander:
