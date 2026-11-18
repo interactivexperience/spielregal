@@ -1499,11 +1499,19 @@ function mapHTML(){
     for(let i=0;i<14;i++){const x=rnd()*600,y=200+rnd()*1200,d=14+rnd()*14,col=['#FFD3E0','#FFF3C9','#D9D2FF','#CFEFE3'][i%4];st+='<ellipse cx="'+x.toFixed(0)+'" cy="'+y.toFixed(0)+'" rx="3" ry="1.8" fill="'+col+'" pointer-events="none" transform="rotate('+(i*37)+' '+x.toFixed(0)+' '+y.toFixed(0)+')"><animateTransform attributeName="transform" additive="sum" type="translate" values="0 0;'+(8+i%5*3)+' -'+(30+i%4*12)+';0 0" dur="'+d.toFixed(0)+'s" repeatCount="indefinite"/><animate attributeName="opacity" values=".2;.9;.2" dur="'+d.toFixed(0)+'s" repeatCount="indefinite"/></ellipse>'}
   }
   EGGS.forEach(e=>{const f=P.eggs[e.id];ov+='<g class="egg'+(f?' f':'')+'" data-a="egg" data-n="'+e.id+'" transform="translate('+e.x+' '+e.y+') scale(1.35)"><circle r="14" fill="#fff" opacity="0.001"/><circle class="glow" r="13" fill="#FFE98A" opacity=".5"/><g class="eart">'+e.a+'</g></g>'});
-  const ci=Math.min(cw,P1N-1),pts=NODES.slice(0,ci+1);
+  const ci=Math.min(cw,P1N-1),tg=U.aTarget!=null&&wOpen(U.aTarget)?U.aTarget:ci;
+  if(P.at==null||P.at>=P1N)P.at=tg;
+  const at=P.at,off=i=>[NODES[i][0]+34,NODES[i][1]-16];
   const ai='<svg x="-19" y="-56" width="38" height="54" viewBox="8 0 90 130">'+window.chr('alice').replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'')+'</svg>';
+  const shadow='<ellipse cx="1" cy="1" rx="11" ry="3" fill="#2A3377" opacity=".2"/>';
   let alice;
-  if(pts.length>1&&!rm())alice='<g><animateMotion dur="'+(pts.length*7)+'s" repeatCount="indefinite" calcMode="linear" keyPoints="0;1;1;0;0" keyTimes="0;.45;.5;.95;1" path="'+spl(pts)+'"/><ellipse cx="1" cy="1" rx="11" ry="3" fill="#2A3377" opacity=".2"/>'+ai+'</g>';
-  else alice='<g transform="translate('+(NODES[ci][0]+34)+' '+(NODES[ci][1]-16)+')"><ellipse cx="1" cy="1" rx="11" ry="3" fill="#2A3377" opacity=".2"/>'+ai+'</g>';
+  if(at!==tg&&rm()){P.at=tg;saveProg()}
+  if(at!==tg&&!rm()){
+    const step=tg>at?1:-1,idx=[];for(let i=at;i!==tg+step;i+=step)idx.push(i);
+    const dur=Math.min((idx.length-1)*1.1,3);
+    alice='<g><animateMotion dur="'+dur.toFixed(1)+'s" begin="0s" fill="freeze" calcMode="linear" path="'+spl(idx.map(off))+'"/>'+shadow+ai+'</g>';
+    clearTimeout(U.aTimer);U.aTimer=setTimeout(()=>{P.at=tg;saveProg();if(U.view==='map'&&!U.sheet)render()},dur*1000+80);
+  }else{const q=off(P.at);alice='<g transform="translate('+q[0]+' '+q[1]+')">'+shadow+ai+'</g>'}
   const found=Object.keys(P.eggs).length;
   return '<div class="top"><button class="leave" data-a="home" data-info="Zum Startbildschirm">'+icon('chevron','ink')+'Start</button><div class="grow"></div><div class="bar eggc" data-info="Versteckte Überraschungen aus den Büchern. Tippe auf der Karte, wenn du eins findest.">'+icon('star','sun')+found+'/'+EGGS.length+'</div><button class="bar eggc" data-a="pieces" data-info="Die Figuren: so zieht jede einzelne.">'+icon('book','sky')+'Figuren</button><button class="bar eggc" data-a="cards" data-info="Deine Sammelkarten: eine für jeden besiegten Boss.">'+icon('trophy','sun')+Object.keys(P.cards).length+'/'+LSN_DATA.length+'</button>'+xpBar()+'</div>'+
     '<div class="mapwrap"><img src="art/map.jpg" alt="Karte des Landes hinter dem Spiegel" draggable="false"><svg class="ov" viewBox="0 0 600 1500">'+st+ov+'</svg>'+nodes+
@@ -1664,11 +1672,15 @@ APP.addEventListener('click',e=>{
   if(a==='sq'){if(U.view==='lesson')lessonSquare(+el.dataset.sq);else onSquare(+el.dataset.sq);return}
   if(a==='map'){U.view='map';mapFocus=true;U.sheet=null;render();APP.scrollTop=0;mapFocus=true;render();return}
   if(a==='p2'){U.view='p2';U.sheet=null;render();APP.scrollTop=0;return}
-  if(a==='node'){U.world=+n;U.sheet='world';render();return}
+  if(a==='node'){
+    const i=+n;
+    if(U.view==='map'&&i<P1N&&wOpen(i)&&P.at!=null&&P.at!==i&&!rm()){const d=Math.min(Math.abs(P.at-i)*1100,3000)+120;U.aTarget=i;U.sheet=null;render();clearTimeout(U.aOpen);U.aOpen=setTimeout(()=>{if(U.view==='map'){U.world=i;U.sheet='world';render()}},d);return}
+    if(U.view==='map'&&i<P1N&&wOpen(i))U.aTarget=i;
+    U.world=i;U.sheet='world';render();return}
   if(a==='lesson'){openLesson(+n,+el.dataset.l);return}
   if(a==='lstart'){LSN.phase='task';loadTask();render();return}
   if(a==='lhint'){lessonHint();return}
-  if(a==='lback'){U.view=LSN&&LSN.w>=P1N?'p2':'map';U.sheet=null;LSN=null;mapFocus=false;render();return}
+  if(a==='lback'){if(LSN&&U.aTarget!=null&&LSN.w===U.aTarget&&U.aTarget===curWorld()-1)U.aTarget=null;U.view=LSN&&LSN.w>=P1N?'p2':'map';U.sheet=null;LSN=null;mapFocus=false;render();return}
   if(a==='pieces'){U.sheet='pieces';render();return}
   if(a==='cards'){U.sheet='cards';render();return}
   if(a==='finale'){U.lvl=3;U.col='rnd';U.sheet=null;newGame();return}
