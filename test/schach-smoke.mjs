@@ -222,6 +222,22 @@ try {
   check(st.over && st.over.res === "win" && st.over.why === "Schachmatt", `Matt wird erkannt (${JSON.stringify(st.over)})`);
   await page.waitForSelector(".sheet .end", { timeout: 4000 });
   await snap("8-sieg");
+
+  // ---- Pfad 2: Sieg gegen Stufe 1 schaltet nichts frei, Sieg gegen Stufe 3 schon ----
+  check(!(await page.evaluate(() => !!window.__schach.P.p2)), "Sieg gegen Stufe 1 schaltet Pfad 2 nicht frei");
+  await page.evaluate(() => {
+    const w = window.__schach, E = w.E;
+    w.S.human = "w"; w.S.level = 3; w.S.over = null; w.S.moves = []; w.S.unlocked = false;
+    w.G.pos = E.parseFEN("6k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1"); w.G.keys = [E.positionKey(w.G.pos)]; w.G.sans = []; w.G.posList = [w.G.pos];
+    w.U.view = "game"; w.U.sheet = null; w.render();
+  });
+  await play("a1", "a8");
+  await page.waitForSelector('.sheet .end [data-a="p2"]', { timeout: 4000 });
+  check(await page.evaluate(() => !!window.__schach.P.p2), "Sieg gegen Stufe 3 schaltet Pfad 2 frei");
+  await page.click('.sheet .end [data-a="p2"]');
+  await page.waitForSelector(".p2w", { timeout: 3000 });
+  const open = await page.evaluate(() => [...document.querySelectorAll(".p2w")].map(e => !e.classList.contains("lock")));
+  check(open.length === 8 && open[0] && !open[1], `Pfad 2: erste Welt offen, zweite gesperrt (${JSON.stringify(open)})`);
 } catch (e) {
   console.log("FEHLER: Ausnahme im Test: " + e.message); fehler++;
 }
