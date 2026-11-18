@@ -510,6 +510,45 @@ var WORLDS=[
  {n:'Die achte Reihe',sc:'crown',ic:'mountain',t:'plum',bg:'#E7D7C3',d:'Matt mit Dame und König, Turm-Endspiele, Bauernrennen. Finale: eine normale Partie gegen die Rote Königin. Erreicht Alice die achte Reihe, wird sie Königin.',b:'Die Rote Königin'}
 ];
 
+function suitGlyph(suit,x,y,z,col){
+  var F=function(n){return Math.round(n*10)/10};
+  if(suit==='h')return '<path d="M'+F(x)+' '+F(y+4*z)+'C'+F(x-7*z)+' '+F(y-1*z)+' '+F(x-5*z)+' '+F(y-7*z)+' '+F(x)+' '+F(y-3*z)+'C'+F(x+5*z)+' '+F(y-7*z)+' '+F(x+7*z)+' '+F(y-1*z)+' '+F(x)+' '+F(y+4*z)+'Z" fill="'+col+'"/>';
+  if(suit==='d')return '<path d="M'+F(x)+' '+F(y-6*z)+'L'+F(x+4.500*z)+' '+F(y)+'L'+F(x)+' '+F(y+6*z)+'L'+F(x-4.500*z)+' '+F(y)+'Z" fill="'+col+'"/>';
+  if(suit==='s')return '<path d="M'+F(x)+' '+F(y-5*z)+'C'+F(x-8*z)+' '+F(y+1*z)+' '+F(x-5*z)+' '+F(y+6*z)+' '+F(x)+' '+F(y+3*z)+'C'+F(x+5*z)+' '+F(y+6*z)+' '+F(x+8*z)+' '+F(y+1*z)+' '+F(x)+' '+F(y-5*z)+'ZM'+F(x)+' '+F(y+2*z)+'L'+F(x-2*z)+' '+F(y+7*z)+'H'+F(x+2*z)+'Z" fill="'+col+'"/>';
+  return '<circle cx="'+F(x)+'" cy="'+F(y-3*z)+'" r="'+F(2.800*z)+'" fill="'+col+'"/><circle cx="'+F(x-3.200*z)+'" cy="'+F(y+1.500*z)+'" r="'+F(2.800*z)+'" fill="'+col+'"/><circle cx="'+F(x+3.200*z)+'" cy="'+F(y+1.500*z)+'" r="'+F(2.800*z)+'" fill="'+col+'"/><path d="M'+F(x)+' '+F(y)+'L'+F(x-2*z)+' '+F(y+7*z)+'H'+F(x+2*z)+'Z" fill="'+col+'"/>';
+}
+/* Kartensoldat: eine stehende Holzfigur in Kartenform, darauf ein grimmiger Soldat mit Helm, Bart und Werkzeug (Owner-Referenz: Foto der Kartensoldaten-Figuren) */
+function kartenMann(x,y,s,suit,tool,flip){
+  var red=(suit==='h'||suit==='d'),
+    P=red?{wood:'#E8503A',wd:'#B8402C',card:'#FFF3E4',helm:'#F08FA0',tun:'#F6A9B0',beard:'#C8693A',pip:'#D9473A'}:{wood:'#E4E8D6',wd:'#B9BFA6',card:'#EAF0FA',helm:'#B8C1EC',tun:'#C9D1F6',beard:'#8A8F9E',pip:'#2A3377'},
+    skin='#F4B49A',ink='#2A3377',o='',F=function(n){return Math.round(n*10)/10};
+  function fp(d,fill,dark){return '<path d="'+d+'" fill="'+(dark||cmix(fill,'#1F2A6B',.3))+'" transform="translate(1.200 1.200)"/><path d="'+d+'" fill="'+fill+'"/>'}
+  var X=function(n){return F(x+n*s)},Y=function(n){return F(y+n*s)};
+  o+='<ellipse cx="'+F(x+1)+'" cy="'+F(y+.5)+'" rx="'+F(9*s)+'" ry="'+F(2*s)+'" fill="'+ink+'" opacity=".2"/>';
+  // Holzfigur in Kartenform mit Absatz oben
+  o+=fp('M'+X(-8)+' '+Y(0)+'V'+Y(-30)+'Q'+X(-8)+' '+Y(-34)+' '+X(-5)+' '+Y(-34)+'H'+X(-3)+'V'+Y(-37)+'H'+X(3)+'V'+Y(-34)+'H'+X(5)+'Q'+X(8)+' '+Y(-34)+' '+X(8)+' '+Y(-30)+'V'+Y(0)+'Z',P.wood,P.wd);
+  o+='<rect x="'+X(-6.500)+'" y="'+Y(-32)+'" width="'+F(13*s)+'" height="'+F(30.500*s)+'" rx="'+F(1.200*s)+'" fill="'+P.card+'"/>';
+  // Farbzeichen an den Ecken
+  o+=suitGlyph(suit,x-4.700*s,y-4.600*s,.33*s,P.pip)+suitGlyph(suit,x+4.700*s,y-4.600*s,.33*s,P.pip)+suitGlyph(suit,x-4.700*s,y-29.200*s,.27*s,P.pip)+suitGlyph(suit,x+4.700*s,y-29.200*s,.27*s,P.pip);
+  // Tunika mit Farbzeichen
+  o+=fp('M'+X(-5)+' '+Y(-3.500)+'L'+X(-4)+' '+Y(-14.500)+'Q'+X(0)+' '+Y(-16)+' '+X(4)+' '+Y(-14.500)+'L'+X(5)+' '+Y(-3.500)+'Z',P.tun)+'<g opacity=".65">'+suitGlyph(suit,x,y-8*s,.45*s,P.pip)+'</g>';
+  // Werkzeug: schräger Schaft, Hände greifen zu
+  var tx=x+2.200*s,ty=y-6.200*s;
+  o+='<g transform="rotate(-19.800 '+F(tx)+' '+F(ty)+')"><path d="M'+F(tx)+' '+F(ty)+'V'+F(ty-24*s)+'" stroke="#7A5232" stroke-width="'+F(1.500*s)+'" stroke-linecap="round" fill="none"/><path d="M'+F(tx-.4*s)+' '+F(ty-1*s)+'V'+F(ty-24*s)+'" stroke="#B07A4E" stroke-width="'+F(.5*s)+'" stroke-linecap="round" fill="none"/>';
+  if(tool==='spear')o+='<path d="M'+F(tx-1.500*s)+' '+F(ty-25*s)+'L'+F(tx)+' '+F(ty-31*s)+'L'+F(tx+1.500*s)+' '+F(ty-25*s)+'Z" fill="#9AA6E0"/>';
+  else if(tool==='brush')o+='<ellipse cx="'+F(tx)+'" cy="'+F(ty-27*s)+'" rx="'+F(1.200*s)+'" ry="'+F(2*s)+'" fill="#D9473A"/>';
+  else o+='<path d="M'+F(tx-2.600*s)+' '+F(ty+3.200*s)+'V'+F(ty)+'H'+F(tx+2.600*s)+'V'+F(ty+3.200*s)+'M'+F(tx)+' '+F(ty)+'V'+F(ty+3.600*s)+'" stroke="#8C98D8" stroke-width="'+F(.9*s)+'" stroke-linecap="round" stroke-linejoin="round" fill="none"/>';
+  o+='</g>';
+  // Kopf: Gesicht mit langer Nase, finsteren Brauen und Bart
+  o+='<ellipse cx="'+X(.5)+'" cy="'+Y(-19.500)+'" rx="'+F(3.300*s)+'" ry="'+F(3.900*s)+'" fill="'+cmix(skin,'#1F2A6B',.25)+'"/><ellipse cx="'+X(0)+'" cy="'+Y(-20)+'" rx="'+F(3.300*s)+'" ry="'+F(3.900*s)+'" fill="'+skin+'"/>';
+  o+='<path d="M'+X(-3.300)+' '+Y(-19)+'Q'+X(0)+' '+Y(-11.500)+' '+X(3.300)+' '+Y(-19)+'Q'+X(0)+' '+Y(-17)+' '+X(-3.300)+' '+Y(-19)+'Z" fill="'+P.beard+'"/><path d="M'+X(-2.600)+' '+Y(-19)+'q'+F(2.600*s)+' '+F(-1.500*s)+' '+F(5.200*s)+' 0" fill="none" stroke="'+P.beard+'" stroke-width="'+F(1*s)+'" stroke-linecap="round"/>';
+  o+='<path d="M'+X(0)+' '+Y(-21.500)+'l'+F(-1*s)+' '+F(2.600*s)+'h'+F(2*s)+'" fill="none" stroke="#D88D78" stroke-width="'+F(.6*s)+'" stroke-linecap="round" stroke-linejoin="round"/><circle cx="'+X(-1.600)+'" cy="'+Y(-21.600)+'" r="'+F(.55*s)+'" fill="'+ink+'"/><circle cx="'+X(1.600)+'" cy="'+Y(-21.600)+'" r="'+F(.55*s)+'" fill="'+ink+'"/><path d="M'+X(-2.800)+' '+Y(-23)+'l'+F(2.200*s)+' '+F(1*s)+'M'+X(2.800)+' '+Y(-23)+'l'+F(-2.200*s)+' '+F(1*s)+'" stroke="'+ink+'" stroke-width="'+F(.7*s)+'" stroke-linecap="round"/>';
+  // Helm
+  o+=fp('M'+X(-4)+' '+Y(-23.500)+'Q'+X(0)+' '+Y(-31)+' '+X(4)+' '+Y(-23.500)+'Z',P.helm)+'<path d="M'+X(-4.800)+' '+Y(-23.500)+'h'+F(9.600*s)+'v'+F(1.100*s)+'h'+F(-9.600*s)+'Z" fill="'+cmix(P.helm,'#1F2A6B',.3)+'"/><path d="M'+X(0)+' '+Y(-29.800)+'v'+F(5.200*s)+'" stroke="'+cmix(P.helm,'#ffffff',.55)+'" stroke-width="'+F(.7*s)+'" stroke-linecap="round" opacity=".8"/>';
+  // Arme und Hände
+  o+='<path d="M'+X(-4.600)+' '+Y(-14)+'Q'+X(-5.400)+' '+Y(-10.500)+' '+X(-1.200)+' '+Y(-10.800)+'M'+X(4.600)+' '+Y(-14)+'Q'+X(5.400)+' '+Y(-9.500)+' '+X(1.800)+' '+Y(-9.600)+'" stroke="'+cmix(P.tun,'#1F2A6B',.2)+'" stroke-width="'+F(1.900*s)+'" stroke-linecap="round" fill="none"/><circle cx="'+X(-1.300)+'" cy="'+Y(-10.800)+'" r="'+F(1.400*s)+'" fill="'+skin+'"/><circle cx="'+X(1.900)+'" cy="'+Y(-9.600)+'" r="'+F(1.400*s)+'" fill="'+skin+'"/>';
+  return flip?'<g transform="translate('+F(2*x)+' 0) scale(-1 1)">'+o+'</g>':o;
+}
 function flatten(s){return s.replace(/<(path|rect|circle|ellipse)\b([^>]*?)(\/?)>/g,function(m,tag,attrs,sl){if(!/ fill="(?!none)[^"]*"/.test(attrs)||!/ stroke="/.test(attrs))return m;attrs=attrs.replace(/ stroke(?:-width|-linejoin|-linecap|-dasharray|-dashoffset|-opacity)?="[^"]*"/g,'');return '<'+tag+attrs+sl+'>'})}
 function scene(k){
   var seed=11;function rnd(){seed=(seed*16807)%2147483647;return seed/2147483647}
@@ -557,7 +596,7 @@ function scene(k){
     o+=nest('alice',112,14,52,75);
   }
   if(k==='cards'){
-    o+=cardP(70,64,34,48,-18,'h')+cardP(112,64,34,48,18,'s')+cardP(91,84,40,26,88,'c')+cardP(91,38,32,44,0,'d')+'<path d="M91 14v-8" stroke="#2B2535" stroke-width="2"/>'+SK([[91,6],[101,9],[91,12]],true,.3,'#E2566B',1.200)+nest('rook',138,22,46,66);
+    o+=RC(14,96,172,6,'#B8C1EC',.4)+kartenMann(44,98,1.55,'s','spear')+kartenMann(84,98,1.55,'h','fork')+kartenMann(124,98,1.55,'c','fork',1)+kartenMann(164,98,1.55,'d','spear',1);
   }
   if(k==='forest'){
     o+=pineP(24,98,1.100)+roundP(176,98,1.100,'#58B947')+pineP(158,92,.7)+pineP(44,92,.7)+'<path d="M40 74Q100 66 160 74" fill="none" stroke="#2B2535" stroke-width="9" stroke-linecap="round"/><path d="M40 74Q100 66 160 74" fill="none" stroke="#9A6B43" stroke-width="6" stroke-linecap="round"/>'+nest('cat',70,10,62,89);
@@ -601,7 +640,7 @@ function scene(k){
   if(k==='roses'){
     o+=SK(ell(100,72,66,32,12),true,1.400,'#3FA04A',2.200)+'<path d="M50 70q10-8 20 0M110 84q10-8 20 0M130 62q8-6 16 0" fill="none" stroke="#2B6B33" stroke-width="1.500"/>';
     [[60,60,'#E2403F'],[86,48,'#E2403F'],[112,64,'#E2403F'],[136,52,'#E2403F'],[100,78,'#FFFDF6'],[76,80,'#E2403F'],[150,74,'#FFFDF6']].forEach(function(r){o+='<circle cx="'+r[0]+'" cy="'+r[1]+'" r="8.500" fill="'+r[2]+'" stroke="#2B2535" stroke-width="1.500"/><path d="M'+(r[0]-3)+' '+r[1]+'q3-4 6 0q-3 4-6 0M'+(r[0]-5)+' '+(r[1]+1)+'q5-8 10 0" fill="none" stroke="'+(r[2]==='#FFFDF6'?'#B8B0A0':'#8A1F1F')+'" stroke-width="1.300"/>'});
-    o+=cardP(30,56,22,32,-10,'s')+'<path d="M40 70L58 80" stroke="#2B2535" stroke-width="2.400" stroke-linecap="round"/>'+SK([[56,78],[62,76],[64,84],[58,86]],true,.3,'#E2403F',1.200);
+    o+=kartenMann(32,102,1.35,'s','brush')+kartenMann(170,102,1.35,'c','brush',1);
   }
   if(k==='court'){
     o+=SK([[24,88],[176,88],[176,102],[24,102]],true,.8,'#9A6B43',2.200)+SK([[44,58],[156,58],[160,88],[40,88]],true,1,'#C99A64',2.200)+heartP(100,72,2.600,'#D23B4E')+
@@ -1141,23 +1180,7 @@ document.getElementById('stratlist').innerHTML=STRAT.map(function(w,i){
   }
   function faceP(x,y,r,mood){ // menschliches Gesicht: Augen, Nase, Wangen, Mund
     return '<circle cx="'+f(x-r*.38)+'" cy="'+f(y-r*.1)+'" r="'+f(r*.17)+'" fill="'+INK+'"/><circle cx="'+f(x+r*.38)+'" cy="'+f(y-r*.1)+'" r="'+f(r*.17)+'" fill="'+INK+'"/><path d="M'+f(x)+' '+f(y)+'l'+f(-r*.1)+' '+f(r*.28)+'h'+f(r*.2)+'" fill="none" stroke="#C9715C" stroke-width="'+f(r*.1)+'" stroke-linecap="round" stroke-linejoin="round"/><circle cx="'+f(x-r*.62)+'" cy="'+f(y+r*.28)+'" r="'+f(r*.2)+'" fill="#EE6B58" opacity=".8"/><circle cx="'+f(x+r*.62)+'" cy="'+f(y+r*.28)+'" r="'+f(r*.2)+'" fill="#EE6B58" opacity=".8"/><path d="M'+f(x-r*.3)+' '+f(y+r*.55)+'q'+f(r*.3)+' '+f(mood==='grim'?-r*.25:r*.28)+' '+f(r*.6)+' 0" fill="none" stroke="#B5453A" stroke-width="'+f(r*.14)+'" stroke-linecap="round"/>'}
-  function cardMan(x,y,s,suit,tool,flip,delay){
-    var red=suit==='h'||suit==='d',col=red?'#D9473A':'#2A3377',skin='#F4B49A',o='',lim='#2A3377';
-    o+='<ellipse cx="'+f(x+1)+'" cy="'+f(y+.5)+'" rx="'+f(8*s)+'" ry="'+f(2*s)+'" fill="'+INK+'" opacity=".2"/>';
-    // Beine mit Schuhen
-    o+='<path d="M'+f(x-3*s)+' '+f(y-8*s)+'V'+f(y-2*s)+'M'+f(x+3*s)+' '+f(y-8*s)+'V'+f(y-2*s)+'" stroke="'+lim+'" stroke-width="'+f(1.900*s)+'" stroke-linecap="round" fill="none"/><ellipse cx="'+f(x-3.800*s)+'" cy="'+f(y-1*s)+'" rx="'+f(2.800*s)+'" ry="'+f(1.500*s)+'" fill="#E8503A"/><ellipse cx="'+f(x+3.800*s)+'" cy="'+f(y-1*s)+'" rx="'+f(2.800*s)+'" ry="'+f(1.500*s)+'" fill="#E8503A"/>';
-    // Arme und Hände
-    var raised=tool?1:0;
-    o+='<path d="M'+f(x-6*s)+' '+f(y-20*s)+'L'+f(x-10.500*s)+' '+f(y-14*s)+'M'+f(x+6*s)+' '+f(y-20*s)+'L'+f(x+10.500*s)+' '+f(raised?y-24*s:y-14*s)+'" stroke="'+lim+'" stroke-width="'+f(1.700*s)+'" stroke-linecap="round" fill="none"/><circle cx="'+f(x-10.800*s)+'" cy="'+f(y-13.500*s)+'" r="'+f(1.700*s)+'" fill="'+skin+'"/><circle cx="'+f(x+10.800*s)+'" cy="'+f(raised?y-24.500*s:y-13.500*s)+'" r="'+f(1.700*s)+'" fill="'+skin+'"/>';
-    if(tool==='spear')o+='<path d="M'+f(x+10.800*s)+' '+f(y-10*s)+'V'+f(y-38*s)+'" stroke="#7A5232" stroke-width="'+f(1.100*s)+'" stroke-linecap="round"/><path d="M'+f(x+10.800*s-1.800*s)+' '+f(y-38*s)+'l'+f(1.800*s)+' '+f(-5*s)+'l'+f(1.800*s)+' '+f(5*s)+'Z" fill="#C9D1F6"/>';
-    if(tool==='brush')o+='<path d="M'+f(x+10.800*s)+' '+f(y-24.500*s)+'L'+f(x+16*s)+' '+f(y-33*s)+'" stroke="#7A5232" stroke-width="'+f(1.100*s)+'" stroke-linecap="round"/><circle cx="'+f(x+16.600*s)+'" cy="'+f(y-34*s)+'" r="'+f(1.900*s)+'" fill="#D9473A"/>';
-    // Kartenkörper
-    o+=flatP('M'+f(x-6*s)+' '+f(y-24*s)+'h'+f(12*s)+'v'+f(17*s)+'h'+f(-12*s)+'Z','#FFFDF6')+suitG(suit,f(x),f(y-15.500*s),1.050*s,col)+suitG(suit,f(x-3.600*s),f(y-21.500*s),.28*s,col)+suitG(suit,f(x+3.600*s),f(y-9.500*s),.28*s,col);
-    // Kopf mit Gesicht und spitzer Mütze
-    o+='<circle cx="'+f(x+.8*s)+'" cy="'+f(y-30*s)+'" r="'+f(5*s)+'" fill="'+mix(skin,'#1F2A6B',.25)+'"/><circle cx="'+f(x)+'" cy="'+f(y-30.500*s)+'" r="'+f(5*s)+'" fill="'+skin+'"/>';
-    o+='<path d="M'+f(x-5*s)+' '+f(y-32*s)+'L'+f(x+1*s)+' '+f(y-41*s)+'L'+f(x+5*s)+' '+f(y-32*s)+'Q'+f(x)+' '+f(y-34*s)+' '+f(x-5*s)+' '+f(y-32*s)+'Z" fill="'+col+'"/>'+faceP(x,y-30*s,5*s,'');
-    return flip?'<g transform="translate('+f(2*x)+' 0) scale(-1 1)">'+o+'</g>':o;
-  }
+  function cardMan(x,y,s,suit,tool,flip){return kartenMann(x,y,s,suit,tool,flip)}
   function eggMan(x,y,s){ // Humpty Dumpty auf der Mauer
     var o=shadow(x,y,26*s);
     for(var r2=0;r2<3;r2++)for(var c2=0;c2<5;c2++)o+='<path d="M'+f(x-24*s+c2*9.600*s+(r2%2?4.800*s:0))+' '+f(y-16*s+r2*5.300*s)+'h'+f(9*s)+'v'+f(4.800*s)+'h'+f(-9*s)+'Z" fill="'+((r2+c2)%2?'#E8806A':'#F29A83')+'"/>';
@@ -1201,13 +1224,13 @@ document.getElementById('stratlist').innerHTML=STRAT.map(function(w,i){
     var c1=SC[1],c2=SC[2],c5=SC[5],c6=SC[6],c7=SC[7],y2=c2[1]+30,y5=c5[1]+30,y7=c7[1]+30;
     // Rosengarten mit drei Kartengärtnern, die weiße Rosen rot malen (Stufe 2)
     var rb='<path d="'+blob(c1[0]-58,c1[1]+6,26,10,10,.08)+'" fill="#58BFA9"/>';[[-76,2,'#D9473A'],[-62,-4,'#FFF6E3'],[-48,0,'#D9473A'],[-68,8,'#D9473A'],[-52,8,'#FFF6E3']].forEach(function(r){rb+='<circle cx="'+(c1[0]+r[0])+'" cy="'+(c1[1]+r[1]+2)+'" r="5.500" fill="'+r[2]+'"/><path d="M'+(c1[0]+r[0]-1.500)+' '+(c1[1]+r[1]+2)+'q1.500-2 3 0" fill="none" stroke="#8E2F3F" stroke-width="1" opacity=".7"/>'});
-    L.push(life(2,300,'<g transform="translate(-74 -62)">'+rb+cardMan(c1[0]-86,c1[1]+30,.9,'s','brush')+cardMan(c1[0]-62,c1[1]+30,.9,'s','brush',1)+cardMan(c1[0]-38,c1[1]+26,.9,'s','brush',1)+'</g>'));
+    L.push(life(2,300,'<g transform="translate(-74 -62)">'+rb+cardMan(c1[0]-92,c1[1]+30,1.05,'s','brush')+cardMan(c1[0]-66,c1[1]+32,1.05,'c','brush',1)+cardMan(c1[0]-40,c1[1]+28,1.05,'s','brush',1)+'</g>'));
     // Wachen am Kartenschloss (Stufe 2)
-    L.push(life(2,500,cardMan(c2[0]-30,y2-2,.95,'h','spear')+cardMan(c2[0]+30,y2-2,.95,'s','spear',1)));
+    L.push(life(2,500,cardMan(c2[0]-30,y2-2,1.05,'h','fork')+cardMan(c2[0]+30,y2-2,1.05,'s','spear',1)));
     // Arbeiter der Roten Königin am Palast (Stufe 2)
-    L.push(life(2,700,cardMan(c5[0]-30,y5+12,.95,'h','spear')+cardMan(c5[0]+8,y5+16,.95,'d','spear',1)));
+    L.push(life(2,700,cardMan(c5[0]-30,y5+12,1.05,'h','spear')+cardMan(c5[0]+8,y5+16,1.05,'d','fork',1)));
     // Krocket: Kartensoldaten am Spielfeld der Arena (Stufe 2)
-    L.push(life(2,900,cardMan(c7[0]-86,y7+8,.9,'c')+cardMan(c7[0]+86,y7+8,.9,'d',null,1)));
+    L.push(life(2,900,cardMan(c7[0]-86,y7+8,1,'c','fork')+cardMan(c7[0]+86,y7+8,1,'d','fork',1)));
     // Hutmacher-Teegesellschaft, Raupe, Humpty Dumpty, Dodo, Tweedledum/-dee (Stufe 3)
     L.push(life(3,100,teaParty(322,806,.85)));
     L.push(life(3,250,caterP(350,918,.85)));
@@ -1215,7 +1238,7 @@ document.getElementById('stratlist').innerHTML=STRAT.map(function(w,i){
     L.push(life(3,550,dodoM(38,198,.9)));
     L.push(life(3,700,tweedles(318,1428,.9)));
     // marschierende Kartensoldaten auf dem Weg (Stufe 4)
-    L.push(life(4,0,'<g><animateMotion dur="120s" begin="-20s" repeatCount="indefinite" path="'+road.d+'"/>'+cardMan(0,5,.5,'h','spear')+'</g><g><animateMotion dur="120s" begin="-26s" repeatCount="indefinite" path="'+road.d+'"/>'+cardMan(0,5,.5,'s','spear')+'</g><g><animateMotion dur="120s" begin="-32s" repeatCount="indefinite" path="'+road.d+'"/>'+cardMan(0,5,.5,'d','spear')+'</g>','op'));
+    L.push(life(4,0,'<g><animateMotion dur="120s" begin="-20s" repeatCount="indefinite" path="'+road.d+'"/>'+cardMan(0,5,.58,'h','spear')+'</g><g><animateMotion dur="120s" begin="-26s" repeatCount="indefinite" path="'+road.d+'"/>'+cardMan(0,5,.58,'s','spear')+'</g><g><animateMotion dur="120s" begin="-32s" repeatCount="indefinite" path="'+road.d+'"/>'+cardMan(0,5,.58,'d','spear')+'</g>','op'));
   })();
   // Grinsekatze im Baum am Wald ohne Namen (Stufe 3)
   (function(){var c=SC[3],cx0=c[0]+62,cy0=c[1]-4;
