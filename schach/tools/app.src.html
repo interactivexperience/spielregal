@@ -161,6 +161,9 @@ svg.i.out{stroke:var(--ink);stroke-width:1.1;stroke-linejoin:round}
 .lrow .ss{margin-left:auto;display:flex;font-size:20px}
 .lrow .ss svg.dim{opacity:.22}
 .lrow .ic{font-size:26px}
+.lbg{position:fixed;inset:0;z-index:-1;background-size:cover;background-position:center top}
+.lbg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(251,243,228,0) 0,rgba(251,243,228,0) 12%,rgba(251,243,228,.5) 30%,rgba(251,243,228,.86) 46%,rgba(251,243,228,.92) 100%)}
+.stitlechip{display:inline-block;margin:6px 6px 0;font:900 17px 'Londrina Solid',cursive;background:#FFF6E3;color:#2A3377;border-radius:99px;padding:1px 12px;box-shadow:0 0 0 2px #fff}
 .scenehead{position:relative;height:118px;margin:8px 4px 0;border-radius:14px;background-size:cover;background-position:center;box-shadow:0 0 0 3px #fff,0 0 0 5px #2A3377}
 .scenehead.big{height:170px}
 .scenehead .stitle{position:absolute;left:10px;bottom:8px;font:900 17px 'Londrina Solid',cursive;background:#FFF6E3;color:#2A3377;border-radius:99px;padding:1px 12px;box-shadow:0 0 0 2px #fff}
@@ -450,8 +453,8 @@ function lessonHTML(){
   const w=LSN_DATA[LSN.w],l=w.lessons[LSN.li],t=l.tasks[LSN.ti],intro=LSN.phase==='intro';
   const dots='<div class="dots">'+l.tasks.map((_,i)=>'<i class="'+(i<LSN.ti||LSN.phase==='done'?'on':'')+'"></i>').join('')+'</div>';
   const say=intro?l.intro:LSN.msg||(t.goal.t==='tap'?'Tippe das gesuchte Feld.':'Tippe erst die Figur, dann das Zielfeld.');
-  let h='<div class="top"><button class="leave" data-a="lback" data-info="Zurück zur Karte">'+icon('chevron','ink')+'Karte</button>'+dots+xpBar()+'</div>'+
-    '<div class="scenehead'+(intro?' big':'')+'" style="background-image:url(art/scenes/w'+LSN.w+'.jpg)"><span class="stitle">'+esc(w.name)+'</span></div>'+
+  let h='<div class="lbg" style="background-image:url(art/scenes/p'+LSN.w+'.jpg)"></div><div class="top"><button class="leave" data-a="lback" data-info="Zurück zur Karte">'+icon('chevron','ink')+'Karte</button>'+dots+xpBar()+'</div>'+
+    '<div style="height:'+(intro?150:84)+'px;display:flex;align-items:flex-end"><span class="stitlechip">'+esc(w.name)+'</span></div>'+
     '<div class="coach"><span class="chr-wrap">'+window.chr(l.coach||w.coach)+'</span><div class="say" role="status">'+esc(say)+'</div></div>';
   if(intro)return h+'<div style="margin:22px 8px 0"><h2 style="font-size:32px;margin:0 0 4px">'+esc(l.title)+'</h2><p style="color:var(--soft);margin-bottom:18px">'+l.tasks.length+' Aufgaben'+(l.boss?' · Boss':'')+'</p><button class="btn" data-a="lstart">Los geht’s</button></div>';
   h+='<div class="prompt bar">'+esc(t.prompt)+'</div><div class="boardwrap">'+boardHTML()+'</div>'+

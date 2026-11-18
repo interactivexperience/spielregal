@@ -709,8 +709,9 @@ function scene(k){
     '<rect x="-220" y="-40" width="640" height="200" fill="url(#sg_'+k+')"/><circle cx="100" cy="58" r="74" fill="url(#gl_'+k+')"/>'+
     '<path d="M-220 78Q-120 52 -40 74T110 70T240 76T420 66V150H-220Z" fill="'+cmix(wb,'#5A4AA8',.16)+'" opacity=".8"/><path d="M-220 90Q-100 72 20 88T200 84T420 90V150H-220Z" fill="'+cmix(wb,'#5A4AA8',.3)+'"/>'+
     '<ellipse cx="40" cy="80" rx="56" ry="5" fill="#fff" opacity=".28"/><ellipse cx="160" cy="70" rx="50" ry="4" fill="#fff" opacity=".22"/>'+star;
-  var fin='<rect x="-220" y="-40" width="640" height="200" fill="url(#chalkF)"/>';
-  return '<svg class="scene" viewBox="0 -2 200 118" aria-hidden="true">'+atmo+o+fin+'</svg>';
+  var ext='<rect x="-220" y="-600" width="640" height="560" fill="'+t1+'"/><defs><linearGradient id="eg_'+k+'" gradientUnits="userSpaceOnUse" x1="0" y1="140" x2="0" y2="430"><stop offset="0" stop-color="'+gd+'"/><stop offset="1" stop-color="'+cmix(wb,'#8F7FD8',.45)+'"/></linearGradient></defs><rect x="-220" y="140" width="640" height="900" fill="url(#eg_'+k+')"/>';
+  var fin='<rect x="-220" y="-600" width="640" height="1700" fill="url(#chalkF)"/>';
+  return '<svg class="scene" viewBox="0 -2 200 118" aria-hidden="true">'+ext+atmo+o+fin+'</svg>';
 }
 var PIECE={pawn:1,rook:1,bishop:1,knight:1,queen:1,king:1};
 document.getElementById('worldlist').innerHTML=WORLDS.map(function(w,i){
