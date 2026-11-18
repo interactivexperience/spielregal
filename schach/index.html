@@ -1394,8 +1394,9 @@ function resign(){if(!S||S.over)return;S.over={res:'loss',why:'Aufgegeben'};reco
 
 /* ---------- Lernpfad ---------- */
 function lessonTask(){return LSN_DATA[LSN.w].lessons[LSN.li].tasks[LSN.ti]}
-function loadTask(){const t=lessonTask();G={pos:E.parseFEN(t.fen),keys:[],sans:[],posList:[]};U.sel=null;U.legal=[];U.last=null;U.hintSq=null;U.flash=null;U.promo=null;LSN.msg=null;LSN.hint=0;LSN.busy=false}
-function openLesson(w,i){LSN={w,li:i,ti:0,hearts:3,hints:0,mist:0,phase:'intro',stars:0,gain:0};const t=LSN_DATA[w].lessons[i].tasks[0];G={pos:E.parseFEN(t.fen),keys:[],sans:[],posList:[]};U.view='lesson';U.sheet=null;U.sel=null;U.legal=[];U.last=null;U.hintSq=null;U.flash=null;render();APP.scrollTop=0}
+function autoSelect(){U.autoSel=false;const t=lessonTask();if(!t||t.goal.t==='tap')return;const all=legalMoves(G.pos),fr=[...new Set(all.map(m=>m.from))];if(fr.length===1){U.sel=fr[0];U.legal=all.filter(m=>m.from===fr[0]);U.autoSel=true}}
+function loadTask(){const t=lessonTask();G={pos:E.parseFEN(t.fen),keys:[],sans:[],posList:[]};U.sel=null;U.legal=[];U.last=null;U.hintSq=null;U.flash=null;U.promo=null;LSN.msg=null;LSN.hint=0;LSN.busy=false;autoSelect()}
+function openLesson(w,i){LSN={w,li:i,ti:0,hearts:3,hints:0,mist:0,phase:'intro',stars:0,gain:0};const t=LSN_DATA[w].lessons[i].tasks[0];G={pos:E.parseFEN(t.fen),keys:[],sans:[],posList:[]};U.view='lesson';U.sheet=null;U.sel=null;U.legal=[];U.last=null;U.hintSq=null;U.flash=null;autoSelect();render();APP.scrollTop=0}
 function solutionSquares(){
   const t=lessonTask(),g=t.goal;
   if(g.t==='tap')return [sqIndex(g.sqs[0])];
@@ -1406,6 +1407,7 @@ function fits(g,m,pos){if(g.pc&&pos.board[m.from].toLowerCase()!==g.pc)return fa
 function goalMet(mv){return fits(lessonTask().goal,mv,G.pos)}
 function lessonOk(sq){
   LSN.busy=true;U.flash=sq!=null?{sq,ok:true}:null;SND.win&&tone(784,.14,'triangle',.18);tone(988,.2,'triangle',.16,.1);buzz(15);
+  {const k=lessonTask().goal.t==='tap'?'tapF':'tapP';if(!P[k]){P[k]=1;saveProg()}}
   const msgs=['Genau!','Sehr gut!','Richtig!','Das sitzt!'];LSN.msg=msgs[(LSN.ti+LSN.li)%msgs.length];render();
   setTimeout(()=>{
     const l=LSN_DATA[LSN.w].lessons[LSN.li];LSN.ti++;
@@ -1435,8 +1437,8 @@ function lessonSquare(i){
     }
   }
   const own=piece!=='.'&&piece===piece.toUpperCase();
-  if(own){if(U.sel===i){U.sel=null;U.legal=[]}else{U.sel=i;U.legal=legalMoves(G.pos).filter(m=>m.from===i);SND.tap();buzz(6);if(!U.legal.length)toast(NAMES[piece.toLowerCase()]+' kann hier nicht ziehen.')}}
-  else if(U.sel!=null){U.sel=null;U.legal=[];SND.bad()}
+  if(own){if(U.sel===i&&U.autoSel){render();return}U.autoSel=false;if(U.sel===i){U.sel=null;U.legal=[]}else{U.sel=i;U.legal=legalMoves(G.pos).filter(m=>m.from===i);SND.tap();buzz(6);if(!U.legal.length)toast(NAMES[piece.toLowerCase()]+' kann hier nicht ziehen.')}}
+  else if(U.sel!=null){if(!U.autoSel){U.sel=null;U.legal=[]}SND.bad()}
   render();
 }
 function lessonMove(mv){
@@ -1533,10 +1535,10 @@ function piecesSheet(){return '<div class="scrim" data-a="close"></div><div clas
 function lessonHTML(){
   const w=LSN_DATA[LSN.w],l=w.lessons[LSN.li],t=l.tasks[LSN.ti],intro=LSN.phase==='intro';
   const dots='<div class="dots">'+l.tasks.map((_,i)=>'<i class="'+(i<LSN.ti||LSN.phase==='done'?'on':'')+'"></i>').join('')+'</div>';
-  const say=intro?l.intro:LSN.msg||(t.goal.t==='tap'?'Tippe das gesuchte Feld.':'Tippe erst die Figur, dann das Zielfeld.');
+  const hk=t.goal.t==='tap'?'tapF':'tapP',say=intro?l.intro:LSN.msg||(P[hk]?'':t.goal.t==='tap'?'Tippe das gesuchte Feld.':U.autoSel?'Tippe das Zielfeld.':'Tippe erst die Figur, dann das Zielfeld.');
   let h='<div class="lbg" style="background-image:url(art/scenes/p'+LSN.w+'.jpg)"></div><div class="top"><button class="leave" data-a="lback" data-info="Zurück">'+icon('chevron','ink')+(LSN.w>=P1N?'Pfad 2':'Karte')+'</button>'+dots+xpBar()+'</div>'+
     '<div style="height:'+(intro?150:84)+'px;display:flex;align-items:flex-end"><span class="stitlechip">'+esc(w.name)+'</span></div>'+
-    '<div class="coach"><span class="chr-wrap">'+window.chr(l.coach||w.coach)+'</span><div class="say" role="status">'+esc(say)+'</div></div>';
+    (say?'<div class="coach"><span class="chr-wrap">'+window.chr(l.coach||w.coach)+'</span><div class="say" role="status">'+esc(say)+'</div></div>':'');
   if(intro)return h+(l.meet?'<div class="meet">'+['pawn','rook','knight','bishop','queen','king'].map(k=>{const d=window.SchachLessons.PIECES[k];return '<div class="mp"><span>'+pieceIcon(k==='knight'?'N':k==='pawn'?'P':k==='rook'?'R':k==='bishop'?'B':k==='queen'?'Q':'K')+'</span><b>'+esc(d.name)+'</b><i>'+esc(d.role)+'</i></div>'}).join('')+'</div>':'')+(l.piece?'<div style="margin:14px 6px 0">'+pieceCard(l.piece)+'</div>':'')+'<div style="margin:22px 8px 0"><h2 style="font-size:32px;margin:0 0 4px">'+esc(l.title)+'</h2><p style="color:var(--soft);margin-bottom:18px">'+l.tasks.length+(l.tasks.length===1?' Aufgabe':' Aufgaben')+(l.boss?' · Boss':'')+'</p><button class="btn" data-a="lstart">Los geht’s</button></div>';
   h+='<div class="prompt bar">'+esc(t.prompt)+'</div><div class="boardwrap">'+boardHTML()+'</div>'+
     '<div class="hrow"><div class="hearts" data-info="Mut-Herzen: Fehler kosten ein Herz, aber nie die Lektion.">'+[0,1,2].map(i=>icon('heart','berry',i<LSN.hearts?'':'dim')).join('')+'</div><button class="btn alt" data-a="lhint" data-info="Zeigt einen Hinweis"><span class="ic">'+icon('bulb','sun')+'</span>Hinweis</button></div>';
