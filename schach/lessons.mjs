@@ -15,6 +15,17 @@ const START = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const t = (fen, prompt, goal, hints) => ({ fen, prompt, goal, hints });
 const mate1 = (fen, who, to) => t(fen, 'Matt in 1.', { t: 'mate' }, ['Der schwarze König hat kaum Fluchtfelder.', 'Dein König nimmt ihm Felder weg, die Figur muss das Schach geben.', `Tippe ${who}, dann ${to}.`]);
 
+
+// Figurenkunde: jede Figur mit Beispielstellung (die Züge der Figur auf dem Feld sq werden gezeigt) und ihren Schritten.
+export const PIECES = {
+  pawn: { name: 'Bauer', icon: 'pawn', fen: '8/8/8/8/8/3p4/4P3/8 w - - 0 1', sq: 'e2', steps: ['Er geht ein Feld nach vorn, nie zurück.', 'Vom Startfeld aus darf er einmalig zwei Felder gehen.', 'Er schlägt schräg nach vorn (roter Ring), geradeaus darf er nicht schlagen.', 'Erreicht er die letzte Reihe, wird er verwandelt, meist in eine Dame.'] },
+  rook: { name: 'Turm', icon: 'rook', fen: '8/3p4/8/8/1P1R4/8/8/8 w - - 0 1', sq: 'd4', steps: ['Er zieht gerade: vor, zurück, nach links und nach rechts.', 'So weit er will, bis etwas im Weg steht.', 'Einen Gegner schlägt er (roter Ring), an eigenen Figuren kommt er nicht vorbei.', 'Wert: 5.'] },
+  bishop: { name: 'Läufer', icon: 'bishop', fen: '8/6p1/8/8/3B4/8/1P6/8 w - - 0 1', sq: 'd4', steps: ['Er zieht schräg in alle vier Richtungen.', 'So weit er will, bis etwas im Weg steht.', 'Er bleibt immer auf der Farbe seines Startfelds.', 'Einen Gegner schlägt er schräg (roter Ring). Wert: 3.'] },
+  knight: { name: 'Springer', icon: 'knight', fen: '8/8/4p3/3P4/3N4/8/8/8 w - - 0 1', sq: 'd4', steps: ['Er springt im L: zwei Felder gerade und eines zur Seite.', 'Er ist die einzige Figur, die über andere hinwegspringt.', 'Er schlägt auf dem Feld, auf dem er landet (roter Ring).', 'Wert: 3.'] },
+  queen: { name: 'Dame', icon: 'queen', fen: '8/3p4/8/8/3Q4/8/1P6/8 w - - 0 1', sq: 'd4', steps: ['Sie zieht gerade wie ein Turm.', 'Sie zieht schräg wie ein Läufer.', 'Also in alle acht Richtungen, so weit sie will, bis etwas im Weg steht.', 'Sie schlägt, wie sie zieht (roter Ring). Wert: 9, die stärkste Figur.'] },
+  king: { name: 'König', icon: 'king', fen: '8/8/8/8/4K3/5p2/8/8 w - - 0 1', sq: 'e4', steps: ['Er zieht ein Feld in jede Richtung, gerade und schräg.', 'Er darf nie auf ein Feld ziehen, das ein Gegner bedroht.', 'Wird er bedroht, heißt das Schach. Kann er nicht entkommen, ist es Schachmatt.', 'Er ist die wichtigste Figur und hat keinen Wert, denn ohne ihn endet die Partie.'] },
+};
+
 export const WORLDS = [
   {
     id: 'w1', name: 'Hinter dem Spiegel', coach: 'rabbit',
@@ -42,7 +53,7 @@ export const WORLDS = [
   {
     id: 'w2', name: 'Garten der Blumen', coach: 'knight',
     lessons: [
-      { id: 'w2-l1', title: 'Ein Schritt vor', coach: 'rabbit', intro: 'Im Garten gehen die Bauern geradeaus: ein Feld pro Zug, immer nach vorn, nie zurück.', tasks: [
+      { id: 'w2-l1', piece: 'pawn', title: 'Ein Schritt vor', coach: 'rabbit', intro: 'Im Garten gehen die Bauern geradeaus: ein Feld pro Zug, immer nach vorn, nie zurück.', tasks: [
         t('8/8/8/8/8/8/4P3/8 w - - 0 1', 'Zieh den Bauern ein Feld vor.', { t: 'to', sqs: ['e3'] }, ['Vorwärts heißt: in Richtung Schwarz.', 'Ein Feld bedeutet: e2 nach e3.', 'Tippe den Bauern, dann e3.']),
         t('8/8/8/8/1P6/8/8/8 w - - 0 1', 'Zieh den Bauern nach b5.', { t: 'to', sqs: ['b5'] }, ['Der Bauer steht auf b4.', 'Ein Feld vor ist b5.', 'Tippe den Bauern, dann b5.']),
         t('8/8/3P4/8/8/8/8/8 w - - 0 1', 'Zieh den Bauern nach d7.', { t: 'to', sqs: ['d7'] }, ['Der Bauer steht auf d6.', 'Ein Feld vor ist d7.', 'Tippe den Bauern, dann d7.']),
@@ -72,7 +83,7 @@ export const WORLDS = [
   {
     id: 'w3', name: 'Das Kartenschloss', coach: 'rabbit',
     lessons: [
-      { id: 'w3-l1', title: 'Gerade Wege', coach: 'rabbit', intro: 'Im Kartenschloss steht der Turm Wache. Er läuft nur gerade: vor, zurück, nach links und nach rechts, so weit er will.', tasks: [
+      { id: 'w3-l1', piece: 'rook', title: 'Gerade Wege', coach: 'rabbit', intro: 'Im Kartenschloss steht der Turm Wache. Er läuft nur gerade: vor, zurück, nach links und nach rechts, so weit er will.', tasks: [
         t('8/8/8/8/8/8/8/R7 w - - 0 1', 'Zieh den Turm nach h1.', { t: 'to', sqs: ['h1'] }, ['Der Turm läuft die Reihe entlang.', 'Von a1 nach rechts bis ganz an den Rand.', 'Tippe den Turm, dann h1.']),
         t('8/8/8/8/3R4/8/8/8 w - - 0 1', 'Zieh den Turm nach d8.', { t: 'to', sqs: ['d8'] }, ['Der Turm bleibt auf der Linie d.', 'Er läuft nach oben bis zum Rand.', 'Tippe den Turm, dann d8.']),
         t('7R/8/8/8/8/8/8/8 w - - 0 1', 'Zieh den Turm nach a8.', { t: 'to', sqs: ['a8'] }, ['Der Turm steht in der Reihe 8.', 'Er läuft nach links bis zum Rand.', 'Tippe den Turm, dann a8.']),
@@ -103,7 +114,7 @@ export const WORLDS = [
   {
     id: 'w4', name: 'Wald ohne Namen', coach: 'cat',
     lessons: [
-      { id: 'w4-l1', title: 'Schräge Wege', coach: 'cat', intro: 'Im Wald ohne Namen gibt es keine geraden Wege, nur schräge. Der Läufer wandert auf den Diagonalen, so weit er will.', tasks: [
+      { id: 'w4-l1', piece: 'bishop', title: 'Schräge Wege', coach: 'cat', intro: 'Im Wald ohne Namen gibt es keine geraden Wege, nur schräge. Der Läufer wandert auf den Diagonalen, so weit er will.', tasks: [
         t('8/8/8/8/8/8/8/2B5 w - - 0 1', 'Zieh den Läufer nach h6.', { t: 'to', sqs: ['h6'] }, ['Der Läufer zieht immer schräg.', 'Von c1 geht es über d2, e3, f4 und g5.', 'Tippe den Läufer, dann h6.']),
         t('8/8/8/8/3B4/8/8/8 w - - 0 1', 'Zieh den Läufer nach a7.', { t: 'to', sqs: ['a7'] }, ['Von d4 schräg nach links oben.', 'Über c5 und b6 nach a7.', 'Tippe den Läufer, dann a7.']),
         t('8/8/8/8/8/8/8/5B2 w - - 0 1', 'Zieh den Läufer nach a6.', { t: 'to', sqs: ['a6'] }, ['Von f1 schräg nach links oben.', 'Über e2, d3, c4 und b5.', 'Tippe den Läufer, dann a6.']),
@@ -133,7 +144,7 @@ export const WORLDS = [
   {
     id: 'w5', name: 'Der Weiße Ritter', coach: 'wknight',
     lessons: [
-      { id: 'w5-l1', title: 'Der L-Sprung', coach: 'wknight', intro: 'Hoppla, schon wieder runtergefallen! Der Springer zieht in einem L: zwei Felder gerade und eines zur Seite.', tasks: [
+      { id: 'w5-l1', piece: 'knight', title: 'Der L-Sprung', coach: 'wknight', intro: 'Hoppla, schon wieder runtergefallen! Der Springer zieht in einem L: zwei Felder gerade und eines zur Seite.', tasks: [
         t('8/8/8/8/8/8/8/1N6 w - - 0 1', 'Zieh den Springer nach c3.', { t: 'to', sqs: ['c3'] }, ['Von b1: ein Feld nach rechts, zwei nach oben.', 'Das ergibt ein L.', 'Tippe den Springer, dann c3.']),
         t('8/8/8/4N3/8/8/8/8 w - - 0 1', 'Zieh den Springer nach f7.', { t: 'to', sqs: ['f7'] }, ['Von e5: ein Feld nach rechts, zwei nach oben.', 'Das ergibt ein L.', 'Tippe den Springer, dann f7.']),
         t('8/8/8/8/8/8/8/6N1 w - - 0 1', 'Zieh den Springer nach f3.', { t: 'to', sqs: ['f3'] }, ['Von g1: ein Feld nach links, zwei nach oben.', 'Das ergibt ein L.', 'Tippe den Springer, dann f3.']),
@@ -164,7 +175,7 @@ export const WORLDS = [
   {
     id: 'w6', name: 'Rasen der Roten Königin', coach: 'rqueen',
     lessons: [
-      { id: 'w6-l1', title: 'Die mächtige Dame', coach: 'rqueen', intro: 'Hier muss man rennen, um am selben Ort zu bleiben! Die Dame ist die stärkste Figur: Sie zieht wie Turm und Läufer zusammen.', tasks: [
+      { id: 'w6-l1', piece: 'queen', title: 'Die mächtige Dame', coach: 'rqueen', intro: 'Hier muss man rennen, um am selben Ort zu bleiben! Die Dame ist die stärkste Figur: Sie zieht wie Turm und Läufer zusammen.', tasks: [
         t('8/8/8/8/8/8/8/3Q4 w - - 0 1', 'Zieh die Dame nach h5.', { t: 'to', sqs: ['h5'] }, ['Von d1 schräg nach rechts oben.', 'Über e2, f3 und g4 nach h5.', 'Tippe die Dame, dann h5.']),
         t('8/8/8/8/8/8/8/Q7 w - - 0 1', 'Zieh die Dame nach a8.', { t: 'to', sqs: ['a8'] }, ['Die Dame darf gerade ziehen wie ein Turm.', 'Die Linie a hinauf bis zum Rand.', 'Tippe die Dame, dann a8.']),
         t('8/8/8/8/4Q3/8/8/8 w - - 0 1', 'Zieh die Dame nach b7.', { t: 'to', sqs: ['b7'] }, ['Von e4 schräg nach links oben.', 'Über d5 und c6 nach b7.', 'Tippe die Dame, dann b7.']),
@@ -194,7 +205,7 @@ export const WORLDS = [
   {
     id: 'w7', name: 'Der schlafende König', coach: 'king',
     lessons: [
-      { id: 'w7-l1', title: 'Der König', coach: 'king', intro: 'Pssst! Der König schläft. Er ist die wichtigste Figur, aber er zieht nur ein einziges Feld, in jede Richtung.', tasks: [
+      { id: 'w7-l1', piece: 'king', title: 'Der König', coach: 'king', intro: 'Pssst! Der König schläft. Er ist die wichtigste Figur, aber er zieht nur ein einziges Feld, in jede Richtung.', tasks: [
         t('8/8/8/8/8/8/8/4K3 w - - 0 1', 'Zieh den König ein Feld nach oben.', { t: 'to', sqs: ['e2'] }, ['Ein Feld heißt: genau ein Feld.', 'Von e1 nach oben liegt e2.', 'Tippe den König, dann e2.']),
         t('8/8/8/8/3K4/8/8/8 w - - 0 1', 'Zieh den König schräg nach links oben.', { t: 'to', sqs: ['c5'] }, ['Schräg: ein Feld nach links und eines nach oben.', 'Von d4 ist das c5.', 'Tippe den König, dann c5.']),
         t('8/8/8/8/8/8/8/7K w - - 0 1', 'Zieh den König schräg nach links oben.', { t: 'to', sqs: ['g2'] }, ['Von h1 ein Feld nach links und eines nach oben.', 'Das ist g2.', 'Tippe den König, dann g2.']),
