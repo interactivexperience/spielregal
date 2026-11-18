@@ -150,11 +150,11 @@ Bei richtigem Zug: Puls, Ton, Fortschrittsbalken.
 | # | Inhalt | Abnahme |
 |---|---|---|
 | M1 ✓ | Engine + Perft-Tests + Bot-Stufen | `schach-engine.mjs` grün (267 Prüfungen, mit `PERFT_DEEP=1` 273) |
-| M2 | Brett-UI: Tippen-Tippen, Animationen, Töne, Sandbox-Stellungen | im Browser spielbar |
+| M2 ✓ | Brett-UI: Tippen-Tippen, Animationen, Töne (Partie gegen Bot; Sandbox-Stellungen folgen mit dem Lektionsplayer) | im Browser spielbar, `schach-smoke.mjs` grün |
 | M3 | Lektionsplayer + Daten Welt 1 + Belohnung | `schach-lessons.mjs` + Smoke grün |
 | M4 | Welt 2 + Bauern-Duell + Bosse | Smoke grün |
 | M5 | Weltkarte, Fortschritt, Stufe 1, Speichern | Fortsetzen getestet |
-| M6 | Spielregal-Anbindung, Cover, Menü, alle globalen Tests | Owner-Test auf dem iPhone |
+| M6 (teilweise ✓) | Spielregal-Anbindung, Cover, Menü: **schon fertig** (Eintrag, Speichern, Meldung, `dashboard-browser-games` grün); offen: Anpassung an den Lernpfad und Owner-Test auf dem iPhone | Owner-Test auf dem iPhone |
 
 ## 9. Risiken
 
