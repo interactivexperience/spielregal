@@ -2,6 +2,7 @@
 // Alle Stellungen: Weiß am Zug, oft ohne König (Sandbox der Engine). goal:
 //   { t:'tap', sqs:[…] }   ein Feld antippen   · { t:'to', sqs:[…] } mit einer Figur auf eines dieser Felder ziehen
 //   { t:'mate' }           ein Zug, der Schachmatt setzt · { t:'check' } ein Zug, der Schach bietet
+//   optional pc:'n' (Figurenart, die ziehen muss) bei to/capto
 //   { t:'cap' }            irgendetwas schlagen · { t:'capto', sq:'d8' } genau dieses Feld schlagen
 const FILES = 'abcdefgh';
 export const file = c => [1, 2, 3, 4, 5, 6, 7, 8].map(r => c + r);
@@ -12,6 +13,7 @@ const LIGHT = allSq.filter(sqLight), DARK = allSq.filter(q => !sqLight(q));
 const EMPTY = '8/8/8/8/8/8/8/8 w - - 0 1';
 const START = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const t = (fen, prompt, goal, hints) => ({ fen, prompt, goal, hints });
+const mate1 = (fen, who, to) => t(fen, 'Matt in 1.', { t: 'mate' }, ['Der schwarze König hat kaum Fluchtfelder.', 'Dein König nimmt ihm Felder weg, die Figur muss das Schach geben.', `Tippe ${who}, dann ${to}.`]);
 
 export const WORLDS = [
   {
@@ -215,7 +217,7 @@ export const WORLDS = [
       ] },
       { id: 'w7-l3', title: 'Schachmatt', coach: 'king', intro: 'Kann der König nicht entkommen, ist es Schachmatt und die Partie ist zu Ende. Finde den Zug, der das erreicht.', tasks: [
         t('6k1/5ppp/8/8/8/8/8/R3K3 w - - 0 1', 'Setze matt: die eigenen Bauern versperren dem König den Weg.', { t: 'mate' }, ['Der König wird von seinen eigenen Bauern eingesperrt.', 'Ein Turm auf der 8. Reihe genügt.', 'Tippe den Turm, dann a8.']),
-        t('7k/8/6K1/8/8/8/8/Q7 w - - 0 1', 'Setze matt mit Dame und König.', { t: 'mate' }, ['Dein König nimmt ihm g7 und h7.', 'Die Dame muss die 8. Reihe angreifen.', 'Tippe die Dame, dann a8.']),
+        t('7k/8/6K1/8/8/8/Q7/8 w - - 0 1', 'Setze matt mit Dame und König.', { t: 'mate' }, ['Dein König nimmt ihm g7 und h7.', 'Die Dame muss die 8. Reihe angreifen.', 'Tippe die Dame, dann a8.']),
         t('7k/R7/8/8/8/8/8/1R2K3 w - - 0 1', 'Setze matt mit zwei Türmen.', { t: 'mate' }, ['Der Turm auf a7 sperrt die 7. Reihe.', 'Der andere Turm muss die 8. Reihe angreifen.', 'Tippe den Turm auf b1, dann b8.']),
       ] },
       { id: 'w7-l4', title: 'Rochade und en passant', coach: 'king', intro: 'Zwei Sonderzüge! Bei der Rochade zieht der König zwei Felder zum Turm hin und der Turm springt auf die andere Seite. En passant ist ein besonderer Schlag des Bauern.', tasks: [
@@ -225,7 +227,7 @@ export const WORLDS = [
       ] },
       { id: 'w7-l5', title: 'Matt in 1', boss: true, card: { kind: 'king', name: 'Der schlafende König' }, coach: 'king', intro: 'Weck ihn nicht, aber setz ihn matt! Aufgepasst: Ein falscher Zug kann auch ein Patt sein, dann ist es unentschieden.', tasks: [
         t('7k/5K2/8/8/8/8/8/6Q1 w - - 0 1', 'Matt in 1. Vorsicht vor Patt!', { t: 'mate' }, ['Dame nach g6 wäre ein Patt, der König hätte keinen Zug.', 'Die Dame muss geschützt sein.', 'Tippe die Dame, dann g7.']),
-        t('k7/8/1K6/8/8/8/8/7Q w - - 0 1', 'Matt in 1. Vorsicht vor Patt!', { t: 'mate' }, ['Dame nach c7 wäre ein Patt.', 'Die Dame muss die 8. Reihe angreifen.', 'Tippe die Dame, dann h8.']),
+        t('k7/8/1K6/8/8/8/7Q/8 w - - 0 1', 'Matt in 1. Vorsicht vor Patt!', { t: 'mate' }, ['Dame nach c7 wäre ein Patt.', 'Die Dame muss die 8. Reihe angreifen.', 'Tippe die Dame, dann h8.']),
         t('5k2/8/5K2/8/8/8/8/7R w - - 0 1', 'Matt in 1 mit Turm und König.', { t: 'mate' }, ['Dein König nimmt ihm e7, f7 und g7.', 'Der Turm muss die 8. Reihe angreifen.', 'Tippe den Turm, dann h8.']),
       ] },
     ],
@@ -295,7 +297,7 @@ export const WORLDS = [
     lessons: [
       { id: 'w10-l1', title: 'Matt mit der Dame', coach: 'alice', intro: 'Fast geschafft! Auf der achten Reihe wartet das Finale. Zuerst brauchst du Matt mit Dame und König, dazu gehört meistens die Hilfe des eigenen Königs.', tasks: [
         t('5k2/8/5K2/8/8/8/8/Q7 w - - 0 1', 'Setze matt.', { t: 'mate' }, ['Dein König nimmt ihm e7, f7 und g7.', 'Die Dame muss die 8. Reihe angreifen.', 'Tippe die Dame, dann a8.']),
-        t('k7/2K5/8/8/8/8/8/7Q w - - 0 1', 'Setze matt.', { t: 'mate' }, ['Dein König nimmt ihm b7 und b8.', 'Die Dame muss die Linie a angreifen.', 'Tippe die Dame, dann a1.']),
+        t('k7/2K5/8/8/8/8/7Q/8 w - - 0 1', 'Setze matt.', { t: 'mate' }, ['Dein König nimmt ihm b7 und b8.', 'Die Dame muss die Linie a angreifen.', 'Tippe die Dame, dann a2.']),
         t('7k/5K2/8/8/8/8/6Q1/8 w - - 0 1', 'Setze matt.', { t: 'mate' }, ['Dein König schützt das Feld g7.', 'Die Dame geht nach g7.', 'Tippe die Dame, dann g7.']),
       ] },
       { id: 'w10-l2', title: 'Matt mit dem Turm', coach: 'alice', intro: 'Auch ein Turm genügt, wenn der König hilft. Er sperrt dem gegnerischen König die Fluchtfelder.', tasks: [
@@ -317,6 +319,246 @@ export const WORLDS = [
         t('1k6/8/1K6/8/8/8/8/7R w - - 0 1', 'Matt in 1.', { t: 'mate' }, ['Dein König nimmt ihm a7, b7 und c7.', 'Der Turm greift die 8. Reihe an.', 'Tippe den Turm, dann h8.']),
         t('kr6/pp6/8/1N6/8/8/8/1K6 w - - 0 1', 'Matt in 1.', { t: 'mate' }, ['Der König ist von eigenen Figuren eingesperrt.', 'Der Springer macht den letzten Schritt.', 'Tippe den Springer, dann c7.']),
         t('7k/5K2/8/8/8/8/6Q1/8 w - - 0 1', 'Matt in 1.', { t: 'mate' }, ['Dein König schützt das Feld g7.', 'Die Dame geht nach g7.', 'Tippe die Dame, dann g7.']),
+      ] },
+    ],
+  },
+  {
+    id: 'w11', name: 'Die Teegesellschaft', coach: 'rabbit',
+    lessons: [
+      { id: 'w11-l1', title: 'Die Mitte besetzen', coach: 'rabbit', intro: 'Beim Hutmacher ist es immer sechs Uhr: Wer Zeit verliert, verliert Tempo. Im Zentrum stehen die Figuren am besten, also fang dort an.', tasks: [
+        t(START, 'Besetze die Mitte mit einem Bauern.', { t: 'to', sqs: ['e4', 'd4'], pc: 'p' }, ['Die Mitte sind die Linien d und e.', 'Zwei Felder vor vom Startfeld.', 'Tippe e2 oder d2, dann zwei Felder vor.']),
+        t('rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2', 'Greif die Mitte mit dem Springer an.', { t: 'to', sqs: ['f3'], pc: 'n' }, ['Der Springer von g1 greift e5 an.', 'Ein Feld nach links, zwei nach oben.', 'Tippe den Springer, dann f3.']),
+        t('rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 2', 'Greif das schwarze Zentrum mit dem c-Bauern an.', { t: 'to', sqs: ['c4'], pc: 'p' }, ['Der Bauer c4 greift den Bauern d5 an.', 'Er steht auf c2 und zieht zwei Felder.', 'Tippe den Bauern, dann c4.']),
+      ] },
+      { id: 'w11-l2', title: 'Zeit gewinnen', coach: 'rabbit', intro: 'Jeder Zug, der eine neue Figur ins Spiel bringt, gewinnt Zeit. Wer eine Figur zweimal zieht, verschenkt einen Zug.', tasks: [
+        t('r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4', 'Entwickle die letzte Leichtfigur.', { t: 'to', sqs: ['c3'], pc: 'n' }, ['Der Springer b1 steht noch zu Hause.', 'Ein Feld nach rechts, zwei nach oben.', 'Tippe den Springer, dann c3.']),
+        t('rnbqkb1r/pppp1ppp/5n2/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3', 'Entwickle den Läufer aktiv.', { t: 'to', sqs: ['c4', 'b5'], pc: 'b' }, ['Der Läufer f1 ist noch nicht im Spiel.', 'c4 und b5 sind aktive Felder.', 'Tippe den Läufer, dann c4 oder b5.']),
+        t('rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2', 'Entwickle einen Springer, statt die Dame zu ziehen.', { t: 'to', sqs: ['f3', 'c3'], pc: 'n' }, ['Die Dame bleibt vorerst zu Hause.', 'Springer ziehen im L.', 'Tippe einen Springer, dann f3 oder c3.']),
+      ] },
+      { id: 'w11-l3', title: 'Früh rochieren', coach: 'rabbit', intro: 'Wer früh rochiert, bringt den König in Sicherheit und den Turm ins Spiel. Prüfe vorher, ob alle Felder dazwischen frei sind.', tasks: [
+        t('r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4', 'Rochiere kurz.', { t: 'to', sqs: ['g1'], pc: 'k' }, ['Zwischen König und Turm ist alles frei.', 'Der König zieht zwei Felder zum Turm.', 'Tippe den König, dann g1.']),
+        t('rnbqk2r/ppppbppp/5n2/4p3/4P3/3B1N2/PPPP1PPP/RNBQK2R w KQkq - 0 1', 'Rochiere kurz.', { t: 'to', sqs: ['g1'], pc: 'k' }, ['Läufer und Springer sind entwickelt.', 'f1 und g1 sind frei.', 'Tippe den König, dann g1.']),
+        t('r3kb1r/ppp2ppp/2n1bn2/3pp3/3PP3/2NBBN2/PPPQ1PPP/R3K2R w KQkq - 0 1', 'Rochiere, wie du magst.', { t: 'to', sqs: ['c1', 'g1'], pc: 'k' }, ['Beide Rochaden sind möglich.', 'Der König zieht zwei Felder zu einem Turm.', 'Tippe den König, dann c1 oder g1.']),
+      ] },
+      { id: 'w11-l4', title: 'Die Dame bleibt zu Hause', coach: 'rabbit', intro: 'Wer die Dame früh herausholt, wird von den kleinen Figuren gejagt. Erst Springer und Läufer, dann die Dame.', tasks: [
+        t('rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2', 'Entwickle mit dem Springer statt mit der Dame.', { t: 'to', sqs: ['c3', 'f3'], pc: 'n' }, ['Die Dame bleibt am besten noch zu Hause.', 'Springer ziehen im L.', 'Tippe einen Springer, dann c3 oder f3.']),
+        t('r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3', 'Dritter Zug: der Läufer kommt heraus.', { t: 'to', sqs: ['c4', 'b5'], pc: 'b' }, ['Der Läufer f1 hat freie Diagonalen.', 'c4 und b5 sind starke Felder.', 'Tippe den Läufer, dann c4 oder b5.']),
+        t('r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3', 'Öffne die Mitte mit dem d-Bauern.', { t: 'to', sqs: ['d4'], pc: 'p' }, ['Der Bauer d2 darf zwei Felder.', 'So öffnet sich das Zentrum für deine Figuren.', 'Tippe den Bauern, dann d4.']),
+      ] },
+      { id: 'w11-l5', title: 'Der Hutmacher', boss: true, card: { kind: 'rook', name: 'Der Hutmacher' }, coach: 'rabbit', intro: 'Es ist sechs Uhr, immer sechs Uhr! Zeig, dass du Zeit nicht verschwendest.', tasks: [
+        t(START, 'Besetze die Mitte.', { t: 'to', sqs: ['e4', 'd4'], pc: 'p' }, ['Zwei Felder vor mit einem Mittelbauern.', 'Die Linien d und e.', 'Tippe e2 oder d2, dann zwei Felder vor.']),
+        t('r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4', 'Entwickle die letzte Leichtfigur.', { t: 'to', sqs: ['c3'], pc: 'n' }, ['Der Springer b1 steht noch zu Hause.', 'Ein Feld nach rechts, zwei nach oben.', 'Tippe den Springer, dann c3.']),
+        t('rnbqk2r/ppppbppp/5n2/4p3/4P3/3B1N2/PPPP1PPP/RNBQK2R w KQkq - 0 1', 'Bring den König in Sicherheit.', { t: 'to', sqs: ['g1'], pc: 'k' }, ['Läufer und Springer sind entwickelt.', 'Rochiere kurz.', 'Tippe den König, dann g1.']),
+      ] },
+    ],
+  },
+  {
+    id: 'w12', name: 'Die Raupe auf dem Pilz', coach: 'cat',
+    lessons: [
+      { id: 'w12-l1', title: 'Das Läuferpaar', coach: 'cat', intro: 'Wer dich ansieht, fragt: Wer bist du? Zwei Läufer auf offenen Diagonalen sind eine starke Waffe. Tausch lieber Springer als Läufer ab.', tasks: [
+        t('4k3/8/8/3n4/8/2N5/8/2B1KB2 w - - 0 1', 'Tausche mit dem Springer, behalte beide Läufer.', { t: 'capto', sq: 'd5', pc: 'n' }, ['Der schwarze Springer steht auf d5.', 'Dein Springer c3 kann ihn schlagen.', 'Tippe den Springer, dann d5.']),
+        t('4k3/8/8/8/3n4/5N2/8/2B1KB2 w - - 0 1', 'Tausche mit dem Springer, behalte beide Läufer.', { t: 'capto', sq: 'd4', pc: 'n' }, ['Der schwarze Springer steht auf d4.', 'Dein Springer f3 kann ihn schlagen.', 'Tippe den Springer, dann d4.']),
+        t('4k3/8/8/8/8/8/8/2B1KB2 w - - 0 1', 'Stell einen Läufer auf die lange Diagonale.', { t: 'to', sqs: ['b2'], pc: 'b' }, ['Die lange Diagonale läuft von a1 nach h8.', 'Der Läufer c1 kommt nach b2.', 'Tippe den Läufer, dann b2.']),
+      ] },
+      { id: 'w12-l2', title: 'Springer-Vorposten', coach: 'cat', intro: 'Ein Vorposten ist ein Feld tief im gegnerischen Gebiet, das kein feindlicher Bauer angreifen kann. Dort steht ein Springer unverwundbar.', tasks: [
+        t('4k3/pp3ppp/8/8/4P3/2N5/PPP2PPP/4K3 w - - 0 1', 'Stell den Springer auf den Vorposten d5.', { t: 'to', sqs: ['d5'], pc: 'n' }, ['Schwarz hat keinen c- oder e-Bauern mehr.', 'Der Springer c3 springt nach d5.', 'Tippe den Springer, dann d5.']),
+        t('4k3/pp3ppp/8/8/3P4/5N2/PPP2PPP/4K3 w - - 0 1', 'Stell den Springer auf den Vorposten e5.', { t: 'to', sqs: ['e5'], pc: 'n' }, ['Schwarz hat keinen d- oder f-Bauern mehr.', 'Der Springer f3 springt nach e5.', 'Tippe den Springer, dann e5.']),
+        t('4k3/pp1p2pp/8/8/4P3/4N3/PPP2PPP/4K3 w - - 0 1', 'Stell den Springer auf den Vorposten f5.', { t: 'to', sqs: ['f5'], pc: 'n' }, ['Kein schwarzer Bauer kann f5 angreifen.', 'Der Springer e3 springt nach f5.', 'Tippe den Springer, dann f5.']),
+      ] },
+      { id: 'w12-l3', title: 'Türme auf offene Linien', coach: 'cat', intro: 'Türme brauchen offene Linien, auf denen kein Bauer steht. Dort haben sie freie Bahn bis in das gegnerische Lager.', tasks: [
+        t('4k3/pp3ppp/8/8/8/8/PP3PPP/R5K1 w - - 0 1', 'Zieh den Turm auf eine offene Linie.', { t: 'to', sqs: ['c1', 'd1', 'e1'], pc: 'r' }, ['Die Linien c, d und e sind offen.', 'Dort stehen keine Bauern.', 'Tippe den Turm, dann c1, d1 oder e1.']),
+        t('3k4/pp3ppp/8/8/8/8/PP3PPP/4RRK1 w - - 0 1', 'Zieh den Turm auf die 7. Reihe.', { t: 'to', sqs: ['e7'], pc: 'r' }, ['Die Linie e ist offen.', 'Die 7. Reihe ist die zweite von oben.', 'Tippe den Turm auf e1, dann e7.']),
+        t('4r3/pp3ppp/8/8/8/8/PP3PPP/4R1K1 w - - 0 1', 'Tausche die Türme auf der offenen Linie.', { t: 'capto', sq: 'e8', pc: 'r' }, ['Beide Türme stehen auf der Linie e.', 'Der Weg ist frei.', 'Tippe den Turm, dann e8.']),
+      ] },
+      { id: 'w12-l4', title: 'Mit der richtigen Figur schlagen', coach: 'cat', intro: 'Wer ist hier der Beste für den Schlag? Meistens ist es die Figur mit dem geringsten Wert, damit du nichts Wertvolles riskierst.', tasks: [
+        t('4k3/8/8/3p4/8/2N5/8/3QK3 w - - 0 1', 'Schlag den Bauern mit dem Springer, nicht mit der Dame.', { t: 'capto', sq: 'd5', pc: 'n' }, ['Der Bauer steht auf d5.', 'Dein Springer c3 greift d5 an.', 'Tippe den Springer, dann d5.']),
+        t('4k3/8/5p2/8/8/2B5/8/3QK3 w - - 0 1', 'Schlag den Bauern mit dem Läufer.', { t: 'capto', sq: 'f6', pc: 'b' }, ['Der Bauer steht auf f6.', 'Dein Läufer c3 greift ihn auf der Diagonale an.', 'Tippe den Läufer, dann f6.']),
+        t('4k3/p7/8/8/8/8/R7/Q3K3 w - - 0 1', 'Schlag den Bauern mit dem Turm.', { t: 'capto', sq: 'a7', pc: 'r' }, ['Der Bauer steht auf a7.', 'Dein Turm a2 greift die Linie hinauf an.', 'Tippe den Turm, dann a7.']),
+      ] },
+      { id: 'w12-l5', title: 'Die Raupe', boss: true, card: { kind: 'bishop', name: 'Die Raupe' }, coach: 'cat', intro: 'Wer … bist … du? Zeig der Raupe, dass jede deiner Figuren ihre Rolle kennt.', tasks: [
+        t('4k3/pp3ppp/8/8/4P3/2N5/PPP2PPP/4K3 w - - 0 1', 'Springer auf den Vorposten.', { t: 'to', sqs: ['d5'], pc: 'n' }, ['Schwarz hat keinen c- oder e-Bauern mehr.', 'Der Springer c3 springt nach d5.', 'Tippe den Springer, dann d5.']),
+        t('4k3/pp3ppp/8/8/8/8/PP3PPP/R5K1 w - - 0 1', 'Turm auf eine offene Linie.', { t: 'to', sqs: ['c1', 'd1', 'e1'], pc: 'r' }, ['Die Linien c, d und e sind offen.', 'Dort stehen keine Bauern.', 'Tippe den Turm, dann c1, d1 oder e1.']),
+        t('4k3/8/8/3n4/8/2N5/8/2B1KB2 w - - 0 1', 'Tausche mit dem Springer, behalte beide Läufer.', { t: 'capto', sq: 'd5', pc: 'n' }, ['Der schwarze Springer steht auf d5.', 'Dein Springer c3 kann ihn schlagen.', 'Tippe den Springer, dann d5.']),
+      ] },
+    ],
+  },
+  {
+    id: 'w13', name: 'Der Rosengarten', coach: 'alice',
+    lessons: [
+      { id: 'w13-l1', title: 'Bauernketten', coach: 'alice', intro: 'Rote Rosen, weiße Rosen, nichts darf verrutschen! Bauern, die sich gegenseitig decken, bilden eine Kette. Angreifen muss man ihren Fuß.', tasks: [
+        t('4k3/8/4p3/3p4/8/8/8/3RK3 w - - 0 1', 'Schlag den Fuß der Kette.', { t: 'capto', sq: 'd5', pc: 'r' }, ['Die Kette läuft von e6 nach d5.', 'Der Bauer d5 ist der Fuß.', 'Tippe den Turm, dann d5.']),
+        t('4k3/8/8/8/3P4/8/4P3/4K3 w - - 0 1', 'Stütze deinen Bauern d4 mit einem anderen Bauern.', { t: 'to', sqs: ['e3'], pc: 'p' }, ['Ein Bauer deckt schräg hinter sich.', 'e3 deckt d4.', 'Tippe den Bauern e2, dann e3.']),
+        t('4k3/8/8/8/4P3/8/3P4/4K3 w - - 0 1', 'Stütze deinen Bauern e4 mit einem anderen Bauern.', { t: 'to', sqs: ['d3'], pc: 'p' }, ['Ein Bauer deckt schräg hinter sich.', 'd3 deckt e4.', 'Tippe den Bauern d2, dann d3.']),
+      ] },
+      { id: 'w13-l2', title: 'Freibauern', coach: 'alice', intro: 'Ein Freibauer hat auf seiner Linie und den Nachbarlinien keinen Gegner vor sich. Niemand kann ihn aufhalten, außer den Figuren.', tasks: [
+        t('4k3/p4ppp/8/3P4/8/8/P4PPP/4K3 w - - 0 1', 'Tippe den Freibauern.', { t: 'tap', sqs: ['d5'] }, ['Der Freibauer hat keinen Gegner auf c, d oder e.', 'Er steht in der Mitte des Bretts.', 'Gesucht: d5.']),
+        t('4k3/pp3ppp/8/8/3P4/8/PP3PPP/4K3 w - - 0 1', 'Tippe den Freibauern.', { t: 'tap', sqs: ['d4'] }, ['Schwarz hat keinen c-, d- oder e-Bauern.', 'Er steht in der Mitte.', 'Gesucht: d4.']),
+        t('4k3/pp3ppp/8/3P4/8/8/PP3PPP/4K3 w - - 0 1', 'Schick den Freibauern voran.', { t: 'to', sqs: ['d6'], pc: 'p' }, ['Er steht auf d5.', 'Ein Feld vor ist d6.', 'Tippe den Bauern, dann d6.']),
+      ] },
+      { id: 'w13-l3', title: 'Doppel- und Randbauern', coach: 'alice', intro: 'Zwei Bauern auf einer Linie behindern sich: ein Doppelbauer. Ein Randbauer hat nur einen Nachbarn und ist schwächer. Isolierte Bauern haben gar keinen.', tasks: [
+        t('4k3/8/8/8/8/4P3/4P3/4K3 w - - 0 1', 'Tippe einen der Doppelbauern.', { t: 'tap', sqs: ['e2', 'e3'] }, ['Doppelbauern stehen auf derselben Linie.', 'Beide auf der Linie e.', 'Gesucht: e2 oder e3.']),
+        t('4k3/8/8/8/8/8/P1P5/4K3 w - - 0 1', 'Tippe den Randbauern.', { t: 'tap', sqs: ['a2'] }, ['Der Randbauer steht am Rand des Bretts.', 'Er steht auf der Linie a.', 'Gesucht: a2.']),
+        t('4k3/8/8/8/8/8/P1P2P2/4K3 w - - 0 1', 'Tippe einen isolierten Bauern.', { t: 'tap', sqs: ['a2', 'c2', 'f2'] }, ['Isolierte Bauern haben keinen Nachbarn auf den Nebenlinien.', 'Keine Bauern auf b, d oder e daneben.', 'Gesucht: a2, c2 oder f2.']),
+      ] },
+      { id: 'w13-l4', title: 'Umwandlung und en passant', coach: 'alice', intro: 'Bauern sind wertvoller, als sie aussehen: Auf der achten Reihe werden sie zur Dame. Der Schlag en passant gehört auch zu ihren Tricks.', tasks: [
+        t('4k3/P7/8/8/8/8/8/4K3 w - - 0 1', 'Verwandle den Bauern.', { t: 'to', sqs: ['a8'], pc: 'p' }, ['Er steht auf a7, ein Feld vor dem Ziel.', 'Ein Feld vor ist a8.', 'Tippe den Bauern, dann a8, dann die Dame.']),
+        t('1r2k3/P7/8/8/8/8/8/4K3 w - - 0 1', 'Schlag den Turm und verwandle dich.', { t: 'capto', sq: 'b8', pc: 'p' }, ['Schräg vor a7 liegt b8.', 'Dort steht ein schwarzer Turm.', 'Tippe den Bauern, dann b8.']),
+        t('4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1', 'Schlag den Bauern d5 im Vorbeigehen.', { t: 'to', sqs: ['d6'], pc: 'p' }, ['Der schwarze Bauer ist gerade zwei Felder gezogen.', 'Dein Bauer schlägt ihn, als wäre er nur eines gezogen.', 'Tippe den Bauern e5, dann d6.']),
+      ] },
+      { id: 'w13-l5', title: 'Der Gärtner', boss: true, card: { kind: 'pawn', name: 'Der Gärtner' }, coach: 'alice', intro: 'Wer pflegt die Rosen am besten? Zeig dem Gärtner, dass du Bauern verstehst.', tasks: [
+        t('4k3/p4ppp/8/3P4/8/8/P4PPP/4K3 w - - 0 1', 'Tippe den Freibauern.', { t: 'tap', sqs: ['d5'] }, ['Der Freibauer hat keinen Gegner auf c, d oder e.', 'Er steht in der Mitte des Bretts.', 'Gesucht: d5.']),
+        t('4k3/8/8/8/3P4/8/4P3/4K3 w - - 0 1', 'Stütze den Bauern d4.', { t: 'to', sqs: ['e3'], pc: 'p' }, ['Ein Bauer deckt schräg hinter sich.', 'e3 deckt d4.', 'Tippe den Bauern e2, dann e3.']),
+        t('1r2k3/P7/8/8/8/8/8/4K3 w - - 0 1', 'Schlag den Turm und verwandle dich.', { t: 'capto', sq: 'b8', pc: 'p' }, ['Schräg vor a7 liegt b8.', 'Dort steht ein schwarzer Turm.', 'Tippe den Bauern, dann b8.']),
+      ] },
+    ],
+  },
+  {
+    id: 'w14', name: 'Der Gerichtssaal', coach: 'rqueen',
+    lessons: [
+      { id: 'w14-l1', title: 'Wer greift an?', coach: 'rqueen', intro: 'Kopf ab! Die Herzkönigin hasst unsichere Könige. Bevor du etwas tust, schau: Wer bedroht meinen König?', tasks: [
+        t('4k3/8/8/8/8/8/8/r3K3 w - - 0 1', 'Tippe die Figur, die deinen König angreift.', { t: 'tap', sqs: ['a1'] }, ['Dein König steht auf e1.', 'Die Figur steht in derselben Reihe.', 'Gesucht: a1.']),
+        t('4k3/8/8/8/8/6b1/8/4K3 w - - 0 1', 'Tippe die Figur, die deinen König angreift.', { t: 'tap', sqs: ['g3'] }, ['Dein König steht auf e1.', 'Die Figur greift schräg an.', 'Gesucht: g3.']),
+        t('4k3/8/8/8/8/3n4/8/4K3 w - - 0 1', 'Tippe die Figur, die deinen König angreift.', { t: 'tap', sqs: ['d3'] }, ['Dein König steht auf e1.', 'Die Figur springt im L.', 'Gesucht: d3.']),
+      ] },
+      { id: 'w14-l2', title: 'Den König retten', coach: 'rqueen', intro: 'Es gibt drei Wege aus dem Schach: ausweichen, den Angreifer schlagen oder dazwischenstellen. Such den richtigen.', tasks: [
+        t('4k3/8/8/8/8/8/8/r3K3 w - - 0 1', 'Weich aus: zieh den König aus der Reihe 1.', { t: 'to', sqs: ['d2', 'e2', 'f2'], pc: 'k' }, ['Der Turm beherrscht die ganze Reihe 1.', 'Geh eine Reihe höher.', 'Tippe den König, dann d2, e2 oder f2.']),
+        t('4k3/8/8/8/8/8/4r3/4K3 w - - 0 1', 'Schlag den angreifenden Turm.', { t: 'capto', sq: 'e2', pc: 'k' }, ['Der Turm steht direkt neben deinem König.', 'Er ist ungedeckt.', 'Tippe den König, dann e2.']),
+        t('4k3/8/8/8/8/3R4/8/r3K3 w - - 0 1', 'Stell den Turm dazwischen.', { t: 'to', sqs: ['b1', 'c1', 'd1'], pc: 'r' }, ['Zwischen Turm a1 und König e1 sind drei Felder.', 'Dein Turm d3 kann auf d1 ziehen.', 'Tippe den Turm, dann d1.']),
+      ] },
+      { id: 'w14-l3', title: 'Luft für den König', coach: 'rqueen', intro: 'Ein König hinter drei Bauern kann ersticken. Schaffe ihm Luft mit einem Bauernzug, damit die Grundreihe nicht zur Falle wird.', tasks: [
+        t('6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1', 'Schaffe Luft für deinen König.', { t: 'to', sqs: ['h3', 'g3', 'f3'], pc: 'p' }, ['Dein König ist hinter drei Bauern eingesperrt.', 'Ein Bauer muss ein Feld nach vorn.', 'Tippe einen Bauern, dann h3, g3 oder f3.']),
+        t('3r2k1/5ppp/8/8/8/8/5PPP/6K1 w - - 0 1', 'Schaffe Luft, bevor der Turm kommt.', { t: 'to', sqs: ['h3', 'g3', 'f3'], pc: 'p' }, ['Schwarz kontrolliert die d-Linie.', 'Ohne Luft droht ein Grundreihenmatt.', 'Tippe einen Bauern, dann h3, g3 oder f3.']),
+        t('6k1/5ppp/8/8/8/8/8/R3K3 w - - 0 1', 'Zeig die Schwäche: setze matt.', { t: 'mate' }, ['Der schwarze König ist eingesperrt.', 'Ein Turm auf der 8. Reihe genügt.', 'Tippe den Turm, dann a8.']),
+      ] },
+      { id: 'w14-l4', title: 'Sichere Felder', coach: 'rqueen', intro: 'Ein König darf nie auf ein angegriffenes Feld ziehen. Zähle nach, welche Felder die gegnerischen Figuren beherrschen.', tasks: [
+        t('4k3/8/8/8/8/8/3r4/4K3 w - - 0 1', 'Zieh den König auf das sichere Feld in Reihe 1.', { t: 'to', sqs: ['f1'], pc: 'k' }, ['Der Turm d2 beherrscht die Reihe 2 und die Linie d.', 'd1 ist angegriffen, f1 nicht.', 'Tippe den König, dann f1.']),
+        t('4k3/8/8/8/8/5q2/8/4K3 w - - 0 1', 'Zieh den König auf das einzige sichere Feld.', { t: 'to', sqs: ['d2'], pc: 'k' }, ['Die Dame f3 beherrscht e2, f2, d1 und f1.', 'Nur ein Nachbarfeld ist frei.', 'Tippe den König, dann d2.']),
+        t('4k3/8/b7/8/8/8/8/4K3 w - - 0 1', 'Zieh den König auf ein sicheres Feld.', { t: 'to', sqs: ['d1', 'd2'], pc: 'k' }, ['Der Läufer a6 beherrscht die Diagonale a6 bis f1.', 'e2 und f1 sind angegriffen.', 'Tippe den König, dann d1 oder d2.']),
+      ] },
+      { id: 'w14-l5', title: 'Die Herzkönigin', boss: true, card: { kind: 'king', name: 'Die Herzkönigin' }, coach: 'rqueen', intro: 'Kopf ab! Wenn dein König sicher ist, darfst du bleiben. Zeig, wie du ihn schützt.', tasks: [
+        t('4k3/8/8/8/8/6b1/8/4K3 w - - 0 1', 'Tippe die Figur, die deinen König angreift.', { t: 'tap', sqs: ['g3'] }, ['Dein König steht auf e1.', 'Die Figur greift schräg an.', 'Gesucht: g3.']),
+        t('4k3/8/8/8/8/3R4/8/r3K3 w - - 0 1', 'Stell den Turm dazwischen.', { t: 'to', sqs: ['b1', 'c1', 'd1'], pc: 'r' }, ['Zwischen Turm a1 und König e1 sind drei Felder.', 'Dein Turm d3 kann auf d1 ziehen.', 'Tippe den Turm, dann d1.']),
+        t('6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1', 'Schaffe Luft für deinen König.', { t: 'to', sqs: ['h3', 'g3', 'f3'], pc: 'p' }, ['Dein König ist hinter drei Bauern eingesperrt.', 'Ein Bauer muss ein Feld nach vorn.', 'Tippe einen Bauern, dann h3, g3 oder f3.']),
+      ] },
+    ],
+  },
+  {
+    id: 'w15', name: 'Das Heckenlabyrinth', coach: 'cat',
+    lessons: [
+      { id: 'w15-l1', title: 'Das Zentrum', coach: 'cat', intro: 'Im Labyrinth ist der Weg durch die Mitte am kürzesten. Figuren im Zentrum erreichen alle Ecken des Bretts.', tasks: [
+        t('4k3/8/8/8/8/2N5/8/4K3 w - - 0 1', 'Stell den Springer ins Zentrum.', { t: 'to', sqs: ['e4', 'd5'], pc: 'n' }, ['Die Mitte sind die Felder d4, d5, e4 und e5.', 'Der Springer c3 erreicht zwei davon.', 'Tippe den Springer, dann e4 oder d5.']),
+        t('4k3/8/8/8/8/8/1B6/4K3 w - - 0 1', 'Stell den Läufer ins Zentrum.', { t: 'to', sqs: ['e5', 'd4'], pc: 'b' }, ['Der Läufer b2 steht auf der langen Diagonale.', 'Er erreicht d4 und e5.', 'Tippe den Läufer, dann e5 oder d4.']),
+        t('4k3/8/8/8/8/8/8/3QK3 w - - 0 1', 'Stell die Dame ins Zentrum.', { t: 'to', sqs: ['d4', 'd5'], pc: 'q' }, ['Die Dame d1 läuft die Linie d hinauf.', 'In der Mitte steht sie stark.', 'Tippe die Dame, dann d4 oder d5.']),
+      ] },
+      { id: 'w15-l2', title: 'Raumvorteil', coach: 'cat', intro: 'Bauern, die weiter vorn stehen, nehmen dem Gegner Platz weg. Wer mehr Raum hat, hat mehr Auswahl.', tasks: [
+        t(START, 'Gewinne Raum mit einem Mittelbauern.', { t: 'to', sqs: ['e4', 'd4', 'c4'], pc: 'p' }, ['Zwei Felder vor mit einem Bauern in der Mitte.', 'Die Linien c, d oder e.', 'Tippe einen Bauern, dann zwei Felder vor.']),
+        t('4k3/ppp2ppp/8/8/4P3/8/PPP2PPP/4K3 w - - 0 1', 'Schieb den Bauern auf die 5. Reihe.', { t: 'to', sqs: ['e5'], pc: 'p' }, ['Der Bauer steht auf e4.', 'Ein Feld vor ist e5.', 'Tippe den Bauern, dann e5.']),
+        t('4k3/pp3ppp/8/8/3P4/8/PP3PPP/4K3 w - - 0 1', 'Schieb den Bauern auf die 5. Reihe.', { t: 'to', sqs: ['d5'], pc: 'p' }, ['Der Bauer steht auf d4.', 'Ein Feld vor ist d5.', 'Tippe den Bauern, dann d5.']),
+      ] },
+      { id: 'w15-l3', title: 'Schwache Felder', coach: 'cat', intro: 'Ein Loch ist ein Feld, das kein gegnerischer Bauer mehr angreifen kann. Bring dort eine Figur hin.', tasks: [
+        t('4k3/pp2pppp/8/8/8/2N5/PPP2PPP/4K3 w - - 0 1', 'Besetze das Loch d5.', { t: 'to', sqs: ['d5'], pc: 'n' }, ['Schwarz hat keinen c- oder e-Bauern, der d5 deckt.', 'Der Springer c3 springt nach d5.', 'Tippe den Springer, dann d5.']),
+        t('4k3/pp1p1ppp/8/8/8/5N2/PPP2PPP/4K3 w - - 0 1', 'Besetze das Loch e5.', { t: 'to', sqs: ['e5'], pc: 'n' }, ['Schwarz hat keinen e-Bauern mehr.', 'Der Springer f3 springt nach e5.', 'Tippe den Springer, dann e5.']),
+        t('4k3/ppp3pp/8/8/8/4N3/PPP2PPP/4K3 w - - 0 1', 'Besetze das Loch f5.', { t: 'to', sqs: ['f5'], pc: 'n' }, ['Schwarz hat keinen d-, e- oder f-Bauern mehr.', 'Der Springer e3 springt nach f5.', 'Tippe den Springer, dann f5.']),
+      ] },
+      { id: 'w15-l4', title: 'Linien öffnen', coach: 'cat', intro: 'Mit Bauernschlägen öffnest du Linien für deine Türme und Läufer. Ein Schlag kann also mehr bewirken als nur Material.', tasks: [
+        t('4k3/8/8/3p4/4P3/8/8/4K3 w - - 0 1', 'Schlag den Bauern und öffne die Linie.', { t: 'capto', sq: 'd5', pc: 'p' }, ['Der Bauer steht schräg vor e4.', 'Schräg vor e4 liegt d5.', 'Tippe den Bauern, dann d5.']),
+        t('4k3/8/8/8/1p6/2P5/8/4K3 w - - 0 1', 'Schlag den Bauern und öffne die Linie.', { t: 'capto', sq: 'b4', pc: 'p' }, ['Der Bauer steht schräg vor c3.', 'Schräg vor c3 liegt b4.', 'Tippe den Bauern, dann b4.']),
+        t('4k3/8/8/8/8/3p4/4P3/4K3 w - - 0 1', 'Schlag den Bauern und öffne die Linie.', { t: 'capto', sq: 'd3', pc: 'p' }, ['Der Bauer steht schräg vor e2.', 'Schräg vor e2 liegt d3.', 'Tippe den Bauern, dann d3.']),
+      ] },
+      { id: 'w15-l5', title: 'Der Irrgartenwächter', boss: true, card: { kind: 'rook', name: 'Der Irrgartenwächter' }, coach: 'cat', intro: 'Wer den Weg durch das Labyrinth kennt, steht in der Mitte. Zeig dem Wächter, dass du ihn findest.', tasks: [
+        t('4k3/8/8/8/8/2N5/8/4K3 w - - 0 1', 'Stell den Springer ins Zentrum.', { t: 'to', sqs: ['e4', 'd5'], pc: 'n' }, ['Die Mitte sind die Felder d4, d5, e4 und e5.', 'Der Springer c3 erreicht zwei davon.', 'Tippe den Springer, dann e4 oder d5.']),
+        t('4k3/pp2pppp/8/8/8/2N5/PPP2PPP/4K3 w - - 0 1', 'Besetze das Loch d5.', { t: 'to', sqs: ['d5'], pc: 'n' }, ['Schwarz hat keinen c- oder e-Bauern, der d5 deckt.', 'Der Springer c3 springt nach d5.', 'Tippe den Springer, dann d5.']),
+        t('4k3/8/8/3p4/4P3/8/8/4K3 w - - 0 1', 'Schlag den Bauern und öffne die Linie.', { t: 'capto', sq: 'd5', pc: 'p' }, ['Der Bauer steht schräg vor e4.', 'Schräg vor e4 liegt d5.', 'Tippe den Bauern, dann d5.']),
+      ] },
+    ],
+  },
+  {
+    id: 'w16', name: 'Humpty Dumptys Mauer', coach: 'wknight',
+    lessons: [
+      { id: 'w16-l1', title: 'Material gewinnen', coach: 'wknight', intro: 'Humpty Dumpty fiel von der Mauer. Wer Figuren einfach so stehen lässt, verliert sie. Prüf, was ungedeckt ist, und schlag zu.', tasks: [
+        t('4k3/8/8/8/8/8/1r6/B3K3 w - - 0 1', 'Schlag den ungedeckten Turm.', { t: 'capto', sq: 'b2', pc: 'b' }, ['Der Turm steht auf b2.', 'Dein Läufer a1 greift ihn schräg an.', 'Tippe den Läufer, dann b2.']),
+        t('4k3/8/8/8/8/2n5/8/B3K3 w - - 0 1', 'Schlag den ungedeckten Springer.', { t: 'capto', sq: 'c3', pc: 'b' }, ['Der Springer steht auf c3.', 'Die lange Diagonale führt von a1 hin.', 'Tippe den Läufer, dann c3.']),
+        t('3q4/8/8/8/8/8/8/3RK2k w - - 0 1', 'Schlag die ungedeckte Dame.', { t: 'capto', sq: 'd8', pc: 'r' }, ['Die Dame steht auf d8.', 'Dein Turm d1 greift die Linie d hinauf an.', 'Tippe den Turm, dann d8.']),
+      ] },
+      { id: 'w16-l2', title: 'Gedeckt oder nicht?', coach: 'wknight', intro: 'Schlägst du eine gedeckte Figur, wird zurückgeschlagen. Nimm lieber die ungedeckte, oder schlag mit der billigeren Figur.', tasks: [
+        t('3r4/8/8/6p1/3Q3r/8/8/4K3 w - - 0 1', 'Schlag den ungedeckten Turm.', { t: 'capto', sq: 'd8', pc: 'q' }, ['Der Turm h4 ist durch den Bauern g5 gedeckt.', 'Der Turm d8 steht allein.', 'Tippe die Dame, dann d8.']),
+        t('4k3/8/8/3n4/4P3/8/8/3QK3 w - - 0 1', 'Schlag den Springer mit dem Bauern, nicht mit der Dame.', { t: 'capto', sq: 'd5', pc: 'p' }, ['Der Springer steht auf d5.', 'Dein Bauer e4 greift ihn an.', 'Tippe den Bauern, dann d5.']),
+        t('4k3/8/8/4q3/8/8/1B6/4K3 w - - 0 1', 'Schlag die ungedeckte Dame.', { t: 'capto', sq: 'e5', pc: 'b' }, ['Die Dame steht auf e5.', 'Dein Läufer b2 greift sie auf der Diagonale an.', 'Tippe den Läufer, dann e5.']),
+      ] },
+      { id: 'w16-l3', title: 'Vorteil verwerten', coach: 'wknight', intro: 'Wer mehr Material hat, sollte die Partie beenden. Der kürzeste Weg ist oft ein Matt, bevor etwas schiefgeht.', tasks: [
+        mate1('5k2/8/5K2/8/8/6Q1/8/8 w - - 0 1', 'die Dame', 'b8'),
+        mate1('6k1/3Q4/5K2/8/8/8/8/8 w - - 0 1', 'die Dame', 'g7'),
+        mate1('2k5/8/3K4/3Q4/8/8/8/8 w - - 0 1', 'die Dame', 'a8'),
+      ] },
+      { id: 'w16-l4', title: 'Matt mit Turm und Dame', coach: 'wknight', intro: 'Noch mehr Matts. Such erst die Fluchtfelder des Königs, dann das Feld, von dem aus du alle versperrst.', tasks: [
+        mate1('8/7R/8/8/8/k1K5/8/8 w - - 0 1', 'den Turm', 'a7'),
+        mate1('k7/8/K7/4R3/8/8/8/8 w - - 0 1', 'den Turm', 'e8'),
+        mate1('8/4Q3/k7/8/8/8/1R1K4/8 w - - 0 1', 'die Dame', 'a3'),
+      ] },
+      { id: 'w16-l5', title: 'Humpty Dumpty', boss: true, card: { kind: 'pawn', name: 'Humpty Dumpty' }, coach: 'wknight', intro: 'Alle Pferde und alle Männer konnten ihn nicht wieder zusammensetzen. Du schon?', tasks: [
+        t('4k3/8/8/3n4/4P3/8/8/3QK3 w - - 0 1', 'Schlag den Springer mit dem Bauern.', { t: 'capto', sq: 'd5', pc: 'p' }, ['Der Springer steht auf d5.', 'Dein Bauer e4 greift ihn an.', 'Tippe den Bauern, dann d5.']),
+        t('4k3/8/8/8/8/8/1r6/B3K3 w - - 0 1', 'Schlag den ungedeckten Turm.', { t: 'capto', sq: 'b2', pc: 'b' }, ['Der Turm steht auf b2.', 'Dein Läufer a1 greift ihn schräg an.', 'Tippe den Läufer, dann b2.']),
+        mate1('8/R5K1/8/6k1/2R5/8/8/8 w - - 0 1', 'den Turm', 'a5'),
+      ] },
+    ],
+  },
+  {
+    id: 'w17', name: 'Die Höhle des Jabberwock', coach: 'knight',
+    lessons: [
+      { id: 'w17-l1', title: 'Der König kämpft mit', coach: 'knight', intro: 'Im Endspiel ist der König keine Last mehr, sondern eine Waffe. Mit wenigen Figuren auf dem Brett darf er vorgehen und selbst schlagen.', tasks: [
+        t('8/8/8/8/3p4/4K3/8/7k w - - 0 1', 'Schlag den ungedeckten Bauern mit dem König.', { t: 'capto', sq: 'd4', pc: 'k' }, ['Der Bauer steht neben deinem König.', 'Er ist nicht gedeckt.', 'Tippe den König, dann d4.']),
+        t('8/8/8/8/8/2p5/3K4/7k w - - 0 1', 'Schlag den ungedeckten Bauern mit dem König.', { t: 'capto', sq: 'c3', pc: 'k' }, ['Der Bauer steht schräg vor deinem König.', 'Er ist nicht gedeckt.', 'Tippe den König, dann c3.']),
+        t('8/8/8/4p3/4K3/8/8/7k w - - 0 1', 'Schlag den ungedeckten Bauern mit dem König.', { t: 'capto', sq: 'e5', pc: 'k' }, ['Der Bauer steht direkt vor deinem König.', 'Er ist nicht gedeckt.', 'Tippe den König, dann e5.']),
+      ] },
+      { id: 'w17-l2', title: 'Turm hinter den Freibauern', coach: 'knight', intro: 'Ein Turm gehört hinter den Freibauern, ob dem eigenen oder dem gegnerischen. So schiebt er ihn an oder hält ihn auf, ohne selbst im Weg zu sein.', tasks: [
+        t('4k3/8/8/8/3P4/8/8/R3K3 w - - 0 1', 'Stell den Turm hinter den Freibauern.', { t: 'to', sqs: ['d1'], pc: 'r' }, ['Der Bauer steht auf d4.', 'Hinter ihm bedeutet: auf derselben Linie weiter unten.', 'Tippe den Turm, dann d1.']),
+        t('k7/8/8/8/8/8/P7/7R w - - 0 1', 'Stell den Turm hinter den Freibauern.', { t: 'to', sqs: ['a1'], pc: 'r' }, ['Der Bauer steht auf a2.', 'Hinter ihm liegt a1.', 'Tippe den Turm, dann a1.']),
+        t('8/8/8/8/4P3/8/7R/k3K3 w - - 0 1', 'Stell den Turm hinter den Freibauern.', { t: 'to', sqs: ['e2'], pc: 'r' }, ['Der Bauer steht auf e4.', 'Hinter ihm liegt e2, ein Feld weiter unten.', 'Tippe den Turm, dann e2.']),
+      ] },
+      { id: 'w17-l3', title: 'Opposition', coach: 'knight', intro: 'Stehen die Könige auf einer Linie mit einem Feld dazwischen, heißt das Opposition. Wer am Zug ist, muss ausweichen. Wer sie hat, drängt den anderen zurück.', tasks: [
+        t('8/8/4k3/8/8/3K4/8/8 w - - 0 1', 'Stell deinen König in Opposition: ein Feld dazwischen.', { t: 'to', sqs: ['e4'], pc: 'k' }, ['Der schwarze König steht auf e6.', 'Opposition: gleiche Linie, ein Feld dazwischen.', 'Tippe den König, dann e4.']),
+        t('8/8/6k1/8/8/5K2/8/8 w - - 0 1', 'Stell deinen König in Opposition: ein Feld dazwischen.', { t: 'to', sqs: ['g4'], pc: 'k' }, ['Der schwarze König steht auf g6.', 'Opposition: gleiche Linie, ein Feld dazwischen.', 'Tippe den König, dann g4.']),
+        t('8/8/8/3k4/8/8/2K5/8 w - - 0 1', 'Stell deinen König in Opposition: ein Feld dazwischen.', { t: 'to', sqs: ['d3'], pc: 'k' }, ['Der schwarze König steht auf d5.', 'Opposition: gleiche Linie, ein Feld dazwischen.', 'Tippe den König, dann d3.']),
+      ] },
+      { id: 'w17-l4', title: 'Matt im Endspiel', coach: 'knight', intro: 'Aus gewonnenen Endspielen wird nur dann ein Sieg, wenn du auch mattsetzen kannst. Dein König muss dem Gegner die letzten Felder nehmen.', tasks: [
+        mate1('k7/3R4/K7/8/8/8/8/8 w - - 0 1', 'den Turm', 'd8'),
+        mate1('8/6R1/8/7k/1K6/8/8/5R2 w - - 0 1', 'den Turm', 'h1'),
+        mate1('8/3B4/8/k1K5/5Q2/8/8/8 w - - 0 1', 'die Dame', 'a4'),
+      ] },
+      { id: 'w17-l5', title: 'Der Jabberwock', boss: true, card: { kind: 'knight', name: 'Der Jabberwock' }, coach: 'knight', intro: 'Er kommt mit Augen wie Feuer! Aber mit Plan statt Zufall besiegst du ihn: König aktiv, Turm hinter den Bauern, Opposition.', tasks: [
+        t('8/8/8/8/3p4/4K3/8/7k w - - 0 1', 'Schlag den ungedeckten Bauern mit dem König.', { t: 'capto', sq: 'd4', pc: 'k' }, ['Der Bauer steht neben deinem König.', 'Er ist nicht gedeckt.', 'Tippe den König, dann d4.']),
+        t('k7/8/8/8/8/8/P7/7R w - - 0 1', 'Stell den Turm hinter den Freibauern.', { t: 'to', sqs: ['a1'], pc: 'r' }, ['Der Bauer steht auf a2.', 'Hinter ihm liegt a1.', 'Tippe den Turm, dann a1.']),
+        t('8/8/4k3/8/8/3K4/8/8 w - - 0 1', 'Stell deinen König in Opposition.', { t: 'to', sqs: ['e4'], pc: 'k' }, ['Der schwarze König steht auf e6.', 'Opposition: gleiche Linie, ein Feld dazwischen.', 'Tippe den König, dann e4.']),
+      ] },
+    ],
+  },
+  {
+    id: 'w18', name: 'Das Spiegelbild', coach: 'alice',
+    lessons: [
+      { id: 'w18-l1', title: 'Hängende Figuren', coach: 'alice', intro: 'Im Spiegel siehst du, was du übersehen hast. Nach jedem Zug des Gegners fragst du zuerst: Hängt etwas, und kann ich es einfach nehmen?', tasks: [
+        t('4k3/8/8/3b4/8/8/8/3QK3 w - - 0 1', 'Schlag die ungedeckte Figur.', { t: 'capto', sq: 'd5', pc: 'q' }, ['Der Läufer steht auf d5.', 'Deine Dame greift die Linie d hinauf an.', 'Tippe die Dame, dann d5.']),
+        t('4k3/8/8/8/2n5/8/8/2R1K3 w - - 0 1', 'Schlag die ungedeckte Figur.', { t: 'capto', sq: 'c4', pc: 'r' }, ['Der Springer steht auf c4.', 'Dein Turm c1 greift die Linie hinauf an.', 'Tippe den Turm, dann c4.']),
+        t('4k3/8/8/8/8/8/3q4/4K3 w - - 0 1', 'Schlag die ungedeckte Dame.', { t: 'capto', sq: 'd2', pc: 'k' }, ['Die Dame steht neben deinem König.', 'Sie ist nicht gedeckt.', 'Tippe den König, dann d2.']),
+      ] },
+      { id: 'w18-l2', title: 'Was droht mir?', coach: 'alice', intro: 'Dreh das Brett im Kopf um und sieh es mit den Augen des Gegners. Welche seiner Figuren greift meine an?', tasks: [
+        t('4k3/8/2n5/8/3Q4/8/8/4K3 w - - 0 1', 'Tippe die Figur, die deine Dame bedroht.', { t: 'tap', sqs: ['c6'] }, ['Deine Dame steht auf d4.', 'Die Figur springt im L.', 'Gesucht: c6.']),
+        t('3k4/8/8/3p4/4R3/8/8/4K3 w - - 0 1', 'Tippe die Figur, die deinen Turm bedroht.', { t: 'tap', sqs: ['d5'] }, ['Dein Turm steht auf e4.', 'Bauern schlagen schräg.', 'Gesucht: d5.']),
+        t('4k3/8/8/8/3Q4/8/8/4K1b1 w - - 0 1', 'Tippe die Figur, die deine Dame bedroht.', { t: 'tap', sqs: ['g1'] }, ['Deine Dame steht auf d4.', 'Die Figur greift schräg an.', 'Gesucht: g1.']),
+      ] },
+      { id: 'w18-l3', title: 'Einen Plan finden', coach: 'alice', intro: 'Ein Plan beginnt mit einer Schwäche. Ein isolierter Bauer, ein Loch oder eine offene Linie zeigt dir, wohin du deine Figuren stellst.', tasks: [
+        t('4k3/8/8/8/3p4/8/8/3RK3 w - - 0 1', 'Greif den isolierten Bauern an.', { t: 'capto', sq: 'd4', pc: 'r' }, ['Der Bauer steht allein auf d4.', 'Dein Turm greift die Linie d an.', 'Tippe den Turm, dann d4.']),
+        t('4k3/8/8/8/8/2p5/8/3NK3 w - - 0 1', 'Greif den isolierten Bauern an.', { t: 'capto', sq: 'c3', pc: 'n' }, ['Der Bauer steht allein auf c3.', 'Dein Springer d1 greift ihn im L an.', 'Tippe den Springer, dann c3.']),
+        t('4k3/8/8/8/p7/8/8/3BK3 w - - 0 1', 'Greif den isolierten Bauern an.', { t: 'capto', sq: 'a4', pc: 'b' }, ['Der Bauer steht allein auf a4.', 'Dein Läufer d1 greift ihn schräg an.', 'Tippe den Läufer, dann a4.']),
+      ] },
+      { id: 'w18-l4', title: 'Matt oder Gewinn?', coach: 'alice', intro: 'Wenn du alles vor dem Zug geprüft hast, bleibt eine Frage: Gibt es ein Matt? Dann ist alles andere egal.', tasks: [
+        mate1('5k2/R7/8/8/8/8/3K4/2Q5 w - - 0 1', 'die Dame', 'c8'),
+        mate1('6k1/8/6NK/8/8/7B/8/8 w - - 0 1', 'den Läufer', 'e6'),
+        mate1('k7/1R6/6K1/8/8/4Q3/8/8 w - - 0 1', 'die Dame', 'a7'),
+      ] },
+      { id: 'w18-l5', title: 'Das Spiegelbild', boss: true, card: { kind: 'alice', name: 'Alice hinter den Spiegeln' }, coach: 'alice', intro: 'Du siehst dein eigenes Spiegelbild: Wer bist du jetzt? Eine Schachspielerin! Zeig, was du über Spiel und Plan gelernt hast.', tasks: [
+        t('4k3/8/2n5/8/3Q4/8/8/4K3 w - - 0 1', 'Tippe die Figur, die deine Dame bedroht.', { t: 'tap', sqs: ['c6'] }, ['Deine Dame steht auf d4.', 'Die Figur springt im L.', 'Gesucht: c6.']),
+        t('4k3/8/8/8/2n5/8/8/2R1K3 w - - 0 1', 'Schlag die ungedeckte Figur.', { t: 'capto', sq: 'c4', pc: 'r' }, ['Der Springer steht auf c4.', 'Dein Turm c1 greift die Linie hinauf an.', 'Tippe den Turm, dann c4.']),
+        mate1('5k2/R7/8/8/8/8/3K4/2Q5 w - - 0 1', 'die Dame', 'c8'),
       ] },
     ],
   },
