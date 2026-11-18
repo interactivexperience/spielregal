@@ -47,7 +47,7 @@ try {
     check(await page.locator(".sheet .lrow").count() === 0, "gesperrte Welt zeigt keine Lektionen");
     await page.click(".scrim", { position: { x: 20, y: 20 } });
     await page.click('.node[data-node="0"]');
-    check(await page.locator(".sheet .lrow").count() === 5 && await page.locator(".sheet .lrow:not([disabled])").count() === 1, "Welt 1: fünf Lektionen, nur die erste offen");
+    check(await page.locator(".sheet .lrow").count() === 4 && await page.locator(".sheet .lrow:not([disabled])").count() === 1, "Welt 1: vier Lektionen, nur die erste offen");
     await page.click('.sheet .lrow[data-l="0"]');
     await page.click("[data-a=lstart]");
     for (let n = 0; n < 12; n++) {
