@@ -1,6 +1,6 @@
 // Prüft die Lektionsdaten (schach/lessons.mjs) gegen die Engine: gültige Stellungen, jede Aufgabe lösbar,
 // 3 Hinweise, eindeutige IDs. Aufruf: node test/schach-lessons.mjs
-import { parseFEN, legalMoves, sqName } from '../schach/engine.mjs';
+import { parseFEN, legalMoves, sqName, makeMove, isMate, inCheck } from '../schach/engine.mjs';
 import { WORLDS } from '../schach/lessons.mjs';
 let fails = 0, checks = 0, tasks = 0;
 const ok = (c, m) => { checks++; if (!c) { fails++; console.error('FAIL:', m); } };
@@ -20,7 +20,8 @@ for (const w of WORLDS) {
       else {
         const mv = legalMoves(pos);
         ok(mv.length > 0, `${n}: hat Züge`);
-        const sol = mv.filter(m => g.t === 'to' ? g.sqs.includes(sqName(m.to)) : g.t === 'cap' ? !!m.cap : g.t === 'capto' ? (m.cap && sqName(m.to) === g.sq) : false);
+        const sol = mv.filter(m => g.t === 'to' ? g.sqs.includes(sqName(m.to)) : g.t === 'cap' ? !!m.cap : g.t === 'capto' ? (m.cap && sqName(m.to) === g.sq) : g.t === 'mate' ? isMate(makeMove(pos, m)) : g.t === 'check' ? inCheck(makeMove(pos, m)) : false);
+        if (process.env.SHOW) console.log(n, g.t, sol.length, 'Lösungen');
         ok(sol.length > 0, `${n}: lösbar (${g.t})`);
         if (g.t === 'to') ok(mv.some(m => !g.sqs.includes(sqName(m.to))) || true, `${n}`);
       }

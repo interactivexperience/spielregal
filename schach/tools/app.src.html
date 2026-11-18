@@ -336,10 +336,11 @@ function openLesson(w,i){LSN={w,li:i,ti:0,hearts:3,hints:0,mist:0,phase:'intro',
 function solutionSquares(){
   const t=lessonTask(),g=t.goal;
   if(g.t==='tap')return [sqIndex(g.sqs[0])];
-  const mv=legalMoves(G.pos).filter(m=>g.t==='to'?g.sqs.includes(sqName(m.to)):g.t==='cap'?!!m.cap:(m.cap&&sqName(m.to)===g.sq));
+  const mv=legalMoves(G.pos).filter(m=>fits(g,m,G.pos));
   return mv.length?[mv[0].from,mv[0].to]:[];
 }
-function goalMet(mv){const g=lessonTask().goal;return g.t==='to'?g.sqs.includes(sqName(mv.to)):g.t==='cap'?!!mv.cap:g.t==='capto'?(!!mv.cap&&sqName(mv.to)===g.sq):false}
+function fits(g,m,pos){return g.t==='to'?g.sqs.includes(sqName(m.to)):g.t==='cap'?!!m.cap:g.t==='capto'?(!!m.cap&&sqName(m.to)===g.sq):g.t==='mate'?isMate(makeMove(pos,m)):g.t==='check'?inCheck(makeMove(pos,m)):false}
+function goalMet(mv){return fits(lessonTask().goal,mv,G.pos)}
 function lessonOk(sq){
   LSN.busy=true;U.flash=sq!=null?{sq,ok:true}:null;SND.win&&tone(784,.14,'triangle',.18);tone(988,.2,'triangle',.16,.1);buzz(15);
   const msgs=['Genau!','Sehr gut!','Richtig!','Das sitzt!'];LSN.msg=msgs[(LSN.ti+LSN.li)%msgs.length];render();
@@ -467,7 +468,8 @@ function lessonEnd(){
   let cf='';for(let i=0;i<28&&!rm();i++)cf+='<i style="left:'+(i*3.6+(i%3))+'%;background:'+['#E2566B','#FFC83D','#6CB4EE','#5FA55A','#B58BE0'][i%5]+';animation-delay:'+(-(i%7)*.4).toFixed(1)+'s;animation-duration:'+(2.2+(i%5)*.3).toFixed(1)+'s"></i>';
   const card=LSN.newCard?'<div class="ccard"><small>NEUE SAMMELKARTE</small>'+window.chr(LSN.newCard.kind)+'<b>'+esc(LSN.newCard.name)+'</b></div>':'';
   return '<div class="scrim" data-a="none"></div><div class="sheet"><div class="conf">'+cf+'</div><div class="end"><div class="stars3">'+[1,2,3].map(k=>icon('star','sun',k<=st?'':'dim')).join('')+'</div><h3>'+(l.boss?'Boss besiegt!':'Geschafft!')+'</h3>'+card+'<p>'+(st===3?'Fehlerfrei und ohne Hinweis.':st===2?'Ohne Hinweis geschafft.':'Geschafft. Mit weniger Hinweisen gibt es mehr Sterne.')+' <b>+'+LSN.gain+' XP</b></p>'+
-    (last&&wd?'<p><b>'+esc(LSN_DATA[LSN.w].name)+' ist geschafft.</b> '+(nextW?'Die nächste Welt öffnet sich.':'Weitere Welten folgen bald.')+'</p>':'')+
+    (last&&wd?'<p><b>'+esc(LSN_DATA[LSN.w].name)+' ist geschafft.</b> '+(nextW?'Die nächste Welt öffnet sich.':'Du hast den ganzen Pfad der Grundlagen geschafft. Jetzt wartet die Rote Königin zu einer richtigen Partie.')+'</p>':'')+
+    (last&&wd&&!nextW?'<button class="btn" data-a="finale">Partie gegen die Rote Königin</button>':'')+
     (!last?'<button class="btn" data-a="lnext">Nächste Lektion</button>':'<button class="btn" data-a="lback">Zur Karte</button>')+
     '<button class="btn alt" data-a="lagain">Nochmal</button>'+(!last?'<button class="btn alt" data-a="lback">Zur Karte</button>':'')+'</div></div>';
 }
@@ -586,6 +588,7 @@ APP.addEventListener('click',e=>{
   if(a==='lstart'){LSN.phase='task';loadTask();render();return}
   if(a==='lhint'){lessonHint();return}
   if(a==='lback'){U.view='map';U.sheet=null;LSN=null;mapFocus=false;render();return}
+  if(a==='finale'){U.lvl=3;U.col='rnd';U.sheet=null;newGame();return}
   if(a==='lnext'){const w=LSN.w,i=LSN.li+1;U.sheet=null;openLesson(w,i);return}
   if(a==='lagain'){const w=LSN.w,i=LSN.li;U.sheet=null;openLesson(w,i);return}
   if(a==='none')return;
