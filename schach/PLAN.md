@@ -16,6 +16,23 @@ ein Browserspiel im Spielregal-Stil (eine Datei, Vanilla JS, kein Build).
 
 **Nicht drin (später)**: Welten 3–10, Tal-Stufen 2–5, Wahrzeichen, Sammelkarten, Tagesquest, Liga, Mehrspieler, Eröffnungsbuch.
 
+## 1a. Pfad-Struktur (Owner-Vorgabe)
+
+Das Spiel hat **zwei Lernpfade** hintereinander:
+
+1. **Pfad 1 · Grundlagen** (Welt 1–10): vom Brett über alle Figuren und Regeln bis zu den ersten Taktiken.
+   Am Ende steht das **Finale: eine normale Partie gegen Meister Matt** (volle Regeln, keine Sonderstellung).
+2. **Freischaltung:** Wer das Finale gewinnt, kann **normal Schach spielen** (freies Spiel nach den vollen Regeln, wie die Partie gegen Bots)
+   und schaltet **Pfad 2 · Strategie** frei („Das Tor zu den Strategien“ im Konzept).
+3. **Pfad 2 · Strategie** (8 Welten): Eröffnungs-Werkstatt, Aktive Figuren, Bauernwerkstatt, Königsschutz & Angriff,
+   Raum & Felder, Tauschen & Material, Endspiel-Strategie, Partien verstehen (Finale gegen eine starke Gegnerin).
+
+Folgen für die Technik: Fortschritt kennt zwei Pfade (`schach:progress`: `pfad1`, `pfad2`, `freischaltung:{freiesSpiel,pfad2}`),
+die Weltkarte zeigt am Gipfel ein **Tor**, das sich beim Freischalten öffnet (Animation), und die Startseite zeigt Pfad 2 gesperrt,
+bis es soweit ist. Pfad 2 wird erst nach Pfad 1 gebaut; v1 bleibt bei Welt 1–2.
+
+**Offen (siehe Abschnitt 10):** Ob die Partie gegen Bots schon jetzt von Anfang an spielbar bleibt oder erst nach dem Finale.
+
 ## 2. Architektur (eine Datei, drei Schichten)
 
 ```
@@ -170,6 +187,7 @@ Bei richtigem Zug: Puls, Ton, Fortschrittsbalken.
 3. **Partie-Meldung:** Nur Duelle und Bosse melden (Vorschlag) oder auch Lektionen?
 4. **Mut-Herzen:** weich (Hinweise statt Game Over, Vorschlag) oder echte Begrenzung?
 5. ~~Schriften~~ entschieden: Londrina Solid + Delius, eingebettet, kein Logo.
+7. **Freies Spiel:** Soll die Partie gegen Bots (jetzt schon in der App) von Anfang an zum Üben offen bleiben, oder erst nach dem Finale von Pfad 1 freigeschaltet werden? Vorschlag: bleibt offen, das Finale schaltet zusätzlich Pfad 2 frei und die höheren Stufen der Bots.
 6. **Branch:** Soll ich für `schach/` direkt auf `main` pushen (wie in der CLAUDE.md für Updates festgelegt) oder weiter auf dem Branch bleiben, bis das erste Spiel steht?
 
 ## 11. Fertig, wenn
