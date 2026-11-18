@@ -21,9 +21,6 @@ export const WORLDS = [
     lessons: [
       { id: 'w1-l1', title: 'Das Brett', coach: 'rabbit', intro: 'Oh je, ich bin spät dran! Hinter dem Spiegel ist alles ein Brett. Jedes Feld hat einen Namen aus Buchstabe und Zahl, zum Beispiel e4.', tasks: [
         t(EMPTY, 'Tippe das Feld e4.', { t: 'tap', sqs: ['e4'] }, ['Der Buchstabe steht unten am Brett: e ist die fünfte Spalte.', 'Die Zahl steht links: 4 ist die vierte Reihe von unten.', 'Gesucht: fünfte Spalte, vierte Reihe.']),
-        t(EMPTY, 'Tippe das Feld a1.', { t: 'tap', sqs: ['a1'] }, ['a ist ganz links, 1 ist ganz unten.', 'Es ist die Ecke unten links.', 'Gesucht: die Ecke unten links.']),
-        t(EMPTY, 'Tippe das Feld h8.', { t: 'tap', sqs: ['h8'] }, ['h ist ganz rechts, 8 ist ganz oben.', 'Es ist die Ecke oben rechts.', 'Gesucht: die Ecke oben rechts.']),
-        t(EMPTY, 'Tippe das Feld d5.', { t: 'tap', sqs: ['d5'] }, ['d ist die vierte Spalte von links.', '5 ist die fünfte Reihe von unten.', 'Gesucht: vierte Spalte, fünfte Reihe.']),
       ] },
       { id: 'w1-l2', title: 'Reihen und Linien', coach: 'rabbit', intro: 'Waagerecht heißen die Felder Reihen (1 bis 8), senkrecht Linien (a bis h). Alles auf einer Linie gehört zusammen.', tasks: [
         t(EMPTY, 'Tippe irgendein Feld auf der Linie e.', { t: 'tap', sqs: file('e') }, ['Eine Linie läuft von unten nach oben.', 'Alle Felder der Linie e beginnen mit e.', 'Zum Beispiel e1, e2 oder e5.']),

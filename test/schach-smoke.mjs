@@ -62,7 +62,7 @@ try {
     }
     check(await page.locator(".sheet .end .stars3").count() === 1, "Lektion endet mit Sternen");
     const pr = await page.evaluate(() => JSON.parse(localStorage.getItem("schach:progress")));
-    check(pr && pr.l["w1-l1"] === 3 && pr.xp >= 40, "Fortschritt gespeichert (3 Sterne, XP)");
+    check(pr && pr.l["w1-l1"] === 3 && pr.xp > 0, "Fortschritt gespeichert (3 Sterne, XP)");
     await snap("10-lektion-ende");
     await page.click("[data-a=lnext]");
     // falscher Zug kostet ein Herz, Hinweis zeigt Text

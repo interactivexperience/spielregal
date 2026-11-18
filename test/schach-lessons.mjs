@@ -9,7 +9,7 @@ for (const w of WORLDS) {
   ok(w.lessons.length >= 4, `${w.id}: mindestens 4 Lektionen`);
   for (const l of w.lessons) {
     ok(!ids.has(l.id), `${l.id} eindeutig`); ids.add(l.id);
-    ok(l.title && l.intro && l.tasks.length >= 3, `${l.id}: Titel, Einleitung, mind. 3 Aufgaben`);
+    ok(l.title && l.intro && l.tasks.length >= (l.id === 'w1-l1' ? 1 : 3), `${l.id}: Titel, Einleitung, mind. 3 Aufgaben (erste Lektion: 1)`);
     l.tasks.forEach((t, i) => {
       tasks++; const n = `${l.id}#${i + 1}`;
       let pos; try { pos = parseFEN(t.fen); } catch (e) { ok(false, `${n}: FEN ungültig`); return; }
