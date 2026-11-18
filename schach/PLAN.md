@@ -187,7 +187,7 @@ Bei richtigem Zug: Puls, Ton, Fortschrittsbalken.
 3. **Partie-Meldung:** Nur Duelle und Bosse melden (Vorschlag) oder auch Lektionen?
 4. **Mut-Herzen:** weich (Hinweise statt Game Over, Vorschlag) oder echte Begrenzung?
 5. ~~Schriften~~ entschieden: Londrina Solid + Delius, eingebettet, kein Logo.
-7. **Freies Spiel:** Soll die Partie gegen Bots (jetzt schon in der App) von Anfang an zum Üben offen bleiben, oder erst nach dem Finale von Pfad 1 freigeschaltet werden? Vorschlag: bleibt offen, das Finale schaltet zusätzlich Pfad 2 frei und die höheren Stufen der Bots.
+7. ~~Freies Spiel~~ entschieden: bleibt von Anfang an offen. (Ursprüngliche Frage: Soll die Partie gegen Bots (jetzt schon in der App) von Anfang an zum Üben offen bleiben, oder erst nach dem Finale von Pfad 1 freigeschaltet werden? Vorschlag: bleibt offen, das Finale schaltet zusätzlich Pfad 2 frei und die höheren Stufen der Bots.
 6. **Branch:** Soll ich für `schach/` direkt auf `main` pushen (wie in der CLAUDE.md für Updates festgelegt) oder weiter auf dem Branch bleiben, bis das erste Spiel steht?
 
 ## 11. Fertig, wenn
