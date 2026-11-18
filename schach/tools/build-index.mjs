@@ -43,6 +43,11 @@ export function buildIndex() {
   if (a < 0 || b < 0) throw new Error('Figuren-Code im Konzept nicht gefunden');
   const chr = concept.slice(a, b);
 
+  // Muster (Schachbrett, Streifen, Kreidekorn) für die Figuren
+  const pats = (concept.match(/<pattern id="(?:chalkF|chkb|chkr|strp)"[\s\S]*?<\/pattern>/g) || []).join('\n');
+  if (!pats) throw new Error('Muster fehlen im Konzept');
+  symbols = pats + '\n' + symbols;
+
   return html.replace('/*@FONTS@*/', () => fonts).replace('/*@SYMBOLS@*/', () => symbols)
     .replace('/*@ENGINE@*/', () => engine).replace('/*@CHR@*/', () => chr);
 }
