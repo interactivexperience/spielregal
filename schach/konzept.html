@@ -1132,10 +1132,91 @@ document.getElementById('stratlist').innerHTML=STRAT.map(function(w,i){
   // Flamingos am Rasen der Roten Königin (Stufe 2)
   (function(){var c=SC[5],y0=c[1]+30;[[c[0]+84,y0+14,.9],[c[0]+104,y0+22,.75],[c[0]+66,y0+30,.8]].forEach(function(q,i){
     L.push(life(2,i*200,'<ellipse cx="'+q[0]+'" cy="'+q[1]+'" rx="'+8*q[2]+'" ry="2.400" fill="#2B2535" opacity=".2"/><path d="M'+(q[0]-1.500*q[2])+' '+(q[1]-9*q[2])+'V'+q[1]+'M'+(q[0]+2*q[2])+' '+(q[1]-9*q[2])+'V'+q[1]+'" stroke="#E56C8E" stroke-width="1.400" stroke-linecap="round"/><ellipse cx="'+q[0]+'" cy="'+(q[1]-14*q[2])+'" rx="'+9*q[2]+'" ry="'+6*q[2]+'" fill="#F58AA7" stroke="#2B2535" stroke-width=".8"/><path d="M'+(q[0]+6*q[2])+' '+(q[1]-17*q[2])+'q'+8*q[2]+' '+(-10*q[2])+' '+3*q[2]+' '+(-18*q[2])+'" fill="none" stroke="#F58AA7" stroke-width="'+3*q[2]+'" stroke-linecap="round"/><circle cx="'+(q[0]+9*q[2])+'" cy="'+(q[1]-36*q[2])+'" r="'+3*q[2]+'" fill="#F58AA7" stroke="#2B2535" stroke-width=".8"/><path d="M'+(q[0]+11*q[2])+' '+(q[1]-37*q[2])+'l'+5*q[2]+' '+3*q[2]+'l'+(-5*q[2])+' '+.5*q[2]+'z" fill="#2B2535"/>'))})})();
-  // Kartensoldaten am Tor des Kartenschlosses (Stufe 4)
-  (function(){var c=SC[2],y0=c[1]+30;[[c[0]-17,'#D23B4E',0],[c[0]+17,'#2B2535',1]].forEach(function(q,i){
-    var g=i?'<path d="M'+q[0]+' '+(y0-18)+'c-4-1-6 3-3 5l3 2l3-2c3-2 1-6-3-5z" fill="#fff"/>':'<path d="M'+q[0]+' '+(y0-14)+'c-6-3-6-9 0-6c6-3 6 3 0 6z" fill="#fff"/>';
-    L.push(life(4,i*150,'<ellipse cx="'+q[0]+'" cy="'+(y0+1)+'" rx="7" ry="2" fill="#2B2535" opacity=".25"/><path d="M'+(q[0]-2)+' '+(y0-2)+'v4M'+(q[0]+2)+' '+(y0-2)+'v4" stroke="#2B2535" stroke-width="1.800" stroke-linecap="round"/><rect x="'+(q[0]-6)+'" y="'+(y0-26)+'" width="12" height="24" rx="1.500" fill="#FFFDF6" stroke="#2B2535" stroke-width="1.200"/><path d="M'+(q[0]-6)+' '+(y0-16)+'h12" stroke="'+q[1]+'" stroke-width="1" opacity=".5"/>'+(i?'<path d="M'+q[0]+' '+(y0-23)+'c-4 0-5 3-2.500 4.500l2.500 2l2.500-2c2.500-1.500 1.500-4.500-2.500-4.500z" fill="'+q[1]+'"/>':'<path d="M'+q[0]+' '+(y0-18)+'c-5-3-5-8 0-5c5-3 5 2 0 5z" fill="'+q[1]+'"/>')+'<path d="M'+(q[0]-6)+' '+(y0-20)+'l-5 7M'+(q[0]+6)+' '+(y0-20)+'l5-9" stroke="#2B2535" stroke-width="1.600" stroke-linecap="round"/><path d="M'+(q[0]+11)+' '+(y0-29)+'v22" stroke="#7A5232" stroke-width="1.600"/><path d="M'+(q[0]+11)+' '+(y0-29)+'l-2.500 5h5z" fill="#C0C8D8" stroke="#2B2535" stroke-width=".7"/>'))})})();
+  /* ===== Figuren der Geschichte: Kartensoldaten (mit Gesicht, Armen, Beinen), Humpty Dumpty, Hutmacher, Raupe, Dodo ... ===== */
+  function suitG(suit,x,y,z,col){
+    if(suit==='h')return '<path d="M'+x+' '+f(y+4*z)+'C'+f(x-7*z)+' '+f(y-1*z)+' '+f(x-5*z)+' '+f(y-7*z)+' '+x+' '+f(y-3*z)+'C'+f(x+5*z)+' '+f(y-7*z)+' '+f(x+7*z)+' '+f(y-1*z)+' '+x+' '+f(y+4*z)+'Z" fill="'+col+'"/>';
+    if(suit==='d')return '<path d="M'+x+' '+f(y-6*z)+'L'+f(x+4.500*z)+' '+y+'L'+x+' '+f(y+6*z)+'L'+f(x-4.500*z)+' '+y+'Z" fill="'+col+'"/>';
+    if(suit==='s')return '<path d="M'+x+' '+f(y-5*z)+'C'+f(x-8*z)+' '+f(y+1*z)+' '+f(x-5*z)+' '+f(y+6*z)+' '+x+' '+f(y+3*z)+'C'+f(x+5*z)+' '+f(y+6*z)+' '+f(x+8*z)+' '+f(y+1*z)+' '+x+' '+f(y-5*z)+'ZM'+x+' '+f(y+2*z)+'L'+f(x-2*z)+' '+f(y+7*z)+'H'+f(x+2*z)+'Z" fill="'+col+'"/>';
+    return '<circle cx="'+x+'" cy="'+f(y-3*z)+'" r="'+f(2.800*z)+'" fill="'+col+'"/><circle cx="'+f(x-3.200*z)+'" cy="'+f(y+1.500*z)+'" r="'+f(2.800*z)+'" fill="'+col+'"/><circle cx="'+f(x+3.200*z)+'" cy="'+f(y+1.500*z)+'" r="'+f(2.800*z)+'" fill="'+col+'"/><path d="M'+x+' '+y+'L'+f(x-2*z)+' '+f(y+7*z)+'H'+f(x+2*z)+'Z" fill="'+col+'"/>';
+  }
+  function faceP(x,y,r,mood){ // menschliches Gesicht: Augen, Nase, Wangen, Mund
+    return '<circle cx="'+f(x-r*.38)+'" cy="'+f(y-r*.1)+'" r="'+f(r*.17)+'" fill="'+INK+'"/><circle cx="'+f(x+r*.38)+'" cy="'+f(y-r*.1)+'" r="'+f(r*.17)+'" fill="'+INK+'"/><path d="M'+f(x)+' '+f(y)+'l'+f(-r*.1)+' '+f(r*.28)+'h'+f(r*.2)+'" fill="none" stroke="#C9715C" stroke-width="'+f(r*.1)+'" stroke-linecap="round" stroke-linejoin="round"/><circle cx="'+f(x-r*.62)+'" cy="'+f(y+r*.28)+'" r="'+f(r*.2)+'" fill="#EE6B58" opacity=".8"/><circle cx="'+f(x+r*.62)+'" cy="'+f(y+r*.28)+'" r="'+f(r*.2)+'" fill="#EE6B58" opacity=".8"/><path d="M'+f(x-r*.3)+' '+f(y+r*.55)+'q'+f(r*.3)+' '+f(mood==='grim'?-r*.25:r*.28)+' '+f(r*.6)+' 0" fill="none" stroke="#B5453A" stroke-width="'+f(r*.14)+'" stroke-linecap="round"/>'}
+  function cardMan(x,y,s,suit,tool,flip,delay){
+    var red=suit==='h'||suit==='d',col=red?'#D9473A':'#2A3377',skin='#F4B49A',o='',lim='#2A3377';
+    o+='<ellipse cx="'+f(x+1)+'" cy="'+f(y+.5)+'" rx="'+f(8*s)+'" ry="'+f(2*s)+'" fill="'+INK+'" opacity=".2"/>';
+    // Beine mit Schuhen
+    o+='<path d="M'+f(x-3*s)+' '+f(y-8*s)+'V'+f(y-2*s)+'M'+f(x+3*s)+' '+f(y-8*s)+'V'+f(y-2*s)+'" stroke="'+lim+'" stroke-width="'+f(1.900*s)+'" stroke-linecap="round" fill="none"/><ellipse cx="'+f(x-3.800*s)+'" cy="'+f(y-1*s)+'" rx="'+f(2.800*s)+'" ry="'+f(1.500*s)+'" fill="#E8503A"/><ellipse cx="'+f(x+3.800*s)+'" cy="'+f(y-1*s)+'" rx="'+f(2.800*s)+'" ry="'+f(1.500*s)+'" fill="#E8503A"/>';
+    // Arme und Hände
+    var raised=tool?1:0;
+    o+='<path d="M'+f(x-6*s)+' '+f(y-20*s)+'L'+f(x-10.500*s)+' '+f(y-14*s)+'M'+f(x+6*s)+' '+f(y-20*s)+'L'+f(x+10.500*s)+' '+f(raised?y-24*s:y-14*s)+'" stroke="'+lim+'" stroke-width="'+f(1.700*s)+'" stroke-linecap="round" fill="none"/><circle cx="'+f(x-10.800*s)+'" cy="'+f(y-13.500*s)+'" r="'+f(1.700*s)+'" fill="'+skin+'"/><circle cx="'+f(x+10.800*s)+'" cy="'+f(raised?y-24.500*s:y-13.500*s)+'" r="'+f(1.700*s)+'" fill="'+skin+'"/>';
+    if(tool==='spear')o+='<path d="M'+f(x+10.800*s)+' '+f(y-10*s)+'V'+f(y-38*s)+'" stroke="#7A5232" stroke-width="'+f(1.100*s)+'" stroke-linecap="round"/><path d="M'+f(x+10.800*s-1.800*s)+' '+f(y-38*s)+'l'+f(1.800*s)+' '+f(-5*s)+'l'+f(1.800*s)+' '+f(5*s)+'Z" fill="#C9D1F6"/>';
+    if(tool==='brush')o+='<path d="M'+f(x+10.800*s)+' '+f(y-24.500*s)+'L'+f(x+16*s)+' '+f(y-33*s)+'" stroke="#7A5232" stroke-width="'+f(1.100*s)+'" stroke-linecap="round"/><circle cx="'+f(x+16.600*s)+'" cy="'+f(y-34*s)+'" r="'+f(1.900*s)+'" fill="#D9473A"/>';
+    // Kartenkörper
+    o+=flatP('M'+f(x-6*s)+' '+f(y-24*s)+'h'+f(12*s)+'v'+f(17*s)+'h'+f(-12*s)+'Z','#FFFDF6')+suitG(suit,f(x),f(y-15.500*s),1.050*s,col)+suitG(suit,f(x-3.600*s),f(y-21.500*s),.28*s,col)+suitG(suit,f(x+3.600*s),f(y-9.500*s),.28*s,col);
+    // Kopf mit Gesicht und spitzer Mütze
+    o+='<circle cx="'+f(x+.8*s)+'" cy="'+f(y-30*s)+'" r="'+f(5*s)+'" fill="'+mix(skin,'#1F2A6B',.25)+'"/><circle cx="'+f(x)+'" cy="'+f(y-30.500*s)+'" r="'+f(5*s)+'" fill="'+skin+'"/>';
+    o+='<path d="M'+f(x-5*s)+' '+f(y-32*s)+'L'+f(x+1*s)+' '+f(y-41*s)+'L'+f(x+5*s)+' '+f(y-32*s)+'Q'+f(x)+' '+f(y-34*s)+' '+f(x-5*s)+' '+f(y-32*s)+'Z" fill="'+col+'"/>'+faceP(x,y-30*s,5*s,'');
+    return flip?'<g transform="translate('+f(2*x)+' 0) scale(-1 1)">'+o+'</g>':o;
+  }
+  function eggMan(x,y,s){ // Humpty Dumpty auf der Mauer
+    var o=shadow(x,y,26*s);
+    for(var r2=0;r2<3;r2++)for(var c2=0;c2<5;c2++)o+='<path d="M'+f(x-24*s+c2*9.600*s+(r2%2?4.800*s:0))+' '+f(y-16*s+r2*5.300*s)+'h'+f(9*s)+'v'+f(4.800*s)+'h'+f(-9*s)+'Z" fill="'+((r2+c2)%2?'#E8806A':'#F29A83')+'"/>';
+    o+='<path d="M'+f(x-26*s)+' '+f(y-17*s)+'h'+f(52*s)+'v'+f(3*s)+'h'+f(-52*s)+'Z" fill="#FBEFD9"/>';
+    o+='<path d="M'+f(x-4.500*s)+' '+f(y-14*s)+'v'+f(6*s)+'M'+f(x+4.500*s)+' '+f(y-14*s)+'v'+f(6*s)+'" stroke="#2A3377" stroke-width="'+f(2*s)+'" stroke-linecap="round" fill="none"/><ellipse cx="'+f(x-5*s)+'" cy="'+f(y-7*s)+'" rx="'+f(3*s)+'" ry="'+f(1.600*s)+'" fill="#E8503A"/><ellipse cx="'+f(x+5*s)+'" cy="'+f(y-7*s)+'" rx="'+f(3*s)+'" ry="'+f(1.600*s)+'" fill="#E8503A"/>';
+    o+='<path d="M'+f(x-8*s)+' '+f(y-27*s)+'L'+f(x-14*s)+' '+f(y-21*s)+'M'+f(x+8*s)+' '+f(y-27*s)+'L'+f(x+14*s)+' '+f(y-21*s)+'" stroke="'+'#2A3377'+'" stroke-width="'+f(1.800*s)+'" stroke-linecap="round" fill="none"/>';
+    o+=flatP(blob(x,y-29*s,9.500*s,12*s,10,.04),'#FFF6E3')+'<path d="M'+f(x-4*s)+' '+f(y-40*s)+'l'+f(2*s)+' '+f(4*s)+'l'+f(-1.500*s)+' '+f(3*s)+'M'+f(x+5*s)+' '+f(y-24*s)+'l'+f(-2*s)+' '+f(3*s)+'l'+f(2*s)+' '+f(2*s)+'" stroke="#B8B0A0" stroke-width="'+f(.8*s)+'" fill="none" stroke-linecap="round"/>';
+    o+=faceP(x,y-31*s,8*s,'')+'<path d="M'+f(x-4*s)+' '+f(y-21*s)+'l'+f(4*s)+' '+f(2*s)+'l'+f(4*s)+' '+f(-2*s)+'l'+f(-1*s)+' '+f(4*s)+'h'+f(-6*s)+'Z" fill="#3F62C4"/>';
+    return o;
+  }
+  function teaParty(x,y,s){
+    var o='<ellipse cx="'+f(x)+'" cy="'+f(y)+'" rx="'+f(38*s)+'" ry="'+f(5*s)+'" fill="'+INK+'" opacity=".2"/>';
+    // Hutmacher (links): Mantel, Kopf mit orangem Haar, hoher Hut
+    o+=flatP('M'+f(x-30*s)+' '+f(y-4*s)+'L'+f(x-26*s)+' '+f(y-20*s)+'H'+f(x-14*s)+'L'+f(x-10*s)+' '+f(y-4*s)+'Z','#3F62C4')+'<path d="M'+f(x-23*s)+' '+f(y-20*s)+'l'+f(3*s)+' '+f(3*s)+'l'+f(3*s)+' '+f(-3*s)+'l'+f(-1*s)+' '+f(5*s)+'h'+f(-4*s)+'Z" fill="#E8503A"/>';
+    o+=flatP(blob(x-20*s,y-26*s,6*s,6*s,8,.05),'#F4B49A')+'<path d="M'+f(x-26*s)+' '+f(y-29*s)+'q'+f(-3*s)+' '+f(3*s)+' '+f(-1*s)+' '+f(8*s)+'M'+f(x-14*s)+' '+f(y-29*s)+'q'+f(3*s)+' '+f(3*s)+' '+f(1*s)+' '+f(8*s)+'" stroke="#E8803A" stroke-width="'+f(3*s)+'" stroke-linecap="round" fill="none"/>'+faceP(x-20*s,y-26*s,6*s,'');
+    o+=flatP('M'+f(x-27*s)+' '+f(y-32*s)+'h'+f(14*s)+'v'+f(-14*s)+'h'+f(-14*s)+'Z','#2A3377')+'<path d="M'+f(x-30*s)+' '+f(y-32*s)+'h'+f(20*s)+'" stroke="#2A3377" stroke-width="'+f(2*s)+'" stroke-linecap="round"/><path d="M'+f(x-27*s)+' '+f(y-35*s)+'h'+f(14*s)+'v'+f(3*s)+'h'+f(-14*s)+'Z" fill="#E8503A"/><rect x="'+f(x-22*s)+'" y="'+f(y-44*s)+'" width="'+f(4*s)+'" height="'+f(3.500*s)+'" fill="#F7D96B"/>';
+    // Märzhase (rechts): braunes Fell, lange Ohren
+    o+=flatP('M'+f(x+12*s)+' '+f(y-4*s)+'L'+f(x+15*s)+' '+f(y-18*s)+'H'+f(x+27*s)+'L'+f(x+30*s)+' '+f(y-4*s)+'Z','#B07A4E')+flatP(blob(x+21*s,y-24*s,6*s,6*s,8,.05),'#B07A4E')+flatP('M'+f(x+16*s)+' '+f(y-29*s)+'L'+f(x+14*s)+' '+f(y-46*s)+'L'+f(x+20*s)+' '+f(y-30*s)+'Z','#B07A4E')+flatP('M'+f(x+22*s)+' '+f(y-30*s)+'L'+f(x+26*s)+' '+f(y-46*s)+'L'+f(x+27*s)+' '+f(y-29*s)+'Z','#B07A4E')+'<circle cx="'+f(x+19*s)+'" cy="'+f(y-25*s)+'" r="'+f(.9*s)+'" fill="'+INK+'"/><circle cx="'+f(x+23*s)+'" cy="'+f(y-25*s)+'" r="'+f(.9*s)+'" fill="'+INK+'"/><ellipse cx="'+f(x+21*s)+'" cy="'+f(y-22.500*s)+'" rx="'+f(1.200*s)+'" ry="'+f(.9*s)+'" fill="#F08FA0"/>';
+    // Tisch mit Schachbrett-Decke, Teekanne, Tassen
+    o+=flatP('M'+f(x-36*s)+' '+f(y-10*s)+'H'+f(x+36*s)+'L'+f(x+32*s)+' '+f(y)+'H'+f(x-32*s)+'Z','url(#chkr)','#8E2F3F');
+    o+=flatP(blob(x-3*s,y-16*s,6*s,5*s,8,.05),'#F08FA0')+'<path d="M'+f(x+2*s)+' '+f(y-16*s)+'l'+f(5*s)+' '+f(-4*s)+'" stroke="#F08FA0" stroke-width="'+f(2*s)+'" stroke-linecap="round"/>'+flatP(blob(x-10*s,y-13*s,2.600*s,2.200*s,6,.05),'#FFF6E3')+flatP(blob(x+9*s,y-13*s,2.600*s,2.200*s,6,.05),'#FFF6E3');
+    return o;
+  }
+  function caterP(x,y,s){
+    var o=shadow(x,y,18*s)+flatP('M'+f(x-4*s)+' '+f(y)+'v'+f(-16*s)+'h'+f(8*s)+'v'+f(16*s)+'Z','#FBEFD9')+flatP('M'+f(x-20*s)+' '+f(y-14*s)+'Q'+f(x)+' '+f(y-40*s)+' '+f(x+20*s)+' '+f(y-14*s)+'Z','#6F86D6')+'<circle cx="'+f(x-8*s)+'" cy="'+f(y-21*s)+'" r="'+f(2*s)+'" fill="#FFF6E3"/><circle cx="'+f(x+6*s)+'" cy="'+f(y-25*s)+'" r="'+f(1.600*s)+'" fill="#FFF6E3"/><circle cx="'+f(x+12*s)+'" cy="'+f(y-18*s)+'" r="'+f(2.200*s)+'" fill="#FFF6E3"/>';
+    for(var k=4;k>=0;k--)o+='<circle cx="'+f(x-16*s+k*7*s)+'" cy="'+f(y-30*s-Math.sin(k*.8)*3*s)+'" r="'+f(4.200*s)+'" fill="'+(k%2?'#7FD1BD':'#58BFA9')+'"/>';
+    o+='<circle cx="'+f(x-16*s)+'" cy="'+f(y-29.500*s)+'" r="'+f(5*s)+'" fill="#58BFA9"/>'+faceP(x-16*s,y-29.500*s,4.600*s,'grim')+'<circle cx="'+f(x+18*s)+'" cy="'+f(y-40*s)+'" r="'+f(3.200*s)+'" fill="none" stroke="#fff" stroke-width="'+f(1*s)+'" opacity=".8"/><circle cx="'+f(x+24*s)+'" cy="'+f(y-47*s)+'" r="'+f(4*s)+'" fill="none" stroke="#fff" stroke-width="'+f(1*s)+'" opacity=".7"/>';
+    return o;
+  }
+  function dodoM(x,y,s){
+    return shadow(x,y,14*s)+'<path d="M'+f(x-4*s)+' '+f(y-8*s)+'V'+f(y)+'M'+f(x+4*s)+' '+f(y-8*s)+'V'+f(y)+'" stroke="#E8503A" stroke-width="'+f(1.800*s)+'" stroke-linecap="round" fill="none"/>'+flatP(blob(x,y-15*s,13*s,9*s,9,.06),'#B99B7A')+flatP('M'+f(x-11*s)+' '+f(y-16*s)+'L'+f(x-19*s)+' '+f(y-22*s)+'L'+f(x-12*s)+' '+f(y-10*s)+'Z','#8A7458')+'<path d="M'+f(x+8*s)+' '+f(y-20*s)+'Q'+f(x+13*s)+' '+f(y-28*s)+' '+f(x+11*s)+' '+f(y-33*s)+'" fill="none" stroke="#B99B7A" stroke-width="'+f(4.500*s)+'" stroke-linecap="round"/><circle cx="'+f(x+11*s)+'" cy="'+f(y-34*s)+'" r="'+f(5*s)+'" fill="#B99B7A"/>'+flatP('M'+f(x+14*s)+' '+f(y-37*s)+'L'+f(x+26*s)+' '+f(y-32*s)+'L'+f(x+22*s)+' '+f(y-27*s)+'L'+f(x+14*s)+' '+f(y-30*s)+'Z','#F2C94C')+'<circle cx="'+f(x+11*s)+'" cy="'+f(y-35.500*s)+'" r="'+f(1.100*s)+'" fill="'+INK+'"/><path d="M'+f(x+8*s)+' '+f(y-39*s)+'l'+f(-1*s)+' '+f(-4*s)+'M'+f(x+11*s)+' '+f(y-39.500*s)+'v'+f(-5*s)+'M'+f(x+14*s)+' '+f(y-39*s)+'l'+f(2*s)+' '+f(-4*s)+'" stroke="'+INK+'" stroke-width="'+f(.9*s)+'" stroke-linecap="round" fill="none"/>';
+  }
+  function tweedles(x,y,s){
+    var o=shadow(x,y,20*s);
+    [[-9,'#3F62C4','#F0B84A'],[9,'#E8503A','#F6C3BA']].forEach(function(q,i){var bx=x+q[0]*s;
+      o+='<path d="M'+f(bx-3*s)+' '+f(y-5*s)+'V'+f(y-1*s)+'M'+f(bx+3*s)+' '+f(y-5*s)+'V'+f(y-1*s)+'" stroke="#2A3377" stroke-width="'+f(1.800*s)+'" stroke-linecap="round" fill="none"/>'+flatP(blob(bx,y-14*s,9*s,10*s,9,.04),q[1])+'<path d="M'+f(bx-7*s)+' '+f(y-14*s)+'h'+f(14*s)+'" stroke="'+q[2]+'" stroke-width="'+f(2*s)+'"/>'+flatP(blob(bx,y-28*s,5.500*s,5.500*s,8,.04),'#F4B49A')+faceP(bx,y-28*s,5.500*s,'')+'<path d="M'+f(bx-5*s)+' '+f(y-31*s)+'Q'+f(bx)+' '+f(y-40*s)+' '+f(bx+5*s)+' '+f(y-31*s)+'Z" fill="'+q[2]+'"/><path d="M'+f(bx)+' '+f(y-37*s)+'v'+f(-3*s)+'M'+f(bx-3*s)+' '+f(y-40*s)+'h'+f(6*s)+'" stroke="'+INK+'" stroke-width="'+f(.9*s)+'" stroke-linecap="round"/>'});
+    return o+'<path d="M'+f(x-5*s)+' '+f(y-16*s)+'q'+f(5*s)+' '+f(3*s)+' '+f(10*s)+' 0" stroke="#F4B49A" stroke-width="'+f(2.500*s)+'" stroke-linecap="round" fill="none"/>';
+  }
+  // --- Platzierung ---
+  (function(){
+    var c1=SC[1],c2=SC[2],c5=SC[5],c6=SC[6],c7=SC[7],y2=c2[1]+30,y5=c5[1]+30,y7=c7[1]+30;
+    // Rosengarten mit drei Kartengärtnern, die weiße Rosen rot malen (Stufe 2)
+    var rb='<path d="'+blob(c1[0]-58,c1[1]+6,26,10,10,.08)+'" fill="#58BFA9"/>';[[-76,2,'#D9473A'],[-62,-4,'#FFF6E3'],[-48,0,'#D9473A'],[-68,8,'#D9473A'],[-52,8,'#FFF6E3']].forEach(function(r){rb+='<circle cx="'+(c1[0]+r[0])+'" cy="'+(c1[1]+r[1]+2)+'" r="5.500" fill="'+r[2]+'"/><path d="M'+(c1[0]+r[0]-1.500)+' '+(c1[1]+r[1]+2)+'q1.500-2 3 0" fill="none" stroke="#8E2F3F" stroke-width="1" opacity=".7"/>'});
+    L.push(life(2,300,'<g transform="translate(-74 -62)">'+rb+cardMan(c1[0]-86,c1[1]+30,.9,'s','brush')+cardMan(c1[0]-62,c1[1]+30,.9,'s','brush',1)+cardMan(c1[0]-38,c1[1]+26,.9,'s','brush',1)+'</g>'));
+    // Wachen am Kartenschloss (Stufe 2)
+    L.push(life(2,500,cardMan(c2[0]-30,y2-2,.95,'h','spear')+cardMan(c2[0]+30,y2-2,.95,'s','spear',1)));
+    // Arbeiter der Roten Königin am Palast (Stufe 2)
+    L.push(life(2,700,cardMan(c5[0]-30,y5+12,.95,'h','spear')+cardMan(c5[0]+8,y5+16,.95,'d','spear',1)));
+    // Krocket: Kartensoldaten am Spielfeld der Arena (Stufe 2)
+    L.push(life(2,900,cardMan(c7[0]-86,y7+8,.9,'c')+cardMan(c7[0]+86,y7+8,.9,'d',null,1)));
+    // Hutmacher-Teegesellschaft, Raupe, Humpty Dumpty, Dodo, Tweedledum/-dee (Stufe 3)
+    L.push(life(3,100,teaParty(322,806,.85)));
+    L.push(life(3,250,caterP(350,918,.85)));
+    L.push(life(3,400,eggMan(c6[0]-122,c6[1]+58,.85)));
+    L.push(life(3,550,dodoM(38,198,.9)));
+    L.push(life(3,700,tweedles(318,1428,.9)));
+    // marschierende Kartensoldaten auf dem Weg (Stufe 4)
+    L.push(life(4,0,'<g><animateMotion dur="120s" begin="-20s" repeatCount="indefinite" path="'+road.d+'"/>'+cardMan(0,5,.5,'h','spear')+'</g><g><animateMotion dur="120s" begin="-26s" repeatCount="indefinite" path="'+road.d+'"/>'+cardMan(0,5,.5,'s','spear')+'</g><g><animateMotion dur="120s" begin="-32s" repeatCount="indefinite" path="'+road.d+'"/>'+cardMan(0,5,.5,'d','spear')+'</g>','op'));
+  })();
   // Grinsekatze im Baum am Wald ohne Namen (Stufe 3)
   (function(){var c=SC[3],cx0=c[0]+62,cy0=c[1]-4;
     L.push(life(3,0,'<ellipse cx="'+cx0+'" cy="'+(cy0+10)+'" rx="14" ry="4" fill="#2B2535" opacity=".2"/><path d="M'+(cx0-12)+' '+(cy0+8)+'Q'+cx0+' '+(cy0+2)+' '+(cx0+14)+' '+(cy0+8)+'" fill="none" stroke="#7A5232" stroke-width="4" stroke-linecap="round"/><ellipse cx="'+cx0+'" cy="'+(cy0-1)+'" rx="9" ry="7" fill="#B58BE0" stroke="#2B2535" stroke-width="1"/><path d="M'+(cx0-8)+' '+(cy0-5)+'l1-8 5 4zM'+(cx0+8)+' '+(cy0-5)+'l-1-8-5 4z" fill="#B58BE0" stroke="#2B2535" stroke-width="1"/><ellipse cx="'+(cx0-3.500)+'" cy="'+(cy0-3)+'" rx="2" ry="2.200" fill="#FFE26B"/><ellipse cx="'+(cx0+3.500)+'" cy="'+(cy0-3)+'" rx="2" ry="2.200" fill="#FFE26B"/><path d="M'+(cx0-7)+' '+cy0+'Q'+cx0+' '+(cy0+8)+' '+(cx0+7)+' '+cy0+'Q'+cx0+' '+(cy0+3)+' '+(cx0-7)+' '+cy0+'z" fill="#fff" stroke="#2B2535" stroke-width=".8"/><path d="M'+(cx0+9)+' '+(cy0+3)+'q10 2 8-8" fill="none" stroke="#B58BE0" stroke-width="3" stroke-linecap="round"/>','op'))})();
@@ -1216,7 +1297,7 @@ document.getElementById('stratlist').innerHTML=STRAT.map(function(w,i){
 
   /* --- zusammenbauen --- */
   var LBL=[];
-  [['Spiegelwiesen',300,1478,-3],['Wald ohne Namen',250,842,-4],['Tränenküste',50,336,-5],['Achte Reihe',300,236,-4]].forEach(function(r){
+  [['Spiegelwiesen',300,1478,-3],['Wald ohne Namen',240,1030,-4],['Tränenküste',50,336,-5],['Achte Reihe',300,236,-4]].forEach(function(r){
     LBL.push('<text x="'+r[1]+'" y="'+r[2]+'" transform="rotate('+r[3]+' '+r[1]+' '+r[2]+')" font-family="Londrina Solid,cursive" font-weight="900" font-size="40" fill="#FFF6E3" fill-opacity=".8" stroke="'+INK+'" stroke-width="1.500" stroke-opacity=".5" paint-order="stroke">'+r[0]+'</text>');
   });
   var RECOL=[['#B9B3CC','#B3BDF0'],['#8E86A8','#6A7BD0'],['#A29BBA','#98A6E6'],['#C9C4D6','#C9D1F6'],['#D5D0E0','#D6DCF8'],['#CFCADB','#C9D1F6'],['#A39EB2','#9AA6E0'],['#9890B4','#8C9BE2'],['#B2AEC0','#B3BDF0'],['#C8C4D2','#C9D1F6'],['#E8E4F0','#E4E8FA'],['#8E8A9A','#8795DD'],['#D8D3E2','#DDE2F9'],['#C9C4D0','#C9D1F6'],['#D6D2DE','#D6DCF8'],
@@ -1233,8 +1314,8 @@ document.getElementById('stratlist').innerHTML=STRAT.map(function(w,i){
   var STAGES=[
     {n:'Karger Anfang',req:'Spielstart',new:'Das Tal ist karg: wenige Bäume, brache Felder, blasse Farben, kein Tier.'},
     {n:'Frühling',req:'Erste Welt geschafft (Brettwiese)',new:'Dutzende Bäume sprießen, Büsche und Wildblumen, Felder ergrünen, Wolken ziehen mit Schatten.'},
-    {n:'Tierfreunde',req:'Welt 3 + 7-Tage-Serie',new:'Schafe, Kühe, Pferde, Rehe und Flamingos ziehen ein, Pilze wachsen, Schornsteine rauchen.'},
-    {n:'Himmelsstürmer',req:'100 gelöste Rätsel',new:'Vogelschwärme kreisen über dem Land (mit Schatten auf dem Boden), Schmetterlinge flattern, das Weiße Kaninchen hetzt über den Weg, die Grinsekatze grinst aus dem Baum.'},
+    {n:'Tierfreunde',req:'Welt 3 + 7-Tage-Serie',new:'Schafe, Kühe, Pferde, Rehe und Flamingos ziehen ein, Pilze wachsen, die Kartensoldaten der Roten Königin malen Rosen rot und bewachen Schloss und Palast.'},
+    {n:'Himmelsstürmer',req:'100 gelöste Rätsel',new:'Vogelschwärme kreisen über dem Land (mit Schatten auf dem Boden), Schmetterlinge flattern. Das Weiße Kaninchen hetzt über den Weg, die Grinsekatze grinst aus dem Baum, der Hutmacher feiert Tee, die Raupe sitzt auf dem Pilz, Humpty Dumpty auf der Mauer, der Dodo am See, Tweedledum und Tweedledee.'},
     {n:'Lebendiges Dorf',req:'Welt 7: erstes Schachmatt',new:'Menschen und Karren auf den Wegen, Windmühle dreht sich, Boote im Hafen, Laternen und Leuchtturm glimmen, Fische im See.'},
     {n:'Blühendes Fest',req:'Finale + alle Sterne',new:'Girlanden, Feuerwerk über der Arena, Heißluftballon, goldene Gipfelflagge.'}
   ];
@@ -1256,7 +1337,7 @@ document.getElementById('stratlist').innerHTML=STRAT.map(function(w,i){
     setStage(0);play.querySelector('span').textContent='Pause';
     timer=setInterval(function(){if(cur>=5){stop();return}setStage(cur+1)},2400);
   });
-  setStage(2);
+  setStage(3);
   var LMS=[{id:'queen',n:'Dame gerettet',e:'Der Brunnen im Palastgarten sprudelt.',y:640,t:'berry'},{id:'matt',n:'Erstes Matt',e:'Der Leuchtturm im Hafen schickt seinen Lichtstrahl.',y:215,t:'sun'},{id:'bot',n:'Bot-Sieg',e:'Goldene Wimpel an der Festung, ein Stern über dem Bergfried.',y:430,t:'sky'}];
   var lmEl=document.getElementById('lms');
   lmEl.innerHTML=LMS.map(function(l){return '<button class="lmb" data-lm="'+l.id+'">'+icon('medal',l.t)+'<div><b>'+l.n+'</b><span>'+l.e+'</span></div></button>'}).join('');

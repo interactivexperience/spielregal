@@ -68,6 +68,19 @@ await page.evaluate(([TITLE, SUB]) => {
     <rect x="190" y="206" width="24" height="34" fill="${DEEP}"/><path d="M188 206h6v-6h4v6h4v-6h4v6h4v-6h4v6h4" fill="${DEEP}" stroke="${DEEP}" stroke-width="1"/><rect x="266" y="206" width="24" height="34" fill="${DEEP}"/><path d="M264 206h6v-6h4v6h4v-6h4v6h4v-6h4v6h4" fill="${DEEP}" stroke="${DEEP}" stroke-width="1"/>
     <rect x="226" y="196" width="28" height="44" fill="${CREAM}"/><path d="M222 198Q240 160 258 198Z" fill="${CREAM}"/>${heart(240, 188, 1.200, RED)}
     <path d="M234 240v-14a6 6 0 0 1 12 0v14z" fill="${DEEP}"/><path d="M232 214h4v8h-4zM244 214h4v8h-4z" fill="${DEEP}"/></g>`;
+  // Die Grinsekatze, getarnt: Kopf im Ton des Hintergrunds, Streifen als Ton-in-Ton, nur Augen und Grinsen verraten sie;
+  // ihr gestreifter Schwanz windet sich als Bänder um die linke Ranke.
+  const cat = () => { const T1 = '#5490D0', T2 = '#4A81C2', hx = 104, hy = 250;
+    let o = `<path d="M${hx - 20} ${hy - 12}L${hx - 24} ${hy - 34}L${hx - 8} ${hy - 20}ZM${hx + 20} ${hy - 12}L${hx + 24} ${hy - 34}L${hx + 8} ${hy - 20}Z" fill="${T1}"/>`;
+    o += `<ellipse cx="${hx}" cy="${hy}" rx="26" ry="20" fill="${T1}"/>`;
+    o += `<path d="M${hx - 8} ${hy - 18}v9M${hx} ${hy - 20}v10M${hx + 8} ${hy - 18}v9M${hx - 24} ${hy - 4}h8M${hx + 16} ${hy - 4}h8" stroke="${T2}" stroke-width="3" stroke-linecap="round"/>`;
+    o += `<ellipse cx="${hx - 10}" cy="${hy - 4}" rx="4.600" ry="5" fill="${GOLD}" opacity=".82"/><ellipse cx="${hx + 10}" cy="${hy - 4}" rx="4.600" ry="5" fill="${GOLD}" opacity=".82"/><ellipse cx="${hx - 10}" cy="${hy - 4}" rx="1.200" ry="4" fill="${T2}"/><ellipse cx="${hx + 10}" cy="${hy - 4}" rx="1.200" ry="4" fill="${T2}"/>`;
+    o += `<path d="M${hx - 17} ${hy + 6}Q${hx} ${hy + 24} ${hx + 17} ${hy + 6}" fill="none" stroke="${CREAM}" stroke-width="2.200" stroke-linecap="round" opacity=".68"/><path d="M${hx - 11} ${hy + 11}v4M${hx - 4} ${hy + 14}v4M${hx + 4} ${hy + 14}v4M${hx + 11} ${hy + 11}v4" stroke="${CREAM}" stroke-width="1.300" stroke-linecap="round" opacity=".55"/>`;
+    o += `<path d="M${hx - 26} ${hy + 2}h-12M${hx - 26} ${hy + 8}l-11 3M${hx + 26} ${hy + 2}h12M${hx + 26} ${hy + 8}l11 3" stroke="${T2}" stroke-width="1.100" stroke-linecap="round"/>`;
+    // Schwanz: Bänder auf der Ranke
+    const P = [[62, 624], [24, 524], [106, 352], [62, 198]];
+    for (let i = 0; i < 6; i++) { const t = .34 + i * .045, p = bez(P, t), q = bez(P, t + .012); const nx = -(q[1] - p[1]), ny = q[0] - p[0], l = Math.hypot(nx, ny) || 1; o += `<path d="M${f(p[0] - nx / l * 5)} ${f(p[1] - ny / l * 5)}L${f(p[0] + nx / l * 5)} ${f(p[1] + ny / l * 5)}" stroke="${BLUE}" stroke-width="3.400" stroke-linecap="round" opacity=".95"/>`; }
+    return o; };
   // Körnung
   let grain = ''; for (let i = 0; i < 2600; i++) { const x = R() * W, y = R() * H; grain += `M${f(x)} ${f(y)}h.01`; }
   let grain2 = ''; for (let i = 0; i < 1400; i++) { const x = R() * W, y = R() * H; grain2 += `M${f(x)} ${f(y)}h.01`; }
@@ -82,6 +95,7 @@ await page.evaluate(([TITLE, SUB]) => {
     <clipPath id="inner"><rect x="12" y="12" width="${W - 24}" height="${H - 24}"/></clipPath>
     ${vine(RED)}<g transform="translate(${W} 0) scale(-1 1)">${vine('#F7F0DC')}</g>
     ${petals}
+    ${cat()}
     ${castle()}
     ${flam()}<g transform="translate(${W} 0) scale(-1 1)">${flam()}</g>
     ${card(106, 316, -12, 's', DEEP)}${card(374, 316, 12, 'h', RED)}
