@@ -1443,7 +1443,7 @@ function lessonSquare(i){
 }
 function lessonMove(mv){
   const first=boardSnapshot();
-  if(!goalMet(mv)){lessonBad(mv.to,'Das geht, ist aber nicht die Aufgabe. Lies den Text noch einmal.');return}
+  if(!goalMet(mv)){const t=lessonTask(),g=t.goal,same=legalMoves(G.pos).some(m=>m.from===mv.from&&fits(g,m,G.pos));lessonBad(mv.to,(same?'Richtige Figur, aber nicht dieses Feld. ':'Das ist ein erlaubter Zug, aber nicht der gesuchte. ')+'Aufgabe: '+t.prompt);return}
   G.pos=makeMove(G.pos,mv);U.last=[mv.from,mv.to];U.sel=null;U.legal=[];U.anim={mv,first};(mv.cap?SND.capture:SND.move)();
   lessonOk(mv.to);
 }
