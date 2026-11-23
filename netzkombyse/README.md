@@ -14,6 +14,7 @@ Statische Seiten ohne Build-Step für den Betrieb. Öffnen: `netzkombyse/index.h
 | `k7/` Seemannsgarn | mobile-first, Stories | Dock unten | – | Vollbild-Karten, Antippen/Halten/Wischen, Fortschrittsbalken |
 | `k8/` Flaschenpost | mobile-first, Karten wischen | Dock unten | – | scroll-snap-Karten neigen sich mit dem Scroll, Flasche treibt mit |
 | `k9/` Funkspruch | mobile-first, Chat | Chips unten | – | Gespräch mit Möwe Mia aus einem JSON-Skript, Chips als Antworten |
+| `k12/` Logbuch | nach Owner-Vorlage (dunkel, Orange, Weiß), Möwe statt Fotos | Schiene links + Kapitelleiste | – | ultra-schmale Anton-Versalien (`fonts/anton.woff2`, OFL), angeschnittene Riesenschrift, Kapitel rasten ein, Zeilen per clip-path, Parallaxe |
 | `k11/` Beton | dunkler Brutalismus, Akzent Säuregrün `#C8FF00` | Kopfzeile als Tabelle | – | Rasterlinien, Monospace, Warnband, Dateiliste, Text-Decoder, Glitch-Headline |
 | `k10/` Signal | bold in Schwarz-Weiß, Akzent Rettungsorange `#FF5B00` | nur Kopfzeile | – | riesige Schrift, Text füllt sich beim Scrollen, gestapelte Karten, Cursor-Blase (Maus) |
 
