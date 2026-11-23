@@ -14,6 +14,7 @@ Statische Seiten ohne Build-Step für den Betrieb. Öffnen: `netzkombyse/index.h
 | `k7/` Seemannsgarn | mobile-first, Stories | Dock unten | – | Vollbild-Karten, Antippen/Halten/Wischen, Fortschrittsbalken |
 | `k8/` Flaschenpost | mobile-first, Karten wischen | Dock unten | – | scroll-snap-Karten neigen sich mit dem Scroll, Flasche treibt mit |
 | `k9/` Funkspruch | mobile-first, Chat | Chips unten | – | Gespräch mit Möwe Mia aus einem JSON-Skript, Chips als Antworten |
+| `k10/` Signal | bold in Schwarz-Weiß, Akzent Rettungsorange `#FF5B00` | nur Kopfzeile | – | riesige Schrift, Text füllt sich beim Scrollen, gestapelte Karten, Cursor-Blase (Maus) |
 
 k4–k9 sind nur als Startseite ausgearbeitet (`src/k4…k9.mjs`; k4–k6 teilen Bausteine in `src/lib2.mjs`). k7–k9 sind mobile-first: Handy-Spalte, am Desktop mittig als Rahmen.
 Touch-Ersatz in k1–k3: k1 Kompassnadel reagiert auf Antippen, k2 Wind weht von selbst und legt beim Scrollen zu, k3 Möwe landet an der Tippstelle und Knöpfe füllen sich beim Antippen; Tippflächen im Menü/Footer mind. 44 px (`pointer:coarse`).
