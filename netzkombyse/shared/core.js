@@ -98,6 +98,7 @@
     if (u.origin !== location.origin || a.target || e.metaKey || e.ctrlKey || e.shiftKey || a.hasAttribute('download')) return;
     if (u.pathname === location.pathname && u.hash) { setMenu(false); return; }
     if (!motionOn()) return;
+    root.style.setProperty('--px', e.clientX + 'px'); root.style.setProperty('--py', e.clientY + 'px');
     e.preventDefault(); leave(u.href);
   });
   if (root.classList.contains('is-entering')) setTimeout(() => {
@@ -111,5 +112,35 @@
     const h = root.scrollHeight - innerHeight; root.style.setProperty('--sp', h > 0 ? (scrollY / h).toFixed(4) : 0); };
   addEventListener('scroll', () => { if (!tick) { tick = true; requestAnimationFrame(prog); } }, { passive: true });
   prog();
+  /* ---------- Weiches Trägheits-Scrollen (Lenis-artig, opt-in per <html data-smooth>) ----------
+     Nur Mausrad, nur bei Bewegung an + feinem Zeiger. Tastatur, Touch, Scrollbar bleiben nativ. */
+  if (root.hasAttribute('data-smooth') && matchMedia('(hover:hover) and (pointer:fine)').matches) {
+    let target = scrollY, cur = scrollY, raf = 0;
+    const max = () => root.scrollHeight - innerHeight;
+    const active = () => motionOn() && !root.classList.contains('menu-open');
+    const loop = () => {
+      cur += (target - cur) * 0.085;
+      if (Math.abs(target - cur) < 0.4) { cur = target; raf = 0; } else raf = requestAnimationFrame(loop);
+      scrollTo(0, cur);
+    };
+    const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
+    addEventListener('wheel', e => {
+      if (!active() || e.ctrlKey || e.target.closest?.('[data-no-smooth],.menu,.track,.cards-x')) return;
+      if (e.deltaMode === 0 && Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      target = Math.min(max(), Math.max(0, target + e.deltaY * (e.deltaMode === 1 ? 32 : 1)));
+      kick();
+    }, { passive: false });
+    addEventListener('scroll', () => { if (!raf) { target = cur = scrollY; } }, { passive: true });
+    addEventListener('resize', () => { target = Math.min(target, max()); });
+    root.classList.add('smooth-on');
+    window.NK.scrollTo = y => { target = Math.min(max(), Math.max(0, y)); kick(); };
+    document.addEventListener('click', e => {
+      const a = e.target.closest('a[href^="#"]'); if (!a || !active()) return;
+      const el = a.hash.length > 1 && document.querySelector(a.hash); if (!el) return;
+      e.preventDefault(); window.NK.scrollTo(el.getBoundingClientRect().top + scrollY - 70);
+      history.replaceState(null, '', a.hash);
+    });
+  }
   root.classList.add('js');
 })();

@@ -1,38 +1,54 @@
-/* Konzept 2 · Magazin – Textfüllung beim Scrollen, Kapitel-Rail, Vorschaukarte im Inhaltsverzeichnis */
+/* Konzept 2 · Brise – Wind in der Headline, Leuchtturm-Etagen, Postkarten ziehen, scheue Möwe */
 (() => {
   const { $, $$, motionOn } = window.NK || {};
   if (!$) return;
 
-  /* Manifest: Wörter füllen sich mit dem Scrollfortschritt */
-  const m = $('[data-fill]');
-  if (m) {
-    const words = m.textContent.trim().split(/\s+/);
-    m.setAttribute('aria-label', words.join(' ')); m.textContent = '';
-    const els = words.map((w, i) => { const s = document.createElement('span'); s.className = 'f'; s.textContent = w; s.setAttribute('aria-hidden', 'true');
-      m.appendChild(s); if (i < words.length - 1) m.appendChild(document.createTextNode(' ')); return s; });
-    let tick = false, last = -1;
-    const upd = () => { tick = false;
-      const r = m.getBoundingClientRect(), p = Math.min(1, Math.max(0, (innerHeight * .85 - r.top) / (r.height + innerHeight * .35)));
-      const n = Math.round(p * els.length); if (n === last) return;
-      els.forEach((e, i) => e.classList.toggle('lit', i < n)); last = n; };
-    addEventListener('scroll', () => { if (!tick) { tick = true; requestAnimationFrame(upd); } }, { passive: true }); upd();
-  }
-
-  /* Kapitel-Rail */
-  const chs = $$('[data-ch]'), rn = $('[data-rail-n]'), rt = $('[data-rail-t]');
-  if (chs.length && rn) {
-    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) {
-      rn.textContent = String(chs.indexOf(e.target) + 1).padStart(2, '0'); rt.textContent = e.target.dataset.ch; } }), { rootMargin: '-45% 0px -50% 0px' });
-    chs.forEach(c => io.observe(c));
-  }
-
-  /* Vorschaukarte folgt dem Zeiger */
-  const peek = $('.peek'); if (!peek) return;
-  let x = 0, y = 0, raf = 0;
-  const draw = () => { raf = 0; peek.style.transform = `translate3d(${x + 28}px,${y - 120}px,0) scale(1)`; };
-  $$('[data-peek]').forEach(a => {
-    a.addEventListener('pointerenter', () => { if (!motionOn()) return; peek.dataset.v = a.dataset.peek; peek.classList.add('on'); });
-    a.addEventListener('pointerleave', () => { peek.classList.remove('on'); peek.style.transform = `translate3d(${x + 28}px,${y - 120}px,0) scale(.85)`; });
-    a.addEventListener('pointermove', e => { x = e.clientX; y = e.clientY; if (!raf) raf = requestAnimationFrame(draw); });
+  /* Headline: Buchstaben wiegen sich im Wind (Zeigerposition) */
+  $$('[data-wind]').forEach(h => {
+    const txt = h.textContent.trim(); h.setAttribute('aria-label', txt); h.textContent = '';
+    let n = 0;
+    txt.split(/\s+/).forEach((w, wi, arr) => {
+      const wd = document.createElement('span'); wd.className = 'wd'; wd.setAttribute('aria-hidden', 'true');
+      [...w].forEach(c => { const s = document.createElement('span'); s.className = 'ch'; s.textContent = c;
+        s.style.setProperty('--k', (Math.sin(n * 2.3) * .9 + Math.cos(n * .7) * .4).toFixed(2)); s.style.setProperty('--n', n++); wd.appendChild(s); });
+      h.appendChild(wd); if (wi < arr.length - 1) h.appendChild(document.createTextNode(' '));
+    });
+    let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
+    const loop = () => { cx += (tx - cx) * .08; cy += (ty - cy) * .08;
+      h.style.setProperty('--wx', cx.toFixed(3)); h.style.setProperty('--wy', cy.toFixed(3));
+      raf = (Math.abs(tx - cx) + Math.abs(ty - cy) > .003) ? requestAnimationFrame(loop) : 0; };
+    addEventListener('pointermove', e => { if (!motionOn()) return; tx = (e.clientX / innerWidth - .5) * 2; ty = (e.clientY / innerHeight - .5) * 2; if (!raf) raf = requestAnimationFrame(loop); }, { passive: true });
   });
+
+  /* Menü: Buchstaben für die Wellen-Hover-Animation */
+  $$('[data-wave]').forEach(el => { const t = el.textContent; el.setAttribute('aria-label', t); el.textContent = '';
+    [...t].forEach((c, i) => { const s = document.createElement('span'); s.textContent = c; s.style.setProperty('--i', i); s.setAttribute('aria-hidden', 'true'); el.appendChild(s); }); });
+
+  /* Leuchtturm: Etage im Blick → Fenster leuchtet */
+  const lh = $('[data-lh]');
+  if (lh) {
+    const tower = $('.lh-t', lh), floors = $$('[data-floor]', lh);
+    const io = new IntersectionObserver(es => es.forEach(e => { if (!e.isIntersecting) return;
+      floors.forEach(f => f.classList.toggle('on', f === e.target)); tower.dataset.f = e.target.dataset.floor; }), { rootMargin: '-40% 0px -40% 0px' });
+    floors.forEach(f => io.observe(f)); floors[0]?.classList.add('on');
+  }
+
+  /* Postkarten per Maus ziehen (Touch scrollt nativ) */
+  $$('[data-drag]').forEach(el => {
+    let down = false, sx = 0, sl = 0, moved = 0;
+    el.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return; down = true; moved = 0; sx = e.clientX; sl = el.scrollLeft; el.classList.add('drag'); });
+    addEventListener('pointermove', e => { if (!down) return; const dx = e.clientX - sx; moved = Math.max(moved, Math.abs(dx)); el.scrollLeft = sl - dx; });
+    addEventListener('pointerup', () => { if (!down) return; down = false; el.classList.remove('drag'); });
+    el.addEventListener('click', e => { if (moved > 6) { e.preventDefault(); e.stopPropagation(); } }, true);
+  });
+
+  /* Scheue Möwe auf der Überschrift */
+  const perch = $('.perch');
+  if (perch) {
+    let busy = false;
+    const scare = () => { if (busy || !motionOn()) return; busy = true; perch.classList.add('flap', 'away');
+      setTimeout(() => { perch.classList.remove('away', 'flap'); perch.classList.add('back', 'flap'); }, 2800);
+      setTimeout(() => { perch.classList.remove('back', 'flap'); busy = false; }, 5300); };
+    perch.addEventListener('pointerenter', scare); perch.addEventListener('click', scare);
+  }
 })();

@@ -14,8 +14,8 @@ export const SYMBOLS = `<svg width="0" height="0" style="position:absolute" aria
 export const logo = (cls = '') => `<svg class="logo ${cls}" role="img" aria-label="NetzKombyse" viewBox="${L.vb}"><use href="#nk"/></svg>`;
 export const mark = (cls = '') => `<svg class="mark ${cls}" aria-hidden="true" viewBox="${M.vb}"><use href="#nkm"/></svg>`;
 export const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-export const page = ({ k, title, desc, theme = '#fff', body, cls = '' }) => `<!doctype html>
-<html lang="de" class="${cls}" data-motion="on">
+export const page = ({ k, title, desc, theme = '#fff', body, cls = '', attrs = '' }) => `<!doctype html>
+<html lang="de" class="${cls}" ${attrs} data-motion="on">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">

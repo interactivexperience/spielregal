@@ -3,11 +3,11 @@
 Statische Seiten ohne Build-Step für den Betrieb. Öffnen: `netzkombyse/index.html` über einen beliebigen statischen Server
 (z. B. `python3 -m http.server` im Repo-Root → `/netzkombyse/`).
 
-| Konzept | Idee | Menü | Übergang |
-|---|---|---|---|
-| `k1/` Hafenkarte | Seekarte, Route mit Stationen | Kompass-Vollbild (Kreis-Reveal) | Welle |
-| `k2/` Magazin | Ausgabe mit Rubriken, Serifen-Typografie | Inhaltsverzeichnis-Vorhang | Seite umblättern |
-| `k3/` Werkbank | Bento, Systemdiagramm, Command-Palette | Palette (⌘K, Filter, Pfeiltasten) | Kachel-Auflösung |
+| Konzept | Idee | Menü | Übergang | Signature |
+|---|---|---|---|---|
+| `k1/` Hafenkarte | Seekarte, Route mit Stationen | Kompass-Vollbild (Kreis-Reveal) | Welle | Kompass, Möwen, Route füllt sich |
+| `k2/` Brise | Küstentag von der Düne ins Meer | Panel mit Wellenkante, Wellen-Buchstaben | Wolken ziehen auf | Wind-Headline, Leuchtturm, Postkarten, wandernde Sonne in den Folien |
+| `k3/` Möwenschwarm | laut, bunt, überraschend | Aufklapp-Sticker fallen herunter | Iris + Möwe | Physik-Buchstaben, Möwenjagd (5 Möwen), Begleit-Möwe, Sammelkarten |
 
 Je Konzept: `index` (Start), `leistung`, `case` (Wein-Bauer.de), `praesentation` (6 Folien); Menü offen = `index.html#menu`.
 

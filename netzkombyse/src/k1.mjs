@@ -158,7 +158,7 @@ function index() {
     <p class="dock-p" data-reveal>${mark()}<span>${C.ansprech.name}, ${C.ansprech.rolle}<br>${C.adresse.join(', ')}</span></p>
   </div>
 </section>`;
-  return page({ k: 1, title: 'NetzKombyse · Konzept 1 – Hafenkarte', desc: 'Hamburger Agentur für digitalen Commerce im Mittelstand. Konzept 1: Hafenkarte.', theme: '#EFE6D2', body: shell(body) });
+  return page({ k: 1, title: 'NetzKombyse · Konzept 1 – Hafenkarte', desc: 'Hamburger Agentur für digitalen Commerce im Mittelstand. Konzept 1: Hafenkarte.', theme: '#EFE6D2', body: shell(body), attrs: 'data-smooth' });
 }
 
 function leistung() {
@@ -178,7 +178,7 @@ function leistung() {
 </div>
 <section class="dock" id="kontakt"><svg class="dock-w" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true"><path d="M0 120V60C120 20 240 20 360 60S600 100 720 60 960 20 1080 60 1320 100 1440 60V120Z"/></svg>
   <div class="dock-in"><p class="eyebrow">Anlegen</p><h2 data-split>Moin! Reden wir. Persönlich.</h2><div class="cta" data-reveal><a class="btn btn-red" href="${C.termin}">Termin buchen</a><a class="btn btn-ghost" href="case.html">Case ansehen</a></div></div></section>`;
-  return page({ k: 1, title: 'Shopware-Agentur · Konzept 1 – Hafenkarte', desc: 'Leistungsseite Technologie & Shop.', theme: '#EFE6D2', body: shell(body) });
+  return page({ k: 1, title: 'Shopware-Agentur · Konzept 1 – Hafenkarte', desc: 'Leistungsseite Technologie & Shop.', theme: '#EFE6D2', body: shell(body), attrs: 'data-smooth' });
 }
 
 function caseP() {
@@ -205,7 +205,7 @@ function caseP() {
 </div>
 <section class="dock" id="kontakt"><svg class="dock-w" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true"><path d="M0 120V60C120 20 240 20 360 60S600 100 720 60 960 20 1080 60 1320 100 1440 60V120Z"/></svg>
   <div class="dock-in"><p class="eyebrow">Nächster Hafen</p><h2 data-split>Ihr Geschäft könnte das nächste sein.</h2><div class="cta" data-reveal><a class="btn btn-red" href="${C.termin}">Termin buchen</a><a class="btn btn-ghost" href="index.html#referenzen">Weitere Referenzen</a></div></div></section>`;
-  return page({ k: 1, title: 'Case Wein-Bauer.de · Konzept 1 – Hafenkarte', desc: 'Case: Multi-Channel-Handel mit Shopware 6.', theme: '#EFE6D2', body: shell(body) });
+  return page({ k: 1, title: 'Case Wein-Bauer.de · Konzept 1 – Hafenkarte', desc: 'Case: Multi-Channel-Handel mit Shopware 6.', theme: '#EFE6D2', body: shell(body), attrs: 'data-smooth' });
 }
 
 function praes() {

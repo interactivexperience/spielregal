@@ -1,193 +1,162 @@
-// Konzept 3 · WERKBANK – ein System aus Bausteinen: Bento-Raster, Diagramme, Command-Palette.
+// Konzept 3 · MÖWENSCHWARM – laut, bunt, überraschend: Physik-Buchstaben, Möwenjagd, Sammelkarten.
 import { C } from '../content.mjs';
 import { page, logo, mark, esc } from './lib.mjs';
+import { gull, fly, fisch, korb, sonne, INK } from './art.mjs';
 
-const NODES = [
-  ['Shop', 50, 9, 'Shop: Shopware 6 oder Shopify – das Schaufenster Ihres Sortiments.'],
-  ['ERP', 13, 24, 'ERP: Bestände, Preise und Aufträge laufen ohne Handarbeit durch.'],
-  ['PIM', 6, 55, 'PIM: Artikeldaten einmal pflegen, überall ausspielen.'],
-  ['CRM', 18, 86, 'CRM: Kundenbeziehungen zusammenführen statt Excel pflegen.'],
-  ['Marktplätze', 87, 24, 'Marktplätze: ein Sortiment, ein Bestand, mehrere Kanäle.'],
-  ['Marke', 94, 55, 'Marke: UX, UI und Content – ein Gesicht über alle Kanäle.'],
-  ['Marketing', 82, 86, 'Marketing: SEO, AI-Sichtbarkeit und Kampagnen, gemessen am Umsatz.'],
-  ['Payment', 50, 93, 'Payment & Versand: reibungslos vom Warenkorb bis zur Haustür.'],
-];
-const graph = (h = 'graph') => `<div class="${h}" data-graph>
-  <svg class="g-svg" aria-hidden="true"></svg>
-  <div class="g-c" aria-hidden="true">${mark()}<span>Ihr Geschäft</span></div>
-  ${NODES.map(([n, x, y, t]) => `<button type="button" class="gn" style="left:${x}%;top:${y}%" data-info="${esc(t)}">${n}</button>`).join('')}
-  <p class="g-st" aria-live="polite"><span>›</span> <b data-gst>Alles verbunden. Nichts doppelt gepflegt.</b></p></div>`;
-
-const kbd = (t) => `<kbd>${t}</kbd>`;
+const QUIPS = ['Schnellster Telefonhörer nördlich der Elbe.', 'Sagt auch mal: „Das brauchen Sie nicht.“', 'Baut, bis die Flut kommt – und danach weiter.', 'Lädt Seiten schneller, als eine Möwe ein Fischbrötchen klaut.', 'Sieht Klickwege im Schlaf.', 'Hält Kurs, auch bei Windstärke 8.', 'Findet Kunden, bevor sie wissen, dass sie suchen.', 'Spricht fließend Google und Mensch.', 'Verbindet jedes System – notfalls mit Seemannsknoten.', 'Findet den Fehler, den niemand finden will.', 'Geht ran. Immer. Auch bei Nebel.'];
+const TCOL = ['#FFD84A', '#7BDCC4', '#FFB3C7', '#9DB8FF', '#FF8A6B', '#C9F26B', '#FFD84A', '#7BDCC4', '#FFB3C7', '#9DB8FF', '#FF8A6B'];
 const header = () => `<header class="hd">
   <a class="hd-logo" href="index.html" aria-label="NetzKombyse – Startseite">${logo()}</a>
-  <p class="hd-s" aria-hidden="true"><i></i>Alle Systeme laufen · Hamburg</p>
+  <p class="hd-g" data-gcount aria-live="polite" title="Möwen vertrieben"><span class="hg">${gull('hgi')}</span><b data-gn>0</b>/5<span class="hgl"> Möwen gescheucht</span></p>
   <div class="hd-r">
-    <button class="mt" type="button" data-motion-toggle aria-pressed="true" title="Animationen ein- oder ausschalten"><span class="tg" aria-hidden="true"></span><span data-motion-label>Bewegung an</span></button>
-    <button class="burger" type="button" data-menu-open aria-expanded="false" aria-controls="menu"><span>Menü</span>${kbd('⌘K')}</button>
+    <button class="mt" type="button" data-motion-toggle aria-pressed="true" title="Animationen ein- oder ausschalten"><span class="mt-i" aria-hidden="true"></span><span data-motion-label>Bewegung an</span></button>
+    <button class="burger" type="button" data-menu-open aria-expanded="false" aria-controls="menu"><span>Menü</span><i aria-hidden="true"></i></button>
   </div></header>`;
-
-const pageLinks = [['Start', 'index.html'], ['Leistung: Shopware-Agentur', 'leistung.html'], ['Referenz: Wein-Bauer.de', 'case.html'], ['Präsentation', 'praesentation.html']];
-const secLinks = [['Ausgangslage', 'index.html#aufgabe'], ['Leistungen', 'index.html#leistungen'], ['Referenzen', 'index.html#referenzen'], ['Team', 'index.html#team'], ['Fragen & Antworten', 'index.html#fragen'], ['Kontakt', 'index.html#kontakt']];
-const menu = () => `<div id="menu" class="menu" role="dialog" aria-modal="true" aria-label="Menü" aria-hidden="true">
-  <div class="menu-bg" data-menu-close></div>
-  <div class="pal">
-    <div class="pal-i"><span aria-hidden="true">›</span><input type="text" data-menu-focus data-filter placeholder="Wohin möchten Sie? (z. B. Referenzen)" aria-label="Menü durchsuchen" autocomplete="off" spellcheck="false">${kbd('esc')}</div>
-    <div class="pal-l" role="menu">
-      <p class="pal-g">Seiten</p>${pageLinks.map(([t, h], i) => `<a role="menuitem" href="${h}" data-it><i>${['S', 'L', 'R', 'P'][i]}</i><span>${esc(t)}</span><em>${['1', '2', '3', '4'][i]}</em></a>`).join('')}
-      <p class="pal-g">Auf dieser Seite</p>${secLinks.map(([t, h]) => `<a role="menuitem" href="${h}" data-it><i>#</i><span>${esc(t)}</span><em>↵</em></a>`).join('')}
-      <p class="pal-g">Wissen</p>${['Logbuch', 'Shopify vs. Shopware', 'Template vs. Headless', 'Fördermittel'].map(t => `<a role="menuitem" href="leistung.html#wissen" data-it><i>W</i><span>${esc(t)}</span><em>↵</em></a>`).join('')}
-      <p class="pal-e" hidden>Nichts gefunden – fragen Sie uns einfach direkt.</p>
-    </div>
-    <div class="pal-f"><span>${kbd('↑')}${kbd('↓')} wählen</span><span>${kbd('↵')} öffnen</span><a href="${C.telHref}">${C.tel}</a><button type="button" class="pal-x" data-menu-close>Schließen</button></div>
-  </div></div>`;
-
-const tiles = Array.from({ length: 40 }, (_, i) => { const c = i % 8, r = Math.floor(i / 8); return `<i style="--d:${(c + r) * 32}ms"></i>`; }).join('');
-const pt = `<div class="pt" aria-hidden="true">${tiles}</div>`;
-const footer = () => `<footer class="ft"><div class="ft-in"><div><a class="ft-logo" href="index.html" aria-label="Startseite">${logo()}</a><p>${C.adresse.join(', ')}<br><a href="${C.telHref}">${C.tel}</a> · Fax haben wir abgeschafft.</p></div>
-  <p><a href="#">Impressum</a> · <a href="#">Datenschutz</a> · <a href="../index.html">Konzept wechseln</a> · <a href="#top">Nach oben</a></p><p class="ft-n">${C.hinweisBeispiel} Zitate sinngemäß bzw. Platzhalter.</p></div></footer>`;
-const shell = (b) => `<div id="top"></div>${header()}${menu()}${pt}<main id="main">${b}</main>${footer()}`;
-const hd = (k, t, s = '') => `<header class="sh"><p class="tag" data-reveal>${esc(k)}</p><h2 data-split>${esc(t)}</h2>${s ? `<p class="sub" data-reveal>${esc(s)}</p>` : ''}</header>`;
-const viz = (i) => { const hs = [[40, 70, 55, 90, 62, 100], [30, 48, 80, 66, 92, 74], [55, 38, 72, 96, 64, 88]][i % 3]; return `<svg viewBox="0 0 120 50" aria-hidden="true" preserveAspectRatio="none">${hs.map((h, k) => `<rect x="${k * 20 + 3}" y="${50 - h / 2.2}" width="14" height="${h / 2.2}" rx="2" fill="${k === 5 ? 'var(--lime)' : 'var(--line2)'}"/>`).join('')}</svg>`; };
+const mcols = ['#FF5A45', '#2E6BF0', '#7BDCC4', '#FFB3C7', '#FFF8E6'];
+const menu = () => `<div id="menu" class="menu" role="dialog" aria-modal="true" aria-label="Hauptmenü" aria-hidden="true">
+  <div class="menu-bgt" aria-hidden="true"><div>${'MOIN MOIN MOIN MOIN MOIN '.repeat(4)}</div><div>${'MOIN MOIN MOIN MOIN MOIN '.repeat(4)}</div></div>
+  <div class="menu-in">
+    <nav aria-label="Hauptnavigation"><ol>${C.menue.map((m, i) => `<li style="--i:${i};--c:${mcols[i]};--r:${[-2.2, 1.6, -1.2, 2.2, -1.8][i]}deg"><a href="${m.href}"><span class="mn">${String(i + 1).padStart(2, '0')}</span><span class="mt2">${esc(m.t)}</span></a><p class="ms">${m.sub.slice(0, 4).map(s => `<a href="${m.href}">${esc(s)}</a>`).join('')}</p></li>`).join('')}</ol></nav>
+    <div class="menu-f"><a class="btn btn-ink" href="index.html#kontakt">Moin sagen</a><a class="menu-tel" href="${C.telHref}">${C.tel}</a><span class="menu-gl" aria-hidden="true">${gull('mg')}</span></div>
+  </div>
+  <button class="menu-x" type="button" data-menu-close aria-label="Menü schließen">${sonne('mx-s')}<span aria-hidden="true">✕</span></button></div>`;
+const pt = `<div class="pt" aria-hidden="true"><div class="pt-i"></div>${fly('pt-g')}</div>`;
+const cursor = `<div class="mgull" aria-hidden="true">${gull('mgi')}<span class="say"></span></div><div class="toast" role="status" aria-live="polite" hidden></div>`;
+const footer = () => `<footer class="ft"><div class="ft-in"><a class="ft-logo" href="index.html" aria-label="Startseite">${logo()}</a><p>${C.adresse.join(', ')} · <a href="${C.telHref}">${C.tel}</a> · Fax haben wir abgeschafft.</p>
+  <p><a href="#">Impressum</a> · <a href="#">Datenschutz</a> · <a href="../index.html">Konzept wechseln</a> · <a href="#top">Nach oben</a></p><p class="ft-n">${C.hinweisBeispiel} Zitate, Kartentexte „Spezialfähigkeit“ sinngemäß bzw. Platzhalter.</p></div></footer>`;
+const shell = (b) => `<div id="top"></div>${header()}${menu()}${pt}<main id="main">${b}</main>${footer()}${cursor}`;
+const perch = (id, cls = '') => `<button type="button" class="perch ${cls}" data-gull="${id}" aria-label="Möwe verscheuchen (${id} von 5)">${gull('pg')}<span class="bub-s" aria-hidden="true">Moin?</span></button>`;
+const hd = (k, t) => `<header class="sh"><p class="pill" data-reveal>${esc(k)}</p><h2 data-split>${esc(t)}</h2></header>`;
 
 function index() {
+  const letters = ['M', 'O', 'I', 'N', '!'], lc = ['#2E6BF0', '#FF5A45', '#FFF8E6', '#7BDCC4', '#FFB3C7'];
   const body = `
 <section class="hero" aria-labelledby="h1">
-  <div class="hero-t">
-    <p class="tag" data-reveal><i></i>Digitaler Commerce · Hamburg · Mittelstand</p>
-    <h1 id="h1" data-split>Systeme, die zusammenspielen. Menschen, die bleiben.</h1>
-    <p class="lead" data-reveal>Wir verbinden Shop, ERP, PIM und Marke zu einem Vertrieb, der sich rechnet – und bleiben danach Ihr Ansprechpartner, nicht nur Ihr Dienstleister.</p>
-    <div class="cta" data-reveal><a class="btn btn-lime" href="#kontakt">Projekt besprechen</a><a class="btn btn-o" href="case.html">Fallstudie ansehen</a></div>
+  <h1 id="h1" class="sr">Moin! Wir sind NetzKombyse – digitaler Commerce aus Hamburg für den Mittelstand.</h1>
+  <p class="pill pill-w" data-reveal>Hamburger Agentur für digitalen Commerce</p>
+  <div class="play" data-play aria-hidden="true">
+    ${letters.map((l, i) => `<span class="bd bd-l" data-b="l" style="--c:${lc[i]}">${l}</span>`).join('')}
+    <span class="bd" data-b="o">${fisch()}</span><span class="bd" data-b="o">${fisch()}</span><span class="bd" data-b="o">${korb('#FF5A45')}</span><span class="bd" data-b="o">${gull('bg')}</span>
+    <p class="play-h">Ziehen, schubsen, werfen – die Buchstaben gehören Ihnen.</p>
   </div>
-  ${graph()}
+  <div class="hero-b">
+    <p class="lead" data-reveal>Wir sind die NetzKombyse: digitaler Commerce für Unternehmen, die mehr vorhaben – und für Menschen, die nach dem Launch nicht verschwinden.</p>
+    <div class="cta" data-reveal><a class="btn btn-ink" href="#kontakt">Moin sagen</a><a class="btn btn-wh" href="case.html">Wein-Bauer.de ansehen</a></div>
+  </div>
+  ${perch(1, 'p1')}
 </section>
 
-<section class="stats" aria-label="Zahlen"><ul>
-  <li data-reveal><b data-count="${C.jahre}" data-suffix="+">${C.jahre}+</b><span>Jahre Erfahrung</span></li>
-  <li data-reveal><b data-count="${C.zahlen.marken}">${C.zahlen.marken}</b><span>Kundenmarken</span></li>
-  <li data-reveal><b data-count="${C.prozessloesungen}" data-suffix="+">${C.prozessloesungen}+</b><span>individuelle Prozesslösungen</span></li>
-  <li data-reveal><b>${C.bewertung.wert}<small>/5</small></b><span>${C.bewertung.anzahl} Google-Bewertungen</span></li></ul></section>
+<div class="tick-w"><section class="tick" aria-label="Kunden"><div class="tick-t"><div>${[...C.marken, ...C.marken].map(m => `<span>${esc(m)}</span>${fisch('tf')}`).join('')}</div><div aria-hidden="true">${[...C.marken, ...C.marken].map(m => `<span>${esc(m)}</span>${fisch('tf')}`).join('')}</div></div></section></div>
 
 <section class="sec" id="aufgabe">
-  ${hd('01 / Aufgabe', 'Welche Aufgabe haben Sie?', 'Wählen Sie Ihre Ausgangslage – wir zeigen, wie wir typischerweise vorgehen.')}
-  <div class="seg" role="tablist" aria-label="Ausgangslage">${C.lagen.map((l, i) => `<button type="button" role="tab" id="t${i}" aria-controls="p${i}" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}"><span>0${i + 1}</span>${esc(l.t)}</button>`).join('')}</div>
-  ${C.lagen.map((l, i) => `<div class="pan" role="tabpanel" id="p${i}" aria-labelledby="t${i}" ${i ? 'hidden' : ''}>
-    <div><h3>${esc(l.t)}</h3><p>${esc(l.d)}</p><a class="btn btn-o" href="#kontakt">Das kennen wir. Reden wir.</a></div>
-    <ol class="pipe">${[['Analyse', 'Prozesse, Systeme, Datenqualität'], ['Architektur', 'Zielbild und Reihenfolge'], ['Umsetzung', 'In Etappen, messbar'], ['Betrieb', 'Monitoring & Wachstum']].map(([a, b], k) => `<li style="--k:${k}"><i>${k + 1}</i><b>${a}</b><span>${b}</span></li>`).join('')}</ol></div>`).join('')}
+  ${hd('Was Sie zu uns führt', 'Kommt Ihnen das bekannt vor?')}
+  <div class="stks">${C.lagen.map((l, i) => `<article class="stk" style="--c:${['#FFB3C7', '#7BDCC4', '#FFD84A'][i]};--r:${[-2.4, 1.8, -1.4][i]}deg" data-reveal><span class="stk-n" aria-hidden="true">${i + 1}</span><h3>${esc(l.t)}</h3><p>${esc(l.d)}</p></article>`).join('')}</div>
+  <ul class="tix" aria-label="Unsere Säulen">${C.saeulen.map((s, i) => `<li data-reveal style="--d:${i * 70}ms" data-info="${esc(s.d)}"><b>${esc(s.t)}</b><span>${esc(s.d)}</span></li>`).join('')}</ul>
+  ${perch(2, 'p2')}
 </section>
 
-<section class="sec" id="leistungen">
-  ${hd('02 / Leistungen', 'Drei Disziplinen, ein Ziel: digitaler Vertrieb, der sich rechnet.')}
-  <div class="bento">
-    <a class="bt b7 big" href="leistung.html" data-spot data-reveal><p class="tag">01 · Technologie & Shop</p><h3>Shopware, Shopify, Migration, Anbindung.</h3><p>${esc(C.disziplinen[0].d)}</p>
-      <div class="chain" aria-hidden="true"><span>Shop</span><i></i><span>ERP</span><i></i><span>PIM</span><i></i><span>CRM</span></div></a>
-    <a class="bt b5" href="leistung.html" data-spot data-reveal style="--d:80ms"><p class="tag">02 · Kommunikation & Marke</p><h3>Ein Gesicht über alle Kanäle.</h3><p>${esc(C.disziplinen[1].d)}</p><div class="swatch" aria-hidden="true"><b>Aa</b><i style="background:var(--lime)"></i><i style="background:var(--vio)"></i><i style="background:var(--cy)"></i></div></a>
-    <a class="bt b5" href="leistung.html" data-spot data-reveal><p class="tag">03 · Marketing & Performance</p><h3>Gemessen an Umsatz, nicht an Klicks.</h3><p>${esc(C.disziplinen[2].d)}</p><div class="bars" aria-hidden="true">${[38, 52, 46, 68, 60, 84, 100].map(h => `<i style="--h:${h}%"></i>`).join('')}</div></a>
-    <div class="bt b7 cols4" data-spot data-reveal style="--d:80ms">${C.saeulen.map(s => `<div><h4>${esc(s.t)}</h4><p>${esc(s.d)}</p></div>`).join('')}</div>
-  </div>
+<section class="sec sec-b" id="leistungen">
+  ${hd('Was wir tun', 'Drei Disziplinen, ein Ziel: digitaler Vertrieb, der sich rechnet.')}
+  <div class="panels" data-panels>${C.disziplinen.map((d, i) => `<a class="pn ${i === 0 ? 'open' : ''}" href="${d.href}" style="--c:${['#FF5A45', '#FFD84A', '#7BDCC4'][i]}"><span class="pn-n" aria-hidden="true">0${i + 1}</span><span class="pn-v" aria-hidden="true">${[fisch(), korb('#2E6BF0'), gull('pg2')][i]}</span><h3>${esc(d.t)}</h3><p>${esc(d.d)}</p><span class="pn-g">Mehr erfahren →</span></a>`).join('')}</div>
+  ${perch(3, 'p3')}
 </section>
 
-<section class="pin" id="referenzen" style="--n:${C.cases.length}" aria-label="Referenzen">
-  <div class="pin-in">
-    <div class="pin-h">${hd('03 / Referenzen', 'Ausgewählte Arbeiten.')}<p class="pin-p" aria-hidden="true"><span data-pin-cur>01</span> / ${String(C.cases.length).padStart(2, '0')}<i><b></b></i></p></div>
-    <div class="track" data-track tabindex="0" aria-label="Referenzen">${C.cases.map((c, i) => `<a class="dc ${c.featured ? 'dc-f' : ''}" href="${c.featured ? 'case.html' : '#referenzen'}" ${c.featured ? '' : 'aria-disabled="true"'} data-spot>
-      <p class="dc-s"><i></i>live <span>${String(i + 1).padStart(2, '0')}</span></p><div class="dc-v">${viz(i)}</div><h3>${esc(c.t)}</h3>
-      <p class="dc-t"><span>${esc(c.typ)}</span><span>${esc(c.branche)}</span></p><p class="dc-go">${c.featured ? 'Fallstudie öffnen →' : 'Im Prototyp nicht ausgebaut'}</p></a>`).join('')}</div>
-  </div>
-</section>
-
-<section class="sec" id="stack">
-  ${hd('04 / Stack', 'Angebunden an Ihre Systeme. Passend zu Ihrer Branche.')}
-  <div class="two">
-    <div class="bt" data-spot data-reveal><p class="tag">Integrationen</p><ul class="ports">${C.integrationen.map(x => `<li><i></i>${esc(x)}</li>`).join('')}</ul><p class="big">${C.prozessloesungen}+ <span>individuell entwickelte Prozesslösungen</span></p></div>
-    <div class="bt" data-spot data-reveal style="--d:80ms"><p class="tag">Branchen</p><ul class="ind">${C.branchen.map((x, i) => `<li><span>0${i + 1}</span>${esc(x)}</li>`).join('')}</ul></div>
-    <div class="bt wide" data-spot data-reveal><p class="tag">Unabhängig ausgezeichnet</p><ul class="aw">${C.awards.map(x => `<li><i>★</i>${esc(x)}</li>`).join('')}</ul></div>
-  </div>
+<section class="sec sec-pile" id="referenzen">
+  ${hd('Postkarten-Haufen', 'Ausgewählte Arbeiten.')}
+  <p class="pile-h" data-reveal>Karten per Hand verschieben. Wein-Bauer.de lässt sich aufschlagen.</p>
+  <div class="pile" data-pile>${C.cases.map((c, i) => { const pos = [[2, 6, -6], [27, 22, 4], [50, 2, -3], [70, 30, 7], [8, 50, 5], [38, 56, -5], [64, 62, 3]][i]; return `<article class="pk ${c.featured ? 'pk-f' : ''}" style="--x:${pos[0]}%;--y:${pos[1]}%;--r:${pos[2]}deg;--c:${['#FFB3C7', '#9DB8FF', '#FFD84A', '#7BDCC4', '#FF8A6B', '#FFF8E6', '#C9F26B'][i]}" data-drag-card><span class="pk-s" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span><p class="pk-t">${esc(c.typ)} · ${esc(c.branche)}</p><h3>${esc(c.t)}</h3>${c.featured ? `<a class="pk-a" href="case.html">Case aufschlagen →</a>` : `<span class="pk-n">Im Prototyp nicht ausgebaut</span>`}</article>`; }).join('')}</div>
+  ${perch(4, 'p4')}
 </section>
 
 <section class="sec" id="team">
-  ${hd('05 / Team', 'Sie arbeiten direkt mit uns.')}
-  <div class="crew">
-    <article class="bt me" data-spot data-reveal><div class="av" aria-hidden="true">HG</div><h3>${C.ansprech.name}</h3><p>${C.ansprech.rolle}. Ihr Ansprechpartner von der ersten Frage an.</p><p class="cta"><a class="btn btn-lime" href="${C.telHref}">Anrufen</a><a class="btn btn-o" href="${C.termin}">Termin buchen</a></p></article>
-    ${C.rollen.slice(1).map((r, i) => `<div class="mb" data-reveal style="--d:${(i % 5) * 40}ms"><span aria-hidden="true">${r.split(/[ &/]+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('')}</span><p>${esc(r)}</p></div>`).join('')}
+  ${hd('Sammelkarten', 'Sie arbeiten direkt mit uns.')}
+  <p class="pile-h" data-reveal>${C.zahlen.team} Menschen – antippen oder drüberfahren, um die Spezialfähigkeit zu sehen.</p>
+  <ul class="deck3">${C.rollen.map((r, i) => `<li class="tc ${i === 0 ? 'tc-gold' : ''}" tabindex="0" data-flip data-reveal style="--c:${TCOL[i]};--r:${[-2, 1.5, -1, 2, -1.6, 1.2, -2, 1.4, -1, 1.8, -1.4][i]}deg;--d:${(i % 4) * 50}ms"><div class="tc-i"><div class="tc-f"><span class="tc-nr">#${String(i + 1).padStart(2, '0')}/${C.rollen.length}</span><span class="tc-ic" aria-hidden="true">${[gull('tcg'), fisch(), korb('#2E6BF0'), gull('tcg'), fisch(), korb('#FF5A45'), gull('tcg'), fisch(), korb('#7BDCC4'), gull('tcg'), fisch()][i]}</span><b>${esc(r)}</b>${i === 0 ? `<em>${C.ansprech.name}</em>` : ''}</div>
+    <div class="tc-b"><span class="tc-k">Spezialfähigkeit</span><p>${esc(QUIPS[i])}</p>${i === 0 ? `<p class="tc-c"><a class="btn btn-ink" href="${C.telHref}">Anrufen</a><a class="btn btn-wh" href="${C.termin}">Termin</a></p>` : ''}</div></div></li>`).join('')}</ul>
+</section>
+
+<section class="sec sec-y" id="zahlen">
+  ${hd('Ganz schön viel Wind', 'Zahlen, die sich sehen lassen können.')}
+  <div class="blobs">
+    <div class="bl" style="--c:#FF5A45" data-reveal><b data-count="${C.jahre}" data-suffix="+">${C.jahre}+</b><span>Jahre Erfahrung</span></div>
+    <div class="bl" style="--c:#2E6BF0;color:#fff;--d:70ms" data-reveal><b data-count="${C.zahlen.marken}">${C.zahlen.marken}</b><span>Kundenmarken</span></div>
+    <div class="bl" style="--c:#7BDCC4" data-reveal><b data-count="${C.prozessloesungen}" data-suffix="+">${C.prozessloesungen}+</b><span>Prozesslösungen</span></div>
+    <div class="bl" style="--c:#FFB3C7" data-reveal><b>${C.bewertung.wert}</b><span>${C.bewertung.anzahl} Google-Bewertungen</span></div>
+    <div class="burst" data-reveal><b data-count="${C.foerderung}" data-suffix=" %">${C.foerderung} %</b><span>Zuschuss<br>möglich</span></div>
   </div>
+  <ul class="orden" aria-label="Auszeichnungen">${C.awards.map((a, i) => `<li data-reveal style="--d:${i * 60}ms;--r:${[-3, 2, -2, 3, -1][i]}deg">★ ${esc(a)}</li>`).join('')}</ul>
+  <p class="chips-l" data-reveal>Branchen: ${C.branchen.map(b => `<span>${esc(b)}</span>`).join('')}</p>
+  <p class="chips-l" data-reveal>Angebunden an: ${C.integrationen.map(b => `<span>${esc(b)}</span>`).join('')}</p>
+  ${perch(5, 'p5')}
 </section>
 
 <section class="sec" id="stimmen">
-  ${hd('06 / Stimmen', 'Was Kunden über die Zusammenarbeit sagen.')}
-  <div class="qs">${C.stimmen.map((s, i) => `<figure class="bt ${i === 0 ? 'q-big' : ''}" data-spot data-reveal style="--d:${i * 70}ms"><blockquote>„${esc(s.q)}“</blockquote><figcaption><b>${esc(s.w)}</b>${esc(s.f)}</figcaption></figure>`).join('')}</div>
+  ${hd('Was man so hört', 'Kunden-Kreisch. Aber nett.')}
+  <div class="says">${C.stimmen.map((s, i) => `<figure class="sy sy${i}" style="--c:${['#FFF8E6', '#FFB3C7', '#7BDCC4'][i]}" data-reveal><blockquote>„${esc(s.q)}“</blockquote><figcaption><b>${esc(s.w)}</b>${esc(s.f)}</figcaption></figure>`).join('')}</div>
 </section>
 
 <section class="sec" id="fragen">
-  <div class="two2"><div>${hd('07 / FAQ', 'Was Entscheider wissen wollen.')}
-    <aside class="fund bt" data-spot data-reveal><b>${C.foerderung} %</b><p>Bis zu ${C.foerderung} % Zuschuss für Ihr Digitalprojekt – wir prüfen, ob Sie förderfähig sind.</p><a class="btn btn-o" href="#kontakt">Fördergespräch</a></aside></div>
-    <div class="faq">${C.faq.map((f, i) => `<details data-reveal><summary><span>Q0${i + 1}</span>${esc(f.q)}<i aria-hidden="true"></i></summary><p>${esc(f.a)}</p></details>`).join('')}</div></div>
+  <div class="two"><div>${hd('Fragen', 'Was Entscheider wissen wollen.')}<aside class="note" data-reveal><b>Übrigens:</b> Bis zu ${C.foerderung} % Zuschuss für Ihr Digitalprojekt sind möglich. Wir prüfen, ob Sie förderfähig sind.</aside></div>
+  <div class="faq">${C.faq.map(f => `<details data-reveal><summary>${esc(f.q)}<i aria-hidden="true"></i></summary><p>${esc(f.a)}</p></details>`).join('')}</div></div>
 </section>
 
-<section class="cta-s" id="kontakt">
-  <p class="tag"><i></i>Bereit, wenn Sie es sind</p>
-  <h2 data-split>Moin! Reden wir. Persönlich.</h2>
-  <div class="cmd" data-reveal>
-    <a href="${C.termin}"><span>›</span>Termin buchen<em>30 Minuten, kein Verkaufsdruck</em></a>
-    <a href="${C.telHref}"><span>›</span>Anrufen<em>${C.tel}</em></a>
-    <a href="index.html#kontakt"><span>›</span>Projekt anfragen<em>${C.ansprech.name} antwortet persönlich</em></a>
-  </div>
+<section class="end" id="kontakt" aria-labelledby="dk">
+  <p class="pill pill-w">Letzte Chance, Moin zu sagen</p>
+  <h2 id="dk" data-split>Moin! Reden wir. Persönlich.</h2>
+  <p class="lead">Moin sagt man hier übrigens zu jeder Uhrzeit. 30 Minuten, kein Verkaufsdruck – nur Menschen mit Meerblick im Kopf.</p>
+  <div class="cta"><a class="btn btn-big" href="${C.termin}" target="_blank" rel="noopener" data-burst>Moin sagen!</a><a class="btn btn-wh" href="${C.telHref}">${C.tel}</a></div>
 </section>`;
-  return page({ k: 3, title: 'NetzKombyse · Konzept 3 – Werkbank', desc: 'Hamburger Agentur für digitalen Commerce im Mittelstand. Konzept 3: Werkbank.', theme: '#0D0E10', body: shell(body) });
+  return page({ k: 3, title: 'NetzKombyse · Konzept 3 – Möwenschwarm', desc: 'Hamburger Agentur für digitalen Commerce im Mittelstand. Konzept 3: Möwenschwarm.', theme: '#FFD84A', body: shell(body) });
 }
 
 function leistung() {
   const w = C.caseWB;
   const body = `
-<section class="phero"><p class="tag" data-reveal><i></i>Leistungen / Technologie & Shop</p><h1 data-split>Shopware-Agentur aus Hamburg.</h1>
-  <p class="lead" data-reveal>Architektur statt Einzeltickets: Shops, die in fünf Jahren noch tragen – und sich an Ihre Systeme anschließen, statt sie zu ersetzen.</p>
-  <div class="flow" data-reveal aria-label="Datenfluss"><span>Kanäle</span><i></i><span class="hl">Shopware 6</span><i></i><span>Middleware</span><i></i><span>ERP · PIM · CRM</span></div></section>
-<section class="sec">${hd('01 / Warum', 'Wann sich Shopware 6 lohnt.')}
-  <div class="bento">${[['Viele Kanäle', 'Shop, Marktplätze, Außendienst – eine Datenbasis statt drei Excel-Listen.', 'b7'], ['Eigene Preislogik', 'Kundengruppen, Staffeln, Rahmenverträge: abbildbar statt umgangen.', 'b5'], ['Offene Architektur', 'Headless, API-first, ohne Abhängigkeit von einem einzigen Anbieter.', 'b5'], ['Wachstum', 'Ein System, das mitwächst, statt bei der nächsten Idee zu klemmen.', 'b7']].map(([t, d, c], i) => `<div class="bt ${c}" data-spot data-reveal style="--d:${i * 50}ms"><p class="tag">0${i + 1}</p><h3>${t}</h3><p>${d}</p></div>`).join('')}</div></section>
-<section class="sec">${hd('02 / Pipeline', 'So läuft ein Projekt bei uns.')}
-  <ol class="pipe pipe-v">${w.schritte.map((s, i) => `<li data-reveal><i>${i + 1}</i><b>${s.t}</b><span>${s.d}</span></li>`).join('')}</ol></section>
-<section class="sec" id="wissen">${hd('03 / Wissen', 'Shopware, Shopify oder Headless?')}
-  <div class="tw bt" data-reveal><table><thead><tr><th></th><th>Shopware 6</th><th>Shopify</th><th>Headless</th></tr></thead><tbody>
+<section class="phero"><p class="pill pill-w" data-reveal>Leistungen · Technologie & Shop</p><h1 data-split>Shopware? Klar. Mit Brise im Segel.</h1>
+  <p class="lead" data-reveal>Shopware-Agentur aus Hamburg. Architektur statt Einzeltickets: Shops, die in fünf Jahren noch tragen – und sich an Ihre Systeme anschließen, statt sie zu ersetzen.</p>${fly('pf1')}${fly('pf2')}</section>
+<section class="sec">${hd('Warum', 'Wann sich Shopware 6 lohnt.')}
+  <div class="stks four">${[['Viele Kanäle', 'Shop, Marktplätze, Außendienst – eine Datenbasis statt drei Excel-Listen.', '#FFB3C7'], ['Eigene Preislogik', 'Kundengruppen, Staffeln, Rahmenverträge: abbildbar statt umgangen.', '#7BDCC4'], ['Offene Architektur', 'Headless, API-first, ohne Abhängigkeit von einem einzigen Anbieter.', '#FFD84A'], ['Wachstum', 'Ein System, das mitwächst, statt bei der nächsten Idee zu klemmen.', '#9DB8FF']].map(([t, d, c], i) => `<article class="stk" style="--c:${c};--r:${[-2, 1.6, -1.2, 2][i]}deg" data-reveal><span class="stk-n" aria-hidden="true">${i + 1}</span><h3>${t}</h3><p>${d}</p></article>`).join('')}</div></section>
+<section class="sec sec-y">${hd('Die Leiter', 'Vier Sprossen bis zum Ziel.')}
+  <ol class="rungs">${w.schritte.map((s, i) => `<li data-reveal style="--c:${['#FF5A45', '#FFF8E6', '#7BDCC4', '#FFB3C7'][i]};--r:${[-1.2, 1, -.8, 1.2][i]}deg"><b>${i + 1}</b><div><h3>${s.t}</h3><p>${s.d}</p></div></li>`).join('')}</ol></section>
+<section class="sec" id="wissen">${hd('Wissen', 'Shopware, Shopify oder Headless?')}
+  <div class="tw" data-reveal><table><thead><tr><th></th><th>Shopware 6</th><th>Shopify</th><th>Headless</th></tr></thead><tbody>
   <tr><th>Stärke</th><td>Tiefe, Unabhängigkeit</td><td>Tempo, einfacher Start</td><td>Freiheit im Frontend</td></tr>
   <tr><th>Passt zu</th><td>Komplexen Prozessen</td><td>Klaren Standardfällen</td><td>Markenerlebnis ohne Grenzen</td></tr>
-  <tr><th>Aufwand</th><td>Mittel</td><td>Gering</td><td>Höher</td></tr></tbody></table></div>
-  <p class="fn">Orientierung, keine Pauschalaussage – wir rechnen es für Sie durch.</p></section>
-<section class="cta-s" id="kontakt"><p class="tag"><i></i>Nächster Schritt</p><h2 data-split>Sehen Sie, wie das in der Praxis aussieht.</h2>
-  <div class="cmd" data-reveal><a href="case.html"><span>›</span>Fallstudie öffnen<em>Wein-Bauer.de · Multi-Channel</em></a><a href="${C.termin}"><span>›</span>Termin buchen<em>30 Minuten</em></a></div></section>`;
-  return page({ k: 3, title: 'Shopware-Agentur · Konzept 3 – Werkbank', desc: 'Leistungsseite Technologie & Shop.', theme: '#0D0E10', body: shell(body) });
+  <tr><th>Aufwand</th><td>Mittel</td><td>Gering</td><td>Höher</td></tr></tbody></table></div><p class="fn">Orientierung, keine Pauschalaussage – wir rechnen es für Sie durch.</p></section>
+<section class="end" id="kontakt"><p class="pill pill-w">Nächster Schritt</p><h2 data-split>Jetzt wird’s konkret.</h2><div class="cta"><a class="btn btn-big" href="case.html">Fallstudie lesen</a><a class="btn btn-wh" href="${C.termin}">Termin buchen</a></div></section>`;
+  return page({ k: 3, title: 'Shopware-Agentur · Konzept 3 – Möwenschwarm', desc: 'Leistungsseite Technologie & Shop.', theme: '#FFD84A', body: shell(body) });
 }
 
 function caseP() {
   const w = C.caseWB;
-  const nodes = ['Laden', 'Shop', 'Marktplätze'];
+  const items = [['Laden', '#FFB3C7'], ['Online-Shop', '#9DB8FF'], ['Marktplätze', '#7BDCC4'], ['Excel-Liste', '#FFF8E6'], ['Zettelwirtschaft', '#FFD84A'], ['Preisabgleich', '#FF8A6B']];
+  const wine = `<svg class="wine" viewBox="0 0 220 260" aria-hidden="true"><g stroke="${INK}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"><path d="M70 6h30v50c0 14 22 24 22 54v140H48V110c0-30 22-40 22-54z" fill="#2E6BF0"/><rect x="56" y="150" width="58" height="62" rx="6" fill="#FFF8E6"/><path d="M68 170h34M68 182h34M68 194h22" fill="none"/><path d="M140 100h64c0 48-14 78-32 78s-32-30-32-78z" fill="#FFB3C7"/><path d="M172 178v56M150 236h44" fill="none"/></g></svg>`;
   const body = `
-<section class="phero"><p class="tag" data-reveal><i></i>Fallstudie / ${esc(w.typ)}</p><h1 data-split>${esc(w.titel)}</h1>
-  <p class="lead" data-reveal>${esc(w.kurz)}.</p>
-  <ul class="chipsr" data-reveal><li>Food & Gastronomie</li><li>${w.jahr}</li><li>Shopware 6</li><li>Warenwirtschaft</li><li>Marktplätze</li></ul></section>
-<section class="sec">${hd('01 / Vorher – Nachher', 'Drei Welten werden ein System.')}
-  <div class="ba bt" data-ba="after"><div class="ba-bar" role="group" aria-label="Ansicht wählen"><button type="button" data-ba-set="before" aria-pressed="false">Vorher</button><button type="button" data-ba-set="after" aria-pressed="true">Nachher</button></div>
-    <div class="ba-d"><div class="ba-n">${nodes.map((n, i) => `<div class="bn" style="--i:${i}"><span>${n}</span></div>`).join('')}</div>
-      <div class="ba-c"><span>Warenwirtschaft<br><small>ein Bestand</small></span></div>
-      <svg class="ba-l" viewBox="0 0 300 100" preserveAspectRatio="none" aria-hidden="true"><path d="M108 11 C150 11 150 50 186 50"/><path d="M108 50 L186 50"/><path d="M108 89 C150 89 150 50 186 50"/></svg></div>
+<section class="phero phero-case"><div><p class="pill pill-w" data-reveal>Case · ${esc(w.typ)}</p><h1 data-split>${esc(w.titel)}</h1><p class="lead" data-reveal>${esc(w.kurz)}.</p>
+  <ul class="tags" data-reveal><li>Food & Gastronomie</li><li>${w.jahr}</li><li>Shopware 6</li><li>Warenwirtschaft</li><li>Marktplätze</li></ul></div><div class="wine-w" data-reveal>${wine}${gull('wg')}</div></section>
+<section class="sec">${hd('Chaos → Ordnung', 'Aus Zettelwirtschaft wird ein System.')}
+  <div class="chaos" data-chaos="after"><div class="ba-bar" role="group" aria-label="Ansicht wählen"><button type="button" data-ba-set="before" aria-pressed="false">Vorher</button><button type="button" data-ba-set="after" aria-pressed="true">Nachher</button></div>
+    <div class="chaos-d">${items.map(([n, c], i) => `<span class="ci" style="--c:${c};--i:${i};--r:${[-8, 6, -4, 9, -7, 5][i]}deg;--x:${[6, 38, 66, 20, 52, 76][i]}%;--y:${[8, 52, 14, 62, 30, 66][i]}%">${n}</span>`).join('')}<span class="ci-h" aria-hidden="true">= ein Bestand</span></div>
     <p class="ba-t"><b class="b-b">Vorher:</b> ${esc(w.ausgang)}</p><p class="ba-t"><b class="b-a">Nachher:</b> ${esc(w.loesung)}</p></div></section>
-<section class="sec">${hd('02 / Pipeline', 'Vier Etappen, ein Ziel.')}<ol class="pipe pipe-v">${w.schritte.map((s, i) => `<li data-reveal><i>${i + 1}</i><b>${s.t}</b><span>${s.d}</span></li>`).join('')}</ol></section>
-<section class="sec">${hd('03 / Ergebnis', 'Ein Sortiment, ein Bestand, eine Wahrheit.', w.ergebnis)}
-  <ul class="stats big-s"><li data-reveal>${''}<b data-count="${w.zahlen[0].n}">${w.zahlen[0].n}</b><span>${esc(w.zahlen[0].l)}</span></li><li data-reveal><b data-count="${w.zahlen[1].n}" data-suffix="${w.zahlen[1].s}">${w.zahlen[1].n}${w.zahlen[1].s}</b><span>${esc(w.zahlen[1].l)}</span></li><li data-reveal><b data-count="${w.zahlen[2].n}" data-suffix="${w.zahlen[2].s}">${w.zahlen[2].n}${w.zahlen[2].s}</b><span>${esc(w.zahlen[2].l)}</span></li></ul>
-  <p class="fn">${C.hinweisBeispiel}</p>
-  <figure class="bt bq" data-spot data-reveal><blockquote>„${esc(w.stimme.q)}“</blockquote><figcaption><b>${w.stimme.w}</b>${w.stimme.f}</figcaption></figure></section>
-<section class="cta-s" id="kontakt"><p class="tag"><i></i>Nächste Fallstudie</p><h2 data-split>Ihr Geschäft könnte das nächste sein.</h2>
-  <div class="cmd" data-reveal><a href="${C.termin}"><span>›</span>Termin buchen<em>30 Minuten</em></a><a href="index.html#referenzen"><span>›</span>Weitere Referenzen<em>7 Projekte</em></a></div></section>`;
-  return page({ k: 3, title: 'Case Wein-Bauer.de · Konzept 3 – Werkbank', desc: 'Fallstudie: Multi-Channel-Handel mit Shopware 6.', theme: '#0D0E10', body: shell(body) });
+<section class="sec sec-y">${hd('Der Weg', 'Vier Etappen, ein Ziel.')}<ol class="rungs">${w.schritte.map((s, i) => `<li data-reveal style="--c:${['#FF5A45', '#FFF8E6', '#7BDCC4', '#FFB3C7'][i]};--r:${[-1.2, 1, -.8, 1.2][i]}deg"><b>${i + 1}</b><div><h3>${s.t}</h3><p>${s.d}</p></div></li>`).join('')}</ol></section>
+<section class="sec">${hd('Ergebnis', 'Ein Sortiment, ein Bestand, eine Wahrheit.')}<p class="lead" data-reveal>${esc(w.ergebnis)}</p>
+  <div class="blobs b3">${w.zahlen.map((z, i) => `<div class="bl" style="--c:${['#FF5A45', '#2E6BF0;color:#fff', '#7BDCC4'][i]}" data-reveal><b data-count="${z.n}" data-suffix="${z.s}">${z.n}${z.s}</b><span>${esc(z.l)}</span></div>`).join('')}</div><p class="fn">${C.hinweisBeispiel}</p>
+  <figure class="sy sy1 big-sy" style="--c:#FFB3C7" data-reveal><blockquote>„${esc(w.stimme.q)}“</blockquote><figcaption><b>${w.stimme.w}</b>${w.stimme.f}</figcaption></figure></section>
+<section class="end" id="kontakt"><p class="pill pill-w">Nächster Fall</p><h2 data-split>Ihr Geschäft könnte das nächste sein.</h2><div class="cta"><a class="btn btn-big" href="${C.termin}" target="_blank" rel="noopener" data-burst>Moin sagen!</a><a class="btn btn-wh" href="index.html#referenzen">Weitere Referenzen</a></div></section>`;
+  return page({ k: 3, title: 'Case Wein-Bauer.de · Konzept 3 – Möwenschwarm', desc: 'Case: Multi-Channel-Handel mit Shopware 6.', theme: '#FFD84A', body: shell(body) });
 }
 
 function praes() {
-  const slides = C.slides.map((s, i) => `<section class="sl ${i === 0 ? 'on' : ''}" data-i="${i}" aria-roledescription="Folie" aria-label="Folie ${i + 1} von ${C.slides.length}" ${i ? 'aria-hidden="true"' : ''}>
-    <p class="tag"><i></i>${String(i + 1).padStart(2, '0')} / ${esc(s.k)}</p><h2>${esc(s.t)}</h2><p class="sl-d">${esc(s.d)}</p><div class="sl-v" aria-hidden="true">${viz(i)}</div></section>`).join('');
+  const bg = ['#FFD84A', '#7BDCC4', '#FFB3C7', '#9DB8FF', '#FF8A6B', '#C9F26B'];
+  const art = [() => gull('sg'), () => fisch('sf'), () => korb('#FF5A45', 'sk'), () => gull('sg'), () => fisch('sf'), () => korb('#2E6BF0', 'sk')];
+  const slides = C.slides.map((s, i) => `<section class="sl ${i === 0 ? 'on' : ''}" style="--c:${bg[i]}" data-i="${i}" aria-roledescription="Folie" aria-label="Folie ${i + 1} von ${C.slides.length}" ${i ? 'aria-hidden="true"' : ''}>
+    <span class="sl-n" aria-hidden="true">${i + 1}</span><span class="sl-a" aria-hidden="true">${art[i]()}</span>
+    <div class="sl-in"><p class="pill pill-w">${esc(s.k)}</p><h2>${esc(s.t)}</h2><p class="sl-d">${esc(s.d)}</p></div></section>`).join('');
   const body = `<div id="top"></div>${header()}${menu()}${pt}<main id="main" class="deck">
   <div class="stage" id="stage" tabindex="0" aria-label="Präsentation. Mit Pfeiltasten blättern.">${slides}</div>
   <div class="deck-ui"><button type="button" class="dbtn" data-prev aria-label="Vorherige Folie">←</button><div class="dprog" aria-hidden="true"><i></i></div><span class="dcount" aria-live="polite"><b data-cur>01</b> / ${String(C.slides.length).padStart(2, '0')}</span><button type="button" class="dbtn" data-next aria-label="Nächste Folie">→</button><button type="button" class="dbtn" data-full aria-label="Vollbild">⤢</button></div>
-  <p class="deck-h">← → blättern · F Vollbild · Esc Menü schließen</p></main>`;
-  return page({ k: 3, title: 'Präsentation · Konzept 3 – Werkbank', desc: 'Präsentationsfolien im Werkbank-Stil.', theme: '#0D0E10', body, cls: 'is-deck' });
+  <p class="deck-h">← → blättern · F Vollbild · Esc Menü schließen</p></main>${cursor}`;
+  return page({ k: 3, title: 'Präsentation · Konzept 3 – Möwenschwarm', desc: 'Präsentationsfolien im Stil des Möwenschwarms.', theme: '#FFD84A', body, cls: 'is-deck' });
 }
 
 export const pages = () => ({ 'index.html': index(), 'leistung.html': leistung(), 'case.html': caseP(), 'praesentation.html': praes() });
