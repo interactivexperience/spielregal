@@ -2,10 +2,10 @@
 // Statt Fotos steht die Möwe als Schwarz-Weiß-Ausschnitt vor der Schrift. Kapitel = Vollbild-Seiten, links Navigation + Kapitelleiste.
 import { page, esc } from './lib.mjs';
 import { C } from '../content.mjs';
-import { gull } from './art.mjs';
 import { marken } from './lib2.mjs';
 
-const cut = (cls) => `<div class="cut ${cls}" aria-hidden="true">${gull('cg')}</div>`;
+// Möwe mit Bommelmütze (Owner-Illustration, media/moewe.webp) als Ausschnitt vor der Schrift
+const cut = (cls) => `<div class="cut ${cls}" aria-hidden="true"><div class="sway"><img class="cg" src="../media/moewe.webp" alt="" width="888" height="1504" decoding="async"></div></div>`;
 const nav = [['s1', 'Start'], ['s2', 'Zahlen'], ['s3', 'Leistung'], ['s4', 'Lage'], ['s5', 'Arbeit'], ['s6', 'Kontakt']];
 const lines = (arr) => arr.map((t, i) => `<span class="ln" style="--i:${i}">${esc(t)}</span>`).join('');
 
