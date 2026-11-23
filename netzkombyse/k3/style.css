@@ -198,3 +198,9 @@ html[data-motion=off] .sl{transition:none}
 .hd-g b{font:900 1.05rem var(--b)}
 .pn:not(.open) h3{writing-mode:vertical-rl;rotate:180deg;align-self:flex-start;font-size:clamp(1.6rem,2.6vw,2.4rem);margin-top:auto}
 @media(max-width:800px){.pn:not(.open) h3{writing-mode:horizontal-tb;rotate:none}}
+/* Knöpfe: Farbfläche wächst per clip-path aus der Zeigerposition */
+.btn{position:relative;overflow:hidden;isolation:isolate}
+.btn::before{content:'';position:absolute;inset:0;z-index:-1;background:var(--sun);clip-path:circle(0 at var(--hx,50%) var(--hy,50%));transition:clip-path .5s cubic-bezier(.6,0,.2,1)}
+.btn-big::before{background:#fff}
+.btn:hover::before,.btn:focus-visible::before{clip-path:circle(150% at var(--hx,50%) var(--hy,50%))}
+html[data-motion=off] .btn::before{display:none}

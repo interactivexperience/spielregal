@@ -20,6 +20,14 @@ Screenshots + Konsolenfehler: `node netzkombyse/tools/shots.mjs k1 <ausgabeordne
 `html[data-motion=on|off]`; Schalter „Bewegung“ im Header, gespeichert in `localStorage` (`nk:motion`), Standard folgt
 `prefers-reduced-motion`. Nur transform/opacity/clip-path, IntersectionObserver und rAF.
 
+## Awwwards-Anregungen (Stand 23.11.2026)
+Gelesen: awwwards.com/awwwards/collections (Seite 1), die Collections „CSS & JS Animations“, „Hovers, Cursors and Cute Interactions“,
+„Horizontal Scrolling“, „UI Animation and Microinteractions“, „Illustration in Web Design“ (jeweils nur Seite 1) und drei Einzelseiten.
+Die Seiten nennen nur Titel, Kategorien und Tags, keine Technikbeschreibungen; übernommen wurde, was die Titel hergeben:
+- k1: Referenzen („Ladung“) laufen beim vertikalen Scrollen seitlich durch (Desktop ab 900 px, Bewegung an; sonst nativ wischen) – Anregung „Horizontal scroll navigation“ (OddCommon).
+- k2: Tageszeit-Schleier, der beim Scrollen wärmer wird (nur opacity) – Anregung „Scroll backgrounds“ (V-A Studio).
+- k3: Knopf-Farbfläche wächst per clip-path aus der Zeigerposition, Knöpfe leicht magnetisch – Anregung „Texture hover reveal“ / „Hover Buttons“.
+
 ## Offen vor Livegang
 Kennzahlen im Case und Kundenzitate sind Platzhalter; Impressum/Datenschutz verlinken ins Leere; Referenzen außer
 Wein-Bauer.de sind nicht ausgebaut; Teamfotos fehlen (rollenbasiert).

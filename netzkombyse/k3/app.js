@@ -136,3 +136,15 @@
   const ch = $('[data-chaos]');
   if (ch) $$('[data-ba-set]', ch).forEach(b => b.addEventListener('click', () => { ch.dataset.chaos = b.dataset.baSet; $$('[data-ba-set]', ch).forEach(x => x.setAttribute('aria-pressed', String(x === b))); }));
 })();
+
+/* Knöpfe: Reveal-Ursprung folgt dem Zeiger, leicht magnetisch (nur Maus, nur Bewegung an) */
+(() => {
+  const { $$, motionOn } = window.NK || {};
+  if (!$$ || !matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+  $$('.btn').forEach(b => {
+    b.addEventListener('pointermove', e => { if (!motionOn()) return; const r = b.getBoundingClientRect();
+      b.style.setProperty('--hx', (e.clientX - r.left) + 'px'); b.style.setProperty('--hy', (e.clientY - r.top) + 'px');
+      b.style.translate = `${((e.clientX - r.left) / r.width - .5) * 8}px ${((e.clientY - r.top) / r.height - .5) * 6}px`; });
+    b.addEventListener('pointerleave', () => { b.style.translate = ''; });
+  });
+})();
