@@ -107,16 +107,16 @@ await p.click('[data-a=tab][data-t=list]');ok(await p.locator('.card').count()==
 
 console.log('== 8. Passwort ändern, anderes Passwort beim Restore ==');
 await p.click('[data-a=tab][data-t=set]');await p.click('[data-a=pass]');
-await p.fill('#apw',PW);await p.click('.mo [data-r="1"]');await p.waitForSelector('#apw');await p.fill('#apw',PW2);await p.click('.mo [data-r="1"]');await p.waitForSelector('#apw');await p.fill('#apw',PW2);await p.click('.mo [data-r="1"]');
+await p.fill('.mo:not(.out) #apw',PW);await p.click('.mo:not(.out) [data-r="1"]');await p.waitForSelector('.mo:not(.out) #apw');await p.fill('.mo:not(.out) #apw',PW2);await p.click('.mo:not(.out) [data-r="1"]');await p.waitForSelector('.mo:not(.out) #apw');await p.fill('.mo:not(.out) #apw',PW2);await p.click('.mo:not(.out) [data-r="1"]');
 await p.waitForFunction(()=>document.querySelector('.toast')&&document.querySelector('.toast').textContent.includes('geändert'),null,{timeout:20000});
 await lock();await p.fill('#lp',PW);await p.click('.gate .pill');await p.waitForTimeout(1500);ok((await p.locator('#gm').textContent()).includes('Falsch'),'altes Passwort geht nicht mehr');
 await unlock(PW2);await p.waitForSelector('.card');ok(await p.locator('.card').count()===before,'neues Passwort öffnet alle Daten');
 // Wipe, neues Tresor-Passwort, altes Backup (PW) importieren
-await p.click('[data-a=tab][data-t=set]');await p.click('[data-a=wipe]');await p.click('.mo [data-r="1"]');await p.fill('#apw',PW2);await p.click('.mo [data-r="1"]');
+await p.click('[data-a=tab][data-t=set]');await p.click('[data-a=wipe]');await p.click('.mo:not(.out) [data-r="1"]');await p.fill('.mo:not(.out) #apw',PW2);await p.click('.mo:not(.out) [data-r="1"]');
 await setup('Drittes-Passwort-fuer-Test-9');await p.waitForSelector('#kn',{timeout:20000});await p.click('[data-r=x]');
-await p.click('[data-a=tab][data-t=set]');await p.setInputFiles('#impF',backupA);await p.waitForSelector('#apw');await p.fill('#apw','falsches-backup-passwort');await p.click('.mo [data-r="1"]');
+await p.click('[data-a=tab][data-t=set]');await p.setInputFiles('#impF',backupA);await p.waitForSelector('.mo:not(.out) #apw');await p.fill('.mo:not(.out) #apw','falsches-backup-passwort');await p.click('.mo:not(.out) [data-r="1"]');
 await p.waitForFunction(()=>document.querySelector('.toast')&&document.querySelector('.toast').textContent.includes('falsch'));ok(true,'falsches Backup-Passwort abgewiesen');
-await p.setInputFiles('#impF',backupA);await p.waitForSelector('#apw');await p.fill('#apw',PW);await p.click('.mo [data-r="1"]');await p.waitForTimeout(4000);
+await p.setInputFiles('#impF',backupA);await p.waitForSelector('.mo:not(.out) #apw');await p.fill('.mo:not(.out) #apw',PW);await p.click('.mo:not(.out) [data-r="1"]');await p.waitForTimeout(4000);
 await p.click('[data-a=tab][data-t=list]');await p.waitForSelector('.card');await p.waitForSelector('.card img[src]');ok(await p.locator('.card').count()===3,'Backup mit fremdem Passwort neu verschlüsselt importiert');
 await lock();await unlock('Drittes-Passwort-fuer-Test-9');await p.waitForSelector('.card');ok(true,'Daten unter dem neuen Schlüssel lesbar');
 

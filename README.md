@@ -7,6 +7,12 @@ Kostenlos, ohne Konto, ohne Server. **Dieses Repo enthält nur Programmcode – 
 Kinderprofile mit Alter · Einträge mit Text, Tags, ★ Meilenstein · Fotos und Videos · Messwerte mit
 Wachstumsdiagramm · Suche, Kalender, „An diesem Tag“ · verschlüsseltes Backup (ZIP) → Dateien-App → pCloud.
 
+## Oberfläche
+Nach iOS-Standard gestaltet, angelehnt an Apples Journal-App (kein 1:1-Nachbau, keine Apple-Assets): Systemschrift SF,
+Gruppenhintergrund, große Titel mit Mini-Titel beim Scrollen, Karten mit Vollbild-Foto und Lesezeichen (= Meilenstein),
+Blur-Leisten, Eintrag als Page-Sheet, Federbewegung (`cubic-bezier(.32,.72,0,1)`), gestaffeltes Einblenden der Karten,
+Press-Effekte. Zeiten/Kurven sind iOS-übliche Richtwerte, nicht von Apple gemessen. „Bewegung reduzieren“ wird respektiert.
+
 ## Sicherheitsmodell
 - **Verschlüsselung:** AES-256-GCM für alle Inhalte (Text, Medien, Namen, Geburtsdaten). Zufälliger Datenschlüssel,
   geschützt durch Passwort (PBKDF2-SHA256, 600.000 Runden). Datensätze sind an ihre ID gebunden (AAD), Medien

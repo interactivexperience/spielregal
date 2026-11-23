@@ -17,6 +17,8 @@ const DATE_RE=/^\d{4}-\d{2}-\d{2}$/,ID_RE=/^[\w-]{8,64}$/;
 const uid=()=>crypto.randomUUID();
 const fmtSize=b=>b<1024?b+' B':b<1048576?(b/1024).toFixed(0)+' KB':b<1073741824?(b/1048576).toFixed(1)+' MB':(b/1073741824).toFixed(2)+' GB';
 const fmtNum=v=>Number(v).toLocaleString('de-DE',{maximumFractionDigits:1});
+const RM=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+function dismiss(el,ms=340){if(!el||!el.isConnected)return;if(RM()){el.remove();return}el.classList.add('out');setTimeout(()=>el.remove(),ms)}
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const b64e=u8=>{let s='';u8.forEach(b=>s+=String.fromCharCode(b));return btoa(s)};
 const b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
@@ -137,16 +139,16 @@ async function loadAll(){
 
 /* ============ UI-Bausteine ============ */
 function toast(msg,ms=2200){$$('.toast').forEach(t=>t.remove());const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.append(t);if(ms)setTimeout(()=>t.remove(),ms);return t}
-function modal(html){const o=document.createElement('div');o.className='mo';o.innerHTML=`<div class="mb">${html}</div>`;o.addEventListener('click',e=>{if(e.target===o)o.remove()});document.body.append(o);return o}
+function modal(html){const o=document.createElement('div');o.className='mo';o.innerHTML=`<div class="mb">${html}</div>`;o.addEventListener('click',e=>{if(e.target===o)dismiss(o)});document.body.append(o);return o}
 function ask(title,text,okLabel='OK',danger=false){return new Promise(res=>{
  const o=modal(`<h3>${esc(title)}</h3><p>${esc(text)}</p><div class="bt"><button class="${danger?'x':'p'}" data-r="1">${esc(okLabel)}</button><button data-r="0">Abbrechen</button></div>`);
- o.addEventListener('click',e=>{const b=e.target.closest('[data-r]');if(b){o.remove();res(b.dataset.r==='1')}else if(e.target===o)res(false)})})}
+ o.addEventListener('click',e=>{const b=e.target.closest('[data-r]');if(b){dismiss(o);res(b.dataset.r==='1')}else if(e.target===o)res(false)})})}
 function askPass(title,text){return new Promise(res=>{
  const o=modal(`<h3>${esc(title)}</h3><p>${esc(text)}</p><input class="inp" type="password" id="apw" autocomplete="current-password" autocapitalize="none"><div class="msg" id="amsg"></div><div class="bt"><button class="p" data-r="1">OK</button><button data-r="0">Abbrechen</button></div>`);
  const inp=$('#apw',o);setTimeout(()=>inp.focus(),50);
- const ok=()=>{const v=inp.value;if(!v)return;o.remove();res(v)};
+ const ok=()=>{const v=inp.value;if(!v)return;dismiss(o);res(v)};
  inp.addEventListener('keydown',e=>{if(e.key==='Enter')ok()});
- o.addEventListener('click',e=>{const b=e.target.closest('[data-r]');if(b){b.dataset.r==='1'?ok():(o.remove(),res(null))}else if(e.target===o)res(null)})})}
+ o.addEventListener('click',e=>{const b=e.target.closest('[data-r]');if(b){b.dataset.r==='1'?ok():(dismiss(o),res(null))}else if(e.target===o)res(null)})})}
 async function checkPass(pass){try{await vaultOpen(pass,VAULT.meta);return true}catch{return false}}
 
 /* ============ Tor: Einrichtung und Sperre ============ */
@@ -171,7 +173,7 @@ function showLock(msg=''){
  <input class="inp" type="password" id="lp" placeholder="Passwort" autocomplete="current-password" autocapitalize="none">
  <div class="msg" id="gm">${esc(msg)}</div><button class="pill" data-a="unlock">Entsperren</button>`);
  const inp=$('#lp',g);inp.addEventListener('keydown',e=>{if(e.key==='Enter')A.unlock()});setTimeout(()=>inp.focus(),80)}
-function wipeScreen(){E=null;document.body.style.overflow='';$('#app').innerHTML='';$$('.sheet,.mo,.lb,.toast').forEach(x=>x.remove());freeThumbs();S.kids=[];S.entries=[]}
+function wipeScreen(){E=null;document.body.style.overflow='';$('#app').innerHTML='';$$('.sheet,.dim,.mo,.lb,.toast').forEach(x=>x.remove());freeThumbs();S.kids=[];S.entries=[]}
 function lockNow(){if(!VAULT.key)return;VAULT.key=null;wipeScreen();showLock()}
 let hiddenAt=0;
 document.addEventListener('visibilitychange',()=>{
@@ -186,14 +188,14 @@ function loadImg(file){return new Promise((res,rej)=>{const u=URL.createObjectUR
 async function scaled(src,w,h,max,type,q){const sc=Math.min(1,max/Math.max(w,h)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*sc));c.height=Math.max(1,Math.round(h*sc));c.getContext('2d').drawImage(src,0,0,c.width,c.height);return toBlob(c,type,q)}
 async function processImage(file){
  try{const i=await loadImg(file),w=i.naturalWidth,h=i.naturalHeight;
-  const blob=await scaled(i,w,h,2400,'image/jpeg',.87),thumb=await scaled(i,w,h,320,'image/jpeg',.75);
+  const blob=await scaled(i,w,h,2400,'image/jpeg',.87),thumb=await scaled(i,w,h,960,'image/jpeg',.8);
   return{blob:blob||file,thumb,mime:blob?'image/jpeg':file.type}}
  catch{return{blob:file,thumb:null,mime:file.type||'image/jpeg'}}}
 function videoThumb(file){return new Promise(res=>{
  const v=document.createElement('video');v.muted=true;v.playsInline=true;v.preload='auto';const u=URL.createObjectURL(file);let fin=false;
  const end=b=>{if(fin)return;fin=true;URL.revokeObjectURL(u);res(b)};
  v.onloadeddata=()=>{try{v.currentTime=Math.min(.5,(v.duration||1)/2)}catch{end(null)}};
- v.onseeked=async()=>{try{end(await scaled(v,v.videoWidth,v.videoHeight,320,'image/jpeg',.75))}catch{end(null)}};
+ v.onseeked=async()=>{try{end(await scaled(v,v.videoWidth,v.videoHeight,960,'image/jpeg',.8))}catch{end(null)}};
  v.onerror=()=>end(null);setTimeout(()=>end(null),7000);v.src=u})}
 async function processVideo(file){return{blob:file,thumb:await videoThumb(file),mime:file.type||'video/mp4'}}
 
@@ -205,8 +207,9 @@ function openEditor(entry,date){
  const defKids=S.kid?[S.kid]:S.kids.length===1?[S.kids[0].id]:[];
  E=entry?{id:entry.id,created:entry.created,isNew:false,date:entry.date,kids:[...entry.kids],ms:entry.ms,text:entry.text,tags:[...entry.tags],h:entry.h,w:entry.w,hd:entry.hd,media:entry.media.map(m=>({...m})),removed:[],dirty:false}
   :{id:uid(),created:Date.now(),isNew:true,date:date||today(),kids:defKids,ms:false,text:'',tags:[],h:null,w:null,hd:null,media:[],removed:[],dirty:false};
+ const dim=document.createElement('div');dim.className='dim';dim.id='dim';document.body.append(dim);
  const o=document.createElement('div');o.className='sheet';o.id='ed';
- o.innerHTML=`<div class="bar"><button class="lnk" data-a="edcancel">Abbrechen</button><b>${E.isNew?'Neuer Eintrag':'Eintrag'}</b><button class="pill" data-a="edsave">Sichern</button></div>
+ o.innerHTML=`<div class="bar"><button class="lnk" data-a="edcancel">Abbrechen</button><b>${E.isNew?'Neuer Eintrag':'Eintrag'}</b><button class="pill" data-a="edsave">Fertig</button></div>
  <div class="edin"><div class="row"><input type="date" id="edDate" value="${E.date}"><button class="mst" id="edMs" data-a="ms"></button></div>
  <div class="chips" id="edKids"></div>
  <textarea id="edText" placeholder="Was ist heute passiert?" enterkeyhint="enter"></textarea>
@@ -255,8 +258,8 @@ async function viewMedia(m){
  if(!blob){toast('Datei nicht lesbar');return}
  const u=URL.createObjectURL(blob),o=document.createElement('div');o.className='lb';
  o.innerHTML=(m.type==='video'?`<video src="${u}" controls playsinline autoplay></video>`:`<img src="${u}" alt="">`)+'<button aria-label="Schließen">✕</button>';
- $('button',o).onclick=()=>{o.remove();URL.revokeObjectURL(u)};document.body.append(o)}
-function closeEditor(){E?.media.forEach(m=>m.thumbUrl&&URL.revokeObjectURL(m.thumbUrl));$('#ed')?.remove();document.body.style.overflow='';E=null}
+ $('button',o).onclick=()=>{dismiss(o);URL.revokeObjectURL(u)};document.body.append(o)}
+function closeEditor(){E?.media.forEach(m=>m.thumbUrl&&URL.revokeObjectURL(m.thumbUrl));dismiss($('#ed'));dismiss($('#dim'));document.body.style.overflow='';E=null}
 async function saveEditor(){
  commitTag();
  const text=E.text.trim();
@@ -279,12 +282,19 @@ function filtered(){const q=S.q.trim().toLowerCase();
  return S.entries.filter(e=>(!S.kid||e.kids.includes(S.kid))&&(!S.mil||e.ms)&&(!S.tag||e.tags.some(t=>t.toLowerCase()===S.tag))&&(!q||e.text.toLowerCase().includes(q)||e.tags.some(t=>t.toLowerCase().includes(q))))}
 function kidBadges(e){return e.kids.map(id=>kidById(id)).filter(Boolean).map(k=>`<span class="kb k${k.c}">${esc(k.name)} · ${ageAt(k.birth,e.date)}</span>`).join('')}
 function measLine(e){const p=METRICS.filter(([k])=>e[k]!=null).map(([k,,u])=>`${fmtNum(e[k])} ${u}`);return p.length?`<div class="ms">${p.join(' · ')}</div>`:''}
-function card(e,cls=''){const d=parseD(e.date),ms=e.media,badges=kidBadges(e);
- return `<article class="card ${cls}" data-a="open" data-id="${e.id}"><div class="dt"><b>${d.getDate()}</b><span>${WD[d.getDay()]}</span></div><div class="bd">
- ${badges||e.ms?`<div class="kbs">${e.ms?'<span class="star">★</span>':''}${badges}</div>`:''}
- <div class="ex ${e.text?'':'empty'}">${e.text?esc(e.text):'Kein Text'}</div>${measLine(e)}
- ${e.tags.length?`<div class="tg">${e.tags.map(t=>`<i>#${esc(t)}</i>`).join('')}</div>`:''}
- ${ms.length?`<div class="ths">${ms.slice(0,4).map(m=>`<div class="th"><img data-th="${m.id}" alt="">${m.type==='video'?'<b>▶</b>':''}</div>`).join('')}${ms.length>4?`<div class="th">+${ms.length-4}</div>`:''}</div>`:''}</div></article>`}
+const BOOKMARK='<svg class="bm" viewBox="0 0 15 20" aria-label="Meilenstein"><path d="M1.5 0h12A1.5 1.5 0 0 1 15 1.5V20l-7.5-5L0 20V1.5A1.5 1.5 0 0 1 1.5 0z"/></svg>';
+function card(e,cls=''){
+ const d=parseD(e.date),ms=e.media,badges=kidBadges(e),first=ms[0];
+ const dl=d.toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'short'}).toUpperCase();
+ const nl=e.text.indexOf('\n'),multi=nl>0&&e.text.slice(nl).trim().length>0;
+ const title=multi?e.text.slice(0,nl).trim():'',body=multi?e.text.slice(nl).trim():e.text;
+ return `<article class="card ${cls}" data-a="open" data-id="${e.id}">
+ ${first?`<div class="hero"><img data-th="${first.id}" alt="">${first.type==='video'?'<span class="play">▶ Video</span>':''}${ms.length>1?`<span class="cnt">${ms.length} Medien</span>`:''}</div>`:''}
+ <div class="cb"><div class="cd"><span>${esc(dl)}</span>${e.ms?BOOKMARK:''}</div>
+ ${badges?`<div class="kbs">${badges}</div>`:''}
+ ${title?`<div class="tt">${esc(title)}</div>`:''}
+ <div class="ex ${body?'':'empty'}">${body?esc(body):(title?'':'Kein Text')}</div>${measLine(e)}
+ ${e.tags.length?`<div class="tg">${e.tags.map(t=>`<i>#${esc(t)}</i>`).join('')}</div>`:''}</div></article>`}
 function daysSinceBackup(){const b=LS.get('lastBackup',0);return b?Math.floor((Date.now()-b)/864e5):null}
 function listBody(){
  const es=filtered();
@@ -297,9 +307,9 @@ function renderList(){
  let ban='';
  if(S.entries.length>=3&&(ds===null||ds>=14))ban+=`<div class="banner"><span>${ds===null?'Noch kein Backup erstellt.':`Letztes Backup vor ${ds} Tagen.`}</span><button data-a="tab" data-t="set">Sichern</button></div>`;
  const now=new Date();
- $('#app').innerHTML=`<h1><small>${WDL[now.getDay()]}, ${now.getDate()}. ${MON[now.getMonth()]}</small>Kinder-Journal</h1>${ban}
+ $('#app').innerHTML=`<h1><small>${WDL[now.getDay()]}, ${now.getDate()}. ${MON[now.getMonth()]}</small>Journal</h1>${ban}
  ${mem.length?`<div class="mon m0">An diesem Tag</div>${mem.map(e=>card(e,'mem')).join('')}`:''}
- <input class="srch" id="q" type="search" placeholder="Suchen …" value="${esc(S.q)}" enterkeyhint="search">
+ <div class="srchw"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input class="srch" id="q" type="search" placeholder="Suchen" value="${esc(S.q)}" enterkeyhint="search"></div>
  <div class="chips"><button class="chip ${!S.kid&&!S.mil?'on':''}" data-a="kidf" data-id="">Alle</button>${S.kids.map(k=>`<button class="chip k${k.c} ${S.kid===k.id?'on':''}" data-a="kidf" data-id="${k.id}">${esc(k.name)}</button>`).join('')}<button class="chip ${S.mil?'on':''}" data-a="milf">★ Meilensteine</button></div>
  ${tags.length?`<div class="chips">${tags.map(x=>`<button class="chip ${S.tag===x.t.toLowerCase()?'on':''}" data-a="tagf" data-t="${esc(x.t.toLowerCase())}">#${esc(x.t)}</button>`).join('')}</div>`:''}
  <div id="lb">${listBody()}</div>`;
@@ -372,9 +382,13 @@ async function renderSet(){
  <h2>Speicher</h2><div class="set"><div><span>Belegt</span><span class="v">${est||'–'}</span></div><div><span>Dauerhafter Speicher</span><span class="v">${persisted===null?'unbekannt':persisted?'aktiv':'nicht garantiert'}</span></div><div><span>Tage in Folge</span><span class="v">${streak()}</span></div></div>
  <h2>Gefahrenzone</h2><div class="set"><button data-a="wipe"><span class="d">Alles löschen (Daten und Schlüssel)</span></button></div>`}
 function render(){
+ $('#app').classList.toggle('ani',!!S.anim);$('#app').classList.toggle('fade',!S.anim&&!!S.fade);S.anim=false;S.fade=false;
  $$('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===S.tab));
  $('.fab').style.display=S.tab==='set'||S.tab==='grow'?'none':'';
- if(S.tab==='list')renderList();else if(S.tab==='cal')renderCal();else if(S.tab==='grow')renderGrow();else renderSet()}
+ if(S.tab==='list')renderList();else if(S.tab==='cal')renderCal();else if(S.tab==='grow')renderGrow();else renderSet();
+ navTitle()}
+function navTitle(){const h=$('#app h1');$('#navt').textContent=h?[...h.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join(''):''}
+addEventListener('scroll',()=>document.body.classList.toggle('scrolled',scrollY>44),{passive:true});
 
 /* ============ ZIP (ohne Kompression) ============ */
 const CRCT=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
@@ -415,8 +429,8 @@ function saveSheet(blob,name,type,title,enc1){
  <p class="fine">${enc1?'Die Datei ist verschlüsselt und ohne dein Passwort nicht lesbar. ':'<b>Achtung: unverschlüsselt.</b> Nach Gebrauch löschen. '}Im Teilen-Menü „In Dateien sichern“ wählen und den pCloud-Ordner antippen (pCloud muss in der Dateien-App aktiviert sein).</p>`);
  const mark=()=>{if(enc1){LS.set('lastBackup',Date.now());if(S.tab==='set')render()}};
  o.addEventListener('click',async e=>{const b=e.target.closest('[data-r]');if(!b)return;const r=b.dataset.r;
-  if(r==='x')o.remove();
-  else if(r==='share'){try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file]});mark();o.remove()}else toast('Teilen nicht möglich – bitte „Als Download“ nutzen',3500)}catch(err){if(err.name!=='AbortError')toast('Teilen fehlgeschlagen: '+err.message,3500)}}
+  if(r==='x')dismiss(o);
+  else if(r==='share'){try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file]});mark();dismiss(o)}else toast('Teilen nicht möglich – bitte „Als Download“ nutzen',3500)}catch(err){if(err.name!=='AbortError')toast('Teilen fehlgeschlagen: '+err.message,3500)}}
   else if(r==='dl'){const u=URL.createObjectURL(file),a=document.createElement('a');a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);mark()}})}
 async function doBackup(){
  const t=toast('Backup wird erstellt …',0);
@@ -484,15 +498,15 @@ function kidDialog(k){
  o.addEventListener('click',async e=>{
   const sw=e.target.closest('[data-c]');if(sw){c=+sw.dataset.c;$$('.sws button',o).forEach(b=>b.classList.toggle('on',+b.dataset.c===c));return}
   const b=e.target.closest('[data-r]');if(!b)return;const r=b.dataset.r;
-  if(r==='x'){o.remove();return}
+  if(r==='x'){dismiss(o);return}
   if(r==='del'){if(!(await ask('Kind entfernen?','Die Einträge bleiben erhalten, verlieren aber die Zuordnung zu diesem Kind.','Entfernen',true)))return;
    const t=txd('kids','readwrite');t.objectStore('kids').delete(k.id);await txDone(t);S.kids=S.kids.filter(x=>x.id!==k.id);
    for(const e2 of S.entries.filter(x=>x.kids.includes(k.id))){e2.kids=e2.kids.filter(x=>x!==k.id);e2.updated=Date.now();await saveEntry(e2,[],[])}
-   if(S.kid===k.id)S.kid='';o.remove();render();return}
+   if(S.kid===k.id)S.kid='';dismiss(o);render();return}
   const name=$('#kn',o).value.trim(),birth=$('#kb',o).value;
   if(!name){toast('Bitte einen Namen eintragen');return}if(!DATE_RE.test(birth)){toast('Bitte das Geburtsdatum eintragen');return}
   const kid={id:k?k.id:uid(),name,birth,c,order:k?k.order:S.kids.length};await saveKid(kid);
-  if(k)Object.assign(k,kid);else S.kids.push(kid);o.remove();render()})}
+  if(k)Object.assign(k,kid);else S.kids.push(kid);dismiss(o);render()})}
 function privacyDialog(){
  modal(`<h3>Datenschutz &amp; Sicherheit</h3>
  <ul><li><b>Nur lokal:</b> Alles liegt im Speicher dieses Geräts. Die App hat keinen Server, kein Konto, kein Tracking, keine Cookies und lädt nichts von fremden Seiten (auch keine Schriften).</li>
@@ -502,11 +516,11 @@ function privacyDialog(){
  <li><b>Grenzen:</b> Kein System ist absolut sicher. Die Stärke hängt an deinem Passwort und an der Gerätesperre. Wer das Passwort vergisst, verliert die Daten. Ein infiziertes oder entsperrtes Gerät kann die App nicht schützen.</li>
  <li><b>Hosting:</b> Beim Laden der App-Dateien sieht der Webserver deine IP-Adresse, aber nie deine Einträge.</li>
  <li><b>Rechtliches (keine Rechtsberatung):</b> Rein private Nutzung fällt unter die Haushaltsausnahme der DSGVO (Art. 2 Abs. 2 c). Teilst du Fotos oder Texte mit anderen, denk an die Persönlichkeitsrechte deiner Kinder.</li></ul>
- <div class="bt"><button class="p" data-r="x">Schließen</button></div>`).addEventListener('click',e=>{if(e.target.closest('[data-r]'))e.target.closest('.mo').remove()})}
+ <div class="bt"><button class="p" data-r="x">Schließen</button></div>`).addEventListener('click',e=>{if(e.target.closest('[data-r]'))dismiss(e.target.closest('.mo'))})}
 
 /* ============ Aktionen ============ */
 const A={
- tab(el){S.tab=el.dataset.t;render();scrollTo(0,0)},
+ tab(el){const same=S.tab===el.dataset.t;S.tab=el.dataset.t;S.anim=!same;S.fade=same;render();scrollTo(0,0)},
  new(){openEditor(null,S.tab==='cal'?S.day:today())},
  newday(){openEditor(null,S.day)},
  open(el){const e=S.entries.find(x=>x.id===el.dataset.id);if(e)openEditor(e)},
@@ -556,7 +570,7 @@ const A={
   const btn=$('#go',g);btn.disabled=true;btn.textContent='Schlüssel wird erzeugt …';await sleep(30);
   try{await vaultCreate(p)}catch(e){toast('Einrichtung fehlgeschlagen: '+e.message,4000);btn.disabled=false;btn.textContent='Tresor anlegen';return}
   try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch{}
-  g.remove();document.body.dataset.s='app';await loadAll();render();kidDialog(null)},
+  g.remove();document.body.dataset.s='app';await loadAll();S.anim=true;render();kidDialog(null)},
  restore(){$('#rsF').click()},
  async unlock(){
   const g=$('.gate'),inp=$('#lp',g),btn=$('.pill',g),wait=(LS.get('lockUntil',0)||0)-Date.now();
@@ -565,7 +579,7 @@ const A={
   try{VAULT.key=await vaultOpen(inp.value,VAULT.meta)}
   catch{const f=(LS.get('fails',0)||0)+1;LS.set('fails',f);if(f>=5)LS.set('lockUntil',Date.now()+Math.min(30*2**(f-5),900)*1000);
    inp.value='';btn.disabled=false;btn.textContent='Entsperren';$('#gm',g).textContent=f>=5?'Falsches Passwort – bitte kurz warten.':'Falsches Passwort.';return}
-  LS.set('fails',0);g.remove();document.body.dataset.s='app';await loadAll();render()}
+  LS.set('fails',0);g.remove();document.body.dataset.s='app';await loadAll();S.anim=true;render()}
 };
 document.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t||t.tagName==='SELECT'||t.tagName==='OPTION')return;const f=A[t.dataset.a];if(f)f(t,e)});
 document.addEventListener('change',e=>{const t=e.target;

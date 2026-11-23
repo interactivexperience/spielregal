@@ -1,6 +1,6 @@
 // Netzwerk zuerst, sonst Cache: App startet auch offline, Updates kommen automatisch.
 // Der Cache enthält nur die App-Dateien, nie Nutzerdaten.
-const V='kinderjournal-v2',FILES=['./','./index.html','./app.js','./app.css','./manifest.webmanifest','./icon-180.png','./icon-512.png'];
+const V='kinderjournal-v3',FILES=['./','./index.html','./app.js','./app.css','./manifest.webmanifest','./icon-180.png','./icon-512.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(V).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{if(e.request.method!=='GET'||new URL(e.request.url).origin!==location.origin)return;

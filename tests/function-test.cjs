@@ -45,7 +45,7 @@ const zb=fs.readFileSync(zp);ok(!zb.includes('GEHEIMTEXT123')&&!zb.includes('Mia
 const {execSync}=require('child_process');const lst=execSync(`python3 -c "import zipfile;z=zipfile.ZipFile('${zp}');print(z.testzip());print(len(z.namelist()))"`).toString().trim();console.log(lst);ok(lst.startsWith('None'),'ZIP gültig');
 await p.click('[data-r=x]');
 // Alles löschen -> Setup -> Restore
-await p.click('[data-a=wipe]');await p.click('.mo [data-r="1"]');await p.fill('#apw',PW);await p.click('.mo [data-r="1"]');await p.waitForSelector('#p1');ok(true,'gelöscht, Einrichtung wieder da');
+await p.click('[data-a=wipe]');await p.click('.mo:not(.out) [data-r="1"]');await p.fill('.mo:not(.out) #apw',PW);await p.click('.mo:not(.out) [data-r="1"]');await p.waitForSelector('#p1');ok(true,'gelöscht, Einrichtung wieder da');
 await p.setInputFiles('#rsF',zp);await p.waitForSelector('#lp',{timeout:15000});ok(true,'Restore: Sperrbildschirm');
 await p.fill('#lp',PW);await p.click('.gate .pill');await p.waitForSelector('#app h1');await p.click('[data-a=tab][data-t=list]');await p.waitForSelector('.card');await p.waitForSelector('.card img[src]');
 ok((await p.locator('.card').count())===2,'Restore: 2 Einträge');ok((await p.locator('.card').first().textContent()).includes('Mia'),'Restore: Kind+Alter');
