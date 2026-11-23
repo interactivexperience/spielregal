@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Tagebuch</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tagebuch">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#F6F1E8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#161311" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+:root{--bg:#F6F1E8;--card:#FFFDF8;--ink:#2A2420;--mut:#8A7F73;--line:#E3DACB;--acc:#B5523B;--acc-ink:#fff;--soft:#EFE6D6;--danger:#B3261E;--shadow:0 1px 0 rgba(42,36,32,.04),0 6px 18px rgba(42,36,32,.06);
+--serif:ui-serif,"New York",Georgia,serif;--sans:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+@media(prefers-color-scheme:dark){:root{--bg:#161311;--card:#201C19;--ink:#EFE7DB;--mut:#9A8F82;--line:#332D28;--acc:#E07A5F;--acc-ink:#1d1210;--soft:#2A2420;--danger:#F2877F;--shadow:0 6px 18px rgba(0,0,0,.35)}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 var(--sans);-webkit-text-size-adjust:100%;touch-action:manipulation;min-height:100vh}
+body.veil #app,body.veil #tabs,body.veil .fab{visibility:hidden}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+input,textarea,select{font:inherit;font-size:16px;color:var(--ink)}
+#app{padding:calc(env(safe-area-inset-top) + 14px) 16px calc(110px + env(safe-area-inset-bottom));max-width:720px;margin:0 auto}
+h1{font:600 34px/1.1 var(--serif);margin:6px 0 14px;letter-spacing:-.01em}
+h1 small{display:block;font:500 13px var(--sans);color:var(--mut);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+h2{font:600 13px var(--sans);letter-spacing:.07em;text-transform:uppercase;color:var(--mut);margin:26px 2px 8px}
+.srch{width:100%;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:11px 14px;margin-bottom:10px;outline:none}
+.srch:focus{border-color:var(--acc)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:5px 11px;border-radius:99px;background:var(--soft);font-size:14px;color:var(--ink);border:1px solid transparent}
+.chip.on{background:var(--acc);color:var(--acc-ink)}
+.mon{font:600 13px var(--sans);letter-spacing:.07em;text-transform:uppercase;color:var(--mut);margin:20px 2px 8px}
+.card{display:flex;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow);cursor:pointer}
+.card:active{transform:scale(.99)}
+.dt{flex:none;width:44px;text-align:center}
+.dt b{display:block;font:600 28px/1 var(--serif)}
+.dt span{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
+.bd{flex:1;min-width:0}
+.ex{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap;word-break:break-word}
+.ex.empty{color:var(--mut);font-style:italic}
+.mood{font-size:18px;margin-right:6px}
+.tg{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.tg i{font-style:normal;font-size:12px;color:var(--acc);background:color-mix(in srgb,var(--acc) 12%,transparent);padding:2px 8px;border-radius:99px}
+.ths{display:flex;gap:6px;margin-top:10px}
+.th{position:relative;width:56px;height:56px;border-radius:10px;overflow:hidden;background:var(--soft);display:grid;place-items:center;color:var(--mut);font-size:13px}
+.th img{width:100%;height:100%;object-fit:cover}
+.th b{position:absolute;right:4px;bottom:2px;color:#fff;font-size:12px;text-shadow:0 1px 3px #000}
+.empty-s{text-align:center;color:var(--mut);padding:60px 20px}
+.empty-s big{display:block;font-size:44px;margin-bottom:8px}
+.banner{display:flex;gap:10px;align-items:center;background:var(--soft);border-radius:14px;padding:11px 13px;margin-bottom:12px;font-size:14px}
+.banner span{flex:1}.banner button{color:var(--acc);font-weight:600}
+#tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--bg);border-top:1px solid var(--line);padding:6px 10px calc(6px + env(safe-area-inset-bottom));z-index:20}
+#tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--mut);padding:5px 0}
+#tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#tabs button.on{color:var(--acc)}
+.fab{position:fixed;right:18px;bottom:calc(76px + env(safe-area-inset-bottom));width:58px;height:58px;border-radius:50%;background:var(--acc);color:var(--acc-ink);font-size:32px;line-height:1;box-shadow:0 8px 22px rgba(181,82,59,.4);z-index:21;display:grid;place-items:center}
+.fab:active{transform:scale(.94)}
+/* Kalender */
+.calh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.calh b{font:600 20px var(--serif)}
+.calh button{width:40px;height:40px;border-radius:50%;background:var(--soft);font-size:18px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal .wd{text-align:center;font-size:12px;color:var(--mut);padding:4px 0}
+.cal button,.cal span.e{aspect-ratio:1;border-radius:12px;background:var(--card);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:15px}
+.cal span.e{background:none;border:0}
+.cal button.td{border-color:var(--acc);color:var(--acc);font-weight:700}
+.cal button.sel{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.cal button i{width:8px;height:8px;border-radius:50%;background:transparent}
+.cal button i.n{background:var(--mut)}
+/* Einstellungen */
+.set{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.set>*{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.set>*:last-child{border-bottom:0}
+.set small{display:block;color:var(--mut);font-size:13px;margin-top:2px}
+.set .v{color:var(--mut);font-size:15px;text-align:right}
+.set select{border:0;background:var(--soft);padding:6px 8px;border-radius:8px}
+.set .a{color:var(--acc);font-weight:600}
+.set .d{color:var(--danger)}
+.note{font-size:13px;color:var(--mut);margin:8px 4px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stats div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;text-align:center}
+.stats b{display:block;font:600 24px var(--serif)}
+.stats span{font-size:12px;color:var(--mut)}
+/* Editor */
+.sheet{position:fixed;inset:0;background:var(--bg);z-index:50;overflow:auto;-webkit-overflow-scrolling:touch}
+.sheet .bar{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;background:var(--bg);border-bottom:1px solid var(--line)}
+.sheet .bar b{font:600 17px var(--serif)}
+.lnk{color:var(--acc);font-weight:500;padding:6px 2px}
+.pill{background:var(--acc);color:var(--acc-ink);padding:8px 18px;border-radius:99px;font-weight:600}
+.edin{padding:16px 16px calc(40px + env(safe-area-inset-bottom));max-width:720px;margin:0 auto}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.row input[type=date]{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:8px 10px}
+.moods{display:flex;gap:4px}
+.moods button{width:44px;height:44px;border-radius:50%;font-size:24px;background:var(--card);border:2px solid var(--line);filter:grayscale(1);opacity:.55}
+.moods button.on{filter:none;opacity:1;border-color:var(--acc);transform:scale(1.08)}
+#edText{width:100%;min-height:22vh;border:0;background:transparent;resize:none;outline:none;font:18px/1.55 var(--serif);padding:6px 0}
+.tagbox{border-top:1px solid var(--line);padding-top:12px;margin-top:6px}
+.tagbox .tg{margin:0 0 8px}
+.tagbox .tg i{font-size:14px;padding:4px 6px 4px 10px;display:inline-flex;gap:6px;align-items:center}
+.tagbox .tg i u{text-decoration:none;opacity:.6;padding:0 4px;cursor:pointer}
+#edTagIn{width:100%;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:10px 12px;outline:none}
+#edSug{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+.media{margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
+#edMedia{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+#edMedia .th{width:auto;height:auto;aspect-ratio:1;border-radius:12px}
+#edMedia .th u{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;text-decoration:none;display:grid;place-items:center;font-size:15px;line-height:1}
+.addm{width:100%;padding:13px;border:1.5px dashed var(--line);border-radius:14px;color:var(--acc);font-weight:600}
+.danger{display:block;margin:34px auto 0;color:var(--danger);padding:10px 16px}
+/* Dialoge */
+.mo{position:fixed;inset:0;background:rgba(20,16,12,.5);z-index:80;display:flex;align-items:flex-end;justify-content:center;padding:12px}
+.mb{background:var(--card);border-radius:22px;padding:22px 20px calc(18px + env(safe-area-inset-bottom));width:100%;max-width:440px}
+.mb h3{font:600 20px var(--serif);margin:0 0 8px}
+.mb p{margin:0 0 16px;color:var(--mut);font-size:15px}
+.mb .bt{display:flex;flex-direction:column;gap:8px}
+.mb .bt button{padding:13px;border-radius:14px;background:var(--soft);font-weight:600}
+.mb .bt button.p{background:var(--acc);color:var(--acc-ink)}
+.mb .bt button.x{background:var(--danger);color:#fff}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;z-index:90;font-size:14px;max-width:88vw;text-align:center}
+.lb{position:fixed;inset:0;background:#000;z-index:70;display:flex;align-items:center;justify-content:center}
+.lb img,.lb video{max-width:100%;max-height:100%}
+.lb button{position:absolute;top:calc(env(safe-area-inset-top) + 12px);right:14px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.2);color:#fff;font-size:20px;z-index:2}
+/* PIN */
+.pinov{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
+.pinbox{width:100%;max-width:330px;text-align:center}
+.pinbox h2{font:600 26px var(--serif);text-transform:none;letter-spacing:0;color:var(--ink);margin:0 0 6px}
+.pinbox .sub{color:var(--mut);min-height:22px;margin:0 0 20px;font-size:15px}
+.dots{display:flex;justify-content:center;gap:14px;margin-bottom:26px}
+.dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--mut)}
+.dots i.on{background:var(--ink);border-color:var(--ink)}
+.dots.shake{animation:sh .35s}
+@keyframes sh{20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;justify-items:center;margin-bottom:14px}
+.pad button{width:74px;height:74px;border-radius:50%;background:var(--soft);font:500 28px var(--sans)}
+.pad button:active{background:var(--line)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<button class="fab" data-a="new" aria-label="Neuer Eintrag">+</button>
+<nav id="tabs">
+ <button data-a="tab" data-t="list" aria-label="Einträge"><svg viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M9 9h6M9 13h6"/></svg>Einträge</button>
+ <button data-a="tab" data-t="cal" aria-label="Kalender"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Kalender</button>
+ <button data-a="tab" data-t="set" aria-label="Einstellungen"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>Einstellungen</button>
+</nav>
+<script>
+'use strict';
+/* ============ Helfer ============ */
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LS={get(k,d){try{const v=localStorage.getItem('tb:'+k);return v==null?d:JSON.parse(v)}catch{return d}},set(k,v){try{localStorage.setItem('tb:'+k,JSON.stringify(v))}catch{}},del(k){try{localStorage.removeItem('tb:'+k)}catch{}}};
+const MOOD=['😞','🙁','😐','🙂','😄'],MOODN=['Mies','Naja','Okay','Gut','Super'],MCOL=['#B5523B','#D98A4B','#C9B458','#8AAE6B','#4F9A7A'];
+const WD=['So','Mo','Di','Mi','Do','Fr','Sa'],WDL=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+const MON=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parseD=s=>{const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const today=()=>ymd(new Date());
+const uid=()=>(crypto.randomUUID?crypto.randomUUID():'id'+Date.now().toString(36)+Math.random().toString(36).slice(2,10));
+const fmtSize=b=>b<1024?b+' B':b<1048576?(b/1024).toFixed(0)+' KB':b<1073741824?(b/1048576).toFixed(1)+' MB':(b/1073741824).toFixed(2)+' GB';
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const b64e=u8=>{let s='';u8.forEach(b=>s+=String.fromCharCode(b));return btoa(s)};
+const b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const extOf=m=>m.type==='video'?((m.mime||'').includes('quicktime')?'mov':(m.mime||'').includes('webm')?'webm':'mp4'):((m.mime||'').includes('png')?'png':'jpg');
+const cmpDesc=(a,b)=>a.date<b.date?1:a.date>b.date?-1:(b.created||0)-(a.created||0);
+
+/* ============ Datenbank (IndexedDB, nur auf diesem Gerät) ============ */
+let db;
+const rq=r=>new Promise((res,rej)=>{r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const txd=(st,mode='readonly')=>db.transaction(st,mode);
+const dbAll=s=>rq(txd(s).objectStore(s).getAll());
+const dbGet=(s,k)=>rq(txd(s).objectStore(s).get(k));
+const txDone=t=>new Promise((res,rej)=>{t.oncomplete=res;t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error||new Error('abgebrochen'))});
+function dbOpen(){return new Promise((res,rej)=>{const r=indexedDB.open('tagebuch',1);
+ r.onupgradeneeded=()=>{const d=r.result;d.createObjectStore('entries',{keyPath:'id'});d.createObjectStore('media',{keyPath:'id'});d.createObjectStore('thumbs',{keyPath:'id'})};
+ r.onsuccess=()=>{db=r.result;res()};r.onerror=()=>rej(r.error)})}
+async function dbSaveEntry(e,newMedia,removed){
+ const t=txd(['entries','media','thumbs'],'readwrite');
+ t.objectStore('entries').put(e);
+ for(const m of newMedia){t.objectStore('media').put({id:m.id,entryId:e.id,blob:m.blob});if(m.thumb)t.objectStore('thumbs').put({id:m.id,blob:m.thumb})}
+ for(const id of removed){t.objectStore('media').delete(id);t.objectStore('thumbs').delete(id)}
+ await txDone(t)}
+async function dbDeleteEntry(e){
+ const t=txd(['entries','media','thumbs'],'readwrite');
+ t.objectStore('entries').delete(e.id);
+ for(const m of e.media||[]){t.objectStore('media').delete(m.id);t.objectStore('thumbs').delete(m.id)}
+ await txDone(t)}
+async function dbClear(){const t=txd(['entries','media','thumbs'],'readwrite');['entries','media','thumbs'].forEach(s=>t.objectStore(s).clear());await txDone(t)}
+
+/* ============ Zustand ============ */
+const S={entries:[],tab:'list',q:'',tag:'',cal:(()=>{const n=new Date();return{y:n.getFullYear(),m:n.getMonth()}})(),day:today(),locked:false};
+const thumbCache=new Map();
+async function thumbURL(id){
+ if(thumbCache.has(id))return thumbCache.get(id);
+ let u=null;try{const r=await dbGet('thumbs',id);if(r&&r.blob)u=URL.createObjectURL(r.blob)}catch{}
+ thumbCache.set(id,u);return u}
+function freeThumbs(){thumbCache.forEach(u=>u&&URL.revokeObjectURL(u));thumbCache.clear()}
+async function hydrate(root=document){
+ for(const img of $$('img[data-th]',root)){const u=await thumbURL(img.dataset.th);if(u)img.src=u;else{img.remove()}}}
+async function loadEntries(){S.entries=(await dbAll('entries')).sort(cmpDesc)}
+
+/* ============ UI-Bausteine ============ */
+function toast(msg,ms=2200){$$('.toast').forEach(t=>t.remove());const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.append(t);if(ms)setTimeout(()=>t.remove(),ms);return t}
+function modal(html){const o=document.createElement('div');o.className='mo';o.innerHTML=`<div class="mb">${html}</div>`;
+ o.addEventListener('click',e=>{if(e.target===o)o.remove()});document.body.append(o);return o}
+function ask(title,text,okLabel='OK',danger=false){return new Promise(res=>{
+ const o=modal(`<h3>${esc(title)}</h3><p>${esc(text)}</p><div class="bt"><button class="${danger?'x':'p'}" data-r="1">${esc(okLabel)}</button><button data-r="0">Abbrechen</button></div>`);
+ o.addEventListener('click',e=>{const b=e.target.closest('[data-r]');if(b){o.remove();res(b.dataset.r==='1')}else if(e.target===o)res(false)})})}
+
+/* ============ PIN-Sperre ============ */
+async function hashPin(pin,saltB64){
+ const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pin),'PBKDF2',false,['deriveBits']);
+ const b=await crypto.subtle.deriveBits({name:'PBKDF2',salt:b64d(saltB64),iterations:150000,hash:'SHA-256'},k,256);
+ return b64e(new Uint8Array(b))}
+function askPin(title,sub,{cancel=true}={}){return new Promise(res=>{
+ const o=document.createElement('div');o.className='pinov';let v='';
+ o.innerHTML=`<div class="pinbox"><h2>${esc(title)}</h2><p class="sub">${esc(sub||'')}</p><div class="dots">${'<i></i>'.repeat(6)}</div><div class="pad">${[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map(k=>k===''?'<span></span>':`<button data-k="${k}" aria-label="${k}">${k}</button>`).join('')}</div>${cancel?'<button class="lnk" data-k="x">Abbrechen</button>':''}</div>`;
+ const upd=()=>$$('.dots i',o).forEach((d,i)=>d.classList.toggle('on',i<v.length));
+ const ui={close:()=>o.remove(),
+  reset:msg=>{v='';upd();$('.sub',o).textContent=msg||'';const d=$('.dots',o);d.classList.remove('shake');void d.offsetWidth;d.classList.add('shake');navigator.vibrate&&navigator.vibrate(80)},
+  sub:t=>{$('.sub',o).textContent=t}};
+ o.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.k;
+  if(k==='x'){o.remove();res(null)}
+  else if(k==='⌫'){v=v.slice(0,-1);upd()}
+  else if(v.length<6){v+=k;upd();if(v.length===6){const p=v;setTimeout(()=>res({pin:p,ui}),120)}}});
+ document.body.append(o)})}
+const pinSet=()=>!!LS.get('pin',null);
+async function unlockFlow(){
+ if(S.locked&&$('.pinov'))return;
+ S.locked=true;wipeScreen();let msg='';
+ for(;;){
+  const wait=(LS.get('lockUntil',0)||0)-Date.now();
+  if(wait>0)msg=`Zu viele Versuche – bitte ${Math.ceil(wait/1000)} s warten`;
+  const r=await askPin('Tagebuch',msg||'PIN eingeben',{cancel:false});
+  if(Date.now()<(LS.get('lockUntil',0)||0)){r.ui.close();continue}
+  const p=LS.get('pin');const h=await hashPin(r.pin,p.salt);
+  if(h===p.hash){LS.set('fails',0);r.ui.close();S.locked=false;await boot2();return}
+  const f=(LS.get('fails',0)||0)+1;LS.set('fails',f);
+  if(f>=5)LS.set('lockUntil',Date.now()+Math.min(30*2**(f-5),900)*1000);
+  msg='Falsche PIN';r.ui.close();
+ }}
+function wipeScreen(){E=null;document.body.style.overflow='';$('#app').innerHTML='';$$('.sheet,.mo,.lb,.toast').forEach(x=>x.remove());freeThumbs()}
+async function lockNow(){if(!pinSet()||S.locked)return;await unlockFlow()}
+let hiddenAt=0;
+document.addEventListener('visibilitychange',()=>{
+ if(document.hidden){hiddenAt=Date.now();if(pinSet())document.body.classList.add('veil')}
+ else{document.body.classList.remove('veil');
+  if(pinSet()&&!S.locked){const g=LS.get('grace',30)*1000;if(Date.now()-hiddenAt>=g)lockNow()}}});
+window.addEventListener('pagehide',()=>{if(pinSet())document.body.classList.add('veil')});
+window.addEventListener('pageshow',()=>{if(!document.hidden)document.body.classList.remove('veil')});
+
+/* ============ Medien ============ */
+const toBlob=(c,t,q)=>new Promise(r=>c.toBlob(r,t,q));
+function loadImg(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file);const i=new Image();i.onload=()=>{URL.revokeObjectURL(u);res(i)};i.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('Bild nicht lesbar'))};i.src=u})}
+async function scaled(src,w,h,max,type,q){const sc=Math.min(1,max/Math.max(w,h));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*sc));c.height=Math.max(1,Math.round(h*sc));c.getContext('2d').drawImage(src,0,0,c.width,c.height);return toBlob(c,type,q)}
+async function processImage(file){
+ try{const i=await loadImg(file);
+  const blob=await scaled(i,i.naturalWidth,i.naturalHeight,2400,'image/jpeg',.87);
+  const thumb=await scaled(i,i.naturalWidth,i.naturalHeight,320,'image/jpeg',.75);
+  return{blob:blob||file,thumb,mime:blob?'image/jpeg':file.type}}
+ catch{return{blob:file,thumb:null,mime:file.type||'image/jpeg'}}}
+function videoThumb(file){return new Promise(res=>{
+ const v=document.createElement('video');v.muted=true;v.playsInline=true;v.preload='auto';const u=URL.createObjectURL(file);let fin=false;
+ const end=b=>{if(fin)return;fin=true;URL.revokeObjectURL(u);res(b)};
+ v.onloadeddata=()=>{try{v.currentTime=Math.min(.5,(v.duration||1)/2)}catch{end(null)}};
+ v.onseeked=async()=>{try{end(await scaled(v,v.videoWidth,v.videoHeight,320,'image/jpeg',.75))}catch{end(null)}};
+ v.onerror=()=>end(null);setTimeout(()=>end(null),7000);v.src=u})}
+async function processVideo(file){return{blob:file,thumb:await videoThumb(file),mime:file.type||'video/mp4'}}
+
+/* ============ Editor ============ */
+let E=null;
+const normTag=t=>t.trim().replace(/^#+/,'').replace(/\s+/g,' ').slice(0,40);
+function allTags(){const m=new Map();for(const e of S.entries)for(const t of e.tags||[]){const k=t.toLowerCase();const o=m.get(k)||{t,n:0};o.n++;m.set(k,o)}return[...m.values()].sort((a,b)=>b.n-a.n||a.t.localeCompare(b.t))}
+function openEditor(entry,date){
+ E=entry?{id:entry.id,created:entry.created,isNew:false,date:entry.date,mood:entry.mood||0,text:entry.text||'',tags:[...(entry.tags||[])],media:(entry.media||[]).map(m=>({...m})),removed:[],dirty:false}
+  :{id:uid(),created:Date.now(),isNew:true,date:date||today(),mood:0,text:'',tags:[],media:[],removed:[],dirty:false};
+ const o=document.createElement('div');o.className='sheet';o.id='ed';
+ o.innerHTML=`<div class="bar"><button class="lnk" data-a="edcancel">Abbrechen</button><b>${E.isNew?'Neuer Eintrag':'Eintrag'}</b><button class="pill" data-a="edsave">Sichern</button></div>
+ <div class="edin"><div class="row"><input type="date" id="edDate" value="${E.date}"><div class="moods" id="edMood"></div></div>
+ <textarea id="edText" placeholder="Was beschäftigt dich heute?" enterkeyhint="enter"></textarea>
+ <div class="tagbox"><div class="tg" id="edTags"></div><input id="edTagIn" placeholder="Tag hinzufügen …" enterkeyhint="done" autocapitalize="none" autocomplete="off"><div id="edSug"></div></div>
+ <div class="media"><div id="edMedia"></div><button class="addm" data-a="addmedia">＋ Foto oder Video</button><input type="file" id="edFile" accept="image/*,video/*" multiple hidden></div>
+ ${E.isNew?'':'<button class="danger" data-a="eddel">Eintrag löschen</button>'}</div>`;
+ document.body.append(o);document.body.style.overflow='hidden';
+ const ta=$('#edText');ta.value=E.text;
+ const grow=()=>{ta.style.height='auto';ta.style.height=Math.max(ta.scrollHeight,window.innerHeight*.22)+'px'};grow();
+ ta.addEventListener('input',()=>{E.text=ta.value;E.dirty=true;grow()});
+ $('#edDate').addEventListener('change',e=>{if(e.target.value){E.date=e.target.value;E.dirty=true}});
+ const ti=$('#edTagIn');
+ ti.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===','){e.preventDefault();commitTag()}else if(e.key==='Backspace'&&!ti.value&&E.tags.length){E.tags.pop();E.dirty=true;drawTags()}});
+ ti.addEventListener('input',()=>{if(/[,]$/.test(ti.value))commitTag();else drawSug()});
+ $('#edFile').addEventListener('change',e=>addFiles([...e.target.files]).then(()=>e.target.value=''));
+ drawMood();drawTags();drawMedia();
+ if(E.isNew)setTimeout(()=>ta.focus(),60)}
+function commitTag(){const ti=$('#edTagIn');if(!ti)return;for(const part of ti.value.split(',')){const t=normTag(part);if(t&&!E.tags.some(x=>x.toLowerCase()===t.toLowerCase())){E.tags.push(t);E.dirty=true}}ti.value='';drawTags()}
+function drawMood(){$('#edMood').innerHTML=MOOD.map((m,i)=>`<button data-a="mood" data-v="${i+1}" class="${E.mood===i+1?'on':''}" aria-label="${MOODN[i]}" title="${MOODN[i]}">${m}</button>`).join('')}
+function drawTags(){$('#edTags').innerHTML=E.tags.map((t,i)=>`<i>#${esc(t)}<u data-a="deltag" data-i="${i}" role="button" aria-label="Tag entfernen">✕</u></i>`).join('');drawSug()}
+function drawSug(){const v=($('#edTagIn')?.value||'').toLowerCase();const have=new Set(E.tags.map(t=>t.toLowerCase()));
+ $('#edSug').innerHTML=allTags().filter(x=>!have.has(x.t.toLowerCase())&&(!v||x.t.toLowerCase().includes(v))).slice(0,8).map(x=>`<button class="chip" data-a="addtag" data-t="${esc(x.t)}">#${esc(x.t)}</button>`).join('')}
+function drawMedia(){
+ $('#edMedia').innerHTML=E.media.map((m,i)=>`<div class="th" data-a="viewmedia" data-i="${i}"><img ${m.thumbUrl?`src="${m.thumbUrl}"`:`data-th="${m.id}"`} alt="">${m.type==='video'?'<b>▶</b>':''}<u data-a="delmedia" data-i="${i}" role="button" aria-label="Entfernen">✕</u></div>`).join('');
+ hydrate($('#edMedia'))}
+async function addFiles(files){
+ const t=toast('Verarbeite …',0);let n=0;
+ for(const f of files){n++;t.textContent=`Verarbeite ${n}/${files.length} …`;
+  try{const isV=f.type.startsWith('video/');const p=isV?await processVideo(f):await processImage(f);
+   E.media.push({id:uid(),type:isV?'video':'image',mime:p.mime,name:f.name||'',blob:p.blob,thumb:p.thumb,thumbUrl:p.thumb?URL.createObjectURL(p.thumb):null,size:p.blob.size});E.dirty=true;drawMedia()}
+  catch(e){toast('Datei übersprungen: '+(f.name||''))}}
+ t.remove()}
+async function viewMedia(m){
+ const blob=m.blob||(await dbGet('media',m.id))?.blob;if(!blob){toast('Datei nicht gefunden');return}
+ const u=URL.createObjectURL(blob);const o=document.createElement('div');o.className='lb';
+ o.innerHTML=(m.type==='video'?`<video src="${u}" controls playsinline autoplay></video>`:`<img src="${u}" alt="">`)+'<button aria-label="Schließen">✕</button>';
+ o.querySelector('button').onclick=()=>{o.remove();URL.revokeObjectURL(u)};document.body.append(o)}
+function closeEditor(){E?.media.forEach(m=>m.thumbUrl&&URL.revokeObjectURL(m.thumbUrl));$('#ed')?.remove();document.body.style.overflow='';E=null}
+async function saveEditor(){
+ commitTag();
+ const text=E.text.trim();
+ if(!text&&!E.media.length&&!E.tags.length&&!E.mood){toast('Leerer Eintrag – schreib etwas oder abbrechen');return}
+ const e={id:E.id,date:E.date,created:E.created,updated:Date.now(),text,mood:E.mood||0,tags:E.tags,media:E.media.map(m=>({id:m.id,type:m.type,mime:m.mime,name:m.name,size:m.size}))};
+ try{await dbSaveEntry(e,E.media.filter(m=>m.blob),E.removed)}
+ catch(err){toast('Speichern fehlgeschlagen (Speicher voll?)',4000);return}
+ const i=S.entries.findIndex(x=>x.id===e.id);if(i>=0)S.entries[i]=e;else S.entries.push(e);S.entries.sort(cmpDesc);
+ S.day=e.date;closeEditor();render();toast('Gespeichert')}
+
+/* ============ Ansichten ============ */
+function filtered(){const q=S.q.trim().toLowerCase();return S.entries.filter(e=>(!S.tag||(e.tags||[]).some(t=>t.toLowerCase()===S.tag))&&(!q||(e.text||'').toLowerCase().includes(q)||(e.tags||[]).some(t=>t.toLowerCase().includes(q))))}
+function card(e){const d=parseD(e.date),ms=e.media||[];
+ return `<article class="card" data-a="open" data-id="${e.id}"><div class="dt"><b>${d.getDate()}</b><span>${WD[d.getDay()]}</span></div><div class="bd">
+ <div class="ex ${e.text?'':'empty'}">${e.mood?`<span class="mood">${MOOD[e.mood-1]}</span>`:''}${e.text?esc(e.text):'Kein Text'}</div>
+ ${(e.tags||[]).length?`<div class="tg">${e.tags.map(t=>`<i>#${esc(t)}</i>`).join('')}</div>`:''}
+ ${ms.length?`<div class="ths">${ms.slice(0,4).map(m=>`<div class="th"><img data-th="${m.id}" alt="">${m.type==='video'?'<b>▶</b>':''}</div>`).join('')}${ms.length>4?`<div class="th">+${ms.length-4}</div>`:''}</div>`:''}</div></article>`}
+function daysSinceBackup(){const b=LS.get('lastBackup',0);return b?Math.floor((Date.now()-b)/864e5):null}
+function listBody(){
+ const es=filtered();
+ if(!S.entries.length)return `<div class="empty-s"><big>📖</big>Noch kein Eintrag.<br>Tippe auf „+“, um den ersten zu schreiben.</div>`;
+ if(!es.length)return `<div class="empty-s"><big>🔎</big>Nichts gefunden.</div>`;
+ let out='',cur='';for(const e of es){const d=parseD(e.date),k=`${MON[d.getMonth()]} ${d.getFullYear()}`;if(k!==cur){cur=k;out+=`<div class="mon">${k}</div>`}out+=card(e)}return out}
+function renderList(){
+ const tags=allTags().slice(0,14);
+ const standalone=navigator.standalone||matchMedia('(display-mode: standalone)').matches;
+ const ds=daysSinceBackup();
+ let ban='';
+ if(!standalone&&!LS.get('hintOff',false))ban+=`<div class="banner"><span>Tipp: In Safari „Teilen → Zum Home-Bildschirm“ – nur so schützt iOS deine Einträge vor automatischem Löschen.</span><button data-a="hintoff">OK</button></div>`;
+ if(S.entries.length>=3&&(ds===null||ds>=14))ban+=`<div class="banner"><span>${ds===null?'Noch kein Backup erstellt.':`Letztes Backup vor ${ds} Tagen.`}</span><button data-a="tab" data-t="set">Sichern</button></div>`;
+ $('#app').innerHTML=`<h1><small>${WDL[new Date().getDay()]}, ${new Date().getDate()}. ${MON[new Date().getMonth()]}</small>Tagebuch</h1>${ban}
+ <input class="srch" id="q" type="search" placeholder="Suchen …" value="${esc(S.q)}" enterkeyhint="search">
+ ${tags.length?`<div class="chips">${tags.map(x=>`<button class="chip ${S.tag===x.t.toLowerCase()?'on':''}" data-a="tagf" data-t="${esc(x.t.toLowerCase())}">#${esc(x.t)}</button>`).join('')}</div>`:''}
+ <div id="lb">${listBody()}</div>`;
+ $('#q').addEventListener('input',e=>{S.q=e.target.value;$('#lb').innerHTML=listBody();hydrate($('#lb'))});
+ hydrate()}
+function renderCal(){
+ const{y,m}=S.cal;const first=new Date(y,m,1),lead=(first.getDay()+6)%7,dim=new Date(y,m+1,0).getDate();
+ const byDay={};for(const e of S.entries){(byDay[e.date]=byDay[e.date]||[]).push(e)}
+ let cells='';for(let i=0;i<lead;i++)cells+='<span class="e"></span>';
+ for(let d=1;d<=dim;d++){const k=`${y}-${pad(m+1)}-${pad(d)}`,es=byDay[k]||[];
+  const ms=es.filter(e=>e.mood);const avg=ms.length?Math.round(ms.reduce((a,e)=>a+e.mood,0)/ms.length):0;
+  cells+=`<button data-a="day" data-d="${k}" class="${k===today()?'td':''} ${k===S.day?'sel':''}">${d}<i ${avg?`style="background:${MCOL[avg-1]}"`:es.length?'class="n"':''}></i></button>`}
+ const sel=byDay[S.day]||[];const sd=parseD(S.day);
+ $('#app').innerHTML=`<h1><small>${S.entries.length} Einträge</small>Kalender</h1>
+ <div class="calh"><button data-a="calp" aria-label="Voriger Monat">‹</button><b>${MON[m]} ${y}</b><button data-a="caln" aria-label="Nächster Monat">›</button></div>
+ <div class="cal">${['Mo','Di','Mi','Do','Fr','Sa','So'].map(w=>`<div class="wd">${w}</div>`).join('')}${cells}</div>
+ <div class="mon">${WDL[sd.getDay()]}, ${sd.getDate()}. ${MON[sd.getMonth()]} ${sd.getFullYear()}</div>
+ ${sel.map(card).join('')||'<div class="note">Kein Eintrag an diesem Tag.</div>'}
+ <button class="pill" data-a="newday" style="margin-top:8px">＋ Eintrag für diesen Tag</button>`;
+ hydrate()}
+function streak(){const set=new Set(S.entries.map(e=>e.date));let d=new Date();if(!set.has(ymd(d)))d.setDate(d.getDate()-1);let n=0;while(set.has(ymd(d))){n++;d.setDate(d.getDate()-1)}return n}
+async function renderSet(){
+ const words=S.entries.reduce((a,e)=>a+((e.text||'').trim()?(e.text.trim().split(/\s+/).length):0),0);
+ const media=S.entries.reduce((a,e)=>a+(e.media||[]).length,0);
+ let est='';try{const s=await navigator.storage.estimate();est=fmtSize(s.usage||0)}catch{}
+ let persisted=null;try{persisted=await navigator.storage.persisted()}catch{}
+ const lb=LS.get('lastBackup',0);
+ $('#app').innerHTML=`<h1><small>Privat · nur auf diesem Gerät</small>Einstellungen</h1>
+ <div class="stats"><div><b>${S.entries.length}</b><span>Einträge</span></div><div><b>${streak()}</b><span>Tage in Folge</span></div><div><b>${media}</b><span>Fotos/Videos</span></div></div>
+ <h2>Sperre</h2><div class="set">
+  <button data-a="pin"><span>${pinSet()?'PIN ändern':'PIN festlegen'}<small>6 Ziffern, wird beim Öffnen abgefragt</small></span><span class="a">${pinSet()?'Ändern':'Einrichten'}</span></button>
+  ${pinSet()?`<label><span>Sperren nach<small>Zeit im Hintergrund</small></span><select data-a="grace">${[[0,'sofort'],[30,'30 Sek.'],[300,'5 Min.']].map(([v,l])=>`<option value="${v}" ${LS.get('grace',30)===v?'selected':''}>${l}</option>`).join('')}</select></label>
+  <button data-a="lockno"><span>Jetzt sperren</span><span class="a">Sperren</span></button>
+  <button data-a="pinoff"><span class="d">PIN entfernen</span></button>`:''}
+ </div>
+ <div class="note">Die PIN ist ein Sichtschutz. Sie verschlüsselt die Daten auf dem Gerät nicht – das Gerät selbst sollte mit Code gesperrt sein.</div>
+ <h2>Backup</h2><div class="set">
+  <button data-a="backup"><span>Backup erstellen (ZIP)<small>Text, Fotos und Videos · Teilen → „In Dateien sichern“ → pCloud</small></span><span class="a">Erstellen</span></button>
+  <button data-a="mdexp"><span>Nur Text als Markdown<small>Zum Lesen und Archivieren</small></span><span class="a">Export</span></button>
+  <button data-a="import"><span>Backup einlesen<small>ZIP dieser App oder JSON</small></span><span class="a">Wählen</span></button>
+  <div><span>Letztes Backup</span><span class="v">${lb?new Date(lb).toLocaleString('de-DE',{dateStyle:'medium',timeStyle:'short'}):'noch nie'}</span></div>
+ </div><input type="file" id="impF" accept=".zip,.json,application/zip,application/json" hidden>
+ <div class="note">Alles liegt nur im Browser-Speicher dieses iPhones. Geht das Gerät verloren oder wird die App gelöscht, sind die Einträge weg – deshalb regelmäßig ein Backup in pCloud ablegen.</div>
+ <h2>Speicher</h2><div class="set">
+  <div><span>Belegt</span><span class="v">${est||'–'}</span></div>
+  <div><span>Dauerhafter Speicher</span><span class="v">${persisted===null?'unbekannt':persisted?'aktiv':'nicht garantiert'}</span></div>
+  <div><span>Wörter geschrieben</span><span class="v">${words.toLocaleString('de-DE')}</span></div>
+ </div>
+ <h2>Gefahrenzone</h2><div class="set"><button data-a="wipe"><span class="d">Alle Einträge löschen</span></button></div>`;
+ }
+function render(){
+ $$('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===S.tab));
+ $('.fab').style.display=S.tab==='set'?'none':'';
+ if(S.tab==='list')renderList();else if(S.tab==='cal')renderCal();else renderSet()}
+
+/* ============ ZIP (ohne Kompression, ohne Fremdbibliothek) ============ */
+const CRCT=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(u8){let c=-1;for(let i=0;i<u8.length;i++)c=CRCT[(c^u8[i])&255]^(c>>>8);return(c^-1)>>>0}
+async function makeZip(files,onProg){
+ const enc=new TextEncoder(),parts=[],cen=[];let off=0;
+ for(let i=0;i<files.length;i++){const f=files[i];onProg&&onProg(i+1,files.length);
+  const crc=crc32(new Uint8Array(await f.blob.arrayBuffer())),nm=enc.encode(f.name),sz=f.blob.size;
+  if(sz>4e9||off>4e9)throw new Error('Backup zu groß für ein ZIP (4 GB)');
+  const lh=new DataView(new ArrayBuffer(30));lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);lh.setUint16(12,0x21,true);lh.setUint32(14,crc,true);lh.setUint32(18,sz,true);lh.setUint32(22,sz,true);lh.setUint16(26,nm.length,true);
+  parts.push(lh.buffer,nm,f.blob);
+  const ch=new DataView(new ArrayBuffer(46));ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);ch.setUint16(14,0x21,true);ch.setUint32(16,crc,true);ch.setUint32(20,sz,true);ch.setUint32(24,sz,true);ch.setUint16(28,nm.length,true);ch.setUint32(42,off,true);
+  cen.push(ch.buffer,nm);off+=30+nm.length+sz}
+ const cdSize=cen.reduce((a,p)=>a+(p.byteLength??p.size),0);
+ const end=new DataView(new ArrayBuffer(22));end.setUint32(0,0x06054b50,true);end.setUint16(8,files.length,true);end.setUint16(10,files.length,true);end.setUint32(12,cdSize,true);end.setUint32(16,off,true);
+ return new Blob([...parts,...cen,end.buffer],{type:'application/zip'})}
+async function readZip(file){
+ const size=file.size,tail=new DataView(await file.slice(Math.max(0,size-65557),size).arrayBuffer());
+ let i=tail.byteLength-22;while(i>=0&&tail.getUint32(i,true)!==0x06054b50)i--;
+ if(i<0)throw new Error('Kein gültiges ZIP');
+ const n=tail.getUint16(i+10,true),cdSize=tail.getUint32(i+12,true),cdOff=tail.getUint32(i+16,true);
+ const cd=new DataView(await file.slice(cdOff,cdOff+cdSize).arrayBuffer()),dec=new TextDecoder(),out=new Map();let p=0;
+ for(let k=0;k<n;k++){
+  if(cd.getUint32(p,true)!==0x02014b50)throw new Error('ZIP beschädigt');
+  const method=cd.getUint16(p+10,true),csize=cd.getUint32(p+20,true),nl=cd.getUint16(p+28,true),el=cd.getUint16(p+30,true),cl=cd.getUint16(p+32,true),lo=cd.getUint32(p+42,true);
+  const name=dec.decode(new Uint8Array(cd.buffer,p+46,nl));p+=46+nl+el+cl;
+  if(method!==0)throw new Error('Nur ZIP-Backups aus dieser App werden unterstützt');
+  const lh=new DataView(await file.slice(lo,lo+30).arrayBuffer()),st=lo+30+lh.getUint16(26,true)+lh.getUint16(28,true);
+  out.set(name,file.slice(st,st+csize))}
+ return out}
+
+/* ============ Backup / Export / Import ============ */
+function toMarkdown(es,withMedia){
+ const s=[...es].sort((a,b)=>-cmpDesc(a,b));let o='# Tagebuch\n\n';
+ for(const e of s){const d=parseD(e.date);o+=`## ${e.date} · ${WDL[d.getDay()]}${e.mood?' · '+MOOD[e.mood-1]+' '+MOODN[e.mood-1]:''}\n\n`;
+  if((e.tags||[]).length)o+=e.tags.map(t=>'#'+t.replace(/\s+/g,'_')).join(' ')+'\n\n';
+  if(e.text)o+=e.text.trim()+'\n\n';
+  if(withMedia)for(const m of e.media||[])o+=`- ${m.type==='video'?'Video':'Foto'}: media/${m.id}.${extOf(m)}\n`;
+  else if((e.media||[]).length)o+=`(${e.media.length} Foto/Video-Anhänge nur im ZIP-Backup)\n`;
+  o+='\n---\n\n'}
+ return o}
+function saveSheet(blob,name,type,title){
+ const file=new File([blob],name,{type});
+ const o=modal(`<h3>${esc(title)}</h3><p>${esc(name)} · ${fmtSize(blob.size)}</p><div class="bt"><button class="p" data-r="share">In Dateien / pCloud sichern</button><button data-r="dl">Als Download speichern</button><button data-r="x">Schließen</button></div>
+ <p style="margin:12px 0 0;font-size:13px">Im Teilen-Menü „In Dateien sichern“ wählen und den pCloud-Ordner antippen. Tipp: Die Datei erst nach erfolgreichem Sichern löschen.</p>`);
+ o.addEventListener('click',async e=>{const b=e.target.closest('[data-r]');if(!b)return;const r=b.dataset.r;
+  if(r==='x')o.remove();
+  else if(r==='share'){try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file]});LS.set('lastBackup',Date.now());o.remove();if(S.tab==='set')render()}else toast('Teilen nicht möglich – bitte „Als Download“ nutzen',3500)}catch(err){if(err.name!=='AbortError')toast('Teilen fehlgeschlagen: '+err.message,3500)}}
+  else if(r==='dl'){const u=URL.createObjectURL(file);const a=document.createElement('a');a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);LS.set('lastBackup',Date.now());if(S.tab==='set')render()}})}
+async function doBackup(){
+ const t=toast('Backup wird erstellt …',0);
+ try{const entries=await dbAll('entries'),files=[],meta=[];
+  for(const e of entries){const ms=[];for(const m of e.media||[]){const rec=await dbGet('media',m.id);if(!rec)continue;const f=`media/${m.id}.${extOf(m)}`;files.push({name:f,blob:rec.blob});ms.push({...m,file:f})}meta.push({...e,media:ms})}
+  const json=JSON.stringify({app:'tagebuch',v:1,exported:new Date().toISOString(),entries:meta},null,1);
+  files.unshift({name:'tagebuch.json',blob:new Blob([json])},{name:'tagebuch.md',blob:new Blob([toMarkdown(meta,true)])});
+  const zip=await makeZip(files,(i,n)=>t.textContent=`Backup ${i}/${n} …`);t.remove();
+  saveSheet(zip,`Tagebuch-Backup-${today()}.zip`,'application/zip','Backup bereit')}
+ catch(e){t.remove();toast('Backup fehlgeschlagen: '+e.message,4500)}}
+async function doImport(file){
+ const t=toast('Lese Backup …',0);
+ try{let data,files=new Map();
+  if(/\.json$/i.test(file.name))data=JSON.parse(await file.text());
+  else{files=await readZip(file);const j=files.get('tagebuch.json');if(!j)throw new Error('tagebuch.json fehlt');data=JSON.parse(await j.text())}
+  if(data.app!=='tagebuch'||!Array.isArray(data.entries))throw new Error('Unbekanntes Format');
+  const have=new Map(S.entries.map(e=>[e.id,e]));let added=0,upd=0,i=0;
+  for(const raw of data.entries){i++;t.textContent=`Importiere ${i}/${data.entries.length} …`;
+   const old=have.get(raw.id);if(old&&(old.updated||0)>=(raw.updated||0))continue;
+   const media=[],newM=[];
+   for(const m of raw.media||[]){const blob=m.file&&files.get(m.file);if(!blob)continue;
+    const typed=blob.slice(0,blob.size,m.mime||(m.type==='video'?'video/mp4':'image/jpeg'));
+    const thumb=m.type==='video'?await videoThumb(typed):(await processImage(typed)).thumb;
+    media.push({id:m.id,type:m.type,mime:m.mime,name:m.name||'',size:m.size});newM.push({id:m.id,blob:typed,thumb})}
+   const e={id:raw.id,date:raw.date,created:raw.created||Date.now(),updated:raw.updated||Date.now(),text:raw.text||'',mood:raw.mood||0,tags:raw.tags||[],media};
+   await dbSaveEntry(e,newM,[]);old?upd++:added++}
+  await loadEntries();freeThumbs();t.remove();render();toast(`${added} neu, ${upd} aktualisiert`,3500)}
+ catch(e){t.remove();toast('Import fehlgeschlagen: '+e.message,4500)}}
+
+/* ============ Aktionen ============ */
+const A={
+ tab(el){S.tab=el.dataset.t;render();scrollTo(0,0)},
+ new(){openEditor(null,S.tab==='cal'?S.day:today())},
+ newday(){openEditor(null,S.day)},
+ open(el){const e=S.entries.find(x=>x.id===el.dataset.id);if(e)openEditor(e)},
+ hintoff(){LS.set('hintOff',true);render()},
+ tagf(el){S.tag=S.tag===el.dataset.t?'':el.dataset.t;renderList()},
+ day(el){S.day=el.dataset.d;renderCal()},
+ calp(){S.cal.m--;if(S.cal.m<0){S.cal.m=11;S.cal.y--}renderCal()},
+ caln(){S.cal.m++;if(S.cal.m>11){S.cal.m=0;S.cal.y++}renderCal()},
+ async edcancel(){if(E.dirty&&!(await ask('Änderungen verwerfen?','Dieser Eintrag wurde noch nicht gesichert.','Verwerfen',true)))return;closeEditor()},
+ edsave(){saveEditor()},
+ mood(el){const v=+el.dataset.v;E.mood=E.mood===v?0:v;E.dirty=true;drawMood()},
+ addtag(el){const t=el.dataset.t;if(!E.tags.some(x=>x.toLowerCase()===t.toLowerCase()))E.tags.push(t);E.dirty=true;drawTags()},
+ deltag(el){E.tags.splice(+el.dataset.i,1);E.dirty=true;drawTags()},
+ addmedia(){$('#edFile').click()},
+ viewmedia(el){viewMedia(E.media[+el.dataset.i])},
+ delmedia(el,ev){ev.stopPropagation();const[m]=E.media.splice(+el.dataset.i,1);if(m.thumbUrl)URL.revokeObjectURL(m.thumbUrl);if(!m.blob)E.removed.push(m.id);E.dirty=true;drawMedia()},
+ async eddel(){if(!(await ask('Eintrag löschen?','Text, Fotos und Videos dieses Eintrags werden endgültig gelöscht.','Löschen',true)))return;
+  const e=S.entries.find(x=>x.id===E.id);try{await dbDeleteEntry(e)}catch{toast('Löschen fehlgeschlagen');return}
+  S.entries=S.entries.filter(x=>x.id!==e.id);closeEditor();render();toast('Gelöscht')},
+ async pin(){
+  if(pinSet()){const r=await askPin('Aktuelle PIN','Zur Bestätigung eingeben');if(!r)return;const p=LS.get('pin');const ok=(await hashPin(r.pin,p.salt))===p.hash;r.ui.close();if(!ok){toast('Falsche PIN');return}}
+  if(!crypto.subtle){toast('PIN braucht eine sichere Verbindung (https)');return}
+  const a=await askPin('Neue PIN','6 Ziffern wählen');if(!a)return;a.ui.close();
+  const b=await askPin('PIN wiederholen','Zur Bestätigung noch einmal');if(!b)return;
+  if(a.pin!==b.pin){b.ui.close();toast('PINs stimmen nicht überein');return}
+  b.ui.close();const salt=b64e(crypto.getRandomValues(new Uint8Array(16)));LS.set('pin',{salt,hash:await hashPin(a.pin,salt)});LS.set('fails',0);toast('PIN gesetzt');render()},
+ async pinoff(){const r=await askPin('PIN entfernen','Aktuelle PIN eingeben');if(!r)return;const p=LS.get('pin');const ok=(await hashPin(r.pin,p.salt))===p.hash;r.ui.close();if(!ok){toast('Falsche PIN');return}LS.del('pin');toast('PIN entfernt');render()},
+ lockno(){lockNow()},
+ grace(el){LS.set('grace',+el.value)},
+ backup(){doBackup()},
+ mdexp(){saveSheet(new Blob([toMarkdown(S.entries,false)],{type:'text/markdown'}),`Tagebuch-${today()}.md`,'text/markdown','Markdown bereit')},
+ import(){$('#impF').click()},
+ async wipe(){if(!(await ask('Alles löschen?',`Alle ${S.entries.length} Einträge samt Fotos und Videos werden unwiderruflich gelöscht. Hast du ein Backup?`,'Alles löschen',true)))return;
+  if(!(await ask('Wirklich sicher?','Das lässt sich nicht rückgängig machen.','Endgültig löschen',true)))return;
+  await dbClear();S.entries=[];freeThumbs();render();toast('Alles gelöscht')}
+};
+document.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t||t.tagName==='SELECT'||t.tagName==='OPTION')return;const f=A[t.dataset.a];if(f)f(t,e)});
+document.addEventListener('change',e=>{const t=e.target;if(t.id==='impF'&&t.files[0]){doImport(t.files[0]);t.value=''}else if(t.tagName==='SELECT'&&t.dataset.a==='grace')A.grace(t)});
+
+/* ============ Start ============ */
+async function boot2(){await loadEntries();render()}
+(async()=>{
+ try{await dbOpen()}catch(e){document.body.insertAdjacentHTML('afterbegin','<p style="padding:40px">Speicher nicht verfügbar. Bitte nicht im privaten Modus öffnen.</p>');return}
+ try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch{}
+ if('serviceWorker' in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+ if(pinSet())await unlockFlow();else await boot2()})();
+</script>
+</body>
+</html>
