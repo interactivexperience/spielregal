@@ -1,4 +1,5 @@
 'use strict';
+if(window.top!==window.self){document.documentElement.textContent='';throw new Error('framed')}
 /* Kinder-Journal – alles lokal, alles verschlüsselt (AES-256-GCM), keine Netzwerkzugriffe.
    Aufbau: Helfer · Krypto · Datenbank · Zustand · Tor (Einrichtung/Sperre) · Editor · Ansichten · ZIP · Backup · Aktionen */
 
@@ -75,6 +76,9 @@ async function openBlob(store,id,blob,mime,key=VAULT.key){
   const buf=await blob.slice(o-12,o+l).arrayBuffer();
   out.push(await crypto.subtle.decrypt({name:'AES-GCM',iv:new Uint8Array(buf,0,12),additionalData:aad(store,id,i+'/'+frames.length)},key,buf.slice(12)))}
  return new Blob(out,{type:mime})}
+function validVault(v){
+ try{return !!v&&v.v===1&&v.kdf==='PBKDF2-SHA256'&&Number.isInteger(v.iter)&&v.iter>=ITER&&v.iter<=5e6
+  &&b64d(v.salt).length===16&&b64d(v.iv).length===12&&b64d(v.wrapped).length===48}catch{return false}}
 function strength(p){
  const n=p.length,u=new Set(p).size,cls=[/[a-z]/,/[A-Z]/,/\d/,/[^A-Za-z0-9]/].filter(r=>r.test(p)).length;
  if(n<12||u<6)return 0;
@@ -116,8 +120,9 @@ async function thumbURL(id){
  thumbCache.set(id,u);return u}
 function freeThumbs(){thumbCache.forEach(u=>u&&URL.revokeObjectURL(u));thumbCache.clear()}
 async function hydrate(root=document){for(const img of $$('img[data-th]',root)){const u=await thumbURL(img.dataset.th);if(u)img.src=u;else img.remove()}}
-function cleanKid(o){const c=Math.min(6,Math.max(1,parseInt(o.c)||1));return{id:o.id,name:String(o.name||'').slice(0,60),birth:DATE_RE.test(o.birth)?o.birth:today(),c,order:+o.order||0}}
+function cleanKid(o){if(!o||!ID_RE.test(o.id))return null;const c=Math.min(6,Math.max(1,parseInt(o.c)||1));return{id:o.id,name:String(o.name||'').slice(0,60),birth:DATE_RE.test(o.birth)?o.birth:today(),c,order:+o.order||0}}
 function cleanEntry(o){
+ if(!o||!ID_RE.test(o.id))return null;
  const num=(v,lo,hi)=>{v=parseFloat(v);return isFinite(v)&&v>=lo&&v<=hi?v:null};
  return{id:o.id,date:DATE_RE.test(o.date)?o.date:today(),created:+o.created||Date.now(),updated:+o.updated||Date.now(),
   kids:(Array.isArray(o.kids)?o.kids:[]).filter(x=>typeof x==='string'&&ID_RE.test(x)),ms:!!o.ms,text:String(o.text||''),
@@ -125,7 +130,7 @@ function cleanEntry(o){
   h:num(o.h,20,250),w:num(o.w,.5,200),hd:num(o.hd,20,70),
   media:(Array.isArray(o.media)?o.media:[]).filter(m=>m&&ID_RE.test(m.id)).map(m=>({id:m.id,type:m.type==='video'?'video':'image',mime:String(m.mime||'').slice(0,60),name:String(m.name||'').slice(0,120),size:+m.size||0}))}}
 async function loadAll(){
- let bad=0;const dec1=async(s,r,cl)=>{try{return cl(await openJSON(s,r))}catch{bad++;return null}};
+ let bad=0;const dec1=async(s,r,cl)=>{try{const o=await openJSON(s,r);if(o.id!==r.id)throw 0;const v=cl(o);if(!v)throw 0;return v}catch{bad++;return null}};
  S.kids=(await Promise.all((await dbAll('kids')).map(r=>dec1('kids',r,cleanKid)))).filter(Boolean).sort((a,b)=>a.order-b.order);
  S.entries=(await Promise.all((await dbAll('entries')).map(r=>dec1('entries',r,cleanEntry)))).filter(Boolean).sort(cmpDesc);
  if(bad)toast(`${bad} Datensatz/Datensätze nicht lesbar – Backup einspielen?`,5000)}
@@ -438,7 +443,7 @@ async function doImport(file,fresh){
  const t=toast('Lese Backup …',0);
  try{const files=await readZip(file),hf=files.get('header.json');if(!hf)throw new Error('header.json fehlt');
   const h=JSON.parse(await hf.text());
-  if(h.app!=='kinderjournal'||!h.vault||!h.vault.wrapped)throw new Error('Unbekanntes Format');
+  if(h.app!=='kinderjournal'||!validVault(h.vault))throw new Error('Unbekanntes oder unsicheres Format');
   const rec=async(name)=>{const b=await files.get(name).arrayBuffer();return{id:name.split('/')[1],iv:new Uint8Array(b,0,12),ct:b.slice(12)}};
   const names=s=>[...files.keys()].filter(n=>n.startsWith(s+'/')&&ID_RE.test(n.split('/')[1]));
   if(fresh){ // frische Installation: Tresor des Backups übernehmen, Datensätze unverändert kopieren
@@ -451,10 +456,10 @@ async function doImport(file,fresh){
    const t2=toast('Prüfe Passwort …',0);try{bkey=await vaultOpen(pw,h.vault)}catch{t2.remove();toast('Passwort falsch');return}t2.remove()}
   const t3=toast('Importiere …',0);let added=0,upd=0,i=0;
   const haveK=new Set(S.kids.map(k=>k.id));
-  for(const n of names('kids')){const r=await rec(n);if(haveK.has(r.id))continue;const k=cleanKid(await openJSON('kids',r,bkey));await saveKid(k);S.kids.push(k)}
+  for(const n of names('kids')){const r=await rec(n);if(haveK.has(r.id))continue;const o=await openJSON('kids',r,bkey),k=o.id===r.id&&cleanKid(o);if(!k)continue;await saveKid(k);S.kids.push(k)}
   const have=new Map(S.entries.map(e=>[e.id,e])),list=names('entries');
   for(const n of list){i++;t3.textContent=`Importiere ${i}/${list.length} …`;
-   const r=await rec(n),e=cleanEntry(await openJSON('entries',r,bkey)),old=have.get(e.id);
+   const r=await rec(n),o=await openJSON('entries',r,bkey),e=o.id===r.id&&cleanEntry(o);if(!e)continue;const old=have.get(e.id);
    if(old&&old.updated>=e.updated)continue;
    const mrec=[];
    for(const m of e.media){const mb=files.get('media/'+m.id);if(!mb)continue;const tb=files.get('thumbs/'+m.id);
