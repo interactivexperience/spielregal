@@ -1,0 +1,70 @@
+/* Konzept 11 · Beton – dunkler Brutalismus: Rasterlinien, Monospace, harte Kanten, kein Radius, kein Schatten (nur transform/opacity/clip-path) */
+@font-face{font-family:Plex;src:url(../fonts/plex-mono-400.woff2) format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:Plex;src:url(../fonts/plex-mono-500.woff2) format('woff2');font-weight:500 800;font-display:swap}
+@font-face{font-family:Bricolage;src:url(../fonts/bricolage.woff2) format('woff2');font-weight:200 800;font-display:swap}
+:root{--bg:#0B0B0B;--bg2:#141414;--line:#E8E8E8;--dim:#8C8C8C;--txt:#E8E8E8;--a:#C8FF00;--g:clamp(14px,3.6vw,48px);--ease:steps(6,end)}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:auto}
+body{background:var(--bg);color:var(--txt);font:400 clamp(.95rem,.9rem + .25vw,1.08rem)/1.55 Plex,ui-monospace,monospace;overflow-x:clip;background-image:linear-gradient(var(--bg2) 1px,transparent 1px),linear-gradient(90deg,var(--bg2) 1px,transparent 1px);background-size:48px 48px}
+h1,h2,h3{font-family:Bricolage,Impact,sans-serif;font-weight:800;line-height:.92;letter-spacing:-.04em;text-transform:uppercase}
+a{color:inherit}svg{display:block;max-width:100%}:focus-visible{outline:3px solid var(--a);outline-offset:2px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--a);color:#000;padding:.6em 1em;z-index:200}.skip:focus{left:8px}
+.logo{height:1.05rem;width:auto;aspect-ratio:433.7/70.2;color:var(--txt)}
+.mono{font:500 .78rem Plex,monospace;letter-spacing:.08em;text-transform:uppercase}.dim{color:var(--dim);text-transform:none}
+.wr{max-width:1280px;margin:auto}
+
+.hd{position:fixed;inset:0 0 auto;z-index:50;display:flex;align-items:stretch;justify-content:space-between;background:var(--bg);border-bottom:2px solid var(--line)}
+.hd-logo{display:flex;align-items:center;padding:0 var(--g);border-right:2px solid var(--line);min-height:52px}
+.hd-nav{display:flex;margin-left:auto}.hd-nav a{display:flex;align-items:center;padding:0 1.2rem;border-left:2px solid var(--line);font:500 .76rem Plex,monospace;text-transform:uppercase;letter-spacing:.08em;text-decoration:none}
+.hd-nav a::before{content:'[';margin-right:.25em}.hd-nav a::after{content:']';margin-left:.25em}
+.hd-nav a:hover,.mt:hover{background:var(--a);color:#000}
+.mt{font:500 .72rem Plex,monospace;text-transform:uppercase;letter-spacing:.08em;border:0;border-left:2px solid var(--line);background:var(--bg);color:var(--txt);min-height:52px;padding:0 1.1rem;display:flex;gap:.5rem;align-items:center;cursor:pointer}
+.mt-i{width:10px;height:10px;background:var(--a)}.mt[aria-pressed=false] .mt-i{background:transparent;border:2px solid var(--txt)}
+@media(max-width:760px){.hd-nav{display:none}.hd{justify-content:space-between}.mt [data-motion-label]{display:none}}
+
+.hero{min-height:94svh;padding:calc(52px + 8vh) var(--g) 7vh;display:flex;flex-direction:column;justify-content:flex-end;gap:1.4rem;border-bottom:2px solid var(--line)}
+.hero h1{font-size:clamp(2.1rem,8.2vw,8.2rem);text-wrap:balance;overflow-wrap:anywhere}
+.gl{position:relative;display:block}
+.gl::before,.gl::after{content:attr(data-t);position:absolute;inset:0;pointer-events:none;opacity:0}
+.gl::before{color:var(--a);clip-path:inset(0 0 100% 0)}.gl::after{color:#fff;clip-path:inset(100% 0 0 0)}
+html[data-motion=on] .gl::before{animation:g1 5s steps(1,end) infinite}html[data-motion=on] .gl::after{animation:g2 5s steps(1,end) infinite}
+@keyframes g1{0%,86%,100%{opacity:0;transform:none}87%{opacity:1;clip-path:inset(18% 0 62% 0);transform:translate3d(-6px,0,0)}91%{opacity:1;clip-path:inset(54% 0 22% 0);transform:translate3d(5px,0,0)}95%{opacity:0}}
+@keyframes g2{0%,88%,100%{opacity:0}89%{opacity:1;clip-path:inset(40% 0 38% 0);transform:translate3d(6px,0,0)}93%{opacity:1;clip-path:inset(8% 0 80% 0);transform:translate3d(-5px,0,0)}96%{opacity:0}}
+.lead{max-width:40rem;font-size:1.1rem}.cta{display:flex;gap:0;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;min-height:56px;font:500 .95rem Plex,monospace;text-transform:uppercase;letter-spacing:.04em;text-decoration:none;border:2px solid var(--line);padding:.7em 1.4em;margin:0 -2px -2px 0;background:var(--bg)}
+.btn:hover{background:var(--line);color:#000}.btn-a{background:var(--a);color:#000;border-color:var(--a)}.btn-a:hover{background:#fff;border-color:#fff}
+
+.tape{overflow:hidden;background:repeating-linear-gradient(135deg,var(--a) 0 22px,#000 22px 44px);color:#000;border-bottom:2px solid var(--line);padding:.55rem 0;font:800 1rem Bricolage;letter-spacing:.04em}
+.tape-t{display:inline-block;white-space:nowrap;background:var(--a);padding:.1rem .6rem;animation:mq 60s linear infinite}
+@keyframes mq{to{transform:translate3d(-50%,0,0)}}html[data-motion=off] .tape-t,html[data-motion=off] .band-t{animation:none}
+
+.sec{padding:clamp(60px,10vh,120px) var(--g);border-bottom:2px solid var(--line)}
+h2{font-size:clamp(2.4rem,8vw,6.4rem);margin-bottom:2.4rem;white-space:pre-wrap;overflow-wrap:anywhere}
+.spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));border:2px solid var(--line);margin-bottom:2.4rem;background:var(--bg)}
+.spec div{padding:1rem 1.2rem;border:0 solid var(--line);border-right-width:2px;border-bottom-width:2px;margin:0 -2px -2px 0}.spec dt{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--dim)}.spec dd{font-weight:500}.ok{color:var(--a)}
+.grid3,.grid4{list-style:none;padding:0;display:grid;border:2px solid var(--line);background:var(--bg)}
+.grid3{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}.grid4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-top:2.4rem}
+.grid3 li,.grid4 li{padding:1.4rem;margin:0 -2px -2px 0;border:0 solid var(--line);border-right-width:2px;border-bottom-width:2px;display:flex;flex-direction:column;gap:.8rem}
+.grid3 h3{font-size:1.7rem}.grid4 b{text-transform:uppercase;font-size:.9rem;letter-spacing:.04em}.grid4 span{font-size:.92rem;color:var(--dim)}
+.tbl{list-style:none;padding:0;border:2px solid var(--line);background:var(--bg)}
+.tbl li+li{border-top:2px solid var(--line)}
+.tbl a{display:grid;grid-template-columns:3rem 1.2fr 1.6fr 2rem;gap:1.2rem;align-items:baseline;padding:1.5rem 1.2rem;text-decoration:none}
+.tbl b{font:800 clamp(1.5rem,3.4vw,2.6rem)/1 Bricolage;text-transform:uppercase;letter-spacing:-.03em}
+.tbl a:hover{background:var(--a);color:#000}.tbl i{font-style:normal}
+.ls{list-style:none;padding:0;border:2px solid var(--line);background:var(--bg);margin-top:1rem}
+.ls li{display:grid;grid-template-columns:7.5rem 1.4fr 1fr 1.4fr;gap:1rem;padding:.9rem 1.2rem}.ls li+li{border-top:2px solid var(--line)}
+.ls b{font-weight:500;color:var(--a)}.perm{color:var(--dim)}.ls li:hover{background:var(--line);color:#000}.ls li:hover b,.ls li:hover .perm{color:#000}
+.band{overflow:hidden;margin:2.4rem 0 0;border:2px solid var(--line);padding:.8rem 0;background:var(--bg);font-weight:500;text-transform:uppercase}
+.band-t{display:inline-flex;gap:1.4rem;white-space:nowrap;animation:mq 50s linear infinite}.band-t i{font-style:normal;color:var(--a)}
+.sm{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:2.4rem;border:2px solid var(--line);background:var(--bg)}
+.sm figure{padding:1.4rem;margin:0 -2px -2px 0;border:0 solid var(--line);border-right-width:2px;border-bottom-width:2px}
+blockquote{font:500 1.15rem/1.35 Plex,monospace}figcaption{margin-top:.8rem;font-size:.78rem;color:var(--dim)}
+.sec-a{background:var(--a);color:#000;background-image:none}.sec-a .btn{background:#000;color:#fff;border-color:#000}.sec-a .btn-o{background:transparent;color:#000}.sec-a .btn:hover{background:#fff;color:#000}
+.prompt{font:800 clamp(2.4rem,10vw,8.5rem)/1 Bricolage;letter-spacing:-.04em;text-transform:uppercase;margin-bottom:1.4rem}.blink{animation:bl 1s steps(1) infinite}@keyframes bl{50%{opacity:0}}html[data-motion=off] .blink{animation:none}
+.ft{padding:2.4rem var(--g) 3.2rem;display:grid;gap:.5rem;font-size:.85rem;background:var(--bg)}.ft .logo{color:var(--txt)}.ft a{display:inline-flex;align-items:center;min-height:44px}.ft-n{color:var(--dim);font-size:.74rem;max-width:44rem}
+
+/* Reveal: hartes Einrasten statt Gleiten (steps) */
+html[data-motion=on].js [data-reveal]{opacity:0;transform:translate3d(0,16px,0)}
+html[data-motion=on].js [data-reveal].in{opacity:1;transform:none;transition:opacity .25s steps(4,end) var(--d,0ms),transform .35s var(--ease) var(--d,0ms)}
+@media(max-width:760px){.tbl a{grid-template-columns:2rem 1fr;gap:.4rem .8rem}.tbl a span:nth-child(3){grid-column:2}.tbl i{display:none}.ls li{grid-template-columns:1fr 1fr}.perm{display:none}.ls b{grid-column:1/-1}}
+@media(prefers-reduced-motion:reduce){.gl::before,.gl::after,.blink,.tape-t,.band-t{animation:none!important}}
