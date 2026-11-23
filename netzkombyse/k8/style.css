@@ -1,0 +1,53 @@
+/* Konzept 8 · Flaschenpost – mobile-first: Karten wischen (scroll-snap), Neigung und Parallaxe aus dem Scroll (transform) */
+@font-face{font-family:Fraunces;src:url(../fonts/fraunces.woff2) format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:Figtree;src:url(../fonts/figtree.woff2) format('woff2');font-weight:300 900;font-display:swap}
+:root{--ink:#10263A;--red:#E4482D;--ease:cubic-bezier(.2,.8,.2,1);--dp:0}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+body{background:linear-gradient(#CDEBF2,#9FD3E0);color:var(--ink);font:500 1.05rem/1.5 Figtree,system-ui,sans-serif}
+svg{display:block;max-width:100%}a{color:inherit}:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+.skip{position:absolute;left:-999px;top:8px;background:#fff;padding:.6em 1em;z-index:200}.skip:focus{left:8px}
+.logo{height:1rem;width:auto;aspect-ratio:433.7/70.2}
+.bar{position:fixed;inset:0 0 auto;z-index:30;display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:max(10px,env(safe-area-inset-top)) 16px 6px}
+.bar-logo{display:inline-flex;align-items:center;min-height:44px}
+.mt{font:700 .7rem Figtree;letter-spacing:.08em;text-transform:uppercase;border:2px solid var(--ink);background:rgba(255,255,255,.5);color:var(--ink);border-radius:99px;min-height:44px;padding:.4em 1em;display:flex;gap:.45rem;align-items:center;cursor:pointer}
+.mt-i{width:11px;height:11px;border-radius:50%;background:var(--red)}.mt[aria-pressed=false] .mt-i{background:transparent;box-shadow:inset 0 0 0 2px var(--ink)}
+
+/* Meer: Wellen laufen, die Flasche treibt mit der Kartenposition (--dp 0…1) */
+.sea{position:fixed;inset:auto 0 0;height:46svh;z-index:0;pointer-events:none;overflow:hidden}
+.sea-w{position:absolute;inset:auto 0 0;height:100%}.sea-w .wl2{position:absolute;left:0;bottom:0;width:200%;height:100%;animation:drift 22s linear infinite}.sea-w .wl2 svg{width:100%;height:100%}
+.sea-2 .wl2{animation-duration:15s;animation-direction:reverse;bottom:-18%}
+@keyframes drift{to{transform:translate3d(-50%,0,0)}}html[data-motion=off] .wl2{animation:none}
+.drift{position:absolute;bottom:14%;left:0;width:46px;transform:translate3d(calc(var(--dp) * (100vw - 80px)),0,0) rotate(calc(70deg + var(--dp) * 20deg));transform-origin:50% 80%}
+.ga-d{width:100%}
+
+.deck{position:fixed;inset:calc(max(10px,env(safe-area-inset-top)) + 58px) 0 calc(92px + env(safe-area-inset-bottom));z-index:5;display:flex;gap:14px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;padding:10px calc((100vw - min(84vw,380px)) / 2);scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;outline:none}
+.deck::-webkit-scrollbar{display:none}
+.card{--o:0;--a:0;position:relative;flex:0 0 min(84vw,380px);height:100%;max-height:640px;align-self:center;scroll-snap-align:center;scroll-snap-stop:always;background:var(--c);color:var(--fg);border:3px solid var(--ink);border-radius:18px 18px 18px 46px;padding:1.6rem 1.4rem 1.6rem;display:flex;flex-direction:column;justify-content:center;gap:.9rem;overflow:hidden;box-shadow:6px 8px 0 rgba(16,38,58,.9);transform:rotate(calc(var(--r) + var(--o) * 5deg)) scale(calc(1 - var(--a) * .06)) translate3d(0,calc(var(--a) * 16px),0);transition:box-shadow .3s}
+.tape{position:absolute;top:-8px;left:50%;width:84px;height:26px;margin-left:-42px;background:rgba(255,216,74,.85);transform:rotate(-3deg);border:2px solid rgba(16,38,58,.25)}
+.card>*:not(.art):not(.tape){position:relative;z-index:2}
+.art{position:absolute;right:-2%;top:3%;width:34%;z-index:1;opacity:.95;transform:translate3d(calc(var(--o) * -34px),0,0) rotate(-6deg)}
+.ga{width:100%;height:auto}.ga-b{width:46%;margin-left:auto}
+.k{font:700 .72rem Figtree;letter-spacing:.14em;text-transform:uppercase;opacity:.8}
+h2{font:500 clamp(1.9rem,8.6vw,2.9rem)/1.02 Fraunces,Georgia,serif;letter-spacing:-.02em;text-wrap:balance;overflow-wrap:break-word;hyphens:auto;margin-top:4.6rem}.card:first-child h2,.card:last-child h2{margin-top:6rem}
+.card:has(blockquote) .k{margin-top:1rem}.card:has(.art) .k{max-width:62%}
+.p{font-size:1.1rem}
+.li{list-style:none;padding:0;display:grid;gap:.9rem;margin-top:.4rem}.li b{display:block;font:600 1.25rem/1.1 Fraunces,serif}.li span{display:block;font-size:.95rem;opacity:.85}
+.chips{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:.5rem}.chips li{border:2px solid currentColor;border-radius:99px;padding:.3em .85em;font-size:.95rem}
+blockquote{font:500 1.55rem/1.15 Fraunces,serif}.who{font-size:.9rem;opacity:.85}
+.acts{display:flex;flex-direction:column;gap:.7rem}
+.btn{display:inline-flex;justify-content:center;align-items:center;min-height:52px;font:700 1rem Figtree;text-decoration:none;border:3px solid var(--ink);border-radius:99px;padding:.7em 1.4em;background:#fff;color:var(--ink);box-shadow:3px 4px 0 var(--ink);transition:transform .2s,box-shadow .2s}.btn:active{transform:translate(2px,3px);box-shadow:0 0 0 var(--ink)}.btn-p{background:var(--red);color:#fff}
+.fine{font-size:.78rem;opacity:.85}.fine a{display:inline-flex;align-items:center;min-height:44px;padding:0 .3rem}
+
+.dock{position:fixed;inset:auto 0 0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.6rem 14px calc(.8rem + env(safe-area-inset-bottom))}
+.nb{width:52px;height:52px;border-radius:50%;border:3px solid var(--ink);background:#fff;color:var(--ink);display:grid;place-items:center;cursor:pointer;flex:none;box-shadow:3px 4px 0 var(--ink)}.nb svg{width:24px}.nb:active{transform:translate(2px,3px);box-shadow:0 0 0 var(--ink)}.nb[disabled]{opacity:.35}
+.dots{list-style:none;padding:0;display:flex;gap:0;overflow:hidden;flex:1;justify-content:center}
+.dots button{width:24px;height:44px;border:0;background:none;display:grid;place-items:center;cursor:pointer;padding:0}
+.dots i{display:block;width:8px;height:8px;border-radius:50%;background:rgba(16,38,58,.35);transition:transform .3s var(--ease),background .3s}
+.dots button[aria-current=true] i{background:var(--ink);transform:scale(1.7)}
+@media(max-width:380px){.dots button{width:20px}}
+
+/* Desktop: Karten mittig, Rad scrollt seitwärts */
+@media(min-width:760px){.card{flex-basis:380px}.deck{padding-inline:calc((100vw - 380px) / 2)}}
+@media(prefers-reduced-motion:reduce){.card{transition:none}}
+html[data-motion=off] .card{transform:rotate(var(--r))!important}html[data-motion=off] .art{transform:rotate(-6deg)!important}html[data-motion=off] .drift{transform:translate3d(0,0,0) rotate(80deg)!important}

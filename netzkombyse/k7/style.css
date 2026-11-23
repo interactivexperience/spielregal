@@ -1,0 +1,55 @@
+/* Konzept 7 · Seemannsgarn – mobile-first: Stories im Vollbild (nur transform/opacity) */
+@font-face{font-family:Bagel;src:url(../fonts/bagel.woff2) format('woff2');font-display:swap}
+@font-face{font-family:Nunito;src:url(../fonts/nunito.woff2) format('woff2');font-weight:200 900;font-display:swap}
+:root{--ink:#10263A;--sun:#FFD84A;--red:#FF5A45;--ease:cubic-bezier(.2,.8,.2,1);--bounce:cubic-bezier(.3,1.5,.5,1)}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+body{background:#0c1a2b;color:var(--ink);font:700 1.06rem/1.45 Nunito,system-ui,sans-serif}
+svg{display:block;max-width:100%}a{color:inherit}:focus-visible{outline:4px solid #fff;outline-offset:3px;box-shadow:0 0 0 7px var(--ink)}
+.skip{position:absolute;left:-999px;top:8px;background:#fff;padding:.6em 1em;z-index:200}.skip:focus{left:8px}
+.logo{height:1rem;width:auto;aspect-ratio:433.7/70.2}
+.app{position:relative;height:100svh;max-width:100%;margin:auto;overflow:hidden;background:var(--bg,#2E6BF0);transition:background .5s}
+.bars{position:absolute;inset:max(10px,env(safe-area-inset-top)) 12px auto;z-index:20;display:flex;gap:4px}
+.seg{flex:1;height:4px;border-radius:4px;background:rgba(16,38,58,.22);overflow:hidden}.seg b{display:block;height:100%;background:var(--ink);transform:scaleX(0);transform-origin:0 50%}
+.seg.done b{transform:scaleX(1)}.seg.cur b{animation:fill var(--dur,8s) linear forwards}.paused .seg.cur b{animation-play-state:paused}
+@keyframes fill{to{transform:scaleX(1)}}
+html[data-motion=off] .seg.cur b{animation:none;transform:scaleX(1)}
+.bar{position:absolute;inset:calc(max(10px,env(safe-area-inset-top)) + 14px) 12px auto;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:.6rem;color:var(--fg,var(--ink))}
+.bar-logo{display:inline-flex;align-items:center;min-height:44px}
+.mt{font:800 .7rem Nunito;letter-spacing:.08em;text-transform:uppercase;border:2.5px solid currentColor;background:transparent;color:inherit;border-radius:99px;min-height:44px;padding:.4em 1em;display:flex;gap:.45rem;align-items:center;cursor:pointer}
+.mt-i{width:11px;height:11px;border-radius:50%;background:currentColor}.mt[aria-pressed=false] .mt-i{background:transparent;box-shadow:inset 0 0 0 2px currentColor}
+.tz{position:absolute;top:calc(max(10px,env(safe-area-inset-top)) + 70px);bottom:calc(96px + env(safe-area-inset-bottom));z-index:5;border:0;background:transparent;cursor:pointer}
+.tz-l{left:0;width:32%}.tz-r{right:0;width:68%}
+.story{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;justify-content:center;gap:1rem;padding:calc(max(10px,env(safe-area-inset-top)) + 90px) 22px calc(112px + env(safe-area-inset-bottom));background:var(--bg);color:var(--fg);opacity:0;transform:translate3d(7%,0,0);pointer-events:none;visibility:hidden;transition:opacity .35s var(--ease),transform .45s var(--ease),visibility 0s .45s}
+.story.on{opacity:1;transform:none;visibility:visible;transition-delay:0s}.story.from-l{transform:translate3d(-7%,0,0)}.story.on.from-l{transform:none}
+.story a,.story button{pointer-events:auto}
+html[data-motion=off] .story{transition:none}
+.art{position:absolute;right:-6%;top:calc(max(10px,env(safe-area-inset-top)) + 86px);width:min(54%,230px);opacity:.95;transform:rotate(-8deg)}
+.story.on .art{animation:bobs 5s ease-in-out infinite}
+@keyframes bobs{50%{transform:translate3d(-8px,-12px,0) rotate(-3deg)}}html[data-motion=off] .story.on .art{animation:none}
+.ga{width:100%;height:auto}
+.txt{position:relative;z-index:2;display:flex;flex-direction:column;gap:.9rem;max-width:34rem}
+.k{font:800 .74rem Nunito;letter-spacing:.14em;text-transform:uppercase;opacity:.85}
+h2{font:400 clamp(2.5rem,12.4vw,4.2rem)/.98 Bagel,Impact,sans-serif;letter-spacing:-.005em;text-wrap:balance;overflow-wrap:anywhere}
+.p{font-size:1.15rem;max-width:26rem}
+.txt>*{opacity:0;transform:translate3d(0,18px,0)}.story.on .txt>*{opacity:1;transform:none;transition:opacity .5s var(--ease) calc(.12s + var(--n,0) * .08s),transform .6s var(--bounce) calc(.12s + var(--n,0) * .08s)}
+html[data-motion=off] .txt>*{opacity:1!important;transform:none!important;transition:none!important}
+.txt>*:nth-child(2){--n:1}.txt>*:nth-child(3){--n:2}.txt>*:nth-child(4){--n:3}.txt>*:nth-child(5){--n:4}
+.li{list-style:none;padding:0;display:grid;gap:.9rem}.li b{display:block;font:400 1.35rem/1.05 Bagel,sans-serif}.li span{display:block;font-size:.95rem;opacity:.88}
+.nums{list-style:none;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:.8rem}.nums li{background:rgba(255,255,255,.55);border:3px solid var(--ink);border-radius:20px;padding:.8rem 1rem}.nums b{display:block;font:400 2.8rem/1 Bagel,sans-serif}.nums span{font-size:.85rem}
+.chips{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:.5rem}.chips li{border:2px solid currentColor;border-radius:99px;padding:.35em .9em;font-size:.95rem}
+blockquote{font:400 1.7rem/1.12 Bagel,sans-serif}.who{font-size:.9rem;opacity:.85}
+.acts{display:flex;flex-direction:column;gap:.7rem;max-width:22rem}
+.btn{display:inline-flex;justify-content:center;align-items:center;min-height:52px;font:800 1rem Nunito;text-decoration:none;border:3px solid var(--ink);border-radius:99px;padding:.7em 1.4em;box-shadow:4px 5px 0 var(--ink);background:#fff;color:var(--ink);transition:transform .2s var(--bounce),box-shadow .2s}
+.btn:active{transform:translate(3px,4px);box-shadow:1px 1px 0 var(--ink)}.btn-p{background:var(--red);color:#fff}
+.fine{font-size:.78rem;font-weight:600;opacity:.85}.fine a,.fine button{display:inline-flex;align-items:center;min-height:44px;font:inherit;background:none;border:0;text-decoration:underline;color:inherit;cursor:pointer;padding:0 .3rem}
+.dock{position:absolute;left:0;right:0;bottom:0;z-index:20;display:flex;align-items:center;gap:.6rem;padding:.6rem 14px calc(.8rem + env(safe-area-inset-bottom));pointer-events:none}
+.dock>*{pointer-events:auto}.dock-cta{flex:1}
+.nb{width:52px;height:52px;border-radius:50%;border:3px solid var(--ink);background:#fff;color:var(--ink);display:grid;place-items:center;cursor:pointer;flex:none;box-shadow:3px 4px 0 var(--ink)}.nb svg{width:24px}.nb:active{transform:translate(2px,3px);box-shadow:0 0 0 var(--ink)}
+.nb[disabled]{opacity:.35}
+.count{position:absolute;right:16px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:19;font:800 .7rem Nunito;letter-spacing:.1em;opacity:.7;color:var(--fg,var(--ink))}
+.last .dock-cta{display:none}
+
+/* Desktop: Handy-Spalte in der Mitte */
+@media(min-width:760px){body{display:grid;place-items:center;background:radial-gradient(circle at 20% 20%,#17406b,#0c1a2b 60%)}.app{width:min(440px,100%);height:min(100svh - 32px,880px);border-radius:36px;box-shadow:0 30px 80px rgba(0,0,0,.5)}}
+@media(prefers-reduced-motion:reduce){.story,.txt>*{transition:none!important}}

@@ -11,8 +11,12 @@ Statische Seiten ohne Build-Step für den Betrieb. Öffnen: `netzkombyse/index.h
 | `k4/` Gezeiten | Wattenmeer, Scroll = Tide | nur Kopfzeile | – | Wasserstand steigt/fällt mit dem Scroll, Pegelanzeige, Ebbe-Reveal (clip-path) |
 | `k5/` Leuchtfeuer | Nordsee bei Nacht | nur Kopfzeile | – | Lichtkegel folgt dem Zeiger (clip-path), kreisender Leuchtturmstrahl, Autopilot ohne Maus |
 | `k6/` Fischmarkt | Marktplakat | nur Kopfzeile | – | Ticker, riesige Schrift, Wortzeilen laufen mit dem Scroll, Preisschilder |
+| `k7/` Seemannsgarn | mobile-first, Stories | Dock unten | – | Vollbild-Karten, Antippen/Halten/Wischen, Fortschrittsbalken |
+| `k8/` Flaschenpost | mobile-first, Karten wischen | Dock unten | – | scroll-snap-Karten neigen sich mit dem Scroll, Flasche treibt mit |
+| `k9/` Funkspruch | mobile-first, Chat | Chips unten | – | Gespräch mit Möwe Mia aus einem JSON-Skript, Chips als Antworten |
 
-k4–k6 sind nur als Startseite ausgearbeitet (`src/k4|k5|k6.mjs`, gemeinsame Bausteine in `src/lib2.mjs`).
+k4–k9 sind nur als Startseite ausgearbeitet (`src/k4…k9.mjs`; k4–k6 teilen Bausteine in `src/lib2.mjs`). k7–k9 sind mobile-first: Handy-Spalte, am Desktop mittig als Rahmen.
+Touch-Ersatz in k1–k3: k1 Kompassnadel reagiert auf Antippen, k2 Wind weht von selbst und legt beim Scrollen zu, k3 Möwe landet an der Tippstelle und Knöpfe füllen sich beim Antippen; Tippflächen im Menü/Footer mind. 44 px (`pointer:coarse`).
 
 Je Konzept k1–k3: `index` (Start), `leistung`, `case` (Wein-Bauer.de), `praesentation` (6 Folien); Menü offen = `index.html#menu`.
 

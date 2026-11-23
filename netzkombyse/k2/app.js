@@ -51,4 +51,17 @@
       setTimeout(() => { perch.classList.remove('back', 'flap'); busy = false; }, 5300); };
     perch.addEventListener('pointerenter', scare); perch.addEventListener('click', scare);
   }
+
+  /* Handy: kein Zeiger, also weht der Wind von selbst und legt beim Scrollen zu */
+  if (!matchMedia('(hover:hover) and (pointer:fine)').matches) $$('[data-wind]').forEach(h => {
+    let vis = true, raf = 0, ly = scrollY, gust = 0;
+    new IntersectionObserver(es => { vis = es[0].isIntersecting; if (vis) kick(); }).observe(h);
+    const loop = t => { raf = 0; if (!vis || !motionOn()) return;
+      gust = gust * .94 + Math.min(1.2, Math.abs(scrollY - ly) * .05); ly = scrollY;
+      h.style.setProperty('--wx', (Math.sin(t / 1900) * (.55 + gust)).toFixed(3));
+      h.style.setProperty('--wy', (Math.cos(t / 2600) * .35).toFixed(3));
+      raf = requestAnimationFrame(loop); };
+    const kick = () => { if (!raf && vis && motionOn()) raf = requestAnimationFrame(loop); };
+    addEventListener('nk:motion', kick); kick();
+  });
 })();

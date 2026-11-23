@@ -1,0 +1,44 @@
+/* Konzept 9 · Funkspruch – mobile-first Chat: Blasen gleiten ein, Chips unten in Daumenreichweite */
+@font-face{font-family:Nunito;src:url(../fonts/nunito.woff2) format('woff2');font-weight:200 900;font-display:swap}
+@font-face{font-family:Bagel;src:url(../fonts/bagel.woff2) format('woff2');font-display:swap}
+:root{--ink:#10263A;--paper:#EAF6F4;--mia:#FFFFFF;--you:#2E6BF0;--sun:#FFD84A;--red:#FF5A45;--ease:cubic-bezier(.2,.8,.2,1);--bounce:cubic-bezier(.3,1.5,.5,1)}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+body{background:var(--paper);color:var(--ink);font:600 1.05rem/1.45 Nunito,system-ui,sans-serif}
+svg{display:block;max-width:100%}a{color:inherit}:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+.skip{position:absolute;left:-999px;top:8px;background:#fff;padding:.6em 1em;z-index:200}.skip:focus{left:8px}
+.logo{height:1rem;width:auto;aspect-ratio:433.7/70.2}
+.app{position:relative;height:100svh;display:flex;flex-direction:column;max-width:560px;margin:auto;background:
+ radial-gradient(circle at 12px 12px,rgba(46,107,240,.09) 2px,transparent 3px) 0 0/34px 34px,var(--paper)}
+.bar{flex:none;display:flex;align-items:center;gap:.6rem;padding:max(10px,env(safe-area-inset-top)) 14px 10px;background:#fff;border-bottom:3px solid var(--ink)}
+.bar-logo{display:none;align-items:center;min-height:44px}
+.who{display:flex;align-items:center;gap:.6rem;flex:1;min-width:0}.who b{display:block;font:400 1.1rem/1 Bagel,sans-serif}.who i{font-style:normal;font-size:.72rem;opacity:.7;display:block}
+.av{width:44px;height:44px;border-radius:50%;background:var(--sun);border:3px solid var(--ink);display:grid;place-items:center;flex:none}.av svg{width:28px;height:auto}
+.mt{font:800 .68rem Nunito;letter-spacing:.08em;text-transform:uppercase;border:2.5px solid var(--ink);background:#fff;color:var(--ink);border-radius:99px;min-height:44px;padding:.4em .9em;display:flex;gap:.45rem;align-items:center;cursor:pointer}
+.mt-i{width:11px;height:11px;border-radius:50%;background:var(--red)}.mt[aria-pressed=false] .mt-i{background:transparent;box-shadow:inset 0 0 0 2px var(--ink)}
+@media(max-width:420px){.mt [data-motion-label]{display:none}.mt{padding:.4em}}
+@media(min-width:420px){.bar-logo{display:inline-flex}.who{justify-content:center}}
+main{flex:1;min-height:0;position:relative}
+.log{position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;padding:16px 14px 20px;display:flex;flex-direction:column;gap:.6rem;scroll-behavior:smooth}
+html[data-motion=off] .log{scroll-behavior:auto}
+.msg{max-width:84%;padding:.7rem 1rem;border:3px solid var(--ink);border-radius:20px;background:var(--mia);box-shadow:3px 4px 0 var(--ink);animation:pop .45s var(--bounce) both;overflow-wrap:anywhere}
+.msg.bot{align-self:flex-start;border-bottom-left-radius:6px}.msg.you{align-self:flex-end;background:var(--you);color:#fff;border-bottom-right-radius:6px;box-shadow:-3px 4px 0 var(--ink)}
+.msg.wide{max-width:100%;width:100%}
+@keyframes pop{from{opacity:0;transform:translate3d(0,14px,0) scale(.92)}}
+html[data-motion=off] .msg,.msg.static{animation:none}
+.typing{align-self:flex-start;display:flex;gap:5px;padding:.9rem 1rem;border:3px solid var(--ink);border-radius:20px 20px 20px 6px;background:#fff;box-shadow:3px 4px 0 var(--ink)}
+.typing i{width:8px;height:8px;border-radius:50%;background:var(--ink);animation:dot 1s infinite ease-in-out}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes dot{40%{transform:translate3d(0,-6px,0)}}
+.kcard{display:grid;gap:.3rem}.kcard b{font:400 1.35rem/1.05 Bagel,sans-serif}.kcard span{font-size:.95rem;font-weight:600}
+.kl{list-style:none;padding:0;display:grid;gap:.7rem}.kl b{display:block}.kl span{font-size:.92rem;font-weight:600;opacity:.85}
+.strip{display:flex;gap:.6rem;overflow-x:auto;scroll-snap-type:x proximity;padding:2px 2px 8px;margin:.3rem -.2rem 0}.strip>div{flex:0 0 184px;scroll-snap-align:start;background:var(--sun);border:3px solid var(--ink);border-radius:14px;padding:.7rem;min-height:104px;display:flex;flex-direction:column;justify-content:space-between}
+.strip b{font:400 1rem/1.05 Bagel,sans-serif;overflow-wrap:normal}.strip small{font-size:.7rem;font-weight:700;opacity:.8}
+.btn{display:flex;justify-content:center;align-items:center;min-height:52px;font:800 1rem Nunito;text-decoration:none;border:3px solid var(--ink);border-radius:99px;padding:.7em 1.4em;background:#fff;color:var(--ink);box-shadow:3px 4px 0 var(--ink);margin-top:.5rem}.btn-p{background:var(--red);color:#fff}
+.foot{flex:none;background:#fff;border-top:3px solid var(--ink);padding:.7rem 14px calc(.5rem + env(safe-area-inset-bottom))}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem;min-height:56px;align-content:flex-start}
+.chip{min-height:48px;font:800 .95rem Nunito;border:3px solid var(--ink);border-radius:99px;padding:.5em 1.1em;background:var(--sun);color:var(--ink);cursor:pointer;box-shadow:3px 4px 0 var(--ink);animation:pop .4s var(--bounce) both;text-align:left}
+.chip:active{transform:translate(2px,3px);box-shadow:0 0 0 var(--ink)}
+.fine{font-size:.75rem;font-weight:600;opacity:.8;margin-top:.3rem}.fine a{display:inline-flex;align-items:center;min-height:44px;padding:0 .3rem}
+.ns{padding:1rem}
+@media(min-width:760px){body{background:linear-gradient(135deg,#bfe6e0,#cfe0ff)}.app{height:min(100svh - 32px,860px);margin-top:16px;border:3px solid var(--ink);border-radius:30px;overflow:hidden;box-shadow:8px 10px 0 var(--ink)}}
+@media(prefers-reduced-motion:reduce){.msg,.chip,.typing i{animation:none}.log{scroll-behavior:auto}}

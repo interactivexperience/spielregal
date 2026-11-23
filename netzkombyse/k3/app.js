@@ -137,6 +137,27 @@
   if (ch) $$('[data-ba-set]', ch).forEach(b => b.addEventListener('click', () => { ch.dataset.chaos = b.dataset.baSet; $$('[data-ba-set]', ch).forEach(x => x.setAttribute('aria-pressed', String(x === b))); }));
 })();
 
+/* Handy: Antippen lässt die Möwe an der Tippstelle landen und krächzen; Knöpfe füllen sich beim Antippen */
+(() => {
+  const { $, $$, motionOn } = window.NK || {};
+  if (!$ || matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+  const mg = $('.mgull'), say = mg && $('.say', mg), img = mg && $('.mgi', mg);
+  const W = ['Kreisch!', 'Moin!', 'Fisch?', 'Hunger!', 'Möwe!', 'Hallo!'];
+  let t1 = 0, t2 = 0, dir = 1;
+  addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse' || !motionOn()) return;
+    const btn = e.target.closest('.btn'); if (btn) { const r = btn.getBoundingClientRect();
+      btn.style.setProperty('--hx', (e.clientX - r.left) + 'px'); btn.style.setProperty('--hy', (e.clientY - r.top) + 'px');
+      btn.classList.add('tap'); setTimeout(() => btn.classList.remove('tap'), 700); }
+    if (!mg || e.target.closest('a,button,.bd,input,summary,[data-flip],[data-drag-card],.menu')) return;
+    dir = e.clientX > innerWidth / 2 ? -1 : 1;
+    mg.style.transform = `translate3d(${Math.min(innerWidth - 60, Math.max(4, e.clientX - 25)).toFixed(0)}px,${Math.max(70, e.clientY - 60).toFixed(0)}px,0)`;
+    img.style.transform = `scaleX(${dir})`; say.textContent = W[Math.floor(Math.random() * W.length)];
+    mg.classList.add('on', 'talk'); clearTimeout(t1); clearTimeout(t2);
+    t1 = setTimeout(() => mg.classList.remove('talk'), 900); t2 = setTimeout(() => mg.classList.remove('on'), 1500);
+  }, { passive: true });
+})();
+
 /* Knöpfe: Reveal-Ursprung folgt dem Zeiger, leicht magnetisch (nur Maus, nur Bewegung an) */
 (() => {
   const { $$, motionOn } = window.NK || {};

@@ -8,7 +8,7 @@
   const aim = v => { if (!mc) return; mc.style.setProperty('--rot', v + 'deg'); if (deg) deg.textContent = String(v).padStart(3, '0'); };
   $$('.menu-nav li>a').forEach(a => {
     const v = +a.dataset.rot;
-    ['mouseenter', 'focus'].forEach(ev => a.addEventListener(ev, () => aim(v)));
+    ['mouseenter', 'focus', 'pointerdown'].forEach(ev => a.addEventListener(ev, () => aim(v)));
   });
 
   /* Routen-Fortschritt je Stationsbereich (nur Variable, kein Layout) */
