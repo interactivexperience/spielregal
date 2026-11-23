@@ -8,8 +8,13 @@ Statische Seiten ohne Build-Step für den Betrieb. Öffnen: `netzkombyse/index.h
 | `k1/` Hafenkarte | Seekarte, Route mit Stationen | Kompass-Vollbild (Kreis-Reveal) | Welle | Kompass, Möwen, Route füllt sich |
 | `k2/` Brise | Küstentag von der Düne ins Meer | Panel mit Wellenkante, Wellen-Buchstaben | Wolken ziehen auf | Wind-Headline, Leuchtturm, Postkarten, wandernde Sonne in den Folien |
 | `k3/` Möwenschwarm | laut, bunt, überraschend | Aufklapp-Sticker fallen herunter | Iris + Möwe | Physik-Buchstaben, Möwenjagd (5 Möwen), Begleit-Möwe, Sammelkarten |
+| `k4/` Gezeiten | Wattenmeer, Scroll = Tide | nur Kopfzeile | – | Wasserstand steigt/fällt mit dem Scroll, Pegelanzeige, Ebbe-Reveal (clip-path) |
+| `k5/` Leuchtfeuer | Nordsee bei Nacht | nur Kopfzeile | – | Lichtkegel folgt dem Zeiger (clip-path), kreisender Leuchtturmstrahl, Autopilot ohne Maus |
+| `k6/` Fischmarkt | Marktplakat | nur Kopfzeile | – | Ticker, riesige Schrift, Wortzeilen laufen mit dem Scroll, Preisschilder |
 
-Je Konzept: `index` (Start), `leistung`, `case` (Wein-Bauer.de), `praesentation` (6 Folien); Menü offen = `index.html#menu`.
+k4–k6 sind nur als Startseite ausgearbeitet (`src/k4|k5|k6.mjs`, gemeinsame Bausteine in `src/lib2.mjs`).
+
+Je Konzept k1–k3: `index` (Start), `leistung`, `case` (Wein-Bauer.de), `praesentation` (6 Folien); Menü offen = `index.html#menu`.
 
 ## Bauen
 `node netzkombyse/build.mjs` erzeugt die HTML-Seiten aus `src/k1|k2|k3.mjs` und den gemeinsamen Inhalten `content.mjs`.

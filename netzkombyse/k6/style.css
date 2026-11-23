@@ -1,0 +1,66 @@
+/* Konzept 6 · Fischmarkt – Marktplakat. Ticker und Wortzeilen per transform, Preisschilder kippen beim Hover */
+@font-face{font-family:Bagel;src:url(../fonts/bagel.woff2) format('woff2');font-display:swap}
+@font-face{font-family:Plex;src:url(../fonts/plex-mono-400.woff2) format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:Plex;src:url(../fonts/plex-mono-500.woff2) format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:Nunito;src:url(../fonts/nunito.woff2) format('woff2');font-weight:200 900;font-display:swap}
+:root{--papier:#F6EFE0;--ink:#111;--rot:#E4351F;--blau:#1D3FA8;--gelb:#FFD23F;--g:clamp(18px,5vw,72px);--ease:cubic-bezier(.2,.7,.2,1)}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}html[data-motion=off]{scroll-behavior:auto}
+body{background:var(--papier);color:var(--ink);font:500 clamp(1.02rem,.98rem + .22vw,1.14rem)/1.55 Nunito,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Bagel,Impact,sans-serif;font-weight:400;line-height:.95;letter-spacing:-.01em;text-wrap:balance}
+svg{display:block;max-width:100%}a{color:inherit}:focus-visible{outline:4px solid var(--blau);outline-offset:3px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--gelb);padding:.6em 1em;z-index:200}.skip:focus{left:8px}
+.logo{height:1.1rem;width:auto;aspect-ratio:433.7/70.2}
+.kk{font:500 .78rem Plex,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--rot)}
+.wr{max-width:1180px;margin:auto}.sub{max-width:38rem;margin-top:1rem;font-size:1.1rem}
+
+.hd{position:fixed;inset:0 0 auto;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.8rem var(--g);background:var(--papier);border-bottom:3px solid var(--ink)}
+.hd-nav{display:flex;gap:1.6rem;font:700 .78rem Plex,monospace;letter-spacing:.06em;text-transform:uppercase}.hd-nav a{text-decoration:none}.hd-nav a:hover{color:var(--rot)}
+.mt{font:700 .7rem Plex,monospace;letter-spacing:.08em;text-transform:uppercase;border:2.5px solid var(--ink);background:var(--gelb);color:var(--ink);border-radius:6px;padding:.55em 1em;display:flex;gap:.5rem;align-items:center;cursor:pointer;box-shadow:3px 3px 0 var(--ink)}
+.mt-i{width:11px;height:11px;background:var(--rot);border-radius:50%}.mt[aria-pressed=false] .mt-i{background:transparent;box-shadow:inset 0 0 0 2px var(--ink)}
+@media(max-width:760px){.hd-nav{display:none}.mt [data-motion-label]{display:none}.mt{padding:.6em}}
+
+.hero{position:relative;padding:calc(70px + 5vh) var(--g) 8vh;display:flex;flex-direction:column;gap:1.4rem;min-height:92svh;justify-content:center;overflow:hidden}
+.hero h1{font-size:clamp(3.6rem,13.5vw,12.5rem);display:flex;flex-direction:column;color:var(--blau)}
+.hero h1 span{display:block}.r2{color:var(--rot)}.r3{color:var(--ink)}
+.stamp{align-self:flex-start;transform:rotate(-4deg);border:3px solid var(--rot);color:var(--rot);font:700 .9rem Plex,monospace;letter-spacing:.12em;text-transform:uppercase;padding:.4em .9em;border-radius:6px}
+.hero-fish .fi{position:absolute;color:var(--ink)}.hf1{right:6%;top:24%;width:clamp(90px,16vw,220px);transform:rotate(-12deg)}.hf2{right:22%;top:58%;width:clamp(60px,9vw,120px);transform:rotate(8deg) scaleX(-1)}
+.lead{max-width:36rem;font-size:1.25rem;font-weight:700}.cta{display:flex;gap:.9rem;flex-wrap:wrap}
+.btn{display:inline-flex;font:800 1rem Nunito;text-decoration:none;border:3px solid var(--ink);border-radius:8px;padding:.8em 1.5em;box-shadow:5px 5px 0 var(--ink);transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
+.btn-p{background:var(--rot);color:#fff}.btn-s{background:var(--gelb)}.btn:hover{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink)}
+
+.ticker{overflow:hidden;background:var(--ink);color:var(--gelb);padding:.9rem 0;font:700 1.3rem Plex,monospace;text-transform:uppercase;border-block:3px solid var(--ink)}
+.ticker-t{display:inline-flex;gap:1.6rem;white-space:nowrap;animation:mq 38s linear infinite}.ticker-t i{color:var(--rot);font-style:normal}
+@keyframes mq{to{transform:translate3d(-50%,0,0)}}html[data-motion=off] .ticker-t{animation:none}
+
+.sec{padding:clamp(80px,13vh,150px) var(--g)}.sec-r{background:var(--rot);color:#fff}
+h2{font-size:clamp(2.4rem,6.4vw,5.6rem);max-width:14ch;margin-top:.8rem;color:var(--blau)}.sec-r h2{color:var(--gelb)}
+.lg,.sl,.dz,.cs{list-style:none;padding:0}
+.lg{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.4rem;margin-top:3rem}
+.lg li{background:#fff;border:3px solid var(--ink);border-radius:10px;padding:1.5rem;box-shadow:6px 6px 0 var(--ink)}.lg li:nth-child(2){background:var(--gelb)}
+.lg h3{font-size:1.7rem;margin:.5rem 0 .7rem}.n{font:700 .9rem Plex,monospace;color:var(--rot)}
+
+/* Wortzeilen laufen gegenläufig mit dem Scroll (--x aus JS, nur transform) */
+.slide{background:var(--blau);color:var(--gelb);padding:clamp(60px,10vh,110px) 0;overflow:hidden}
+.row{display:flex;gap:3vw;white-space:nowrap;font:400 clamp(4rem,15vw,13rem)/1 Bagel,Impact,sans-serif;transform:translate3d(var(--x,0),0,0);will-change:transform}
+.row:nth-child(2){color:#fff;-webkit-text-stroke:0;margin-block:-.05em}.row:nth-child(3){color:var(--rot)}
+.slide-in{padding:4rem var(--g) 0;color:#fff}
+.sl{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.6rem}.sl h3{font-size:1.4rem;margin-bottom:.5rem;color:var(--gelb)}.sl p{font-size:1rem}
+
+/* Preisschilder */
+.cs{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1.4rem;margin-top:3rem}
+.cs li{position:relative;background:#fff;border:3px solid var(--ink);border-radius:10px 10px 10px 40px;padding:1.4rem 1.4rem 2rem;min-height:200px;display:flex;flex-direction:column;gap:.6rem;transition:transform .35s var(--ease);transform-origin:50% 0}
+.cs li:nth-child(odd){transform:rotate(-1deg)}.cs li:nth-child(even){transform:rotate(1.2deg)}
+.cs li::before{content:'';position:absolute;top:12px;right:14px;width:14px;height:14px;border-radius:50%;border:3px solid var(--ink);background:var(--papier)}
+.cs li:hover{transform:rotate(3deg) translateY(-6px)}.cs li.feat{background:var(--gelb)}
+.cs-m{font:700 .68rem Plex,monospace;letter-spacing:.06em;text-transform:uppercase}.cs h3{font-size:1.8rem;margin-top:auto}.cs-f{font-size:.82rem;color:var(--rot);font-weight:800}
+.sm{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:2rem;margin-top:4rem}
+blockquote{font:800 1.4rem/1.25 Nunito}figcaption{margin-top:1rem;font:500 .8rem Plex,monospace}
+.ct h2{max-width:12ch;font-size:clamp(3rem,9vw,8rem)}.ct p{margin-top:1.2rem;max-width:34rem;font-weight:700}.ct-a{display:flex;gap:.9rem;flex-wrap:wrap}.sec-r .btn-p{background:var(--ink)}
+.ft{padding:3rem var(--g) 4rem;display:grid;gap:.8rem;font-size:.9rem;border-top:3px solid var(--ink)}.ft-n{opacity:.7;font-size:.78rem;max-width:44rem}
+
+/* Aufpoppen wie ein Schild (transform/opacity) */
+html[data-motion=on].js [data-reveal]{opacity:0;transform:translate3d(0,40px,0) rotate(-2deg)}
+html[data-motion=on].js [data-reveal].in{opacity:1;transform:none;transition:opacity .5s var(--ease) var(--d,0ms),transform .7s cubic-bezier(.3,1.5,.5,1) var(--d,0ms)}
+html[data-motion=on].js .cs li[data-reveal].in{transition-property:opacity,transform}
+@media(max-width:760px){.hero-fish{display:none}}
