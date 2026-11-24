@@ -142,5 +142,20 @@
       history.replaceState(null, '', a.hash);
     });
   }
+
+  /* ---------- Zurück zur Übersicht (alle Konzepte): fester Knopf, Tippfläche 44 px ---------- */
+  if (document.body.dataset.k) {
+    const st = document.createElement('style');
+    st.textContent = '.nk-back{position:fixed;z-index:500;left:max(10px,env(safe-area-inset-left));bottom:max(10px,env(safe-area-inset-bottom));display:inline-flex;align-items:center;gap:.35em;min-height:44px;padding:0 1em 0 .8em;border-radius:99px;background:#fff;color:#111;border:2px solid #111;font:700 .8rem/1 system-ui,sans-serif;letter-spacing:.02em;text-decoration:none;box-shadow:0 3px 14px rgba(0,0,0,.28)}'
+      + '.nk-back:hover{background:#111;color:#fff}.nk-back:focus-visible{outline:3px solid #FF5A45;outline-offset:3px}'
+      + 'body[data-k=k7] .nk-back,body[data-k=k8] .nk-back{left:50%;bottom:auto;top:max(84px,calc(env(safe-area-inset-top) + 84px));transform:translateX(-50%)}'
+      + 'body[data-k=k9] .nk-back{bottom:auto;top:max(70px,calc(env(safe-area-inset-top) + 70px))}'
+      + 'body[data-k=k12] .nk-back{left:max(10px,env(safe-area-inset-left));bottom:auto;top:max(72px,calc(env(safe-area-inset-top) + 66px))}'
+      + '@media(min-width:901px){body[data-k=k12] .nk-back{top:auto;bottom:max(10px,env(safe-area-inset-bottom));left:calc(250px + 20px)}}'
+      + '@media(max-width:560px){.nk-back{font-size:.78rem}}@media print{.nk-back{display:none}}';
+    document.head.appendChild(st);
+    const a = document.createElement('a'); a.className = 'nk-back'; a.href = '../index.html'; a.textContent = '‹ Übersicht'; a.setAttribute('aria-label', 'Zurück zur Konzept-Übersicht');
+    document.body.appendChild(a);
+  }
   root.classList.add('js');
 })();
