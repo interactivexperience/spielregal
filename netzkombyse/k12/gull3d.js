@@ -123,6 +123,16 @@ function loop() {
   renderer.render(scene, cam);
 }
 
+/* Modell laden: echte .glb-Datei; wo ein Host keine .glb ausliefert (Artifact-Vorschau), als Base64-Modul media/moewe.glb.js */
+async function loadBuffer() {
+  try {
+    const r = await fetch(new URL('../media/moewe.glb', import.meta.url));
+    if (r.ok) { const b = await r.arrayBuffer(); if (new Uint8Array(b, 0, 4).join() === '103,108,84,70') return b; }   // „glTF“
+  } catch (e) { /* weiter mit Modul */ }
+  const b64 = (await import('../media/moewe.glb.js')).default;
+  return Uint8Array.from(atob(b64), c => c.charCodeAt(0)).buffer;
+}
+
 async function init() {
   if (loading || ready || failed) return; loading = true;
   try {
@@ -137,7 +147,7 @@ async function init() {
     const rim = new THREE.DirectionalLight(0xffffff, .8); rim.position.set(5, 3, -5); scene.add(rim);
     bird = new THREE.Group(); bird.rotation.order = 'YXZ'; scene.add(bird);
     const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
-    const buf = await (await fetch(new URL('../media/moewe.glb', import.meta.url))).arrayBuffer();
+    const buf = await loadBuffer();
     const gltf = await loader.parseAsync(buf, '');
     const m = gltf.scene, box = new THREE.Box3().setFromObject(m);
     H0 = box.max.y - box.min.y; m.position.y = -box.min.y;
