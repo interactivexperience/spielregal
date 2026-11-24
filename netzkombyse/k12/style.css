@@ -23,10 +23,10 @@ a{color:inherit}svg{display:block;max-width:100%}:focus-visible{outline:3px soli
 .mt-i{width:10px;height:10px;border-radius:50%;background:var(--o)}.mt[aria-pressed=false] .mt-i{background:transparent;box-shadow:inset 0 0 0 2px #fff}
 
 /* Kapitel */
-.sl{position:relative;min-height:100svh;padding:0 5vw 9vh calc(var(--rail) + 20px);display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;isolation:isolate;scroll-snap-align:start;background-color:var(--bg);
+.sl{position:relative;min-height:100svh;padding:0 5vw 9vh calc(var(--rail) + 20px);display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;scroll-snap-align:start;background-color:var(--bg);
   background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:56px 56px}
 .sl.org{background-color:var(--o);background-image:none;color:#1B1918}
-.bigw{position:absolute;z-index:1;display:flex;flex-direction:column;font:400 clamp(7rem,22vw,24rem)/1 Anton,Impact,sans-serif;text-transform:uppercase;color:#fff;letter-spacing:0;transform:translate3d(calc(var(--p,0) * 4vw),0,0);pointer-events:none;user-select:none}
+.bigw{position:absolute;z-index:3;display:flex;flex-direction:column;font:400 clamp(7rem,22vw,24rem)/1 Anton,Impact,sans-serif;text-transform:uppercase;color:#fff;letter-spacing:0;transform:translate3d(calc(var(--p,0) * 4vw),0,0);pointer-events:none;user-select:none}
 .s1 .bigw{right:-7vw;top:5vh;font-size:clamp(6rem,19vw,21rem)}
 .s2 .bigw{left:calc(var(--rail) + 14vw);top:-6vw;font-size:clamp(14rem,46vw,52rem)}
 .s3 .bigw{right:-5vw;top:4vh;font-size:clamp(5.5rem,17vw,19rem)}
@@ -34,7 +34,8 @@ a{color:inherit}svg{display:block;max-width:100%}:focus-visible{outline:3px soli
 .cut{position:absolute;z-index:2;bottom:-3vh;pointer-events:none;transform:translate3d(calc(var(--p,0) * -3vw),calc(var(--p,0) * 5vh),0)}
 .cut,.sway{height:100%}.sway{transform-origin:50% 100%}.cg{display:block;height:100%;width:auto;max-width:none}
 html[data-motion=on] .act .sway{animation:sway 6s ease-in-out infinite}@keyframes sway{50%{transform:rotate(1.1deg) translate3d(0,-6px,0)}}
-.gull3d{position:fixed;inset:0;width:100%;height:100%;z-index:40;pointer-events:none}html.g3d .cut{display:none}
+/* Ebenen: Riesenwort (1) → 3D-Möwe (2) → Headline und Texte (3) → Gesicht der Möwe (4). So liegt die Möwe teils hinter der Headline, ihr Gesicht nie. */
+.gull3d{position:fixed;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}.gull3d-face{position:fixed;inset:0;width:100%;height:100%;z-index:4;pointer-events:none}html.g3d .cut{display:none}
 .c1{right:12vw;height:min(104svh,150vw);bottom:-9vh}.c1 .cg,.c6 .cg{transform:scaleX(-1)}
 .c2{left:calc(var(--rail) + 3vw);height:min(94svh,150vw);bottom:-8vh}
 .c3{left:calc(var(--rail) - 3vw);height:min(90svh,150vw);bottom:-7vh}

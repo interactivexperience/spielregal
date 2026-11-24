@@ -25,7 +25,7 @@ const ease = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
 const smooth = u => { u = clamp(u, 0, 1); return u * u * (3 - 2 * u); };
 const rand = (a, b) => a + Math.random() * (b - a);
 
-let renderer, scene, cam, bird, mixer, headBone = null, neckBone = null, A = {}, current = null;
+let renderer, face = null, fctx = null, scene, cam, bird, mixer, headBone = null, neckBone = null, A = {}, current = null;
 let ready = false, loading = false, failed = false, running = false;
 let state = 'idle', fly = null, thinkT = 4, blinkT = 2, followW = 0, sec = 0, lastY = 0, sv = 0;
 let visH = 1, halfW = 1, halfH = 1, H0 = 1;
@@ -38,6 +38,7 @@ function size() {
   if (!renderer) return;
   const w = innerWidth, h = innerHeight;
   renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
+  if (face) { face.width = renderer.domElement.width; face.height = renderer.domElement.height; }
   visH = 2 * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)) * cam.position.z; halfH = visH / 2; halfW = halfH * cam.aspect;
 }
 function targetWorld(i) {
@@ -108,6 +109,26 @@ function headFollow(dt, now) {
   }
 }
 
+/* Gesicht immer vorn: Die Möwe liegt unter den Headlines (Canvas z 2). Über dem Text zeichnet eine zweite Ebene (z 4) denselben Ausschnitt um Kopf und
+   Hut noch einmal, weich ausgeblendet. So bleibt der Körper hinter dem Text, das Gesicht aber frei. Kopfmitte = Kopfknochen + FACE_UP Möwenhöhen. */
+const FACE_UP = .05, FACE_R = .25, hp3 = new THREE.Vector3(), pv3 = new THREE.Vector3();
+function drawFace() {
+  if (!face || !headBone) return;
+  const gl = renderer.domElement, W = gl.width, H = gl.height;
+  headBone.getWorldPosition(hp3); pv3.copy(hp3).project(cam);
+  const unit = H / (2 * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)) * (cam.position.z - hp3.z)), gh = cur.s * H0 * unit;
+  const cx = (pv3.x + 1) / 2 * W, cy = (1 - pv3.y) / 2 * H - FACE_UP * gh, R = FACE_R * gh;
+  fctx.clearRect(0, 0, W, H);
+  const x0 = clamp(cx - R, 0, W), x1 = clamp(cx + R, 0, W), y0 = clamp(cy - R, 0, H), y1 = clamp(cy + R, 0, H), w = x1 - x0, h = y1 - y0;
+  if (w < 2 || h < 2) return;
+  fctx.drawImage(gl, x0, y0, w, h, x0, y0, w, h);
+  fctx.globalCompositeOperation = 'destination-in';
+  const g = fctx.createRadialGradient(cx, cy, R * .82, cx, cy, R); g.addColorStop(0, '#000'); g.addColorStop(1, 'rgba(0,0,0,0)');
+  fctx.fillStyle = g; fctx.fillRect(x0, y0, w, h); fctx.globalCompositeOperation = 'source-over';
+  if (DEBUG_FACE) { fctx.strokeStyle = 'rgba(255,0,200,.9)'; fctx.lineWidth = 3; fctx.beginPath(); fctx.arc(cx, cy, R, 0, 7); fctx.stroke(); }
+}
+const DEBUG_FACE = location.search.includes('facedebug');
+
 function loop() {
   const now = performance.now(), dt = Math.min(clock.getDelta(), .05);
   const y = scrollY; sv += ((y - lastY) - sv) * .2; lastY = y;
@@ -121,6 +142,7 @@ function loop() {
   else { const k = 1 - Math.exp(-dt * 9); cur.x += (tgtNow.x - cur.x) * k; cur.y += (tgtNow.y - cur.y) * k; cur.s += (tgtNow.s - cur.s) * k; cur.yaw += (tgtNow.yaw - cur.yaw) * k; cur.z = 0; place(); }
   headFollow(dt, now);
   renderer.render(scene, cam);
+  drawFace();
 }
 
 /* Modell laden: echte .glb-Datei; wo ein Host keine .glb ausliefert (Artifact-Vorschau), als Base64-Modul media/moewe.glb.js */
@@ -162,18 +184,20 @@ async function init() {
     for (const n of ['Flap', 'Look', 'Blink']) A[n]?.setLoop(THREE.LoopOnce, 1);
     mixer.addEventListener('finished', e => { if (e.action === A.Flap || e.action === A.Look) toIdle(); });
     A.Idle.play(); current = A.Idle;
-    document.body.appendChild(renderer.domElement); size();
+    document.body.appendChild(renderer.domElement);
+    face = document.createElement('canvas'); face.className = 'gull3d-face'; face.setAttribute('aria-hidden', 'true'); fctx = face.getContext('2d'); document.body.appendChild(face);
+    size();
     sec = curSec(); lastY = scrollY; ready = true; loading = false;
     if (NK.motionOn()) resume(true);
   } catch (e) { failed = true; loading = false; console.warn('3D-Möwe nicht verfügbar, Standbild bleibt:', e?.message || e); }
 }
 function resume(intro) {
   if (!ready || running) return; running = true;
-  renderer.domElement.style.display = ''; root.classList.add('g3d'); clock.getDelta();
+  renderer.domElement.style.display = ''; face.style.display = ''; root.classList.add('g3d'); clock.getDelta();
   if (intro) flyTo(sec, true); else { const t = targetWorld(sec); Object.assign(cur, t); place(); toIdle(); }
   renderer.setAnimationLoop(loop);
 }
-function pause() { if (!running) return; running = false; renderer.setAnimationLoop(null); renderer.domElement.style.display = 'none'; root.classList.remove('g3d'); }
+function pause() { if (!running) return; running = false; renderer.setAnimationLoop(null); renderer.domElement.style.display = 'none'; face.style.display = 'none'; root.classList.remove('g3d'); }
 
 if (NK && location.search.includes('debug')) {   // nur zum Testen: Zustand und Flügeldrehung auslesen
   window.__gull = () => { let w = null; bird?.traverse(o => { if (o.isBone && /^wing/i.test(o.name) && /L$/.test(o.name)) w = o; });
