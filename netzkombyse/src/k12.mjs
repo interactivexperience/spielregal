@@ -61,6 +61,10 @@ function index() {
     <p class="fine">${C.hinweisBeispiel} Zitate sinngemäß bzw. Platzhalter. Dieses Konzept ist nur als Startseite ausgearbeitet.</p></div>
 </section>
 </main>`;
-  return page({ k: 'k12', title: 'NetzKombyse · Konzept 12 Logbuch', desc: 'Konzept 12: Logbuch – dunkel, Orange, angeschnittene Riesenschrift, Möwe als Schwarz-Weiß-Ausschnitt.', theme: '#1B1918', body });
+  const html = page({ k: 'k12', title: 'NetzKombyse · Konzept 12 Logbuch', desc: 'Konzept 12: Logbuch – dunkel, Orange, angeschnittene Riesenschrift, 3D-Möwe fliegt zu den Kapiteln.', theme: '#1B1918', body });
+  // 3D-Möwe: three.js lokal (shared/three), Standbild bleibt als Fallback
+  return html
+    .replace('</head>', `<script type="importmap">{"imports":{"three":"../shared/three/three.module.min.js","three/addons/":"../shared/three/addons/"}}</script>\n</head>`)
+    .replace('</body>', `<script type="module" src="gull3d.js"></script>\n</body>`);
 }
 export const pages = () => ({ 'index.html': index() });

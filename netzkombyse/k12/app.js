@@ -8,6 +8,7 @@
     sls.forEach((s, k) => s.classList.toggle('act', k === i));
     links.forEach((a, k) => { if (k === i) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current'); });
     idx.forEach((e, k) => e.classList.toggle('on', k === i));
+    window.dispatchEvent(new CustomEvent('k12:section', { detail: i }));
     const a = links[i]; if (a && a.scrollIntoView && matchMedia('(max-width:900px)').matches) { const nav = a.closest('.rail-nav'); nav.scrollTo({ left: a.offsetLeft - 12, behavior: 'auto' }); }
   };
   const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) setActive(sls.indexOf(e.target)); }), { threshold: .55 });
