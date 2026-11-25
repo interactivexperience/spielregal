@@ -8,21 +8,33 @@
   const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
 
   /* ---------- Headlines Zeichen für Zeichen ---------- */
-  $$('[data-chars]').forEach(h => {
-    const label = h.textContent.replace(/\s+/g, ' ').trim(); h.setAttribute('aria-label', label);
-    let n = 0; const frag = document.createDocumentFragment();
-    [...h.childNodes].forEach(node => {
-      if (node.nodeType === 3) {
-        node.textContent.split(/(\s+)/).forEach(part => {
-          if (!part) return; if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(' ')); return; }
-          const w = document.createElement('span'); w.className = 'chw'; w.setAttribute('aria-hidden', 'true');
-          [...part].forEach(c => { const s = document.createElement('span'); s.className = 'ch'; s.style.setProperty('--i', n++); s.textContent = c; w.appendChild(s); });
-          frag.appendChild(w);
-        });
-      } else frag.appendChild(node.cloneNode(true));
-    });
-    h.textContent = ''; h.appendChild(frag);
-  });
+  /* ---------- Text-Reveal für die ganze Seite: Wörter leuchten beim Scrollen nacheinander auf ----------
+     Gilt für Headlines, Einleitungen und Fließtexte. Text bleibt als normaler Text lesbar (keine aria-Ersetzung);
+     bei ausgeschalteter Bewegung ist alles sofort sichtbar. */
+  const REVEAL = '[data-chars],[data-lit],.side,.s,.igt,.tm-f,.fp b,.k + p,.cd .tx,.pn p,.faq p,.vq figcaption,.rate';
+  const wordify = el => {
+    if (el.dataset.wf) return null; el.dataset.wf = '1';
+    const keep = /E-Commerce|Unternehmensentwicklung|Möwen/;
+    const walk = node => { [...node.childNodes].forEach(n => {
+      if (n.nodeType === 3) { const parts = n.textContent.split(/(\s+)/); const frag = document.createDocumentFragment();
+        parts.forEach(t => { if (!t) return; if (/^\s+$/.test(t)) { frag.appendChild(document.createTextNode(t)); return; }
+          const s = document.createElement('span'); s.className = 'lw' + (keep.test(t) && el.hasAttribute('data-lit') ? ' hl' : ''); s.textContent = t; frag.appendChild(s); });
+        n.replaceWith(frag);
+      } else if (n.nodeType === 1 && !/^(svg|img|BR|script|style)$/i.test(n.tagName) && !n.classList.contains('lw')) walk(n); }); };
+    walk(el); el.removeAttribute('data-reveal'); el.classList.add('in', 'wr2');
+    return $$('.lw', el);
+  };
+  const revealEls = [];
+  $$(REVEAL).forEach(el => { if (el.closest('[hidden],.vq,.pn[hidden]') && !el.closest('.vq')) return; const ws = wordify(el); if (ws && ws.length) revealEls.push({ el, ws }); });
+  const heroDone = el => el.getBoundingClientRect().top < innerHeight * .75;
+  revealEls.forEach(r => { r.hero = r.el.closest('.hero') !== null; });
+  let rt = false;
+  const revealUpdate = () => { rt = false; const on = motionOn();
+    revealEls.forEach(r => { const b = r.el.getBoundingClientRect(); if (b.bottom < -50 || b.top > innerHeight + 50) { if (b.top > innerHeight + 50) r.ws.forEach(w => w.classList.toggle('on', !on)); else r.ws.forEach(w => w.classList.add('on')); return; }
+      const p = r.hero ? 1 : clamp((innerHeight * .9 - b.top) / (b.height + innerHeight * .3), 0, 1);
+      r.ws.forEach((w, i) => w.classList.toggle('on', !on || i / r.ws.length < p * 1.04)); }); };
+  addEventListener('scroll', () => { if (!rt) { rt = true; requestAnimationFrame(revealUpdate); } }, { passive: true });
+  addEventListener('nk:motion', revealUpdate); addEventListener('resize', revealUpdate); revealUpdate();
 
   /* ---------- Lesefortschritt, Laufband, Hero-Glühen beim Scrollen ---------- */
   const prog = $('.prog'), mqs = $$('[data-mq]'), glow = $('.hero .glow'), gk = $('.gk');
@@ -228,21 +240,17 @@
     set(store.get('nk:light') === 'on', false);
   }
 
-  /* ---------- Leitsatz leuchtet beim Scrollen, Team-Auswahl, Hamburger Uhr ---------- */
-  const lit = $('[data-lit]');
-  if (lit) {
-    const txt = lit.textContent.trim(); lit.setAttribute('aria-label', txt); lit.textContent = '';
-    txt.split(' ').forEach((w, i, a) => { const s = document.createElement('span'); s.className = 'lw' + (/E-Commerce|Unternehmensentwicklung/.test(w) ? ' hl' : ''); s.setAttribute('aria-hidden', 'true'); s.textContent = w; lit.appendChild(s); if (i < a.length - 1) lit.appendChild(document.createTextNode(' ')); });
-    const ws = $$('.lw', lit); let tk = false;
-    const upd = () => { tk = false; const r = lit.getBoundingClientRect(), p = clamp((innerHeight * .85 - r.top) / (r.height + innerHeight * .35), 0, 1);
-      ws.forEach((w, i) => w.classList.toggle('on', !motionOn() || i / ws.length < p * 1.05)); };
-    addEventListener('scroll', () => { if (!tk) { tk = true; requestAnimationFrame(upd); } }, { passive: true }); addEventListener('nk:motion', upd); upd();
-  }
   const tm = $('[data-team]');
   if (tm) {
     const ps = $$('.tp', tm), bs = $$('.tm-l button', tm);
     const show = i => { ps.forEach((p, j) => p.classList.toggle('on', j === i)); bs.forEach((b, j) => b.setAttribute('aria-selected', String(j === i))); };
     bs.forEach((b, i) => { b.addEventListener('click', () => show(i)); b.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') show(i); }); });
+  }
+  const tc = $('[data-tcar]');
+  if (tc) {
+    const ls = $$('.tsl', tc), bt = $$('.tsr button', tc);
+    const go = (i, f) => { ls.forEach((l, j) => l.classList.toggle('on', j === i)); bt.forEach((b, j) => b.setAttribute('aria-selected', String(j === i))); if (f) bt[i].focus(); bt[i].scrollIntoView({ block: 'nearest', inline: 'center', behavior: motionOn() ? 'smooth' : 'auto' }); };
+    bt.forEach((b, i) => { b.addEventListener('click', () => go(i)); b.addEventListener('keydown', e => { const k = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (k) { e.preventDefault(); go((i + k + bt.length) % bt.length, true); } }); });
   }
   const clk = $('[data-clock]');
   if (clk) { const t = () => { clk.textContent = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' }).format(new Date()); }; t(); setInterval(t, 20000); }

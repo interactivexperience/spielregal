@@ -155,7 +155,7 @@
       + '@media(max-width:560px){.nk-back{font-size:.78rem}}@media print{.nk-back{display:none}}';
     document.head.appendChild(st);
     const a = document.createElement('a'); a.className = 'nk-back'; a.href = '../index.html'; a.textContent = '‹ Übersicht'; a.setAttribute('aria-label', 'Zurück zur Konzept-Übersicht');
-    document.body.appendChild(a);
+    const nv = document.createElement('nav'); nv.setAttribute('aria-label', 'Konzepte'); nv.appendChild(a); document.body.appendChild(nv);
   }
   root.classList.add('js');
 })();
