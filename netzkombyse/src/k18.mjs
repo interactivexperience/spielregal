@@ -122,7 +122,7 @@ function index() {
   <div class="glow" aria-hidden="true"></div>
   
   <h1 id="h1" data-chars data-reveal>Nicht Möwen<br>zählen.<br>Machen.</h1>
-  <p class="s" data-reveal>Wir bauen Onlineshops und digitale Vertriebswege für den Mittelstand. Ohne großes Getöse, mit ordentlich Tiefgang. Wo KI uns schneller macht, nutzen wir sie. Den letzten Blick hat immer ein Mensch.</p>
+  <p class="s" data-reveal>Wir bauen Onlineshops und digitale Vertriebswege für den Mittelstand. Ohne großes Getöse, mit ordentlich Tiefgang.</p>
   <p class="ctas" data-reveal>${btn(C.termin, 'Termin buchen')}${btn('#fragen', 'Deine Fragen', 'alt')}</p>
   <div class="gwrap" data-gull aria-hidden="true"><div class="gfl"></div><div class="gb"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"></div><div class="gw"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"></div><div class="gh"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"><i class="lid"></i></div></div>
 </section>
