@@ -21,13 +21,19 @@
       tgt.r = dy * 9 - dx * 4; tgt.x = 0; tgt.y = 0; kick(); }, { passive: true });
     const blink = () => lid && lid.animate([{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)', offset: .4 }, { transform: 'scaleY(0)' }], { duration: 260, easing: 'ease-in-out' });
     const both = (kf, o) => { body.animate(kf.body || kf, o); return head.animate(kf.head || kf, o); };
+
+    /* Flügel flattern (Klick auf die Möwe oder im Leerlauf), Blinzeln und Schweif bleiben fein */
+    const wing = $('.gw', gull);
+    const flap = () => wing && wing.animate([{ rotate: '0deg' }, { rotate: '-14deg', offset: .12 }, { rotate: '3deg', offset: .24 }, { rotate: '-12deg', offset: .38 }, { rotate: '2deg', offset: .52 }, { rotate: '-8deg', offset: .68 }, { rotate: '0deg' }], { duration: 1100, easing: 'ease-in-out' });
+    const hop = () => { gull.animate([{ translate: '0 0' }, { translate: '0 -16px', offset: .35 }, { translate: '0 0', offset: .7 }, { translate: '0 -3px', offset: .85 }, { translate: '0 0' }], { duration: 900, easing: 'cubic-bezier(.45,0,.2,1)' }); return flap(); };
+    gull.style.pointerEvents = 'auto'; gull.style.cursor = 'pointer'; gull.addEventListener('click', () => { if (motionOn() && !busy) { busy = true; hop().finished.then(() => { busy = false; }, () => { busy = false; }); } });
     const ease = 'cubic-bezier(.45,0,.2,1)';
     const acts = [
       () => { blink(); return head.animate([{ rotate: '0deg' }, { rotate: '0deg' }], { duration: 300 }); },
       () => head.animate([{ rotate: '0deg', translate: '0 0' }, { rotate: '-6deg', translate: '-4px 2px', offset: .3 }, { rotate: '7deg', translate: '5px -3px', offset: .68 }, { rotate: '0deg', translate: '0 0' }], { duration: 3600, easing: ease }),
       () => head.animate([{ rotate: '0deg', translate: '0 0' }, { rotate: '-13deg', translate: '-6px 10px', offset: .18 }, { rotate: '1deg', translate: '0 0', offset: .34 }, { rotate: '-13deg', translate: '-6px 10px', offset: .52 }, { rotate: '0deg', translate: '0 0' }], { duration: 1700, easing: ease }),
       () => { body.animate([{ rotate: '0deg' }, { rotate: '1.4deg' }, { rotate: '-1.4deg' }, { rotate: '1.1deg' }, { rotate: '-1.1deg' }, { rotate: '0deg' }], { duration: 650, iterations: 2 }); return head.animate([{ rotate: '0deg' }, { rotate: '4deg' }, { rotate: '-4deg' }, { rotate: '3deg' }, { rotate: '-3deg' }, { rotate: '0deg' }], { duration: 650, iterations: 2 }); },
-      () => both({ body: [{ translate: '0 0' }, { translate: '0 -20px', offset: .4 }, { translate: '0 0', offset: .75 }, { translate: '0 -4px', offset: .88 }, { translate: '0 0' }], head: [{ translate: '0 0' }, { translate: '0 -20px', offset: .4 }, { translate: '0 0', offset: .75 }, { translate: '0 -4px', offset: .88 }, { translate: '0 0' }] }, { duration: 760, easing: ease }),
+      () => hop(),
     ];
     setInterval(() => {
       if (busy || !motionOn() || document.hidden || performance.now() - last < 3000) return;

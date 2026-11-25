@@ -45,7 +45,7 @@ function index() {
     <p class="ib" data-reveal><a href="${C.termin}" target="_blank" rel="noopener" aria-label="Termin buchen" title="Termin buchen" data-mag>${ico.cal}</a><a href="${C.telHref}" aria-label="Anrufen: ${C.tel}" title="Anrufen" data-mag>${ico.phone}</a><a href="mailto:ahoi@netzkombyse.de" aria-label="E-Mail schreiben" title="E-Mail schreiben" data-mag>${ico.mail}</a></p>
   </div>
   <a class="scrl" href="#leistung" aria-label="Weiter zu den Leistungen"><i aria-hidden="true"></i></a>
-  <div class="hg" data-gull aria-hidden="true"><div class="gfl"></div><div class="gb"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"></div><div class="gh"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"><i class="lid"></i></div></div>
+  <div class="hg" data-gull aria-hidden="true"><div class="gfl"></div><div class="gb"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"></div><div class="gw"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"></div><div class="gh"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"><i class="lid"></i></div></div>
 </section>
 
 <p class="mq" aria-label="Kunden"><span class="mq-t">${[...C.marken, ...C.marken].map(m => `<span>${esc(m)}</span><i aria-hidden="true">✦</i>`).join('')}</span></p>
