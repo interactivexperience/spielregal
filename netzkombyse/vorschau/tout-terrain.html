@@ -40,7 +40,7 @@ h2{font:800 clamp(1.6rem,3.4vw,2.8rem)/1 var(--hf);letter-spacing:-.04em;margin:
 .vc.l .wheel{width:96%;right:-14%;top:-6%}
 .wheel img{position:absolute;inset:0;width:100%;height:100%;display:block}
 .spin{clip-path:circle(36% at 49.8% 47%);will-change:transform}
-.vc.hot .wheel{filter:brightness(.9) saturate(1);transform:translate3d(-1%,-1%,0) scale(1.02)}
+.vc.hot .wheel{filter:brightness(.8) saturate(1)}
 .mud{position:absolute;left:49.8%;top:93%;width:0;height:0}
 .mud i{position:absolute;left:0;top:0;border-radius:52% 40% 58% 44%;background:radial-gradient(circle at 30% 28%,#a05a2a,#3a1c0c 62%,#1a0a04);box-shadow:inset 2px 2px 3px rgba(255,150,70,.75),0 0 6px rgba(255,90,20,.25);width:var(--s);height:var(--s);opacity:0;will-change:transform,opacity;animation:fling var(--t) cubic-bezier(.25,.6,.4,1) forwards}
 .mud i.d{background:radial-gradient(closest-side,rgba(150,80,40,.55),transparent);box-shadow:none;filter:blur(5px);animation-name:puff}
@@ -85,7 +85,7 @@ h2{font:800 clamp(1.6rem,3.4vw,2.8rem)/1 var(--hf);letter-spacing:-.04em;margin:
 <div class="top"><a href="../index.html">‹ Übersicht</a><span>Case-Vorschau · Beispiel Tout Terrain · Konzept Glut</span></div>
 <p class="k">Neue Vorschaubilder statt Screens</p>
 <h1>Erst verstehen, dann neugierig werden.</h1>
-<p class="lead">Ein Reifen allein sagt nichts. Die Karte beantwortet deshalb schon im Ruhezustand drei Fragen: <b>Für wen?</b> (Bike-Traveller), <b>Was ist es?</b> (Online-Shop, in dem eine Radmanufaktur Fahrräder verkauft) und <b>Was haben wir gemacht?</b> (Chips). Das Motiv erzählt die Welt dazu, das Kundenlogo steht groß und mit Abstand zur Kante. Beim Hover (oder Tippen) dreht sich das Rad langsam, einzelne Schlammbrocken spritzen, die Route läuft auf und die vollständige Website schiebt sich als kleines Bild herein.</p>
+<p class="lead">Ein Reifen allein sagt nichts. Die Karte beantwortet deshalb schon im Ruhezustand drei Fragen: <b>Für wen?</b> (Bike-Traveller), <b>Was ist es?</b> (Online-Shop, in dem eine Radmanufaktur Fahrräder verkauft) und <b>Was haben wir gemacht?</b> (Chips). Das Motiv erzählt die Welt dazu, das Kundenlogo steht groß und mit Abstand zur Kante. Beim Hover (oder Tippen) spritzen einzelne Schlammbrocken vom Rad, die Route läuft auf und die vollständige Website schiebt sich als kleines Bild herein.</p>
 
 <div class="row">
   <a class="vc" href="https://netzkombyse.de/case-tout" target="_blank" rel="noopener" aria-label="Tout Terrain: Online-Shop für Reiseräder, für Bike-Traveller. Projekt ansehen">
@@ -125,7 +125,7 @@ h2{font:800 clamp(1.6rem,3.4vw,2.8rem)/1 var(--hf);letter-spacing:-.04em;margin:
   <li><em>D</em><b>Geste + Fund</b><span>Eine Tätigkeit aus der Markenwelt (spritzen, tropfen, funkeln, brechen) als Hover-Animation, dazu die vollständige Website als kleines Bild (der „Fund“) und der Pfeil.</span></li>
 </ul>
 <div class="scroll"><table class="tbl" style="margin-top:2rem"><thead><tr><th>Case</th><th>A · Welt</th><th>C · Klartext (Satz)</th><th>D · Hover-Tätigkeit</th></tr></thead><tbody>
-<tr><td>Tout Terrain</td><td>Verschlammtes Rad, Route</td><td><b>Fahrräder</b> für Bike-Traveller, direkt vom Hersteller</td><td>Rad dreht, Schlamm spritzt</td></tr>
+<tr><td>Tout Terrain</td><td>Verschlammtes Rad, Route</td><td><b>Fahrräder</b> für Bike-Traveller, direkt vom Hersteller</td><td>Schlamm spritzt</td></tr>
 <tr><td>PremiumWheels</td><td>Felge im Scheinwerferlicht, Reifenspuren</td><td><b>Internationaler Reifenhandel</b> mit Shop</td><td>Rauch und Gummi-Abrieb steigen auf</td></tr>
 <tr><td>Wein-Bauer.de</td><td>Weinberg bei Nacht, Glas</td><td><b>50 Jahre Weinhandel</b>, Multi-Channel</td><td>Wein schwenkt, Tropfen laufen</td></tr>
 <tr><td>Abelmann.de</td><td>Fisch unter Wasser im Gegenlicht</td><td><b>Fischmanufaktur</b> mit neuer Marke</td><td>Wasser kräuselt, Schuppen glitzern</td></tr>
@@ -150,7 +150,7 @@ h2{font:800 clamp(1.6rem,3.4vw,2.8rem)/1 var(--hf);letter-spacing:-.04em;margin:
       i.className = dust ? 'd' : ''; const w = wheel.offsetWidth / 1024;
       i.style.cssText = `--s:${s.toFixed(1)}px;--dx:${((Math.random() * -150 - 20) * w * 1.6).toFixed(0)}px;--dy:${((-40 - Math.random() * 120) * w * 1.6).toFixed(0)}px;--r:${(Math.random() * 300 - 150).toFixed(0)}deg;--t:${(1.2 + Math.random() * .8).toFixed(2)}s;margin-left:${(Math.random() * 120 - 70).toFixed(0)}px`;
       i.addEventListener('animationend', () => i.remove()); mud.appendChild(i); };
-    const on = () => { if (rm) return; c.classList.add('hot'); tv = 60; if (!raf) raf = requestAnimationFrame(tick); clearInterval(spawn); for (let k = 0; k < 2; k++) clod(); spawn = setInterval(() => clod(), 380); };
+    const on = () => { if (rm) return; c.classList.add('hot'); clearInterval(spawn); for (let k = 0; k < 2; k++) clod(); spawn = setInterval(() => clod(), 380); };
     const off = () => { c.classList.remove('hot'); tv = 0; clearInterval(spawn); spawn = 0; };
     c.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') on(); }); c.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') off(); });
     c.addEventListener('focus', on); c.addEventListener('blur', off);
