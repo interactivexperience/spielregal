@@ -4,6 +4,17 @@ import { page, logo, esc } from './lib.mjs';
 import { C } from '../content.mjs';
 
 const W = 'https://netzkombyse.de';
+const team = [
+  ['Henning Groß', 'Gründer & Strategie', 'henning', 'Vom Konzern-Einkäufer zur Entwicklung von Unternehmen. Weltreisender, Stratege. Privat mit Wärmepumpe, E-Auto, PV und Smart Home von Zukunftstechnologie begeistert.'],
+  ['Patrick König', 'FullStack', 'patrick', 'Begeistert von komplexen Systemstrukturen und IT-Landschaften. Sorgt für Performance im Front- und Backend.'],
+  ['Heiko Bee', 'FullStack', 'heiko', 'Schnittstellen sind sein Entwickler-Leben. Als FullStack verbindet er jedes System zur Effizienzsteigerung. Keine ERP, die nicht angebunden wird. Privat rettet er Vespas.'],
+  ['Felix Augur', 'Marke & Kommunikation', 'felix', 'Marke und Kommunikation von der Pieke auf gelernt. Agentur- und Konzernerfahren. Er sorgt dafür, dass Ihre Botschaft ankommt. Privat angelt er gerne in Skandinavien.'],
+  ['Inga von Kurnatowski', 'Video & Content', 'inga', 'Geschichten, die hängenbleiben – für Ihre Marke, Ihre Produkte, Ihre Kampagnen. Sympathie vor Pathos, Wirkung vor Ästhetik.'],
+  ['Mi Dinh', 'UI & Design', 'mi', 'Form folgt Wirkung. User Interface-Design und User Experience, die konvertieren und begeistern, mit Liebe zum Detail.'],
+  ['Tim Brettschneider', 'Fördermittel', 'tim', 'Kennt die Fördertöpfe, die Bedingungen und die Wege dorthin. Ihr Vorteil bei der Finanzierung von Digitalisierungsprojekten.'],
+  ['Stefan Gutmann', 'SEO & AI-Sichtbarkeit', 'stefan', 'Sorgt dafür, dass Ihre Kunden Sie finden – in Suchmaschinen und KI-Antworten. Datengetriebene Strategien für organische Reichweite.'],
+  ['Mr. Claude', 'AI Guy', 'claude', 'Der digitale Kollege im Team: recherchiert, prüft und baut mit, rund um die Uhr.'],
+];
 const pad = n => String(n).padStart(2, '0');
 const sq = `<svg class="sq" viewBox="0 0 300 12" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 6C25 0 40 12 62 6S100 0 124 6S162 12 186 6S224 0 248 6S280 10 298 6"/></svg>`;
 const arrow = `<svg viewBox="0 0 60 16" aria-hidden="true"><path d="M2 8h52M46 2l8 6-8 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -33,7 +44,7 @@ function index() {
   const body = `<div id="top"></div><div class="prog" aria-hidden="true"></div>
 <header class="hd"><div class="hd-in">
   <a class="hd-logo" href="index.html" aria-label="NetzKombyse – Startseite">${logo()}</a>
-  <nav class="hd-nav" aria-label="Hauptnavigation"><a href="#leistung">Leistung</a><a href="#lage">Lage</a><a href="#arbeit">Arbeit</a><a href="#stimmen">Stimmen</a><a href="#kontakt">Kontakt</a></nav>
+  <nav class="hd-nav" aria-label="Hauptnavigation"><a href="#leistung">Leistung</a><a href="#lage">Lage</a><a href="#arbeit">Arbeit</a><a href="#stimmen">Stimmen</a><a href="#team">Team</a><a href="#kontakt">Kontakt</a></nav>
   <div class="hd-r"><a class="cart" href="${C.termin}" target="_blank" rel="noopener" data-mag>Termin <b>1</b></a><button class="mt" type="button" data-motion-toggle aria-pressed="true" title="Animationen ein- oder ausschalten"><span class="mt-i" aria-hidden="true"></span><span data-motion-label>Bewegung an</span></button></div>
 </div></header>
 <main id="main">
@@ -70,7 +81,11 @@ function index() {
   <div class="vox"><div class="vq-w">${C.stimmen.map((s, i) => `<figure class="vq${i === 0 ? ' on' : ''}" data-i="${i}"><blockquote>${s.q.split(' ').map((w, j) => `<span style="--w:${j}">${esc(w)}</span>`).join(' ')}</blockquote><figcaption><b>${esc(s.w)}</b><i>${esc(s.f)}${s.hinweis ? ` (${esc(s.hinweis)})` : ''}</i></figcaption></figure>`).join('')}</div>
     <div class="vsel" role="tablist" aria-label="Stimme wählen">${C.stimmen.map((s, i) => `<button type="button" role="tab" aria-selected="${i === 0}" data-i="${i}"><span class="vn">${pad(i + 1)}</span><span><b>${esc(s.w)}</b><i>${esc(s.f)}</i></span></button>`).join('')}</div></div></div></section>
 
-<section class="sec ctsec" id="kontakt"><div class="wr ct"><div class="ct-t"><p class="tag" data-reveal><b>06</b> Kontakt</p><h2 data-reveal>Reden wir <span class="pill">persönlich</span>.</h2>
+<section class="sec" id="team"><div class="wr"><p class="tag" data-reveal><b>06</b> Team</p><h2 data-reveal>Die <span class="pill">Menschen</span> dahinter.</h2>
+  <p class="lead tl" data-reveal>Jede Person hier ist Ihre direkte Ansprechpartnerin, Ihr direkter Ansprechpartner, vom ersten Gespräch bis zum Start. In keiner bestimmten Reihenfolge.</p></div>
+  <div class="tc-row" data-trow tabindex="0" role="region" aria-label="Team, seitlich scrollbar">${team.map(([n, r, im, d], i) => `<article class="tc" style="--i:${i}" tabindex="0"><p class="tc-p">Präsentiert</p><h3 class="tc-n">${esc(n)}</h3><div class="tc-w bg${i}"><img src="../media/team-cut/${im}.webp" alt="${esc(n)}" width="800" height="1000" loading="lazy" decoding="async" draggable="false"><div class="tc-d"><p>${esc(d)}</p></div></div><p class="tc-z">zuständig für</p><p class="tc-r">${esc(r)}</p><span class="tc-i" aria-hidden="true">${pad(i + 1)}/${pad(team.length)}</span><span class="tc-m" aria-hidden="true">NK</span></article>`).join('')}</div></section>
+
+<section class="sec ctsec" id="kontakt"><div class="wr ct"><div class="ct-t"><p class="tag" data-reveal><b>07</b> Kontakt</p><h2 data-reveal>Reden wir <span class="pill">persönlich</span>.</h2>
   <p class="lead" data-reveal>${C.ansprech.name}, ${C.ansprech.rolle}: Ihr Ansprechpartner von der ersten Frage an, ohne Account-Manager dazwischen.</p>
   <ul class="ctl" data-reveal>
     <li class="main"><a href="${C.termin}" target="_blank" rel="noopener" data-mag><i>${ico.cal}</i><span><small>Kennenlernen</small><b>Termin buchen</b></span></a></li>

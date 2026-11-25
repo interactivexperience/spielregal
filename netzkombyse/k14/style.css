@@ -271,3 +271,34 @@ html[data-motion=on] .scrl i{animation:scrl 1.8s var(--ease) infinite}@keyframes
 /* Flügel als eigene Ebene: hebt sich beim Flattern, Drehpunkt an der Schulter */
 .gw{transform-origin:38% 38%;clip-path:polygon(38.1% 38.1%,27.9% 42.2%,20.7% 48.7%,14.7% 64.1%,8.1% 75.1%,13.5% 77.1%,23.1% 74.3%,29.1% 64.9%,33.3% 56.8%,37.5% 45.5%);will-change:transform}
 .gw+.gh{}
+
+/* ===== Team als Autogrammkarten (Vorbild sonarmusic.com.au/team): cremefarbene Karte, „Präsentiert“, Fotofenster mit eigenem Hintergrund je Person in der Orange-Familie, Rolle unten ===== */
+.tl{max-width:36rem;color:var(--soft)}
+.tc-row{display:flex;gap:clamp(.9rem,2vw,1.6rem);overflow-x:auto;scroll-snap-type:x proximity;padding:1rem var(--g) 2.4rem;scrollbar-width:thin;scrollbar-color:var(--o) transparent;cursor:grab;-webkit-overflow-scrolling:touch}
+.tc-row.drag{cursor:grabbing;scroll-snap-type:none}.tc-row:focus-visible{outline-offset:-3px}
+.tc{flex:0 0 clamp(236px,23vw,330px);aspect-ratio:3/4.45;background:var(--ink);color:#0b0b0b;border-radius:10px;padding:.55rem .55rem .65rem;display:grid;grid-template-rows:auto auto 1fr auto auto;gap:.15rem;position:relative;scroll-snap-align:start;box-shadow:0 18px 50px rgba(0,0,0,.5);transition:transform .5s var(--bounce),box-shadow .4s;user-select:none}
+.tc:nth-child(odd){transform:rotate(-1.2deg)}.tc:nth-child(even){transform:rotate(1deg)}
+.tc:is(:hover,:focus-visible,.open){transform:translate3d(0,-10px,0) rotate(0);box-shadow:0 28px 60px rgba(255,107,20,.28)}
+.tc-p{font:700 .52rem Montserrat;letter-spacing:.24em;text-transform:uppercase;text-align:center;color:#333}
+.tc-n{font:800 clamp(.8rem,1.2vw,1rem)/1.1 Unbounded;text-transform:uppercase;text-align:center;letter-spacing:-.01em;margin:.1rem 0 .45rem;text-wrap:nowrap}
+.tc-w{position:relative;overflow:hidden;border-radius:4px;min-height:0;background-color:var(--o)}
+.tc-w img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:50% 100%;pointer-events:none}
+.tc-d{position:absolute;inset:auto 0 0;background:rgba(11,11,11,.9);color:#fff;padding:.9rem 1rem;font-size:clamp(.7rem,.9vw,.82rem);line-height:1.5;transform:translateY(101%);transition:transform .5s var(--ease)}
+.tc:is(:hover,:focus-visible,.open) .tc-d{transform:none}
+.tc-z{font:italic 400 clamp(.9rem,1.3vw,1.1rem)/1 Georgia,serif;text-align:center;margin-top:.55rem;color:#333}
+.tc-r{font:800 clamp(.85rem,1.35vw,1.15rem)/1.05 Unbounded;text-transform:uppercase;text-align:center;letter-spacing:-.02em;padding:0 .2rem}
+.tc-i,.tc-m{position:absolute;bottom:.5rem;font:700 .5rem Montserrat;letter-spacing:.1em;color:#333}.tc-i{left:.7rem}.tc-m{right:.7rem;border:1.2px solid #333;border-radius:3px;padding:.05em .3em}
+/* je Person ein anderer Hintergrund, alle in der Orange-Familie */
+.bg0{background:repeating-radial-gradient(circle at 50% 70%,#ff6b14 0 14px,#ff8a3d 14px 28px)}
+.bg1{background:repeating-linear-gradient(135deg,#ff8a3d 0 16px,#ffa566 16px 32px)}
+.bg2{background:radial-gradient(circle,#ffd0a0 3px,transparent 3.5px) 0 0/22px 22px,#ffb36b}
+.bg3{background:repeating-linear-gradient(90deg,#d9480f 0 12px,#ff6b14 12px 36px)}
+.bg4{background:repeating-conic-gradient(from 0deg at 50% 78%,#ffa07a 0 9deg,#ff7f50 9deg 18deg)}
+.bg5{background:conic-gradient(#ffcb8e 25%,#ffb066 0 50%,#ffcb8e 0 75%,#ffb066 0) 0 0/44px 44px}
+.bg6{background:linear-gradient(#b93a0a 2px,transparent 2px) 0 0/28px 28px,linear-gradient(90deg,#b93a0a 2px,transparent 2px) 0 0/28px 28px,#e9540c}
+.bg7{background:radial-gradient(circle at 50% 100%,transparent 0 17px,#ff7a2e 17px 19px,#ffa25e 19px) 0 0/38px 20px,#ffa25e}
+.bg8{background:repeating-linear-gradient(0deg,#ffd9a8 0 10px,#ffc27d 10px 12px)}
+@media(max-width:860px){.tc{flex-basis:70vw}.tc-d{transform:none;position:static;background:#0b0b0bd9;margin-top:0}.tc-w{display:grid}.tc-d{position:absolute}.tc:not(.open) .tc-d{transform:translateY(101%)}}
+html[data-motion=off] .tc,html[data-motion=off] .tc-d{transition:none}
+@media(prefers-reduced-motion:reduce){.tc,.tc-d{transition:none}}
+.tc{padding-bottom:1.7rem}.tc-r{font-size:clamp(.74rem,1.05vw,.95rem)}.tc-i,.tc-m{bottom:.55rem}

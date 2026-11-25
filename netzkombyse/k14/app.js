@@ -92,3 +92,14 @@
     addEventListener('scroll', () => { if (shown) { shown = false; pv.classList.remove('on'); if (pc) pc.classList.remove('on'); kick(); } }, { passive: true });
   }
 })();
+
+/* ---------- Team-Karten: Ziehen mit der Maus, Antippen zeigt die Beschreibung ---------- */
+(() => {
+  const row = document.querySelector('[data-trow]'); if (!row) return;
+  let down = false, sx = 0, sl = 0, moved = false;
+  row.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return; down = true; moved = false; sx = e.clientX; sl = row.scrollLeft; row.classList.add('drag'); });
+  addEventListener('pointermove', e => { if (!down) return; const dx = e.clientX - sx; if (Math.abs(dx) > 4) moved = true; row.scrollLeft = sl - dx; });
+  addEventListener('pointerup', () => { if (!down) return; down = false; row.classList.remove('drag'); });
+  row.addEventListener('click', e => { const c = e.target.closest('.tc'); if (!c || moved) return; const on = c.classList.toggle('open'); row.querySelectorAll('.tc.open').forEach(x => { if (x !== c) x.classList.remove('open'); }); c.toggleAttribute('data-o', on); });
+  row.addEventListener('keydown', e => { if (e.target !== row) return; if (e.key === 'ArrowRight') row.scrollBy({ left: 300, behavior: 'smooth' }); if (e.key === 'ArrowLeft') row.scrollBy({ left: -300, behavior: 'smooth' }); });
+})();
