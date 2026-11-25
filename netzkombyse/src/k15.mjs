@@ -92,7 +92,7 @@ const logoOf = { 'Bio Planète': 'bioplanete.svg', 'Tout Terrain': 'touttterrain
 const row = a => [...a, ...a].map(x => `<span class="bn">${esc(x)}${logoOf[x] ? `<span class="bl"><img src="../media/logos/${logoOf[x]}" alt="" loading="lazy" decoding="async"></span>` : ''}</span><i aria-hidden="true">✦</i>`).join('');
 
 function index() {
-  const body = `<div id="top"></div><div class="prog" aria-hidden="true"></div><div class="spot" aria-hidden="true"></div><div class="spot spot2" aria-hidden="true"></div>
+  const body = `<div id="top"></div><div class="prog" aria-hidden="true"></div><div class="spot" aria-hidden="true"></div><div class="spot spot2" aria-hidden="true"></div><div class="spot spot3" aria-hidden="true"></div>
 <header class="hd"><a class="hd-logo" href="index.html" aria-label="NetzKombyse – Startseite">${logo()}</a>
   <nav class="hd-nav" aria-label="Hauptnavigation"><a href="#leistung">Leistungen</a><a href="#haltung">Haltung</a><a href="#arbeit">Referenzen</a><a href="${W}/ueber-uns" target="_blank" rel="noopener">Über uns</a><a href="#kontakt">Kontakt</a></nav>
   <div class="hd-r"><button class="mt lt" type="button" data-light aria-pressed="false" title="Lichtpunkt: ein warmer Lichtfleck folgt dem Zeiger"><span class="mt-i" aria-hidden="true"></span><span>Licht</span></button>

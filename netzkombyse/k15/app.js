@@ -56,15 +56,16 @@
   const gull = $('[data-gull]');
   if (gull) {
     const head = $('.gh', gull), body = $('.gb', gull), lid = $('.lid', gull);
-    let last = performance.now(), cur = { r: 0, x: 0, y: 0 }, tgt = { r: 0, x: 0, y: 0 }, raf = 0, busy = false, lastAct = -1;
+    let last = performance.now(), cur = { r: 0, x: 0, y: 0, s: 1 }, tgt = { r: 0, x: 0, y: 0, s: 1 }, raf = 0, busy = false, lastAct = -1;
     const eye = () => { const r = gull.getBoundingClientRect(); return { x: r.left + r.width * .52, y: r.top + r.height * .17 }; };
-    const loop = () => { cur.r += (tgt.r - cur.r) * .08; cur.x += (tgt.x - cur.x) * .08; cur.y += (tgt.y - cur.y) * .08;
-      head.style.transform = `rotate(${cur.r.toFixed(2)}deg)`;
-      raf = (Math.abs(tgt.r - cur.r) + Math.abs(tgt.x - cur.x) + Math.abs(tgt.y - cur.y) > .02) ? requestAnimationFrame(loop) : 0; };
+    /* Kopf dreht sich wirklich: s = Breite des Kopfes (1 = Blick nach links, -1 = nach rechts, dazwischen schmal wie bei einer Drehung) */
+    const loop = () => { cur.r += (tgt.r - cur.r) * .08; cur.x += (tgt.x - cur.x) * .08; cur.y += (tgt.y - cur.y) * .08; cur.s += (tgt.s - cur.s) * .12;
+      head.style.transform = `rotate(${cur.r.toFixed(2)}deg) scaleX(${cur.s.toFixed(3)})`;
+      raf = (Math.abs(tgt.r - cur.r) + Math.abs(tgt.x - cur.x) + Math.abs(tgt.y - cur.y) + Math.abs(tgt.s - cur.s) > .01) ? requestAnimationFrame(loop) : 0; };
     const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
     addEventListener('pointermove', e => { if (!motionOn()) return; last = performance.now();
       const c = eye(), dx = clamp((e.clientX - c.x) / Math.max(260, gull.offsetWidth * .9), -1, 1), dy = clamp((c.y - e.clientY) / Math.max(260, gull.offsetHeight * .5), -1, 1);
-      tgt.r = dy * 9 - dx * 4; tgt.x = 0; tgt.y = 0; kick(); }, { passive: true });
+      tgt.r = dy * 11 - dx * 5; tgt.x = 0; tgt.y = 0; tgt.s = clamp(-dx * 2.6, -1, 1); kick(); }, { passive: true });
     const blink = () => lid && lid.animate([{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)', offset: .4 }, { transform: 'scaleY(0)' }], { duration: 260, easing: 'ease-in-out' });
     const both = (kf, o) => { body.animate(kf.body || kf, o); return head.animate(kf.head || kf, o); };
 
