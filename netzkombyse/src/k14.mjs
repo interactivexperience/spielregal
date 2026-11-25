@@ -66,11 +66,11 @@ function index() {
   <p class="lead" data-reveal>${C.ansprech.name}, ${C.ansprech.rolle}, ist Ihr Ansprechpartner von der ersten Frage an, ohne Account-Manager dazwischen.</p>
   <p class="acts" data-reveal><a class="btn" href="${C.termin}" target="_blank" rel="noopener" data-mag>Termin buchen</a></p>
   <ul class="cl" data-reveal><li><a href="${C.telHref}">${C.tel}</a></li><li><a href="mailto:ahoi@netzkombyse.de">ahoi@netzkombyse.de</a></li><li>${C.adresse[0]}, 22765 ${C.adresse[1]} · <a href="https://maps.google.com/?q=Harkortstraße+81,+22765+Hamburg" target="_blank" rel="noopener">Route ↗</a></li></ul></div>
-  <figure class="hen" data-reveal><img src="../media/henning.webp" alt="Henning Groß, Geschäftsführer (Platzhalterbild)" width="912" height="1140" loading="lazy" decoding="async"><figcaption>${C.ansprech.name}<span>${C.ansprech.rolle}</span></figcaption></figure></div></section>
+  <figure class="hen" data-reveal><img src="../media/henning.webp" alt="Henning Groß, Geschäftsführer" width="912" height="1140" loading="lazy" decoding="async"><figcaption>${C.ansprech.name}<span>${C.ansprech.rolle}</span></figcaption></figure></div></section>
 </main>
 <footer class="ft"><a class="ft-logo" href="index.html" aria-label="Startseite">${logo()}</a>
   <nav aria-label="Rechtliches"><a href="${W}/impressum" target="_blank" rel="noopener">Impressum</a><a href="${W}/datenschutz" target="_blank" rel="noopener">Datenschutz</a><a href="../index.html">Konzepte</a><a href="#top">Nach oben ↑</a></nav>
-  <p class="ft-n">© NetzKombyse GmbH · Hamburg · Beispielwerte und Zitate sind Platzhalter, das Foto von Henning wird ersetzt.</p></footer>`;
+  <p class="ft-n">© NetzKombyse GmbH · Hamburg · Beispielwerte und Zitate sind Platzhalter.</p></footer>`;
   return page({ k: 'k14', title: 'NetzKombyse · Konzept 14 Pille', desc: 'Konzept 14: Pille – Darkmode, Typo im Zentrum, Projekt-Vorschau beim Hover, Henning im Kontakt.', theme: '#000000', body });
 }
 export const pages = () => ({ 'index.html': index() });
