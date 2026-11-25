@@ -304,74 +304,36 @@ html[data-motion=off] .bk{transition:none}
 html[data-light=on] .spot{opacity:1}
 html[data-light=on] .hero .glow{opacity:0}.hero .glow{transition:opacity .6s}
 
-/* ============ Case-Kacheln: ein freigestelltes Motiv, eine Aussage, Details darunter ============
-   Bühne mit Glut-Schein, Motiv steht frei darauf. Beim Hover hebt sich das Motiv und ein kleines, projekttypisches Element bewegt sich
-   (Schlamm, Rauch, Glanz, Pfoten, Blitzlicht, Krümel). Phone-Cases: Hand mit Phone in Perspektive, Features schweben außen. */
+/* ============ Case-Kacheln „Tiefe“: echte Screens als 3D-Ebenen, Motiv vorn, Chips mit Fakten ============
+   Die Bühne kippt leicht; mit der Maus folgt sie dem Cursor (--rx/--ry aus app.js), beim Hover fächern die Ebenen auf.
+   Auf Touch-Geräten läuft das Auffächern, solange die Kachel mittig im Bild ist (.hot). */
 .kcs{list-style:none;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(2rem,4vw,4.5rem) clamp(1.2rem,3vw,3rem)}
 .kc.lo{transform:translate3d(0,clamp(2rem,9vw,8rem),0)}.kcs{padding-bottom:clamp(2rem,9vw,8rem)}
 .kc>a{display:block;text-decoration:none;color:#fff;outline-offset:6px}
-.kc-st{position:relative;aspect-ratio:4/5;border-radius:6px;overflow:hidden;background:radial-gradient(120% 80% at 50% 100%,#2a0905,#0b0201 60%,#050100);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);isolation:isolate}
-.kc-g{position:absolute;left:10%;right:10%;bottom:-25%;height:80%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,90,20,.75),rgba(194,31,11,.35) 55%,transparent);opacity:.55;transition:opacity .8s,transform 1.2s var(--ease)}
-.kc-n{position:absolute;right:1rem;top:.4rem;font:800 clamp(3rem,7vw,6rem)/1 var(--hf);letter-spacing:-.05em;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.22);z-index:0}
+.kc-st{position:relative;aspect-ratio:4/5;border-radius:8px;overflow:hidden;isolation:isolate;perspective:1100px;background:radial-gradient(80% 60% at 70% 30%,#3a1206 0,#120604 55%,#050202 100%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
 .kc-tag{position:absolute;left:1.1rem;top:1.1rem;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:#FFB48A;z-index:3}
-.kc-m{position:absolute;left:50%;bottom:var(--b,7%);height:var(--h,74%);transform:translate3d(-50%,0,0);z-index:2;transition:transform 1s var(--ease)}
-.kc-m img{display:block;height:100%;width:auto;max-width:none;filter:drop-shadow(0 30px 40px rgba(0,0,0,.6));transition:filter .8s}
-.kc-fx{position:absolute;inset:0;pointer-events:none}
-.kc-fx i{position:absolute;opacity:0}
+.kc-sc{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateX(var(--rx,6deg)) rotateY(var(--ry,-12deg));transition:transform .9s var(--ease)}
+.kc-ly{position:absolute;display:block;max-width:none;transition:transform 1s var(--ease)}
+.kc-scr{left:12%;top:13%;width:94%;border-radius:8px;box-shadow:0 30px 60px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.12);transform:translateZ(0)}
+.kc-scr.t{left:44%;top:7%;width:46%;border-radius:16px}
+.kc-mid{border-radius:7px;box-shadow:0 24px 50px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.1);transform:translateZ(40px)}
+.kc-cut{height:auto;filter:drop-shadow(0 30px 40px rgba(0,0,0,.7));transform:translateZ(80px)}
+.kc-ch{position:absolute;z-index:4;display:flex;align-items:center;gap:.5rem;padding:.45rem .8rem .45rem .45rem;border-radius:99px;background:rgba(18,8,4,.84);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);font:500 clamp(.66rem,.6rem + .2vw,.78rem)/1.2 var(--bf);white-space:nowrap;opacity:0;transform:translateZ(50px) translateY(10px);transition:opacity .7s var(--ease),transform 1s var(--ease)}
+.kc-ch img{width:30px;height:30px;border-radius:50%;object-fit:contain;background:#fff}
+.kc-ch b{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle,var(--o) 0 4px,rgba(255,90,20,.18) 5px)}
+.kc-ch em{font-style:normal;color:var(--o)}
+.kc-ch1{right:7%;top:9%}.kc-ch2{left:9%;top:34%}
+.kc:is(:hover,:focus-within,.hot) .kc-ch{opacity:1;transform:translateZ(60px)}
+.kc:is(:hover,:focus-within,.hot) .kc-ch2{transition-delay:.12s}
+html[data-motion=on] .kc:is(:hover,:focus-within,.hot) .kc-scr{transform:translateZ(-30px)}
+html[data-motion=on] .kc:is(:hover,:focus-within,.hot) .kc-mid{transform:translateZ(70px) translateY(-5%)}
+html[data-motion=on] .kc:is(:hover,:focus-within,.hot) .kc-cut{transform:translateZ(120px) translateX(3%)}
 .kc-s{font:700 clamp(1.25rem,1rem + 1vw,1.9rem)/1.12 var(--hf);letter-spacing:-.03em;margin:1.3rem 0 .7rem;max-width:22ch;transition:color .4s}
 .kc-d{display:flex;flex-wrap:wrap;gap:.2rem .8rem;font-size:.85rem;color:var(--soft);border-top:1px solid var(--line);padding-top:.8rem}.kc-d b{color:#fff;font-weight:600}
 .kc-l{display:inline-flex;align-items:center;gap:.5rem;margin-top:.9rem;font:600 .74rem var(--bf);letter-spacing:.1em;text-transform:uppercase;color:var(--o)}.kc-l i{width:12px;height:12px;display:block;transition:transform .4s var(--ease)}
-/* Hover / im Blick (Touch) */
-.kc:is(:hover,:focus-within,.hot) .kc-g{opacity:1;transform:scale(1.08)}
 .kc:is(:hover,:focus-within,.hot) .kc-s{color:var(--o)}
 .kc:is(:hover,:focus-within) .kc-l i{transform:translate3d(3px,-3px,0)}
-html[data-motion=on] .kc:is(:hover,:focus-within,.hot) .kc-m{transform:translate3d(-50%,-3%,0) scale(1.04)}
-/* Größen je Motiv */
-.fx-mud{--h:70%;--b:9%}.fx-smoke{--h:66%;--b:12%}.fx-glint{--h:84%;--b:5%}.fx-paws{--h:84%;--b:0%}.fx-paws .kc-m img{-webkit-mask:linear-gradient(#000 78%,transparent);mask:linear-gradient(#000 78%,transparent)}.fx-flash{--h:58%;--b:16%}.fx-crumbs{--h:52%;--b:16%}
-/* Schlamm: einzelne Brocken lösen sich unten vom Reifen */
-.fx-mud .kc-fx i{left:50%;top:94%;width:var(--s,7px);height:var(--s,7px);border-radius:52% 40% 58% 44%;background:radial-gradient(circle at 30% 28%,#a05a2a,#3a1c0c 62%)}
-.fx-mud .kc-fx i:nth-child(1){--dx:-60px;--dy:-50px;--s:8px}.fx-mud .kc-fx i:nth-child(2){--dx:-95px;--dy:-24px;--s:5px;animation-delay:.5s!important}.fx-mud .kc-fx i:nth-child(3){--dx:-40px;--dy:-80px;--s:6px;animation-delay:1.1s!important}.fx-mud .kc-fx i:nth-child(4){--dx:-120px;--dy:-60px;--s:4px;animation-delay:1.6s!important}.fx-mud .kc-fx i:nth-child(5){--dx:-75px;--dy:-100px;--s:5px;animation-delay:2.2s!important}
-@keyframes kmud{0%{opacity:0;transform:translate3d(0,0,0) scale(.4)}15%{opacity:1}55%{transform:translate3d(calc(var(--dx)*.7),var(--dy),0) rotate(120deg) scale(1)}100%{opacity:0;transform:translate3d(var(--dx),calc(var(--dy)*-.2 + 60px),0) rotate(260deg) scale(.8)}}
-html[data-motion=on] .fx-mud:is(:hover,.hot) .kc-fx i{animation:kmud 2.6s cubic-bezier(.25,.6,.4,1) infinite}
-/* Rauch: weiche Schwaden ziehen am Reifenfuß nach rechts */
-.fx-smoke .kc-fx i{left:30%;bottom:-2%;width:45%;height:22%;border-radius:50%;background:radial-gradient(closest-side,rgba(230,230,235,.4),transparent)}
-.fx-smoke .kc-fx i:nth-child(2){left:10%;animation-delay:1.2s!important}.fx-smoke .kc-fx i:nth-child(3){left:45%;animation-delay:2.4s!important}
-@keyframes ksmoke{0%{opacity:0;transform:translate3d(0,0,0) scale(.8)}30%{opacity:.9}100%{opacity:0;transform:translate3d(60%,-30%,0) scale(1.6)}}
-html[data-motion=on] .fx-smoke:is(:hover,.hot) .kc-fx i{animation:ksmoke 3.6s ease-out infinite}
-/* Glanz: ein Lichtstreif läuft über die Flasche, auf die Flaschenform maskiert */
-.kc-gl{position:absolute;inset:0;-webkit-mask:var(--mk) center/100% 100% no-repeat;mask:var(--mk) center/100% 100% no-repeat;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.75) 48%,transparent 60%) 0 0/300% 100% no-repeat;background-position:110% 0;mix-blend-mode:screen;pointer-events:none}
-@keyframes kglint{0%{background-position:110% 0}60%,100%{background-position:-10% 0}}
-html[data-motion=on] .fx-glint:is(:hover,.hot) .kc-gl{animation:kglint 2.8s var(--ease) infinite}
-/* Pfoten: vier Abdrücke tapsen nacheinander ins Bild */
-.fx-paws .kc-fx i{width:16px;height:16px;bottom:4%;background:radial-gradient(circle at 50% 70%,#FFB48A 34%,transparent 36%),radial-gradient(circle at 18% 30%,#FFB48A 13%,transparent 15%),radial-gradient(circle at 42% 12%,#FFB48A 13%,transparent 15%),radial-gradient(circle at 66% 14%,#FFB48A 13%,transparent 15%),radial-gradient(circle at 88% 34%,#FFB48A 13%,transparent 15%)}
-.fx-paws .kc-fx i:nth-child(1){left:-30%;bottom:2%;transform:rotate(70deg)}.fx-paws .kc-fx i:nth-child(2){left:-18%;bottom:8%;transform:rotate(80deg);animation-delay:.35s!important}.fx-paws .kc-fx i:nth-child(3){left:-6%;bottom:2%;transform:rotate(70deg);animation-delay:.7s!important}.fx-paws .kc-fx i:nth-child(4){left:6%;bottom:8%;transform:rotate(80deg);animation-delay:1.05s!important}
-@keyframes kpaw{0%{opacity:0}10%,60%{opacity:.85}100%{opacity:0}}
-html[data-motion=on] .fx-paws:is(:hover,.hot) .kc-fx i{animation:kpaw 2.8s ease-out infinite}
-/* Blitzlicht: die Lightbar auf dem Dach flammt kurz auf */
-.fx-flash .kc-fx i{top:22%;width:34%;height:16%;border-radius:50%;background:radial-gradient(closest-side,#fff,rgba(255,240,200,.75) 25%,rgba(255,180,90,.25) 55%,transparent);mix-blend-mode:screen}
-.fx-flash .kc-fx i:nth-child(1){left:8%}.fx-flash .kc-fx i:nth-child(2){left:22%;animation-delay:.12s!important}
-@keyframes kflash{0%,100%{opacity:0}8%{opacity:1}16%{opacity:.2}24%{opacity:.95}40%{opacity:0}}
-html[data-motion=on] .fx-flash:is(:hover,.hot) .kc-fx i{animation:kflash 2.4s linear infinite}
-/* Krümel rieseln aus der Tüte */
-.fx-crumbs .kc-fx i{top:34%;width:5px;height:4px;border-radius:1px;background:#d9cbb4}
-.fx-crumbs .kc-fx i:nth-child(1){left:36%}.fx-crumbs .kc-fx i:nth-child(2){left:52%;width:4px;animation-delay:.6s!important}.fx-crumbs .kc-fx i:nth-child(3){left:44%;width:3px;animation-delay:1.2s!important}.fx-crumbs .kc-fx i:nth-child(4){left:60%;animation-delay:1.8s!important}
-@keyframes kcrumb{0%{opacity:0;transform:translate3d(0,0,0) rotate(0)}10%{opacity:1}100%{opacity:0;transform:translate3d(6px,170px,0) rotate(200deg)}}
-html[data-motion=on] .fx-crumbs:is(:hover,.hot) .kc-fx i{animation:kcrumb 2.4s cubic-bezier(.5,0,.8,.6) infinite}
-/* Phone mit Hand: schräge Perspektive, beim Hover dreht es sich zum Betrachter; Features schweben außen */
-.fx-ph{--h:80%;--b:-6%}
-.fx-ph .kc-st{perspective:900px}
-.fx-ph .kc-m{transform:translate3d(-44%,0,0) rotateZ(-7deg) rotateY(14deg);transform-origin:60% 100%}
-html[data-motion=on] .fx-ph:is(:hover,:focus-within,.hot) .kc-m{transform:translate3d(-46%,-3%,0) rotateZ(-2deg) rotateY(-4deg) scale(1.03)}
-.kc-f{list-style:none;padding:0;position:absolute;inset:0;z-index:3;pointer-events:none}
-.kc-f li{position:absolute;display:flex;gap:.45rem;align-items:center;font:600 clamp(.64rem,.6rem + .2vw,.78rem)/1.2 var(--bf);padding:.55rem .8rem;border-radius:3px;background:rgba(18,4,2,.72);box-shadow:inset 0 0 0 1px rgba(255,138,60,.45),0 14px 30px rgba(0,0,0,.5);backdrop-filter:blur(6px);white-space:nowrap;transition:transform 1s var(--ease)}
-.kc-f b{color:var(--o);font-size:.7em}
-.kc-f li:nth-child(1){left:6%;top:24%}.kc-f li:nth-child(2){right:5%;top:46%}.kc-f li:nth-child(3){left:8%;top:64%}
-html[data-motion=on] .kc-f li{animation:kfloat 5s ease-in-out infinite;animation-delay:calc(var(--j)*-1.6s)}
-@keyframes kfloat{50%{translate:0 -6px}}
-html[data-motion=on] .fx-ph:is(:hover,:focus-within,.hot) .kc-f li:nth-child(1){transform:translate3d(-8px,-6px,0)}
-html[data-motion=on] .fx-ph:is(:hover,:focus-within,.hot) .kc-f li:nth-child(2){transform:translate3d(8px,0,0)}
-html[data-motion=on] .fx-ph:is(:hover,:focus-within,.hot) .kc-f li:nth-child(3){transform:translate3d(-8px,6px,0)}
-@media (max-width:760px){.kcs{grid-template-columns:1fr;gap:2.6rem}.kc.lo{transform:none}.kcs{padding-bottom:0}.kc-st{aspect-ratio:1/1.05}}
+@media (max-width:760px){.kcs{grid-template-columns:1fr;gap:2.6rem}.kc.lo{transform:none}.kcs{padding-bottom:0}.kc-ch{font-size:.64rem}.kc-ch img,.kc-ch b{width:24px;height:24px}}
 
 /* ===== Stimmen: Zitat mittig, darunter kleine Namen mit gleich runden Bildern ===== */
 .vs .k{text-align:center}
