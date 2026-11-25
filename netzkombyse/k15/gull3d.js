@@ -1,71 +1,54 @@
-/* Konzept 15 · neue 3D-Möwe im Glut-Stil, komplett prozedural (kein Fremdmodell):
-   schlanke Silbermöwe mit roter Strickmütze, weiche matte Flächen in Weiß, Schiefergrau und Orange, warmes Randlicht von hinten.
-   Hals und Kopf drehen sich im Raum zur Maus, Flügel schlägt nur auf Klick, sie atmet und blinzelt selten.
-   Ohne WebGL oder bei „Bewegung aus“ bleibt das Standbild (Foto-Bild). Mit ?foto bleibt das Foto auch bei WebGL. */
+/* Konzept 15 · 3D-Möwe aus dem Foto: Das Foto der Möwe wird in Ebenen zerlegt (Körper, Flügel, Kopf mit Mütze) und in three.js im Raum gedreht.
+   Farben, Federn und Licht bleiben pixelgleich wie im Foto (unbeleuchtete Texturen, keine Neuberechnung). Der Kopf besteht aus mehreren Schichten mit Tiefe,
+   dreht sich zur Maus (bis zum Blick nach rechts, dabei geht er kurz durch die Schmalansicht), der Körper neigt sich leicht, der Flügel schlägt nur auf Klick.
+   Ohne WebGL oder bei „Bewegung aus“ bleibt das Standbild; mit ?foto bleibt es immer. */
 import * as THREE from 'three';
 
 const NK = window.NK;
 const wrap = location.search.includes('foto') ? null : document.querySelector('[data-gull]');
-const clamp = THREE.MathUtils.clamp, rand = (a, b) => a + Math.random() * (b - a);
-let renderer, scene, cam, bird, headG, neckG, wingL, wingR, tailG, lidL, lidR, bodyG, legs;
-let ready = false, failed = false, running = false, blinkT = 2, flapT = -1;
-const look = { yaw: 0, pitch: 0 }, ptr = { x: .5, y: .1, t: -1e9 }, clock = new THREE.Clock(), blink = { t: -1 };
-const H = 6.1;   // Höhe der Möwe in Welteinheiten (Füße bei y = 0)
+const clamp = THREE.MathUtils.clamp, smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+const SRC = new URL('../media/moewe-cut-l.webp', import.meta.url).href;
+const AR = 1232 / 832, W = 1, Hh = AR;                       // Ebene in Welteinheiten (Breite 1, Höhe 1,481)
+const NECK = { x: .52, y: .268 }, SHOULDER = { x: .38, y: .38 };
+let renderer, scene, cam, bird, bodyG, headG, wingG, headLayers = [], ready = false, failed = false, running = false, flapT = -1;
+const look = { yaw: 0, pitch: 0 }, ptr = { x: -.6, y: .1, t: -1e9 }, clock = new THREE.Clock();
 
-const mat = (c, o = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: .88, metalness: 0, ...o });
-const M = {
-  white: mat(0xf3ece4), cream: mat(0xe9ddd0), slate: mat(0x59606b, { roughness: .8 }), dark: mat(0x1b1d24),
-  beak: mat(0xff9a1c, { roughness: .55 }), red: mat(0xe0301c, { roughness: .6 }), leg: mat(0xff6a1a, { roughness: .6 }),
-  eye: mat(0x0b0b0b, { roughness: .25 }), ring: mat(0xffb020, { roughness: .5 }), hatA: mat(0xff4a12, { roughness: .95 }),
-};
-function ell(m, rx, ry, rz, seg = 40) { const o = new THREE.Mesh(new THREE.SphereGeometry(1, seg, Math.round(seg * .7)), m); o.scale.set(rx, ry, rz); return o; }
-function at(o, x, y, z, rz = 0, ry = 0, rx = 0) { o.position.set(x, y, z); o.rotation.set(rx, ry, rz); return o; }
-function beanieTexture() {
-  const c = document.createElement('canvas'); c.width = 256; c.height = 128; const g = c.getContext('2d');
-  g.fillStyle = '#ff4a12'; g.fillRect(0, 0, 256, 128);
-  for (let i = 0; i < 32; i++) { g.fillStyle = i % 2 ? 'rgba(120,20,0,.55)' : 'rgba(255,140,60,.35)'; g.fillRect(i * 8, 0, 3, 128); }
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = THREE.RepeatWrapping; return t;
+const load = src => new Promise((res, rej) => { const i = new Image(); i.crossOrigin = 'anonymous'; i.onload = () => res(i); i.onerror = rej; i.src = src; });
+function layer(img, fn) {
+  const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const g = c.getContext('2d');
+  fn(g, c.width, c.height, img);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter; return t;
+}
+const gradMask = (g, w, h, stops) => { const gr = g.createLinearGradient(0, 0, 0, h); stops.forEach(([p, a]) => gr.addColorStop(p, `rgba(0,0,0,${a})`)); g.globalCompositeOperation = 'destination-in'; g.fillStyle = gr; g.fillRect(0, 0, w, h); g.globalCompositeOperation = 'source-over'; };
+const WING = [[38.1, 38.1], [27.9, 42.2], [20.7, 48.7], [14.7, 64.1], [8.1, 75.1], [13.5, 77.1], [23.1, 74.3], [29.1, 64.9], [33.3, 56.8], [37.5, 45.5]];
+
+/* Ebene mit Drehpunkt (px, py in Bildanteilen) und Tiefe z */
+function plane(tex, pivot, z, o = {}) {
+  const m = new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: .02, side: THREE.DoubleSide, depthWrite: true, color: o.tint ?? 0xffffff });
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(W, Hh), m);
+  mesh.position.set(-(pivot.x - .5) * W, (pivot.y - .5) * Hh, z);
+  const g = new THREE.Group(); g.position.set((pivot.x - .5) * W, -(pivot.y - .5) * Hh, 0); g.add(mesh); return { g, mesh, m };
 }
 
-/* Möwe blickt nach links (−X), Körper leicht zur Kamera gedreht. */
-function build() {
+async function build() {
+  const img = await load(SRC);
+  const texBody = layer(img, (g, w, h, i) => { g.drawImage(i, 0, 0); gradMask(g, w, h, [[0, 0], [.2, 0], [.245, 1], [1, 1]]); });
+  const texHead = layer(img, (g, w, h, i) => { g.drawImage(i, 0, 0); gradMask(g, w, h, [[0, 1], [.215, 1], [.268, 0], [1, 0]]); });
+  const texWing = layer(img, (g, w, h, i) => { g.save(); g.beginPath(); WING.forEach(([x, y], k) => g[k ? 'lineTo' : 'moveTo'](x / 100 * w, y / 100 * h)); g.closePath(); g.clip(); g.drawImage(i, 0, 0); g.restore(); });
   bird = new THREE.Group(); bodyG = new THREE.Group(); bird.add(bodyG);
-  const body = ell(M.white, .8, 1.5, .62); at(body, 0, 2.55, 0, .3); bodyG.add(body);
-  const back = ell(M.slate, .55, 1.25, .58); at(back, .36, 2.65, 0, .3); back.scale.z = .6; bodyG.add(back);
-  const belly = ell(M.cream, .66, 1.0, .58); at(belly, -.2, 2.0, 0, .3); bodyG.add(belly);
-  tailG = new THREE.Group(); at(tailG, .72, 1.55, 0, -.5); bodyG.add(tailG);
-  tailG.add(at(ell(M.white, .9, .12, .4), .5, 0, 0)); tailG.add(at(ell(M.dark, .32, .13, .36), .95, .01, 0));
-  const mkWing = s => { const g = new THREE.Group(); at(g, .05, 3.35, .56 * s);
-    g.add(at(ell(M.slate, .42, 1.3, .13), .35, -1.15, 0, .5));
-    g.add(at(ell(M.dark, .18, .6, .12), .95, -2.1, 0, .54));
-    g.add(at(ell(M.white, .15, .5, .11), .75, -1.6, s * .03, .5));
-    bodyG.add(g); return g; };
-  wingL = mkWing(1); wingR = mkWing(-1);
-  legs = new THREE.Group(); bodyG.add(legs);
-  for (const z of [.24, -.24]) {
-    legs.add(at(new THREE.Mesh(new THREE.CylinderGeometry(.06, .05, 1.5, 14), M.leg), -.05, .78, z));
-    for (const a of [-.55, 0, .55]) legs.add(at(ell(M.leg, .5, .06, .09, 20), -.35, .05, z + a * .28, 0, a * .5));
+  /* Körper: Hauptebene plus dünne dunklere Rückschichten für Volumen bei Neigung */
+  for (let k = 3; k >= 1; k--) { const p = plane(texBody, { x: .5, y: .8 }, -k * .012, { tint: 0x777777 }); bodyG.add(p.g); }
+  const b0 = plane(texBody, { x: .5, y: .8 }, 0); bodyG.add(b0.g);
+  /* Flügel über dem Körper */
+  const w = plane(texWing, SHOULDER, .035); wingG = w.g; bodyG.add(wingG);
+  /* Kopf: mehrere Schichten, hinten dunkler (Dicke), vorn das helle Foto */
+  headG = new THREE.Group(); headG.position.set((NECK.x - .5) * W, -(NECK.y - .5) * Hh, 0); bodyG.add(headG);
+  const N = 5;
+  for (let k = 0; k < N; k++) {
+    const z = (k - (N - 1) / 2) * .005, v = 0x88 + Math.round(k * (0xff - 0x88) / (N - 1)), shade = (v << 16) | (v << 8) | v;
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(W, Hh), new THREE.MeshBasicMaterial({ map: texHead, transparent: true, alphaTest: .02, side: THREE.DoubleSide, color: shade }));
+    mesh.position.set(-(NECK.x - .5) * W, (NECK.y - .5) * Hh, z + .06); headG.add(mesh); headLayers.push(mesh);
   }
-  neckG = new THREE.Group(); at(neckG, -.55, 4.0, 0, .26); bodyG.add(neckG);
-  neckG.add(at(ell(M.white, .36, .62, .34), 0, .32, 0));
-  headG = new THREE.Group(); at(headG, -.1, .86, 0); neckG.add(headG);
-  headG.add(at(ell(M.white, .5, .42, .4, 48), -.05, .2, 0));
-  const bu = at(new THREE.Mesh(new THREE.ConeGeometry(.15, 1.0, 24), M.beak), -.78, .06, 0, Math.PI / 2 + .12); bu.scale.set(1, 1, .8); headG.add(bu);
-  headG.add(at(ell(M.beak, .17, .08, .13), -1.2, -.04, 0, -.55));
-  headG.add(at(ell(M.red, .05, .05, .09), -1.02, -.14, 0));
-  const lids = [];
-  for (const s of [1, -1]) {
-    headG.add(at(ell(M.ring, .13, .13, .06), -.28, .3, s * .46, 0, s * .45));
-    headG.add(at(ell(M.eye, .08, .08, .06), -.29, .3, s * .5, 0, s * .45));
-    const lid = at(ell(M.white, .15, .15, .08), -.28, .3, s * .49, 0, s * .45); lid.scale.y = .001; headG.add(lid); lids.push(lid);
-  }
-  [lidL, lidR] = lids;
-  const hat = new THREE.Group(); at(hat, -.02, .42, 0, .12); headG.add(hat);
-  const capM = new THREE.MeshStandardMaterial({ map: beanieTexture(), roughness: .98 });
-  const cap = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 28, 0, Math.PI * 2, 0, Math.PI * .55), capM); cap.scale.set(.56, .6, .5); at(cap, 0, .05, 0); hat.add(cap);
-  const brim = new THREE.Mesh(new THREE.TorusGeometry(.5, .11, 16, 48), M.hatA); brim.rotation.x = Math.PI / 2; brim.scale.set(1.04, .95, 1); hat.add(brim);
-  hat.add(at(new THREE.Mesh(new THREE.IcosahedronGeometry(.2, 3), M.hatA), .05, .7, 0));
-  bird.rotation.y = .12;
   return bird;
 }
 
@@ -73,43 +56,36 @@ function size() {
   if (!renderer || !wrap) return;
   const w = wrap.clientWidth, h = wrap.clientHeight; if (!w || !h) return;
   renderer.setSize(w, h, false); cam.aspect = w / h;
-  const vis = H * 1.08, d = vis / (2 * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)));
-  cam.position.set(0, H * .5, d); cam.lookAt(0, H * .5, 0); cam.updateProjectionMatrix();
+  const d = (Hh / 2) / Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)); cam.position.set(0, 0, d); cam.lookAt(0, 0, 0); cam.updateProjectionMatrix();
 }
 
 function loop() {
   const now = performance.now(), dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
-  const a = now - ptr.t < 6000, nx = a ? ptr.x : -.2, ny = a ? ptr.y : .05;
-  const r = wrap.getBoundingClientRect(), cx = (r.left + r.width * .48) / innerWidth * 2 - 1, cy = 1 - (r.top + r.height * .2) / innerHeight * 2;
-  const yawT = clamp((nx - cx) * 1.55, -.55, 2.3), pitchT = clamp((ny - cy) * .8, -.45, .5);
-  look.yaw += (yawT - look.yaw) * Math.min(1, dt * 5); look.pitch += (pitchT - look.pitch) * Math.min(1, dt * 5);
-  neckG.rotation.y = look.yaw * .42; neckG.rotation.z = .22 - look.pitch * .25;
-  headG.rotation.y = look.yaw * .58; headG.rotation.z = -look.pitch * .75;
-  bird.rotation.y += ((.12 + look.yaw * .12) - bird.rotation.y) * Math.min(1, dt * 3);
-  bodyG.scale.y = 1 + Math.sin(t * 1.7) * .006; bodyG.position.y = 0;
-  tailG.rotation.z = -.42 + Math.sin(t * .8) * .02;
-  if (flapT >= 0) { flapT += dt; const u = flapT / 1.1, f = u < 1 ? Math.sin(u * Math.PI * 4.5) * Math.sin(u * Math.PI) * .75 : 0;
-    wingL.rotation.z = wingR.rotation.z = -f * .5; wingL.rotation.x = -f * .9; wingR.rotation.x = f * .9; bodyG.position.y = Math.max(0, f) * .12;
-    if (u >= 1) { flapT = -1; wingL.rotation.set(0, 0, 0); wingR.rotation.set(0, 0, 0); } }
-  if ((blinkT -= dt) <= 0) { blinkT = rand(2.5, 6.5); blink.t = 0; }
-  if (blink.t >= 0) { blink.t += dt; const u = blink.t / .26, s = u < 1 ? Math.sin(u * Math.PI) : 0; lidL.scale.y = lidR.scale.y = Math.max(.001, s); if (u >= 1) blink.t = -1; }
+  const a = now - ptr.t < 6000, nx = a ? ptr.x : -.6, ny = a ? ptr.y : .1;
+  const r = wrap.getBoundingClientRect(), cx = (r.left + r.width * .46) / innerWidth * 2 - 1, cy = 1 - (r.top + r.height * .2) / innerHeight * 2;
+  const dx = nx - cx, dy = ny - cy;
+  /* Kopf: Maus links = Foto-Blick, Maus rechts = Kopf dreht sich bis zur Dreiviertel-Ansicht zur Kamera */
+  const yawT = 1.0 * smooth(0, .7, dx), pitchT = clamp(dy * .4, -.35, .4);
+  look.yaw += (yawT - look.yaw) * Math.min(1, dt * 4.5); look.pitch += (pitchT - look.pitch) * Math.min(1, dt * 5);
+  headG.rotation.y = look.yaw; headG.rotation.x = -look.pitch * .8; headG.rotation.z = Math.sin(look.yaw) * .02;
+  /* Körper neigt sich minimal zur Maus, Atmen */
+  bird.rotation.y += (clamp(dx * .22, -.14, .2) - bird.rotation.y) * Math.min(1, dt * 3);
+  bodyG.scale.y = 1 + Math.sin(t * 1.6) * .004;
+  if (flapT >= 0) { flapT += dt; const u = flapT / 1.1, f = u < 1 ? Math.sin(u * Math.PI * 4.5) * Math.sin(u * Math.PI) : 0;
+    wingG.rotation.z = f * .22; wingG.rotation.y = -Math.abs(f) * .5; if (u >= 1) { flapT = -1; wingG.rotation.set(0, 0, 0); } }
   renderer.render(scene, cam);
 }
 
-function init() {
+async function init() {
   if (!wrap || ready || failed) return;
   try {
     const mobile = innerWidth < 900;
-    renderer = new THREE.WebGLRenderer({ antialias: !mobile, alpha: true, powerPreference: 'high-performance' });
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(devicePixelRatio, mobile ? 1.5 : 2));
-    renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = .95;
+    renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.NoToneMapping;
     renderer.domElement.className = 'gull3d'; renderer.domElement.setAttribute('aria-hidden', 'true');
-    scene = new THREE.Scene(); cam = new THREE.PerspectiveCamera(24, 1, .1, 80);
-    scene.add(new THREE.HemisphereLight(0xffe9d6, 0x3a1608, 1.0));
-    const key = new THREE.DirectionalLight(0xfff0e0, 2.2); key.position.set(-4, 6, 6); scene.add(key);
-    const rim = new THREE.DirectionalLight(0xff5a14, 4.5); rim.position.set(6, 3, -3); scene.add(rim);
-    const rim2 = new THREE.DirectionalLight(0xff7a30, 1.4); rim2.position.set(5, 1, 4); scene.add(rim2);
-    scene.add(build());
+    scene = new THREE.Scene(); cam = new THREE.PerspectiveCamera(16, 1, .1, 80);
+    scene.add(await build());
     wrap.appendChild(renderer.domElement);
     size(); ready = true;
     if (NK.motionOn()) resume();
