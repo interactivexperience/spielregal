@@ -88,23 +88,21 @@ function index() {
   <div class="tc-row" data-trow tabindex="0" role="region" aria-label="Team, seitlich scrollbar">${team.map(([n, r, im, d], i) => `<article class="tc" style="--i:${i}" tabindex="0"><p class="tc-p">Präsentiert</p><h3 class="tc-n">${esc(n)}</h3><div class="tc-w bg${i}">${LINE[i] || ''}<img src="../media/team-cut/${im}.webp" alt="${esc(n)}" width="800" height="1000" loading="lazy" decoding="async" draggable="false"><div class="tc-d"><p>${esc(d)}</p></div></div><p class="tc-z">${i === 0 || i === 8 ? 'im Team als' : 'zuständig für'}</p><p class="tc-r">${esc(TC_ROLE[i] || r)}</p><span class="tc-i" aria-hidden="true">${pad(i + 1)}/${pad(team.length)}</span><span class="tc-m" aria-hidden="true">NK</span></article>`).join('')}</div></section>
 
 <section class="sec kx" id="kontakt" aria-labelledby="kxh">
-  <div class="kx-glow" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="kx-glow" aria-hidden="true"><i></i><i></i></div>
   <div class="kx-top wr">
-    <div class="kx-r"><p class="tag" data-reveal><b>07</b> Kontakt</p><h2 id="kxh" data-reveal>Reden wir <span class="pill">persönlich</span>.</h2>
-      <p class="kx-n" data-reveal><b>${C.ansprech.name}</b> · ${C.ansprech.rolle}</p>
-      <p class="kx-m" data-reveal><a href="mailto:ahoi@netzkombyse.de">ahoi@netzkombyse.de</a></p>
+    <div class="kx-r"><p class="tag" data-reveal><b>07</b> Kontakt</p><h2 id="kxh" data-reveal>Reden wir persönlich.</h2>
+      <p class="kx-n" data-reveal>Ohne Umwege zu den Menschen, die Ihr Projekt bauen.</p>
       <p class="kx-b" data-reveal><a class="kb kb-f" href="${C.termin}" target="_blank" rel="noopener" data-mag>Termin buchen</a><button class="kb" type="button" data-copy="ahoi@netzkombyse.de"><span data-copy-l>E-Mail kopieren</span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button><span class="sr" role="status" aria-live="polite" data-copy-s></span></p></div>
     <div class="kx-s" aria-hidden="true"></div>
     <div class="kx-l">
       <ul class="kx-ln" data-reveal>
-        <li><a href="${C.telHref}"><i>${ico.phone}</i><span>${C.tel}</span></a></li>
-        <li><a href="${C.termin}" target="_blank" rel="noopener"><i>${ico.cal}</i><span>Videotermin, 30 Minuten</span></a></li>
-        <li><a href="https://maps.google.com/?q=Harkortstraße+81,+22765+Hamburg" target="_blank" rel="noopener"><i>${ico.pin}</i><span>${C.adresse[0]}, ${C.adresse[1]}</span></a></li>
+        <li><a href="${C.telHref}"><small>Telefon</small><span>${C.tel}</span></a></li>
+        <li><a href="mailto:ahoi@netzkombyse.de"><small>E-Mail</small><span>ahoi@netzkombyse.de</span></a></li>
+        <li><a href="https://maps.google.com/?q=Harkortstraße+81,+22765+Hamburg" target="_blank" rel="noopener"><small>Büro</small><span>${C.adresse[0]}, ${C.adresse[1]}</span></a></li>
       </ul></div>
   </div>
-  <figure class="kx-p"><img src="../media/henning-pose.webp" alt="${C.ansprech.name}, ${C.ansprech.rolle}" width="928" height="1152" loading="lazy" decoding="async"></figure>
-  <div class="kx-ft wr"><span>© 2026 NetzKombyse GmbH</span><a href="${W}/datenschutz" target="_blank" rel="noopener">Datenschutz</a><a href="${W}/impressum" target="_blank" rel="noopener">Impressum</a><span class="kx-c">Moin aus Hamburg: Hier ist es gerade <b data-clock>–</b> Uhr.</span></div>
-  <p class="kx-big" aria-hidden="true">Kontakt</p>
+  <figure class="kx-p"><img src="../media/henning-pose.webp" alt="${C.ansprech.name}, ${C.ansprech.rolle}" width="928" height="1152" loading="lazy" decoding="async"><figcaption><b>${C.ansprech.name}</b> · ${C.ansprech.rolle}</figcaption></figure>
+  <div class="kx-ft wr"><span>© 2026 NetzKombyse GmbH</span><a href="${W}/datenschutz" target="_blank" rel="noopener">Datenschutz</a><a href="${W}/impressum" target="_blank" rel="noopener">Impressum</a><span class="kx-c">Hamburg, <b data-clock>–</b> Uhr</span></div>
 </section>
 </main>
 <footer class="ft"><div class="ft-g">
