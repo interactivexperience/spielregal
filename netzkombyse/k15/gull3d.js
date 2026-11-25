@@ -6,7 +6,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 
 const NK = window.NK;
-const wrap = document.querySelector('[data-gull]');
+const wrap = location.search.includes('3d') ? document.querySelector('[data-gull]') : null;   // nur mit ?3d: Standard ist das Foto-Bild der Möwe (bessere Qualität)
 const clamp = THREE.MathUtils.clamp, rand = (a, b) => a + Math.random() * (b - a);
 let renderer, scene, cam, bird, mixer, headBone = null, neckBone = null, A = {}, current = null, H0 = 1;
 let ready = false, loading = false, failed = false, running = false, blinkT = 2, lookT = 9, followW = 0;
@@ -76,13 +76,15 @@ async function init() {
     const mobile = innerWidth < 900;
     renderer = new THREE.WebGLRenderer({ antialias: !mobile, alpha: true, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(devicePixelRatio, mobile ? 1.5 : 2));
-    renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = .78;
     renderer.domElement.className = 'gull3d'; renderer.domElement.setAttribute('aria-hidden', 'true');
     scene = new THREE.Scene(); cam = new THREE.PerspectiveCamera(26, 1, .1, 80);
-    scene.add(new THREE.HemisphereLight(0xfff0e0, 0x4a2a1a, 1.25));
-    const sun = new THREE.DirectionalLight(0xfff1df, 2.1); sun.position.set(-3, 6, 6); scene.add(sun);
-    const rim = new THREE.DirectionalLight(0xff6a20, 2.6); rim.position.set(5, 2, -4); scene.add(rim);   // warmes Orange von hinten wie im Standbild
-    bird = new THREE.Group(); bird.rotation.order = 'YXZ'; bird.rotation.y = +.55; scene.add(bird);
+    /* Licht wie im Standbild: weiche warme Fläche, starkes orangefarbenes Randlicht von rechts hinten, kaum Kontrast von vorn */
+    scene.add(new THREE.HemisphereLight(0xffe2c8, 0x3a1608, .9));
+    const sun = new THREE.DirectionalLight(0xffcfa0, 1.25); sun.position.set(-4, 5, 5); scene.add(sun);
+    const rim = new THREE.DirectionalLight(0xff5a14, 4.2); rim.position.set(6, 2.5, -3); scene.add(rim);
+    const rim2 = new THREE.DirectionalLight(0xff7a30, 1.6); rim2.position.set(5, 1, 4); scene.add(rim2);
+    bird = new THREE.Group(); bird.rotation.order = 'YXZ'; bird.rotation.y = +.95; scene.add(bird);
     const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
     const gltf = await loader.parseAsync(await loadBuffer(), '');
     const m = gltf.scene, box = new THREE.Box3().setFromObject(m);
