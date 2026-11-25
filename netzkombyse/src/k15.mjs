@@ -112,7 +112,7 @@ function index() {
   <div class="glow" aria-hidden="true"></div>
   <p class="k" data-reveal>Hamburger Agentur für digitalen Commerce · Mittelstand</p>
   <h1 id="h1" data-chars data-reveal>Machen.<br>Nicht Möwen<br>zählen.</h1>
-  <p class="s" data-reveal>Strategische Beratung, komplexe Shop- und Systementwicklung, Markenkommunikation und Performance-Marketing zu einer ganzheitlichen Lösung, für Unternehmen, die mehr vorhaben.</p>
+  <p class="s" data-reveal>Strategische Beratung, komplexe Shop- und Systementwicklung, Markenkommunikation und Performance-Marketing zu einer ganzheitlichen Lösung, für Unternehmen, die mehr vorhaben. KI macht uns schneller, jedes Ergebnis prüft ein Mensch.</p>
   <p class="ctas" data-reveal>${btn(C.termin, 'Termin buchen')}${btn('#arbeit', 'Referenzen', 'alt')}</p>
   <div class="gwrap" data-gull aria-hidden="true"><div class="gfl"></div><div class="gb"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"></div><div class="gw"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"></div><div class="gh"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"><i class="lid"></i></div></div>
 </section>

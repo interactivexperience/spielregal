@@ -121,7 +121,7 @@ function index() {
   <div class="glow" aria-hidden="true"></div>
   <p class="k" data-reveal>Moin, wir sind die NetzKombyse aus Hamburg</p>
   <h1 id="h1" data-chars data-reveal>Ihr Onlineshop<br>in guten<br>Händen.</h1>
-  <p class="s" data-reveal>Technik, Marke und Marketing aus einer Hand, von Menschen, die Sie persönlich kennen. Für Unternehmen im Mittelstand, die mehr vorhaben.</p>
+  <p class="s" data-reveal>Technik, Marke und Marketing aus einer Hand, von Menschen, die Sie persönlich kennen. KI macht uns schneller, jedes Ergebnis prüft ein Mensch.</p>
   <p class="ctas" data-reveal>${btn(C.termin, 'Termin buchen')}${btn('#fragen', 'Ihre Fragen', 'alt')}</p>
   <div class="gwrap" data-gull aria-hidden="true"><div class="gfl"></div><div class="gb"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"></div><div class="gw"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"></div><div class="gh"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"><i class="lid"></i></div></div>
 </section>
