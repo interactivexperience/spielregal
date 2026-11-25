@@ -103,3 +103,15 @@
   row.addEventListener('click', e => { const c = e.target.closest('.tc'); if (!c || moved) return; const on = c.classList.toggle('open'); row.querySelectorAll('.tc.open').forEach(x => { if (x !== c) x.classList.remove('open'); }); c.toggleAttribute('data-o', on); });
   row.addEventListener('keydown', e => { if (e.target !== row) return; if (e.key === 'ArrowRight') row.scrollBy({ left: 300, behavior: 'smooth' }); if (e.key === 'ArrowLeft') row.scrollBy({ left: -300, behavior: 'smooth' }); });
 })();
+
+/* ---------- Kontakt: E-Mail-Adresse kopieren ---------- */
+(() => {
+  const btn = document.querySelector('[data-copy]'); if (!btn) return;
+  const lab = btn.querySelector('[data-copy-l]'), st = document.querySelector('[data-copy-s]'); let t;
+  btn.addEventListener('click', async () => {
+    const v = btn.dataset.copy; let ok = false;
+    try { await navigator.clipboard.writeText(v); ok = true; } catch (e) { try { const ta = document.createElement('textarea'); ta.value = v; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove(); } catch (e2) { /* nichts */ } }
+    lab.textContent = ok ? 'Kopiert ✓' : 'Bitte markieren'; if (st) st.textContent = ok ? 'E-Mail-Adresse kopiert' : 'Kopieren nicht möglich';
+    clearTimeout(t); t = setTimeout(() => { lab.textContent = 'E-Mail kopieren'; }, 2200);
+  });
+})();

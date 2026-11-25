@@ -87,22 +87,33 @@ function index() {
   <p class="lead tl" data-reveal>Jede Person hier ist Ihre direkte Ansprechpartnerin, Ihr direkter Ansprechpartner, vom ersten Gespräch bis zum Start. In keiner bestimmten Reihenfolge.</p></div>
   <div class="tc-row" data-trow tabindex="0" role="region" aria-label="Team, seitlich scrollbar">${team.map(([n, r, im, d], i) => `<article class="tc" style="--i:${i}" tabindex="0"><p class="tc-p">Präsentiert</p><h3 class="tc-n">${esc(n)}</h3><div class="tc-w">${ART[i] || ''}<img src="../media/team-cut/${im}.webp" alt="${esc(n)}" width="800" height="1000" loading="lazy" decoding="async" draggable="false"><div class="tc-d"><p>${esc(d)}</p></div></div><p class="tc-z">${i === 0 || i === 8 ? 'im Team als' : 'zuständig für'}</p><p class="tc-r">${esc(TC_ROLE[i] || r)}</p><span class="tc-i" aria-hidden="true">${pad(i + 1)}/${pad(team.length)}</span><span class="tc-m" aria-hidden="true">NK</span></article>`).join('')}</div></section>
 
-<section class="sec ctsec" id="kontakt"><div class="wr ct"><div class="ct-t"><p class="tag" data-reveal><b>07</b> Kontakt</p><h2 data-reveal>Reden wir <span class="pill">persönlich</span>.</h2>
-  <p class="lead" data-reveal>${C.ansprech.name}, ${C.ansprech.rolle}: Ihr Ansprechpartner von der ersten Frage an, ohne Account-Manager dazwischen.</p>
-  <ul class="ctl" data-reveal>
-    <li class="main"><a href="${C.termin}" target="_blank" rel="noopener" data-mag><i>${ico.cal}</i><span><small>Kennenlernen</small><b>Termin buchen</b></span></a></li>
-    <li><a href="${C.telHref}"><i>${ico.phone}</i><span><small>Anrufen</small><b>${C.tel}</b></span></a></li>
-    <li><a href="mailto:ahoi@netzkombyse.de"><i>${ico.mail}</i><span><small>Schreiben</small><b>ahoi@netzkombyse.de</b></span></a></li>
-    <li><a href="https://maps.google.com/?q=Harkortstraße+81,+22765+Hamburg" target="_blank" rel="noopener"><i>${ico.pin}</i><span><small>Besuchen</small><b>${C.adresse[0]}, ${C.adresse[1]}</b></span></a></li>
-  </ul></div>
-  <figure class="hen" data-reveal><img src="../media/henning-pose.webp" alt="Henning Groß, Geschäftsführer" width="928" height="1152" loading="lazy" decoding="async"><figcaption>${C.ansprech.name}<span>${C.ansprech.rolle}</span></figcaption></figure></div></section>
+<section class="sec kx" id="kontakt" aria-labelledby="kxh">
+  <div class="kx-glow" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="kx-top wr">
+    <div class="kx-l"><p class="tag" data-reveal><b>07</b> Kontakt</p>
+      <ul class="kx-ln" data-reveal>
+        <li><a href="${C.telHref}"><i>${ico.phone}</i><span>${C.tel}</span></a></li>
+        <li><a href="mailto:ahoi@netzkombyse.de"><i>${ico.mail}</i><span>ahoi@netzkombyse.de</span></a></li>
+        <li><a href="${C.termin}" target="_blank" rel="noopener"><i>${ico.cal}</i><span>Videotermin, 30 Minuten</span></a></li>
+        <li><a href="https://maps.google.com/?q=Harkortstraße+81,+22765+Hamburg" target="_blank" rel="noopener"><i>${ico.pin}</i><span>${C.adresse[0]}, ${C.adresse[1]}</span></a></li>
+      </ul></div>
+    <div class="kx-s" aria-hidden="true"></div>
+    <div class="kx-r"><h2 id="kxh" data-reveal>Reden wir <span class="pill">persönlich</span>.</h2>
+      <p class="kx-n" data-reveal>${C.ansprech.name}, ${C.ansprech.rolle}: Ihr Ansprechpartner von der ersten Frage an, ohne Account-Manager dazwischen.</p>
+      <p class="kx-m" data-reveal><a href="mailto:ahoi@netzkombyse.de">ahoi@netzkombyse.de</a></p>
+      <p class="kx-b" data-reveal><a class="kb kb-f" href="${C.termin}" target="_blank" rel="noopener" data-mag>Termin buchen</a><button class="kb" type="button" data-copy="ahoi@netzkombyse.de"><span data-copy-l>E-Mail kopieren</span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button><span class="sr" role="status" aria-live="polite" data-copy-s></span></p></div>
+  </div>
+  <figure class="kx-p"><img src="../media/henning-pose.webp" alt="${C.ansprech.name}, ${C.ansprech.rolle}" width="928" height="1152" loading="lazy" decoding="async"></figure>
+  <div class="kx-ft wr"><span>© 2026 NetzKombyse GmbH</span><a href="${W}/datenschutz" target="_blank" rel="noopener">Datenschutz</a><a href="${W}/impressum" target="_blank" rel="noopener">Impressum</a><span class="kx-c">Moin aus Hamburg: Hier ist es gerade <b data-clock>–</b> Uhr.</span></div>
+  <p class="kx-big" aria-hidden="true">Kontakt</p>
+</section>
 </main>
 <footer class="ft"><div class="ft-g">
   <div class="ft-a"><a class="ft-logo" href="index.html" aria-label="Startseite">${logo()}</a><p>Digitaler Commerce für Unternehmen, die mehr vorhaben.</p><p class="ft-ad">NetzKombyse GmbH<br>Harkortstraße 81, Hamburg<br><a href="${C.telHref}">${C.tel}</a><br><a href="mailto:ahoi@netzkombyse.de">ahoi@netzkombyse.de</a></p></div>
   <nav aria-label="Leistungen"><h4>Leistungen</h4><a href="${W}/e-commerce" target="_blank" rel="noopener">E-Commerce</a><a href="${W}/shopware-migration" target="_blank" rel="noopener">Shop-Migration</a><a href="${W}/marketing" target="_blank" rel="noopener">Marketing</a><a href="${W}/brand-ux-ui" target="_blank" rel="noopener">Kommunikation &amp; Marke</a><a href="${W}/seo-agentur-hamburg" target="_blank" rel="noopener">SEO &amp; AI-Sichtbarkeit</a><a href="${W}/barrierefreiheit" target="_blank" rel="noopener">Barrierefreiheit</a><a href="${W}/foerdermittel" target="_blank" rel="noopener">Fördermittel</a></nav>
   <nav aria-label="Referenzen"><h4>Referenzen</h4><a href="${W}/references" target="_blank" rel="noopener">Alle Referenzen</a>${['Food & Gastronomie', 'Medizin & Gesundheit', 'B2B & Industrie', 'Heimtier', 'Musik & Entertainment', 'Mobilität & Handwerk'].map(b => `<span>${esc(b)}</span>`).join('')}</nav>
   <nav aria-label="Unternehmen"><h4>Unternehmen</h4><a href="${W}/ueber-uns" target="_blank" rel="noopener">Über uns</a><a href="${W}/impressum" target="_blank" rel="noopener">Impressum</a><a href="${W}/datenschutz" target="_blank" rel="noopener">Datenschutz</a><a href="../index.html">Konzepte</a><a href="#top">Nach oben ↑</a></nav></div>
-  <p class="ft-n">© NetzKombyse GmbH · Moin aus Hamburg: Hier ist es gerade <b data-clock>–</b> Uhr. Moin sagt man hier zu jeder Uhrzeit. · Beispielwerte und Zitate sind Platzhalter.</p></footer>`;
+  <p class="ft-n">© NetzKombyse GmbH · Beispielwerte und Zitate sind Platzhalter.</p></footer>`;
   return page({ k: 'k14', title: 'NetzKombyse · Konzept 14 Pille', desc: 'Konzept 14: Pille – Darkmode, Typo im Zentrum, Projekt-Vorschau beim Hover, Henning im Kontakt.', theme: '#000000', body });
 }
 export const pages = () => ({ 'index.html': index() });
