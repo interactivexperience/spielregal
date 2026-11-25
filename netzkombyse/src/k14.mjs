@@ -37,7 +37,7 @@ function index() {
     <p class="lead" data-reveal>Digitaler Vertrieb für Mittelständler: Shopware & Shopify, Marke und Marketing aus einer Hand, mit festen Ansprechpartnern.</p>
     <p class="acts" data-reveal><a class="btn" href="${C.termin}" target="_blank" rel="noopener" data-mag>Termin buchen</a><a class="more" href="#leistung">Mehr lesen ↗</a></p>
   </div>
-  <div class="hg" aria-hidden="true"><img class="g" src="../media/moewe-hero.webp" alt="" width="832" height="1232" decoding="async"></div>
+  <div class="hg" data-gull aria-hidden="true"><div class="gb"><img src="../media/moewe-hero-l.webp" alt="" width="832" height="1232" decoding="async"></div><div class="gh"><img src="../media/moewe-hero-l.webp" alt="" width="832" height="1232" decoding="async"></div></div>
 </section>
 
 <p class="mq" aria-label="Kunden"><span class="mq-t">${[...C.marken, ...C.marken].map(m => `<span>${esc(m)}</span><i aria-hidden="true">✦</i>`).join('')}</span></p>

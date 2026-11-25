@@ -107,7 +107,7 @@ html[data-motion=on].js h2 .pill{transform:scaleX(.55);opacity:0}html[data-motio
 
 /* ---- Runde 3 ---- */
 /* Hero: Möwe aus Glut, Kante weich in Schwarz, Kundenleiste im ersten Viewport */
-.hero{min-height:0;padding-top:clamp(12px,2.4vh,24px);padding-bottom:clamp(12px,2vh,24px);gap:1rem 2rem}
+.hero{min-height:calc(100svh - 76px - 72px);padding-top:clamp(12px,2.4vh,24px);padding-bottom:0;gap:1rem 2rem}
 .hero h1{font-size:clamp(1.8rem,min(7cqi,11.5svh),6.6rem)}
 .hero-b{align-self:center}
 .hg{width:min(100%,clamp(170px,min(20vw,34svh),280px));margin-top:calc(-1 * clamp(20px,6svh,60px))!important;z-index:1;aspect-ratio:832/1232;position:relative;margin:0;align-self:end}
@@ -163,3 +163,12 @@ html[data-motion=on] .vq.on blockquote span{animation:wd2 .7s var(--ease) both;a
 .hen::before{content:"";position:absolute;inset:6% -22% -4% -22%;background:radial-gradient(closest-side,rgba(255,107,20,.6),rgba(194,31,11,.28) 55%,transparent 80%);filter:blur(26px)}
 .hen img{position:relative;filter:none;object-position:50% 50%;-webkit-mask-image:linear-gradient(0deg,transparent 0,#000 12%);mask-image:linear-gradient(0deg,transparent 0,#000 12%)}
 .hen figcaption{background:none;left:1rem;bottom:.8rem;padding:0;text-shadow:0 1px 10px #000}html[data-motion=on] .hen img{animation:hgb 7s ease-in-out infinite}
+/* Hero-Möwe: deutlich größer, hinter der Headline, Kopf folgt dem Zeiger (zweiteilig, Drehpunkt am Hals) */
+.hero{overflow:clip}
+.hg{position:absolute!important;grid-column:1/-1;grid-row:1/-1;z-index:1;right:-3%;bottom:0;left:auto;top:auto;width:auto;height:100%;aspect-ratio:832/1232;margin:0!important;animation:none!important}
+.hg>div{position:absolute;inset:0;will-change:transform;mix-blend-mode:lighten}.hg img{display:block;width:100%;height:100%}
+.hg::before{inset:8% -30% -6% -20%}
+.hg .gb{;-webkit-mask-image:linear-gradient(180deg,transparent 0,transparent 24%,#000 28%),linear-gradient(90deg,transparent 0,#000 14%,#000 86%,transparent 100%),linear-gradient(0deg,transparent 0,#000 6%);-webkit-mask-composite:source-in,source-in;mask-image:linear-gradient(180deg,transparent 0,transparent 24%,#000 28%),linear-gradient(90deg,transparent 0,#000 14%,#000 86%,transparent 100%),linear-gradient(0deg,transparent 0,#000 6%);mask-composite:intersect}
+.hg .gh{transform-origin:52% 26.8%;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 7%,#000 25%,transparent 31%),linear-gradient(90deg,transparent 0,#000 14%,#000 86%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(180deg,transparent 0,#000 7%,#000 25%,transparent 31%),linear-gradient(90deg,transparent 0,#000 14%,#000 86%,transparent 100%);mask-composite:intersect}
+.hero h1,.hero-b,.meta{position:relative;z-index:3}
+@media(max-width:860px){.hg{position:relative!important;right:auto;bottom:auto;height:min(52svh,110vw);justify-self:center;margin:0 auto!important}}

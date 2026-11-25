@@ -48,3 +48,6 @@ Die Seiten nennen nur Titel, Kategorien und Tags, keine Technikbeschreibungen; �
 ## Offen vor Livegang
 Kennzahlen im Case und Kundenzitate sind Platzhalter; Impressum/Datenschutz verlinken ins Leere; Referenzen außer
 Wein-Bauer.de sind nicht ausgebaut; Teamfotos fehlen (rollenbasiert).
+
+
+**Case-Vorschau (Baustein zu k15 Glut):** `vorschau/tout-terrain.html` – Vorschaubild-Konzept mit vier Ebenen (Welt, Wortmarke, Klartext, Hover-Geste + Fund) am Beispiel Tout Terrain, mit Baukasten-Tabelle für die übrigen Cases.

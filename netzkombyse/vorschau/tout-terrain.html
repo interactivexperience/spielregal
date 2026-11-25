@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Case-Vorschau Tout Terrain · Glut</title>
+<meta name="robots" content="noindex">
+<style>
+@font-face{font-family:Bricolage;src:url(../fonts/bricolage.woff2) format('woff2');font-weight:200 800;font-display:swap}
+@font-face{font-family:Sora;src:url(../fonts/sora.woff2) format('woff2');font-weight:100 800;font-display:swap}
+:root{--o:#FF5A14;--r:#C21F0B;--soft:rgba(255,255,255,.68);--line:rgba(255,255,255,.22);--ease:cubic-bezier(.2,.8,.2,1);--hf:Bricolage,Sora,sans-serif;--bf:Sora,system-ui,sans-serif}
+*{box-sizing:border-box;margin:0}
+html{background:#000}
+body{background:#000;color:#fff;font:300 1rem/1.65 var(--bf);padding:clamp(20px,5vw,72px);overflow-x:clip}
+a{color:inherit}:focus-visible{outline:3px solid var(--o);outline-offset:3px}
+.top{display:flex;justify-content:space-between;gap:1rem;font-size:.78rem;color:var(--soft);margin-bottom:3rem}.top a{text-decoration:none;display:inline-flex;min-height:44px;align-items:center}.top a:hover{color:var(--o)}
+h1{font:800 clamp(2.4rem,6vw,5.4rem)/.95 var(--hf);letter-spacing:-.045em;max-width:18ch}
+h2{font:800 clamp(1.6rem,3.4vw,2.8rem)/1 var(--hf);letter-spacing:-.04em;margin:clamp(3rem,8vh,5rem) 0 1.4rem}
+.lead{max-width:42rem;margin:1.2rem 0 3rem;color:var(--soft)}
+.k{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);margin-bottom:1rem}
+
+/* ============ Glut-Karte: vier Ebenen ============
+   A Welt (Farbflächen + Motiv)  B Wortmarke, deren Buchstaben herausragen  C Klartext: was ist das Projekt?  D Hover-Geste + „Fund“ */
+.row{display:grid;grid-template-columns:minmax(260px,.7fr) 1.6fr minmax(200px,.8fr);gap:clamp(1.4rem,3vw,2.6rem);align-items:end;padding-top:3.4rem}
+.vc{position:relative;display:block;aspect-ratio:var(--ar,4/5);text-decoration:none;color:#fff;cursor:pointer;-webkit-tap-highlight-color:transparent;outline-offset:6px;--lift:0}
+.vc.l{--ar:3/2}
+.frame{position:absolute;inset:0;overflow:hidden;border-radius:8px;background:#120302;isolation:isolate;box-shadow:0 0 0 1px rgba(255,255,255,.1)}
+.bg{position:absolute;inset:-10%;z-index:0}
+.bg i{position:absolute;border-radius:50%;filter:blur(44px);will-change:transform,opacity;transition:transform 1.4s var(--ease),opacity 1s}
+.b1{width:90%;height:70%;left:-10%;top:-12%;background:radial-gradient(closest-side,#FF4A12,rgba(232,32,10,.7) 55%,transparent);opacity:.55}
+.b2{width:80%;height:80%;right:-24%;bottom:-8%;background:radial-gradient(closest-side,#FF8A3C,rgba(255,90,20,.6) 50%,transparent);opacity:.32}
+.b3{width:60%;height:50%;left:20%;bottom:-18%;background:radial-gradient(closest-side,#7a0c04,transparent);opacity:.9}
+.vc.hot .b1{transform:translate3d(14%,12%,0) scale(1.2);opacity:.95}.vc.hot .b2{transform:translate3d(-18%,-10%,0) scale(1.25);opacity:.85}.vc.hot .b3{transform:translate3d(10%,-6%,0) scale(1.3)}
+/* Route: gepunktete Linie, die eine Reise andeutet; beim Hover läuft sie auf */
+.route{position:absolute;z-index:1;left:0;right:0;top:34%;height:20%;width:100%;overflow:visible;clip-path:inset(0 100% 0 0);transition:clip-path 1.6s var(--ease);opacity:.9}
+.route path{fill:none;stroke:#FFD2B0;stroke-width:2;stroke-dasharray:2 9;stroke-linecap:round}.route circle{fill:#fff}
+.vc.hot .route{clip-path:inset(0 0 0 0)}
+/* Rad */
+.wheel{position:absolute;z-index:1;width:128%;aspect-ratio:1;right:-34%;top:6%;mix-blend-mode:lighten;transition:transform 1.2s var(--ease),filter .8s;filter:brightness(.6) saturate(.9)}
+.vc.l .wheel{width:96%;right:-14%;top:-6%}
+.wheel img{position:absolute;inset:0;width:100%;height:100%;display:block}
+.spin{clip-path:circle(36% at 49.8% 47%);will-change:transform}
+.vc.hot .wheel{filter:brightness(1.1) saturate(1.1);transform:translate3d(-3%,-3%,0) scale(1.05)}
+.mud{position:absolute;left:49.8%;top:93%;width:0;height:0}
+.mud i{position:absolute;left:0;top:0;border-radius:52% 40% 58% 44%;background:radial-gradient(circle at 30% 28%,#a05a2a,#3a1c0c 62%,#1a0a04);box-shadow:inset 2px 2px 3px rgba(255,150,70,.75),0 0 6px rgba(255,90,20,.25);width:var(--s);height:var(--s);opacity:0;will-change:transform,opacity;animation:fling var(--t) cubic-bezier(.25,.6,.4,1) forwards}
+.mud i.d{background:radial-gradient(closest-side,rgba(150,80,40,.55),transparent);box-shadow:none;filter:blur(5px);animation-name:puff}
+@keyframes fling{0%{opacity:0;transform:translate3d(0,0,0) scale(.4)}12%{opacity:1}52%{transform:translate3d(calc(var(--dx)*.72),var(--dy),0) rotate(var(--r)) scale(1)}100%{opacity:0;transform:translate3d(var(--dx),calc(var(--dy)*-.25 + 120px),0) rotate(calc(var(--r)*2)) scale(.8)}}
+@keyframes puff{0%{opacity:0;transform:translate3d(0,0,0) scale(.4)}20%{opacity:.8}100%{opacity:0;transform:translate3d(var(--dx),var(--dy),0) scale(2.4)}}
+.vg{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(120% 90% at 70% 55%,transparent 35%,rgba(0,0,0,.78)),linear-gradient(180deg,rgba(0,0,0,.5),transparent 30%,transparent 55%,rgba(0,0,0,.82))}
+
+/* B: Wortmarke. Einzelne Buchstaben stehen größer und ragen über die Kartenkante hinaus, beim Hover springen alle ein Stück höher */
+.ty{position:absolute;z-index:4;left:clamp(.8rem,1.6vw,1.4rem);right:0;top:34%;display:flex;align-items:flex-end;gap:.02em;font:800 clamp(5.2rem,12vw,9.4rem)/.74 var(--hf);letter-spacing:-.06em;pointer-events:none;text-shadow:0 8px 40px rgba(0,0,0,.45)}
+.vc.l .ty{top:18%;font-size:clamp(5rem,9vw,8.4rem)}
+.ty span{display:inline-block;transition:transform .9s cubic-bezier(.3,1.4,.5,1);transform:translate3d(0,var(--y0,0),0) scale(var(--s0,1));transform-origin:50% 100%;will-change:transform}
+.ty .p{--y0:-18%;--s0:1.22}.ty .q{--y0:-6%;--s0:1.08}
+.vc.hot .ty span{transform:translate3d(0,calc(var(--y0,0) - 9% - var(--n)*2%),0) scale(var(--s0,1)) rotate(calc(var(--n)*-1.2deg + 1.2deg));transition-delay:calc(var(--n)*55ms)}
+.vc.hot .ty .p{--y0:-30%}
+
+/* C: Klartext, immer sichtbar: Branche, Was ist es, Was haben wir gemacht */
+.tx{position:absolute;inset:0;z-index:3;padding:clamp(1rem,1.8vw,1.5rem);display:flex;flex-direction:column;justify-content:space-between;pointer-events:none}
+.tag{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:#FFB48A}
+.cap{display:grid;gap:.5rem;max-width:21rem;padding-right:3.6rem}
+.cap strong{font:700 1.05rem/1.25 var(--bf)}.cap p{font-size:.8rem;line-height:1.45;color:rgba(255,255,255,.82)}
+.chips{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.2rem}.chips span{border:1px solid rgba(255,255,255,.5);padding:.2em .7em;font-size:.64rem;letter-spacing:.1em;text-transform:uppercase}
+.h{transition:opacity .5s,transform .7s var(--ease)}.vc:not(.hot) .h{opacity:0;transform:translate3d(0,10px,0)}
+/* D: Fund. Beim Hover schiebt sich ein kleiner Ausschnitt der Website ins Bild, ohne dass der Screen die Karte bestimmt */
+.fund{position:absolute;z-index:5;right:clamp(.8rem,1.6vw,1.4rem);top:clamp(.8rem,1.6vw,1.4rem);width:34%;aspect-ratio:3/2;overflow:hidden;border-radius:4px;box-shadow:0 14px 40px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.25);transform:translate3d(30%,-30%,0) rotate(8deg) scale(.8);opacity:0;transition:transform .9s cubic-bezier(.3,1.4,.5,1),opacity .5s;pointer-events:none}
+.fund img{width:100%;height:100%;object-fit:cover;object-position:18% 30%;display:block;transform:scale(1.9);transform-origin:20% 30%}
+.vc.hot .fund{opacity:1;transform:translate3d(0,0,0) rotate(-3deg) scale(1)}
+.go{position:absolute;right:clamp(1rem,1.8vw,1.5rem);bottom:clamp(1rem,1.8vw,1.5rem);z-index:6;width:56px;height:56px;border-radius:50%;background:#fff;color:#000;display:grid;place-items:center;transform:scale(.6) rotate(-45deg);opacity:0;transition:transform .7s cubic-bezier(.3,1.5,.5,1),opacity .4s}.go svg{width:20px}
+.vc.hot .go{opacity:1;transform:none}
+
+.old{position:relative;aspect-ratio:3/2;overflow:hidden;border-radius:8px}.old img{width:100%;height:100%;object-fit:cover;display:block}
+.side{font-size:.88rem;color:var(--soft)}.side b{color:#fff;font-weight:600}
+@media(max-width:900px){.row{grid-template-columns:1fr}.vc{max-width:420px}.vc.l{max-width:none}}
+
+/* Baukasten */
+.tbl{width:100%;border-collapse:collapse;font-size:.85rem}.tbl th,.tbl td{text-align:left;vertical-align:top;padding:.9rem 1rem .9rem 0;border-bottom:1px solid var(--line)}
+.tbl th{font:600 .68rem var(--bf);letter-spacing:.12em;text-transform:uppercase;color:var(--o)}.tbl td:first-child{font:800 1.05rem var(--hf);letter-spacing:-.02em;white-space:nowrap}.tbl td{color:var(--soft)}.tbl td b{color:#fff;font-weight:600}
+.scroll{overflow-x:auto}
+.layers{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));border-top:1px solid var(--line);list-style:none;padding:0}
+.layers li{padding:1.4rem 1.2rem 1.4rem 0;border-bottom:1px solid var(--line)}.layers em{font-style:normal;font:800 2.2rem var(--hf);letter-spacing:-.05em;color:transparent;-webkit-text-stroke:1.5px var(--o);display:block;margin-bottom:.4rem}.layers b{font:700 1.05rem var(--hf);display:block;margin-bottom:.3rem}.layers span{font-size:.85rem;color:var(--soft)}
+@media(prefers-reduced-motion:reduce){.bg i,.wheel,.mud i,.go,.ty span,.fund,.route{transition:none;animation:none}}
+</style>
+</head>
+<body>
+<div class="top"><a href="../index.html">‹ Übersicht</a><span>Case-Vorschau · Beispiel Tout Terrain · Konzept Glut</span></div>
+<p class="k">Neue Vorschaubilder statt Screens</p>
+<h1>Erst verstehen, dann neugierig werden.</h1>
+<p class="lead">Ein Reifen allein sagt nichts. Die Karte beantwortet deshalb schon im Ruhezustand drei Fragen: <b>Für wen?</b> (Bike-Traveller), <b>Was ist es?</b> (Online-Shop einer Radmanufaktur) und <b>Was haben wir gemacht?</b> (Chips). Das Motiv erzählt die Welt dazu, die Wortmarke ragt aus dem Bild. Beim Hover (oder Tippen) dreht sich das Rad, der Schlamm spritzt, die Route läuft auf und ein kleiner Ausschnitt der Website schiebt sich ins Bild.</p>
+
+<div class="row">
+  <a class="vc" href="https://netzkombyse.de/case-tout" target="_blank" rel="noopener" aria-label="Tout Terrain: Online-Shop für handgebaute Laufräder, für Bike-Traveller. Projekt ansehen">
+    <div class="frame">
+      <div class="bg" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
+      <svg class="route" viewBox="0 0 400 80" preserveAspectRatio="none" aria-hidden="true"><path d="M0 70C60 70 70 20 140 30S230 70 290 40S350 8 400 14"/><circle cx="400" cy="14" r="4"/></svg>
+      <div class="wheel" aria-hidden="true"><img src="../media/tout-rad.webp" alt="" width="1024" height="1024"><img class="spin" src="../media/tout-rad.webp" alt="" width="1024" height="1024"><div class="mud"></div></div>
+      <div class="vg" aria-hidden="true"></div>
+    </div>
+    <p class="ty" aria-hidden="true"><span class="p" style="--n:0">T</span><span style="--n:1">O</span><span class="q" style="--n:2">U</span><span class="p" style="--n:3">T</span></p>
+    <div class="tx"><span class="tag">Outdoor · Online-Shop</span><div class="cap"><strong>Tout Terrain</strong><p>Laufräder nach Maß für Bike-Traveller, handgebaut in der Radmanufaktur.</p><span class="chips"><span>Shop</span><span>Konfigurator</span><span class="h">Relaunch</span></span></div></div>
+    <div class="fund" aria-hidden="true"><img src="../media/cases/tout.jpg" alt="" width="1034" height="674"></div>
+    <span class="go" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 9l6-6M4 3h5v5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+  </a>
+
+  <a class="vc l" href="https://netzkombyse.de/case-tout" target="_blank" rel="noopener" aria-label="Tout Terrain: Online-Shop für handgebaute Laufräder, für Bike-Traveller. Projekt ansehen">
+    <div class="frame">
+      <div class="bg" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i></div>
+      <svg class="route" viewBox="0 0 400 80" preserveAspectRatio="none" aria-hidden="true"><path d="M0 70C60 70 70 20 140 30S230 70 290 40S350 8 400 14"/><circle cx="400" cy="14" r="4"/></svg>
+      <div class="wheel" aria-hidden="true"><img src="../media/tout-rad.webp" alt="" width="1024" height="1024"><img class="spin" src="../media/tout-rad.webp" alt="" width="1024" height="1024"><div class="mud"></div></div>
+      <div class="vg" aria-hidden="true"></div>
+    </div>
+    <p class="ty" aria-hidden="true"><span class="p" style="--n:0">T</span><span style="--n:1">O</span><span class="q" style="--n:2">U</span><span class="p" style="--n:3">T</span></p>
+    <div class="tx"><span class="tag">Outdoor · Online-Shop</span><div class="cap"><strong>Tout Terrain</strong><p>Laufräder nach Maß für Bike-Traveller, handgebaut in der Radmanufaktur.</p><span class="chips"><span>Shop</span><span>Konfigurator</span><span class="h">Relaunch</span></span></div></div>
+    <div class="fund" aria-hidden="true"><img src="../media/cases/tout.jpg" alt="" width="1034" height="674"></div>
+    <span class="go" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 9l6-6M4 3h5v5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+  </a>
+
+  <div class="side"><p class="k">Bisher</p><div class="old"><img src="../media/cases/tout.jpg" alt="Bisheriges Vorschaubild: Screens der Tout-Terrain-Website" width="1034" height="674"></div><p style="margin-top:1rem">Der Mockup zeigt, <b>was</b> gebaut wurde, aber nicht, <b>warum</b> man es sehen will. In der neuen Karte steckt er nur noch als „Fund“ im Hover.</p></div>
+</div>
+
+<h2>Das Baukasten-Prinzip für alle Cases</h2>
+<ul class="layers">
+  <li><em>A</em><b>Welt</b><span>Das Motiv der Marke vor Glut-Farbflächen, im Ruhezustand dunkel und verhangen. Eine Szene, kein Produktfoto.</span></li>
+  <li><em>B</em><b>Wortmarke</b><span>Der Kundenname in Riesenschrift. Ein, zwei Buchstaben stehen größer und ragen über die Kartenkante. Hover: alle springen.</span></li>
+  <li><em>C</em><b>Klartext</b><span>Immer sichtbar: Branche, ein Satz „Was ist das?“, zwei Leistungs-Chips. Hier wird verstanden, worum es geht.</span></li>
+  <li><em>D</em><b>Geste + Fund</b><span>Ein Verb aus der Markenwelt als Hover-Animation, dazu ein kleiner Ausschnitt der Website (der „Fund“) und der Pfeil.</span></li>
+</ul>
+<div class="scroll"><table class="tbl" style="margin-top:2rem"><thead><tr><th>Case</th><th>A · Welt</th><th>C · Klartext (Satz)</th><th>D · Hover-Geste</th></tr></thead><tbody>
+<tr><td>Tout Terrain</td><td>Verschlammtes Rad, Route</td><td><b>Laufräder nach Maß</b> für Bike-Traveller</td><td>Rad dreht, Schlamm spritzt</td></tr>
+<tr><td>PremiumWheels</td><td>Felge im Scheinwerferlicht, Reifenspuren</td><td><b>Internationaler Reifenhandel</b> mit Shop</td><td>Rauch und Gummi-Abrieb steigen auf</td></tr>
+<tr><td>Wein-Bauer.de</td><td>Weinberg bei Nacht, Glas</td><td><b>50 Jahre Weinhandel</b>, Multi-Channel</td><td>Wein schwenkt, Tropfen laufen</td></tr>
+<tr><td>Abelmann.de</td><td>Fisch unter Wasser im Gegenlicht</td><td><b>Fischmanufaktur</b> mit neuer Marke</td><td>Wasser kräuselt, Schuppen glitzern</td></tr>
+<tr><td>Lightfix · Truck-line</td><td>Truck-Front im Nebel</td><td><b>Zusatzlicht</b> für Fahrzeuge</td><td>Scheinwerfer flammen auf, Strahl wandert</td></tr>
+<tr><td>PECHKEKS</td><td>Keks im Schatten</td><td><b>Fiese Kekse</b>, Marke und Shop</td><td>Keks bricht, Krümel fliegen</td></tr>
+<tr><td>SABRO</td><td>Hundesofa im Spot</td><td><b>Premium-Hundesofas</b> vom Hersteller</td><td>Pfote tippt, Kissen federt</td></tr>
+<tr><td>BEISSER.DE</td><td>Fleisch auf Glut</td><td><b>Fleisch-Shop</b>, „Das Fleisch ist willig“</td><td>Funken steigen, Rauch zieht</td></tr>
+</tbody></table></div>
+<p class="lead" style="margin-top:1.6rem">Für jede Karte brauchen wir: ein Motiv (frei gestellt oder generiert), zwei bis drei Wörter für die Chips und einen Ausschnitt der Website. Die Hover-Geste ist pro Case ein eigenes kleines Skript, der Rest ist eine gemeinsame Komponente.</p>
+
+<script>
+(() => {
+  const rm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const cards = [...document.querySelectorAll('.vc')];
+  cards.forEach(c => {
+    const spin = c.querySelector('.spin'), mud = c.querySelector('.mud'), wheel = c.querySelector('.wheel');
+    let v = 0, ang = 0, tv = 0, last = 0, raf = 0, spawn = 0;
+    const tick = t => { const dt = Math.min(.05, (t - (last || t)) / 1000); last = t;
+      v += (tv - v) * Math.min(1, dt * 3.2); ang = (ang + v * dt) % 360; spin.style.transform = `rotate(${ang.toFixed(2)}deg)`;
+      raf = (tv > 0 || Math.abs(v) > 1) ? requestAnimationFrame(tick) : 0; if (!raf) last = 0; };
+    const clod = () => { const i = document.createElement('i'), dust = Math.random() < .28, s = dust ? 26 + Math.random() * 30 : 5 + Math.random() * 13;
+      i.className = dust ? 'd' : ''; const w = wheel.offsetWidth / 1024;
+      i.style.cssText = `--s:${s.toFixed(1)}px;--dx:${((Math.random() * -300 - 20) * w * 1.6).toFixed(0)}px;--dy:${((-70 - Math.random() * 260) * w * 1.6).toFixed(0)}px;--r:${(Math.random() * 300 - 150).toFixed(0)}deg;--t:${(0.9 + Math.random() * .8).toFixed(2)}s;margin-left:${(Math.random() * 120 - 70).toFixed(0)}px`;
+      i.addEventListener('animationend', () => i.remove()); mud.appendChild(i); };
+    const on = () => { if (rm) return; c.classList.add('hot'); tv = 260; if (!raf) raf = requestAnimationFrame(tick); clearInterval(spawn); for (let k = 0; k < 6; k++) clod(); spawn = setInterval(() => { for (let k = 0; k < 2; k++) clod(); }, 140); };
+    const off = () => { c.classList.remove('hot'); tv = 0; clearInterval(spawn); spawn = 0; };
+    c.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') on(); }); c.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') off(); });
+    c.addEventListener('focus', on); c.addEventListener('blur', off);
+    c.addEventListener('click', e => { if (matchMedia('(hover:none)').matches && !c.classList.contains('hot')) { e.preventDefault(); cards.forEach(x => x !== c && x.classList.remove('hot')); on(); setTimeout(off, 4000); } });
+  });
+})();
+</script>
+</body>
+</html>
