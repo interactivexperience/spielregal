@@ -1,11 +1,11 @@
 /* Konzept 15 · 3D-Möwe aus dem Foto: Das Foto der Möwe wird in Ebenen zerlegt (Körper, Flügel, Kopf mit Mütze) und in three.js im Raum gedreht.
    Farben, Federn und Licht bleiben pixelgleich wie im Foto (unbeleuchtete Texturen, keine Neuberechnung). Der Kopf besteht aus mehreren Schichten mit Tiefe,
    dreht sich zur Maus (bis zum Blick nach rechts, dabei geht er kurz durch die Schmalansicht), der Körper neigt sich leicht, der Flügel schlägt nur auf Klick.
-   Ohne WebGL oder bei „Bewegung aus“ bleibt das Standbild; mit ?foto bleibt es immer. */
+   Nur mit ?3d an der Adresse aktiv; Standard ist das 2D-Foto mit Kopf- und Flügelanimation (app.js). */
 import * as THREE from 'three';
 
 const NK = window.NK;
-const wrap = location.search.includes('foto') ? null : document.querySelector('[data-gull]');
+const wrap = location.search.includes('3d') ? document.querySelector('[data-gull]') : null;   // Standard ist das 2D-Foto; die 3D-Fassung nur mit ?3d
 const clamp = THREE.MathUtils.clamp, smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 const SRC = new URL('../media/moewe-cut-l.webp', import.meta.url).href;
 const AR = 1232 / 832, W = 1, Hh = AR;                       // Ebene in Welteinheiten (Breite 1, Höhe 1,481)
