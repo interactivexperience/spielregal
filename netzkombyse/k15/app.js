@@ -11,7 +11,7 @@
   /* ---------- Text-Reveal für die ganze Seite: Wörter leuchten beim Scrollen nacheinander auf ----------
      Gilt für Headlines, Einleitungen und Fließtexte. Text bleibt als normaler Text lesbar (keine aria-Ersetzung);
      bei ausgeschalteter Bewegung ist alles sofort sichtbar. */
-  const REVEAL = '[data-chars],[data-lit],.side,.s,.igt,.tm-f,.fp b,.k + p,.cd .tx,.pn p,.faq p,.vq figcaption,.rate';
+  const REVEAL = '[data-chars],[data-lit],.side,.s,.igt,.tm-f,.fp b,.k + p,.cd .tx,.pn p,.faq p,.vq figcaption,.rate,.pil b,.pil li>span:last-child,.brl b,.brl .bd,.ld';
   const wordify = el => {
     if (el.dataset.wf) return null; el.dataset.wf = '1';
     const keep = /E-Commerce|Unternehmensentwicklung|Möwen/;
