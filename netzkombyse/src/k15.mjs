@@ -61,23 +61,27 @@ const cases = [
   ['sabro', 'SABRO', 'Premium-Hersteller für Hundesofas', 'Heimtier', 'case-sabro'],
   ['beisser', 'BEISSER.DE', 'Das Fleisch ist willig', 'Food & Gastronomie', 'case-beisser'],
 ];
-// Case-Kacheln: ein freigestelltes Motiv, eine Aussage, darunter Details. fx = kleine Hover-Bewegung, ph = Phone mit Hand + schwebende Features
+// Case-Kacheln „Tiefe“ (Mi-Wahl 25.11.2026): echte Screens als 3D-Ebenen, Motiv vorn, Chips mit Fakten; kippt mit dem Cursor.
+// scr = hinterste Ebene (t = Hochformat), mid = UI-Ausschnitt [links, oben, Breite in %], cut = Motiv [links, unten, Breite in %], ch = Chips [Text, Zusatz, Plakette]
 const kacheln = [
-  { c: 1, img: 'tout', fx: 'mud', s: 'Ein Shop, so robust wie die Räder, die er verkauft.' },
-  { c: 7, img: 'beisser', fx: 'ph', s: 'Feinste Fleischwaren, mit dem Daumen bestellt.', f: ['Gutschein direkt im Warenkorb', 'Lieferbar auf einen Blick', 'Gesamtpreis inkl. Versand'] },
-  { c: 0, img: 'premiumwheels', fx: 'smoke', s: 'Original-Felgen, die in drei Schritten zum Auto passen.' },
-  { c: 2, img: 'weinbauer', fx: 'glint', s: '50 Jahre Weinhandel, jetzt auf allen Kanälen.' },
-  { c: 3, img: 'abelmann', fx: 'ph', s: 'Fangfrisch bestellt, gekühlt an der Haustür.', f: ['Gekühlte Lieferung', 'In unter 24 h unterwegs', 'Lieferstatus per SMS'] },
-  { c: 6, img: 'sabro', fx: 'paws', s: 'Hundesofas, so gemütlich wie ihr Ruf.' },
-  { c: 4, img: 'truckline', fx: 'flash', s: 'Lightbars für Trucks, Schritt für Schritt konfiguriert.' },
-  { c: 5, img: 'pechkeks', fx: 'crumbs', s: 'Fiese Kekse brauchen einen frechen Shop.' },
+  { c: 1, img: 'tout', s: 'Ein Shop, so robust wie die Räder, die er verkauft.', mid: [52, 38, 38], cut: [-14, -6, 72], ch: [['Shop Usability Award', 'nominiert 2025', 'b1'], ['Shop Award 2020', '', 'b2']] },
+  { c: 7, img: 'beisser', s: 'Feinste Fleischwaren, mit dem Daumen bestellt.', mid: [3, 58, 54], cut: [40, -6, 62], ch: [['Gutschein direkt im Warenkorb'], ['Gegründet 1836']] },
+  { c: 0, img: 'premiumwheels', t: 1, s: 'Original-Felgen, die in drei Schritten zum Auto passen.', mid: [36, 30, 46], cut: [-12, -4, 66], ch: [['Top Shop 2024', 'Auto Bild', 'b1'], ['Trend Shop 2025', 'Computer Bild', 'b2']] },
+  { c: 2, img: 'weinbauer', s: '50 Jahre Weinhandel, jetzt auf allen Kanälen.', mid: [5, 50, 40], cut: [58, -8, 34], ch: [['Shop, Social, Verkaufswagen'], ['50 Jahre Weinhandel']] },
+  { c: 3, img: 'abelmann', s: 'Fangfrisch bestellt, gekühlt an der Haustür.', mid: [3, 40, 56], cut: [42, -6, 62], ch: [['Lieferstatus per SMS'], ['Gekühlt bis an die Haustür']] },
+  { c: 6, img: 'sabro', s: 'Hundesofas, so gemütlich wie ihr Ruf.', mid: [6, 34, 30], cut: [42, -2, 60], ch: [['Empfohlen von Martin Rütter'], ['Geld-zurück-Garantie']] },
+  { c: 4, img: 'truckline', s: 'Lightbars für Trucks, Schritt für Schritt konfiguriert.', mid: [50, 32, 46], cut: [-4, 2, 64], ch: [['Konfigurator in drei Schritten'], ['Alle großen Lkw-Marken']] },
+  { c: 5, img: 'pechkeks', s: 'Fiese Kekse brauchen einen frechen Shop.', mid: [4, 52, 66], cut: [24, -4, 60], ch: [['Shop Usability Award', 'Top 2017', 'b1'], ['Shop Award 2016', 'Shortlist', 'b2']] },
 ];
-const fxEl = { mud: '<i></i><i></i><i></i><i></i><i></i>', smoke: '<i></i><i></i><i></i>', glint: '', paws: '<i></i><i></i><i></i><i></i>', flash: '<i></i><i></i>', crumbs: '<i></i><i></i><i></i><i></i>', ph: '' };
-const kachel = (k, i) => { const c = cases[k.c];
-  return `<li class="kc fx-${k.fx}${i % 2 ? ' lo' : ''}" data-kc><a href="${W}/${c[4]}" target="_blank" rel="noopener" aria-label="${esc(c[1])}: ${esc(k.s)}">
-  <div class="kc-st"><span class="kc-g" aria-hidden="true"></span><span class="kc-n" aria-hidden="true">${pad(i + 1)}</span><span class="kc-tag">${esc(c[3])}</span>
-    <div class="kc-m"><img src="../media/cut/${k.img}.webp" alt="" loading="lazy" decoding="async" draggable="false" style="--mk:url(../media/cut/${k.img}.webp)">${k.fx === 'glint' ? '<span class="kc-gl" aria-hidden="true" style="--mk:url(../media/cut/' + k.img + '.webp)"></span>' : ''}<span class="kc-fx" aria-hidden="true">${fxEl[k.fx]}</span></div>
-    ${k.f ? `<ul class="kc-f" aria-label="Wichtige Funktionen">${k.f.map((x, j) => `<li style="--j:${j}"><b aria-hidden="true">✦</b>${esc(x)}</li>`).join('')}</ul>` : ''}</div>
+const pc = a => a.map(v => v + '%');
+const kachel = (k, i) => { const c = cases[k.c], m = pc(k.mid), u = pc(k.cut), M = `../media/kc/${k.img}`;
+  const chip = (x, j) => `<span class="kc-ch kc-ch${j + 1}">${x[2] ? `<img src="${M}-${x[2]}.webp" alt="" loading="lazy">` : '<b aria-hidden="true"></b>'}${esc(x[0])}${x[1] ? ` <em>${esc(x[1])}</em>` : ''}</span>`;
+  return `<li class="kc${i % 2 ? ' lo' : ''}" data-kc><a href="${W}/${c[4]}" target="_blank" rel="noopener" aria-label="${esc(c[1])}: ${esc(k.s)}">
+  <div class="kc-st"><span class="kc-tag">${esc(c[3])}</span><div class="kc-sc">
+    <img class="kc-ly kc-scr${k.t ? ' t' : ''}" src="${M}-scr.webp" alt="" loading="lazy" decoding="async" draggable="false">
+    <img class="kc-ly kc-mid" src="${M}-mid.webp" alt="" loading="lazy" decoding="async" draggable="false" style="left:${m[0]};top:${m[1]};width:${m[2]}">
+    <img class="kc-ly kc-cut" src="../media/cut/${k.img}.webp" alt="" loading="lazy" decoding="async" draggable="false" style="left:${u[0]};bottom:${u[1]};width:${u[2]}">
+    ${k.ch.map(chip).join('')}</div></div>
   <h3 class="kc-s">${esc(k.s)}</h3>
   <p class="kc-d"><b>${esc(c[1])}</b><span>${esc(c[2])}</span></p><span class="kc-l">Projekt ansehen <i aria-hidden="true">${ar}</i></span></a></li>`; };
 // Projektwand: [Projekt-Index, Breite, Höhe, x, y, Tiefe, Bildausschnitt]

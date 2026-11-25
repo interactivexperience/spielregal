@@ -263,3 +263,11 @@
   const io = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle('hot', e.isIntersecting)), { rootMargin: '-35% 0px -35% 0px' });
   ks.forEach(k => io.observe(k));
 })();
+/* Case-Kacheln: Bühne folgt dem Mauszeiger (nur Maus, nur bei Bewegung an) */
+(() => {
+  document.querySelectorAll('[data-kc]').forEach(k => { const st = k.querySelector('.kc-st'), sc = k.querySelector('.kc-sc'); if (!sc) return;
+    k.addEventListener('pointermove', e => { if (e.pointerType !== 'mouse' || document.documentElement.dataset.motion !== 'on') return;
+      const r = st.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+      sc.style.setProperty('--ry', (x * 24 - 6).toFixed(1) + 'deg'); sc.style.setProperty('--rx', (4 - y * 16).toFixed(1) + 'deg'); });
+    k.addEventListener('pointerleave', () => { sc.style.removeProperty('--ry'); sc.style.removeProperty('--rx'); }); });
+})();
