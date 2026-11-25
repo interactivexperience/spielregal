@@ -80,7 +80,6 @@
       () => head.animate([{ rotate: '0deg', translate: '0 0' }, { rotate: '-6deg', translate: '-4px 2px', offset: .3 }, { rotate: '7deg', translate: '5px -3px', offset: .68 }, { rotate: '0deg', translate: '0 0' }], { duration: 3600, easing: ease }),
       () => head.animate([{ rotate: '0deg', translate: '0 0' }, { rotate: '-13deg', translate: '-6px 10px', offset: .18 }, { rotate: '1deg', translate: '0 0', offset: .34 }, { rotate: '-13deg', translate: '-6px 10px', offset: .52 }, { rotate: '0deg', translate: '0 0' }], { duration: 1700, easing: ease }),
       () => { body.animate([{ rotate: '0deg' }, { rotate: '1.4deg' }, { rotate: '-1.4deg' }, { rotate: '1.1deg' }, { rotate: '-1.1deg' }, { rotate: '0deg' }], { duration: 650, iterations: 2 }); return head.animate([{ rotate: '0deg' }, { rotate: '4deg' }, { rotate: '-4deg' }, { rotate: '3deg' }, { rotate: '-3deg' }, { rotate: '0deg' }], { duration: 650, iterations: 2 }); },
-      () => hop(),
     ];
     setInterval(() => {
       if (busy || !motionOn() || document.hidden || performance.now() - last < 3000) return;
@@ -88,7 +87,7 @@
       let i; do { i = Math.random() < .4 ? 0 : 1 + Math.floor(Math.random() * (acts.length - 1)); } while (i === lastAct && acts.length > 1); lastAct = i;
       busy = true; tgt.r = 0; tgt.x = 0; tgt.y = 0; kick();
       const a = acts[i](); (a.finished || Promise.resolve()).then(() => { busy = false; }, () => { busy = false; });
-    }, 3600);
+    }, 7000);
     /* gelegentliches Blinzeln, auch wenn der Zeiger sich bewegt */
     setInterval(() => { if (motionOn() && !document.hidden && Math.random() < .5) blink(); }, 5200);
   }
@@ -104,7 +103,7 @@
   /* ---------- Lage-Karten drehen ---------- */
   $$('.cd').forEach(c => { const f = $('.fcard', c); if (!f) return;
     const flip = () => { const on = c.classList.toggle('on'); f.setAttribute('aria-pressed', String(on)); };
-    f.addEventListener('click', e => { if (e.target.closest('a')) return; flip(); });
+    f.addEventListener('click', e => { if (e.target.closest('a')) return; const r = f.getBoundingClientRect(); f.style.setProperty('--cx', (e.clientX - r.left || r.width / 2).toFixed(0) + 'px'); f.style.setProperty('--cy', (e.clientY - r.top || r.height / 2).toFixed(0) + 'px'); flip(); });
     f.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); } }); });
 
   /* ---------- Projekte: Tabs ---------- */

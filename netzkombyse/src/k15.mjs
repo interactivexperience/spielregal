@@ -93,7 +93,7 @@ const wallTiles = [
 const caseLink = (c, cls, inner) => `<a class="${cls}" href="${W}/${c[4]}" target="_blank" rel="noopener" aria-label="${esc(c[1])}: ${esc(c[2])}">${inner}</a>`;
 const marq = ['Shopware', 'Shopify', 'Headless', 'Migration', 'Marke', 'UX / UI', 'SEO', 'AI-Sichtbarkeit', 'Performance', 'ERP · PIM · CRM'];
 const logoOf = { 'Bio Planète': 'bioplanete.svg', 'Tout Terrain': 'touttterrain.svg', 'K-Idol': 'kidol.svg', 'Craft & Caviar': 'craftandcaviar.svg', 'Grizzly': 'grizzly.svg', 'Beisser': 'beisser.webp', 'Timkid': 'timkid.svg', 'Elektrosil': 'elektrosil.svg', 'PremiumWheels': 'premiumwheels.webp', 'dgina': 'dgina.svg', 'Pechkeks': 'pechkeks.webp', 'HWT': 'hwt.svg', 'Abelmann': 'abelmann.svg', 'Wurstladen': 'wurstladen.svg', 'Marktpirat': 'marktpirat.svg', 'Sabro': 'sabro.svg', 'Wein-Bauer': 'weinbauer.svg', 'Kaffeekontor': 'kaffeekontor.svg' };
-const row = a => [...a, ...a].map(x => `<span class="bn">${esc(x)}${logoOf[x] ? `<span class="bl"><img src="../media/logos/${logoOf[x]}" alt="" loading="lazy" decoding="async"></span>` : ''}</span><i aria-hidden="true">✦</i>`).join('');
+const row = a => [...a, ...a].map(x => `<span class="bn">${esc(x)}</span><i aria-hidden="true">✦</i>`).join('');
 
 function index() {
   const body = `<div id="top"></div><div class="prog" aria-hidden="true"></div><div class="spot" aria-hidden="true"></div><div class="spot spot2" aria-hidden="true"></div><div class="spot spot3" aria-hidden="true"></div>
@@ -112,10 +112,10 @@ function index() {
 </section>
 
 <section class="facts" aria-label="Zahlen"><ul>
-  <li data-reveal><strong data-count="${C.jahre}" data-suffix="+">${C.jahre}+</strong><span>Jahre E-Commerce</span></li>
-  <li data-reveal style="--d:90ms"><strong data-count="${C.zahlen.marken}">${C.zahlen.marken}</strong><span>Marken im Portfolio</span></li>
-  <li data-reveal style="--d:180ms"><strong data-count="${C.prozessloesungen}" data-suffix="+">${C.prozessloesungen}+</strong><span>Prozesslösungen</span></li></ul>
-  <a class="fp" data-reveal href="${W}/foerdermittel" target="_blank" rel="noopener"><span class="fp-k">Akkreditierter Förderpartner</span><b>Zuschüsse bis zu 80 % möglich</b><i aria-hidden="true">${ar}</i></a></section>
+  <li data-reveal><strong data-dur="600" data-count="${C.jahre}" data-suffix="+">${C.jahre}+</strong><span>Jahre E-Commerce</span></li>
+  <li data-reveal style="--d:90ms"><strong data-dur="600" data-count="${C.zahlen.marken}">${C.zahlen.marken}</strong><span>Marken im Portfolio</span></li>
+  <li data-reveal style="--d:180ms"><strong data-dur="600" data-count="${C.prozessloesungen}" data-suffix="+">${C.prozessloesungen}+</strong><span>Prozesslösungen</span></li></ul>
+  <a class="fp" data-reveal href="${W}/foerdermittel" target="_blank" rel="noopener"><svg class="fp-s" viewBox="0 0 120 120" aria-hidden="true"><defs><path id="fpc" d="M60 60m-46 0a46 46 0 1 1 92 0a46 46 0 1 1-92 0"/></defs><circle cx="60" cy="60" r="58" fill="#000"/><circle cx="60" cy="60" r="57" fill="none" stroke="#FF5A14" stroke-width="1.5"/><text class="fp-t" font-size="11.5" font-weight="700" letter-spacing="2.6" fill="#fff"><textPath href="#fpc">AKKREDITIERTER FÖRDERPARTNER · AKKREDITIERT ·</textPath></text></svg><span class="fp-pc" aria-hidden="true">%</span><span class="fp-k">Akkreditierter Förderpartner</span><b>Zuschüsse bis zu <em>80 %</em> möglich</b><i aria-hidden="true">${ar}</i></a></section>
 
 <section class="sec" id="wen" aria-label="Wen wir begleiten"><div class="wr"><p class="k">Wen wir begleiten</p>
   <p class="lit" data-lit>Wir begleiten mittelständische Unternehmen, die E-Commerce als zentralen Bestandteil ihrer Unternehmensentwicklung verstehen.</p>
@@ -160,20 +160,25 @@ function index() {
   <ul class="brl">${branchen.map(([t, d], i) => `<li data-reveal style="--d:${i * 60}ms" tabindex="0"><span class="n">${pad(i + 1)}</span><b>${esc(t)}</b><span class="bd">${esc(d)}</span><i aria-hidden="true">${ar}</i></li>`).join('')}</ul>
   <div class="ig"><p class="k">Integrationen</p><p class="igt">ERP, Warenwirtschaft, Versand und Zahlung: über 100 individuell entwickelte Prozesslösungen, angebunden an Ihre Systeme.</p><p class="igl" aria-hidden="true"><span class="igm">${[...integr, ...integr].map(x => `<span>${esc(x)}</span>`).join('')}</span></p><ul class="sr">${integr.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div></div></section>
 
-<section class="sec fd" id="foerderung"><div class="wr fd-g"><div><p class="k">Förderung</p><p class="fd-n" data-count="80" data-suffix=" %">80 %</p></div><div class="fd-t"><h2 data-chars data-reveal>Bis zu 80 % Zuschuss für Ihr Digitalprojekt.</h2><p class="s" data-reveal>Wir prüfen die Förderfähigkeit, wählen das Programm und begleiten den Antrag, akkreditiert für Programme des Bundes.</p><p class="ctas" data-reveal>${btn(`${W}/foerdermittel`, 'Fördergespräch')}<a class="cta ln" href="${W}/foerderrechner" target="_blank" rel="noopener"><span>Förderrechner</span><i aria-hidden="true">${ar}</i></a></p></div></div>
-  <div class="aw2" data-reveal><p class="k">Unabhängig ausgezeichnet</p><ul class="awl">${awards.map(([f, t]) => `<li>${f ? `<img src="../media/awards/${f}.webp" alt="${esc(t)}" loading="lazy" decoding="async">` : `<span class="awt">${esc(t)}</span>`}</li>`).join('')}</ul></div></section>
+<section class="sec fd" id="foerderung"><div class="wr fd-g"><div><p class="k">Förderung</p><p class="fd-n" data-dur="600" data-count="80" data-suffix=" %">80 %</p></div><div class="fd-t"><h2 data-chars data-reveal>Bis zu 80 % Zuschuss für Ihr Digitalprojekt.</h2><p class="s" data-reveal>Wir prüfen die Förderfähigkeit, wählen das Programm und begleiten den Antrag, akkreditiert für Programme des Bundes.</p><p class="ctas" data-reveal>${btn(`${W}/foerdermittel`, 'Fördergespräch')}<a class="cta ln" href="${W}/foerderrechner" target="_blank" rel="noopener"><span>Förderrechner</span><i aria-hidden="true">${ar}</i></a></p></div></div>
+  <div class="aw2" data-reveal><p class="k">Unabhängig ausgezeichnet</p><ul class="awl">${awards.map(([f, t], i) => `<li style="--i:${i}"><div class="awc" tabindex="0"><div class="awf">${f ? `<img src="../media/awards/${f}.webp" alt="${esc(t)}" loading="lazy" decoding="async">` : `<span class="awt">${esc(t)}</span>`}</div><div class="awb" aria-hidden="true"><b>${esc(t)}</b></div></div></li>`).join('')}</ul></div></section>
 
 <section class="sec" id="faq"><div class="wr"><div class="two"><h2 data-chars data-reveal>Was Entscheider wissen wollen.</h2></div>
   <div class="faq">${C.faq.map((q, i) => `<details data-reveal style="--d:${i * 60}ms"${i === 0 ? ' open' : ''}><summary><span>${esc(q.q)}</span><i aria-hidden="true"></i></summary><p>${esc(q.a)}</p></details>`).join('')}</div></div></section>
 
 <section class="sec end" id="kontakt"><div class="glow g2" aria-hidden="true"></div><div class="wr ctw"><div class="ctx"><p class="k">Kontakt</p><h2 class="b" data-chars data-reveal>Reden wir persönlich.</h2><p class="s" data-reveal>Lassen Sie uns herausfinden, ob die Chemie stimmt. Sie erreichen mich direkt: per Nachricht, am Telefon oder im Videotermin.</p>
+  <p class="who" data-reveal><b>${C.ansprech.name}</b> · ${C.ansprech.rolle}</p>
   <p class="ctas" data-reveal>${btn(C.termin, 'Termin buchen')}</p>
   <ul class="cl" data-reveal><li><i class="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></i><span><em>Telefon</em><a href="${C.telHref}">${C.tel}</a></span></li><li><i class="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 6l8.5 7 8.5-7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></i><span><em>E-Mail</em><a href="mailto:ahoi@netzkombyse.de">ahoi@netzkombyse.de</a></span></li><li><i class="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></i><span><em>Videotermin</em><a href="${C.termin}" target="_blank" rel="noopener">30 Minuten, unverbindlich</a></span></li><li><i class="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="9.5" r="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></i><span><em>Büro</em><a href="https://maps.google.com/?q=Harkortstraße+81,+22765+Hamburg" target="_blank" rel="noopener">${C.adresse[0]}, 22765 ${C.adresse[1]}</a></span></li></ul></div>
-  <figure class="gk" data-reveal><img class="g" src="../media/henning-pose.webp" alt="Henning Groß, Geschäftsführer" width="928" height="1152" loading="lazy" decoding="async"><figcaption>${C.ansprech.name}<span>${C.ansprech.rolle}</span></figcaption></figure></div></section>
+  <p class="moin">Moin aus Hamburg: Hier ist es gerade <b data-clock>–</b> Uhr. Moin sagt man hier zu jeder Uhrzeit.</p>
+  <figure class="gk" data-reveal><img class="g" src="../media/henning-pose.webp" alt="Henning Groß, Geschäftsführer" width="928" height="1152" loading="lazy" decoding="async"></figure></div></section>
 </main>
 <footer class="ft"><a class="ft-logo" href="index.html" aria-label="Startseite">${logo()}</a>
   <nav aria-label="Rechtliches"><a href="${W}/impressum" target="_blank" rel="noopener">Impressum</a><a href="${W}/datenschutz" target="_blank" rel="noopener">Datenschutz</a><a href="../index.html">Konzepte</a><a href="#top">Nach oben ↑</a></nav>
-  <p class="ft-n">© NetzKombyse GmbH · Harkortstraße 81, Hamburg · Moin aus Hamburg: Hier ist es gerade <b data-clock>–</b> Uhr. Moin sagt man hier zu jeder Uhrzeit.</p></footer>`;
-  return page({ k: 'k15', title: 'NetzKombyse · Konzept 15 Glut', desc: 'Konzept 15: Glut – Schwarz mit Orange-Verlauf, Möwe mit Blick, Disziplinen als Riesenzeilen, drehende Lage-Karten, vier Projektansichten, typografische Stimmen.', theme: '#000000', body });
+  <p class="ft-n">© NetzKombyse GmbH · Harkortstraße 81, Hamburg</p></footer>`;
+  const html = page({ k: 'k15', title: 'NetzKombyse · Konzept 15 Glut', desc: 'Konzept 15: Glut – Schwarz mit Orange-Verlauf, Möwe mit Blick, Disziplinen als Riesenzeilen, drehende Lage-Karten, vier Projektansichten, typografische Stimmen.', theme: '#000000', body });
+  return html
+    .replace('</head>', `<script type="importmap">{"imports":{"three":"../shared/three/three.module.min.js","three/addons/":"../shared/three/addons/"}}</script>\n</head>`)
+    .replace('</body>', `<script type="module" src="gull3d.js"></script>\n</body>`);
 }
 export const pages = () => ({ 'index.html': index() });

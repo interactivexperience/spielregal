@@ -44,7 +44,7 @@
   const countUp = el => {
     const to = parseFloat(el.dataset.count), suf = el.dataset.suffix || '';
     if (!motionOn() || to === 0) { el.textContent = to + suf; return; }
-    const t0 = performance.now(), d = 1100;
+    const t0 = performance.now(), d = +el.dataset.dur || 1100;
     const f = t => { const p = Math.min(1, (t - t0) / d), e = 1 - Math.pow(1 - p, 3);
       el.textContent = Math.round(to * e) + suf; if (p < 1) requestAnimationFrame(f); };
     requestAnimationFrame(f);
