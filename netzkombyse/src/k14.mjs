@@ -20,6 +20,13 @@ const cases = [
   ['sabro', 'SABRO', 'Premium-Hersteller für Hundesofas', 'Heimtier', 'case-sabro', 'l'],
   ['beisser', 'BEISSER.DE', 'Das Fleisch ist willig', 'Food & Gastronomie', 'case-beisser', 'q'],
 ];
+const I = (d, extra = '') => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ${extra}>${d}</svg>`;
+const ico = {
+  cal: I('<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8.5 14.5l2 2 4-4"/>'),
+  phone: I('<path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/>'),
+  mail: I('<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 7l8.5 6 8.5-6"/>'),
+  pin: I('<path d="M12 21s-7-6.2-7-11a7 7 0 0114 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>'),
+};
 const hg = `<svg class="hs" viewBox="0 0 400 480" aria-hidden="true"><path d="M30 480c4-96 62-150 170-150s166 54 170 150z" fill="#17120F"/><rect x="170" y="268" width="60" height="70" rx="26" fill="#E9B48F"/><ellipse cx="200" cy="214" rx="66" ry="78" fill="#F1C4A1"/><path d="M128 196c2-60 34-96 72-96s70 36 72 96c-26-18-48-26-72-26s-46 8-72 26z" fill="#FF6B14"/><rect x="124" y="188" width="152" height="26" rx="13" fill="#E55A0B"/><circle cx="200" cy="96" r="20" fill="#FFC93C"/><circle cx="176" cy="226" r="6" fill="#17120F"/><circle cx="224" cy="226" r="6" fill="#17120F"/><path d="M178 258c14 14 30 14 44 0" stroke="#17120F" stroke-width="5" stroke-linecap="round" fill="none"/></svg>`;
 
 function index() {
@@ -32,12 +39,13 @@ function index() {
 <main id="main">
 <section class="hero" aria-labelledby="h1">
   <div class="meta"><span class="tag"><b>01</b></span><span class="tag">Shopware & E-Commerce Agentur</span><span class="tag mr">Hamburg · ${C.jahre}+ Jahre</span></div>
-  <h1 id="h1" aria-label="Wir bauen Shops, die sich rechnen"><span class="r"><span class="pill" data-reveal>Wir bauen</span></span><span class="r"><span class="word" data-reveal style="--d:80ms">Shops</span> <span class="chip" data-reveal style="--d:120ms">${arrow}</span></span><span class="r"><span class="pill" data-reveal style="--d:200ms">die sich</span> <span class="word" data-reveal style="--d:260ms">rechnen</span>${sq}</span></h1>
+  <h1 id="h1" aria-label="Wir bauen Shops, die sich rechnen"><span class="r"><span class="pill" data-reveal>Wir bauen</span></span><span class="r"><span class="word" data-reveal style="--d:80ms">Shops</span> <a class="chip" data-reveal style="--d:120ms" href="${C.termin}" target="_blank" rel="noopener" aria-label="Termin buchen" title="Termin buchen" data-mag>${ico.cal}</a></span><span class="r"><span class="pill" data-reveal style="--d:200ms">die sich</span> <span class="word" data-reveal style="--d:260ms">rechnen</span>${sq}</span></h1>
   <div class="hero-b">
     <p class="lead" data-reveal>Digitaler Vertrieb für Mittelständler: Shopware & Shopify, Marke und Marketing aus einer Hand, mit festen Ansprechpartnern.</p>
-    <p class="acts" data-reveal><a class="btn" href="${C.termin}" target="_blank" rel="noopener" data-mag>Termin buchen</a><a class="more" href="#leistung">Mehr lesen ↗</a></p>
+    <p class="ib" data-reveal><a href="${C.termin}" target="_blank" rel="noopener" aria-label="Termin buchen" title="Termin buchen" data-mag>${ico.cal}</a><a href="${C.telHref}" aria-label="Anrufen: ${C.tel}" title="Anrufen" data-mag>${ico.phone}</a><a href="mailto:ahoi@netzkombyse.de" aria-label="E-Mail schreiben" title="E-Mail schreiben" data-mag>${ico.mail}</a></p>
   </div>
-  <div class="hg" data-gull aria-hidden="true"><div class="gb"><img src="../media/moewe-hero-l.webp" alt="" width="832" height="1232" decoding="async"></div><div class="gh"><img src="../media/moewe-hero-l.webp" alt="" width="832" height="1232" decoding="async"></div></div>
+  <a class="scrl" href="#leistung" aria-label="Weiter zu den Leistungen"><i aria-hidden="true"></i></a>
+  <div class="hg" data-gull aria-hidden="true"><div class="gfl"></div><div class="gb"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"></div><div class="gh"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"><i class="lid"></i></div></div>
 </section>
 
 <p class="mq" aria-label="Kunden"><span class="mq-t">${[...C.marken, ...C.marken].map(m => `<span>${esc(m)}</span><i aria-hidden="true">✦</i>`).join('')}</span></p>
@@ -47,10 +55,10 @@ function index() {
     ['Technologie & Shop', 'Shopware und Shopify für B2B, B2C und Headless: Systeme, die in fünf Jahren noch tragen.', 'e-commerce', ['Shopware', 'Shopify', 'Headless', 'Migration', 'ERP · PIM · CRM']],
     ['Kommunikation & Marke', 'Markenstrategie, Design und Inhalte: ein Gesicht über alle Kanäle.', 'brand-ux-ui', ['Positionierung', 'Corporate Design', 'UX / UI', 'Content']],
     ['Marketing & Performance', 'Sichtbarkeit, gemessen an Umsatz und nicht an Klicks.', 'marketing', ['SEO', 'AI-Sichtbarkeit', 'Google Ads', 'Newsletter', 'Tracking']],
-  ].map(([t, d, u, ch], i) => `<li class="c${i + 1}" style="--i:${i}"><a href="${W}/${u}" target="_blank" rel="noopener"><span class="cn" aria-hidden="true">${pad(i + 1)}</span><h3>${esc(t)}</h3><p>${esc(d)}</p><span class="chs">${ch.map(x => `<span class="pill">${esc(x)}</span>`).join('')}</span><span class="go" aria-hidden="true">${arrow}</span></a></li>`).join('')}</ol></div></section>
+  ].map(([t, d, u, ch], i) => `<li class="c${i + 1}" style="--i:${i}"><button type="button" class="ch" aria-expanded="false" aria-controls="cp${i}"><span class="cn">${pad(i + 1)}</span><h3>${esc(t)}</h3><span class="pm" aria-hidden="true"></span></button><div id="cp${i}" class="cb" hidden><p>${esc(d)}</p><ul class="tg">${ch.map(x => `<li>${esc(x)}</li>`).join('')}</ul><a class="more2" href="${W}/${u}" target="_blank" rel="noopener">Mehr erfahren ${arrow}</a></div></li>`).join('')}</ol></div></section>
 
-<section class="sec sec-l" id="lage"><div class="wr"><p class="tag" data-reveal><b>03</b> Ausgangslage</p><h2 data-reveal>Von Ihrer <span class="pill">Lage</span> zu unserem Plan.</h2>
-  <ol class="pairs">${lagen.map((l, i) => `<li data-reveal style="--d:${i * 100}ms"><div class="pl"><span class="big" aria-hidden="true">${pad(i + 1)}</span><div><p class="lab">Ihre Lage</p><h3>${esc(l.n.t)}</h3><p>${esc(l.n.d)}</p></div></div><span class="px" aria-hidden="true">${arrow}</span><div class="pa"><p class="lab">Unsere Antwort</p>${l.a.map(a => `<div><b>${esc(a.t)}</b><span>${esc(a.d)}</span></div>`).join('')}</div></li>`).join('')}</ol></div></section>
+<section class="sec sec-l" id="lage"><div class="wr"><p class="tag" data-reveal><b>03</b> Ausgangslage</p><h2 data-reveal>Ihre <span class="pill">Lage</span>. Unsere Antwort.</h2>
+  <ol class="pairs">${lagen.map((l, i) => `<li data-reveal style="--d:${i * 100}ms"><div class="pl"><span class="big" aria-hidden="true">${pad(i + 1)}</span><div><p class="lab">Ihre Lage</p><h3>${esc(l.n.t)}</h3><p>${esc(l.n.d)}</p></div></div><span class="px" aria-hidden="true">${arrow}</span><ul class="pa" aria-label="Unsere Antwort">${l.a.map(a => `<li><b>${esc(a.t)}</b><span>${esc(a.d)}</span></li>`).join('')}</ul></li>`).join('')}</ol></div></section>
 
 <section class="sec" id="arbeit"><div class="wr"><p class="tag" data-reveal><b>04</b> Arbeit</p><h2 data-reveal>Ausgewählte <span class="pill">Projekte</span>.</h2>
   <ul class="work" data-work>${cases.map(([f, t, d, b, u]) => `<li data-reveal><a href="${W}/${u}" target="_blank" rel="noopener" data-src="../media/cases/${f}.jpg" aria-label="${esc(t)}: ${esc(d)}"><b>${esc(t)}</b><span class="d">${esc(d)}</span><span class="br">${esc(b)}</span><i class="wi" aria-hidden="true">${arrow}</i><img class="th" src="../media/cases/${f}.jpg" alt="" width="1024" height="675" loading="lazy" decoding="async"></a></li>`).join('')}</ul>
@@ -58,19 +66,26 @@ function index() {
   <div class="pv" aria-hidden="true"><img alt="" width="1024" height="675"></div><span class="pc" aria-hidden="true">${arrow}</span></section>
 
 <section class="sec sec-s" id="stimmen"><div class="wr vx"><div class="vx-h"><p class="tag" data-reveal><b>05</b> Stimmen</p><h2 data-reveal>Was <span class="pill">Kunden</span> sagen.</h2>
-  <p class="rate" data-reveal><b>4,8</b><span>von 5 · 11 Google-Bewertungen</span><a href="https://www.google.com/maps/search/?api=1&query=NetzKombyse&query_place_id=ChIJP2GS276FsUcRbSWqjQ9NfAE" target="_blank" rel="noopener">Bewertungen lesen ↗</a></p></div>
+  <p class="rate" data-reveal><b>4,8</b><span>von 5 · 11 Google-Bewertungen</span><a class="rl" href="https://www.google.com/maps/search/?api=1&query=NetzKombyse&query_place_id=ChIJP2GS276FsUcRbSWqjQ9NfAE" target="_blank" rel="noopener">Bewertungen lesen ↗</a></p></div>
   <div class="vox"><div class="vq-w">${C.stimmen.map((s, i) => `<figure class="vq${i === 0 ? ' on' : ''}" data-i="${i}"><blockquote>${s.q.split(' ').map((w, j) => `<span style="--w:${j}">${esc(w)}</span>`).join(' ')}</blockquote><figcaption><b>${esc(s.w)}</b><i>${esc(s.f)}${s.hinweis ? ` (${esc(s.hinweis)})` : ''}</i></figcaption></figure>`).join('')}</div>
-    <div class="vsel" role="tablist" aria-label="Stimme wählen">${C.stimmen.map((s, i) => `<button type="button" role="tab" aria-selected="${i === 0}" data-i="${i}"><span class="av" aria-hidden="true">${esc((w => (w[0][0] + w[w.length - 1][0]))(s.w.split(' ').filter(x => /^[A-ZÄÖÜ]/.test(x) && !x.endsWith('.'))))}</span><span><b>${esc(s.w)}</b><i>${esc(s.f)}</i></span></button>`).join('')}</div></div></div></section>
+    <div class="vsel" role="tablist" aria-label="Stimme wählen">${C.stimmen.map((s, i) => `<button type="button" role="tab" aria-selected="${i === 0}" data-i="${i}"><span class="vn">${pad(i + 1)}</span><span><b>${esc(s.w)}</b><i>${esc(s.f)}</i></span></button>`).join('')}</div></div></div></section>
 
-<section class="sec" id="kontakt"><div class="wr ct"><div class="ct-t"><p class="tag" data-reveal><b>06</b> Kontakt</p><h2 data-reveal>Reden wir <span class="pill">persönlich</span>.</h2>
-  <p class="lead" data-reveal>${C.ansprech.name}, ${C.ansprech.rolle}, ist Ihr Ansprechpartner von der ersten Frage an, ohne Account-Manager dazwischen.</p>
-  <p class="acts" data-reveal><a class="btn" href="${C.termin}" target="_blank" rel="noopener" data-mag>Termin buchen</a></p>
-  <ul class="cl" data-reveal><li><a href="${C.telHref}">${C.tel}</a></li><li><a href="mailto:ahoi@netzkombyse.de">ahoi@netzkombyse.de</a></li><li>${C.adresse[0]}, 22765 ${C.adresse[1]} · <a href="https://maps.google.com/?q=Harkortstraße+81,+22765+Hamburg" target="_blank" rel="noopener">Route ↗</a></li></ul></div>
-  <figure class="hen" data-reveal><img src="../media/henning.webp" alt="Henning Groß, Geschäftsführer" width="928" height="1152" loading="lazy" decoding="async"><figcaption>${C.ansprech.name}<span>${C.ansprech.rolle}</span></figcaption></figure></div></section>
+<section class="sec ctsec" id="kontakt"><div class="wr ct"><div class="ct-t"><p class="tag" data-reveal><b>06</b> Kontakt</p><h2 data-reveal>Reden wir <span class="pill">persönlich</span>.</h2>
+  <p class="lead" data-reveal>${C.ansprech.name}, ${C.ansprech.rolle}: Ihr Ansprechpartner von der ersten Frage an, ohne Account-Manager dazwischen.</p>
+  <ul class="ctl" data-reveal>
+    <li class="main"><a href="${C.termin}" target="_blank" rel="noopener" data-mag><i>${ico.cal}</i><span><small>Kennenlernen</small><b>Termin buchen</b></span></a></li>
+    <li><a href="${C.telHref}"><i>${ico.phone}</i><span><small>Anrufen</small><b>${C.tel}</b></span></a></li>
+    <li><a href="mailto:ahoi@netzkombyse.de"><i>${ico.mail}</i><span><small>Schreiben</small><b>ahoi@netzkombyse.de</b></span></a></li>
+    <li><a href="https://maps.google.com/?q=Harkortstraße+81,+22765+Hamburg" target="_blank" rel="noopener"><i>${ico.pin}</i><span><small>Besuchen</small><b>${C.adresse[0]}, ${C.adresse[1]}</b></span></a></li>
+  </ul></div>
+  <figure class="hen" data-reveal><img src="../media/henning-pose.webp" alt="Henning Groß, Geschäftsführer" width="928" height="1152" loading="lazy" decoding="async"><figcaption>${C.ansprech.name}<span>${C.ansprech.rolle}</span></figcaption></figure></div></section>
 </main>
-<footer class="ft"><a class="ft-logo" href="index.html" aria-label="Startseite">${logo()}</a>
-  <nav aria-label="Rechtliches"><a href="${W}/impressum" target="_blank" rel="noopener">Impressum</a><a href="${W}/datenschutz" target="_blank" rel="noopener">Datenschutz</a><a href="../index.html">Konzepte</a><a href="#top">Nach oben ↑</a></nav>
-  <p class="ft-n">© NetzKombyse GmbH · Hamburg · Beispielwerte und Zitate sind Platzhalter.</p></footer>`;
+<footer class="ft"><div class="ft-g">
+  <div class="ft-a"><a class="ft-logo" href="index.html" aria-label="Startseite">${logo()}</a><p>Digitaler Commerce für Unternehmen, die mehr vorhaben.</p><p class="ft-ad">NetzKombyse GmbH<br>Harkortstraße 81, Hamburg<br><a href="${C.telHref}">${C.tel}</a><br><a href="mailto:ahoi@netzkombyse.de">ahoi@netzkombyse.de</a></p></div>
+  <nav aria-label="Leistungen"><h4>Leistungen</h4><a href="${W}/e-commerce" target="_blank" rel="noopener">E-Commerce</a><a href="${W}/shopware-migration" target="_blank" rel="noopener">Shop-Migration</a><a href="${W}/marketing" target="_blank" rel="noopener">Marketing</a><a href="${W}/brand-ux-ui" target="_blank" rel="noopener">Kommunikation &amp; Marke</a><a href="${W}/seo-agentur-hamburg" target="_blank" rel="noopener">SEO &amp; AI-Sichtbarkeit</a><a href="${W}/barrierefreiheit" target="_blank" rel="noopener">Barrierefreiheit</a><a href="${W}/foerdermittel" target="_blank" rel="noopener">Fördermittel</a></nav>
+  <nav aria-label="Referenzen"><h4>Referenzen</h4><a href="${W}/references" target="_blank" rel="noopener">Alle Referenzen</a>${['Food & Gastronomie', 'Medizin & Gesundheit', 'B2B & Industrie', 'Heimtier', 'Musik & Entertainment', 'Mobilität & Handwerk'].map(b => `<span>${esc(b)}</span>`).join('')}</nav>
+  <nav aria-label="Unternehmen"><h4>Unternehmen</h4><a href="${W}/ueber-uns" target="_blank" rel="noopener">Über uns</a><a href="${W}/impressum" target="_blank" rel="noopener">Impressum</a><a href="${W}/datenschutz" target="_blank" rel="noopener">Datenschutz</a><a href="../index.html">Konzepte</a><a href="#top">Nach oben ↑</a></nav></div>
+  <p class="ft-n">© NetzKombyse GmbH · Moin aus Hamburg: Hier ist es gerade <b data-clock>–</b> Uhr. Moin sagt man hier zu jeder Uhrzeit. · Beispielwerte und Zitate sind Platzhalter.</p></footer>`;
   return page({ k: 'k14', title: 'NetzKombyse · Konzept 14 Pille', desc: 'Konzept 14: Pille – Darkmode, Typo im Zentrum, Projekt-Vorschau beim Hover, Henning im Kontakt.', theme: '#000000', body });
 }
 export const pages = () => ({ 'index.html': index() });

@@ -172,3 +172,89 @@ html[data-motion=on] .vq.on blockquote span{animation:wd2 .7s var(--ease) both;a
 .hg .gh{transform-origin:52% 26.8%;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 7%,#000 25%,transparent 31%),linear-gradient(90deg,transparent 0,#000 14%,#000 86%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(180deg,transparent 0,#000 7%,#000 25%,transparent 31%),linear-gradient(90deg,transparent 0,#000 14%,#000 86%,transparent 100%);mask-composite:intersect}
 .hero h1,.hero-b,.meta{position:relative;z-index:3}
 @media(max-width:860px){.hg{position:relative!important;right:auto;bottom:auto;height:min(52svh,110vw);justify-self:center;margin:0 auto!important}}
+
+/* ===== Runde 4 ===== */
+/* Hero: Typo größer, Möwe mittig im Viewport. Nur der Vogel bewegt sich (Freisteller), Boden und Glühen stehen still.
+   Der Kopf liegt über der Headline, der Körper dahinter. */
+.hg,.hg::before{animation:none!important}
+.hero h1{font-size:clamp(1.8rem,9.4cqi,9.4rem);line-height:1.04;position:relative;z-index:3}
+.hero-b,.meta,.scrl{position:relative;z-index:6}
+.hg{z-index:auto!important;left:0!important;right:0!important;margin-inline:auto!important;width:fit-content!important;height:100%;aspect-ratio:832/1232;transform:none!important}
+.hg::before{content:"";position:absolute;left:-40%;right:-40%;top:8%;bottom:-4%;background:radial-gradient(closest-side,rgba(255,107,20,.5),rgba(194,31,11,.22) 52%,transparent 78%);filter:blur(26px);z-index:0;pointer-events:none}
+.hg .gfl{position:absolute;left:4%;right:-10%;top:81%;height:13%;background:radial-gradient(closest-side,rgba(255,110,40,.65),rgba(194,31,11,.3) 55%,transparent 78%);filter:blur(10px);pointer-events:none;mix-blend-mode:normal;transform:none}
+.hg>div{mix-blend-mode:normal!important}
+.hg .gb{z-index:1;-webkit-mask-image:linear-gradient(180deg,transparent 0,transparent 24%,#000 28%)!important;mask-image:linear-gradient(180deg,transparent 0,transparent 24%,#000 28%)!important;-webkit-mask-composite:source-over!important;mask-composite:add!important}
+.hg .gh{z-index:4;transform-origin:52% 26.8%;-webkit-mask-image:linear-gradient(180deg,#000 0,#000 25%,transparent 31%)!important;mask-image:linear-gradient(180deg,#000 0,#000 25%,transparent 31%)!important;-webkit-mask-composite:source-over!important;mask-composite:add!important}
+.hg .lid{position:absolute;left:49.6%;top:15.6%;width:4.6%;height:3.2%;border-radius:50%;background:#cdbfb2;transform:scaleY(0);transform-origin:50% 0;pointer-events:none}
+.chip{text-decoration:none;color:#000;transition:transform .5s cubic-bezier(.3,1.4,.5,1),background .3s}.chip:hover{transform:scale(1.08);background:var(--ink)}.chip svg{width:44%}
+html[data-motion=on] .chip svg{animation:none}
+.ib{display:flex;gap:.8rem}.ib a{display:grid;place-items:center;width:58px;height:58px;border-radius:50%;border:1.5px solid var(--ink);color:var(--ink);transition:background .3s,color .3s}.ib a:first-child{background:var(--ink);color:#000}.ib a:hover{background:var(--o);border-color:var(--o);color:#000}.ib svg{width:26px}
+.scrl{position:absolute;left:50%;bottom:14px;margin-left:-15px;width:30px;height:48px;border:1.5px solid var(--ink);border-radius:16px;display:block}
+.scrl i{position:absolute;left:50%;top:9px;width:5px;height:9px;margin-left:-2.5px;border-radius:3px;background:var(--o)}
+html[data-motion=on] .scrl i{animation:scrl 1.8s var(--ease) infinite}@keyframes scrl{0%{transform:translate3d(0,0,0);opacity:0}25%{opacity:1}80%{transform:translate3d(0,16px,0);opacity:0}100%{opacity:0}}
+@media(max-width:860px){.hero h1{font-size:clamp(1.8rem,10cqi,4rem)}.hg{width:min(52vw,210px)!important;height:auto;margin:0 auto!important}.scrl{display:none}.hero-b .ib{justify-content:center}}
+
+/* Leistungen: auf den ersten Blick nur Zahl und Titel, per Klick mehr */
+.caps li{border-radius:40px 40px 110px 40px;overflow:hidden;position:sticky;top:calc(76px + var(--i)*18px)}
+.c1{background:var(--o);color:#000}.c2{background:#F6EFE3;color:#0b0b0b}.c3{background:#1b1917;color:#F6EFE3;box-shadow:inset 0 0 0 1.5px var(--line)}
+.caps .ch{display:grid;grid-template-columns:auto 1fr 56px;align-items:center;gap:clamp(1rem,2.4vw,2rem);width:100%;min-height:clamp(120px,20vh,180px);padding:1rem clamp(1.4rem,3vw,2.6rem);background:none;border:0;color:inherit;text-align:left;cursor:pointer;font:inherit}
+.caps .cn{font:800 clamp(3rem,9vw,7.4rem)/.8 Unbounded;letter-spacing:-.07em;opacity:1;color:inherit;display:block}.c3 .cn{color:var(--o)}
+.caps h3{font-size:clamp(1.5rem,3.8vw,3.4rem);line-height:1.02;max-width:none}
+.pm{position:relative;width:56px;height:56px;border-radius:50%;border:2px solid currentColor;transition:transform .5s var(--bounce),background .3s,color .3s}
+.pm::before,.pm::after{content:"";position:absolute;left:50%;top:50%;width:20px;height:2.5px;margin:-1.25px 0 0 -10px;background:currentColor;transition:transform .5s var(--ease),background .3s}.pm::after{transform:rotate(90deg)}
+.ch:hover .pm{background:currentColor}.ch:hover .pm::before,.ch:hover .pm::after{background:var(--bg-inv,#000)}.c3 .ch:hover .pm::before,.c3 .ch:hover .pm::after{background:#1b1917}
+.caps li.open .pm::after{transform:rotate(0)}
+.cb{display:grid;grid-template-columns:1fr auto;grid-template-areas:"p p" "tg more";gap:1.4rem 2rem;align-items:end;padding:0 clamp(1.4rem,3vw,2.6rem) clamp(1.4rem,3vw,2.2rem)}
+.cb p{grid-area:p;max-width:36rem;font-size:clamp(1.05rem,1.6vw,1.3rem);line-height:1.4;font-weight:600}
+.tg{grid-area:tg;list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:.5rem}.tg li{border:1.5px solid currentColor;border-radius:4px;padding:.3em .8em;font:700 .72rem Montserrat;letter-spacing:.08em;text-transform:uppercase}
+.more2{grid-area:more;display:inline-flex;align-items:center;gap:.7rem;min-height:52px;padding:0 1.4rem;border-radius:4px;background:#000;color:#fff;font:700 .78rem Montserrat;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;transition:background .3s,color .3s}.more2 svg{width:18px}.more2:hover{background:var(--ink);color:#000}
+.c3 .more2{background:var(--ink);color:#000}.c3 .more2:hover{background:var(--o)}
+.cb:not([hidden]){animation:cbin .6s var(--ease)}@keyframes cbin{from{opacity:0;transform:translate3d(0,14px,0)}}html[data-motion=off] .cb{animation:none!important}
+@media(max-width:700px){.caps .ch{grid-template-columns:auto 1fr 44px}.pm{width:44px;height:44px}.cb{grid-template-columns:1fr;grid-template-areas:"p" "tg" "more"}.more2{justify-self:start}}
+
+/* Lage: rechts keine Kästen mehr, nur Linie und Text */
+.pa{list-style:none;padding:0;display:grid;gap:1rem;background:none;border-radius:0}.pa li{display:grid;gap:.2rem;padding:.2rem 0 .2rem 1.2rem;border-left:3px solid var(--o)}
+.pa b{font:700 1.05rem Unbounded;letter-spacing:-.02em}.pa li span{font-size:.92rem;color:var(--soft)}
+
+/* Stimmen */
+.rate{gap:.5rem}.rate b{margin-bottom:.5rem}.rate span{margin-bottom:1.6rem}
+.rl{position:relative;align-self:flex-start;display:inline-flex;align-items:center;gap:.5rem;min-height:52px;padding:0 1.3rem;border:2px solid #000;font:800 .8rem Montserrat;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;overflow:hidden;isolation:isolate;transition:color .4s}
+.rl::before{content:"";position:absolute;inset:0;background:#000;transform:translate3d(-101%,0,0);transition:transform .5s var(--ease);z-index:-1}.rl:hover{color:var(--o)}.rl:hover::before{transform:none}
+.vsel{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:2px solid #000}
+.vsel button{display:grid;grid-template-columns:auto 1fr;gap:.2rem .8rem;align-items:start;min-height:0;padding:1.1rem 1rem 0 0;border:0;border-radius:0;background:none;color:#000;opacity:.45;position:relative;text-align:left;transition:opacity .3s}
+.vsel button::before{content:"";position:absolute;left:0;top:-4px;height:6px;width:100%;background:#000;transform:scaleX(0);transform-origin:0 50%;transition:transform .6s var(--ease)}
+.vsel button[aria-selected=true]{opacity:1;background:none;color:#000}.vsel button[aria-selected=true]::before{transform:scaleX(1)}
+.vsel .vn{font:700 .75rem Montserrat;letter-spacing:.1em}.vsel b{display:block;font:700 1rem Montserrat}.vsel i{font-style:normal;font-size:.8rem;opacity:.8}
+@media(max-width:700px){.vsel{grid-template-columns:1fr}}
+
+/* Kontakt: Icon-Kacheln, Henning groß und auf der Unterkante */
+.ctsec{padding-bottom:0;overflow:hidden}.ct{grid-template-columns:1fr minmax(320px,.95fr);align-items:end}.ct-t{align-self:center;padding-bottom:clamp(40px,10vh,100px)}
+.ctl{list-style:none;padding:0;margin:2rem 0 0;display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.ctl a{display:flex;align-items:center;gap:1rem;min-height:84px;padding:.9rem 1.1rem;border:1.5px solid var(--line);border-radius:22px 22px 22px 6px;text-decoration:none;transition:background .3s,border-color .3s,color .3s,transform .4s var(--bounce)}
+.ctl a:hover{border-color:var(--o);transform:translate3d(0,-4px,0)}
+.ctl i{display:grid;place-items:center;flex:none;width:48px;height:48px;border-radius:50%;background:var(--o);color:#000;transition:transform .5s var(--bounce)}.ctl svg{width:24px}.ctl a:hover i{transform:rotate(-12deg) scale(1.1)}
+.ctl small{display:block;font:600 .66rem Montserrat;letter-spacing:.12em;text-transform:uppercase;color:var(--soft)}.ctl b{display:block;font:700 .95rem/1.25 Montserrat;overflow-wrap:anywhere}
+.ctl .main{grid-column:1/-1}.ctl .main a{background:var(--o);border-color:var(--o);color:#000;min-height:96px}.ctl .main small{color:rgba(0,0,0,.7)}.ctl .main b{font:800 1.4rem Unbounded;letter-spacing:-.03em}.ctl .main i{background:#000;color:var(--o)}.ctl .main a:hover{background:var(--ink);border-color:var(--ink)}
+.hen{width:min(100%,660px);justify-self:end}.hen img{-webkit-mask-image:none;mask-image:none}
+@media(max-width:860px){.ct{grid-template-columns:1fr}.ctl{grid-template-columns:1fr}.hen{justify-self:center;width:min(100%,460px)}}
+
+/* Footer: der Raum wird genutzt */
+.ft{display:block;padding:clamp(3rem,8vh,5rem) var(--g) 1.6rem;max-width:none;border-top:1px solid var(--line)}
+.ft-g{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:clamp(1.6rem,4vw,4rem);max-width:1280px;margin:0 auto}
+.ft-a p{color:var(--soft);font-size:.9rem;margin-top:1rem;max-width:20rem}.ft-a .ft-ad{font-size:.85rem;line-height:1.8}.ft-a .logo{height:1.4rem}
+.ft h4{font:700 .7rem Montserrat;letter-spacing:.14em;text-transform:uppercase;color:var(--o);margin-bottom:1rem}
+.ft nav{display:flex;flex-direction:column;gap:.1rem}.ft nav a,.ft nav span{font-size:.88rem;color:var(--soft);text-decoration:none;min-height:36px;display:inline-flex;align-items:center}.ft nav a:hover,.ft-a a:hover{color:var(--ink)}
+.ft-a a{display:inline;min-height:0;color:var(--soft);text-decoration:none}
+.ft-n{max-width:1280px;margin:clamp(2rem,6vh,4rem) auto 0;padding-top:1.2rem;border-top:1px solid var(--line);font-size:.74rem;color:var(--soft);opacity:.8}.ft-n b{color:var(--o);font-weight:700}
+@media(max-width:860px){.ft-g{grid-template-columns:1fr 1fr}.ft-a{grid-column:1/-1}}
+/* alte Grid-Bereiche der Leistungskarten zurücksetzen */
+.caps .ch .cn,.caps .ch h3,.caps .ch .pm{grid-area:auto;position:static}.caps .ch .pm{position:relative}
+.caps .cb p{opacity:1;align-self:auto;grid-area:p}.caps .cb .tg{grid-area:tg}.caps .cb .more2{grid-area:more}
+.caps>li{margin-bottom:clamp(16px,3vh,28px)}
+/* verschachtelte Listen erben sonst die Regeln der Karten und Paare */
+.caps .tg li{position:static;top:auto;margin:0;overflow:visible;background:none;box-shadow:none;border-radius:4px;perspective:none}
+.pa li{display:grid;grid-template-columns:none;gap:.2rem;align-items:start;padding:.2rem 0 .2rem 1.2rem;border:0;border-left:3px solid var(--o);border-radius:0;background:none}.pa li:hover{border-left-color:var(--o);padding-left:1.2rem}
+.hen img{display:block;width:100%;height:100%}
+.caps a.more2{display:inline-flex;grid-template-columns:none;grid-template-areas:none;min-height:52px;padding:0 1.4rem;border-radius:4px;background:#000;color:#fff;gap:.7rem;transform:none;filter:none;align-items:center}
+.caps a.more2{flex-direction:row;white-space:nowrap}.cb[hidden]{display:none}
+.caps a.more2:hover{background:var(--ink);color:#000;filter:none}.c3 a.more2{background:var(--ink);color:#000}.c3 a.more2:hover{background:var(--o)}

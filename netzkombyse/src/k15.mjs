@@ -72,7 +72,7 @@ function index() {
   <h1 id="h1" data-chars data-reveal>Machen.<br>Nicht Möwen<br>zählen.</h1>
   <p class="s" data-reveal>Strategische Beratung, komplexe Shop- und Systementwicklung, Markenkommunikation und Performance-Marketing zu einer ganzheitlichen Lösung, für Unternehmen, die mehr vorhaben.</p>
   <p class="ctas" data-reveal>${btn(C.termin, 'Termin buchen')}${btn('#arbeit', 'Referenzen', 'ln')}</p>
-  <div class="gwrap" data-gull aria-hidden="true"><div class="gb"><img src="../media/moewe-hero-l.webp" alt="" width="832" height="1232" decoding="async"></div><div class="gh"><img src="../media/moewe-hero-l.webp" alt="" width="832" height="1232" decoding="async"></div></div>
+  <div class="gwrap" data-gull aria-hidden="true"><div class="gfl"></div><div class="gb"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"></div><div class="gh"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"><i class="lid"></i></div></div>
 </section>
 
 <section class="facts" aria-label="Zahlen"><ul>

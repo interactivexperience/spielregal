@@ -38,10 +38,13 @@ svg{display:block;max-width:100%}a{color:inherit}:focus-visible{outline:3px soli
 .s{max-width:30rem;font-size:.95rem;color:var(--soft)}.hero .s,.hero .ctas{grid-column:1}.hero .ctas{align-self:start;margin-top:.4rem}
 /* Möwe: Körper und Kopf getrennt, damit der Kopf dem Zeiger folgen kann (Drehpunkt am Hals) */
 .gwrap{position:absolute!important;z-index:1!important;right:0;bottom:0;height:min(94svh,150vw);aspect-ratio:832/1232}
-.gwrap>div{position:absolute;inset:0;will-change:transform;mix-blend-mode:lighten}.gwrap img{display:block;width:100%;height:100%}
-.gb{;-webkit-mask-image:linear-gradient(180deg,transparent 0,transparent 24%,#000 28%),linear-gradient(90deg,transparent 0,#000 14%,#000 86%,transparent 100%),linear-gradient(0deg,transparent 0,#000 6%);-webkit-mask-composite:source-in,source-in;mask-image:linear-gradient(180deg,transparent 0,transparent 24%,#000 28%),linear-gradient(90deg,transparent 0,#000 14%,#000 86%,transparent 100%),linear-gradient(0deg,transparent 0,#000 6%);mask-composite:intersect;transform-origin:50% 90%}
-.gh{transform-origin:52% 26.8%;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 7%,#000 25%,transparent 31%),linear-gradient(90deg,transparent 0,#000 14%,#000 86%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(180deg,transparent 0,#000 7%,#000 25%,transparent 31%),linear-gradient(90deg,transparent 0,#000 14%,#000 86%,transparent 100%);mask-composite:intersect}
-.gb{transform-origin:50% 90%}
+.gwrap::before{content:"";position:absolute;left:-30%;right:-30%;top:6%;bottom:-4%;background:radial-gradient(closest-side,rgba(255,90,20,.5),rgba(194,31,11,.22) 52%,transparent 78%);filter:blur(26px);pointer-events:none}
+.gfl{position:absolute;left:4%;right:-10%;top:81%;height:13%;background:radial-gradient(closest-side,rgba(255,110,40,.65),rgba(194,31,11,.3) 55%,transparent 78%);filter:blur(10px);pointer-events:none}
+.gfl::after{content:"";position:absolute;left:14%;right:14%;top:50%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,160,90,.55),transparent)}
+.gwrap>div:not(.gfl){position:absolute;inset:0;will-change:transform}.gwrap img{display:block;width:100%;height:100%}
+.gb{transform-origin:50% 90%;-webkit-mask-image:linear-gradient(180deg,transparent 0,transparent 24%,#000 28%);mask-image:linear-gradient(180deg,transparent 0,transparent 24%,#000 28%)}
+.gh{transform-origin:52% 26.8%;-webkit-mask-image:linear-gradient(180deg,#000 0,#000 25%,transparent 31%);mask-image:linear-gradient(180deg,#000 0,#000 25%,transparent 31%)}
+.lid{position:absolute;left:49.6%;top:15.6%;width:4.6%;height:3.2%;border-radius:50%;background:#cdbfb2;transform:scaleY(0);transform-origin:50% 0;pointer-events:none}
 @media(max-width:860px){.hero{grid-template-columns:1fr;padding-bottom:0}.hero h1{font-size:clamp(3rem,15vw,5.6rem)}.gwrap{position:relative!important;right:auto;bottom:auto;height:min(56svh,112vw);margin:-1svh auto 0}}
 
 /* Zahlen: drei große Werte */
