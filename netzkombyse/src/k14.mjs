@@ -8,7 +8,7 @@ const pad = n => String(n).padStart(2, '0');
 const sq = `<svg class="sq" viewBox="0 0 300 12" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 6C25 0 40 12 62 6S100 0 124 6S162 12 186 6S224 0 248 6S280 10 298 6"/></svg>`;
 const arrow = `<svg viewBox="0 0 60 16" aria-hidden="true"><path d="M2 8h52M46 2l8 6-8 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const blobSvg = `<svg viewBox="0 0 400 360" aria-hidden="true"><path d="M70 60C130 10 250 0 330 50C395 90 400 190 350 250C300 320 170 365 90 320C10 275 -10 120 70 60Z" fill="var(--c)"/></svg>`;
-const gull = `<img class="g" src="../media/moewe.webp" alt="" width="888" height="1504" decoding="async">`;
+const lagen = [{ n: C.lagen[0], a: [C.saeulen[0], C.saeulen[1]] }, { n: C.lagen[1], a: [C.saeulen[2]] }, { n: C.lagen[2], a: [C.saeulen[3]] }];
 // Vorschau-Format je Projekt (nach Bildinhalt): l = quer, q = fast quadratisch, h = hoch
 const cases = [
   ['premiumwheels', 'PremiumWheels', 'Internationaler Reifenhandel', 'Mobilität', 'case-premiumwheels', 'l'],
@@ -37,40 +37,40 @@ function index() {
     <p class="lead" data-reveal>Digitaler Vertrieb für Mittelständler: Shopware & Shopify, Marke und Marketing aus einer Hand, mit festen Ansprechpartnern.</p>
     <p class="acts" data-reveal><a class="btn" href="${C.termin}" target="_blank" rel="noopener" data-mag>Termin buchen</a><a class="more" href="#leistung">Mehr lesen ↗</a></p>
   </div>
-  <div class="blob hg" style="--c:#FF6B14">${blobSvg}${gull}</div>
+  <div class="hg" aria-hidden="true"><img class="g" src="../media/moewe-hero.webp" alt="" width="832" height="1232" decoding="async"></div>
 </section>
 
 <p class="mq" aria-label="Kunden"><span class="mq-t">${[...C.marken, ...C.marken].map(m => `<span>${esc(m)}</span><i aria-hidden="true">✦</i>`).join('')}</span></p>
 
 <section class="sec" id="leistung"><div class="wr"><p class="tag" data-reveal><b>02</b> Leistung</p><h2 data-reveal>Drei <span class="pill">Disziplinen</span>, ein Ziel.</h2>
   <ol class="caps">${[
-    ['Technologie & Shop', 'Shopware und Shopify für B2B, B2C und Headless, Migration, ERP-, PIM- und CRM-Anbindung.', 'e-commerce'],
-    ['Kommunikation & Marke', 'Markenstrategie, Corporate Design, UX/UI und Content: ein Gesicht über alle Kanäle.', 'brand-ux-ui'],
-    ['Marketing & Performance', 'SEO, AI-Sichtbarkeit und bezahlte Kanäle, gemessen an Umsatz und nicht an Klicks.', 'marketing'],
-  ].map(([t, d, u], i) => `<li data-reveal style="--d:${i * 90}ms"><a href="${W}/${u}" target="_blank" rel="noopener" data-tilt><b>${pad(i + 1)}</b><h3>${esc(t)}</h3><p>${esc(d)}</p><span class="go" aria-hidden="true">${arrow}</span></a></li>`).join('')}</ol></div></section>
+    ['Technologie & Shop', 'Shopware und Shopify für B2B, B2C und Headless: Systeme, die in fünf Jahren noch tragen.', 'e-commerce', ['Shopware', 'Shopify', 'Headless', 'Migration', 'ERP · PIM · CRM']],
+    ['Kommunikation & Marke', 'Markenstrategie, Design und Inhalte: ein Gesicht über alle Kanäle.', 'brand-ux-ui', ['Positionierung', 'Corporate Design', 'UX / UI', 'Content']],
+    ['Marketing & Performance', 'Sichtbarkeit, gemessen an Umsatz und nicht an Klicks.', 'marketing', ['SEO', 'AI-Sichtbarkeit', 'Google Ads', 'Newsletter', 'Tracking']],
+  ].map(([t, d, u, ch], i) => `<li class="c${i + 1}" style="--i:${i}"><a href="${W}/${u}" target="_blank" rel="noopener"><span class="cn" aria-hidden="true">${pad(i + 1)}</span><h3>${esc(t)}</h3><p>${esc(d)}</p><span class="chs">${ch.map(x => `<span class="pill">${esc(x)}</span>`).join('')}</span><span class="go" aria-hidden="true">${arrow}</span></a></li>`).join('')}</ol></div></section>
 
-<section class="sec sec-l" id="lage"><div class="wr"><div class="lage"><div class="lage-h"><p class="tag" data-reveal><b>03</b> Ausgangslage</p><h2 data-reveal>Woher <span class="pill">Sie</span> kommen.</h2><p class="sub" data-reveal>Wir begleiten Unternehmen, die E-Commerce als zentralen Teil ihrer Entwicklung sehen, nicht als Nebenschauplatz.</p></div>
-  <ol class="steps">${C.lagen.map((l, i) => `<li data-reveal style="--d:${i * 100}ms"><span class="big" aria-hidden="true">${pad(i + 1)}</span><div><h3>${esc(l.t)}</h3><p>${esc(l.d)}</p></div></li>`).join('')}</ol></div>
-  <div class="pillars"><p class="lab" data-reveal>Darauf bauen wir</p><ul>${C.saeulen.map((s, i) => `<li data-reveal style="--d:${i * 80}ms"><b>${esc(s.t)}</b><span>${esc(s.d)}</span></li>`).join('')}</ul></div></div></section>
+<section class="sec sec-l" id="lage"><div class="wr"><p class="tag" data-reveal><b>03</b> Ausgangslage</p><h2 data-reveal>Von Ihrer <span class="pill">Lage</span> zu unserem Plan.</h2>
+  <ol class="pairs">${lagen.map((l, i) => `<li data-reveal style="--d:${i * 100}ms"><div class="pl"><span class="big" aria-hidden="true">${pad(i + 1)}</span><div><p class="lab">Ihre Lage</p><h3>${esc(l.n.t)}</h3><p>${esc(l.n.d)}</p></div></div><span class="px" aria-hidden="true">${arrow}</span><div class="pa"><p class="lab">Unsere Antwort</p>${l.a.map(a => `<div><b>${esc(a.t)}</b><span>${esc(a.d)}</span></div>`).join('')}</div></li>`).join('')}</ol></div></section>
 
 <section class="sec" id="arbeit"><div class="wr"><p class="tag" data-reveal><b>04</b> Arbeit</p><h2 data-reveal>Ausgewählte <span class="pill">Projekte</span>.</h2>
-  <ul class="work" data-work>${cases.map(([f, t, d, b, u, fmt]) => `<li data-reveal><a href="${W}/${u}" target="_blank" rel="noopener" data-src="../media/cases/${f}.jpg" data-fmt="${fmt}" aria-label="${esc(t)}: ${esc(d)}"><b>${esc(t)}</b><span class="d">${esc(d)}</span><span class="br">${esc(b)}</span><i class="wi" aria-hidden="true">${arrow}</i><img class="th" src="../media/cases/${f}.jpg" alt="" width="1024" height="675" loading="lazy" decoding="async"></a></li>`).join('')}</ul>
+  <ul class="work" data-work>${cases.map(([f, t, d, b, u]) => `<li data-reveal><a href="${W}/${u}" target="_blank" rel="noopener" data-src="../media/cases/${f}.jpg" aria-label="${esc(t)}: ${esc(d)}"><b>${esc(t)}</b><span class="d">${esc(d)}</span><span class="br">${esc(b)}</span><i class="wi" aria-hidden="true">${arrow}</i><img class="th" src="../media/cases/${f}.jpg" alt="" width="1024" height="675" loading="lazy" decoding="async"></a></li>`).join('')}</ul>
   <p class="all" data-reveal><a class="btn btn-o" href="${W}/references" target="_blank" rel="noopener">Alle Referenzen ↗</a></p></div>
-  <div class="pv" aria-hidden="true"><img alt="" width="1024" height="675"></div></section>
+  <div class="pv" aria-hidden="true"><img alt="" width="1024" height="675"></div><span class="pc" aria-hidden="true">${arrow}</span></section>
 
 <section class="sec sec-s" id="stimmen"><div class="wr vx"><div class="vx-h"><p class="tag" data-reveal><b>05</b> Stimmen</p><h2 data-reveal>Was <span class="pill">Kunden</span> sagen.</h2>
   <p class="rate" data-reveal><b>4,8</b><span>von 5 · 11 Google-Bewertungen</span><a href="https://www.google.com/maps/search/?api=1&query=NetzKombyse&query_place_id=ChIJP2GS276FsUcRbSWqjQ9NfAE" target="_blank" rel="noopener">Bewertungen lesen ↗</a></p></div>
-  <div class="vox">${C.stimmen.map((s, i) => `<figure data-reveal style="--d:${i * 90}ms"><blockquote data-words>${esc(s.q)}</blockquote><figcaption><span class="av" aria-hidden="true">${esc((w => (w[0][0] + w[w.length - 1][0]))(s.w.split(' ').filter(x => /^[A-ZÄÖÜ]/.test(x) && !x.endsWith('.'))))}</span><span><b>${esc(s.w)}</b><i>${esc(s.f)}${s.hinweis ? ` (${esc(s.hinweis)})` : ''}</i></span></figcaption></figure>`).join('')}</div></div></section>
+  <div class="vox"><div class="vq-w">${C.stimmen.map((s, i) => `<figure class="vq${i === 0 ? ' on' : ''}" data-i="${i}"><blockquote>${s.q.split(' ').map((w, j) => `<span style="--w:${j}">${esc(w)}</span>`).join(' ')}</blockquote><figcaption><b>${esc(s.w)}</b><i>${esc(s.f)}${s.hinweis ? ` (${esc(s.hinweis)})` : ''}</i></figcaption></figure>`).join('')}</div>
+    <div class="vsel" role="tablist" aria-label="Stimme wählen">${C.stimmen.map((s, i) => `<button type="button" role="tab" aria-selected="${i === 0}" data-i="${i}"><span class="av" aria-hidden="true">${esc((w => (w[0][0] + w[w.length - 1][0]))(s.w.split(' ').filter(x => /^[A-ZÄÖÜ]/.test(x) && !x.endsWith('.'))))}</span><span><b>${esc(s.w)}</b><i>${esc(s.f)}</i></span></button>`).join('')}</div></div></div></section>
 
-<section class="sec" id="kontakt"><div class="wr ct"><div class="ct-t"><p class="tag" data-reveal><b>06</b> Kontakt</p><h2 data-reveal>Moin! Reden wir <span class="pill">persönlich</span>.</h2>
-  <p class="lead" data-reveal>Ihr Ansprechpartner von der ersten Frage an, ohne Account-Manager dazwischen.</p>
-  <p class="acts" data-reveal><a class="btn" href="${C.termin}" target="_blank" rel="noopener" data-mag>Termin buchen</a><a class="btn btn-o" href="${C.telHref}" data-mag>${C.tel}</a><a class="btn btn-o" href="mailto:ahoi@netzkombyse.de" data-mag>ahoi@netzkombyse.de</a></p>
-  <p class="adr" data-reveal>${C.adresse[0]}, 22765 ${C.adresse[1]} · <a href="https://maps.google.com/?q=Harkortstraße+81,+22765+Hamburg" target="_blank" rel="noopener">Route planen ↗</a></p></div>
-  <figure class="hen" data-reveal><div class="blob hb" style="--c:#FFC93C">${blobSvg}<img class="ph" src="../media/henning.webp" alt="Henning Groß, Geschäftsführer" width="600" height="720" onerror="var p=this.parentNode;this.remove();p.classList.add('fb')">${hg}</div><figcaption><span class="tag">Henning Groß · ${C.ansprech.rolle}</span><small class="note">Foto folgt</small></figcaption></figure></div></section>
+<section class="sec" id="kontakt"><div class="wr ct"><div class="ct-t"><p class="tag" data-reveal><b>06</b> Kontakt</p><h2 data-reveal>Reden wir <span class="pill">persönlich</span>.</h2>
+  <p class="lead" data-reveal>${C.ansprech.name}, ${C.ansprech.rolle}, ist Ihr Ansprechpartner von der ersten Frage an, ohne Account-Manager dazwischen.</p>
+  <p class="acts" data-reveal><a class="btn" href="${C.termin}" target="_blank" rel="noopener" data-mag>Termin buchen</a></p>
+  <ul class="cl" data-reveal><li><a href="${C.telHref}">${C.tel}</a></li><li><a href="mailto:ahoi@netzkombyse.de">ahoi@netzkombyse.de</a></li><li>${C.adresse[0]}, 22765 ${C.adresse[1]} · <a href="https://maps.google.com/?q=Harkortstraße+81,+22765+Hamburg" target="_blank" rel="noopener">Route ↗</a></li></ul></div>
+  <figure class="hen" data-reveal><img src="../media/henning.webp" alt="Henning Groß, Geschäftsführer (Platzhalterbild)" width="912" height="1140" loading="lazy" decoding="async"><figcaption>${C.ansprech.name}<span>${C.ansprech.rolle}</span></figcaption></figure></div></section>
 </main>
-<footer class="ft"><a class="ft-logo" href="index.html" aria-label="Startseite">${logo()}</a><p>© NetzKombyse GmbH · Hamburg · 53° 33′ N, 9° 56′ O</p>
-  <p><a href="${W}/impressum" target="_blank" rel="noopener">Impressum</a> · <a href="${W}/datenschutz" target="_blank" rel="noopener">Datenschutz</a> · <a href="../index.html">Konzept wechseln</a> · <a href="#top">Nach oben</a></p>
-  <p class="ft-n">${C.hinweisBeispiel} Zitate sinngemäß bzw. Platzhalter. Inhalte und Verlinkungen nach netzkombyse.de. Dieses Konzept ist nur als Startseite ausgearbeitet.</p></footer>`;
-  return page({ k: 'k14', title: 'NetzKombyse · Konzept 14 Pille', desc: 'Konzept 14: Pille – Darkmode, Typo im Zentrum, Projekt-Vorschau beim Hover, Henning im Kontakt.', theme: '#0F0E0D', body });
+<footer class="ft"><a class="ft-logo" href="index.html" aria-label="Startseite">${logo()}</a>
+  <nav aria-label="Rechtliches"><a href="${W}/impressum" target="_blank" rel="noopener">Impressum</a><a href="${W}/datenschutz" target="_blank" rel="noopener">Datenschutz</a><a href="../index.html">Konzepte</a><a href="#top">Nach oben ↑</a></nav>
+  <p class="ft-n">© NetzKombyse GmbH · Hamburg · Beispielwerte und Zitate sind Platzhalter, das Foto von Henning wird ersetzt.</p></footer>`;
+  return page({ k: 'k14', title: 'NetzKombyse · Konzept 14 Pille', desc: 'Konzept 14: Pille – Darkmode, Typo im Zentrum, Projekt-Vorschau beim Hover, Henning im Kontakt.', theme: '#000000', body });
 }
 export const pages = () => ({ 'index.html': index() });

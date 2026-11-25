@@ -14,6 +14,11 @@
   $$('[data-words]').forEach(q => { const t = q.textContent; q.setAttribute('aria-label', t); q.textContent = '';
     t.split(' ').forEach((w, i, a) => { const s = document.createElement('span'); s.className = 'wd'; s.style.setProperty('--i', i); s.setAttribute('aria-hidden', 'true'); s.textContent = w; q.appendChild(s); if (i < a.length - 1) q.appendChild(document.createTextNode(' ')); }); });
 
+  /* Stimmen: ein Zitat im Fokus, Auswahl darunter */
+  const vox = $('.vox');
+  if (vox) { const qs = $$('.vq', vox), bs = $$('.vsel button', vox);
+    bs.forEach((b, i) => b.addEventListener('click', () => { qs.forEach((q, j) => q.classList.toggle('on', j === i)); bs.forEach((x, j) => x.setAttribute('aria-selected', String(j === i))); })); }
+
   if (!fine) return;
 
   /* Magnetische Knöpfe */
@@ -31,7 +36,7 @@
   });
 
   /* Projekt-Vorschau: groß, folgt dem Zeiger weich und ragt über die Zeile; Format je Projekt */
-  const pv = $('.pv'), work = $('[data-work]');
+  const pv = $('.pv'), work = $('[data-work]'), pc = $('.pc');
   if (pv && work) {
     const img = $('img', pv); let x = 0, y = 0, cx = 0, cy = 0, raf = 0, shown = false;
     const loop = () => { cx += (x - cx) * .16; cy += (y - cy) * .16;
@@ -40,13 +45,13 @@
       raf = (Math.abs(x - cx) + Math.abs(y - cy) > .4 || shown !== pv.classList.contains('on')) ? requestAnimationFrame(loop) : 0; };
     const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
     const place = e => { const w = pv.offsetWidth, h = pv.offsetHeight;
-      x = Math.min(innerWidth - w - 16, Math.max(16, e.clientX + 36));      // rechts vom Zeiger, ragt über die Zeile hinaus
+      x = Math.min(innerWidth - w - 16, Math.max(16, e.clientX + 60));      // rechts vom Zeiger, ragt über die Zeile hinaus
       y = Math.min(innerHeight - h - 16, Math.max(16, e.clientY - h * .55)); };
     $$('a', work).forEach(a => {
-      a.addEventListener('pointerenter', e => { if (!motionOn()) return; img.src = a.dataset.src; pv.dataset.fmt = a.dataset.fmt; shown = true; pv.classList.add('on'); place(e); if (!pv.dataset.init) { cx = x; cy = y; pv.dataset.init = 1; } kick(); });
-      a.addEventListener('pointermove', e => { if (!shown) return; place(e); kick(); });
-      a.addEventListener('pointerleave', () => { shown = false; pv.classList.remove('on'); kick(); });
+      a.addEventListener('pointerenter', e => { if (!motionOn()) return; img.src = a.dataset.src; shown = true; pv.classList.add('on'); if (pc) { pc.classList.add('on'); pc.style.transform = `translate3d(${e.clientX}px,${e.clientY}px,0)`; } place(e); if (!pv.dataset.init) { cx = x; cy = y; pv.dataset.init = 1; } kick(); });
+      a.addEventListener('pointermove', e => { if (!shown) return; place(e); if (pc) pc.style.transform = `translate3d(${e.clientX}px,${e.clientY}px,0)`; kick(); });
+      a.addEventListener('pointerleave', () => { shown = false; pv.classList.remove('on'); if (pc) pc.classList.remove('on'); kick(); });
     });
-    addEventListener('scroll', () => { if (shown) { shown = false; pv.classList.remove('on'); kick(); } }, { passive: true });
+    addEventListener('scroll', () => { if (shown) { shown = false; pv.classList.remove('on'); if (pc) pc.classList.remove('on'); kick(); } }, { passive: true });
   }
 })();
