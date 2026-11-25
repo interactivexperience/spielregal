@@ -90,18 +90,17 @@ function index() {
 <section class="sec kx" id="kontakt" aria-labelledby="kxh">
   <div class="kx-glow" aria-hidden="true"><i></i><i></i><i></i></div>
   <div class="kx-top wr">
-    <div class="kx-l"><p class="tag" data-reveal><b>07</b> Kontakt</p>
+    <div class="kx-r"><p class="tag" data-reveal><b>07</b> Kontakt</p><h2 id="kxh" data-reveal>Reden wir <span class="pill">persönlich</span>.</h2>
+      <p class="kx-n" data-reveal><b>${C.ansprech.name}</b> · ${C.ansprech.rolle}</p>
+      <p class="kx-m" data-reveal><a href="mailto:ahoi@netzkombyse.de">ahoi@netzkombyse.de</a></p>
+      <p class="kx-b" data-reveal><a class="kb kb-f" href="${C.termin}" target="_blank" rel="noopener" data-mag>Termin buchen</a><button class="kb" type="button" data-copy="ahoi@netzkombyse.de"><span data-copy-l>E-Mail kopieren</span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button><span class="sr" role="status" aria-live="polite" data-copy-s></span></p></div>
+    <div class="kx-s" aria-hidden="true"></div>
+    <div class="kx-l">
       <ul class="kx-ln" data-reveal>
         <li><a href="${C.telHref}"><i>${ico.phone}</i><span>${C.tel}</span></a></li>
-        <li><a href="mailto:ahoi@netzkombyse.de"><i>${ico.mail}</i><span>ahoi@netzkombyse.de</span></a></li>
         <li><a href="${C.termin}" target="_blank" rel="noopener"><i>${ico.cal}</i><span>Videotermin, 30 Minuten</span></a></li>
         <li><a href="https://maps.google.com/?q=Harkortstraße+81,+22765+Hamburg" target="_blank" rel="noopener"><i>${ico.pin}</i><span>${C.adresse[0]}, ${C.adresse[1]}</span></a></li>
       </ul></div>
-    <div class="kx-s" aria-hidden="true"></div>
-    <div class="kx-r"><h2 id="kxh" data-reveal>Reden wir <span class="pill">persönlich</span>.</h2>
-      <p class="kx-n" data-reveal>${C.ansprech.name}, ${C.ansprech.rolle}: Ihr Ansprechpartner von der ersten Frage an, ohne Account-Manager dazwischen.</p>
-      <p class="kx-m" data-reveal><a href="mailto:ahoi@netzkombyse.de">ahoi@netzkombyse.de</a></p>
-      <p class="kx-b" data-reveal><a class="kb kb-f" href="${C.termin}" target="_blank" rel="noopener" data-mag>Termin buchen</a><button class="kb" type="button" data-copy="ahoi@netzkombyse.de"><span data-copy-l>E-Mail kopieren</span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button><span class="sr" role="status" aria-live="polite" data-copy-s></span></p></div>
   </div>
   <figure class="kx-p"><img src="../media/henning-pose.webp" alt="${C.ansprech.name}, ${C.ansprech.rolle}" width="928" height="1152" loading="lazy" decoding="async"></figure>
   <div class="kx-ft wr"><span>© 2026 NetzKombyse GmbH</span><a href="${W}/datenschutz" target="_blank" rel="noopener">Datenschutz</a><a href="${W}/impressum" target="_blank" rel="noopener">Impressum</a><span class="kx-c">Moin aus Hamburg: Hier ist es gerade <b data-clock>–</b> Uhr.</span></div>
