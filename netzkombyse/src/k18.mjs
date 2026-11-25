@@ -132,7 +132,7 @@ function index() {
   <li data-reveal style="--d:180ms"><strong data-dur="600" data-count="${C.zahlen.marken}">${C.zahlen.marken}</strong><span>Marken vertrauen uns</span></li></ul>
 </section>
 
-<section class="sec" id="fragen"><div class="wr"><p class="k kc">Ihre Fragen</p><div class="two"><h2 data-chars data-reveal>Was Sie wissen wollen, bevor Sie uns anrufen.</h2><p class="side" data-reveal>Die Antwort steht groß da. Wer mehr wissen möchte, klickt drauf.</p></div>
+<section class="sec" id="fragen"><div class="wr"><p class="k kc">Ihre Fragen</p><div class="two"><h2 data-chars data-reveal>Was Sie wissen wollen, bevor Sie uns anrufen.</h2></div>
   <ol class="acc">${fragen.map((f, i) => `<li class="${i === 0 ? 'open' : ''}" data-reveal style="--d:${i * 70}ms"><button type="button" aria-expanded="${i === 0}" aria-controls="p${i}"><span class="n qn">${esc(f.q)}</span><b>${esc(f.a)}</b><i class="ar" aria-hidden="true"></i></button><div id="p${i}" class="pn" ${i === 0 ? '' : 'hidden'}><p>${esc(f.d)}</p>${f.c ? `<span class="chs">${f.c.map(x => `<span>${esc(x)}</span>`).join('')}</span>` : ''}<a class="more" href="${f.href}"${ext(f.href)}>${esc(f.l)} ${ar}</a></div></li>`).join('')}</ol></div></section>
 
 <div class="mqs" role="group" aria-label="Marken, für die wir arbeiten"><p class="k mk">Diese Marken arbeiten mit uns.</p><p class="mq a" aria-hidden="true"><span class="mq-t" data-mq="-1">${row(marken.slice(0, 9))}</span></p><p class="mq b" aria-hidden="true"><span class="mq-t" data-mq="1">${row(marken.slice(9))}</span></p></div>
