@@ -185,7 +185,8 @@ html[data-motion=on] .vq.on blockquote span{animation:wd .8s var(--ease) both;an
 .ft nav{display:flex;gap:1.6rem;flex-wrap:wrap}.ft a{color:var(--soft);text-decoration:none;display:inline-flex;align-items:center;min-height:44px}.ft a:hover{color:#fff}.ft-logo{display:inline-flex}.ft-logo .logo{height:1rem}.ft-n{flex-basis:100%;margin:0;font-size:.7rem;opacity:.55}
 
 /* Lichtpunkt: dunkelt alles ab, nur um den Zeiger bleibt es hell (Schalter „Licht“ im Kopf) */
-.spot{position:fixed;left:0;top:0;width:300vmax;height:300vmax;margin:-150vmax 0 0 -150vmax;z-index:85;pointer-events:none;opacity:0;transition:opacity .5s;background:radial-gradient(circle 300px at 50% 50%,rgba(255,170,90,.14),transparent 100%),radial-gradient(circle 300px at 50% 50%,transparent 0,rgba(0,0,0,.55) 45%,rgba(0,0,0,.92) 100%);will-change:transform}
+/* Licht: ein warmer Lichtfleck folgt dem Zeiger und hellt die Stelle auf, der Rest bleibt unverändert */
+.spot{position:fixed;left:0;top:0;width:520px;height:520px;margin:-260px 0 0 -260px;z-index:85;pointer-events:none;opacity:0;transition:opacity .5s;background:radial-gradient(closest-side,rgba(255,196,140,.55),rgba(255,120,50,.28) 42%,rgba(255,90,20,.1) 70%,transparent);mix-blend-mode:screen;will-change:transform}
 html[data-light=on] .spot{opacity:1}
 .lt[aria-pressed=true]{background:var(--o);border-color:var(--o);color:#000}.lt[aria-pressed=true] .mt-i{background:#000;box-shadow:none}
 
@@ -255,3 +256,23 @@ html[data-motion=on] .faq details[open] p{animation:fadein .5s var(--ease)}
 /* Flügel als eigene Ebene: hebt sich beim Flattern, Drehpunkt an der Schulter */
 .gw{transform-origin:38% 38%;clip-path:polygon(38.1% 38.1%,27.9% 42.2%,20.7% 48.7%,14.7% 64.1%,8.1% 75.1%,13.5% 77.1%,23.1% 74.3%,29.1% 64.9%,33.3% 56.8%,37.5% 45.5%);will-change:transform}
 .gw+.gh{}
+
+/* ruhigere Animation: keine Blur-Filter auf bewegten Ebenen, weiche Verläufe stattdessen */
+.glow{filter:none;background:radial-gradient(closest-side,rgba(255,90,20,.8),rgba(194,31,11,.45) 40%,rgba(194,31,11,.12) 65%,transparent 80%)}
+.gwrap::before{filter:none;background:radial-gradient(closest-side,rgba(255,90,20,.45),rgba(194,31,11,.2) 50%,rgba(194,31,11,.06) 70%,transparent 82%)}
+.gfl{filter:none}
+.gwrap>div:not(.gfl){backface-visibility:hidden}
+/* Förderpartner: gut sichtbar */
+.fp{display:flex;align-items:center;gap:1rem 1.6rem;flex-wrap:wrap;margin-top:2.2rem;padding:1.1rem 1.4rem;border:1.5px solid var(--o);text-decoration:none;color:#fff;position:relative;overflow:hidden;isolation:isolate;transition:color .4s}
+.fp::before{content:"";position:absolute;inset:0;background:var(--o);transform:translate3d(-101%,0,0);transition:transform .5s var(--ease);z-index:-1}.fp:hover{color:#000}.fp:hover::before{transform:none}
+.fp .fp-k{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--o);transition:color .4s}.fp:hover .fp-k{color:#000}
+.fp b{font:800 clamp(1.3rem,2.6vw,2rem)/1.1 var(--hf);letter-spacing:-.03em}
+.fp i{margin-left:auto;display:grid;place-items:center;width:44px;height:44px;border:1.5px solid currentColor;border-radius:50%;font-style:normal}.fp i svg{width:16px}
+/* Marken: Hover zeigt das Logo über dem Namen */
+.mqs{overflow-x:clip;overflow-y:visible}
+.bn{position:relative;display:inline-block;cursor:default;transition:color .3s,-webkit-text-stroke-color .3s}
+.bn:hover,.bn:focus-within{color:var(--o);-webkit-text-stroke:1.5px var(--o)}
+.bl{position:absolute;left:50%;bottom:92%;z-index:30;display:grid;place-items:center;min-width:140px;max-width:260px;padding:.9rem 1.2rem;background:#fff;border-radius:3px;box-shadow:0 14px 40px rgba(0,0,0,.55);opacity:0;pointer-events:none;transform:translate3d(-50%,10px,0) scale(.94);transition:opacity .25s,transform .45s cubic-bezier(.3,1.4,.5,1);-webkit-text-stroke:0;font-size:1rem}
+.bl img{display:block;height:46px;max-width:230px;width:auto;object-fit:contain}
+.bl::after{content:"";position:absolute;left:50%;top:100%;margin-left:-7px;border:7px solid transparent;border-top-color:#fff}
+.bn:hover .bl{opacity:1;transform:translate3d(-50%,0,0) scale(1)}

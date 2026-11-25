@@ -57,13 +57,14 @@ const wallTiles = [
 ];
 const caseLink = (c, cls, inner) => `<a class="${cls}" href="${W}/${c[4]}" target="_blank" rel="noopener" aria-label="${esc(c[1])}: ${esc(c[2])}">${inner}</a>`;
 const marq = ['Shopware', 'Shopify', 'Headless', 'Migration', 'Marke', 'UX / UI', 'SEO', 'AI-Sichtbarkeit', 'Performance', 'ERP · PIM · CRM'];
-const row = a => [...a, ...a].map(x => `<span>${esc(x)}</span><i aria-hidden="true">✦</i>`).join('');
+const logoOf = { 'Bio Planète': 'bioplanete.svg', 'Tout Terrain': 'touttterrain.svg', 'K-Idol': 'kidol.svg', 'Craft & Caviar': 'craftandcaviar.svg', 'Grizzly': 'grizzly.svg', 'Beisser': 'beisser.webp', 'Timkid': 'timkid.svg', 'Elektrosil': 'elektrosil.svg', 'PremiumWheels': 'premiumwheels.webp', 'dgina': 'dgina.svg', 'Pechkeks': 'pechkeks.webp', 'HWT': 'hwt.svg', 'Abelmann': 'abelmann.svg', 'Wurstladen': 'wurstladen.svg', 'Marktpirat': 'marktpirat.svg', 'Sabro': 'sabro.svg', 'Wein-Bauer': 'weinbauer.svg', 'Kaffeekontor': 'kaffeekontor.svg' };
+const row = a => [...a, ...a].map(x => `<span class="bn">${esc(x)}${logoOf[x] ? `<span class="bl"><img src="../media/logos/${logoOf[x]}" alt="" loading="lazy" decoding="async"></span>` : ''}</span><i aria-hidden="true">✦</i>`).join('');
 
 function index() {
   const body = `<div id="top"></div><div class="prog" aria-hidden="true"></div><div class="spot" aria-hidden="true"></div>
 <header class="hd"><a class="hd-logo" href="index.html" aria-label="NetzKombyse – Startseite">${logo()}</a>
   <nav class="hd-nav" aria-label="Hauptnavigation"><a href="#leistung">Leistungen</a><a href="#haltung">Haltung</a><a href="#arbeit">Referenzen</a><a href="${W}/ueber-uns" target="_blank" rel="noopener">Über uns</a><a href="#kontakt">Kontakt</a></nav>
-  <div class="hd-r"><button class="mt lt" type="button" data-light aria-pressed="false" title="Lichtpunkt folgt dem Zeiger und leuchtet die Stelle aus"><span class="mt-i" aria-hidden="true"></span><span>Licht</span></button>
+  <div class="hd-r"><button class="mt lt" type="button" data-light aria-pressed="false" title="Lichtpunkt: ein warmer Lichtfleck folgt dem Zeiger"><span class="mt-i" aria-hidden="true"></span><span>Licht</span></button>
   <button class="mt" type="button" data-motion-toggle aria-pressed="true" title="Animationen ein- oder ausschalten"><span class="mt-i" aria-hidden="true"></span><span data-motion-label>Bewegung an</span></button></div></header>
 <main id="main">
 <section class="hero" aria-labelledby="h1">
@@ -79,7 +80,7 @@ function index() {
   <li data-reveal><strong data-count="${C.jahre}" data-suffix="+">${C.jahre}+</strong><span>Jahre E-Commerce</span></li>
   <li data-reveal style="--d:90ms"><strong data-count="${C.zahlen.marken}">${C.zahlen.marken}</strong><span>Marken im Portfolio</span></li>
   <li data-reveal style="--d:180ms"><strong data-count="${C.prozessloesungen}" data-suffix="+">${C.prozessloesungen}+</strong><span>Prozesslösungen</span></li></ul>
-  <p class="fp" data-reveal>Akkreditierter Förderpartner · <a href="${W}/foerdermittel" target="_blank" rel="noopener">Zuschüsse bis zu 80 % möglich ↗</a></p></section>
+  <a class="fp" data-reveal href="${W}/foerdermittel" target="_blank" rel="noopener"><span class="fp-k">Akkreditierter Förderpartner</span><b>Zuschüsse bis zu 80 % möglich</b><i aria-hidden="true">${ar}</i></a></section>
 
 <section class="sec" id="wen" aria-label="Wen wir begleiten"><div class="wr"><p class="k">Wen wir begleiten</p>
   <p class="lit" data-lit>Wir begleiten mittelständische Unternehmen, die E-Commerce als zentralen Bestandteil ihrer Unternehmensentwicklung verstehen.</p>

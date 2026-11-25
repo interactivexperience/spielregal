@@ -12,7 +12,7 @@
     const head = $('.gh', gull), body = $('.gb', gull), lid = $('.lid', gull);
     let last = performance.now(), cur = { r: 0, x: 0, y: 0 }, tgt = { r: 0, x: 0, y: 0 }, raf = 0, busy = false, lastAct = -1;
     const eye = () => { const r = gull.getBoundingClientRect(); return { x: r.left + r.width * .52, y: r.top + r.height * .17 }; };
-    const loop = () => { cur.r += (tgt.r - cur.r) * .14; cur.x += (tgt.x - cur.x) * .14; cur.y += (tgt.y - cur.y) * .14;
+    const loop = () => { cur.r += (tgt.r - cur.r) * .08; cur.x += (tgt.x - cur.x) * .08; cur.y += (tgt.y - cur.y) * .08;
       head.style.transform = `rotate(${cur.r.toFixed(2)}deg)`;
       raf = (Math.abs(tgt.r - cur.r) + Math.abs(tgt.x - cur.x) + Math.abs(tgt.y - cur.y) > .02) ? requestAnimationFrame(loop) : 0; };
     const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
