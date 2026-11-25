@@ -51,3 +51,5 @@ Wein-Bauer.de sind nicht ausgebaut; Teamfotos fehlen (rollenbasiert).
 
 
 **Case-Vorschau (Baustein zu k15 Glut):** `vorschau/tout-terrain.html` – Vorschaubild-Konzept mit vier Ebenen (Welt, Wortmarke, Klartext, Hover-Geste + Fund) am Beispiel Tout Terrain, mit Baukasten-Tabelle für die übrigen Cases.
+
+**Styleguide (Glut und Pille):** `styleguide/index.html` – Farben, Schrift, Komponenten, Bilder, Bewegung und gemeinsame Regeln mit Begründung je Element und Kontrastwerten.

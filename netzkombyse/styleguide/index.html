@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Styleguide Glut und Pille · NetzKombyse</title>
+<meta name="robots" content="noindex">
+<style>
+@font-face{font-family:Bricolage;src:url(../fonts/bricolage.woff2) format('woff2');font-weight:200 800;font-display:swap}
+@font-face{font-family:Sora;src:url(../fonts/sora.woff2) format('woff2');font-weight:100 800;font-display:swap}
+@font-face{font-family:Unbounded;src:url(../fonts/unbounded.woff2) format('woff2');font-weight:300 900;font-display:swap}
+@font-face{font-family:Montserrat;src:url(../fonts/montserrat.woff2) format('woff2');font-weight:300 800;font-display:swap}
+:root{--o:#FF5A14;--op:#FF6B14;--soft:rgba(255,255,255,.68);--line:rgba(255,255,255,.2);--ease:cubic-bezier(.2,.8,.2,1)}
+*{box-sizing:border-box;margin:0}
+html{background:#000;scroll-behavior:smooth}
+body{background:#000;color:#fff;font:300 1.02rem/1.65 Sora,system-ui,sans-serif;padding:0 clamp(20px,5vw,80px) 6rem;overflow-x:clip}
+a{color:inherit}:focus-visible{outline:3px solid var(--o);outline-offset:3px}
+.wrap{max-width:1180px;margin:auto}
+.top{display:flex;justify-content:space-between;gap:1rem;padding:1rem 0;font-size:.78rem;color:var(--soft);position:sticky;top:0;background:#000;z-index:5;border-bottom:1px solid var(--line)}.top a{text-decoration:none;display:inline-flex;min-height:44px;align-items:center}.top a:hover{color:var(--o)}.top nav{display:flex;gap:1.4rem;flex-wrap:wrap}
+h1{font:800 clamp(2.6rem,7vw,6.4rem)/.92 Bricolage,sans-serif;letter-spacing:-.05em;margin:3rem 0 1.2rem;max-width:14ch}
+h2{font:800 clamp(1.9rem,4.4vw,3.6rem)/.98 Bricolage,sans-serif;letter-spacing:-.045em;margin:clamp(4rem,10vh,7rem) 0 1.2rem;scroll-margin-top:80px}
+h3{font:700 1.3rem/1.15 Bricolage,sans-serif;letter-spacing:-.025em;margin:2.4rem 0 .8rem}
+.k{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--o)}
+p+p{margin-top:.9rem}.lead{max-width:44rem;color:var(--soft);font-size:1.08rem}
+.why{border-left:3px solid var(--o);padding:.2rem 0 .2rem 1.1rem;margin:1rem 0;max-width:46rem}.why b{display:block;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--o);margin-bottom:.2rem;font-weight:600}.why span{color:#e9e9e9}
+table{width:100%;border-collapse:collapse;font-size:.88rem;margin:1.2rem 0}th,td{text-align:left;vertical-align:top;padding:.8rem 1rem .8rem 0;border-bottom:1px solid var(--line)}th{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--o);font-weight:600}td:first-child{font-weight:600;white-space:nowrap}td{color:#dcdcdc}
+.sc{overflow-x:auto}
+.sw{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:.8rem;margin:1.2rem 0}
+.sw div{border-radius:6px;padding:1rem;min-height:150px;display:flex;flex-direction:column;justify-content:flex-end;font-size:.78rem;line-height:1.4;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}.sw b{font-size:.95rem;display:block}.sw i{font-style:normal;opacity:.8}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}@media(max-width:800px){.grid2{grid-template-columns:1fr}}
+.box{border:1px solid var(--line);border-radius:6px;padding:1.4rem;background:#0a0a0a}
+.box .k{display:block;margin-bottom:.8rem}
+.grid2>*,.fonts>*,.dd>*{min-width:0}.p-card{overflow-wrap:anywhere}.g-card h4{overflow-wrap:anywhere}
+@media(max-width:560px){.p-card{border-radius:28px 28px 70px 28px;gap:.9rem}.p-card b{font-size:2.4rem}.g-row{grid-template-columns:2.4rem 1fr 40px}.g-row i{width:40px;height:40px}}
+.dd{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin:1rem 0}@media(max-width:800px){.dd{grid-template-columns:1fr}}.dd>div{padding:1.1rem 1.2rem;border-radius:6px;font-size:.9rem}.dd .do{background:rgba(120,200,120,.09);box-shadow:inset 0 0 0 1px rgba(120,200,120,.35)}.dd .dont{background:rgba(255,90,20,.08);box-shadow:inset 0 0 0 1px rgba(255,90,20,.4)}.dd b{display:block;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.4rem}.dd ul{padding-left:1.1rem}.dd li{margin:.25rem 0}
+.hr{height:1px;background:var(--line);margin:4rem 0 0}
+
+/* ===== Muster: Glut ===== */
+.g-btn{position:relative;display:inline-flex;align-items:center;gap:1.2rem;min-height:56px;padding:0 0 0 1.6rem;background:var(--o);color:#000;font:700 .78rem Sora;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;overflow:hidden;isolation:isolate;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));transition:color .4s}
+.g-btn::before{content:"";position:absolute;inset:0;background:#000;transform:translate3d(-101%,0,0);transition:transform .5s var(--ease);z-index:-1}
+.g-btn i{display:grid;place-items:center;width:56px;align-self:stretch;border-left:2px solid rgba(0,0,0,.3);font-style:normal;transition:color .4s,transform .5s var(--ease)}
+.g-btn:hover{color:#fff}.g-btn:hover::before{transform:none}.g-btn:hover i{color:var(--o);border-color:rgba(255,255,255,.25);transform:translateX(4px)}
+.g-ln{display:inline-flex;gap:.7rem;align-items:center;min-height:44px;border-bottom:2px solid var(--line);font:700 .78rem Sora;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;transition:color .3s,border-color .3s}.g-ln:hover{color:var(--o);border-color:var(--o)}
+.g-card{position:relative;padding:1.6rem;min-height:230px;background:#0b0b0b;box-shadow:inset 0 0 0 1px var(--line);display:flex;flex-direction:column;justify-content:space-between;clip-path:polygon(0 0,calc(100% - 28px) 0,100% 28px,100% 100%,28px 100%,0 calc(100% - 28px))}
+.g-card .num{font:800 5rem/.8 Bricolage;letter-spacing:-.07em;color:transparent;-webkit-text-stroke:2px var(--o)}.g-card h4{font:700 1.5rem/1.05 Bricolage;letter-spacing:-.03em}
+.g-card.on{background:linear-gradient(155deg,#FF5A14,#C21F0B 85%);color:#000;box-shadow:none}.g-card.on p{font:700 1.2rem/1.25 Bricolage}
+.g-row{display:grid;grid-template-columns:3.4rem 1fr 48px;align-items:center;gap:1rem;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:1rem 0;font:800 clamp(1.6rem,4vw,3rem)/1 Bricolage;letter-spacing:-.045em;transition:background .5s var(--ease),color .3s,padding .5s var(--ease)}.g-row small{font:400 .75rem Sora;letter-spacing:.1em}.g-row:hover{background:var(--o);color:#000;padding-inline:1rem}
+.g-row i{display:grid;place-items:center;width:48px;height:48px;border:1.5px solid currentColor;border-radius:50%;font-style:normal}
+.g-tag{display:inline-block;border:1.5px solid currentColor;padding:.3em .9em;font:600 .72rem Sora;letter-spacing:.08em;text-transform:uppercase}
+.g-hero{position:relative;min-height:300px;padding:1.6rem;background:radial-gradient(60% 80% at 15% 0,rgba(255,90,20,.85),rgba(194,31,11,.4) 45%,transparent 75%),#000;overflow:hidden;border-radius:4px;box-shadow:inset 0 0 0 1px var(--line)}
+.g-hero h4{font:800 clamp(2.6rem,6vw,4.6rem)/.9 Bricolage;letter-spacing:-.05em}
+.g-hero img{position:absolute;right:2%;bottom:0;height:92%;width:auto}
+.g-hero::after{content:"";position:absolute;right:-6%;bottom:2%;width:48%;height:13%;background:radial-gradient(closest-side,rgba(255,110,40,.6),transparent 78%);filter:blur(8px)}
+
+/* ===== Muster: Pille ===== */
+.p-bg{background:#000}
+.p-pill{display:inline-block;border:1.5px solid #F6EFE3;border-radius:99px;padding:0 .26em;line-height:1.1}
+.p-h{font:800 clamp(2.2rem,5vw,4rem)/1.1 Unbounded;letter-spacing:-.04em;color:#F6EFE3}
+.p-chip{display:inline-flex;align-items:center;justify-content:center;width:1.9em;height:.85em;border-radius:99px;background:var(--op);vertical-align:middle;margin:0 .1em;color:#000;font-size:inherit}.p-chip svg{width:44%}
+.p-tag{display:inline-flex;align-items:center;gap:.5rem;border:1.5px solid rgba(246,239,227,.3);border-radius:99px;padding:.18rem .8rem;font:600 .7rem Montserrat;letter-spacing:.06em;text-transform:uppercase}.p-tag b{display:inline-grid;place-items:center;min-width:1.7em;height:1.7em;margin-left:-.55rem;border-radius:99px;background:#F6EFE3;color:#000}
+.p-btn{display:inline-flex;align-items:center;min-height:56px;padding:.6em 2em;border-radius:99px;background:#F6EFE3;color:#000;font:700 .95rem Montserrat;text-decoration:none;border:2px solid #F6EFE3;transition:background .3s,border-color .3s}.p-btn:hover{background:var(--op);border-color:var(--op)}
+.p-ic{display:inline-grid;place-items:center;width:58px;height:58px;border-radius:50%;border:1.5px solid #F6EFE3;color:#F6EFE3;transition:background .3s,color .3s}.p-ic:hover{background:var(--op);border-color:var(--op);color:#000}.p-ic svg{width:26px}
+.p-card{padding:1.4rem 1.6rem;border-radius:40px 40px 110px 40px;min-height:150px;display:flex;align-items:center;gap:1.4rem;font:800 clamp(1.3rem,2.6vw,2.2rem)/1.05 Unbounded;letter-spacing:-.04em}.p-card b{font:800 3.4rem/.8 Unbounded;letter-spacing:-.07em}
+.p-wave{height:34px;background:currentColor;opacity:.25;border-radius:50%/100% 100% 0 0}
+.fonts{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}@media(max-width:800px){.fonts{grid-template-columns:1fr}}
+.spec{border:1px solid var(--line);border-radius:6px;padding:1.4rem;background:#0a0a0a}.spec .big{font-size:clamp(3rem,7vw,5.4rem);line-height:.95}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top"><a href="../index.html">‹ Übersicht</a><nav><a href="#marke">Marke</a><a href="#glut">Glut</a><a href="#pille">Pille</a><a href="#regeln">Gemeinsame Regeln</a><a href="#zugaenglich">Zugänglichkeit</a></nav></div>
+
+<p class="k" style="margin-top:3rem">Styleguide · Konzepte 15 und 14</p>
+<h1>Glut und Pille: zwei Gesichter einer Marke.</h1>
+<p class="lead">Beide Konzepte übersetzen dieselbe Haltung: ein Hamburger Partner für den Mittelstand, der macht statt zu zählen, persönlich erreichbar ist und Systeme baut, die tragen. Dieser Styleguide beschreibt Farben, Schrift, Formen, Bilder und Bewegung jedes Konzepts und begründet bei jedem Element, warum es zur Marke passt.</p>
+
+<h2 id="marke">Was die Marke ausmacht</h2>
+<p class="lead">Grundlage sind die Aussagen von netzkombyse.de: Hamburg, mehr als 15 Jahre, 18 Marken, über 100 Prozesslösungen, feste Ansprechpartner, Förderpartner für Bundesmittel, „Moin“ zu jeder Uhrzeit. Die Möwe mit Mütze ist das Maskottchen und der Slogan „Machen. Nicht Möwen zählen.“ spielt mit dem norddeutschen Ausdruck für Nichtstun.</p>
+<div class="sc"><table><thead><tr><th>Markeneigenschaft</th><th>Was sie bedeutet</th><th>Visuelle Übersetzung</th></tr></thead><tbody>
+<tr><td>Hamburg, Hafen, Nordsee</td><td>Verwurzelt, nüchtern, mit Wetterfestigkeit</td><td>Dunkle Flächen wie Hafen bei Nacht, ein orangefarbenes Leuchtfeuer als einzige Farbe, Möwe als Wächter</td></tr>
+<tr><td>Machen statt zählen</td><td>Handfest, ergebnisorientiert, ein Augenzwinkern</td><td>Große, klare Wörter, wenige Elemente, ruhige Möwe, die sich selten und gezielt bewegt</td></tr>
+<tr><td>Mittelstand, inhabergeführt</td><td>Direkt, ohne Agentur-Floskeln, auf Augenhöhe</td><td>Echte Menschen im Bild, Du-Nähe in der Sprache, keine Stockfotos</td></tr>
+<tr><td>Feste Ansprechpartner</td><td>Vertrauen durch Gesichter</td><td>Henning Groß und das Team als freigestellte Porträts, großformatig, auf der Kante der Seite stehend</td></tr>
+<tr><td>Systeme statt Einzeltickets</td><td>Architektur, Ordnung, Verlässlichkeit</td><td>Nummerierung [01], [02], klare Raster, Linien, Zeilenlisten statt Kartenwirrwarr</td></tr>
+<tr><td>Messbare Ergebnisse</td><td>Zahlen statt Versprechen</td><td>Riesenzahlen als Gestaltungselement (15+, 18, 100+, 80 %)</td></tr>
+</tbody></table></div>
+
+<!-- ============ GLUT ============ -->
+<h2 id="glut">Konzept 15 · Glut</h2>
+<p class="lead">Schwarz, ein glühendes Orange und große, fette Typografie. Das Konzept ist bewusst laut und plakativ: die Marke als Leuchtfeuer im Dunkel.</p>
+<div class="why"><b>Warum Glut zur Marke passt</b><span>Der Hafen bei Nacht ist dunkel, ein Leuchtfeuer ist die einzige Orientierung. Glut übersetzt das: alles bleibt schwarz, nur das Wichtige glüht. Das passt zu einer Agentur, die für Klarheit steht und Entscheidern nicht mit Dekoration die Zeit stiehlt.</span></div>
+
+<h3>Farben</h3>
+<div class="sw">
+<div style="background:#000"><b>Schwarz #000000</b><i>Grundfläche. Hafen bei Nacht. Kontrast zu Weiß 21:1</i></div>
+<div style="background:#FF5A14;color:#000"><b>Glut-Orange #FF5A14</b><i>Aktion, Akzent, Leuchtfeuer. Auf Schwarz 6,7:1</i></div>
+<div style="background:#C21F0B"><b>Tiefrot #C21F0B</b><i>Verlauf und Nebel hinter dem Orange. Weiß darauf 6,0:1</i></div>
+<div style="background:#fff;color:#000"><b>Weiß #FFFFFF</b><i>Headlines und Ziffern</i></div>
+<div style="background:#a8a8a8;color:#000"><b>Weiß 66 % ≈ #A8A8A8</b><i>Fließtext, 8,8:1 auf Schwarz</i></div>
+</div>
+<div class="why"><b>Warum</b><span>Eine einzige Akzentfarbe erzeugt Wiedererkennung: Wer Orange auf Schwarz sieht, denkt an NetzKombyse. Der Verlauf von Orange zu Tiefrot wirkt wie Glut oder Abendlicht über dem Wasser, nicht wie ein Technik-Gradient. Das Rot kommt nie flächig vor, nur als Nebel.</span></div>
+
+<h3>Typografie</h3>
+<div class="fonts">
+<div class="spec"><span class="k">Headlines · Bricolage Grotesque 800</span><p class="big" style="font:800 clamp(3rem,7vw,5.4rem)/.95 Bricolage;letter-spacing:-.05em">Machen.<br>Nicht Möwen zählen.</p></div>
+<div class="spec"><span class="k">Text · Sora 300 / 700</span><p style="font:300 1.1rem/1.65 Sora">Wir verbinden strategische Beratung, komplexe Shop- und Systementwicklung, Markenkommunikation und Performance-Marketing zu einer ganzheitlichen Lösung.</p><p style="font:700 .78rem Sora;letter-spacing:.1em;text-transform:uppercase;margin-top:1rem">Termin buchen · Referenzen</p></div>
+</div>
+<div class="why"><b>Warum</b><span>Bricolage Grotesque hat enge, kräftige Formen mit leicht eigenwilligen Details. Sie wirkt wie Hafenbeschriftung: handfest und lesbar, aber nicht anonym. Sora ist breit und geometrisch, ähnlich wie das frühere Montserrat, hat aber mehr Charakter und bleibt auch klein gut lesbar. Zusammen ergeben sie ein „Marke-taugliches“ Paar: Headline mit Haltung, Text mit Ruhe.</span></div>
+<p>Regeln: Headlines Sentence-Case mit Punkt am Ende (Behauptung statt Überschrift), Laufweite −4 bis −5 %, Zeilenhöhe 0,9 bis 1,05. Fließtext mindestens 16 px, 1,6 Zeilenhöhe, maximal 34 Zeichen pro Zeile bei Textblöcken in Spalten. Großbuchstaben nur für Mikro-Labels mit 12 bis 14 % Laufweite.</p>
+
+<h3>Formen und Komponenten</h3>
+<div class="grid2">
+<div class="box"><span class="k">Knopf (Primär) · Textlink (Sekundär)</span><p style="display:flex;gap:1.4rem;align-items:center;flex-wrap:wrap"><a class="g-btn" href="#glut">Termin buchen <i>↗</i></a><a class="g-ln" href="#glut">Referenzen ↗</a></p></div>
+<div class="box"><span class="k">Tag</span><p><span class="g-tag">Shopware</span> <span class="g-tag">Headless</span> <span class="g-tag">Migration</span></p></div>
+<div class="box"><span class="k">Karte (Vorderseite) · Karte (Rückseite, nach Antippen)</span><div class="grid2"><div class="g-card"><span class="num">01</span><h4>Komplexe Vertriebsprozesse</h4></div><div class="g-card on"><p>Wir denken in Architektur statt in Einzeltickets.</p><span style="font:700 .7rem Sora;letter-spacing:.14em;text-transform:uppercase">Unsere Antwort</span></div></div></div>
+<div class="box"><span class="k">Riesenzeile (Hover füllt orange)</span><div class="g-row"><small>[01]</small><span>Technologie &amp; Shop</span><i>↗</i></div><div class="g-row"><small>[02]</small><span>Kommunikation &amp; Marke</span><i>↗</i></div></div>
+</div>
+<div class="why"><b>Warum</b><span>Die abgeschrägten Ecken (Knopf, Karte) sind das einzige „Technik“-Zitat: wie ein Stanzteil oder ein Kontaktschild im Hafen. Sie sind eckig, nicht rund, weil die Marke handfest und nicht verspielt ist. Linien, Nummern und Zeilen statt Kartenwände ordnen Inhalte wie ein System, das passt zu „Architektur statt Einzeltickets“. Eine Kartenrückseite in Orange macht den Klick zum Erlebnis: die Antwort auf ein Problem leuchtet.</span></div>
+
+<h3>Bilder</h3>
+<div class="g-hero"><h4>Machen.<br>Nicht Möwen<br>zählen.</h4><img src="../media/moewe-cut-l.webp" alt="Möwe mit orangener Mütze, freigestellt"></div>
+<ul style="margin:1rem 0 0 1.1rem;color:#dcdcdc"><li>Immer freigestellt, nie als Rechteck: Motive stehen direkt auf Schwarz, dahinter ein weiches orangefarbenes Glühen, am Boden ein Lichtreflex.</li><li>Motive tragen orangefarbenes Kantenlicht von links oder hinten, Hintergrund bleibt reines Schwarz.</li><li>Menschen (Henning, Team): Brustbild oder Halbfigur, leicht gedreht, freundlich, mit Berührung der Unterkante.</li><li>Case-Vorschauen zeigen die Welt des Kunden, nicht Screens (siehe <a href="../vorschau/tout-terrain.html" style="color:var(--o)">Vorschau Tout Terrain</a>).</li></ul>
+<div class="why"><b>Warum</b><span>Ein freigestelltes Motiv wirkt wie ein Plakat und braucht keine Fotohintergründe, die schnell nach Stock aussehen. Die Möwe ist das wiedererkennbarste Merkmal: sie macht die Marke freundlich und norddeutsch. Menschen auf der Kante der Seite stehen für „stehen für ihre Arbeit“, das passt zum Versprechen persönlicher Verantwortung.</span></div>
+
+<h3>Bewegung</h3>
+<ul style="margin:0 0 0 1.1rem;color:#dcdcdc"><li><b>Ruhig wie ein Sitzvogel:</b> Die Möwe blinzelt, schaut dem Zeiger nach, schaut sich im Leerlauf um, pickt oder schüttelt das Gefieder. Nur der Vogel bewegt sich, Boden und Glühen stehen still.</li><li>Headlines bauen sich Zeichen für Zeichen auf, Zeilen füllen sich beim Hover, Karten drehen sich, Zahlen zählen hoch.</li><li>Option „Licht“: ein Lichtpunkt folgt der Maus und leuchtet die Stelle aus, der Rest wird dunkel.</li><li>Technik: nur transform und opacity. Alles lässt sich mit dem Schalter „Bewegung“ und über prefers-reduced-motion ausschalten.</li></ul>
+<div class="why"><b>Warum</b><span>Eine Agentur, die Ruhe und Verlässlichkeit verspricht, darf nicht zappeln. Wenige, gezielte Bewegungen wirken souveräner als Dauerbewegung. Der Lichtpunkt greift das Leuchtfeuer auf und macht Entdecken zur Handlung, ohne Inhalte zu verstecken (er ist abschaltbar).</span></div>
+
+<div class="dd"><div class="do"><b>Do</b><ul><li>Orange nur für Aktion und Leuchtfeuer einsetzen</li><li>Wenige Wörter, große Schrift, viel Schwarz</li><li>Eckige, abgeschrägte Formen</li><li>Freigestellte Motive mit Kantenlicht</li></ul></div><div class="dont"><b>Don’t</b><ul><li>Orange als großflächigen Hintergrund für Fließtext</li><li>Runde Pillen-Buttons (gehören zu Pille)</li><li>Fotos mit Hintergrund als Rechteck</li><li>Dauerhaft bewegte Elemente neben Text</li></ul></div></div>
+
+<div class="hr"></div>
+<!-- ============ PILLE ============ -->
+<h2 id="pille">Konzept 14 · Pille</h2>
+<p class="lead">Fette, breite Schrift in Cremeweiß auf Schwarz, runde Pillen, ein orangefarbener Chip, aufklappbare Farbkarten. Das Konzept ist freundlicher, verspielter und zugänglicher als Glut.</p>
+<div class="why"><b>Warum Pille zur Marke passt</b><span>NetzKombyse ist inhabergeführt und nahbar: „Moin“ zu jeder Uhrzeit, feste Ansprechpartner. Pille übersetzt Nähe in Formen: abgerundet, griffig, wie Knöpfe und Buoys im Hafen. Die Farbkarten (Orange, Creme, Anthrazit) erinnern an Seekarten-Tafeln und geben der Seite einen Rhythmus, ohne bunt zu werden.</span></div>
+
+<h3>Farben</h3>
+<div class="sw">
+<div style="background:#000"><b>Schwarz #000000</b><i>Grundfläche, Header und Seite sind identisch</i></div>
+<div style="background:#F6EFE3;color:#000"><b>Creme #F6EFE3</b><i>Schrift, Pillen, Karten. Auf Schwarz 18,4:1</i></div>
+<div style="background:#FF6B14;color:#000"><b>Orange #FF6B14</b><i>Chip, Aktion, Karte. Auf Schwarz 7,4:1</i></div>
+<div style="background:#1b1917"><b>Anthrazit #1B1917</b><i>Dritte Karte. Creme darauf 15,3:1, Orange 6,2:1</i></div>
+<div style="background:#FFC93C;color:#000"><b>Sonnengelb #FFC93C</b><i>Nur Illustrationen und seltene Highlights</i></div>
+</div>
+<div class="why"><b>Warum</b><span>Creme statt reinem Weiß wirkt warm und menschlich, ohne an Kontrast zu verlieren. Drei Kartenfarben in einer Familie (Orange, Creme, Anthrazit) geben Ordnung: erste Disziplin kräftig, zweite hell, dritte ruhig. Gelb bleibt Sonderfarbe, damit die Palette nicht zur Spielzeugfarbe kippt.</span></div>
+
+<h3>Typografie</h3>
+<div class="fonts">
+<div class="spec"><span class="k">Headlines · Unbounded 800</span><p class="p-h big" style="font-size:clamp(2.4rem,6vw,4.4rem)">Wir bauen <span class="p-pill">Shops</span> <span class="p-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8.5 14.5l2 2 4-4"/></svg></span></p></div>
+<div class="spec"><span class="k">Text · Montserrat 500</span><p style="font:500 1.05rem/1.6 Montserrat;color:#F6EFE3">Digitaler Vertrieb für Mittelständler: Shopware &amp; Shopify, Marke und Marketing aus einer Hand, mit festen Ansprechpartnern.</p></div>
+</div>
+<div class="why"><b>Warum</b><span>Unbounded ist extrabreit und rund: man liest sie aus der Entfernung wie ein Schild am Kai. Sie macht jede Zeile zur Ansage. Montserrat im Text hält die Seite ruhig und gut lesbar. Wörter in Pillen heben das Entscheidende hervor, ohne eine zweite Schrift zu brauchen.</span></div>
+
+<h3>Formen und Komponenten</h3>
+<div class="grid2">
+<div class="box p-bg"><span class="k">Tag · Knopf · Icon-Buttons</span><p style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap"><span class="p-tag"><b>01</b> Leistung</span><a class="p-btn" href="#pille">Termin buchen</a><a class="p-ic" href="#pille" aria-label="Termin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8.5 14.5l2 2 4-4"/></svg></a><a class="p-ic" href="#pille" aria-label="Anrufen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/></svg></a></p></div>
+<div class="box"><span class="k">Farbkarten (Kopfzeile: Zahl und Titel, Klick zeigt Details)</span><div style="display:grid;gap:.7rem"><div class="p-card" style="background:#FF6B14;color:#000"><b>01</b>Technologie &amp; Shop</div><div class="p-card" style="background:#F6EFE3;color:#0b0b0b"><b>02</b>Kommunikation &amp; Marke</div><div class="p-card" style="background:#1b1917;color:#F6EFE3;box-shadow:inset 0 0 0 1.5px var(--line)"><b style="color:#FF6B14">03</b>Marketing &amp; Performance</div></div></div>
+</div>
+<div class="why"><b>Warum</b><span>Pillen, Chips und Kapseln sind „greifbar“: sie laden zum Klicken ein, auch auf dem Smartphone. Der orange Chip hinter „Shops“ ist gleichzeitig der Termin-Knopf und macht die Handlung zum Teil der Aussage („Wir bauen Shops, die sich rechnen“ und direkt dahinter der Weg zum Gespräch). Icons ersetzen Textbuttons, weil Kalender, Telefon und Brief international verständlich sind und die Seite aufgeräumt halten. Beim ersten Blick nur Zahl und Titel, Details erst nach Klick: das schützt vor Textwänden.</span></div>
+
+<h3>Bilder</h3>
+<ul style="margin:0 0 0 1.1rem;color:#dcdcdc"><li>Die Möwe steht groß im Zentrum des Heros, der Körper hinter der Headline, der Kopf davor, so dass das Gesicht nie verdeckt ist.</li><li>Henning Groß als freigestellte Halbfigur im Kontaktbereich, bündig auf der Unterkante, mit orangefarbenem Glühen im Rücken.</li><li>Case-Vorschau im Bildformat der Datei, Pfeil-Button direkt am Zeiger, damit das Bild beim Hover frei bleibt.</li></ul>
+<div class="why"><b>Warum</b><span>Dasselbe Bildmaterial wie bei Glut macht beide Konzepte zu Varianten einer Marke. Die Möwe zwischen den Buchstaben (Kopf vorn, Körper hinten) verbindet Typografie und Bild zu einem Plakat und gibt dem Slogan ein Gesicht.</span></div>
+
+<h3>Bewegung</h3>
+<ul style="margin:0 0 0 1.1rem;color:#dcdcdc"><li>Wiedererkennbar: Möwe mit Blick, Blinzeln und Gesten (wie Glut), Pfeil-Chip nickt, Scroll-Maus am Heroende zeigt, dass es weitergeht.</li><li>Karten klappen mit weicher Einblendung auf, Pillen wachsen beim Einblenden, Bewertungslink füllt sich beim Hover.</li><li>Gleiche Regeln: nur transform und opacity, Schalter und prefers-reduced-motion beachten.</li></ul>
+
+<div class="dd"><div class="do"><b>Do</b><ul><li>Auf den ersten Blick nur Zahl und Titel</li><li>Icons mit Beschriftung für Aktionen</li><li>Maximal drei Kartenfarben in einer Sektion</li><li>Creme für Text, nie reines Weiß</li></ul></div><div class="dont"><b>Don’t</b><ul><li>Pillen als Auswahl-Elemente für Textinhalte (stattdessen Zeilen mit Fortschrittslinie)</li><li>Mehr als eine Pille in einer Zeile mit Fließtext</li><li>Abgeschrägte Ecken (gehören zu Glut)</li><li>Gelb auf großen Flächen</li></ul></div></div>
+
+<div class="hr"></div>
+<h2 id="regeln">Gemeinsame Regeln</h2>
+<div class="sc"><table><thead><tr><th>Thema</th><th>Regel</th><th>Begründung</th></tr></thead><tbody>
+<tr><td>Grundfläche</td><td>Immer reines Schwarz, Header ohne Linie und ohne Unterschied zur Seite</td><td>Ein Schwarz verhindert sichtbare Bildkanten und lässt freigestellte Motive stehen</td></tr>
+<tr><td>Akzentfarbe</td><td>Ein Orange (#FF5A14 oder #FF6B14), kein zweiter Akzent</td><td>Wiedererkennung vor Abwechslung</td></tr>
+<tr><td>Möwe</td><td>Eine Möwe pro Seite, im Hero, freigestellt, mit Blick</td><td>Eine Figur bleibt im Gedächtnis, zwei streiten um Aufmerksamkeit</td></tr>
+<tr><td>Menschen</td><td>Echte Fotos, freigestellt, Brustbild bis Halbfigur, nahbar und professionell</td><td>Das Versprechen heißt „Sie arbeiten direkt mit uns“</td></tr>
+<tr><td>Sprache</td><td>Du-nah, Sentence-Case, Punkt am Ende der Headline, „Moin“ höchstens einmal pro Seite</td><td>Persönlich, ohne zu übertreiben</td></tr>
+<tr><td>Cases</td><td>Welt des Kunden statt Screens, Klartext (Branche, ein Satz, zwei Chips) bleibt sichtbar</td><td>Neugier wecken, aber verständlich bleiben</td></tr>
+<tr><td>Fußzeile</td><td>Mehrspaltig, Leistungen, Referenzen, Unternehmen, Adresse, Uhr „Moin aus Hamburg“</td><td>Der Raum wird genutzt, die Uhr macht die Verwurzelung spürbar</td></tr>
+</tbody></table></div>
+
+<h2 id="zugaenglich">Zugänglichkeit und Technik</h2>
+<div class="sc"><table><thead><tr><th>Paarung</th><th>Kontrast</th><th>Bewertung</th></tr></thead><tbody>
+<tr><td>Weiß auf Schwarz (Glut)</td><td>21:1</td><td>AAA</td></tr><tr><td>Orange #FF5A14 auf Schwarz / Schwarz auf Orange</td><td>6,7:1</td><td>AA (auch für Text)</td></tr><tr><td>Weiß 66 % auf Schwarz (Fließtext Glut)</td><td>8,8:1</td><td>AAA</td></tr><tr><td>Weiß auf Tiefrot #C21F0B</td><td>6,0:1</td><td>AA</td></tr>
+<tr><td>Creme auf Schwarz (Pille)</td><td>18,4:1</td><td>AAA</td></tr><tr><td>Schwarz auf Orange #FF6B14</td><td>7,4:1</td><td>AAA (Normaltext)</td></tr><tr><td>Creme auf Anthrazit</td><td>15,3:1</td><td>AAA</td></tr><tr><td>Orange auf Anthrazit</td><td>6,2:1</td><td>AA</td></tr>
+</tbody></table></div>
+<ul style="margin:1rem 0 0 1.1rem;color:#dcdcdc"><li>Fließtext mindestens 16 px, Touch-Ziele mindestens 44 px, Fokus sichtbar (3 px Orange).</li><li>Animation: Schalter „Bewegung“ im Kopf und prefers-reduced-motion schalten alle Effekte ab, Inhalte bleiben vollständig sichtbar.</li><li>Bilder haben Alternativtexte, dekorative Motive sind ausgeblendet. Der Lichtpunkt ist eine abschaltbare Option.</li><li>Alle Zahlen und Zitate im Prototyp sind Platzhalter oder wörtliche Zitate von netzkombyse.de und müssen vor Livegang mit den Kunden abgestimmt werden.</li></ul>
+<p style="margin-top:3rem;font-size:.8rem;color:var(--soft)">Stand: November 2026 · Konzepte: <a href="../k15/index.html" style="color:var(--o)">k15 Glut</a>, <a href="../k14/index.html" style="color:var(--o)">k14 Pille</a>.</p>
+</div>
+</body>
+</html>
