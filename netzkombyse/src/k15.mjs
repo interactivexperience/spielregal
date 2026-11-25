@@ -92,7 +92,7 @@ function index() {
   <p class="k" data-reveal>Hamburger Agentur für digitalen Commerce · Mittelstand</p>
   <h1 id="h1" data-chars data-reveal>Machen.<br>Nicht Möwen<br>zählen.</h1>
   <p class="s" data-reveal>Strategische Beratung, komplexe Shop- und Systementwicklung, Markenkommunikation und Performance-Marketing zu einer ganzheitlichen Lösung, für Unternehmen, die mehr vorhaben.</p>
-  <p class="ctas" data-reveal>${btn(C.termin, 'Termin buchen')}${btn('#arbeit', 'Referenzen', 'sec')}</p>
+  <p class="ctas" data-reveal>${btn(C.termin, 'Termin buchen')}${btn('#arbeit', 'Referenzen', 'alt')}</p>
   <div class="gwrap" data-gull aria-hidden="true"><div class="gfl"></div><div class="gb"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"></div><div class="gw"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"></div><div class="gh"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"><i class="lid"></i></div></div>
 </section>
 
@@ -119,7 +119,7 @@ function index() {
   <div class="gal" data-gal="kc"><ul class="kcs">${kacheln.map(kachel).join('')}</ul></div>
   <div class="gal" data-gal="cf" hidden><div class="cf" data-cf role="region" aria-roledescription="Karussell" aria-label="Projekte, mit Pfeiltasten oder Wischen blättern">
     <ul class="cf-s">${cases.map((c, i) => `<li class="cf-c" data-i="${i}">${caseLink(c, '', `<img src="../media/cases/${c[0]}.jpg" alt="Projektbilder ${esc(c[1])}" width="1024" height="675" ${i < 3 ? '' : 'loading="lazy"'} decoding="async" draggable="false"><i class="sh" aria-hidden="true"></i>`)}</li>`).join('')}</ul>
-    <div class="cf-i" aria-live="polite"><p class="cf-n"><b data-cur>01</b> / ${pad(cases.length)}</p><h3 data-t></h3><p class="cf-d" data-d></p><p class="cf-b" data-b></p>${btn(`${W}/references`, 'Projekt ansehen', 'sec').replace('class="cta ', 'data-l class="cta ')}</div>
+    <div class="cf-i" aria-live="polite"><p class="cf-n"><b data-cur>01</b> / ${pad(cases.length)}</p><h3 data-t></h3><p class="cf-d" data-d></p><p class="cf-b" data-b></p>${btn(`${W}/references`, 'Projekt ansehen', 'alt').replace('class="cta ', 'data-l class="cta ')}</div>
     <div class="cf-ctl"><button type="button" data-prev aria-label="Vorheriges Projekt"><svg viewBox="0 0 60 16" aria-hidden="true"><path d="M58 8H6M14 2L6 8l8 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="cf-bar" aria-hidden="true"><i></i></span><button type="button" data-next aria-label="Nächstes Projekt"><svg viewBox="0 0 60 16" aria-hidden="true"><path d="M2 8h52M46 2l8 6-8 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
     <script type="application/json" data-meta>${JSON.stringify(cases.map(c => ({ t: c[1], d: c[2], b: c[3], h: `${W}/${c[4]}` })))}</script></div></div>
   <div class="gal" data-gal="wall" hidden><div class="wall" data-wall role="region" aria-label="Projektwand, ziehen zum Verschieben"><div class="wall-in">${wallTiles.map(([c, w, h, x, y, z, pos], i) => caseLink(cases[c], 'wt', `<img src="../media/cases/${cases[c][0]}.jpg" alt="" style="object-position:${pos}" width="1024" height="675" loading="lazy" draggable="false"><span class="wc"><b>${esc(cases[c][1])}</b><em>${esc(cases[c][3])}</em></span>`).replace('class="wt"', `class="wt" data-z="${z}" style="--w:${w}px;--h:${h}px;left:${x}px;top:${y}px;--i:${i}"`)).join('')}</div><p class="wall-h" aria-hidden="true">← ziehen →</p></div></div>
@@ -127,7 +127,7 @@ function index() {
   <div class="gal" data-gal="deck" hidden><div class="deck" data-deck role="region" aria-label="Projektstapel, ziehen oder tippen für das nächste Projekt"><div class="dk-s">${cases.map((c, i) => `<figure class="dk-c" data-i="${i}">${caseLink(c, '', `<img src="../media/cases/${c[0]}.jpg" alt="Projektbilder ${esc(c[1])}" width="1024" height="675" loading="lazy" draggable="false">`)}</figure>`).join('')}</div>
     <div class="dk-i" aria-live="polite"><h3 data-dt></h3><p data-dd></p></div><div class="dk-c2"><button type="button" data-dp aria-label="Zurück">←</button><span class="dk-n" data-dn>01 / ${pad(cases.length)}</span><button type="button" data-dx aria-label="Nächstes">→</button></div>
     <script type="application/json" data-dmeta>${JSON.stringify(cases.map(c => ({ t: c[1], d: c[2] })))}</script></div></div>
-  <p class="all" data-reveal>${btn(`${W}/references`, 'Alle Referenzen', 'sec')}</p></div>
+  <p class="all" data-reveal>${btn(`${W}/references`, 'Alle Referenzen', 'alt')}</p></div>
   <div class="pv" aria-hidden="true"><img alt="" width="1024" height="675"></div><span class="pc" aria-hidden="true">${ar}</span></section>
 
 <section class="sec vs" id="stimmen" aria-label="Was Kunden sagen"><div class="wr"><p class="k">Kundenstimmen</p>
