@@ -43,7 +43,9 @@
 
   /* Leistungen: Karten klappen per Klick auf */
   $$('.caps>li').forEach(li => { const b = $('.ch', li), p = $('.cb', li);
-    b.addEventListener('click', () => { const open = li.classList.toggle('open'); b.setAttribute('aria-expanded', String(open)); p.hidden = !open; }); });
+    b.addEventListener('click', () => { const was = li.classList.contains('open');
+      $$('.caps>li').forEach(o => { o.classList.remove('open'); $('.ch', o).setAttribute('aria-expanded', 'false'); $('.cb', o).hidden = true; });
+      if (!was) { li.classList.add('open'); b.setAttribute('aria-expanded', 'true'); p.hidden = false; } }); });
 
   /* Hamburger Uhr im Footer */
   const clk = $('[data-clock]');
