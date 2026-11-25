@@ -385,3 +385,17 @@ html[data-motion=on] .kx-glow i{animation:kxg 9s ease-in-out infinite alternate}
 
 /* Schwarz-Weiß-Test: gerade Karten invertiert (schwarzer Grund, weiße Grafik) */
 .tc:nth-child(even) .bgs{filter:invert(1)}
+
+/* Autogrammkarte: dünne maritime Linien (Kompass, Wellen, Anker, Tiefenlinien, Leuchtfeuer, Steuerrad, Ringel, Segel, Netz), Unterschrift, gleich große Köpfe und Textbereiche */
+@font-face{font-family:Sig;src:url(../fonts/playfair-italic.woff2) format('woff2');font-weight:400 900;font-display:swap}
+.tc{padding:.6rem .6rem 1.7rem}
+.tc::before{content:"";position:absolute;inset:.3rem;border:1px solid rgba(11,11,11,.28);border-radius:7px;pointer-events:none}
+.tc-p{margin-top:.15rem}
+.tc-n{font-size:clamp(.66rem,.92vw,.84rem);height:1.4em;line-height:1.4;margin:.1rem 0 .4rem;white-space:nowrap;overflow:hidden}
+.tc-w{background:#F2EEE6!important}.tc-w img{object-fit:cover;object-position:50% 0;transform-origin:50% 0}
+.tc-z{height:1.2rem;font-size:clamp(.78rem,1vw,.92rem);margin-top:.45rem;line-height:1.2}
+.tc-r{height:2.3em;display:flex;align-items:center;justify-content:center;font-size:clamp(.66rem,.9vw,.8rem);line-height:1.15}
+.tc-sig{position:absolute;z-index:3;right:.7rem;bottom:.55rem;font:italic 600 clamp(1.1rem,1.8vw,1.6rem)/1 Sig,Georgia,serif;color:#fff;transform:rotate(-7deg);text-shadow:0 1px 8px rgba(0,0,0,.55);pointer-events:none;letter-spacing:.01em}
+.tc:nth-child(even) .bgs{filter:invert(1)}
+.tc-d{z-index:4}
+.tc:nth-child(even) .bgs *{stroke-width:2.2}

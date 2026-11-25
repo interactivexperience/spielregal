@@ -115,3 +115,14 @@
     clearTimeout(t); t = setTimeout(() => { lab.textContent = 'E-Mail kopieren'; }, 2200);
   });
 })();
+
+/* Team: Kopf immer gleich groß und auf gleicher Höhe (aus gemessener Kopfoberkante und Kopfbreite) */
+(() => {
+  const ws = [...document.querySelectorAll('.tc-w[data-top]')]; if (!ws.length) return;
+  const fit = () => ws.forEach(w => { const img = w.querySelector('img'), cw = w.clientWidth, ch = w.clientHeight; if (!cw || !ch) return;
+    const top = +w.dataset.top, hw = +w.dataset.hw, sc = Math.min(1.3, Math.max(1, 330 / hw));
+    const ih = Math.max(cw / .8, ch), tgt = .1 * ch;
+    let ty = tgt - top * ih * sc; ty = Math.min(0, Math.max(ch - ih * sc, ty));
+    img.style.transform = `translateY(${ty.toFixed(1)}px) scale(${sc.toFixed(3)})`; });
+  fit(); addEventListener('resize', fit); if (document.fonts) document.fonts.ready.then(fit); addEventListener('load', fit);
+})();
