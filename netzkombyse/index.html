@@ -3,80 +3,76 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NetzKombyse – drei Website-Konzepte</title>
+<title>NetzKombyse – Konzepte</title>
 <meta name="robots" content="noindex">
 <style>
 @font-face{font-family:Br;src:url(fonts/bricolage.woff2) format('woff2');font-weight:200 800;font-display:swap}
-:root{--bg:#F4F1EA;--ink:#141414}
-@media(prefers-color-scheme:dark){:root{--bg:#111;--ink:#F0EEE8}}
-*{box-sizing:border-box;margin:0}body{background:var(--bg);color:var(--ink);font:400 1.05rem/1.55 Br,system-ui,sans-serif;padding:clamp(20px,5vw,72px)}
-h1{font-size:clamp(2.4rem,7vw,6rem);letter-spacing:-.04em;line-height:.95;font-weight:700;max-width:14ch}
-.lead{max-width:44rem;margin:1.4rem 0 3rem;opacity:.8}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:18px;max-width:1300px}
-.c{border-radius:26px;padding:clamp(1.4rem,3vw,2.2rem);display:flex;flex-direction:column;gap:1rem;min-height:440px;text-decoration:none;color:inherit}
-.c h2{font-size:clamp(2rem,4vw,3.2rem);letter-spacing:-.03em;line-height:1}.c p{opacity:.85}.c ul{list-style:none;padding:0;display:grid;gap:.3rem;margin-top:auto}
-.c li a{display:flex;justify-content:space-between;gap:1rem;text-decoration:none;color:inherit;padding:.55rem 0;border-top:1px solid currentColor;border-color:color-mix(in srgb,currentColor 30%,transparent);font-weight:500}.c li a:hover{padding-left:.5rem}
-.k{font:500 .72rem ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase;opacity:.7}
-.c1{background:#0B2540;color:#EFE6D2}.c1 .k{color:#F2B63D}.c2{background:#BCD9EA;color:#10263A}.c2 .k{color:#3F8FB5}.c3{background:#FFD84A;color:#10263A}
-.c4{background:#EFE6D3;color:#1D2B2F}.c4 .k{color:#3E7C94}.c5{background:#0A1A2E;color:#DCE6F0}.c5 .k{color:#F5B83D}.c6{background:#E4351F;color:#fff}.c6 .k{color:#FFD23F}
-.c7{background:#2E6BF0;color:#fff}.c7 .k{color:#FFD84A}.c8{background:#BFE6E0;color:#10263A}.c8 .k{color:#E4482D}.c9{background:#FFF6DF;color:#10263A}.c9 .k{color:#2E6BF0}
-.c10{background:#0A0A0A;color:#fff;border:3px solid #FF5B00}.c10 .k{color:#FF5B00}
-.c11{background:#0B0B0B;color:#E8E8E8;border:2px solid #E8E8E8;border-radius:0}.c11 .k{color:#C8FF00}.c11 li a{border-radius:0}
-.c12{background:#1B1918;color:#fff}.c12 .k{color:#F2551A}.c12 h2{color:#F2551A}
-.c13{background:#EDEBE7;color:#0A0A0A;border:2px solid #0A0A0A}.c13 .k{color:#0A0A0A}.c13 h2{font-style:italic}
-.c14{background:#FFF9EE;color:#0B0B0B;border:2px solid #0B0B0B}.c14 .k{color:#FF6B14}.c15{background:#000;color:#fff;background-image:radial-gradient(60% 60% at 10% 0,rgba(255,90,20,.75),transparent 70%)}.c15 .k{color:#FF8A4C}.c16{background:linear-gradient(140deg,#FF6A1A,#F2431C);color:#0E0E0E}.c16 .k{color:#fff}.c16 h2{font-family:Georgia,serif;font-weight:900;text-transform:uppercase}.c17{background:#E6E6E6;color:#0B0B0B}.c17 .k{color:#F03A24}.c17 h2{color:#F03A24;letter-spacing:.02em}
-.c{min-height:340px}
-.n{max-width:1300px;margin-top:3rem;font-size:.9rem;opacity:.7}a:focus-visible{outline:3px solid currentColor;outline-offset:3px}
-</style></head>
+:root{--bg:#0B0B0B;--card:#161616;--ink:#F4F1EA;--soft:rgba(244,241,234,.66);--line:rgba(244,241,234,.16);--o:#FF6B14;--g:clamp(14px,4vw,48px)}
+@media(prefers-color-scheme:light){:root{--bg:#F4F1EA;--card:#fff;--ink:#141414;--soft:rgba(20,20,20,.66);--line:rgba(20,20,20,.16);--o:#E2530A}}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font:400 1rem/1.45 Br,system-ui,sans-serif;padding:var(--g);max-width:960px;margin:0 auto}
+a{color:inherit}a:focus-visible,summary:focus-visible{outline:3px solid var(--o);outline-offset:3px;border-radius:6px}
+h1{font:800 clamp(1.5rem,6vw,2.4rem)/1 Br,system-ui,sans-serif;letter-spacing:-.04em}
+.sub{color:var(--soft);font-size:.85rem;margin:.35rem 0 1.1rem}
+h2{font:700 .72rem/1 ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);margin:1.5rem 0 .6rem}
+.pair{display:grid;gap:.7rem;grid-template-columns:1fr}
+@media(min-width:620px){.pair{grid-template-columns:1fr 1fr}}
+.pick{display:flex;flex-direction:column;gap:.6rem;padding:1rem;border-radius:18px;background:var(--card);border:1.5px solid var(--o);text-decoration:none}
+.pick .t{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem}
+.pick b{font:800 1.7rem/1 Br,system-ui,sans-serif;letter-spacing:-.04em}
+.pick .n{font:600 .7rem ui-monospace,monospace;color:var(--o);letter-spacing:.1em}
+.pick p{font-size:.86rem;color:var(--soft)}
+.go{display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:12px;background:var(--o);color:#000;font-weight:700;text-decoration:none;font-size:.95rem}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem}
+.chips a{display:inline-flex;align-items:center;min-height:44px;padding:0 .85rem;border:1.5px solid var(--line);border-radius:99px;text-decoration:none;font-size:.85rem;font-weight:500}
+.chips a:hover{border-color:var(--o)}
+.list{display:grid;gap:.5rem}
+.row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:.2rem .8rem;padding:.75rem .9rem;border:1.5px solid var(--line);border-radius:14px;text-decoration:none;min-height:56px}
+.row:hover{border-color:var(--o)}
+.row b{font-weight:700;font-size:.98rem}.row span{grid-column:1;font-size:.78rem;color:var(--soft)}.row i{grid-column:2;grid-row:1/3;font-style:normal;color:var(--o);font-size:1.2rem}
+details{margin-top:1.6rem;border-top:1px solid var(--line);padding-top:.4rem}
+summary{display:flex;justify-content:space-between;align-items:center;min-height:48px;cursor:pointer;font:700 .72rem ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);list-style:none}
+summary::-webkit-details-marker{display:none}summary::after{content:"+";font-size:1.2rem;color:var(--o)}details[open] summary::after{content:"–"}
+.arch{display:flex;flex-wrap:wrap;gap:.4rem;padding:.3rem 0 .8rem}
+.arch a{display:inline-flex;align-items:center;min-height:44px;padding:0 .8rem;border:1.5px solid var(--line);border-radius:10px;text-decoration:none;font-size:.85rem}
+.arch a:hover{border-color:var(--o)}.arch small{color:var(--soft);margin-left:.4rem;font-size:.7rem}
+.note{margin-top:1.4rem;font-size:.75rem;color:var(--soft)}
+</style>
+</head>
 <body>
-<p class="k">NetzKombyse GmbH · Website-Relaunch · Prototypen</p>
-<h1>Drei Konzepte. Drei Wege zum selben Ziel.</h1>
-<p class="lead">Jedes Konzept hat eine eigene Seitenlogik, Navigation, Bewegungssprache und Tonalität. Alle sind responsive, nutzen nur transform/opacity-Animationen und lassen sich über den Schalter „Bewegung“ (oder die Systemeinstellung „Bewegung reduzieren“) komplett ausschalten.</p>
-<div class="grid">
-<section class="c c1"><p class="k">Konzept 1</p><h2>Hafenkarte</h2><p>Die Seite ist eine Seekarte, die Zusammenarbeit eine Route. Sektionen sind Stationen, das Menü ein Kompass. Hanseatisch, warm, einprägsam.</p>
-<ul><li><a href="k1/index.html">Startseite <span>→</span></a></li><li><a href="k1/index.html#menu">Burgermenü offen <span>→</span></a></li><li><a href="k1/praesentation.html">Präsentationsslide <span>→</span></a></li><li><a href="k1/case.html">Case Wein-Bauer.de <span>→</span></a></li><li><a href="k1/leistung.html">Leistungsseite <span>→</span></a></li></ul></section>
-<section class="c c2"><p class="k">Konzept 2</p><h2>Brise</h2><p>Ein Küstentag von der Düne ins Meer: Wind in der Headline, Leuchtturm-Etagen, Postkarten zum Durchblättern, Strandkörbe als Team. Luftig, warm, zugänglich.</p>
-<ul><li><a href="k2/index.html">Startseite <span>→</span></a></li><li><a href="k2/index.html#menu">Burgermenü offen <span>→</span></a></li><li><a href="k2/praesentation.html">Präsentationsslide <span>→</span></a></li><li><a href="k2/case.html">Case Wein-Bauer.de <span>→</span></a></li><li><a href="k2/leistung.html">Leistungsseite <span>→</span></a></li></ul></section>
-<section class="c c3"><p class="k">Konzept 3 · die Überraschung</p><h2>Möwenschwarm</h2><p>Laut, bunt, verspielt: Buchstaben mit Physik zum Werfen, eine Möwenjagd durch die Seite, eine Begleit-Möwe am Cursor, Sammelkarten statt Teamfotos. Mit Augenzwinkern.</p>
-<ul><li><a href="k3/index.html">Startseite <span>→</span></a></li><li><a href="k3/index.html#menu">Burgermenü offen <span>→</span></a></li><li><a href="k3/praesentation.html">Präsentationsslide <span>→</span></a></li><li><a href="k3/case.html">Case Wein-Bauer.de <span>→</span></a></li><li><a href="k3/leistung.html">Leistungsseite <span>→</span></a></li></ul></section>
-<section class="c c4"><p class="k">Konzept 4 · nur Startseite</p><h2>Gezeiten</h2><p>Wattenmeer: Der Scroll ist die Tide. Das Wasser steigt und fällt, ein Pegel zählt mit, Inhalte tauchen wie bei Ebbe auf. Ruhig, editorial.</p>
-<ul><li><a href="k4/index.html">Startseite <span>→</span></a></li></ul></section>
-<section class="c c5"><p class="k">Konzept 5 · nur Startseite</p><h2>Leuchtfeuer</h2><p>Nordsee bei Nacht: Ein Lichtkegel folgt dem Zeiger und deckt die Headline auf, ein Strahl kreist über dem Hero. Dunkel, dramatisch.</p>
-<ul><li><a href="k5/index.html">Startseite <span>→</span></a></li></ul></section>
-<section class="c c6"><p class="k">Konzept 6 · nur Startseite</p><h2>Fischmarkt</h2><p>Marktplakat: riesige Schrift, Ticker, Preisschilder statt Karten, Wortzeilen laufen mit dem Scroll gegenläufig. Laut, handfest.</p>
-<ul><li><a href="k6/index.html">Startseite <span>→</span></a></li></ul></section>
-<section class="c c7"><p class="k">Konzept 7 · mobile-first · nur Startseite</p><h2>Seemannsgarn</h2><p>Stories-Format: Vollbild-Karten, Antippen rechts und links, Halten pausiert, Fortschrittsbalken oben, Termin-Knopf in der Daumenzone.</p>
-<ul><li><a href="k7/index.html">Startseite <span>→</span></a></li></ul></section>
-<section class="c c8"><p class="k">Konzept 8 · mobile-first · nur Startseite</p><h2>Flaschenpost</h2><p>Postkarten zum seitlichen Wischen: Karten neigen sich mit dem Abstand zur Mitte, eine Flasche treibt mit, Punkte und Pfeile unten.</p>
-<ul><li><a href="k8/index.html">Startseite <span>→</span></a></li></ul></section>
-<section class="c c9"><p class="k">Konzept 9 · mobile-first · nur Startseite</p><h2>Funkspruch</h2><p>Chat mit Möwe Mia: Sie antworten per Tipp auf Chips, das Gespräch führt zu passenden Leistungen, Arbeiten und zum Termin.</p>
-<ul><li><a href="k9/index.html">Startseite <span>→</span></a></li></ul></section>
-<section class="c c10"><p class="k">Konzept 10 · Schwarz-Weiß · nur Startseite</p><h2>Signal</h2><p>Bold in Schwarz-Weiß mit genau einer Akzentfarbe, Rettungsorange: riesige Schrift, Text füllt sich beim Scrollen, gestapelte Karten, Cursor-Blase am Desktop.</p>
-<ul><li><a href="k10/index.html">Startseite <span>→</span></a></li></ul></section>
-<section class="c c11"><p class="k">Konzept 11 · dunkel · nur Startseite</p><h2>Beton</h2><p>Dunkler Brutalismus: sichtbare Rasterlinien, Monospace, harte Kanten ohne Radius, Warnband, Projekte als Dateiliste, Überschriften decodieren sich beim Einblenden.</p>
-<ul><li><a href="k11/index.html">Startseite <span>→</span></a></li></ul></section>
-<section class="c c12"><p class="k">Konzept 12 · nach Owner-Vorlage · nur Startseite</p><h2>Logbuch</h2><p>Dunkel mit Orange und ultra-schmalen Versalien, am Rand angeschnittene Riesenschrift, links Navigation und Kapitelleiste. Statt Fotos fliegt eine 3D-Möwe mit Flügelschlag von Kapitel zu Kapitel zur Headline, Kopf und Blick folgen Zeiger und Scrollen.</p>
-<ul><li><a href="k12/index.html">Startseite <span>→</span></a></li></ul></section>
-<section class="c c13"><p class="k">Konzept 13 · nach Owner-Vorlage · nur Startseite</p><h2>Federstrich</h2><p>Körniges Papier, kontrastreiche Serife in zwei Gewichten, viel Weißraum, handgezeichnete Strichillustration (Möwe lässt eine Münze auf den Stapel fallen) und dunkle Sektionen im Wechsel.</p>
-<ul><li><a href="k13/index.html">Startseite <span>→</span></a></li></ul></section>
-<section class="c c14"><p class="k">Konzept 14 · nach Owner-Referenz · nur Startseite</p><h2>Pille</h2><p>Creme mit breiter Fettschrift, Wörter in Pillen, orangefarbener Pfeil-Chip, Möwe in Blobs, Kennzahl in einer Kapsel.</p>
-<ul><li><a href="k14/index.html">Startseite <span>→</span></a></li></ul></section>
-<section class="c c15"><p class="k">Konzept 15 · nach Owner-Referenz · nur Startseite</p><h2>Glut</h2><p>Schwarz mit Orange-Verlaufsnebel, das Riesenwort steht hinter der Möwe, Leistungen als Akkordeon. Case-Kacheln in der Richtung „Tiefe“: echte Screens als 3D-Ebenen, Motiv vorn, Fakten-Chips, kippt mit dem Cursor.</p>
-<ul><li><a href="k15/index.html">Startseite <span>→</span></a></li></ul></section>
-<section class="c c16"><p class="k">Konzept 16 · nach Owner-Referenz · nur Startseite</p><h2>Stencil</h2><p>Orange-Rot-Verlauf mit Filmkorn, Versal-Serife über die ganze Breite, die Möwe schwebt zwischen den Zeilen.</p>
-<ul><li><a href="k16/index.html">Startseite <span>→</span></a></li></ul></section>
-<section class="c c17"><p class="k">Konzept 17 · nach Owner-Referenz · nur Startseite</p><h2>Index</h2><p>Hellgrau mit ultrabreiter Rot-Schrift, Möwe in Schwarz-Weiß über dem Wort, [Klammer]-Labels, schwarze Dreier-Sektion.</p>
-<ul><li><a href="k17/index.html">Startseite <span>→</span></a></li></ul></section>
-<section class="c c15"><p class="k">Baustein · Case-Vorschau · Konzept Glut</p><h2>Vorschaubild statt Screen</h2><p>Beispiel Tout Terrain und Pechkeks: ein freigestelltes Motiv vor Riesen-Typo, ein subtiles Hover-Element (Schlamm), darunter Aussage, Beschreibung und Leistungen. Mit Baukasten für alle Cases.</p>
-<ul><li><a href="vorschau/tout-terrain.html">Tout Terrain <span>→</span></a></li></ul></section>
-<section class="c c15"><p class="k">Skizzen · Case-Karussells · Glut</p><h2>Fünf Karussells</h2><p>Ziehen mit Schwung, Bogen, Vorhang, Streifen und 3D-Zylinder: dieselben acht Cases mit vollflächigen Bildern und Pillen, Bewegungen nach Awwwards-Mustern.</p>
-<ul><li><a href="vorschau/karussell.html">Karussells ansehen <span>→</span></a></li></ul></section>
-<section class="c c15"><p class="k">Skizzen · Case-Kacheln · Glut</p><h2>Neuansatz: Tiefe, Datenblatt, Story</h2><p>Ein Case (Tout Terrain), drei eigenständige Kachel-Prinzipien mit echten Projektinhalten: 3D-Ebenen aus Screens, Konstruktionsblatt, das zum Produkt wird, oder Story in drei Bildern. Darunter die erste Skizzenrunde.</p>
-<ul><li><a href="vorschau/kachel-neu.html">Neuansatz ansehen <span>→</span></a></li><li><a href="vorschau/kachel-richtungen.html">Erste Runde <span>→</span></a></li></ul></section>
-<section class="c c14"><p class="k">Skizzen · Team-Karten · Pille</p><h2>Sieben Hintergründe</h2><p>Dieselben neun Karten in sieben Stilen: Abstrakte Muster, Scherenschnitt, Riso-Raster, Bauhaus, Initialen, Verlauf mit Korn und nach Vorlage (Sonar). Zum Auswählen für die Team-Sektion.</p>
-<ul><li><a href="vorschau/team-hintergruende.html">Varianten ansehen <span>→</span></a></li></ul></section>
-<section class="c c15"><p class="k">Styleguide · Konzepte 15 und 14</p><h2>Glut und Pille</h2><p>Farben, Schrift, Formen, Bilder und Bewegung beider Konzepte, mit Begründung, warum jedes Element zur Marke passt, sowie Kontrastwerten und gemeinsamen Regeln.</p>
-<ul><li><a href="styleguide/index.html">Styleguide <span>→</span></a></li></ul></section>
+<h1>NetzKombyse · Konzepte</h1>
+<p class="sub">Zwei ausgewählt, der Rest unten.</p>
+
+<h2>Ausgewählt</h2>
+<div class="pair">
+  <div class="pick"><div class="t"><b>Glut</b><span class="n">K15</span></div>
+    <p>Schwarz mit Orange-Verlauf, Möwe, vollständige Seite (15 Sektionen).</p>
+    <a class="go" href="k15/index.html">Glut öffnen</a>
+    <div class="chips"><a href="k15/index.html#leistung">Leistungen</a><a href="k15/index.html#arbeit">Projekte</a><a href="k15/index.html#menschen">Team</a><a href="k15/index.html#kontakt">Kontakt</a></div></div>
+  <div class="pick"><div class="t"><b>Pille</b><span class="n">K14</span></div>
+    <p>Wörter in Pillen, Möwe in Blob, schlanke Startseite (6 Sektionen).</p>
+    <a class="go" href="k14/index.html">Pille öffnen</a>
+    <div class="chips"><a href="k14/index.html#leistung">Leistung</a><a href="k14/index.html#arbeit">Arbeit</a><a href="k14/index.html#team">Team</a><a href="k14/index.html#kontakt">Kontakt</a></div></div>
 </div>
-<p class="n">Hinweis: Fakten, Zahlen und Struktur stammen von netzkombyse.de/labor/startseite. Kennzahlen im Case sowie zwei Kundenzitate sind Platzhalter und vor Livegang mit den Kunden abzustimmen. Logos und Schriften liegen lokal (keine externen Anfragen).</p>
-</body></html>
+
+<h2>Offene Themen</h2>
+<div class="list">
+  <a class="row" href="vorschau/team-hintergruende.html"><b>Team-Karten: Hintergründe</b><span>Sieben Stile zur Auswahl (Pille)</span><i>›</i></a>
+  <a class="row" href="vorschau/karussell.html"><b>Projekte: Karussells</b><span>Fünf Bewegungen für die Case-Auswahl (Glut)</span><i>›</i></a>
+  <a class="row" href="vorschau/kachel-neu.html"><b>Case-Kacheln: Neuansatz</b><span>Tiefe, Datenblatt, Story (Tout Terrain)</span><i>›</i></a>
+  <a class="row" href="vorschau/tout-terrain.html"><b>Case-Vorschau: Plakat-Prinzip</b><span>Freisteller vor Riesen-Typo, Baukasten</span><i>›</i></a>
+  <a class="row" href="vorschau/kachel-richtungen.html"><b>Case-Kacheln: erste Runde</b><span>Frühe Richtungen</span><i>›</i></a>
+  <a class="row" href="styleguide/index.html"><b>Styleguide</b><span>Glut und Pille: Farben, Schrift, Formen, Begründung</span><i>›</i></a>
+</div>
+
+<details>
+  <summary>Weitere Konzepte (Archiv, 15)</summary>
+  <div class="arch">
+    <a href="k1/index.html">1 Hafenkarte</a><a href="k2/index.html">2 Brise</a><a href="k3/index.html">3 Möwenschwarm</a><a href="k4/index.html">4 Gezeiten</a><a href="k5/index.html">5 Leuchtfeuer</a><a href="k6/index.html">6 Fischmarkt</a><a href="k7/index.html">7 Seemannsgarn</a><a href="k8/index.html">8 Flaschenpost</a><a href="k9/index.html">9 Funkspruch</a><a href="k10/index.html">10 Signal</a><a href="k11/index.html">11 Beton</a><a href="k12/index.html">12 Logbuch</a><a href="k13/index.html">13 Federstrich</a><a href="k16/index.html">16 Stencil</a><a href="k17/index.html">17 Index</a>
+  </div>
+  <div class="arch"><small>Zusatzseiten 1–3:</small><a href="k1/praesentation.html">Slide 1</a><a href="k1/case.html">Case 1</a><a href="k1/leistung.html">Leistung 1</a><a href="k2/praesentation.html">Slide 2</a><a href="k2/case.html">Case 2</a><a href="k2/leistung.html">Leistung 2</a><a href="k3/praesentation.html">Slide 3</a><a href="k3/case.html">Case 3</a><a href="k3/leistung.html">Leistung 3</a></div>
+</details>
+<p class="note">Fakten und Struktur nach netzkombyse.de/labor/startseite. Kennzahlen und zwei Zitate sind Platzhalter. Schriften und Logos liegen lokal.</p>
+</body>
+</html>
