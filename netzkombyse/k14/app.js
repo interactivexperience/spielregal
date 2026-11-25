@@ -13,12 +13,12 @@
     let last = performance.now(), cur = { r: 0, x: 0, y: 0 }, tgt = { r: 0, x: 0, y: 0 }, raf = 0, busy = false, lastAct = -1;
     const eye = () => { const r = gull.getBoundingClientRect(); return { x: r.left + r.width * .52, y: r.top + r.height * .17 }; };
     const loop = () => { cur.r += (tgt.r - cur.r) * .14; cur.x += (tgt.x - cur.x) * .14; cur.y += (tgt.y - cur.y) * .14;
-      head.style.transform = `translate3d(${cur.x.toFixed(2)}px,${cur.y.toFixed(2)}px,0) rotate(${cur.r.toFixed(2)}deg)`; body.style.transform = `translate3d(${(cur.x * .25).toFixed(2)}px,0,0) rotate(${(-cur.r * .3).toFixed(2)}deg)`;
+      head.style.transform = `rotate(${cur.r.toFixed(2)}deg)`;
       raf = (Math.abs(tgt.r - cur.r) + Math.abs(tgt.x - cur.x) + Math.abs(tgt.y - cur.y) > .02) ? requestAnimationFrame(loop) : 0; };
     const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
     addEventListener('pointermove', e => { if (!motionOn()) return; last = performance.now();
       const c = eye(), dx = clamp((e.clientX - c.x) / Math.max(260, gull.offsetWidth * .9), -1, 1), dy = clamp((c.y - e.clientY) / Math.max(260, gull.offsetHeight * .5), -1, 1);
-      tgt.r = dy * 16 - dx * 6; tgt.x = dx * 10; tgt.y = -dy * 5; kick(); }, { passive: true });
+      tgt.r = dy * 9 - dx * 4; tgt.x = 0; tgt.y = 0; kick(); }, { passive: true });
     const blink = () => lid && lid.animate([{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)', offset: .4 }, { transform: 'scaleY(0)' }], { duration: 260, easing: 'ease-in-out' });
     const both = (kf, o) => { body.animate(kf.body || kf, o); return head.animate(kf.head || kf, o); };
     const ease = 'cubic-bezier(.45,0,.2,1)';
