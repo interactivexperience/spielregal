@@ -120,7 +120,7 @@ function index() {
 <section class="hero" aria-labelledby="h1">
   <div class="glow" aria-hidden="true"></div>
   
-  <p class="k kh" data-reveal>Digital Commerce mit Unternehmergeist.</p>
+  <p class="k kh" data-reveal>Digital Commerce mit Unternehmergeist. Aus Hamburg.</p>
   <h1 id="h1" data-chars data-reveal>Nicht Möwen <br>zählen. <br>Machen.</h1>
   <p class="s" data-reveal>Wir verbinden Strategie, Shop- und Systementwicklung, Markenkommunikation und Performance-Marketing. Mit künstlicher Intelligenz, echtem Menschenverstand und dem Blick für dein Geschäft.</p>
   <p class="ctas" data-reveal>${btn(C.termin, 'Lass uns schnacken.')}${btn(C.telHref, 'Anrufen', 'alt')}</p><p class="micro" data-reveal>30 Minuten Videotermin, unverbindlich.</p>
