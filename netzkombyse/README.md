@@ -53,3 +53,6 @@ Wein-Bauer.de sind nicht ausgebaut; Teamfotos fehlen (rollenbasiert).
 **Case-Vorschau (Baustein zu k15 Glut):** `vorschau/tout-terrain.html` – Vorschaubild-Konzept mit vier Ebenen (Welt, Wortmarke, Klartext, Hover-Geste + Fund) am Beispiel Tout Terrain, mit Baukasten-Tabelle für die übrigen Cases.
 
 **Styleguide (Glut und Pille):** `styleguide/index.html` – Farben, Schrift, Komponenten, Bilder, Bewegung und gemeinsame Regeln mit Begründung je Element und Kontrastwerten.
+
+**Case-Kacheln (k15 Glut, Ansicht „Kacheln“, Standard):** je Projekt ein freigestelltes Motiv (`media/cut/`, aus den Projektcollagen freigestellt), darüber Branche und Nummer, darunter eine Aussage zum Projekt und Details. Beim Hover läuft eine kleine projekttypische Bewegung (Schlamm, Rauch, Glanz, Pfoten, Blitzlicht, Krümel). Beisser und Abelmann zeigen eine Hand mit Phone in Perspektive, wichtige Funktionen schweben außen (die Hand stammt aus der Beisser-Collage, der Abelmann-Screen ist perspektivisch eingesetzt). Auf Touch läuft die Bewegung, solange die Kachel mittig im Bild ist.
+Team (`media/team-cut/`) und Auszeichnungen (`media/awards/`, aus den Collagen) sind ebenfalls freigestellt. Die Motive sind aus 1024-px-Collagen geschnitten und für den Livegang durch Originalfotos zu ersetzen.

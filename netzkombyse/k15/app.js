@@ -216,11 +216,11 @@
   }
 
   /* ---------- Lichtpunkt (Option „Licht“) ---------- */
-  const spot = $('.spot'), lt = $('.lt[data-light]');
+  const spots = $$('.spot'), spot = spots[0], lt = $('.lt[data-light]');
   if (spot && lt) {
     let sx = innerWidth / 2, sy = innerHeight / 2, cx = sx, cy = sy, raf = 0;
-    const draw = () => { cx += (sx - cx) * (motionOn() ? .2 : 1); cy += (sy - cy) * (motionOn() ? .2 : 1);
-      spot.style.transform = `translate3d(${cx.toFixed(1)}px,${cy.toFixed(1)}px,0)`; raf = (Math.abs(sx - cx) + Math.abs(sy - cy) > .5) ? requestAnimationFrame(draw) : 0; };
+    const draw = () => { cx += (sx - cx) * (motionOn() ? .12 : 1); cy += (sy - cy) * (motionOn() ? .12 : 1);
+      spots.forEach(sp => { sp.style.transform = `translate3d(${cx.toFixed(1)}px,${cy.toFixed(1)}px,0)`; }); raf = (Math.abs(sx - cx) + Math.abs(sy - cy) > .5) ? requestAnimationFrame(draw) : 0; };
     const move = e => { sx = e.clientX; sy = e.clientY; if (!raf) raf = requestAnimationFrame(draw); };
     const set = (on, persist) => { document.documentElement.dataset.light = on ? 'on' : 'off'; lt.setAttribute('aria-pressed', String(on)); if (persist) store.set('nk:light', on ? 'on' : 'off');
       if (on) { addEventListener('pointermove', move, { passive: true }); addEventListener('pointerdown', move, { passive: true }); raf = requestAnimationFrame(draw); } else { removeEventListener('pointermove', move); removeEventListener('pointerdown', move); } };
@@ -246,4 +246,12 @@
   }
   const clk = $('[data-clock]');
   if (clk) { const t = () => { clk.textContent = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' }).format(new Date()); }; t(); setInterval(t, 20000); }
+})();
+
+/* Case-Kacheln: auf Touch-Geräten läuft die Hover-Bewegung, solange die Kachel mittig im Bild ist */
+(() => {
+  const ks = document.querySelectorAll('[data-kc]');
+  if (!ks.length || !matchMedia('(hover:none)').matches) return;
+  const io = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle('hot', e.isIntersecting)), { rootMargin: '-35% 0px -35% 0px' });
+  ks.forEach(k => io.observe(k));
 })();

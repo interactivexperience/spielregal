@@ -28,6 +28,7 @@ const team = [
 ];
 const marken = ['Bio Planète', 'Tout Terrain', 'K-Idol', 'Craft & Caviar', 'Grizzly', 'Beisser', 'Timkid', 'Elektrosil', 'PremiumWheels', 'dgina', 'Pechkeks', 'HWT', 'Abelmann', 'Wurstladen', 'Marktpirat', 'Sabro', 'Wein-Bauer', 'Kaffeekontor'];
 const branchen = [['Food & Gastronomie', 'Marke, Direktvertrieb, Gastronomie.'], ['Medizin & Gesundheit', 'Medizintechnik, Kliniken, Verbände.'], ['B2B & Industrie', 'B2B, Corporate, Händlerportale.'], ['Heimtier', 'Hundemöbel, Futter, Markenentwicklung.'], ['Musik & Entertainment', 'Instrumente, K-Pop, Fachhandel.'], ['Mobilität & Handwerk', 'Reifen, Fahrräder, SHK-Leads.']];
+const awards = [['usability', 'Shop Usability Award'], ['topshop', 'Top Shop 2024 (Auto Bild)'], ['trendshop', 'Trend Shop 2025 (Computer Bild)'], ['iwb', 'Internet World Business Shop-Award, Shortlist'], ['', 'Carlsberg Preis']];
 const integr = ['Pickware', 'JTL', 'Shopify', 'Mollie', 'Sendcloud', 'Hive', 'VARIO', 'xentral', 'Sage', 'HQS ProfiSoft', 'Haufe X360'];
 const leist = [
   { t: 'Technologie & Shop', href: `${W}/e-commerce`, d: 'Ihr Shop als Wachstumsmaschine: skalierbar, integriert, zukunftsfähig.', c: ['Shopware & Shopify', 'Shop-Migration', 'ERP-, PIM- & CRM-Anbindung'] },
@@ -49,6 +50,25 @@ const cases = [
   ['sabro', 'SABRO', 'Premium-Hersteller für Hundesofas', 'Heimtier', 'case-sabro'],
   ['beisser', 'BEISSER.DE', 'Das Fleisch ist willig', 'Food & Gastronomie', 'case-beisser'],
 ];
+// Case-Kacheln: ein freigestelltes Motiv, eine Aussage, darunter Details. fx = kleine Hover-Bewegung, ph = Phone mit Hand + schwebende Features
+const kacheln = [
+  { c: 1, img: 'tout', fx: 'mud', s: 'Ein Shop, so robust wie die Räder, die er verkauft.' },
+  { c: 7, img: 'beisser', fx: 'ph', s: 'Feinste Fleischwaren, mit dem Daumen bestellt.', f: ['Gutschein direkt im Warenkorb', 'Lieferbar auf einen Blick', 'Gesamtpreis inkl. Versand'] },
+  { c: 0, img: 'premiumwheels', fx: 'smoke', s: 'Original-Felgen, die in drei Schritten zum Auto passen.' },
+  { c: 2, img: 'weinbauer', fx: 'glint', s: '50 Jahre Weinhandel, jetzt auf allen Kanälen.' },
+  { c: 3, img: 'abelmann', fx: 'ph', s: 'Fangfrisch bestellt, gekühlt an der Haustür.', f: ['Gekühlte Lieferung', 'In unter 24 h unterwegs', 'Lieferstatus per SMS'] },
+  { c: 6, img: 'sabro', fx: 'paws', s: 'Hundesofas, so gemütlich wie ihr Ruf.' },
+  { c: 4, img: 'truckline', fx: 'flash', s: 'Lightbars für Trucks, Schritt für Schritt konfiguriert.' },
+  { c: 5, img: 'pechkeks', fx: 'crumbs', s: 'Fiese Kekse brauchen einen frechen Shop.' },
+];
+const fxEl = { mud: '<i></i><i></i><i></i><i></i><i></i>', smoke: '<i></i><i></i><i></i>', glint: '', paws: '<i></i><i></i><i></i><i></i>', flash: '<i></i><i></i>', crumbs: '<i></i><i></i><i></i><i></i>', ph: '' };
+const kachel = (k, i) => { const c = cases[k.c];
+  return `<li class="kc fx-${k.fx}${i % 2 ? ' lo' : ''}" data-kc><a href="${W}/${c[4]}" target="_blank" rel="noopener" aria-label="${esc(c[1])}: ${esc(k.s)}">
+  <div class="kc-st"><span class="kc-g" aria-hidden="true"></span><span class="kc-n" aria-hidden="true">${pad(i + 1)}</span><span class="kc-tag">${esc(c[3])}</span>
+    <div class="kc-m"><img src="../media/cut/${k.img}.webp" alt="" loading="lazy" decoding="async" draggable="false" style="--mk:url(../media/cut/${k.img}.webp)">${k.fx === 'glint' ? '<span class="kc-gl" aria-hidden="true" style="--mk:url(../media/cut/' + k.img + '.webp)"></span>' : ''}<span class="kc-fx" aria-hidden="true">${fxEl[k.fx]}</span></div>
+    ${k.f ? `<ul class="kc-f" aria-label="Wichtige Funktionen">${k.f.map((x, j) => `<li style="--j:${j}"><b aria-hidden="true">✦</b>${esc(x)}</li>`).join('')}</ul>` : ''}</div>
+  <h3 class="kc-s">${esc(k.s)}</h3>
+  <p class="kc-d"><b>${esc(c[1])}</b><span>${esc(c[2])}</span></p><span class="kc-l">Projekt ansehen <i aria-hidden="true">${ar}</i></span></a></li>`; };
 // Projektwand: [Projekt-Index, Breite, Höhe, x, y, Tiefe, Bildausschnitt]
 const wallTiles = [
   [2, 520, 360, 120, 90, 1.15, '50% 40%'], [0, 380, 520, 700, 40, .85, '40% 50%'], [5, 440, 300, 1130, 150, 1.2, '50% 60%'], [1, 560, 380, 1620, 60, .9, '30% 50%'], [7, 380, 380, 2180, 130, 1.1, '60% 50%'],
@@ -61,7 +81,7 @@ const logoOf = { 'Bio Planète': 'bioplanete.svg', 'Tout Terrain': 'touttterrain
 const row = a => [...a, ...a].map(x => `<span class="bn">${esc(x)}${logoOf[x] ? `<span class="bl"><img src="../media/logos/${logoOf[x]}" alt="" loading="lazy" decoding="async"></span>` : ''}</span><i aria-hidden="true">✦</i>`).join('');
 
 function index() {
-  const body = `<div id="top"></div><div class="prog" aria-hidden="true"></div><div class="spot" aria-hidden="true"></div>
+  const body = `<div id="top"></div><div class="prog" aria-hidden="true"></div><div class="spot" aria-hidden="true"></div><div class="spot spot2" aria-hidden="true"></div>
 <header class="hd"><a class="hd-logo" href="index.html" aria-label="NetzKombyse – Startseite">${logo()}</a>
   <nav class="hd-nav" aria-label="Hauptnavigation"><a href="#leistung">Leistungen</a><a href="#haltung">Haltung</a><a href="#arbeit">Referenzen</a><a href="${W}/ueber-uns" target="_blank" rel="noopener">Über uns</a><a href="#kontakt">Kontakt</a></nav>
   <div class="hd-r"><button class="mt lt" type="button" data-light aria-pressed="false" title="Lichtpunkt: ein warmer Lichtfleck folgt dem Zeiger"><span class="mt-i" aria-hidden="true"></span><span>Licht</span></button>
@@ -72,7 +92,7 @@ function index() {
   <p class="k" data-reveal>Hamburger Agentur für digitalen Commerce · Mittelstand</p>
   <h1 id="h1" data-chars data-reveal>Machen.<br>Nicht Möwen<br>zählen.</h1>
   <p class="s" data-reveal>Strategische Beratung, komplexe Shop- und Systementwicklung, Markenkommunikation und Performance-Marketing zu einer ganzheitlichen Lösung, für Unternehmen, die mehr vorhaben.</p>
-  <p class="ctas" data-reveal>${btn(C.termin, 'Termin buchen')}${btn('#arbeit', 'Referenzen', 'ln')}</p>
+  <p class="ctas" data-reveal>${btn(C.termin, 'Termin buchen')}${btn('#arbeit', 'Referenzen', 'sec')}</p>
   <div class="gwrap" data-gull aria-hidden="true"><div class="gfl"></div><div class="gb"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"></div><div class="gw"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"></div><div class="gh"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"><i class="lid"></i></div></div>
 </section>
 
@@ -95,10 +115,11 @@ function index() {
   <div class="cards">${lagen.map((l, i) => `<div class="cd" data-reveal style="--d:${i * 110}ms"><div class="fcard" role="button" tabindex="0" aria-pressed="false" aria-label="${esc(l.n.t)}: Antwort zeigen"><div class="face fr"><span class="num" aria-hidden="true">${pad(i + 1)}</span><h3>${esc(l.n.t)}</h3><span class="hint"><i aria-hidden="true">+</i> Antwort zeigen</span></div><div class="face bk"><p class="lab">Ihre Lage</p><p class="tx">${esc(l.n.d)}</p><p class="lab">Unsere Antwort</p>${l.a.map(a => `<p class="an"><b>${esc(a.t)}</b><span>${esc(a.d)}</span></p>`).join('')}</div></div></div>`).join('')}</div></div></section>
 
 <section class="sec" id="arbeit"><div class="wr"><div class="two"><h2 data-chars data-reveal>Projekte, die bleiben.</h2><p class="side" data-reveal>Vom Ein-Frau-Startup bis zum international aufgestellten Mittelstand. Eine Auswahl aus über 40 Projekten.</p></div>
-  <div class="tabs" role="tablist" aria-label="Ansicht der Projekte"><button type="button" role="tab" aria-selected="true" data-tab="cf">Karussell</button><button type="button" role="tab" aria-selected="false" data-tab="wall">Wand</button><button type="button" role="tab" aria-selected="false" data-tab="idx">Index</button><button type="button" role="tab" aria-selected="false" data-tab="deck">Stapel</button></div>
-  <div class="gal" data-gal="cf"><div class="cf" data-cf role="region" aria-roledescription="Karussell" aria-label="Projekte, mit Pfeiltasten oder Wischen blättern">
+  <div class="tabs" role="tablist" aria-label="Ansicht der Projekte"><button type="button" role="tab" aria-selected="true" data-tab="kc">Kacheln</button><button type="button" role="tab" aria-selected="false" data-tab="cf">Karussell</button><button type="button" role="tab" aria-selected="false" data-tab="wall">Wand</button><button type="button" role="tab" aria-selected="false" data-tab="idx">Index</button><button type="button" role="tab" aria-selected="false" data-tab="deck">Stapel</button></div>
+  <div class="gal" data-gal="kc"><ul class="kcs">${kacheln.map(kachel).join('')}</ul></div>
+  <div class="gal" data-gal="cf" hidden><div class="cf" data-cf role="region" aria-roledescription="Karussell" aria-label="Projekte, mit Pfeiltasten oder Wischen blättern">
     <ul class="cf-s">${cases.map((c, i) => `<li class="cf-c" data-i="${i}">${caseLink(c, '', `<img src="../media/cases/${c[0]}.jpg" alt="Projektbilder ${esc(c[1])}" width="1024" height="675" ${i < 3 ? '' : 'loading="lazy"'} decoding="async" draggable="false"><i class="sh" aria-hidden="true"></i>`)}</li>`).join('')}</ul>
-    <div class="cf-i" aria-live="polite"><p class="cf-n"><b data-cur>01</b> / ${pad(cases.length)}</p><h3 data-t></h3><p class="cf-d" data-d></p><p class="cf-b" data-b></p>${btn(`${W}/references`, 'Projekt ansehen').replace('class="cta ', 'data-l class="cta ')}</div>
+    <div class="cf-i" aria-live="polite"><p class="cf-n"><b data-cur>01</b> / ${pad(cases.length)}</p><h3 data-t></h3><p class="cf-d" data-d></p><p class="cf-b" data-b></p>${btn(`${W}/references`, 'Projekt ansehen', 'sec').replace('class="cta ', 'data-l class="cta ')}</div>
     <div class="cf-ctl"><button type="button" data-prev aria-label="Vorheriges Projekt"><svg viewBox="0 0 60 16" aria-hidden="true"><path d="M58 8H6M14 2L6 8l8 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="cf-bar" aria-hidden="true"><i></i></span><button type="button" data-next aria-label="Nächstes Projekt"><svg viewBox="0 0 60 16" aria-hidden="true"><path d="M2 8h52M46 2l8 6-8 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
     <script type="application/json" data-meta>${JSON.stringify(cases.map(c => ({ t: c[1], d: c[2], b: c[3], h: `${W}/${c[4]}` })))}</script></div></div>
   <div class="gal" data-gal="wall" hidden><div class="wall" data-wall role="region" aria-label="Projektwand, ziehen zum Verschieben"><div class="wall-in">${wallTiles.map(([c, w, h, x, y, z, pos], i) => caseLink(cases[c], 'wt', `<img src="../media/cases/${cases[c][0]}.jpg" alt="" style="object-position:${pos}" width="1024" height="675" loading="lazy" draggable="false"><span class="wc"><b>${esc(cases[c][1])}</b><em>${esc(cases[c][3])}</em></span>`).replace('class="wt"', `class="wt" data-z="${z}" style="--w:${w}px;--h:${h}px;left:${x}px;top:${y}px;--i:${i}"`)).join('')}</div><p class="wall-h" aria-hidden="true">← ziehen →</p></div></div>
@@ -106,7 +127,7 @@ function index() {
   <div class="gal" data-gal="deck" hidden><div class="deck" data-deck role="region" aria-label="Projektstapel, ziehen oder tippen für das nächste Projekt"><div class="dk-s">${cases.map((c, i) => `<figure class="dk-c" data-i="${i}">${caseLink(c, '', `<img src="../media/cases/${c[0]}.jpg" alt="Projektbilder ${esc(c[1])}" width="1024" height="675" loading="lazy" draggable="false">`)}</figure>`).join('')}</div>
     <div class="dk-i" aria-live="polite"><h3 data-dt></h3><p data-dd></p></div><div class="dk-c2"><button type="button" data-dp aria-label="Zurück">←</button><span class="dk-n" data-dn>01 / ${pad(cases.length)}</span><button type="button" data-dx aria-label="Nächstes">→</button></div>
     <script type="application/json" data-dmeta>${JSON.stringify(cases.map(c => ({ t: c[1], d: c[2] })))}</script></div></div>
-  <p class="all" data-reveal>${btn(`${W}/references`, 'Alle Referenzen')}</p></div>
+  <p class="all" data-reveal>${btn(`${W}/references`, 'Alle Referenzen', 'sec')}</p></div>
   <div class="pv" aria-hidden="true"><img alt="" width="1024" height="675"></div><span class="pc" aria-hidden="true">${ar}</span></section>
 
 <section class="sec vs" id="stimmen" aria-label="Was Kunden sagen"><div class="wr"><p class="k">Kundenstimmen</p>
@@ -116,23 +137,22 @@ function index() {
   <p class="rate" data-reveal><b>4,8</b> von 5 · 11 Google-Bewertungen · <a href="https://www.google.com/maps/search/?api=1&query=NetzKombyse&query_place_id=ChIJP2GS276FsUcRbSWqjQ9NfAE" target="_blank" rel="noopener">Bewertung lesen ↗</a></p></div></section>
 
 <section class="sec" id="menschen"><div class="wr"><div class="two"><h2 data-chars data-reveal>Sie arbeiten direkt mit uns.</h2><p class="side" data-reveal>Jede Person hier ist Ihre direkte Ansprechpartnerin, Ihr direkter Ansprechpartner, vom ersten Gespräch bis zum Start.</p></div>
-  <div class="tm" data-team><div class="tm-p" aria-hidden="true">${team.map(([n, r, im], i) => `<img class="tp${i === 0 ? ' on' : ''}" src="../media/team/${im}.webp" alt="" width="800" height="1000" loading="lazy">`).join('')}</div>
-    <div class="tm-l" role="tablist" aria-label="Team">${team.map(([n, r, im, d], i) => `<button type="button" role="tab" aria-selected="${i === 0}" data-i="${i}"><b>${esc(n)}</b><span>${esc(r)}</span><p>${esc(d)}</p></button>`).join('')}</div></div>
+  <div class="tg">${team.map(([n, r, im, d], i) => `<article class="tg-c${i === 0 ? ' lead' : ''}" data-reveal style="--d:${i * 60}ms" tabindex="0"><div class="tg-p"><span class="tg-g" aria-hidden="true"></span><img src="../media/team-cut/${im}.webp" alt="${esc(n)}" width="800" height="1000" loading="lazy" decoding="async"></div><h3>${esc(n)}</h3><p class="tg-r">${esc(r)}</p><p class="tg-d">${esc(d)}</p></article>`).join('')}</div>
   <p class="tm-f" data-reveal>Dazu ein fest eingebundenes Team für Performance Marketing und Entwicklung.</p></div></section>
 
 <section class="sec br" id="branchen"><div class="wr"><div class="two"><h2 data-chars data-reveal>Wir kennen Ihren Markt.</h2><p class="side" data-reveal>Sechs Branchen, in denen wir seit Jahren Shops, Marken und Kampagnen verantworten.</p></div>
-  <ul class="bl">${branchen.map(([t, d], i) => `<li data-reveal style="--d:${i * 70}ms"><span class="n">${pad(i + 1)}</span><b>${esc(t)}</b><span>${esc(d)}</span></li>`).join('')}</ul>
+  <ul class="brl">${branchen.map(([t, d], i) => `<li data-reveal style="--d:${i * 70}ms"><span class="n">${pad(i + 1)}</span><b>${esc(t)}</b><span>${esc(d)}</span></li>`).join('')}</ul>
   <div class="ig"><p class="k">Integrationen</p><p class="igt">ERP, Warenwirtschaft, Versand und Zahlung: über 100 individuell entwickelte Prozesslösungen, angebunden an Ihre Systeme.</p><p class="igl">${integr.map(x => `<span>${esc(x)}</span>`).join('')}</p></div></div></section>
 
 <section class="sec fd" id="foerderung"><div class="wr fd-g"><div><p class="k">Förderung</p><p class="fd-n" data-count="80" data-suffix=" %">80 %</p></div><div class="fd-t"><h2 data-chars data-reveal>Bis zu 80 % Zuschuss für Ihr Digitalprojekt.</h2><p class="s" data-reveal>Wir prüfen die Förderfähigkeit, wählen das Programm und begleiten den Antrag, akkreditiert für Programme des Bundes.</p><p class="ctas" data-reveal>${btn(`${W}/foerdermittel`, 'Fördergespräch')}<a class="cta ln" href="${W}/foerderrechner" target="_blank" rel="noopener"><span>Förderrechner</span><i aria-hidden="true">${ar}</i></a></p></div></div>
-  <p class="aw2" data-reveal aria-label="Auszeichnungen">Unabhängig ausgezeichnet: ${C.awards.join(' · ')}</p></section>
+  <div class="aw2" data-reveal><p class="k">Unabhängig ausgezeichnet</p><ul class="awl">${awards.map(([f, t]) => `<li>${f ? `<img src="../media/awards/${f}.webp" alt="${esc(t)}" loading="lazy" decoding="async">` : `<span class="awt">${esc(t)}</span>`}</li>`).join('')}</ul></div></section>
 
 <section class="sec" id="faq"><div class="wr"><div class="two"><h2 data-chars data-reveal>Was Entscheider wissen wollen.</h2><p class="side" data-reveal>Fragen und Antworten zur Zusammenarbeit.</p></div>
   <div class="faq">${C.faq.map((q, i) => `<details data-reveal style="--d:${i * 60}ms"${i === 0 ? ' open' : ''}><summary><span>${esc(q.q)}</span><i aria-hidden="true"></i></summary><p>${esc(q.a)}</p></details>`).join('')}</div></div></section>
 
 <section class="sec end" id="kontakt"><div class="glow g2" aria-hidden="true"></div><div class="wr ctw"><div class="ctx"><p class="k">Kontakt</p><h2 class="b" data-chars data-reveal>Reden wir persönlich.</h2><p class="s" data-reveal>Lassen Sie uns herausfinden, ob die Chemie stimmt. Sie erreichen mich direkt: per Nachricht, am Telefon oder im Videotermin.</p>
   <p class="ctas" data-reveal>${btn(C.termin, 'Termin buchen')}</p>
-  <ul class="cl" data-reveal><li><a href="${C.telHref}">${C.tel}</a></li><li><a href="mailto:ahoi@netzkombyse.de">ahoi@netzkombyse.de</a></li><li>${C.adresse[0]}, 22765 ${C.adresse[1]} · <a href="https://maps.google.com/?q=Harkortstraße+81,+22765+Hamburg" target="_blank" rel="noopener">Route ↗</a></li></ul></div>
+  <ul class="cl" data-reveal><li><i class="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></i><span><em>Telefon</em><a href="${C.telHref}">${C.tel}</a></span></li><li><i class="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 6l8.5 7 8.5-7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></i><span><em>E-Mail</em><a href="mailto:ahoi@netzkombyse.de">ahoi@netzkombyse.de</a></span></li><li><i class="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></i><span><em>Videotermin</em><a href="${C.termin}" target="_blank" rel="noopener">30 Minuten, unverbindlich</a></span></li><li><i class="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="9.5" r="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></i><span><em>Büro</em><a href="https://maps.google.com/?q=Harkortstraße+81,+22765+Hamburg" target="_blank" rel="noopener">${C.adresse[0]}, 22765 ${C.adresse[1]}</a></span></li></ul></div>
   <figure class="gk" data-reveal><img class="g" src="../media/henning-pose.webp" alt="Henning Groß, Geschäftsführer" width="928" height="1152" loading="lazy" decoding="async"><figcaption>${C.ansprech.name}<span>${C.ansprech.rolle}</span></figcaption></figure></div></section>
 </main>
 <footer class="ft"><a class="ft-logo" href="index.html" aria-label="Startseite">${logo()}</a>
