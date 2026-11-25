@@ -1,125 +1,130 @@
-/* Konzept 15 · echte 3D-Möwe im Hero (Owner-Modell „Möwe 1“ aus Konzept 12: Skelett mit Hals, Kopf, Lidern, Flügeln).
-   Sie sitzt ruhig, atmet, blinzelt selten. Hals und Kopf drehen sich im Raum zum Zeiger (links, rechts, oben, unten), auch Touch.
-   Flügelschlag nur beim Anklicken, kein Hüpfen. Ohne WebGL oder bei „Bewegung aus“ bleibt das Standbild (2D). */
+/* Konzept 15 · neue 3D-Möwe im Glut-Stil, komplett prozedural (kein Fremdmodell):
+   schlanke Silbermöwe mit roter Strickmütze, weiche matte Flächen in Weiß, Schiefergrau und Orange, warmes Randlicht von hinten.
+   Hals und Kopf drehen sich im Raum zur Maus, Flügel schlägt nur auf Klick, sie atmet und blinzelt selten.
+   Ohne WebGL oder bei „Bewegung aus“ bleibt das Standbild (Foto-Bild). Mit ?foto bleibt das Foto auch bei WebGL. */
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 
 const NK = window.NK;
-const wrap = location.search.includes('3d') ? document.querySelector('[data-gull]') : null;   // nur mit ?3d: Standard ist das Foto-Bild der Möwe (bessere Qualität)
+const wrap = location.search.includes('foto') ? null : document.querySelector('[data-gull]');
 const clamp = THREE.MathUtils.clamp, rand = (a, b) => a + Math.random() * (b - a);
-let renderer, scene, cam, bird, mixer, headBone = null, neckBone = null, A = {}, current = null, H0 = 1;
-let ready = false, loading = false, failed = false, running = false, blinkT = 2, lookT = 9, followW = 0;
-const look = { yaw: 0, pitch: 0 }, ptr = { x: .6, y: .1, t: -1e9 }, applied = new Map(), clock = new THREE.Clock();
+let renderer, scene, cam, bird, headG, neckG, wingL, wingR, tailG, lidL, lidR, bodyG, legs;
+let ready = false, failed = false, running = false, blinkT = 2, flapT = -1;
+const look = { yaw: 0, pitch: 0 }, ptr = { x: .5, y: .1, t: -1e9 }, clock = new THREE.Clock(), blink = { t: -1 };
+const H = 6.1;   // Höhe der Möwe in Welteinheiten (Füße bei y = 0)
+
+const mat = (c, o = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: .88, metalness: 0, ...o });
+const M = {
+  white: mat(0xf3ece4), cream: mat(0xe9ddd0), slate: mat(0x59606b, { roughness: .8 }), dark: mat(0x1b1d24),
+  beak: mat(0xff9a1c, { roughness: .55 }), red: mat(0xe0301c, { roughness: .6 }), leg: mat(0xff6a1a, { roughness: .6 }),
+  eye: mat(0x0b0b0b, { roughness: .25 }), ring: mat(0xffb020, { roughness: .5 }), hatA: mat(0xff4a12, { roughness: .95 }),
+};
+function ell(m, rx, ry, rz, seg = 40) { const o = new THREE.Mesh(new THREE.SphereGeometry(1, seg, Math.round(seg * .7)), m); o.scale.set(rx, ry, rz); return o; }
+function at(o, x, y, z, rz = 0, ry = 0, rx = 0) { o.position.set(x, y, z); o.rotation.set(rx, ry, rz); return o; }
+function beanieTexture() {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 128; const g = c.getContext('2d');
+  g.fillStyle = '#ff4a12'; g.fillRect(0, 0, 256, 128);
+  for (let i = 0; i < 32; i++) { g.fillStyle = i % 2 ? 'rgba(120,20,0,.55)' : 'rgba(255,140,60,.35)'; g.fillRect(i * 8, 0, 3, 128); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = THREE.RepeatWrapping; return t;
+}
+
+/* Möwe blickt nach links (−X), Körper leicht zur Kamera gedreht. */
+function build() {
+  bird = new THREE.Group(); bodyG = new THREE.Group(); bird.add(bodyG);
+  const body = ell(M.white, .8, 1.5, .62); at(body, 0, 2.55, 0, .3); bodyG.add(body);
+  const back = ell(M.slate, .55, 1.25, .58); at(back, .36, 2.65, 0, .3); back.scale.z = .6; bodyG.add(back);
+  const belly = ell(M.cream, .66, 1.0, .58); at(belly, -.2, 2.0, 0, .3); bodyG.add(belly);
+  tailG = new THREE.Group(); at(tailG, .72, 1.55, 0, -.5); bodyG.add(tailG);
+  tailG.add(at(ell(M.white, .9, .12, .4), .5, 0, 0)); tailG.add(at(ell(M.dark, .32, .13, .36), .95, .01, 0));
+  const mkWing = s => { const g = new THREE.Group(); at(g, .05, 3.35, .56 * s);
+    g.add(at(ell(M.slate, .42, 1.3, .13), .35, -1.15, 0, .5));
+    g.add(at(ell(M.dark, .18, .6, .12), .95, -2.1, 0, .54));
+    g.add(at(ell(M.white, .15, .5, .11), .75, -1.6, s * .03, .5));
+    bodyG.add(g); return g; };
+  wingL = mkWing(1); wingR = mkWing(-1);
+  legs = new THREE.Group(); bodyG.add(legs);
+  for (const z of [.24, -.24]) {
+    legs.add(at(new THREE.Mesh(new THREE.CylinderGeometry(.06, .05, 1.5, 14), M.leg), -.05, .78, z));
+    for (const a of [-.55, 0, .55]) legs.add(at(ell(M.leg, .5, .06, .09, 20), -.35, .05, z + a * .28, 0, a * .5));
+  }
+  neckG = new THREE.Group(); at(neckG, -.55, 4.0, 0, .26); bodyG.add(neckG);
+  neckG.add(at(ell(M.white, .36, .62, .34), 0, .32, 0));
+  headG = new THREE.Group(); at(headG, -.1, .86, 0); neckG.add(headG);
+  headG.add(at(ell(M.white, .5, .42, .4, 48), -.05, .2, 0));
+  const bu = at(new THREE.Mesh(new THREE.ConeGeometry(.15, 1.0, 24), M.beak), -.78, .06, 0, Math.PI / 2 + .12); bu.scale.set(1, 1, .8); headG.add(bu);
+  headG.add(at(ell(M.beak, .17, .08, .13), -1.2, -.04, 0, -.55));
+  headG.add(at(ell(M.red, .05, .05, .09), -1.02, -.14, 0));
+  const lids = [];
+  for (const s of [1, -1]) {
+    headG.add(at(ell(M.ring, .13, .13, .06), -.28, .3, s * .46, 0, s * .45));
+    headG.add(at(ell(M.eye, .08, .08, .06), -.29, .3, s * .5, 0, s * .45));
+    const lid = at(ell(M.white, .15, .15, .08), -.28, .3, s * .49, 0, s * .45); lid.scale.y = .001; headG.add(lid); lids.push(lid);
+  }
+  [lidL, lidR] = lids;
+  const hat = new THREE.Group(); at(hat, -.02, .42, 0, .12); headG.add(hat);
+  const capM = new THREE.MeshStandardMaterial({ map: beanieTexture(), roughness: .98 });
+  const cap = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 28, 0, Math.PI * 2, 0, Math.PI * .55), capM); cap.scale.set(.56, .6, .5); at(cap, 0, .05, 0); hat.add(cap);
+  const brim = new THREE.Mesh(new THREE.TorusGeometry(.5, .11, 16, 48), M.hatA); brim.rotation.x = Math.PI / 2; brim.scale.set(1.04, .95, 1); hat.add(brim);
+  hat.add(at(new THREE.Mesh(new THREE.IcosahedronGeometry(.2, 3), M.hatA), .05, .7, 0));
+  bird.rotation.y = .12;
+  return bird;
+}
 
 function size() {
   if (!renderer || !wrap) return;
   const w = wrap.clientWidth, h = wrap.clientHeight; if (!w || !h) return;
   renderer.setSize(w, h, false); cam.aspect = w / h;
-  /* Möwe füllt die Höhe des Rahmens (Füße am unteren Rand, etwas Luft oben) */
-  const vis = H0 * 1.06; cam.position.set(0, H0 * .5, vis / (2 * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)))); cam.lookAt(0, H0 * .5, 0);
-  cam.updateProjectionMatrix();
-}
-
-function fadeTo(name, d = .35) { const n = A[name]; if (!n || current === n) return; n.reset().setEffectiveWeight(1).fadeIn(d).play(); current?.fadeOut(d); current = n; }
-function toIdle() { A.Flap?.setLoop(THREE.LoopOnce, 1); if (A.Flap) A.Flap.timeScale = 1; fadeTo('Idle', .5); }
-function blink(twice) { if (!A.Blink) return; A.Blink.reset().play(); if (twice) setTimeout(() => A.Blink.reset().play(), 330); }
-
-function gaze(now) {
-  /* Zeiger, solange er sich bewegt hat; sonst ruhig Richtung Seitenmitte */
-  const a = now - ptr.t < 6000 ? 1 : 0;
-  return [a ? ptr.x : -.15, a ? ptr.y : .05];
-}
-function headFollow(dt, now) {
-  if (!headBone) return;
-  followW += (1 - followW) * Math.min(1, dt * 4);
-  const [nx, ny] = gaze(now), hp = new THREE.Vector3(); headBone.getWorldPosition(hp);
-  /* Blickpunkt im Raum: vom Zeiger durch die Kamera auf eine Ebene vor dem Kopf */
-  const ray = new THREE.Vector3(nx, ny, .5).unproject(cam).sub(cam.position).normalize();
-  const tgt = cam.position.clone().addScaledVector(ray, (hp.z + 1.5 - cam.position.z) / Math.min(-.05, ray.z));
-  const local = tgt.sub(hp).applyQuaternion(bird.quaternion.clone().invert());
-  const yawT = clamp(Math.atan2(local.x, local.z), -1.15, 1.15), pitchT = clamp(Math.atan2(local.y, Math.hypot(local.x, local.z)), -.45, .4);
-  look.yaw += (yawT - look.yaw) * Math.min(1, dt * 5); look.pitch += (pitchT - look.pitch) * Math.min(1, dt * 5);
-  const right = new THREE.Vector3(1, 0, 0).applyQuaternion(bird.quaternion);
-  for (const [bone, f] of neckBone ? [[neckBone, .5], [headBone, .6]] : [[headBone, 1]]) {
-    const d = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), look.yaw * followW * f)
-      .multiply(new THREE.Quaternion().setFromAxisAngle(right, -look.pitch * followW * f));
-    const pq = new THREE.Quaternion(); bone.parent.getWorldQuaternion(pq);
-    const lq = pq.clone().invert().multiply(d).multiply(pq);
-    bone.quaternion.premultiply(lq); applied.set(bone, lq); bone.updateMatrixWorld(true);
-  }
+  const vis = H * 1.08, d = vis / (2 * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)));
+  cam.position.set(0, H * .5, d); cam.lookAt(0, H * .5, 0); cam.updateProjectionMatrix();
 }
 
 function loop() {
-  const now = performance.now(), dt = Math.min(clock.getDelta(), .05);
-  for (const [bone, dq] of applied) bone.quaternion.premultiply(dq.clone().invert());   // Zusatzdrehung des letzten Bildes zurücknehmen
-  applied.clear();
-  mixer.update(dt);
-  if ((blinkT -= dt) <= 0) { blink(Math.random() < .2); blinkT = rand(2.5, 6.5); }
-  if ((lookT -= dt) <= 0) { lookT = rand(14, 26); if (A.Look && now - ptr.t > 6000) { A.Look.reset(); fadeTo('Look', .4); } }
-  headFollow(dt, now);
+  const now = performance.now(), dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
+  const a = now - ptr.t < 6000, nx = a ? ptr.x : -.2, ny = a ? ptr.y : .05;
+  const r = wrap.getBoundingClientRect(), cx = (r.left + r.width * .48) / innerWidth * 2 - 1, cy = 1 - (r.top + r.height * .2) / innerHeight * 2;
+  const yawT = clamp((nx - cx) * 1.55, -.55, 2.3), pitchT = clamp((ny - cy) * .8, -.45, .5);
+  look.yaw += (yawT - look.yaw) * Math.min(1, dt * 5); look.pitch += (pitchT - look.pitch) * Math.min(1, dt * 5);
+  neckG.rotation.y = look.yaw * .42; neckG.rotation.z = .22 - look.pitch * .25;
+  headG.rotation.y = look.yaw * .58; headG.rotation.z = -look.pitch * .75;
+  bird.rotation.y += ((.12 + look.yaw * .12) - bird.rotation.y) * Math.min(1, dt * 3);
+  bodyG.scale.y = 1 + Math.sin(t * 1.7) * .006; bodyG.position.y = 0;
+  tailG.rotation.z = -.42 + Math.sin(t * .8) * .02;
+  if (flapT >= 0) { flapT += dt; const u = flapT / 1.1, f = u < 1 ? Math.sin(u * Math.PI * 4.5) * Math.sin(u * Math.PI) * .75 : 0;
+    wingL.rotation.z = wingR.rotation.z = -f * .5; wingL.rotation.x = -f * .9; wingR.rotation.x = f * .9; bodyG.position.y = Math.max(0, f) * .12;
+    if (u >= 1) { flapT = -1; wingL.rotation.set(0, 0, 0); wingR.rotation.set(0, 0, 0); } }
+  if ((blinkT -= dt) <= 0) { blinkT = rand(2.5, 6.5); blink.t = 0; }
+  if (blink.t >= 0) { blink.t += dt; const u = blink.t / .26, s = u < 1 ? Math.sin(u * Math.PI) : 0; lidL.scale.y = lidR.scale.y = Math.max(.001, s); if (u >= 1) blink.t = -1; }
   renderer.render(scene, cam);
 }
 
-async function loadBuffer() {
-  try {
-    const r = await fetch(new URL('../media/moewe.glb', import.meta.url));
-    if (r.ok) { const b = await r.arrayBuffer(); if (new Uint8Array(b, 0, 4).join() === '103,108,84,70') return b; }   // „glTF“
-  } catch (e) { /* weiter mit Modul */ }
-  const b64 = (await import('../media/moewe.glb.js')).default;
-  return Uint8Array.from(atob(b64), c => c.charCodeAt(0)).buffer;
-}
-
-async function init() {
-  if (!wrap || loading || ready || failed) return; loading = true;
+function init() {
+  if (!wrap || ready || failed) return;
   try {
     const mobile = innerWidth < 900;
     renderer = new THREE.WebGLRenderer({ antialias: !mobile, alpha: true, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(devicePixelRatio, mobile ? 1.5 : 2));
-    renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = .78;
+    renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = .95;
     renderer.domElement.className = 'gull3d'; renderer.domElement.setAttribute('aria-hidden', 'true');
-    scene = new THREE.Scene(); cam = new THREE.PerspectiveCamera(26, 1, .1, 80);
-    /* Licht wie im Standbild: weiche warme Fläche, starkes orangefarbenes Randlicht von rechts hinten, kaum Kontrast von vorn */
-    scene.add(new THREE.HemisphereLight(0xffe2c8, 0x3a1608, .9));
-    const sun = new THREE.DirectionalLight(0xffcfa0, 1.25); sun.position.set(-4, 5, 5); scene.add(sun);
-    const rim = new THREE.DirectionalLight(0xff5a14, 4.2); rim.position.set(6, 2.5, -3); scene.add(rim);
-    const rim2 = new THREE.DirectionalLight(0xff7a30, 1.6); rim2.position.set(5, 1, 4); scene.add(rim2);
-    bird = new THREE.Group(); bird.rotation.order = 'YXZ'; bird.rotation.y = +.95; scene.add(bird);
-    const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
-    const gltf = await loader.parseAsync(await loadBuffer(), '');
-    const m = gltf.scene, box = new THREE.Box3().setFromObject(m);
-    H0 = box.max.y - box.min.y; m.position.y = -box.min.y;
-    m.traverse(o => { if (o.isMesh) o.frustumCulled = false; if (o.isBone && o.name === 'head') headBone = o; if (o.isBone && o.name === 'neck') neckBone = o; });
-    for (const t of gltf.animations.find(c => c.name === 'Blink')?.tracks ?? []) {   // Ruhepose der Lider = geschlossen → vor dem Binden auf „offen“
-      const p = THREE.PropertyBinding.parseTrackName(t.name), n = THREE.PropertyBinding.findNode(m, p.nodeName);
-      if (n && p.propertyName === 'scale') n.scale.fromArray(t.values, 0);
-    }
-    bird.add(m); mixer = new THREE.AnimationMixer(m);
-    const isLid = t => /lid/i.test(t.name);
-    for (const clip of gltf.animations) { const c = clip.clone(); c.tracks = c.tracks.filter(t => (clip.name === 'Blink' ? isLid(t) : !isLid(t))); A[clip.name] = mixer.clipAction(c); }
-    for (const n of ['Flap', 'Look', 'Blink']) A[n]?.setLoop(THREE.LoopOnce, 1);
-    mixer.addEventListener('finished', e => { if (e.action === A.Flap || e.action === A.Look) toIdle(); });
-    A.Idle.play(); current = A.Idle;
+    scene = new THREE.Scene(); cam = new THREE.PerspectiveCamera(24, 1, .1, 80);
+    scene.add(new THREE.HemisphereLight(0xffe9d6, 0x3a1608, 1.0));
+    const key = new THREE.DirectionalLight(0xfff0e0, 2.2); key.position.set(-4, 6, 6); scene.add(key);
+    const rim = new THREE.DirectionalLight(0xff5a14, 4.5); rim.position.set(6, 3, -3); scene.add(rim);
+    const rim2 = new THREE.DirectionalLight(0xff7a30, 1.4); rim2.position.set(5, 1, 4); scene.add(rim2);
+    scene.add(build());
     wrap.appendChild(renderer.domElement);
-    size(); ready = true; loading = false;
+    size(); ready = true;
     if (NK.motionOn()) resume();
-  } catch (e) { failed = true; loading = false; console.warn('3D-Möwe nicht verfügbar, Standbild bleibt:', e?.message || e); }
+  } catch (e) { failed = true; console.warn('3D-Möwe nicht verfügbar, Standbild bleibt:', e?.message || e); }
 }
-function resume() {
-  if (!ready || running) return; running = true;
-  renderer.domElement.style.display = ''; wrap.classList.add('g3'); clock.getDelta();
-  renderer.setAnimationLoop(loop);
-}
+function resume() { if (!ready || running) return; running = true; renderer.domElement.style.display = ''; wrap.classList.add('g3'); clock.getDelta(); renderer.setAnimationLoop(loop); }
 function pause() { if (!running) return; running = false; renderer.setAnimationLoop(null); renderer.domElement.style.display = 'none'; wrap.classList.remove('g3'); }
 
 if (NK && wrap) {
-  const set = e => { const r = wrap.getBoundingClientRect(); ptr.x = (e.clientX / innerWidth) * 2 - 1; ptr.y = -(e.clientY / innerHeight) * 2 + 1; ptr.t = performance.now(); };
+  const set = e => { ptr.x = (e.clientX / innerWidth) * 2 - 1; ptr.y = -(e.clientY / innerHeight) * 2 + 1; ptr.t = performance.now(); };
   addEventListener('pointermove', set, { passive: true }); addEventListener('pointerdown', set, { passive: true });
-  /* Flügelschlag nur auf Klick */
   wrap.style.pointerEvents = 'auto'; wrap.style.cursor = 'pointer';
-  wrap.addEventListener('click', () => { if (running && A.Flap) { A.Flap.setLoop(THREE.LoopOnce, 1); A.Flap.timeScale = 1; fadeTo('Flap', .15); } });
+  wrap.addEventListener('click', () => { if (running && flapT < 0) flapT = 0; });
   addEventListener('resize', () => { if (ready) size(); });
   addEventListener('nk:motion', () => { if (NK.motionOn()) { if (ready) resume(); else init(); } else pause(); });
-  if (NK.motionOn()) setTimeout(init, 200);
+  if (NK.motionOn()) setTimeout(init, 150);
 }
 if (NK && location.search.includes('debug')) window.__gull = () => ({ running, ready, failed, yaw: +look.yaw.toFixed(2), pitch: +look.pitch.toFixed(2) });
