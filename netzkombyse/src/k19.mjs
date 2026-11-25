@@ -40,7 +40,7 @@ const PROPS = {
 const marken = ['Bio Planète', 'Tout Terrain', 'K-Idol', 'Craft & Caviar', 'Grizzly', 'Beisser', 'Timkid', 'Elektrosil', 'PremiumWheels', 'dgina', 'Pechkeks', 'HWT', 'Abelmann', 'Wurstladen', 'Marktpirat', 'Sabro', 'Wein-Bauer', 'Kaffeekontor'];
 const branchen = [['Food & Gastronomie', 'Marke, Direktvertrieb, Gastronomie.'], ['Medizin & Gesundheit', 'Medizintechnik, Kliniken, Verbände.'], ['B2B & Industrie', 'B2B, Corporate, Händlerportale.'], ['Heimtier', 'Hundemöbel, Futter, Markenentwicklung.'], ['Musik & Entertainment', 'Instrumente, K-Pop, Fachhandel.'], ['Mobilität & Handwerk', 'Reifen, Fahrräder, SHK-Leads.']];
 const awards = [['usability', 'Shop Usability Award'], ['topshop', 'Top Shop 2024 (Auto Bild)'], ['trendshop', 'Trend Shop 2025 (Computer Bild)'], ['iwb', 'Internet World Business Shop-Award, Shortlist'], ['', 'Carlsberg Preis']];
-const integr = ['Pickware', 'JTL', 'Shopify', 'Mollie', 'Sendcloud', 'Hive', 'VARIO', 'xentral', 'Sage', 'HQS ProfiSoft', 'Haufe X360'];
+const integr = ['Pickware', 'JTL', 'Shopify', 'Stripe', 'Mollie', 'Sendcloud', 'Hive', 'VARIO', 'xentral', 'Sage', 'HQS ProfiSoft', 'Haufe X360'];
 const leist = [
   { t: 'Technologie & Shop', href: `${W}/e-commerce`, d: 'Ihr Shop als Wachstumsmaschine: skalierbar, integriert, zukunftsfähig.', c: ['Shopware & Shopify', 'Shop-Migration', 'ERP-, PIM- & CRM-Anbindung', 'Individuelle Module', 'Barrierefreiheit (BFSG)', 'KI-gestützte Suche'] },
   { t: 'Kommunikation & Marke', href: `${W}/brand-ux-ui`, d: 'Marke, UX und Content aus einem Guss: ein Gesicht über alle Kanäle.', c: ['Markenstrategie', 'UX / UI', 'Video & Content', 'Markenstimme & Wording', 'Social Media', 'Recruiting-Kampagnen'] },
