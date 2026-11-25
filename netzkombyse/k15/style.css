@@ -612,3 +612,14 @@ html[data-motion=off] .bk,html[data-motion=off] .fr,html[data-motion=off] .bk .a
 @media(min-width:861px){.gwrap{height:min(68svh,52vw)!important;right:clamp(2rem,8vw,9rem)!important;bottom:clamp(2.5rem,9svh,6rem)!important}}
 .gwrap::before{inset:6% -34% -6% -30%!important;background:radial-gradient(closest-side,rgba(255,107,20,.55),rgba(194,31,11,.25) 55%,transparent 80%)!important;filter:blur(24px)!important}
 @media(max-width:860px){.gwrap{height:min(48svh,100vw)!important}}
+
+/* Projekt-Opener (Vorbild designhouse.co.kr): Farbfläche, Wortmarke teilt sich, in der Mitte blättert eine Karte durch die Cases, dann gibt die Fläche die Projekte frei. Scrollgesteuert, reversibel. */
+.op{height:300svh;position:relative}
+.op-s{position:sticky;top:0;height:100svh;display:flex;align-items:center;justify-content:center;gap:.3em;background:var(--o);color:#000;overflow:hidden;font-size:clamp(2.6rem,9vw,9rem);line-height:1}
+.op-a,.op-b{display:block;font-family:var(--hf);letter-spacing:-.05em;will-change:transform,opacity}
+.op-a{font-weight:300;font-style:italic}.op-b{font-weight:800}
+.op-c{position:relative;width:var(--w,0);height:var(--h,0);flex:none;overflow:hidden;background:#000;box-shadow:0 20px 60px rgba(0,0,0,.35);transform:rotate(var(--r,0deg));opacity:var(--o2,1)}
+.op-c img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0}.op-c img.on{opacity:1}
+html[data-motion=off] .op{display:none}
+@media(prefers-reduced-motion:reduce){.op{display:none}}
+@media(max-width:860px){.op-s{flex-direction:column;font-size:clamp(2.6rem,15vw,5rem);gap:.4em}}

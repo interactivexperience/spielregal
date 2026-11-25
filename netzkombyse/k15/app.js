@@ -252,6 +252,23 @@
     const go = (i, f) => { ls.forEach((l, j) => l.classList.toggle('on', j === i)); bt.forEach((b, j) => b.setAttribute('aria-selected', String(j === i))); if (f) bt[i].focus(); bt[i].scrollIntoView({ block: 'nearest', inline: 'center', behavior: motionOn() ? 'smooth' : 'auto' }); };
     bt.forEach((b, i) => { b.addEventListener('click', () => go(i)); b.addEventListener('keydown', e => { const k = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (k) { e.preventDefault(); go((i + k + bt.length) % bt.length, true); } }); });
   }
+  /* ---------- Projekt-Opener (scrollgesteuert) ---------- */
+  const op = $('[data-op]');
+  if (op) {
+    const st = $('.op-s', op), A = $('.op-a', op), B = $('.op-b', op), imgs = $$('.op-c img', op); let cur = 0, ticking = false;
+    const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const upd = () => { ticking = false; if (!motionOn()) return;
+      const r = op.getBoundingClientRect(), p = clamp(-r.top / (r.height - innerHeight), 0, 1), mob = innerWidth < 860;
+      const open = ease(clamp(p / .2, 0, 1)), out = ease(clamp((p - .82) / .18, 0, 1));
+      const cw = (mob ? 46 : 19) * (1 - out * .35), ch = cw * 1.32;
+      st.style.setProperty('--w', (open * cw).toFixed(2) + 'vw'); st.style.setProperty('--h', (open * ch).toFixed(2) + 'vw'); st.style.setProperty('--r', ((1 - open) * -8).toFixed(1) + 'deg'); st.style.setProperty('--o2', (1 - out).toFixed(2));
+      const sp = innerWidth * (mob ? 0 : .06) * open; A.style.transform = `translate3d(${-sp * out * 6}px,0,0)`; B.style.transform = `translate3d(${sp * out * 6}px,0,0)`; A.style.opacity = B.style.opacity = String(1 - out);
+      st.style.background = `color-mix(in srgb, var(--o) ${((1 - out) * 100).toFixed(0)}%, #000)`;
+      const k = clamp((p - .15) / .67, 0, .999), i = Math.floor(k * imgs.length);
+      if (i !== cur) { imgs[cur].classList.remove('on'); imgs[i].classList.add('on'); cur = i; } };
+    const sched = () => { if (!ticking) { ticking = true; requestAnimationFrame(upd); } };
+    addEventListener('scroll', sched, { passive: true }); addEventListener('resize', sched); addEventListener('nk:motion', sched); upd();
+  }
   const clk = $('[data-clock]');
   if (clk) { const t = () => { clk.textContent = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' }).format(new Date()); }; t(); setInterval(t, 20000); }
 })();
