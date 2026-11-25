@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Case-Kacheln · drei Richtungen</title>
+<meta name="robots" content="noindex">
+<style>
+@font-face{font-family:Bricolage;src:url(../fonts/bricolage.woff2) format('woff2');font-weight:200 800;font-display:swap}
+@font-face{font-family:Sora;src:url(../fonts/sora.woff2) format('woff2');font-weight:100 800;font-display:swap}
+:root{--o:#FF5A14;--soft:rgba(255,255,255,.66);--line:rgba(255,255,255,.2);--ease:cubic-bezier(.2,.8,.2,1);--hf:Bricolage,Sora,sans-serif;--bf:Sora,system-ui,sans-serif}
+*{box-sizing:border-box;margin:0}
+html,body{background:#000;color:#fff}
+body{font:300 1rem/1.6 var(--bf);padding:clamp(20px,5vw,72px);overflow-x:clip}
+a{color:inherit;text-decoration:none}
+.top{font-size:.78rem;color:var(--soft);margin-bottom:2.4rem}.top a{text-decoration:underline}
+h1{font:800 clamp(2.2rem,5.5vw,4.6rem)/.95 var(--hf);letter-spacing:-.045em;max-width:16ch}
+.lead{max-width:44rem;color:var(--soft);margin:1.2rem 0 0}
+.dir{margin-top:clamp(4rem,10vh,7rem);padding-top:1.6rem;border-top:1px solid var(--line)}
+.dh{display:grid;grid-template-columns:auto 1fr;gap:.4rem 1.4rem;align-items:baseline;margin-bottom:clamp(2rem,5vw,3.4rem)}
+.dh b{font:800 clamp(3rem,7vw,5.6rem)/.8 var(--hf);color:var(--o);grid-row:span 2}
+.dh h2{font:700 clamp(1.4rem,2.6vw,2.2rem)/1.05 var(--hf);letter-spacing:-.03em}
+.dh p{color:var(--soft);font-size:.92rem;max-width:46rem}
+img{display:block;max-width:none}
+.k{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:#FFB48A}
+.go{display:inline-flex;gap:.5rem;align-items:center;margin-top:1rem;font:600 .72rem var(--bf);letter-spacing:.1em;text-transform:uppercase;color:var(--o)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ===== A · Editorial: eine Zeile pro Case, Motiv riesig, Text daneben ===== */
+.a{display:grid;gap:clamp(3rem,7vw,6rem)}
+.a-r{display:grid;grid-template-columns:1fr 1.15fr;gap:clamp(1.5rem,4vw,4rem);align-items:center;min-height:clamp(320px,42vw,560px);border-bottom:1px solid var(--line);padding-bottom:2rem}
+.a-r:nth-child(even) .a-m{order:-1}
+.a-t h3{font:800 clamp(2rem,4.6vw,4.2rem)/.98 var(--hf);letter-spacing:-.045em;margin:.6rem 0 1.2rem;max-width:13ch;transition:color .4s}
+.a-t dl{display:grid;grid-template-columns:auto 1fr;gap:.3rem 1.2rem;font-size:.85rem;color:var(--soft)}.a-t dt{color:#fff;font-weight:600}
+.a-m{position:relative;height:100%;min-height:inherit;display:grid;place-items:center}
+.a-m::before{content:"";position:absolute;inset:10% 6%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,90,20,.45),transparent);opacity:.5;transition:opacity .6s,transform .9s var(--ease)}
+.a-m img{position:relative;height:clamp(300px,40vw,540px);width:auto;filter:drop-shadow(0 40px 50px rgba(0,0,0,.7));transition:transform 1s var(--ease)}
+.a-r:hover .a-m::before{opacity:1;transform:scale(1.1)}.a-r:hover h3{color:var(--o)}
+.a-r:hover .a-m img{transform:translate3d(0,-3%,0) rotate(-3deg) scale(1.04)}
+@media(max-width:760px){.a-r{grid-template-columns:1fr}.a-r:nth-child(even) .a-m{order:0}.a-m img{height:300px}}
+
+/* ===== B · Markenfarbe: jede Kachel trägt die Farbe des Kunden, ruhig und flach ===== */
+.b{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(.8rem,1.6vw,1.4rem)}
+.b-c{position:relative;display:flex;flex-direction:column;aspect-ratio:3/4.2;border-radius:4px;background:var(--c);overflow:hidden;padding:1.3rem;transition:background .6s}
+.b-c .k{color:rgba(255,255,255,.75)}
+.b-m{flex:1;position:relative;min-height:0;margin:.6rem 0 1rem}
+.b-m img{position:absolute;inset:0;margin:auto;max-height:100%;max-width:88%;width:auto;height:auto;object-fit:contain;filter:drop-shadow(0 22px 26px rgba(0,0,0,.4));transition:transform .9s var(--ease)}
+.b-c h3{font:700 clamp(1.1rem,1.6vw,1.45rem)/1.15 var(--hf);letter-spacing:-.025em}
+.b-c p{font-size:.78rem;color:rgba(255,255,255,.75);margin-top:.4rem}
+.b-c:hover{background:var(--c2)}.b-c:hover .b-m img{transform:scale(1.07) rotate(-2deg)}
+.b-c.ph .b-m{margin:0 -1.3rem 1rem}.b-c.ph .b-m img{inset:auto 0 -1rem;max-height:112%}
+.c-c.ph .c-m{bottom:0;height:150%;clip-path:inset(-50% -50% 0 -50%)}.c-c.ph h3,.c-c.ph p,.c-c.ph .k{text-shadow:0 2px 14px #000}
+@media(max-width:860px){.b{grid-template-columns:1fr}.b-c{aspect-ratio:4/4.4}}
+
+/* ===== C · Pop-out: flache dunkle Karte, das Motiv bricht oben aus dem Rahmen ===== */
+.c{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(1.2rem,2.4vw,2.2rem);padding-top:clamp(6rem,12vw,10rem)}
+.c-c{position:relative;display:block;aspect-ratio:4/3.4;border-radius:6px;background:linear-gradient(160deg,#1c0704,#0a0201 70%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);padding:1.2rem;display:flex;flex-direction:column;justify-content:flex-end}
+.c-c::after{content:"";position:absolute;left:8%;right:8%;bottom:-1px;height:45%;border-radius:50% 50% 0 0;background:radial-gradient(closest-side,rgba(255,90,20,.55),transparent);opacity:.6;pointer-events:none;transition:opacity .5s}
+.c-m{position:absolute;left:50%;bottom:34%;height:118%;transform:translate3d(-50%,0,0);transition:transform .9s var(--ease);z-index:2;pointer-events:none}
+.c-m img{height:100%;width:auto;filter:drop-shadow(0 26px 30px rgba(0,0,0,.65))}
+.c-c h3{position:relative;z-index:3;font:700 clamp(1.05rem,1.5vw,1.35rem)/1.15 var(--hf);letter-spacing:-.025em;margin-top:.4rem}
+.c-c p{position:relative;z-index:3;font-size:.76rem;color:var(--soft);margin-top:.35rem}
+.c-c .k{position:relative;z-index:3}
+.c-c:hover .c-m{transform:translate3d(-50%,-8%,0) rotate(-3deg)}.c-c:hover::after{opacity:1}
+@media(max-width:860px){.c{grid-template-columns:1fr;gap:9rem}}
+</style>
+</head>
+<body>
+<p class="top"><a href="../index.html">‹ Übersicht</a> · Skizzen zum Vergleich, gleiche drei Cases, jeweils mit Hover</p>
+<h1>Case-Kacheln: drei Richtungen.</h1>
+<p class="lead">Drei bewusst gegensätzliche Wege. Fahr mit der Maus über die Kacheln. Sag mir, welche Richtung passt, oder was du aus welcher mitnehmen willst. Die kleine Hover-Animation (Schlamm, Glanz, Features am Phone) aus Version 32 lässt sich in jede Richtung übernehmen.</p>
+
+<section class="dir"><div class="dh"><b>A</b><h2>Editorial: ein Case, eine Bühne</h2><p>Eine Zeile pro Projekt, abwechselnd links und rechts. Das Motiv ist riesig, die Aussage groß wie eine Headline, Details als kurze Liste. Wirkt wie ein Magazin, braucht viel Scrollweg.</p></div>
+<div class="a">
+  <a class="a-r" href="#"><div class="a-t"><p class="k">Outdoor · Tout Terrain</p><h3>So robust wie die Räder, die er verkauft.</h3><dl><dt>Kunde</dt><dd>Radmanufaktur für Bike-Traveller</dd><dt>Leistung</dt><dd>Shop, Marke, Content</dd></dl><span class="go">Projekt ansehen ↗</span></div><div class="a-m"><img src="../media/cut/tout.webp" alt=""></div></a>
+  <a class="a-r" href="#"><div class="a-t"><p class="k">Food · Beisser</p><h3>Feinste Fleischwaren, mit dem Daumen bestellt.</h3><dl><dt>Kunde</dt><dd>Das Fleisch ist willig</dd><dt>Leistung</dt><dd>Mobile Shop, Checkout</dd></dl><span class="go">Projekt ansehen ↗</span></div><div class="a-m"><img src="../media/cut/beisser.webp" alt=""></div></a>
+  <a class="a-r" href="#"><div class="a-t"><p class="k">Food · Wein-Bauer.de</p><h3>50 Jahre Weinhandel, auf allen Kanälen.</h3><dl><dt>Kunde</dt><dd>Multi-Channel Weinhandel</dd><dt>Leistung</dt><dd>Shopware, Marketing</dd></dl><span class="go">Projekt ansehen ↗</span></div><div class="a-m"><img src="../media/cut/weinbauer.webp" alt=""></div></a>
+</div></section>
+
+<section class="dir"><div class="dh"><b>B</b><h2>Markenfarbe: jede Kachel in der Farbe des Kunden</h2><p>Flache Farbfläche statt Schwarz mit Glut, Motiv mittig, kurzer Text unten in der Kachel. Ruhig und produktnah, die Referenzen werden bunt und unterscheidbar, Glut bleibt nur drumherum.</p></div>
+<div class="b">
+  <a class="b-c" href="#" style="--c:#5A3B24;--c2:#6E4A2E"><p class="k">Outdoor</p><div class="b-m"><img src="../media/cut/tout.webp" alt=""></div><h3>So robust wie die Räder, die er verkauft.</h3><p>Tout Terrain · Radmanufaktur</p></a>
+  <a class="b-c ph" href="#" style="--c:#8E1222;--c2:#A5172A"><p class="k">Food</p><div class="b-m"><img src="../media/cut/beisser.webp" alt=""></div><h3>Feinste Fleischwaren, mit dem Daumen bestellt.</h3><p>Beisser · Fleischwaren</p></a>
+  <a class="b-c" href="#" style="--c:#2E4A2C;--c2:#395B36"><p class="k">Food</p><div class="b-m"><img src="../media/cut/weinbauer.webp" alt=""></div><h3>50 Jahre Weinhandel, auf allen Kanälen.</h3><p>Wein-Bauer.de · Weinhandel</p></a>
+</div></section>
+
+<section class="dir"><div class="dh"><b>C</b><h2>Pop-out: das Motiv bricht aus der Karte</h2><p>Niedrige dunkle Karten, das Motiv ist größer als die Karte und ragt oben heraus. Beim Hover steigt es weiter hoch. Am meisten Tiefe und Spiel, im Raster dichter als A.</p></div>
+<div class="c">
+  <a class="c-c" href="#"><div class="c-m"><img src="../media/cut/tout.webp" alt=""></div><p class="k">Outdoor</p><h3>So robust wie die Räder, die er verkauft.</h3><p>Tout Terrain · Radmanufaktur</p></a>
+  <a class="c-c ph" href="#"><div class="c-m"><img src="../media/cut/beisser.webp" alt=""></div><p class="k">Food</p><h3>Feinste Fleischwaren, mit dem Daumen bestellt.</h3><p>Beisser · Fleischwaren</p></a>
+  <a class="c-c" href="#"><div class="c-m"><img src="../media/cut/weinbauer.webp" alt=""></div><p class="k">Food</p><h3>50 Jahre Weinhandel, auf allen Kanälen.</h3><p>Wein-Bauer.de · Weinhandel</p></a>
+</div></section>
+</body>
+</html>
