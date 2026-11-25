@@ -49,6 +49,7 @@ const leist = [
 const faq = [
   { q: 'Welche Agentur in Hamburg baut Shops auf Shopware 6 für B2B und B2C?', a: 'Wir. Seit über 15 Jahren entwickeln wir Shops für den Mittelstand, von der Beratung über die Anbindung an ERP, PIM und CRM bis zum laufenden Betrieb. Ihre Ansprechperson kennt Ihr Geschäft und bleibt dieselbe.' },
   { q: 'Für wen sind wir der richtige Partner, für wen eher nicht?', a: 'Sehr gut passen wir, wenn E-Commerce für Ihr Wachstum zentral ist, Sie Systeme anbinden müssen und einen verlässlichen Partner auf Augenhöhe suchen. Weniger gut passen wir, wenn nur der günstigste Preis zählt, ein fertiges Template genügt oder niemand im Haus Entscheidungen treffen kann.' },
+  { q: 'Arbeiten Sie mit KI?', a: 'Ja, um unsere Arbeit zu beschleunigen: bei Recherche, Entwicklung, Content und Auswertung. Die Qualitätssicherung bleibt bei Menschen. Jede Lieferung prüft ein Mensch, bevor sie bei Ihnen ankommt.' },
   { q: 'Was unterscheidet uns von anderen Shopware-Agenturen?', a: 'Wir denken in Architektur statt in Einzeltickets. Wir verbinden Technik, Performance-Marketing und Beratung. Wir sind auf Shopware 6 spezialisiert, sprechen direkt mit Ihnen und messen unsere Arbeit an Ergebnissen.' },
 ];
 const lagen = [
