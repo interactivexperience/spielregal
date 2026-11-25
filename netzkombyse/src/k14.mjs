@@ -15,6 +15,7 @@ const team = [
   ['Stefan Gutmann', 'SEO & AI-Sichtbarkeit', 'stefan', 'Sorgt dafür, dass Ihre Kunden Sie finden – in Suchmaschinen und KI-Antworten. Datengetriebene Strategien für organische Reichweite.'],
   ['Mr. Claude', 'AI Guy', 'claude', 'Der digitale Kollege im Team: recherchiert, prüft und baut mit, rund um die Uhr.'],
 ];
+const TC_ROLE = { 1: 'FullStack-Entwicklung', 2: 'FullStack & Schnittstellen' };
 const pad = n => String(n).padStart(2, '0');
 const sq = `<svg class="sq" viewBox="0 0 300 12" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 6C25 0 40 12 62 6S100 0 124 6S162 12 186 6S224 0 248 6S280 10 298 6"/></svg>`;
 const arrow = `<svg viewBox="0 0 60 16" aria-hidden="true"><path d="M2 8h52M46 2l8 6-8 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -83,7 +84,7 @@ function index() {
 
 <section class="sec" id="team"><div class="wr"><p class="tag" data-reveal><b>06</b> Team</p><h2 data-reveal>Die <span class="pill">Menschen</span> dahinter.</h2>
   <p class="lead tl" data-reveal>Jede Person hier ist Ihre direkte Ansprechpartnerin, Ihr direkter Ansprechpartner, vom ersten Gespräch bis zum Start. In keiner bestimmten Reihenfolge.</p></div>
-  <div class="tc-row" data-trow tabindex="0" role="region" aria-label="Team, seitlich scrollbar">${team.map(([n, r, im, d], i) => `<article class="tc" style="--i:${i}" tabindex="0"><p class="tc-p">Präsentiert</p><h3 class="tc-n">${esc(n)}</h3><div class="tc-w bg${i}"><img src="../media/team-cut/${im}.webp" alt="${esc(n)}" width="800" height="1000" loading="lazy" decoding="async" draggable="false"><div class="tc-d"><p>${esc(d)}</p></div></div><p class="tc-z">zuständig für</p><p class="tc-r">${esc(r)}</p><span class="tc-i" aria-hidden="true">${pad(i + 1)}/${pad(team.length)}</span><span class="tc-m" aria-hidden="true">NK</span></article>`).join('')}</div></section>
+  <div class="tc-row" data-trow tabindex="0" role="region" aria-label="Team, seitlich scrollbar">${team.map(([n, r, im, d], i) => `<article class="tc" style="--i:${i}" tabindex="0"><p class="tc-p">Präsentiert</p><h3 class="tc-n">${esc(n)}</h3><div class="tc-w bg${i}"><img src="../media/team-cut/${im}.webp" alt="${esc(n)}" width="800" height="1000" loading="lazy" decoding="async" draggable="false"><div class="tc-d"><p>${esc(d)}</p></div></div><p class="tc-z">${i === 0 || i === 8 ? 'im Team als' : 'zuständig für'}</p><p class="tc-r">${esc(TC_ROLE[i] || r)}</p><span class="tc-i" aria-hidden="true">${pad(i + 1)}/${pad(team.length)}</span><span class="tc-m" aria-hidden="true">NK</span></article>`).join('')}</div></section>
 
 <section class="sec ctsec" id="kontakt"><div class="wr ct"><div class="ct-t"><p class="tag" data-reveal><b>07</b> Kontakt</p><h2 data-reveal>Reden wir <span class="pill">persönlich</span>.</h2>
   <p class="lead" data-reveal>${C.ansprech.name}, ${C.ansprech.rolle}: Ihr Ansprechpartner von der ersten Frage an, ohne Account-Manager dazwischen.</p>
