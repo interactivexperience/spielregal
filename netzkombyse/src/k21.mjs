@@ -99,7 +99,7 @@ const wallTiles = [
 const caseLink = (c, cls, inner) => `<a class="${cls}" href="${W}/${c[4]}" target="_blank" rel="noopener" aria-label="${esc(c[1])}: ${esc(c[2])}">${inner}</a>`;
 const marq = ['Shopware', 'Shopify', 'Headless', 'Migration', 'Marke', 'UX / UI', 'SEO', 'AI-Sichtbarkeit', 'Performance', 'ERP · PIM · CRM'];
 const logoOf = { 'Bio Planète': 'bioplanete.svg', 'Tout Terrain': 'touttterrain.svg', 'K-Idol': 'kidol.svg', 'Craft & Caviar': 'craftandcaviar.svg', 'Grizzly': 'grizzly.svg', 'Beisser': 'beisser.webp', 'Timkid': 'timkid.svg', 'Elektrosil': 'elektrosil.svg', 'PremiumWheels': 'premiumwheels.webp', 'dgina': 'dgina.svg', 'Pechkeks': 'pechkeks.webp', 'HWT': 'hwt.svg', 'Abelmann': 'abelmann.svg', 'Wurstladen': 'wurstladen.svg', 'Marktpirat': 'marktpirat.svg', 'Sabro': 'sabro.svg', 'Wein-Bauer': 'weinbauer.svg', 'Kaffeekontor': 'kaffeekontor.svg' };
-const row = a => [...a, ...a].map(x => `<span class="bn">${esc(x)}</span><i aria-hidden="true">✦</i>`).join('');
+const row = a => [...a, ...a].map(x => `<span class="bn">${esc(x)}</span><i class="stn" aria-hidden="true">✦</i><i class="lgo" aria-hidden="true"><img src="../media/logos/${logoOf[x]}" alt="" loading="lazy" decoding="async"></i>`).join('');
 
 const fragen = [
   { q: 'Was kostet ein Onlineshop?', a: 'Das sagen wir vorher. Nicht hinterher.', d: 'Der Preis hängt von Umfang, Schnittstellen und Design ab. Im Erstgespräch klären wir Ziel und Budget, danach bekommst du ein Angebot, das du nachvollziehen kannst.', l: 'Termin mit Henning buchen', href: C.termin },
@@ -135,7 +135,7 @@ function index() {
 
 <nav class="qk" aria-label="Schnell zu den häufigsten Fragen"><p class="k" data-reveal>Schnell zur Antwort</p><ul data-reveal>${[['Was kostet ein Onlineshop?', 0], ['Shopware oder Shopify?', 1], ['Shop umziehen?', 2], ['Förderung?', 3]].map(([t, i]) => `<li><a href="#fragen" data-q="${i}">${esc(t)}</a></li>`).join('')}</ul></nav>
 
-<div class="mqs" role="group" aria-label="Marken, für die wir arbeiten"><p class="k mk">Diese Marken arbeiten mit uns.</p><p class="sr-only">${marken.join(', ')}</p><p class="mq a" aria-hidden="true"><span class="mq-t" data-mq="-1">${row(marken.slice(0, 9))}</span></p><p class="mq b" aria-hidden="true"><span class="mq-t" data-mq="1">${row(marken.slice(9))}</span></p></div>
+<script>if(/[?&]marken=sterne/.test(location.search))document.documentElement.classList.add('mq-st')</script><div class="mqs" role="group" aria-label="Marken, für die wir arbeiten"><p class="k mk">Diese Marken arbeiten mit uns.</p><p class="sr-only">${marken.join(', ')}</p><p class="mq a" aria-hidden="true"><span class="mq-t" data-mq="-1">${row(marken.slice(0, 9))}</span></p><p class="mq b" aria-hidden="true"><span class="mq-t" data-mq="1">${row(marken.slice(9))}</span></p></div>
 
 <section class="sec" id="arbeit"><div class="wr"><p class="k kc">Referenzen</p><div class="two"><h2 data-chars data-reveal>Projekte, die bleiben.</h2><p class="side" data-reveal>Eine Auswahl aus über 40 Projekten, vom Ein-Frau-Startup bis zum Mittelstand.</p></div>
   <div class="gal" data-gal="kc"><ul class="kcs">${kacheln.slice(0, 3).map(kachel).join('')}</ul></div>
