@@ -150,6 +150,7 @@ function index() {
 <section class="sec sun" id="zusammen"><div class="sunglow" aria-hidden="true"></div><div class="wr"><p class="k kc">So arbeiten wir</p><div class="two"><h2 data-chars data-reveal>Auf Augenhöhe. Auch bei Wellengang.</h2></div>
   <p class="s zs" data-reveal>Wir sind nicht die Agentur, die Aufträge abarbeitet. Wir denken mit, entscheiden gemeinsam und bleiben an deiner Seite, wenn es ungemütlich wird.</p>
   <p class="trio" data-reveal><span>Du kennst dein Geschäft.</span><span>Wir kennen unser Handwerk.</span><span class="hl">Zusammen wissen wir mehr.</span></p>
+  <a class="crew" href="#menschen" data-reveal><span class="crew-f" aria-hidden="true">${team.map(([n, , im]) => `<img src="../media/team-glut/${im}.webp" alt="" width="80" height="100" loading="lazy">`).join('')}</span><span class="crew-t"><b>Neun Köpfe, ein Team.</b> Du sprichst direkt mit den Leuten, die deinen Shop bauen. <u>Team ansehen</u></span></a>
   </div></section>
 
 <section class="sec vs" id="stimmen" aria-label="Was Kunden sagen"><div class="wr"><p class="k kc">Kundenstimmen</p><div class="two"><h2 data-chars data-reveal>Genug von uns. Frag die anderen.</h2></div>
