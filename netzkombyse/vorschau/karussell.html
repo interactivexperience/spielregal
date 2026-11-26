@@ -105,14 +105,94 @@ h1{font:800 clamp(2.2rem,5.4vw,4.6rem)/.95 var(--hf);letter-spacing:-.045em;max-
 .v5 .lab{position:absolute;left:0;right:0;bottom:4%;text-align:center;font:800 clamp(1.4rem,3vw,2.4rem)/1 var(--hf);letter-spacing:-.04em;pointer-events:none}
 .v5 .lab small{display:block;margin-top:.5rem;font:400 .7rem var(--mf);letter-spacing:.12em;text-transform:uppercase;color:var(--soft)}
 
+.nbtn{width:48px;height:48px;border-radius:50%;border:1px solid rgba(255,255,255,.4);background:transparent;color:#fff;font:400 1.1rem var(--bf);cursor:pointer;transition:background .3s,color .3s,border-color .3s}.nbtn:hover{background:var(--o);color:#000;border-color:var(--o)}
+
+/* ===== 6 Stapel ===== */
+.v6 .st{display:grid;gap:1.6rem;align-items:center}
+@media (min-width:820px){.v6 .st{grid-template-columns:1.1fr 1fr}}
+.v6 .dk{position:relative;height:clamp(460px,50vw,600px);touch-action:pan-y}
+.v6 .cd{position:absolute;left:50%;top:52%;width:clamp(240px,27vw,360px);aspect-ratio:4/5;translate:-50% -50%;border-radius:14px;overflow:hidden;background:#111;box-shadow:0 30px 70px rgba(0,0,0,.7);transition:transform .7s var(--e),filter .7s,opacity .5s;cursor:grab;user-select:none;-webkit-user-select:none}
+.v6 .cd.dr{transition:none;cursor:grabbing}
+.v6 .cd img{width:100%;height:100%;object-fit:cover;pointer-events:none}
+.v6 .cd .pills{position:absolute;left:12px;right:12px;bottom:12px}
+.v6 .tx{display:grid;gap:1rem;align-content:center;justify-items:start}
+.v6 .tx .n{font:400 .72rem var(--mf);letter-spacing:.12em;color:var(--soft)}
+.v6 .tx h3{font:800 clamp(2rem,4.6vw,4rem)/.95 var(--hf);letter-spacing:-.05em;max-width:13ch}
+.v6 .tx .nm{font:600 1rem var(--bf);color:var(--o)}
+.v6 .tx .nb{display:flex;gap:.5rem}
+.v6 .tx>*{transition:opacity .35s,transform .6s var(--e)}.v6 .tx.sw>:not(.nb){opacity:0;transform:translateY(10px)}
+
+/* ===== 7 Namensliste ===== */
+.v7 .ls{border-top:1px solid var(--line)}
+.v7 .rw{display:grid;grid-template-columns:3rem 1fr auto;align-items:baseline;gap:1rem;padding:clamp(.7rem,1.4vw,1.1rem) 0;border-bottom:1px solid var(--line);text-decoration:none;transition:opacity .45s}
+.v7 .rw .n{font:400 .7rem var(--mf);letter-spacing:.1em;color:var(--soft)}
+.v7 .rw h3{font:800 clamp(2rem,6vw,5.4rem)/.95 var(--hf);letter-spacing:-.05em;transition:transform .6s var(--e),color .3s}
+.v7 .rw .k{font:400 .68rem/1.5 var(--mf);letter-spacing:.1em;text-transform:uppercase;color:var(--soft);text-align:right}
+@media (hover:hover){.v7 .ls:hover .rw{opacity:.25}.v7 .ls .rw:hover{opacity:1}.v7 .rw:hover h3{color:var(--o);transform:translateX(.2em)}}
+.v7 .fl{position:fixed;left:0;top:0;z-index:8;width:clamp(240px,23vw,340px);aspect-ratio:4/5;border-radius:12px;overflow:hidden;pointer-events:none;opacity:0;scale:.6;transition:scale .55s var(--e),opacity .3s;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.v7 .fl.on{opacity:1;scale:1}
+.v7 .fl img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;clip-path:inset(100% 0 0 0);transition:clip-path .65s var(--e)}
+.v7 .fl img.in{clip-path:inset(0)}
+.v7 .fl .pills{position:absolute;z-index:2;left:10px;right:10px;bottom:10px}
+.v7 .mi{display:none}
+@media (max-width:600px){.v7 .rw{grid-template-columns:2.2rem 1fr}.v7 .rw .k{display:none}}
+@media (hover:none){.v7 .fl{display:none}.v7 .rw{grid-template-columns:2.2rem 1fr}.v7 .rw .k{display:none}.v7 .rw h3{transition:color .3s}.v7 .rw.on h3{color:var(--o)}
+ .v7 .mi{display:block;grid-column:1/-1;height:0;overflow:hidden;position:relative;border-radius:10px;transition:height .6s var(--e)}.v7 .rw.on .mi{height:min(75vw,380px)}
+ .v7 .mi img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.v7 .mi .pills{position:absolute;left:10px;right:10px;bottom:10px}}
+
+/* ===== 8 Scroll-Pin ===== */
+.v8 .pin{position:relative;height:420vh}
+.v8 .sk{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;display:flex;align-items:center}
+.v8 .bgt{position:absolute;top:50%;left:0;white-space:nowrap;font:800 clamp(7rem,24vw,20rem)/1 var(--hf);letter-spacing:-.06em;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.13);margin-top:-.5em;will-change:transform;pointer-events:none}
+.v8 .tr{position:relative;display:flex;align-items:center;gap:clamp(16px,3vw,40px);padding:0 var(--g);will-change:transform}
+.v8 .cd{flex:0 0 auto;text-decoration:none}
+.v8 .cd:nth-child(odd){translate:0 -5vh}.v8 .cd:nth-child(even){translate:0 6vh}
+.v8 .im{position:relative;height:min(56svh,540px);aspect-ratio:4/5;border-radius:12px;overflow:hidden;background:#111}
+.v8 .im img{position:absolute;top:0;left:-10%;width:120%;height:100%;object-fit:cover;will-change:transform}
+.v8 .im .pills{position:absolute;left:12px;right:12px;bottom:12px}
+.v8 .cap{display:flex;justify-content:space-between;gap:1rem;margin-top:.8rem;max-width:min(45svh,432px)}
+.v8 .cap h3{font:700 1.1rem/1.15 var(--hf);letter-spacing:-.03em}.v8 .cap span{font:400 .68rem/1.6 var(--mf);color:var(--soft)}
+.v8 .hud{position:absolute;left:var(--g);right:var(--g);bottom:clamp(14px,3vh,32px);display:flex;align-items:end;gap:1.2rem;pointer-events:none}
+.v8 .ct{font:800 clamp(2.2rem,5vw,4.4rem)/.8 var(--hf);letter-spacing:-.05em;color:var(--o)}
+.v8 .hud .ln{flex:1;height:2px;background:var(--line);margin-bottom:.4rem}.v8 .hud .ln i{display:block;height:100%;background:var(--o);transform-origin:left;transform:scaleX(0)}
+.v8 .hud small{font:400 .68rem var(--mf);letter-spacing:.12em;text-transform:uppercase;color:var(--soft)}
+
+/* ===== 9 Tiefenflug ===== */
+.v9 .pin{position:relative;height:520vh}
+.v9 .sk{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;perspective:900px}
+.v9 .wd{position:absolute;inset:0;transform-style:preserve-3d}
+.v9 .cd{--w:clamp(200px,25vw,340px);position:absolute;left:50%;top:46%;width:var(--w);aspect-ratio:4/5;margin:calc(var(--w)*-.625) 0 0 calc(var(--w)/-2);border-radius:12px;overflow:hidden;background:#111;will-change:transform,opacity;text-decoration:none}
+.v9 .cd img{width:100%;height:100%;object-fit:cover}
+.v9 .ttl{position:absolute;z-index:2;left:var(--g);right:var(--g);bottom:clamp(16px,5vh,48px);display:grid;justify-items:center;gap:.8rem;text-align:center;pointer-events:none}
+.v9 .ttl h3{font:800 clamp(1.8rem,4.6vw,4rem)/.95 var(--hf);letter-spacing:-.05em;max-width:18ch}
+.v9 .ttl .pills{justify-content:center}
+.v9 .ttl>*{transition:opacity .35s,transform .6s var(--e)}.v9 .ttl.sw>*{opacity:0;transform:translateY(10px)}
+.v9 .sk::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 46%,transparent 40%,#000 85%)}
+
+/* ===== 10 Laufband ===== */
+.v10 .row{overflow:hidden;padding:.5rem 0;touch-action:pan-y}
+.v10 .tk{display:flex;gap:16px;width:max-content;will-change:transform}
+.v10 .cd{flex:0 0 auto;width:clamp(190px,21vw,290px);text-decoration:none}
+.v10 .im{position:relative;aspect-ratio:4/5;border-radius:10px;overflow:hidden;background:#111}
+.v10 .im img{width:100%;height:100%;object-fit:cover;filter:grayscale(.7) brightness(.65);transition:scale .9s var(--e),filter .6s}
+.v10 .cd:hover img,.v10 .cd:focus-visible img{scale:1.06;filter:none}
+.v10 .im .pills{position:absolute;left:10px;right:10px;bottom:10px;opacity:0;translate:0 8px;transition:opacity .4s,translate .6s var(--e)}
+.v10 .cd:hover .pills,.v10 .cd:focus-visible .pills{opacity:1;translate:0}
+.v10 .tn{display:flex;align-items:center;gap:clamp(1.2rem,3vw,2.6rem);width:max-content;font:800 clamp(3rem,9vw,8rem)/1.05 var(--hf);letter-spacing:-.05em;white-space:nowrap;will-change:transform}
+.v10 .tn span{color:transparent;-webkit-text-stroke:1.5px rgba(255,255,255,.75);transition:color .4s,-webkit-text-stroke-color .4s}
+.v10 .tn span.hi{color:var(--o);-webkit-text-stroke-color:var(--o)}
+.v10 .tn i{width:.22em;height:.22em;border-radius:50%;background:var(--o);flex:0 0 auto}
+@media (hover:none){.v10 .im img{filter:none}.v10 .im .pills{opacity:1;translate:0}}
+.rm .v10 .row{overflow-x:auto}
+
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<div class="top"><a href="../index.html">‹ Übersicht</a><span>Skizze · fünf Karussells · Bilder vorläufig</span></div>
+<div class="top"><a href="../index.html">‹ Übersicht</a><span>Skizze · zehn Karussells · Bilder vorläufig</span></div>
 <div class="wrap">
-<h1>Fünf Karussells für die Cases.</h1>
-<p class="lead">Alle fünf zeigen dieselben acht Cases mit <b>vollflächigen Bildern statt Freistellern</b> und mit den Pillen aus der letzten Runde. Die Bewegungen folgen bekannten Mustern von Awwwards-Seiten. Ziehen geht mit Maus und Finger. Die Bilder sind noch Ausschnitte aus den Collagen; mit Originalfotos wirkt jede Variante deutlich stärker.</p>
+<h1>Zehn Karussells für die Cases.</h1>
+<p class="lead"><b>Neu sind 6 bis 10.</b> Alle zeigen dieselben acht Cases mit <b>vollflächigen Bildern statt Freistellern</b> und mit den Pillen aus der letzten Runde. Die Bewegungen folgen bekannten Mustern von Awwwards-Seiten. Ziehen geht mit Maus und Finger. Die Bilder sind noch Ausschnitte aus den Collagen; mit Originalfotos wirkt jede Variante deutlich stärker.</p>
 </div>
 
 <section class="var v1"><div class="wrap vh"><b>1</b><h2>Ziehen mit Schwung</h2><span class="hint">ziehen · Mausrad</span><p>Horizontale Reihe mit Trägheit. Beim schnellen Ziehen neigen sich die Karten, die Bilder verschieben sich leicht gegen die Bewegung (Parallaxe). Am Desktop wird der Cursor zur Blase „Ziehen“.</p></div>
@@ -129,6 +209,21 @@ h1{font:800 clamp(2.2rem,5.4vw,4.6rem)/.95 var(--hf);letter-spacing:-.045em;max-
 
 <section class="var v5"><div class="wrap vh"><b>5</b><h2>Zylinder</h2><span class="hint">dreht sich · ziehen</span><p>Die Karten stehen auf einem drehenden 3D-Zylinder. Er dreht langsam von selbst und lässt sich anfassen.</p></div>
   <div class="st drag" id="v5"><div class="rg"></div><div class="lab"></div></div></section>
+<section class="var v6"><div class="wrap vh"><b>6</b><h2>Stapel</h2><span class="hint">wegziehen · Pfeile</span><p>Die Cases liegen als Kartenstapel. Die oberste Karte zieht man zur Seite weg, sie schiebt sich hinten wieder unter. Daneben stehen Satz und Pillen zur aktuellen Karte.</p></div>
+  <div class="wrap"><div class="st"><div class="dk" id="v6"></div><div class="tx"><span class="n"></span><span class="nm"></span><h3></h3><div class="pills"></div><div class="nb"><button class="nbtn" type="button" data-d="-1" aria-label="Zurück">←</button><button class="nbtn" type="button" data-d="1" aria-label="Weiter">→</button></div></div></div></div></section>
+
+<section class="var v7"><div class="wrap vh"><b>7</b><h2>Namensliste</h2><span class="hint">Maus darüber · auf dem Handy scrollen</span><p>Kein Bild-Raster, sondern eine Liste in großer Schrift. Über einem Namen erscheint das Bild am Cursor, wischt von unten auf und folgt der Maus mit leichter Verzögerung. Auf dem Handy öffnet sich die Zeile in der Bildmitte.</p></div>
+  <div class="wrap"><div class="ls" id="v7"></div></div><div class="fl" id="v7f"><div class="pills"></div></div></section>
+
+<section class="var v8"><div class="wrap vh"><b>8</b><h2>Scrollen wird seitwärts</h2><span class="hint">einfach weiterscrollen</span><p>Die Seite bleibt stehen, und das normale Scrollen schiebt die Cases seitwärts durch. Dahinter läuft langsamer eine riesige Kontur-Schrift mit (Parallaxe). Unten zählt eine Nummer mit.</p></div>
+  <div class="pin" id="v8"><div class="sk"><div class="bgt"></div><div class="tr"></div><div class="hud"><span class="ct">01</span><span class="ln"><i></i></span><small>/ 08</small></div></div></div></section>
+
+<section class="var v9"><div class="wrap vh"><b>9</b><h2>Tiefenflug</h2><span class="hint">einfach weiterscrollen</span><p>Die Cases stehen hintereinander im Raum. Beim Scrollen fliegt man an ihnen vorbei, abwechselnd links und rechts. Unten wechselt der Satz zum Case, das gerade vorne ist.</p></div>
+  <div class="pin" id="v9"><div class="sk"><div class="wd"></div><div class="ttl"><h3></h3><div class="pills"></div></div></div></div></section>
+
+<section class="var v10"><div class="wrap vh"><b>10</b><h2>Laufband</h2><span class="hint">läuft selbst · Maus darüber hält an</span><p>Zwei Bänder laufen gegeneinander: oben die Bilder, unten die Namen in Konturschrift. Scrollen beschleunigt beide kurz. Über einem Bild hält das Band an, das Bild bekommt Farbe und der passende Name leuchtet orange.</p></div>
+  <div class="row" id="v10a"><div class="tk"></div></div><div class="row" id="v10b"><div class="tn"></div></div></section>
+
 <div style="height:12vh"></div>
 
 <div class="cur" id="cur">Ziehen</div>
@@ -217,6 +312,79 @@ const lerp = (a, b, t) => a + (b - a) * t, clamp = (v, a, b) => Math.max(a, Math
     const a = ((-cur % 360) + 360) % 360, i = Math.round(a / (360 / N)) % N;
     cds.forEach((c, j) => { let d = Math.abs(((j * 360 / N - a) % 360 + 540) % 360 - 180); c.style.opacity = clamp(1.15 - d / 130, .15, 1); });
     if (i !== last) { last = i; lab.innerHTML = `${C[i][1]}<small>${C[i][2]} · ${pad(i)} / ${pad(N - 1)}</small>`; } requestAnimationFrame(f); })(); })();
+// 6 Stapel
+(() => { const dk = document.getElementById('v6'), tx = document.querySelector('.v6 .tx');
+  dk.innerHTML = C.map(c => `<a class="cd" href="${W}" target="_blank" rel="noopener" draggable="false">${img(c).replace(' loading="lazy"', '')}<div class="pills"><span class="pl t">${c[2]}</span></div></a>`).join('');
+  const cds = [...dk.children]; let order = C.map((_, i) => i), busy = false;
+  const lay = () => order.forEach((ci, k) => { const c = cds[ci], q = Math.min(k, 3); c.style.zIndex = N - k;
+    c.style.transform = k ? `translateY(${-q * 18}px) scale(${1 - q * .06}) rotate(${(ci % 2 ? 1 : -1) * q * 2}deg)` : 'none';
+    c.style.filter = `brightness(${1 - q * .22})`; c.style.opacity = k > 3 ? 0 : 1; });
+  const info = () => { tx.classList.add('sw'); setTimeout(() => { const i = order[0], c = C[i];
+    tx.querySelector('.n').textContent = `${pad(i)} / ${pad(N - 1)}`; tx.querySelector('.nm').textContent = c[1]; tx.querySelector('h3').textContent = c[3];
+    tx.querySelector('.pills').innerHTML = pills(c, 0); tx.classList.remove('sw'); }, 200); };
+  const next = d => { if (busy) return; busy = true;
+    if (d > 0) { const top = cds[order[0]]; top.classList.remove('dr'); top.style.transform = `translate(${110 * (d0 || 1)}%,-4%) rotate(${14 * (d0 || 1)}deg)`; info();
+      setTimeout(() => { order.push(order.shift()); top.style.zIndex = 0; lay(); busy = false; }, RM ? 0 : 380); }
+    else { order.unshift(order.pop()); cds[order[0]].style.zIndex = N + 1; info(); lay(); busy = false; } d0 = 0; };
+  let d0 = 0, sx = 0, sy = 0, dx = 0, on = false, moved = 0;
+  dk.addEventListener('pointerdown', e => { const top = cds[order[0]]; if (!top.contains(e.target) || busy) return; on = true; moved = 0; sx = e.clientX; sy = e.clientY; dx = 0; top.classList.add('dr'); dk.setPointerCapture(e.pointerId); });
+  dk.addEventListener('pointermove', e => { if (!on) return; dx = e.clientX - sx; moved = Math.max(moved, Math.abs(dx)); cds[order[0]].style.transform = `translate(${dx}px,${(e.clientY - sy) * .15}px) rotate(${dx * .05}deg)`; });
+  const up = () => { if (!on) return; on = false; const top = cds[order[0]]; top.classList.remove('dr'); if (Math.abs(dx) > 90) { d0 = Math.sign(dx); next(1); } else lay(); };
+  dk.addEventListener('pointerup', up); dk.addEventListener('pointercancel', up); dk.addEventListener('click', e => { if (moved > 6) e.preventDefault(); }, true);
+  tx.querySelectorAll('[data-d]').forEach(b => b.addEventListener('click', () => next(+b.dataset.d)));
+  lay(); info(); })();
+
+// 7 Namensliste
+(() => { const ls = document.getElementById('v7'), fl = document.getElementById('v7f');
+  ls.innerHTML = C.map((c, i) => `<a class="rw" href="${W}" target="_blank" rel="noopener" data-i="${i}"><span class="n">${pad(i)}</span><h3>${c[1]}</h3><span class="k">${c[2]}<br>${c[4][0]}</span><span class="mi">${img(c)}<span class="pills">${pills(c, 0)}</span></span></a>`).join('');
+  const rws = [...ls.children]; let mx = innerWidth / 2, my = innerHeight / 2, x = mx, y = my, act = -1, live = false;
+  const show = i => { if (i === act) return; act = i; const im = document.createElement('img'); im.src = `../media/car/${C[i][0]}.webp`; im.alt = '';
+    fl.insertBefore(im, fl.querySelector('.pills')); requestAnimationFrame(() => requestAnimationFrame(() => im.classList.add('in')));
+    setTimeout(() => [...fl.querySelectorAll('img')].slice(0, -1).forEach(o => o.remove()), 700); fl.querySelector('.pills').innerHTML = pills(C[i], 1); };
+  rws.forEach(r => r.addEventListener('pointerenter', e => { if (e.pointerType !== 'mouse') return; show(+r.dataset.i); fl.classList.add('on'); }));
+  ls.addEventListener('pointerleave', () => fl.classList.remove('on'));
+  addEventListener('pointermove', e => { mx = e.clientX; my = e.clientY; if (!live) { live = true; x = mx; y = my; } });
+  (function f() { const w = fl.offsetWidth, h = fl.offsetHeight, px = x; x = RM ? mx : lerp(x, mx, .12); y = RM ? my : lerp(y, my, .12);
+    const r = RM ? 0 : clamp((x - px) * .25, -8, 8); fl.style.transform = `translate(${x + 28}px,${y - h / 2}px) rotate(${r}deg)`; requestAnimationFrame(f); })();
+  if (matchMedia('(hover:none)').matches) { const io = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle('on', e.isIntersecting)), { rootMargin: '-42% 0px -42% 0px' }); rws.forEach(r => io.observe(r)); } })();
+
+// 8 Scrollen wird seitwärts
+(() => { const pin = document.getElementById('v8'), tr = pin.querySelector('.tr'), bgt = pin.querySelector('.bgt'), ct = pin.querySelector('.ct'), ln = pin.querySelector('.ln i');
+  tr.innerHTML = C.map((c, i) => `<a class="cd" href="${W}" target="_blank" rel="noopener"><div class="im">${img(c)}<div class="pills">${pills(c, 1)}</div></div><div class="cap"><h3>${c[3]}</h3><span>${pad(i)}</span></div></a>`).join('');
+  bgt.textContent = C.map(c => c[1]).join(' · ');
+  const cds = [...tr.children], ims = cds.map(c => c.querySelector('img')); let cur = 0;
+  (function f() { const r = pin.getBoundingClientRect(), p = clamp(-r.top / (r.height - innerHeight), 0, 1), max = Math.max(0, tr.scrollWidth - innerWidth);
+    cur = RM ? p : lerp(cur, p, .14); tr.style.transform = `translate3d(${-cur * max}px,0,0)`; bgt.style.transform = `translate3d(${-cur * (bgt.scrollWidth - innerWidth) * .55}px,0,0)`;
+    ln.style.transform = `scaleX(${cur})`; ct.textContent = pad(Math.min(N - 1, Math.floor(cur * N)));
+    if (r.top < innerHeight && r.bottom > 0) { const mid = innerWidth / 2; cds.forEach((c, i) => { const b = c.getBoundingClientRect(); ims[i].style.transform = `translate3d(${((b.left + b.width / 2 - mid) / innerWidth) * -8}%,0,0)`; }); }
+    requestAnimationFrame(f); })(); })();
+
+// 9 Tiefenflug
+(() => { const pin = document.getElementById('v9'), wd = pin.querySelector('.wd'), ttl = pin.querySelector('.ttl'), D = 850;
+  wd.innerHTML = C.map(c => `<a class="cd" href="${W}" target="_blank" rel="noopener">${img(c).replace(' loading="lazy"', '')}</a>`).join('');
+  const cds = [...wd.children]; let cur = 0, act = -1;
+  const show = i => { if (i === act) return; act = i; ttl.classList.add('sw'); setTimeout(() => { ttl.querySelector('h3').textContent = C[i][3]; ttl.querySelector('.pills').innerHTML = pills(C[i], 1); ttl.classList.remove('sw'); }, 200); };
+  (function f() { const r = pin.getBoundingClientRect(), p = clamp(-r.top / (r.height - innerHeight), 0, 1); cur = RM ? p : lerp(cur, p, .1);
+    const pos = cur * (N - 1), xo = clamp(innerWidth * .2, 70, 300);
+    cds.forEach((c, i) => { const z = (pos - i) * D, x = i % 2 ? xo : -xo, y = (i % 3 - 1) * 30;
+      const o = z > 0 ? clamp(1 - z / 520, 0, 1) : clamp(1 + (z + 2 * D) / (1.6 * D), 0, 1);
+      c.style.transform = `translate3d(${x}px,${y}px,${z}px)`; c.style.opacity = o; c.style.visibility = o < .01 ? 'hidden' : 'visible'; c.style.pointerEvents = Math.abs(z) < D / 2 ? 'auto' : 'none'; });
+    show(clamp(Math.round(pos), 0, N - 1)); requestAnimationFrame(f); })(); })();
+
+// 10 Laufband
+(() => { const a = document.querySelector('#v10a .tk'), b = document.querySelector('#v10b .tn');
+  const one = C.map((c, i) => `<a class="cd" href="${W}" target="_blank" rel="noopener" data-i="${i}"><div class="im">${img(c)}<div class="pills">${pills(c, 1)}</div></div></a>`).join('');
+  a.innerHTML = one + one.replace(/<a /g, '<a tabindex="-1" aria-hidden="true" ');
+  const nm = C.map((c, i) => `<span data-i="${i}">${c[1]}</span><i></i>`).join(''); b.innerHTML = nm + nm;
+  if (RM) { document.body.classList.add('rm'); return; }
+  let xa = 0, xb = 0, va = 0, hold = false, boost = 0, ly = scrollY;
+  const hi = i => b.querySelectorAll('span').forEach(s => s.classList.toggle('hi', s.dataset.i === String(i)));
+  a.querySelectorAll('.cd').forEach(c => { c.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') { hold = true; hi(c.dataset.i); } }); c.addEventListener('pointerleave', () => { hold = false; hi(-1); }); });
+  drag(document.getElementById('v10a'), dx => xa += dx);
+  (function f() { const dy = scrollY - ly; ly = scrollY; boost = lerp(boost, Math.min(Math.abs(dy) * .35, 14), .1);
+    va = lerp(va, hold ? 0 : .7 + boost, .08); xa -= va; xb += .7 + boost;
+    const wa = a.scrollWidth / 2, wb = b.scrollWidth / 2; xa = ((xa % wa) - wa) % wa; xb = ((xb % wb) - wb) % wb;
+    a.style.transform = `translate3d(${xa}px,0,0)`; b.style.transform = `translate3d(${xb}px,0,0)`; requestAnimationFrame(f); })(); })();
 </script>
 </body>
 </html>
