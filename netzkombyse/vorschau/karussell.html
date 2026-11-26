@@ -186,14 +186,93 @@ h1{font:800 clamp(2.2rem,5.4vw,4.6rem)/.95 var(--hf);letter-spacing:-.045em;max-
 @media (hover:none){.v10 .im img{filter:none}.v10 .im .pills{opacity:1;translate:0}}
 .rm .v10 .row{overflow-x:auto}
 
+.ok{display:block;margin-top:.5rem;color:#8fe39a;font-weight:600}
+
+/* ===== 11 Kapitel ===== */
+.v11 .st{position:relative;aspect-ratio:16/8;min-height:460px;border-radius:12px;overflow:hidden;background:#111}
+.v11 .ly{position:absolute;inset:0}
+.v11 .ly img{width:100%;height:100%;object-fit:cover}
+.v11 .ly::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.8),rgba(0,0,0,.1) 70%),linear-gradient(transparent 50%,rgba(0,0,0,.55))}
+.v11 .tx{position:absolute;z-index:3;left:clamp(18px,4vw,48px);right:clamp(18px,4vw,48px);top:clamp(18px,4vw,44px);display:grid;gap:.9rem;justify-items:start}
+.v11 .tx .nm{font:400 .72rem var(--mf);letter-spacing:.12em;text-transform:uppercase;color:var(--o)}
+.v11 .tx h3{font:800 clamp(1.8rem,4.8vw,4.4rem)/.94 var(--hf);letter-spacing:-.05em;max-width:14ch}
+.v11 .tx>*{transition:opacity .35s,transform .6s var(--e)}.v11 .tx.sw>*{opacity:0;transform:translateY(10px)}
+.v11 .ix{position:absolute;z-index:4;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(8,1fr);background:linear-gradient(transparent,rgba(0,0,0,.7))}
+.v11 .ix button{position:relative;min-height:64px;padding:18px 10px 12px;border:0;background:none;color:rgba(255,255,255,.55);font:500 .74rem/1.2 var(--bf);text-align:left;cursor:pointer;transition:color .3s}
+.v11 .ix button::before{content:"";position:absolute;left:10px;right:10px;top:8px;height:2px;background:rgba(255,255,255,.25);transition:background .3s}
+.v11 .ix button small{display:block;font:400 .62rem var(--mf);letter-spacing:.1em;margin-bottom:.2rem}
+.v11 .ix button:hover,.v11 .ix button[aria-current=true]{color:#fff}
+.v11 .ix button[aria-current=true]::before{background:var(--o)}
+@media (max-width:760px){.v11 .st{aspect-ratio:auto;height:560px}.v11 .ix{grid-template-columns:repeat(4,1fr)}.v11 .ix button span{display:none}}
+
+/* ===== 12 Vorschau-Leiste (Scrubben) ===== */
+.v12 .st{display:grid;gap:clamp(1rem,3vw,2.6rem);align-items:end}
+@media (min-width:820px){.v12 .st{grid-template-columns:1.15fr 1fr}}
+.v12 .big{position:relative;aspect-ratio:5/4;border-radius:12px;overflow:hidden;background:#111}
+.v12 .big img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .35s}
+.v12 .big img.on{opacity:1}
+.v12 .side{display:grid;gap:1rem;align-content:end}
+.v12 .side .nm{font:800 clamp(2rem,5vw,4.2rem)/.9 var(--hf);letter-spacing:-.05em;color:var(--o)}
+.v12 .side h3{font:600 clamp(1.05rem,1.6vw,1.35rem)/1.3 var(--bf);max-width:26ch}
+.v12 .strip{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-top:1rem;padding-bottom:4px;touch-action:pan-y}
+.v12 .strip button{position:relative;aspect-ratio:4/5;padding:0;border:0;border-radius:6px;overflow:hidden;background:#111;cursor:pointer;opacity:.45;transition:opacity .25s,transform .4s var(--e)}
+.v12 .strip button img{width:100%;height:100%;object-fit:cover;pointer-events:none}
+.v12 .strip button[aria-current=true]{opacity:1;transform:translateY(-6px);box-shadow:0 0 0 2px var(--o)}
+.v12 .strip button:hover{opacity:1}
+
+/* ===== 13 Bento ===== */
+.v13 .gr{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:clamp(140px,15vw,220px);gap:8px}
+.v13 .cd{position:relative;border-radius:10px;overflow:hidden;background:#111;text-decoration:none;cursor:pointer}
+.v13 .cd.on{grid-column:span 2;grid-row:span 2}
+.v13 .cd img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(.6) brightness(.6);transition:filter .6s}
+.v13 .cd.on img,.v13 .cd:hover img{filter:none}
+.v13 .cd .nm{position:absolute;z-index:2;left:12px;bottom:10px;font:700 .95rem var(--hf);letter-spacing:-.02em}
+.v13 .cd.on .nm{display:none}
+.v13 .cd::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 45%,rgba(0,0,0,.8))}
+.v13 .bd{position:absolute;z-index:2;left:18px;right:18px;bottom:18px;display:none;gap:.8rem}
+.v13 .cd.on .bd{display:grid;animation:up .6s var(--e) both .15s}
+@keyframes up{from{opacity:0;transform:translateY(12px)}}
+.v13 .bd h3{font:800 clamp(1.4rem,2.6vw,2.4rem)/1 var(--hf);letter-spacing:-.04em;max-width:16ch}
+@media (max-width:760px){.v13 .gr{grid-template-columns:repeat(2,1fr);grid-auto-rows:150px}}
+
+/* ===== 14 Reihe oder Raster ===== */
+.v14 .bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.8rem;padding:0 var(--g);margin-bottom:1rem}
+.v14 .sw{display:inline-flex;padding:4px;border-radius:99px;box-shadow:inset 0 0 0 1px var(--line)}
+.v14 .sw button{min-height:40px;padding:0 1rem;border:0;border-radius:99px;background:none;color:#fff;font:600 .8rem var(--bf);cursor:pointer;transition:background .3s,color .3s}
+.v14 .sw button[aria-pressed=true]{background:var(--o);color:#000}
+.v14 .nb{display:flex;gap:.5rem}
+.v14 .vp{overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:0 var(--g) 6px;scroll-padding:0 var(--g)}
+.v14 .vp::-webkit-scrollbar{display:none}
+.v14 .tr{display:grid;grid-auto-flow:column;grid-auto-columns:clamp(240px,28vw,400px);gap:clamp(12px,2vw,20px)}
+.v14.grid .vp{overflow:visible}
+.v14.grid .tr{grid-auto-flow:row;grid-template-columns:repeat(4,1fr);grid-auto-columns:auto}
+.v14.grid .nb{visibility:hidden}
+@media (max-width:760px){.v14.grid .tr{grid-template-columns:repeat(2,1fr)}}
+.v14 .cd{scroll-snap-align:start;text-decoration:none;min-width:0}
+.v14 .im{position:relative;aspect-ratio:4/5;border-radius:10px;overflow:hidden;background:#111}
+.v14 .im img{width:100%;height:100%;object-fit:cover;transition:scale .9s var(--e)}
+.v14 .cd:hover .im img{scale:1.04}
+.v14 .im .pills{position:absolute;left:10px;right:10px;bottom:10px}
+.v14 .cap{margin-top:.7rem;font:700 1.05rem/1.15 var(--hf);letter-spacing:-.03em}
+.v14.grid .cap{font-size:.9rem}.v14.grid .im .pills .pl:not(.t){display:none}
+
+/* ===== 15 Fächer ===== */
+.v15 .st{position:relative;height:clamp(420px,44vw,560px);display:flex;justify-content:center;align-items:flex-end;padding-bottom:2rem}
+.v15 .fan{position:relative;width:min(100%,1100px);height:100%}
+.v15 .cd{--cw:clamp(110px,17vw,230px);position:absolute;left:50%;bottom:30%;width:var(--cw);aspect-ratio:4/5;margin-left:calc(var(--cw)/-2);border-radius:10px;overflow:hidden;background:#111;transform-origin:50% 240%;box-shadow:0 20px 40px rgba(0,0,0,.6);transition:transform .6s var(--e),filter .6s;text-decoration:none}
+.v15 .cd img{width:100%;height:100%;object-fit:cover}
+.v15 .fan.hov .cd:not(.on){filter:brightness(.45)}
+.v15 .info{position:absolute;z-index:60;left:0;right:0;bottom:0;text-align:center;display:grid;justify-items:center;gap:.6rem;pointer-events:none}
+.v15 .info h3{font:800 clamp(1.3rem,2.6vw,2.2rem)/1 var(--hf);letter-spacing:-.04em}
+.v15 .info>*{transition:opacity .3s}.v15 .info.sw>*{opacity:0}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<div class="top"><a href="../index.html">‹ Übersicht</a><span>Skizze · zehn Karussells · Bilder vorläufig</span></div>
+<div class="top"><a href="../index.html">‹ Übersicht</a><span>Skizze · fünfzehn Karussells · Bilder vorläufig</span></div>
 <div class="wrap">
-<h1>Zehn Karussells für die Cases.</h1>
-<p class="lead"><b>Neu sind 6 bis 10.</b> Alle zeigen dieselben acht Cases mit <b>vollflächigen Bildern statt Freistellern</b> und mit den Pillen aus der letzten Runde. Die Bewegungen folgen bekannten Mustern von Awwwards-Seiten. Ziehen geht mit Maus und Finger. Die Bilder sind noch Ausschnitte aus den Collagen; mit Originalfotos wirkt jede Variante deutlich stärker.</p>
+<h1>Fünfzehn Karussells für die Cases.</h1>
+<p class="lead"><b>Neu sind 11 bis 15: alle jederzeit überspringbar.</b> Alle zeigen dieselben acht Cases mit <b>vollflächigen Bildern statt Freistellern</b> und mit den Pillen aus der letzten Runde. Die Bewegungen folgen bekannten Mustern von Awwwards-Seiten. Ziehen geht mit Maus und Finger. Die Bilder sind noch Ausschnitte aus den Collagen; mit Originalfotos wirkt jede Variante deutlich stärker.</p>
 </div>
 
 <section class="var v1"><div class="wrap vh"><b>1</b><h2>Ziehen mit Schwung</h2><span class="hint">ziehen · Mausrad</span><p>Horizontale Reihe mit Trägheit. Beim schnellen Ziehen neigen sich die Karten, die Bilder verschieben sich leicht gegen die Bewegung (Parallaxe). Am Desktop wird der Cursor zur Blase „Ziehen“.</p></div>
@@ -224,6 +303,24 @@ h1{font:800 clamp(2.2rem,5.4vw,4.6rem)/.95 var(--hf);letter-spacing:-.045em;max-
 
 <section class="var v10"><div class="wrap vh"><b>10</b><h2>Laufband</h2><span class="hint">läuft selbst · Maus darüber hält an</span><p>Zwei Bänder laufen gegeneinander: oben die Bilder, unten die Namen in Konturschrift. Scrollen beschleunigt beide kurz. Über einem Bild hält das Band an, das Bild bekommt Farbe und der passende Name leuchtet orange.</p></div>
   <div class="row" id="v10a"><div class="tk"></div></div><div class="row" id="v10b"><div class="tn"></div></div></section>
+
+<div class="wrap" style="margin-top:clamp(4rem,10vh,7rem)"><h2 style="font:800 clamp(1.8rem,4vw,3.2rem)/1 var(--hf);letter-spacing:-.045em">Neue Runde: nie gezwungen, alles anzusehen.</h2><p class="lead">Jede der folgenden fünf zeigt <b>alle acht Cases sofort</b> als Index, Leiste oder Raster. Man springt direkt zum gewünschten Case oder scrollt einfach weiter. Nichts läuft von selbst, nichts hält die Seite fest.</p></div>
+
+<section class="var v11"><div class="wrap vh"><b>11</b><h2>Kapitel</h2><span class="hint">Leiste antippen · Pfeiltasten</span><p>Eine große Bühne, unten eine Kapitel-Leiste mit allen acht Namen. Ein Klick springt direkt zum Case, das neue Bild steigt von unten auf. Kein Autoplay.<span class="ok">Alle Cases sofort sichtbar und anspringbar.</span></p></div>
+  <div class="wrap"><div class="st" id="v11" tabindex="0" aria-label="Cases als Kapitel"><div class="tx"><span class="nm"></span><h3></h3><div class="pills"></div></div><div class="ix" role="tablist"></div></div></div></section>
+
+<section class="var v12"><div class="wrap vh"><b>12</b><h2>Vorschau-Leiste</h2><span class="hint">mit der Maus über die Leiste fahren</span><p>Unten liegen alle acht als kleine Bilder. Fährt man darüber, wechselt das große Bild sofort mit (Scrubben wie bei Video-Vorschauen). So überfliegt man alle Cases in einer Sekunde.<span class="ok">Überfliegen in einer Handbewegung.</span></p></div>
+  <div class="wrap"><div class="st"><a class="big" id="v12b" href="https://www.netzkombyse.de" target="_blank" rel="noopener"></a><div class="side"><span class="nm"></span><h3></h3><div class="pills"></div></div></div><div class="strip" id="v12"></div></div></section>
+
+<section class="var v13"><div class="wrap vh"><b>13</b><h2>Bento</h2><span class="hint">Kachel antippen</span><p>Alle acht stehen als Raster da. Die gewählte Kachel wird groß und zeigt Satz und Pillen, die anderen rücken weich zur Seite.<span class="ok">Ein Blick auf alles, Details nur für das, was interessiert.</span></p></div>
+  <div class="wrap"><div class="gr" id="v13"></div></div></section>
+
+<section class="var v14"><div class="wrap vh"><b>14</b><h2>Reihe oder Raster</h2><span class="hint">umschalten · seitwärts wischen</span><p>Startet als ruhige Reihe mit normalem Seitwärts-Scrollen (Trackpad, Finger, Pfeile). Ein Schalter klappt die Reihe zum Raster auf: alle acht auf einen Blick, mit weicher Umordnung.<span class="ok">Wer nicht blättern will, schaltet aufs Raster.</span></p></div>
+  <div class="bar"><div class="sw" role="group" aria-label="Ansicht"><button type="button" data-m="row" aria-pressed="true">Reihe</button><button type="button" data-m="grid" aria-pressed="false">Alle 8 auf einen Blick</button></div><div class="nb"><button class="nbtn" type="button" data-d="-1" aria-label="Zurück">←</button><button class="nbtn" type="button" data-d="1" aria-label="Weiter">→</button></div></div>
+  <div class="vp" id="v14"><div class="tr"></div></div></section>
+
+<section class="var v15"><div class="wrap vh"><b>15</b><h2>Fächer</h2><span class="hint">Maus darüber · antippen</span><p>Alle acht liegen als aufgefächerte Hand. Die Karte unter der Maus hebt sich, richtet sich auf, die Nachbarn weichen aus. Darunter erscheinen Satz und Pillen.<span class="ok">Kompakt, und trotzdem ist alles da.</span></p></div>
+  <div class="wrap"><div class="st"><div class="fan" id="v15"></div><div class="info"><h3></h3><div class="pills"></div></div></div></div></section>
 
 <div style="height:12vh"></div>
 
@@ -386,6 +483,61 @@ const lerp = (a, b, t) => a + (b - a) * t, clamp = (v, a, b) => Math.max(a, Math
     va = lerp(va, hold ? 0 : .7 + boost, .08); xa -= va; xb += .7 + boost;
     const wa = a.scrollWidth / 2, wb = b.scrollWidth / 2; xa = ((xa % wa) - wa) % wa; xb = ((xb % wb) - wb) % wb;
     a.style.transform = `translate3d(${xa}px,0,0)`; b.style.transform = `translate3d(${xb}px,0,0)`; requestAnimationFrame(f); })(); })();
+// FLIP: Layoutwechsel weich animieren
+function flip(els, change) { const a = els.map(e => e.getBoundingClientRect()); change(); if (RM) return;
+  els.forEach((e, i) => { const b = e.getBoundingClientRect(); if (!b.width) return; const dx = a[i].left - b.left, dy = a[i].top - b.top, sx = a[i].width / b.width, sy = a[i].height / b.height;
+    if (Math.abs(dx) + Math.abs(dy) + Math.abs(sx - 1) + Math.abs(sy - 1) < .5) return;
+    e.animate([{ transformOrigin: '0 0', transform: `translate(${dx}px,${dy}px) scale(${sx},${sy})` }, { transformOrigin: '0 0', transform: 'none' }], { duration: 650, easing: 'cubic-bezier(.2,.8,.2,1)' }); }); }
+
+// 11 Kapitel
+(() => { const st = document.getElementById('v11'), tx = st.querySelector('.tx'), ix = st.querySelector('.ix'); let i = -1;
+  ix.innerHTML = C.map((c, k) => `<button type="button" role="tab" data-i="${k}"><small>${pad(k)}</small><span>${c[1]}</span></button>`).join('');
+  const bs = [...ix.children];
+  const go = n => { n = (n + N) % N; if (n === i) return; const ly = document.createElement('div'); ly.className = 'ly'; ly.innerHTML = img(C[n]).replace(' loading="lazy"', '');
+    st.insertBefore(ly, tx); if (!RM && i >= 0) ly.animate([{ clipPath: 'inset(100% 0 0 0)' }, { clipPath: 'inset(0 0 0 0)' }], { duration: 900, easing: 'cubic-bezier(.77,0,.18,1)' });
+    setTimeout(() => st.querySelectorAll('.ly').forEach(l => l !== ly && l.remove()), 950);
+    tx.classList.add('sw'); setTimeout(() => { tx.querySelector('.nm').textContent = `${pad(n)} · ${C[n][1]}`; tx.querySelector('h3').textContent = C[n][3]; tx.querySelector('.pills').innerHTML = pills(C[n], 1); tx.classList.remove('sw'); }, i < 0 ? 0 : 300);
+    bs.forEach((b, k) => b.setAttribute('aria-current', String(k === n))); i = n; };
+  bs.forEach(b => b.addEventListener('click', () => go(+b.dataset.i)));
+  st.addEventListener('keydown', e => { if (e.key === 'ArrowRight') go(i + 1); if (e.key === 'ArrowLeft') go(i - 1); });
+  go(0); })();
+
+// 12 Vorschau-Leiste
+(() => { const s = document.getElementById('v12'), big = document.getElementById('v12b'), side = document.querySelector('.v12 .side'); let i = -1;
+  big.href = W; big.innerHTML = C.map(c => img(c).replace(' loading="lazy"', '')).join(''); const ims = [...big.children];
+  s.innerHTML = C.map((c, k) => `<button type="button" data-i="${k}" aria-label="${c[1]}">${img(c)}</button>`).join(''); const bs = [...s.children];
+  const set = n => { if (n === i) return; i = n; ims.forEach((m, k) => m.classList.toggle('on', k === n)); bs.forEach((b, k) => b.setAttribute('aria-current', String(k === n)));
+    side.querySelector('.nm').textContent = C[n][1]; side.querySelector('h3').textContent = C[n][3]; side.querySelector('.pills').innerHTML = pills(C[n], 1); };
+  const at = x => { const r = s.getBoundingClientRect(); return clamp(Math.floor((x - r.left) / r.width * N), 0, N - 1); };
+  s.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' || e.buttons) set(at(e.clientX)); });
+  s.addEventListener('pointerdown', e => set(at(e.clientX)));
+  bs.forEach(b => b.addEventListener('focus', () => set(+b.dataset.i)));
+  set(0); })();
+
+// 13 Bento
+(() => { const g = document.getElementById('v13');
+  g.innerHTML = C.map((c, k) => `<a class="cd${k ? '' : ' on'}" href="${W}" target="_blank" rel="noopener" data-i="${k}">${img(c)}<span class="nm">${c[1]}</span><div class="bd"><div class="pills">${pills(c, 1)}</div><h3>${c[3]}</h3></div></a>`).join('');
+  const cds = [...g.children];
+  cds.forEach(c => { c.addEventListener('click', e => { if (c.classList.contains('on')) return; e.preventDefault(); flip(cds, () => cds.forEach(x => x.classList.toggle('on', x === c))); }); }); })();
+
+// 14 Reihe oder Raster
+(() => { const sec = document.querySelector('.v14'), vp = document.getElementById('v14'), tr = vp.querySelector('.tr');
+  tr.innerHTML = C.map(c => `<a class="cd" href="${W}" target="_blank" rel="noopener"><div class="im">${img(c)}<div class="pills">${pills(c, 1)}</div></div><p class="cap">${c[3]}</p></a>`).join('');
+  const cds = [...tr.children];
+  sec.querySelectorAll('[data-m]').forEach(b => b.addEventListener('click', () => { const g = b.dataset.m === 'grid'; if (g === sec.classList.contains('grid')) return;
+    sec.querySelectorAll('[data-m]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); flip(cds, () => { sec.classList.toggle('grid', g); vp.scrollLeft = 0; }); }));
+  sec.querySelectorAll('[data-d]').forEach(b => b.addEventListener('click', () => vp.scrollBy({ left: +b.dataset.d * cds[0].offsetWidth, behavior: RM ? 'auto' : 'smooth' }))); })();
+
+// 15 Fächer
+(() => { const fan = document.getElementById('v15'), info = document.querySelector('.v15 .info'); let act = -1;
+  fan.innerHTML = C.map(c => `<a class="cd" href="${W}" target="_blank" rel="noopener">${img(c)}</a>`).join(''); const cds = [...fan.children], mid = (N - 1) / 2;
+  const lay = h => cds.forEach((c, k) => { let a = (k - mid) * (innerWidth < 600 ? 5 : 7), y = 0, z = k; if (h >= 0) { if (k === h) { a = (k - mid) * 2; y = -40; z = 50; } else a += k < h ? -5 : 5; }
+    c.style.transform = `rotate(${a}deg) translateY(${y}px)`; c.style.zIndex = z; c.classList.toggle('on', k === h); });
+  const show = h => { if (h === act) return; act = h; lay(h); fan.classList.toggle('hov', h >= 0); info.classList.add('sw');
+    setTimeout(() => { const c = C[h < 0 ? 0 : h]; info.querySelector('h3').textContent = h < 0 ? 'Alle acht Cases' : c[3]; info.querySelector('.pills').innerHTML = h < 0 ? '' : pills(c, 1); info.classList.remove('sw'); }, 150); };
+  cds.forEach((c, k) => { c.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') show(k); }); c.addEventListener('focus', () => show(k));
+    c.addEventListener('click', e => { if (act !== k) { e.preventDefault(); show(k); } }); });
+  fan.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') show(-1); }); act = 0; show(-1); })();
 </script>
 </body>
 </html>
