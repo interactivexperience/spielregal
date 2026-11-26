@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Case-Thumbnails Orange</title>
+<meta name="robots" content="noindex">
+<style>
+@font-face{font-family:Bricolage;src:url(../fonts/bricolage.woff2) format('woff2');font-weight:200 800;font-display:swap}
+@font-face{font-family:Sora;src:url(../fonts/sora.woff2) format('woff2');font-weight:100 800;font-display:swap}
+@font-face{font-family:Mono;src:url(../fonts/plex-mono-400.woff2) format('woff2');font-weight:400;font-display:swap}
+:root{--o:#FF5A14;--soft:rgba(255,255,255,.66);--line:rgba(255,255,255,.16);--e:cubic-bezier(.2,.8,.2,1);--hf:Bricolage,Sora,sans-serif;--bf:Sora,system-ui,sans-serif;--mf:Mono,ui-monospace,monospace;--g:clamp(16px,4.5vw,64px)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#000;overflow-x:clip}
+body{color:#fff;font:300 1rem/1.6 var(--bf);padding:var(--g)}
+a{color:inherit}:focus-visible{outline:3px solid var(--o);outline-offset:4px}
+img{display:block;max-width:none;user-select:none;-webkit-user-drag:none}
+.top{display:flex;justify-content:space-between;gap:1rem;font-size:.78rem;color:var(--soft)}.top a{text-decoration:none;min-height:44px;display:inline-flex;align-items:center}.top a:hover{color:var(--o)}
+h1{font:800 clamp(2.2rem,5.4vw,4.6rem)/.95 var(--hf);letter-spacing:-.045em;max-width:16ch;margin-top:2rem}
+.lead{max-width:46rem;margin:1.2rem 0 0;color:var(--soft)}.lead b{color:#fff;font-weight:600}
+.var{margin-top:clamp(4rem,10vh,7rem);border-top:1px solid var(--line);padding-top:1.4rem}
+.vh{display:flex;flex-wrap:wrap;align-items:baseline;gap:.4rem 1rem;margin-bottom:1.8rem}
+.vh b{font:800 clamp(1.6rem,3vw,2.4rem)/1 var(--hf);letter-spacing:-.04em;color:var(--o)}
+.vh h2{font:700 clamp(1.6rem,3vw,2.4rem)/1 var(--hf);letter-spacing:-.04em}
+.vh p{flex-basis:100%;max-width:46rem;font-size:.88rem;color:var(--soft)}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(1.2rem,2.4vw,2.4rem)}
+@media (max-width:1000px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.grid{grid-template-columns:1fr}}
+
+/* Kachel */
+.cs{display:block;text-decoration:none;-webkit-tap-highlight-color:transparent}
+.tile{position:relative;aspect-ratio:4/5;border-radius:14px;overflow:hidden;isolation:isolate;background:linear-gradient(180deg,#5c1206 0%,#c23a10 30%,#ec6a2c 58%,#f4a36f 82%,#f6caa2 100%)}
+.tile::after{content:"";position:absolute;inset:0;z-index:6;pointer-events:none;background:radial-gradient(120% 80% at 50% 0,transparent 40%,rgba(30,4,0,.45))}
+.meta{display:flex;justify-content:space-between;gap:1rem;margin-top:1rem;font:400 .68rem/1.4 var(--mf);letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
+.cs h3{font:700 clamp(1.25rem,1.7vw,1.55rem)/1.12 var(--hf);letter-spacing:-.03em;margin-top:.5rem;max-width:22ch;transition:color .4s}
+.cs p.d{font-size:.84rem;color:var(--soft);margin-top:.5rem}
+.cs:hover h3,.cs.on h3{color:var(--o)}
+/* Pillen */
+.pills{position:absolute;z-index:7;left:14px;right:14px;bottom:14px;display:flex;flex-wrap:wrap;gap:.4rem}
+.pl{display:inline-flex;align-items:center;gap:.45rem;padding:.42rem .8rem .42rem .5rem;border-radius:99px;background:rgba(20,6,2,.72);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);font:500 .72rem/1.2 var(--bf);white-space:nowrap;color:#fff;opacity:0;transition:opacity .5s var(--e)}
+.pl::before{content:"";width:16px;height:16px;border-radius:50%;background:radial-gradient(circle,var(--o) 0 3px,rgba(255,90,20,.25) 4px)}
+.pl:nth-child(2){transition-delay:.08s}.pl:nth-child(3){transition-delay:.16s}
+.cs:hover .pl,.cs.on .pl,.cs:focus-visible .pl{opacity:1}
+/* Hintergrund-Typo */
+.ty{position:absolute;z-index:1;left:0;right:0;text-align:center;font:800 var(--fs,6rem)/.82 var(--hf);letter-spacing:-.05em;text-transform:uppercase;white-space:nowrap;pointer-events:none}
+.ty.fill{color:rgba(255,236,220,.32)}
+.ty.line{color:transparent;-webkit-text-stroke:1.5px rgba(255,240,228,.75)}
+.obj{position:absolute;z-index:2;filter:drop-shadow(0 30px 30px rgba(40,6,0,.55))}
+
+/* ===== Variante 1: Objekt + ruhiges Detail (nur Licht und Deckkraft, keine Bewegung großer Flächen) ===== */
+/* Glanz-Streif, maskiert auf die Form des Objekts */
+.gl{position:absolute;z-index:3;pointer-events:none;-webkit-mask:var(--m) center/100% 100% no-repeat;mask:var(--m) center/100% 100% no-repeat;background:linear-gradient(110deg,transparent 40%,rgba(255,214,170,.75) 50%,transparent 60%) 0 0/250% 100% no-repeat;background-position:120% 0;mix-blend-mode:screen;opacity:0}
+.cs:hover .gl,.cs.on .gl{animation:gl 2.6s var(--e) .1s 1 both}
+@keyframes gl{0%{opacity:0;background-position:120% 0}15%{opacity:1}85%{opacity:1}100%{opacity:0;background-position:-20% 0}}
+/* Wein: drei feine Perlen steigen im Glas auf */
+.bub{position:absolute;z-index:3;left:49%;top:43%;width:8%;height:13%;pointer-events:none}
+.bub i{position:absolute;bottom:0;width:4px;height:4px;border-radius:50%;background:rgba(255,248,225,.9);box-shadow:0 0 6px rgba(255,220,160,.8);opacity:0}
+.bub i:nth-child(1){left:10%}.bub i:nth-child(2){left:55%;animation-delay:.7s!important}.bub i:nth-child(3){left:85%;animation-delay:1.4s!important;width:3px;height:3px}
+.cs:hover .bub i,.cs.on .bub i{animation:bub 2.1s ease-in infinite}
+@keyframes bub{0%{opacity:0;transform:translateY(0)}20%{opacity:1}100%{opacity:0;transform:translateY(-42px)}}
+/* Felge: Bremse glüht warm auf */
+.heat{position:absolute;z-index:3;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(255,150,60,.85),rgba(255,90,20,.35) 45%,transparent 72%);mix-blend-mode:screen;opacity:0;transition:opacity 1.2s var(--e)}
+.cs:hover .heat,.cs.on .heat{opacity:1}
+
+/* ===== Variante 2: Ergebnis + ein Feature, Hand als Silhouette ===== */
+.hbg,.hcut{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hbg{z-index:0}.hcut{z-index:2}
+.v2 .ty{z-index:1}
+.v2 .tile{aspect-ratio:896/1152}
+.scr{position:absolute;z-index:3;left:33.1%;top:9.5%;width:34.8%;height:61.8%;border-radius:8.5% / 3.9%;overflow:hidden;background:#fff;color:#111;font:400 clamp(6px,.62vw,9px)/1.35 var(--bf);display:flex;flex-direction:column}
+.scr .sb{display:flex;justify-content:space-between;padding:7% 8% 3%;font-weight:600;font-size:.95em}
+.scr .hd{padding:2% 8% 5%;font:700 1.5em/1.1 var(--hf);letter-spacing:-.02em}
+.scr .bd{flex:1;padding:0 6%;display:flex;flex-direction:column;gap:5px}
+.scr .row{display:flex;justify-content:space-between;gap:6px;padding:5px 0;border-bottom:1px solid #eee}
+.scr .btn{margin:auto 6% 9%;padding:7px;border-radius:6px;text-align:center;font-weight:700;color:#fff}
+.scr .img{border-radius:6px;background:#eee center/cover}
+.res{position:absolute;z-index:7;left:14px;bottom:62px;display:flex;flex-direction:column;gap:2px;padding:.55rem .8rem;border-radius:12px;background:rgba(20,6,2,.72);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
+.res small{font:400 .6rem var(--mf);letter-spacing:.12em;text-transform:uppercase;color:#FFB48A}
+.res b{font:800 1.05rem/1.1 var(--hf);letter-spacing:-.02em}
+/* Das eine Feature ragt aus dem Phone heraus */
+.ft{position:absolute;z-index:5;border-radius:12px;background:#fff;color:#111;padding:.75rem .85rem;font:400 .74rem/1.35 var(--bf);box-shadow:0 24px 50px rgba(40,6,0,.45),0 0 0 1px rgba(0,0,0,.04);transition:transform .8s var(--e)}
+.ft small{display:block;font:600 .58rem var(--mf);letter-spacing:.12em;text-transform:uppercase;color:#c2410c;margin-bottom:.35rem}
+.ft b{font:700 .9rem/1.2 var(--hf);letter-spacing:-.01em}
+.cs:hover .ft,.cs.on .ft{transform:translate(var(--tx,6px),-4px)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.cs:hover .ft{transform:none}}
+</style>
+</head>
+<body>
+<div class="top"><a href="../index.html">‹ Übersicht</a><span>Skizze · zwei Varianten · Bilder neu erzeugt</span></div>
+<h1>Case-Thumbnails in Orange.</h1>
+<p class="lead">Nach deinen Referenzen: <b>Orangetöne, dunkle Schatten, Hände als Silhouette, Typo hinter dem Motiv, Elemente ragen heraus.</b> Die Objekte und die Hand sind neu erzeugte Bilder statt Ausschnitte aus den Collagen; die Phone-Screens sind gebaut, nicht abfotografiert, und bleiben dadurch gestochen scharf. Hover-Details bewegen nur Licht und Kleinstteile, nie das ganze Bild (kein Zoom, keine Parallaxe), damit keine Bewegungsübelkeit entsteht. Am Handy laufen sie, sobald die Kachel in der Mitte steht.</p>
+
+<section class="var v1">
+  <div class="vh"><b>1</b><h2>Ein Objekt, ein Detail</h2><p>Ein freigestelltes Objekt pro Case, dahinter ein Wort aus der Markenwelt. Beim Hover passiert genau eine kleine Sache: Perlen steigen im Glas auf, ein Lichtstreif läuft über das Rad, die Bremse glüht. Dazu erscheinen die Pillen.</p></div>
+  <div class="grid">
+    <a class="cs" href="#" data-io>
+      <div class="tile">
+        <div class="ty fill" style="--fs:clamp(5.5rem,11vw,9.5rem);top:6%">Wein</div>
+        <img class="obj" src="../media/th/glas.webp" alt="Weinglas" style="left:2%;top:4%;width:96%">
+        <span class="bub" aria-hidden="true"><i></i><i></i><i></i></span>
+        <div class="pills"><span class="pl">50 Jahre Weinhandel</span><span class="pl">Shop, Social, Verkaufswagen</span></div>
+      </div>
+      <div class="meta"><span>Wein-Bauer.de</span><span>Food</span></div>
+      <h3>50 Jahre Weinhandel, jetzt auf allen Kanälen.</h3>
+      <p class="d">Multi-Channel-Relaunch für einen Familienbetrieb aus Württemberg.</p>
+    </a>
+    <a class="cs" href="#" data-io>
+      <div class="tile">
+        <div class="ty line" style="--fs:clamp(3.6rem,7.4vw,6.4rem);top:12%">Any<br>Terrain</div>
+        <img class="obj" src="../media/th/rad.webp" alt="Reiserad" style="left:-26%;top:18%;width:152%">
+        <span class="gl" aria-hidden="true" style="--m:url(../media/th/rad.webp);left:-26%;top:18%;width:152%;aspect-ratio:608/448"></span>
+        <div class="pills"><span class="pl">Shop Award 2020</span><span class="pl">Usability Award nominiert</span></div>
+      </div>
+      <div class="meta"><span>Tout Terrain</span><span>Outdoor</span></div>
+      <h3>Ein Shop, so robust wie die Räder, die er verkauft.</h3>
+      <p class="d">Radmanufaktur für die härtesten Bike-Traveller, mit Konfigurator und B2B-Portal.</p>
+    </a>
+    <a class="cs" href="#" data-io>
+      <div class="tile">
+        <div class="ty fill" style="--fs:clamp(3.6rem,7vw,6rem);top:7%">100 %<br>Original</div>
+        <img class="obj" src="../media/th/felge.webp" alt="Felge mit Reifen" style="left:-8%;top:14%;width:116%">
+        <span class="heat" aria-hidden="true" style="left:44%;top:50%;width:30%;aspect-ratio:1"></span>
+        <span class="gl" aria-hidden="true" style="--m:url(../media/th/felge.webp);left:-8%;top:14%;width:116%;aspect-ratio:1"></span>
+        <div class="pills"><span class="pl">Top Shop 2024</span><span class="pl">Trend Shop 2025</span></div>
+      </div>
+      <div class="meta"><span>PremiumWheels</span><span>Mobilität</span></div>
+      <h3>Original-Felgen, die in drei Schritten zum Auto passen.</h3>
+      <p class="d">Internationaler Reifenhandel mit Felgen-Finder nach Marke, Modell und Baujahr.</p>
+    </a>
+  </div>
+</section>
+
+<section class="var v2">
+  <div class="vh"><b>2</b><h2>Ergebnis und ein Feature</h2><p>Die Hand ist eine dunkle Silhouette, im Phone läuft der echte Shop. Genau ein Feature ragt heraus, darunter steht das Ergebnis. Beim Hover schiebt sich das Feature ein Stück weiter heraus.</p></div>
+  <div class="grid">
+    <a class="cs" href="#" data-io>
+      <div class="tile">
+        <img class="hbg" src="../media/th/hand-bg.webp" alt="">
+        <div class="ty line" style="--fs:clamp(3.4rem,7vw,6rem);top:4%">Felgen<br>Finder</div>
+        <img class="hcut" src="../media/th/hand.webp" alt="">
+        <div class="scr" aria-hidden="true">
+          <div class="sb"><span>9:41</span><span>●●●</span></div>
+          <div class="hd">Original Felgen &amp; Kompletträder</div>
+          <div class="bd"><div class="img" style="height:38%;background-image:url(../media/th/felge-bg.webp)"></div>
+            <div class="row"><span>Seit 2007 nur Original-Räder</span></div><div class="row"><span>Keine Replicas</span></div></div>
+          <div class="btn" style="background:#E3001B">Passende Räder anzeigen</div>
+        </div>
+        <div class="ft" style="left:8%;top:40%;width:58%"><small>Feature · Felgen-Finder</small><b>1 Marke · 2 Modell · 3 Baujahr</b><div style="margin-top:.4rem;display:grid;gap:4px"><span style="border:1px solid #ddd;border-radius:6px;padding:4px 6px">Mercedes-Benz ▾</span><span style="border:1px solid #ddd;border-radius:6px;padding:4px 6px">C-Klasse ▾</span></div></div>
+        <div class="res"><small>Ergebnis</small><b>Top Shop 2024</b></div>
+        <div class="pills"><span class="pl">Auto Bild</span><span class="pl">Trend Shop 2025</span></div>
+      </div>
+      <div class="meta"><span>PremiumWheels</span><span>Mobilität</span></div>
+      <h3>In drei Schritten zur passenden Original-Felge.</h3>
+      <p class="d">Der Felgen-Finder ersetzt Suchen und Zweifeln durch drei Auswahlfelder.</p>
+    </a>
+    <a class="cs" href="#" data-io>
+      <div class="tile">
+        <img class="hbg" src="../media/th/hand-bg.webp" alt="" style="transform:scaleX(-1)">
+        <div class="ty fill" style="--fs:clamp(3.4rem,6.6vw,5.8rem);top:4%">Wunsch<br>Rad</div>
+        <img class="hcut" src="../media/th/hand.webp" alt="" style="transform:scaleX(-1)">
+        <div class="scr" aria-hidden="true" style="background:#111;color:#fff;left:32.1%">
+          <div class="sb"><span>9:41</span><span>●●●</span></div>
+          <div class="hd">Silkroad Xplore II</div>
+          <div class="bd"><div class="img" style="height:34%;background:#f2efe9 url(../media/th/rad.webp) center/92% no-repeat"></div>
+            <div class="row" style="border-color:#2a2a2a"><span>Rahmenfarbe</span><span>Sand</span></div><div class="row" style="border-color:#2a2a2a"><span>Schaltung</span><span>Rohloff</span></div><div class="row" style="border-color:#2a2a2a"><span>ab</span><span>4.790 €</span></div></div>
+          <div class="btn" style="background:#F07D00">Beim Händler abholen</div>
+        </div>
+        <div class="ft" style="left:40%;top:30%;width:54%;--tx:-6px"><small>Feature · Konfigurator</small><b>Dein Rad, Teil für Teil</b><div style="margin-top:.45rem;display:flex;gap:5px"><i style="width:18px;height:18px;border-radius:50%;background:#c8b79a;box-shadow:0 0 0 2px #fff,0 0 0 3px #F07D00"></i><i style="width:18px;height:18px;border-radius:50%;background:#2b4a3a"></i><i style="width:18px;height:18px;border-radius:50%;background:#7a1e12"></i><i style="width:18px;height:18px;border-radius:50%;background:#222"></i></div></div>
+        <div class="res"><small>Ergebnis</small><b>Shop Award 2020</b></div>
+        <div class="pills"><span class="pl">Usability Award nominiert</span><span class="pl">B2B-Portal</span></div>
+      </div>
+      <div class="meta"><span>Tout Terrain</span><span>Outdoor</span></div>
+      <h3>Das Wunschrad, im Shop zusammengestellt.</h3>
+      <p class="d">Konfigurator für Rahmen, Farbe und Ausstattung, Abholung beim Händler.</p>
+    </a>
+    <a class="cs" href="#" data-io>
+      <div class="tile">
+        <img class="hbg" src="../media/th/hand-bg.webp" alt="">
+        <div class="ty line" style="--fs:clamp(3.6rem,7.4vw,6.4rem);top:4%">Ahoi</div>
+        <img class="hcut" src="../media/th/hand.webp" alt="">
+        <div class="scr" aria-hidden="true">
+          <div class="sb"><span>9:41</span><span>●●●</span></div>
+          <div class="hd">Schellfisch küchenfertig</div>
+          <div class="bd"><div class="img" style="height:30%;background:linear-gradient(135deg,#c9d6df,#8ea6b8)"></div>
+            <div class="row"><span>Lieferzeit</span><span><b>2 Tage</b></span></div><div class="row"><span>❄ Gekühlte Lieferung</span></div><div class="row"><span>Paket &lt; 24 h unterwegs</span></div></div>
+          <div class="btn" style="background:#1A2BE6">In den Warenkorb</div>
+        </div>
+        <div class="ft" style="left:6%;top:44%;width:62%"><small>Feature · Lieferstatus per SMS</small><b>„Ahoi aus Bremerhaven, Ihre Bestellung ist unterwegs.“</b><div style="margin-top:.35rem;color:#666;font-size:.66rem">Heute 10:41 · Fangfrische Grüße!</div></div>
+        <div class="res"><small>Ergebnis</small><b>Kennzahl folgt</b></div>
+        <div class="pills"><span class="pl">Gekühlt bis zur Tür</span><span class="pl">Markenrelaunch</span></div>
+      </div>
+      <div class="meta"><span>Abelmann.de</span><span>Food</span></div>
+      <h3>Fangfrisch bestellt, per SMS begleitet.</h3>
+      <p class="d">Markenrelaunch der Fischmanufaktur mit Lieferstatus direkt aufs Handy.</p>
+    </a>
+  </div>
+</section>
+<div style="height:10vh"></div>
+<script>
+// Touch: Hover-Zustand, solange die Kachel mittig im Bild ist
+if (matchMedia('(hover:none)').matches) { const io = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle('on', e.isIntersecting)), { rootMargin: '-30% 0px -30% 0px' }); document.querySelectorAll('[data-io]').forEach(el => io.observe(el)); }
+document.querySelectorAll('.cs[href="#"]').forEach(a => a.addEventListener('click', e => e.preventDefault()));
+</script>
+</body>
+</html>
