@@ -82,6 +82,31 @@ h1{font:800 clamp(2.2rem,5.4vw,4.6rem)/.95 var(--hf);letter-spacing:-.045em;max-
 .ft small{display:block;font:600 .58rem var(--mf);letter-spacing:.12em;text-transform:uppercase;color:#c2410c;margin-bottom:.35rem}
 .ft b{font:700 .9rem/1.2 var(--hf);letter-spacing:-.01em}
 .cs:hover .ft,.cs.on .ft{transform:translate(var(--tx,6px),-4px)}
+
+/* ===== Variante 3: Ruhezustand = Detail (statisch), Hover = Feature. Komposition: Lamellen klappen auf der Stelle auf, das Feature ragt über den Kachelrand ===== */
+.v3 .grid{row-gap:clamp(2.4rem,5vw,4rem)}
+.v3 .tile{overflow:visible;background:none}
+.v3 .tile::after{display:none}
+.v3 .bk{position:absolute;inset:0;border-radius:14px;overflow:hidden;isolation:isolate;background:linear-gradient(180deg,#5c1206 0%,#c23a10 30%,#ec6a2c 58%,#f4a36f 82%,#f6caa2 100%)}
+.v3 .sl{position:absolute;inset:0;z-index:8;display:grid;grid-template-columns:repeat(6,1fr);border-radius:14px;overflow:hidden;perspective:900px;pointer-events:none}
+.v3 .sl i{background-image:var(--d);background-size:600% 100%;transform-origin:50% 50%;transition:transform .75s cubic-bezier(.65,0,.35,1),filter .75s,opacity .2s linear .55s;backface-visibility:hidden}
+.v3 .sl i:nth-child(1){background-position:0 0}.v3 .sl i:nth-child(2){background-position:20% 0;transition-delay:.04s}.v3 .sl i:nth-child(3){background-position:40% 0;transition-delay:.08s}.v3 .sl i:nth-child(4){background-position:60% 0;transition-delay:.12s}.v3 .sl i:nth-child(5){background-position:80% 0;transition-delay:.16s}.v3 .sl i:nth-child(6){background-position:100% 0;transition-delay:.2s}
+.v3 .cs:hover .sl i,.v3 .cs.on .sl i{transform:rotateY(90deg);filter:brightness(.4);opacity:0}
+.v3 .cs{position:relative}.v3 .cs:hover,.v3 .cs.on{z-index:5}
+.v3 .tag{position:absolute;z-index:9;left:14px;top:14px;display:flex;gap:.5rem;align-items:center;font:400 .62rem/1 var(--mf);letter-spacing:.14em;text-transform:uppercase;color:#fff;transition:opacity .3s}
+.v3 .tag b{font:800 .9rem var(--hf);letter-spacing:-.01em;text-transform:none}
+.v3 .tag::before{content:"";width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(255,255,255,.8);background:radial-gradient(circle,#fff 0 2px,transparent 3px)}
+.v3 .cs:hover .tag,.v3 .cs.on .tag{opacity:0}
+.v3 .cap{position:absolute;z-index:9;left:16px;right:16px;bottom:16px;font:800 clamp(1.3rem,2.2vw,1.9rem)/1 var(--hf);letter-spacing:-.04em;color:#fff;text-shadow:0 2px 18px rgba(0,0,0,.5);transition:opacity .3s}
+.v3 .cs:hover .cap,.v3 .cs.on .cap{opacity:0}
+.v3 .ft{z-index:10;opacity:0;transform:translateY(8px);transition:opacity .45s var(--e) .45s,transform .7s var(--e) .45s}
+.v3 .cs:hover .ft,.v3 .cs.on .ft{opacity:1;transform:none}
+.v3 .pills{z-index:10}
+.v3 .cs:hover .pl,.v3 .cs.on .pl{transition-delay:.6s}
+.hang{position:absolute;z-index:10;top:-10px;display:flex;gap:6px;opacity:0;transition:opacity .4s .55s}
+.hang span{display:grid;place-items:center;width:28px;height:64px;border-radius:0 0 4px 4px;clip-path:polygon(0 0,100% 0,100% 86%,50% 100%,0 86%);font:700 .6rem var(--bf);letter-spacing:.12em;color:#fff;writing-mode:vertical-rl;transform:rotate(180deg)}
+.v3 .cs:hover .hang,.v3 .cs.on .hang{opacity:1}
+@media (prefers-reduced-motion:reduce){.v3 .cs:hover .sl i,.v3 .cs.on .sl i{transform:none;opacity:0}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.cs:hover .ft{transform:none}}
 </style>
 </head>
@@ -192,6 +217,50 @@ h1{font:800 clamp(2.2rem,5.4vw,4.6rem)/.95 var(--hf);letter-spacing:-.045em;max-
       <div class="meta"><span>Abelmann.de</span><span>Food</span></div>
       <h3>Fangfrisch bestellt, per SMS begleitet.</h3>
       <p class="d">Markenrelaunch der Fischmanufaktur mit Lieferstatus direkt aufs Handy.</p>
+    </a>
+  </div>
+</section>
+
+<section class="var v3">
+  <div class="vh"><b>3</b><h2>Erst das Detail, dann das Feature</h2><p>Im Ruhezustand steht ein ruhiges Makro-Detail, ohne Animation: Profil, Speichen, Weinspiegel. Beim Hover klappen sechs Lamellen auf der Stelle auf wie eine Jalousie und geben das Feature frei. Das Feature ragt dabei über den Rand der Kachel hinaus. Es gibt keinen Zoom und keine Kamerafahrt, jede Lamelle dreht nur um sich selbst.</p></div>
+  <div class="grid">
+    <a class="cs" href="#" data-io>
+      <div class="tile">
+        <div class="bk"><div class="ty line" style="--fs:clamp(3.4rem,7vw,6rem);top:6%">Any<br>Terrain</div><img class="obj" src="../media/th/rad.webp" alt="" style="left:-30%;top:34%;width:150%"></div>
+        <div class="ft" style="right:-7%;top:16%;width:62%"><small>Feature · Konfigurator</small><b>Dein Rad, Teil für Teil</b><div style="margin-top:.45rem;display:grid;gap:4px"><span style="display:flex;justify-content:space-between;border:1px solid #ddd;border-radius:6px;padding:4px 6px"><span>Rahmenfarbe</span><b style="font-size:.72rem">Sand</b></span><span style="display:flex;justify-content:space-between;border:1px solid #ddd;border-radius:6px;padding:4px 6px"><span>Schaltung</span><b style="font-size:.72rem">Rohloff</b></span><span style="display:flex;justify-content:space-between;padding:4px 6px"><span>ab</span><b style="font-size:.72rem">4.790 €</b></span></div></div>
+        <div class="sl" aria-hidden="true" style="--d:url(../media/th/d-tout.webp)"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <span class="tag">Detail <b>Profil</b></span><span class="cap">Gebaut für Matsch, Schotter, Weltreise.</span>
+        <div class="pills"><span class="pl">Shop Award 2020</span><span class="pl">B2B-Portal</span></div>
+      </div>
+      <div class="meta"><span>Tout Terrain</span><span>Outdoor</span></div>
+      <h3>Ein Shop, so robust wie die Räder, die er verkauft.</h3>
+      <p class="d">Radmanufaktur für Bike-Traveller, mit Konfigurator und Händlerabholung.</p>
+    </a>
+    <a class="cs" href="#" data-io>
+      <div class="tile" style="aspect-ratio:896/1152">
+        <div class="bk"><img class="hbg" src="../media/th/hand-bg.webp" alt=""><div class="ty line" style="--fs:clamp(3.4rem,7vw,6rem);top:4%">Felgen<br>Finder</div><img class="hcut" src="../media/th/hand.webp" alt="">
+          <div class="scr" aria-hidden="true" style="left:33.1%;top:9.5%;width:34.8%;height:61.8%"><div class="sb"><span>9:41</span><span>●●●</span></div><div class="hd">Passende Original-Räder</div><div class="bd"><div class="img" style="height:40%;background-image:url(../media/th/felge-bg.webp)"></div><div class="row"><span>Mercedes C-Klasse</span></div><div class="row"><span>18 Zoll · 4 Räder</span></div></div><div class="btn" style="background:#E3001B">Ab 1.290 €</div></div></div>
+        <div class="ft" style="right:-7%;top:34%;width:60%"><small>Feature · Felgen-Finder</small><b>Marke, Modell, Baujahr. Fertig.</b><div style="margin-top:.4rem;display:grid;gap:4px"><span style="border:1px solid #ddd;border-radius:6px;padding:4px 6px">1 · Mercedes-Benz ▾</span><span style="border:1px solid #ddd;border-radius:6px;padding:4px 6px">2 · C-Klasse ▾</span><span style="border:1px solid #E3001B;border-radius:6px;padding:4px 6px;color:#E3001B">3 · Baujahr wählen ▾</span></div></div>
+        <div class="sl" aria-hidden="true" style="--d:url(../media/th/d-felge.webp)"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <span class="tag">Detail <b>Speichen</b></span><span class="cap">Nur Original. Nie Nachbau.</span>
+        <div class="pills"><span class="pl">Top Shop 2024</span><span class="pl">Trend Shop 2025</span></div>
+      </div>
+      <div class="meta"><span>PremiumWheels</span><span>Mobilität</span></div>
+      <h3>Original-Felgen, die in drei Schritten zum Auto passen.</h3>
+      <p class="d">Internationaler Reifenhandel, Felgen-Finder nach Marke, Modell und Baujahr.</p>
+    </a>
+    <a class="cs" href="#" data-io>
+      <div class="tile">
+        <div class="bk"><div class="ty fill" style="--fs:clamp(5rem,10vw,8.6rem);top:8%">Wein</div><img class="obj" src="../media/th/glas.webp" alt="" style="left:18%;top:8%;width:74%"></div>
+        <div class="hang" style="left:12%"><span style="background:#1d4ea8">Neu</span><span style="background:#3b8a5a">Bio</span><span style="background:#a3122a">Sale</span></div>
+        <div class="ft" style="right:-8%;top:48%;width:60%"><small>Feature · Etiketten im Shop</small><b>Riff Merlot Cabernet 2021</b><div style="margin-top:.35rem;display:flex;justify-content:space-between;align-items:center"><span style="color:#666;font-size:.68rem">Lagerwein · Bio</span><b style="font-size:.85rem">8,90 €</b></div></div>
+        <div class="sl" aria-hidden="true" style="--d:url(../media/th/d-glas.webp)"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <span class="tag">Detail <b>Weinspiegel</b></span><span class="cap">Seit 50 Jahren im Glas.</span>
+        <div class="pills"><span class="pl">Shop, Social, Verkaufswagen</span></div>
+      </div>
+      <div class="meta"><span>Wein-Bauer.de</span><span>Food</span></div>
+      <h3>50 Jahre Weinhandel, jetzt auf allen Kanälen.</h3>
+      <p class="d">Etiketten wie Neu, Bio und Sale hängen direkt am Produkt, im Shop wie im Laden.</p>
     </a>
   </div>
 </section>
