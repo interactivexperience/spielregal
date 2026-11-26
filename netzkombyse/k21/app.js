@@ -37,11 +37,32 @@
   addEventListener('nk:motion', revealUpdate); addEventListener('resize', revealUpdate); revealUpdate();
 
   /* ---------- Lesefortschritt, Laufband, Hero-Glühen beim Scrollen ---------- */
+  /* ---------- Marken-Laufband: folgt dem Scrollen, lässt sich aber auch wischen und ziehen ---------- */
+  const mqRows = $$('.mq').map(r => ({ r, d: +($('.mq-t', r) || { dataset: { mq: 1 } }).dataset.mq, user: 0, prog: false }));
+  const mqHalf = m => m.r.scrollWidth / 2, mqBase = m => mqHalf(m) * .25 + (motionOn() ? scrollY * .35 * m.d : 0);
+  const mqSet = (m, v) => { const h = mqHalf(m); if (!h) return; m.prog = true; m.r.scrollLeft = ((v % h) + h) % h; };
+  function mqPos() { mqRows.forEach(m => mqSet(m, mqBase(m) + m.user)); }
+  mqRows.forEach(m => {
+    m.r.addEventListener('scroll', () => {
+      if (m.prog) { m.prog = false; return; }
+      const h = mqHalf(m);
+      if (m.r.scrollLeft < 40) { m.prog = true; m.r.scrollLeft += h; } else if (m.r.scrollLeft > h) { m.prog = true; m.r.scrollLeft -= h; }
+      m.user = m.r.scrollLeft - mqBase(m);
+    }, { passive: true });
+    let dx = null, sl = 0;
+    m.r.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return; dx = e.clientX; sl = m.r.scrollLeft; m.r.setPointerCapture(e.pointerId); m.r.classList.add('drag'); });
+    m.r.addEventListener('pointermove', e => { if (dx === null) return; m.r.scrollLeft = sl - (e.clientX - dx); });
+    const end = () => { dx = null; m.r.classList.remove('drag'); };
+    m.r.addEventListener('pointerup', end);
+    m.r.addEventListener('pointercancel', end);
+  });
+  addEventListener('resize', mqPos);
+
   const prog = $('.prog'), mqs = $$('[data-mq]'), glow = $('.hero .glow'), gk = $('.gk');
   let st = false;
   const onScroll = () => { st = false;
     const h = document.documentElement.scrollHeight - innerHeight; prog && prog.style.setProperty('--sp', h > 0 ? (scrollY / h).toFixed(4) : 0);
-    mqs.forEach(m => { const d = +m.dataset.mq, off = motionOn() ? scrollY * .35 * d : 0; m.style.transform = `translate3d(${(-25 + (d > 0 ? 0 : 0) + (d > 0 ? -off * 0 : 0)).toFixed(0)}%,0,0) translate3d(${off.toFixed(1)}px,0,0)`; });
+    mqPos();
     if (gk) { const r = gk.parentElement.getBoundingClientRect(), p = clamp(1 - r.top / innerHeight, 0, 1.2); gk.style.transform = motionOn() ? `translate3d(0,${((1 - Math.min(p, 1)) * 40).toFixed(1)}px,0)` : ''; } };
   addEventListener('scroll', () => { if (!st) { st = true; requestAnimationFrame(onScroll); } }, { passive: true }); addEventListener('nk:motion', onScroll); onScroll();
 
