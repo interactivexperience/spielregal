@@ -39,7 +39,9 @@
   /* ---------- Lesefortschritt, Laufband, Hero-Glühen beim Scrollen ---------- */
   /* ---------- Marken-Laufband: folgt dem Scrollen, lässt sich aber auch wischen und ziehen ---------- */
   const mqRows = $$('.mq').map(r => ({ r, d: +($('.mq-t', r) || { dataset: { mq: 1 } }).dataset.mq, user: 0, prog: false }));
-  const mqHalf = m => m.r.scrollWidth / 2, mqBase = m => mqHalf(m) * .25 + (motionOn() ? scrollY * .35 * m.d : 0);
+  const mqHalf = m => m.r.scrollWidth / 2, mqBase = m => mqHalf(m) * .25 + mqT * m.d;
+  /* läuft langsam von allein (ca. 28 px/s), pausiert beim Hover, Ziehen oder ausgeschalteter Bewegung */
+  let mqT = 0, mqLast = 0, mqHov = false;
   const mqSet = (m, v) => { const h = mqHalf(m); if (!h) return; m.prog = true; m.r.scrollLeft = ((v % h) + h) % h; };
   function mqPos() { mqRows.forEach(m => mqSet(m, mqBase(m) + m.user)); }
   mqRows.forEach(m => {
@@ -57,6 +59,11 @@
     m.r.addEventListener('pointercancel', end);
   });
   addEventListener('resize', mqPos);
+  $$('.mqs').forEach(x => { x.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') mqHov = true; }); x.addEventListener('pointerleave', () => { mqHov = false; }); });
+  const mqTick = t => { const dt = mqLast ? Math.min(t - mqLast, 100) : 0; mqLast = t;
+    if (motionOn() && !mqHov && !mqRows.some(m => m.r.classList.contains('drag')) && !document.hidden) { mqT += dt * .028; mqPos(); }
+    requestAnimationFrame(mqTick); };
+  requestAnimationFrame(mqTick);
 
   const prog = $('.prog'), mqs = $$('[data-mq]'), glow = $('.hero .glow'), gk = $('.gk');
   let st = false;
