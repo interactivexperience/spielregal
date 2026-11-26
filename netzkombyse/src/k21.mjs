@@ -138,7 +138,7 @@ function index() {
 
 <div class="mqs" role="group" aria-label="Marken, für die wir arbeiten"><p class="k mk">Diese Marken arbeiten mit uns.</p><p class="sr-only">${marken.join(', ')}</p><p class="mq a" aria-hidden="true"><span class="mq-t" data-mq="-1">${row(marken.slice(0, 9))}</span></p><p class="mq b" aria-hidden="true"><span class="mq-t" data-mq="1">${row(marken.slice(9))}</span></p></div>
 
-<section class="sec" id="arbeit"><div class="wr"><p class="k kc">Referenzen</p><div class="two"><h2 data-chars data-reveal>Handverlesen. Wie am Fischmarkt.</h2><p class="side" data-reveal>Eine Auswahl aus 40 Projekten, vom Ein-Frau-Startup bis zum Mittelstand.</p></div>
+<section class="sec" id="arbeit"><div class="wr"><p class="k kc">Referenzen</p><div class="two"><h2 data-chars data-reveal>Handverlesen. Wie am Fischmarkt.</h2></div>
   <div class="gal" data-gal="kc"><ul class="kcs">${kacheln.slice(0, 3).map(kachel).join('')}</ul></div>
   <p class="all" data-reveal>${btn(`${W}/references`, 'Alle Referenzen ansehen', 'alt')}</p></div>
   <div class="pv" aria-hidden="true"><img alt="" width="1024" height="675"></div><span class="pc" aria-hidden="true">${ar}</span></section>
