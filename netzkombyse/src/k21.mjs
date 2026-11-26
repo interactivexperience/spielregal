@@ -102,7 +102,7 @@ const logoOf = { 'Bio Planète': 'bioplanete.svg', 'Tout Terrain': 'touttterrain
 const row = a => [...a, ...a].map(x => `<span class="bn">${esc(x)}</span><i aria-hidden="true">✦</i>`).join('');
 
 const fragen = [
-  { q: 'Was kostet ein Onlineshop, und wie lange dauert er?', a: 'Das sagen wir vorher. Nicht hinterher.', d: 'Preis und Zeitplan hängen von Umfang, Schnittstellen und Design ab. Im Erstgespräch klären wir Ziel und Budget, danach bekommst du ein Angebot mit Zeitplan, das du nachvollziehen kannst.', l: 'Termin mit Henning buchen', href: C.termin },
+  { q: 'Was kostet ein Onlineshop?', a: 'Das sagen wir vorher. Nicht hinterher.', d: 'Der Preis hängt von Umfang, Schnittstellen und Design ab. Im Erstgespräch klären wir Ziel und Budget, danach bekommst du ein Angebot, das du nachvollziehen kannst.', l: 'Termin mit Henning buchen', href: C.termin },
   { q: 'Shopware oder Shopify?', a: 'Shopify für Tempo. Shopware für Tiefe.', d: 'Wir vergleichen Betriebskosten, Integrationsaufwand und Zielbild und empfehlen, was zu deinem Geschäft passt.', l: 'Shopify vs. Shopware lesen', href: `${W}/shopify-shopware-kostenvergleich` },
   { q: 'Könnt ihr meinen bestehenden Shop umziehen?', a: 'Ja. Wir planen den Umzug mit dir.', d: 'Wir migrieren bestehende Shops auf Shopware 6 oder Shopify und binden deine Systeme wieder an. Gemeinsam planen wir den Umzug so, dass dein Geschäft währenddessen weiterläuft.', l: 'Shop-Migration ansehen', href: `${W}/e-commerce` },
   { q: 'Gibt es Förderung für meinen Onlineshop?', a: 'Bis zu 80 % können gefördert werden.', d: 'Wir schauen gemeinsam, ob dein Vorhaben förderfähig ist, und begleiten den Antrag bis zum Nachweis.', l: 'Förderung mit dem Förderrechner prüfen', href: `${W}/foerderrechner` },
