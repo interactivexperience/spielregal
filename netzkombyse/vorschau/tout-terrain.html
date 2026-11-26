@@ -58,6 +58,82 @@ h2{font:800 clamp(1.6rem,3.4vw,2.8rem)/1 var(--hf);letter-spacing:-.04em;margin:
 .scroll{overflow-x:auto}
 .layers{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));border-top:1px solid var(--line);list-style:none;padding:0}
 .layers li{padding:1.4rem 1.2rem 1.4rem 0;border-bottom:1px solid var(--line)}.layers em{font-style:normal;font:800 2.2rem var(--hf);letter-spacing:-.05em;color:transparent;-webkit-text-stroke:1.5px var(--o);display:block;margin-bottom:.4rem}.layers b{font:700 1.05rem var(--hf);display:block;margin-bottom:.3rem}.layers span{font-size:.85rem;color:var(--soft)}
+
+/* ====== Sechs weitere Kompositionen (Plakat-Prinzip) ====== */
+.row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(2rem,4vw,3.4rem) clamp(1.4rem,3vw,2.6rem);align-items:start}
+@media(max-width:1000px){.row3{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.row3{grid-template-columns:1fr}}
+.pc{display:grid;gap:1rem;text-decoration:none;color:#fff;-webkit-tap-highlight-color:transparent}
+.pp{position:relative;aspect-ratio:4/5;container-type:inline-size;isolation:isolate}
+.pp .bgd{position:absolute;inset:0;z-index:-1;border-radius:6px;background:radial-gradient(90% 70% at 50% 60%,#5a1a08 0,#1d0804 55%,#080202 100%);box-shadow:0 0 0 1px rgba(255,255,255,.1)}
+.pp.clip{overflow:hidden;border-radius:6px}
+.pp .mt{position:absolute;z-index:6;left:4cqw;right:4cqw;top:4cqw;display:flex;justify-content:space-between;font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.85);pointer-events:none}
+.pp .w{position:absolute;margin:0;font-family:var(--hf);font-weight:800;letter-spacing:-.06em;text-transform:uppercase;color:var(--o);white-space:nowrap;pointer-events:none}
+.pp img{display:block;height:auto;pointer-events:none;-webkit-user-drag:none}
+.pc .det h3{font-size:clamp(1.3rem,2vw,1.7rem)}
+
+/* 1 Durchstoßen: Wort hinter UND vor der Felge */
+.p1 .w{left:0;right:0;top:15cqw;text-align:center;font-size:22.5cqw;line-height:.86}
+.p1 .w.f{z-index:3;clip-path:inset(52% 0 0 0)}
+.p1 .mw{position:absolute;z-index:2;left:50%;top:17cqw;width:100cqw;aspect-ratio:1;translate:-50% 0;filter:drop-shadow(0 30px 40px rgba(0,0,0,.7))}
+.p1 .mw img{width:100%}
+.p1 .gl{position:absolute;inset:0;-webkit-mask:url(../media/th/felge.webp) center/100% 100%;mask:url(../media/th/felge.webp) center/100% 100%;background:linear-gradient(105deg,transparent 42%,rgba(255,214,170,.75) 50%,transparent 58%) 130% 0/300% 100% no-repeat;transition:background-position 1.6s var(--ease)}
+.pc.hot .p1 .gl{background-position:-30% 0}
+
+/* 2 Senkrecht: Wort läuft an der Kante hoch, Rad ragt über den Rand */
+.p2 .w{left:1cqw;top:3cqw;bottom:3cqw;writing-mode:vertical-rl;rotate:180deg;font-size:27cqw;line-height:.8;text-align:center}
+.p2 .sm{position:absolute;z-index:6;right:5cqw;top:12cqw;font:800 9cqw/.9 var(--hf);letter-spacing:-.05em;text-align:right;text-transform:uppercase}
+.p2 .sm small{display:block;margin-top:.6em;font:400 .62rem/1.4 var(--bf);letter-spacing:.12em;color:var(--soft)}
+.p2 .m{position:absolute;z-index:2;left:16cqw;bottom:20cqw;width:108cqw;filter:drop-shadow(0 26px 30px rgba(0,0,0,.75));transition:translate 1.4s var(--ease)}
+.pc.hot .p2 .m{translate:4cqw 0}
+.p2 .gr{position:absolute;z-index:1;left:0;right:0;bottom:19cqw;height:1px;background:linear-gradient(90deg,transparent,rgba(255,90,20,.7) 30%,rgba(255,90,20,.7))}
+
+/* 3 Zahl: eine Kennzahl als Plakat */
+.p3 .w{left:0;right:0;top:4cqw;text-align:center;font-size:92cqw;line-height:.9;letter-spacing:-.08em;transition:color .8s,-webkit-text-stroke-color .8s;-webkit-text-stroke:2px var(--o)}
+.pc.hot .p3 .w{color:transparent}
+.p3 .m{position:absolute;z-index:2;left:50%;bottom:4cqw;height:100cqw;width:auto;translate:-50% 0;filter:drop-shadow(0 26px 30px rgba(0,0,0,.7))}
+.p3 .lb{position:absolute;z-index:3;left:5cqw;bottom:30cqw;font:800 7.5cqw/.95 var(--hf);letter-spacing:-.04em;text-transform:uppercase}
+.p3 .lb small{display:block;margin-top:.5em;font:400 .62rem/1.45 var(--bf);letter-spacing:.06em;text-transform:none;color:var(--soft);max-width:13em;opacity:0;translate:0 6px;transition:opacity .6s,translate .8s var(--ease)}
+.pc.hot .p3 .lb small{opacity:1;translate:0}
+
+/* 4 Kreis: Sonne, Schrift im Ring, Hand mit Phone */
+.p4 .sun{position:absolute;left:50%;top:44%;width:78cqw;aspect-ratio:1;translate:-50% -50%;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ff9a52,var(--o) 45%,#b8380a)}
+.p4 .ring{position:absolute;left:50%;top:44%;width:96cqw;aspect-ratio:1;translate:-50% -50%;animation:spin 40s linear infinite;animation-play-state:paused}
+.pc.hot .p4 .ring{animation-play-state:running}
+@keyframes spin{to{rotate:360deg}}
+.p4 .ring text{font:600 4.1px var(--bf);letter-spacing:.32em;fill:#fff;text-transform:uppercase}
+.p4 .hw{position:absolute;z-index:2;left:50%;bottom:0;width:78cqw;aspect-ratio:896/1152;translate:-44% 0}
+.p4 .hw>img{width:100%;height:100%;filter:drop-shadow(0 20px 30px rgba(0,0,0,.6))}
+.scr{position:absolute;left:33.1%;top:9.5%;width:34.8%;height:61.8%;border-radius:8.5%/3.9%;background:#0c0c0c;overflow:hidden;font-family:var(--bf);color:#fff;display:flex;flex-direction:column;gap:2.2cqw;padding:5cqw 2.4cqw}
+.scr .tm{font:600 2.4cqw var(--bf);text-align:center;color:var(--soft)}
+.scr .bub{align-self:flex-start;max-width:92%;padding:1.8cqw 2.2cqw;border-radius:3cqw 3cqw 3cqw 1cqw;background:#262626;font-size:2.35cqw;line-height:1.35;opacity:.55;transition:opacity .6s,translate .8s var(--ease)}
+.scr .bub b{display:block;font-size:1.9cqw;color:var(--o);letter-spacing:.04em}
+.scr .bub.n{background:var(--o);color:#000;opacity:0;translate:0 3cqw}.scr .bub.n b{color:#000}
+.pc.hot .scr .bub.n{opacity:1;translate:0;transition-delay:.4s}
+
+/* 5 Bild in Schrift */
+.p5 .tx{position:absolute;inset:0;z-index:2;display:grid;place-content:center;text-align:center;font:800 43cqw/.8 var(--hf);letter-spacing:-.07em;text-transform:uppercase;color:transparent;background:url(../media/car/sabro.webp) 50% 40%/cover;-webkit-background-clip:text;background-clip:text;transition:-webkit-text-stroke-color .8s;-webkit-text-stroke:1.5px rgba(255,90,20,0)}
+.p5 .ph{position:absolute;inset:0;z-index:1;background:url(../media/car/sabro.webp) 50% 40%/cover;clip-path:circle(0 at 50% 50%);transition:clip-path 1.2s var(--ease)}
+.p5 .ph::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 55%,rgba(0,0,0,.65))}
+.pc.hot .p5 .ph{clip-path:circle(75% at 50% 50%)}
+.pc.hot .p5 .tx{-webkit-text-stroke-color:var(--o)}
+.p5 .cl{position:absolute;z-index:3;left:5cqw;right:5cqw;bottom:5cqw;font:600 .8rem/1.3 var(--bf);opacity:0;transition:opacity .6s .4s}
+.pc.hot .p5 .cl{opacity:1}
+
+/* 6 Band: Schriftbänder kreuzen hinter dem Motiv */
+.p6 .bd{position:absolute;left:-20cqw;right:-20cqw;height:13cqw;display:flex;align-items:center;overflow:hidden;font:800 8cqw/1 var(--hf);letter-spacing:-.03em;text-transform:uppercase;white-space:nowrap}
+.p6 .bd span{display:block;transition:translate 6s linear}
+.p6 .bd.a{top:30cqw;rotate:-12deg;background:var(--o);color:#000}
+.p6 .bd.b{top:62cqw;rotate:9deg;background:#0b0504;color:transparent;-webkit-text-stroke:1.2px var(--o);box-shadow:0 0 0 1px rgba(255,90,20,.35)}
+.pc.hot .p6 .bd.a span{translate:-18cqw 0}.pc.hot .p6 .bd.b span{translate:18cqw 0}
+.p6 .hw{position:absolute;z-index:2;left:50%;bottom:0;width:74cqw;aspect-ratio:896/1152;translate:-50% 0;scale:-1 1}
+.p6 .hw>img{width:100%;height:100%;filter:drop-shadow(0 20px 30px rgba(0,0,0,.7))}
+.p6 .scr{left:32.1%;scale:-1 1;padding:4cqw 2.2cqw;gap:1.6cqw}
+.scr .it{display:flex;justify-content:space-between;gap:1cqw;font-size:2.1cqw;padding-bottom:1.2cqw;border-bottom:1px solid rgba(255,255,255,.12)}
+.scr .h{font:800 3.2cqw/1 var(--hf);letter-spacing:-.03em}
+.scr .cp{margin-top:auto;padding:1.6cqw 2cqw;border-radius:99px;background:rgba(255,90,20,.18);color:var(--o);font-size:2.1cqw;text-align:center;transition:background .6s,color .6s}
+.pc.hot .scr .cp{background:var(--o);color:#000}
+@media(prefers-reduced-motion:reduce){.pp *{transition:none!important;animation:none!important}}
 @media(prefers-reduced-motion:reduce){.big,.cut,.mud i,.sec::before{transition:none;animation:none}}
 </style>
 </head>
@@ -88,6 +164,44 @@ h2{font:800 clamp(1.6rem,3.4vw,2.8rem)/1 var(--hf);letter-spacing:-.04em;margin:
   </a>
 
   <div class="side"><p class="k">Bisher</p><div class="old"><img src="../media/cases/tout.jpg" alt="Bisheriges Vorschaubild: Screens der Tout-Terrain-Website" width="1034" height="674"></div><p style="margin-top:1rem">Der Mockup zeigt, <b>was</b> gebaut wurde, aber nicht, <b>warum</b> man es sehen will. Die neue Kachel zeigt <b>wofür</b> die Marke steht und lässt den Screen auf der Case-Seite.</p></div>
+</div>
+
+<h2>Sechs weitere Kompositionen</h2>
+<p class="lead" style="margin-top:-.4rem">Gleiches Prinzip, sechs andere Bauweisen: Wie stehen Wort und Motiv zueinander? Jede Komposition an einem anderen Case, damit man sieht, dass sie für das ganze Portfolio taugt. Beim Hover passiert jeweils genau eine ruhige Sache (kein Zoom, keine Kamerafahrt).</p>
+<div class="row3">
+  <a class="pc" href="https://netzkombyse.de" target="_blank" rel="noopener" aria-label="PremiumWheels: Original-Felgen, die in drei Schritten passen. Projekt ansehen">
+    <div class="pp clip p1"><div class="bgd"></div><div class="mt" aria-hidden="true"><span>Mobilität</span><span>Fall 03</span></div>
+      <p class="w" aria-hidden="true">Premium<br>Wheels</p><div class="mw" aria-hidden="true"><img src="../media/th/felge.webp" alt="" width="1024" height="1024"><span class="gl"></span></div><p class="w f" aria-hidden="true">Premium<br>Wheels</p></div>
+    <div class="det"><span class="tag">1 · Durchstoßen</span><h3>Original-Felgen, die in drei Schritten passen.</h3><p>Das Motiv steckt im Wort: die obere Zeile liegt dahinter, die untere davor. Hover: ein Glanzlicht wandert einmal über die Felge.</p></div></a>
+
+  <a class="pc" href="https://netzkombyse.de/case-tout" target="_blank" rel="noopener" aria-label="Tout Terrain: Für alle, die nicht auf der Straße bleiben. Projekt ansehen">
+    <div class="pp p2"><div class="bgd"></div><div class="mt" aria-hidden="true"><span></span><span>Fall 02</span></div>
+      <p class="w" aria-hidden="true">Terrain</p><p class="sm" aria-hidden="true">Tout<small>Outdoor · Shop</small></p><span class="gr" aria-hidden="true"></span><img class="m" src="../media/plakat/rad.webp" alt="" width="443" height="259"></div>
+    <div class="det"><span class="tag">2 · Senkrecht</span><h3>Für alle, die nicht auf der Straße bleiben.</h3><p>Das Wort läuft an der Kante hoch, das Rad ragt rechts aus dem Bild. Hover: das Rad rollt ein Stück weiter.</p></div></a>
+
+  <a class="pc" href="https://netzkombyse.de" target="_blank" rel="noopener" aria-label="Wein-Bauer: 50 Jahre Weinhandel, jetzt auf allen Kanälen. Projekt ansehen">
+    <div class="pp clip p3"><div class="bgd"></div><div class="mt" aria-hidden="true"><span>Food</span><span>Fall 05</span></div>
+      <p class="w" aria-hidden="true">50</p><img class="m" src="../media/plakat/glas.webp" alt="" width="374" height="985"><p class="lb" aria-hidden="true">Jahre<br>Wein-Bauer<small>Shop, Social und Verkaufswagen aus einem Guss.</small></p></div>
+    <div class="det"><span class="tag">3 · Zahl</span><h3>50 Jahre Weinhandel, jetzt auf allen Kanälen.</h3><p>Statt des Namens trägt eine Kennzahl das Plakat. Hover: die Zahl wird zur Kontur, ein Satz erscheint.</p></div></a>
+
+  <a class="pc" href="https://netzkombyse.de" target="_blank" rel="noopener" aria-label="Abelmann: Fangfrisch bestellt, gekühlt an der Haustür. Projekt ansehen">
+    <div class="pp clip p4"><div class="bgd"></div><div class="mt" aria-hidden="true"><span>Food</span><span>Fall 06</span></div>
+      <span class="sun" aria-hidden="true"></span>
+      <svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><defs><path id="rgp" d="M50,50 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0"/></defs><text><textPath href="#rgp">Fangfrisch bestellt · gekühlt bis zur Tür · Abelmann ·</textPath></text></svg>
+      <div class="hw" aria-hidden="true"><img src="../media/th/hand.webp" alt="" width="896" height="1152"><div class="scr"><span class="tm">Heute</span><span class="bub"><b>ABELMANN</b>Bestellung eingegangen: 2 × Lachsfilet.</span><span class="bub n"><b>ABELMANN</b>Gekühlt unterwegs. Ankunft 14:30 bis 15:00.</span></div></div></div>
+    <div class="det"><span class="tag">4 · Kreis</span><h3>Fangfrisch bestellt, gekühlt an der Haustür.</h3><p>Eine Sonne als Bühne, die Aussage läuft im Ring. Hover: der Ring dreht sehr langsam, auf dem Phone kommt die Liefer-SMS.</p></div></a>
+
+  <a class="pc" href="https://netzkombyse.de" target="_blank" rel="noopener" aria-label="Sabro: Hundesofas, so gemütlich wie ihr Ruf. Projekt ansehen">
+    <div class="pp clip p5"><div class="bgd" style="background:#0b0504"></div><div class="mt" aria-hidden="true"><span>Heimtier</span><span>Fall 04</span></div>
+      <span class="ph" aria-hidden="true"></span><p class="tx" aria-hidden="true">Sa<br>bro</p><p class="cl" aria-hidden="true">Empfohlen von Martin Rütter</p></div>
+    <div class="det"><span class="tag">5 · Bild in Schrift</span><h3>Hundesofas, so gemütlich wie ihr Ruf.</h3><p>Das Foto steckt in den Buchstaben. Hover: es öffnet sich als Kreis aus der Mitte, die Buchstaben bleiben als Kontur stehen.</p></div></a>
+
+  <a class="pc" href="https://netzkombyse.de" target="_blank" rel="noopener" aria-label="Beisser: Feinste Fleischwaren, mit dem Daumen bestellt. Projekt ansehen">
+    <div class="pp clip p6"><div class="bgd"></div><div class="mt" aria-hidden="true"><span>Food</span><span>Fall 01</span></div>
+      <div class="bd a" aria-hidden="true"><span>Feinste Fleischwaren · seit 1836 · Feinste Fleischwaren · seit 1836 ·</span></div>
+      <div class="bd b" aria-hidden="true"><span>Beisser · Beisser · Beisser · Beisser · Beisser ·</span></div>
+      <div class="hw" aria-hidden="true"><img src="../media/th/hand.webp" alt="" width="896" height="1152"><div class="scr"><span class="h">Warenkorb</span><span class="it"><span>Rinderfilet</span><span>38,90</span></span><span class="it"><span>Salami 1836</span><span>12,50</span></span><span class="it"><span>Gutschein</span><span>−5,00</span></span><span class="cp">Gutschein eingelöst</span></div></div></div>
+    <div class="det"><span class="tag">6 · Band</span><h3>Feinste Fleischwaren, mit dem Daumen bestellt.</h3><p>Zwei Schriftbänder kreuzen hinter der Hand wie Absperrband. Hover: die Bänder gleiten gegeneinander, der Gutschein greift.</p></div></a>
 </div>
 
 <h2>Baukasten für alle Cases</h2>
@@ -125,6 +239,14 @@ h2{font:800 clamp(1.6rem,3.4vw,2.8rem)/1 var(--hf);letter-spacing:-.04em;margin:
     /* Touch: läuft, solange die Kachel mittig im Bild ist */
     if (matchMedia('(hover:none)').matches && 'IntersectionObserver' in window) new IntersectionObserver(es => es.forEach(e => e.isIntersecting ? on() : off()), { rootMargin: '-35% 0px -35% 0px' }).observe(c);
   });
+})();
+</script>
+<script>
+(() => { const rm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('.pc').forEach(c => { const on = () => c.classList.add('hot'), off = () => c.classList.remove('hot');
+    c.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') on(); }); c.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') off(); });
+    c.addEventListener('focus', on); c.addEventListener('blur', off);
+    if (matchMedia('(hover:none)').matches && 'IntersectionObserver' in window) new IntersectionObserver(es => es.forEach(e => e.isIntersecting ? on() : off()), { rootMargin: '-35% 0px -35% 0px' }).observe(c); });
 })();
 </script>
 </body>

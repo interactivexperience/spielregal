@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Case-Vorschau</title>
+<meta name="robots" content="noindex">
+<style>
+@font-face{font-family:Bricolage;src:url(../fonts/bricolage.woff2) format('woff2');font-weight:200 800;font-display:swap}
+@font-face{font-family:Sora;src:url(../fonts/sora.woff2) format('woff2');font-weight:100 800;font-display:swap}
+:root{--o:#FF5A14;--soft:rgba(255,255,255,.66);--line:rgba(255,255,255,.16);--g:clamp(14px,3vw,40px)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#000;color:#fff;font:400 1rem/1.4 Sora,system-ui,sans-serif}
+body{display:flex;flex-direction:column}
+a{color:inherit}:focus-visible{outline:3px solid var(--o);outline-offset:3px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1.2rem;padding:.6rem var(--g);border-bottom:1px solid var(--line)}
+.bk{display:inline-flex;align-items:center;min-height:44px;font-size:.78rem;color:var(--soft);text-decoration:none}.bk:hover{color:var(--o)}
+h1{font:800 1.25rem/1 Bricolage,Sora,sans-serif;letter-spacing:-.03em;margin-right:auto}
+.tabs,.sub{display:flex;gap:.35rem;flex-wrap:wrap}
+.tabs button,.sub button{min-height:44px;padding:0 1.1rem;border-radius:99px;border:1.5px solid var(--line);background:transparent;color:#fff;font:600 .85rem Sora,sans-serif;cursor:pointer;transition:background .25s,color .25s,border-color .25s}
+.tabs button:hover,.sub button:hover{border-color:var(--o)}
+.tabs button[aria-selected=true]{background:var(--o);border-color:var(--o);color:#000}
+.sub{flex-basis:100%;padding-top:.1rem}
+.sub[hidden]{display:none}
+.sub button{min-height:40px;font-weight:500;font-size:.8rem}
+.sub button[aria-pressed=true]{border-color:var(--o);color:var(--o)}
+main{position:relative;flex:1;min-height:0}
+iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+iframe[hidden]{display:none}
+</style>
+</head>
+<body>
+<header>
+  <a class="bk" href="../index.html">‹ Übersicht</a>
+  <h1>Case-Vorschau</h1>
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" data-t="karussell">Karussell</button>
+    <button type="button" role="tab" data-t="thumbs">Thumbnails</button>
+  </div>
+  <div class="sub" aria-label="Thumbnail-Richtungen">
+    <button type="button" data-s="thumbs">Orange: Objekt, Ergebnis, Detail</button>
+    <button type="button" data-s="plakat">Plakat-Prinzip</button>
+    <button type="button" data-s="erste">Erste Runde</button>
+  </div>
+</header>
+<main id="m"></main>
+<script>
+const SRC = { karussell: 'karussell.html', thumbs: 'thumbs.html', plakat: 'tout-terrain.html', erste: 'kachel-richtungen.html' };
+const m = document.getElementById('m'), frames = {}, sub = document.querySelector('.sub');
+let lastThumb = 'thumbs';
+function show(k) {
+  if (!SRC[k]) k = 'karussell';
+  if (k !== 'karussell') lastThumb = k;
+  if (!frames[k]) { const f = document.createElement('iframe'); f.src = SRC[k]; f.title = k;
+    // eigene Kopfzeile der eingebetteten Seite ausblenden (Zurück-Link würde im Rahmen navigieren)
+    f.addEventListener('load', () => { try { const s = f.contentDocument.createElement('style'); s.textContent = 'body>.top{display:none!important}'; f.contentDocument.head.appendChild(s); } catch (e) {} });
+    m.appendChild(f); frames[k] = f; }
+  Object.entries(frames).forEach(([n, f]) => f.hidden = n !== k);
+  const isK = k === 'karussell';
+  document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.t === (isK ? 'karussell' : 'thumbs'))));
+  sub.hidden = isK;
+  sub.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.s === k)));
+  if (location.hash.slice(1) !== k) history.replaceState(null, '', '#' + k);
+}
+document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => show(b.dataset.t === 'thumbs' ? lastThumb : 'karussell')));
+sub.querySelectorAll('button').forEach(b => b.addEventListener('click', () => show(b.dataset.s)));
+addEventListener('hashchange', () => show(location.hash.slice(1)));
+show(location.hash.slice(1) || 'karussell');
+</script>
+</body>
+</html>
