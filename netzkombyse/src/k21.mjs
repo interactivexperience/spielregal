@@ -135,7 +135,7 @@ function index() {
 
 <nav class="qk" aria-label="Schnell zu den häufigsten Fragen"><p class="k" data-reveal>Schnell zur Antwort</p><ul data-reveal>${[['Was kostet ein Onlineshop?', 0], ['Shopware oder Shopify?', 1], ['Shop umziehen?', 2], ['Förderung?', 3]].map(([t, i]) => `<li><a href="#fragen" data-q="${i}">${esc(t)}</a></li>`).join('')}</ul></nav>
 
-<div class="mqs" role="group" aria-label="Marken, für die wir arbeiten"><p class="k mk">Diese Marken arbeiten mit uns. <span class="mqh" aria-hidden="true">Wischen oder ziehen.</span></p><p class="sr-only">${marken.join(', ')}</p><p class="mq a" aria-hidden="true"><span class="mq-t" data-mq="-1">${row(marken.slice(0, 9))}</span></p><p class="mq b" aria-hidden="true"><span class="mq-t" data-mq="1">${row(marken.slice(9))}</span></p></div>
+<div class="mqs" role="group" aria-label="Marken, für die wir arbeiten"><p class="k mk">Diese Marken arbeiten mit uns.</p><p class="sr-only">${marken.join(', ')}</p><p class="mq a" aria-hidden="true"><span class="mq-t" data-mq="-1">${row(marken.slice(0, 9))}</span></p><p class="mq b" aria-hidden="true"><span class="mq-t" data-mq="1">${row(marken.slice(9))}</span></p></div>
 
 <section class="sec" id="arbeit"><div class="wr"><p class="k kc">Referenzen</p><div class="two"><h2 data-chars data-reveal>Projekte, die bleiben.</h2><p class="side" data-reveal>Eine Auswahl aus über 40 Projekten, vom Ein-Frau-Startup bis zum Mittelstand.</p></div>
   <div class="gal" data-gal="kc"><ul class="kcs">${kacheln.slice(0, 3).map(kachel).join('')}</ul></div>
