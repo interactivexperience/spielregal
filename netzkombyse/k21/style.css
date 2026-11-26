@@ -816,9 +816,9 @@ html[data-motion=off] .op .op-k,.op.static .op-k{transition:none;opacity:1;trans
 .mq.b{max-width:none;font-size:clamp(2.4rem,7vw,6rem);margin:.2rem 0 0}
 
 /* ===== Mi-Kommentare 26.11. ===== */
-/* Hero-Headline größer */
-.hero h1{font-size:clamp(3.8rem,12.2vw,13rem)}
-@media(max-width:560px){#h1{font-size:clamp(3rem,14vw,4.2rem)}}
+/* Hero: Möwe größer (Headline bleibt in alter Größe) */
+@media(min-width:861px){.gwrap{height:min(86svh,64vw)!important;right:clamp(1rem,5vw,6rem)!important;bottom:clamp(1rem,4svh,3rem)!important}}
+@media(max-width:860px){.gwrap{height:min(58svh,118vw)!important}}
 /* Licht/Bewegung: gleiche Pillenform wie die Knöpfe der Seite */
 .mt{border-radius:999px;padding:.3em 1.1em;border-color:rgba(255,255,255,.35);background:transparent;font-size:.72rem;letter-spacing:.04em}
 .mt:hover{border-color:#fff}
@@ -844,3 +844,24 @@ html[data-motion=off] .op .op-k,.op.static .op-k{transition:none;opacity:1;trans
 .tsr button[aria-selected=true] img{box-shadow:0 0 0 2px #fff!important;transform:translate3d(0,-4px,0) scale(1.04)}
 .tsr button[aria-selected=true] img,.tsr button:hover img{filter:none!important}
 @media(min-width:861px){.tsl>img{height:clamp(28rem,48vw,38rem)!important;max-height:none!important}}
+
+/* Fragen: Frage klein über der Antwort, nicht mehr in schmaler Spalte daneben */
+@media(min-width:761px){
+.acc button{grid-template-columns:1fr 56px;grid-template-areas:"q ar" "a ar";gap:.5rem 1.2rem;align-items:center;padding:1.4rem 1.2rem 1.5rem;min-height:0}
+.acc .n.qn{grid-area:q;margin:0}
+.acc b{grid-area:a}
+.acc .ar{grid-area:ar}
+.pn p,.pn .chs{grid-column:1}
+.acc .pn{padding-left:1.2rem;padding-right:1.2rem}}
+/* Bewertungszeile: ruhige Farben */
+.rate{color:var(--soft)}
+.rate b{color:var(--o);font-weight:800}
+.rate a{color:#fff;text-decoration:none;border-bottom:1.5px solid var(--o);padding-bottom:1px}
+.rate a:hover{color:var(--o)}
+/* Ablauf im Kontakt */
+.kst{list-style:none;padding:0;margin:1.4rem 0 1.6rem;display:grid;gap:0;border-top:1px solid var(--line);max-width:34rem}
+.kst li{display:grid;grid-template-columns:2rem 1fr;gap:.1rem .8rem;padding:.8rem 0;border-bottom:1px solid var(--line)}
+.kst .n{grid-row:1/3;font:800 1.4rem/1 var(--hf);color:var(--o)}
+.kst b{font:800 1.05rem/1.2 var(--hf);letter-spacing:-.02em}
+.kst li>span:last-child{font-size:.92rem;color:var(--soft)}
+@media(min-width:761px){.pn{grid-template-columns:minmax(0,1fr) auto}.pn p,.pn .chs{grid-column:1}.acc .pn .more{grid-column:2}}
