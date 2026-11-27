@@ -1083,3 +1083,9 @@ html[data-motion=off] .qk a::before{transition:none}
 /* Schnell zur Antwort wieder als Pillen: feiner Rand, beim Hover füllt sich die Pille von links orange */
 .qk a{border-radius:99px!important;border:1.5px solid var(--line)!important;padding:0 1.1rem 0 1.2rem!important;min-height:44px;transition:color .3s,border-color .3s!important}
 .qk a:hover,.qk a:focus-visible{border-color:var(--o)!important}
+/* Leistungen: Zeiger-Blase wie bei der Galerie */
+.sv-cur{position:fixed;left:0;top:0;z-index:120;pointer-events:none;scale:0;transition:scale .35s var(--ease)}
+.sv-cur span{display:block;transform:translate(-50%,-50%);padding:.85rem 1.2rem;border-radius:99px;background:var(--o);color:#000;font:700 .72rem var(--bf);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.sv-cur span::after{content:" ↗"}
+.sv-cur.on{scale:1}
+@media(min-width:901px){.svc.sv-click{cursor:pointer}}

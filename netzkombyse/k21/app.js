@@ -391,3 +391,14 @@
     bar.style.setProperty('--p', (10 + 90 * (max ? cur / max : 0)) + '%'); })();
 })();
 
+
+/* Leistungen: über einer Karte wird der Zeiger zur orangen Blase, die sagt, was beim Klick passiert; die ganze Karte ist klickbar */
+(() => {
+  const cards = [...document.querySelectorAll('.svc')]; if (!cards.length || !matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+  const cu = document.createElement('div'); cu.className = 'sv-cur'; cu.setAttribute('aria-hidden', 'true'); document.body.appendChild(cu);
+  addEventListener('pointermove', e => { cu.style.transform = `translate(${e.clientX}px,${e.clientY}px)`; }, { passive: true });
+  cards.forEach(c => { const a = c.querySelector('.more'); if (!a) return; c.classList.add('sv-click');
+    c.addEventListener('pointerenter', e => { if (e.pointerType !== 'mouse' || innerWidth < 901) return; cu.innerHTML = '<span></span>'; cu.firstChild.textContent = a.textContent.trim(); cu.classList.add('on'); });
+    c.addEventListener('pointerleave', () => cu.classList.remove('on'));
+    c.addEventListener('click', e => { if (e.target.closest('a')) return; a.click(); }); });
+})();
