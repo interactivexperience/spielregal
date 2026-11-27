@@ -112,10 +112,10 @@ const fragen = [
   { q: 'Arbeitet ihr mit KI?', a: 'Ja. KI macht schneller. Menschen prüfen.', d: 'Wir nutzen KI bei Recherche, Entwicklung, Content und Auswertung. Die Verantwortung für das Ergebnis bleibt bei uns: Jede Zeile, jedes Bild und jede Zahl prüft ein Mensch.', l: 'Mehr zu Shop & Technologie', href: `${W}/e-commerce` },
 ];
 function index() {
-  const body = `<div id="top"></div><div class="prog" aria-hidden="true"></div><div class="spot" aria-hidden="true"></div><div class="spot spot2" aria-hidden="true"></div><div class="spot spot3" aria-hidden="true"></div>
+  const body = `<div id="top"></div><div class="prog" aria-hidden="true"></div>
 <header class="hd"><a class="hd-logo" href="index.html" aria-label="NetzKombyse – Startseite">${logo()}</a>
   <nav class="hd-nav" aria-label="Hauptnavigation"><a href="#arbeit">Referenzen</a><a href="#leistung">Leistungen</a><a href="#menschen">Team</a><a href="#fragen">Fragen</a><a href="#kontakt">Kontakt</a></nav>
-  <div class="hd-r"><button class="mt lt" type="button" data-light aria-pressed="false" title="Lichtpunkt: ein warmer Lichtfleck folgt dem Zeiger"><span class="mt-i" aria-hidden="true"></span><span>Licht</span></button>
+  <div class="hd-r">
   <button class="mt" type="button" data-motion-toggle aria-pressed="true" title="Animationen ein- oder ausschalten"><span class="mt-i" aria-hidden="true"></span><span data-motion-label>Bewegung an</span></button></div></header>
 <main id="main">
 <section class="hero" aria-labelledby="h1">
