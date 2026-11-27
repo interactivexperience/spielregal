@@ -355,3 +355,12 @@
   addEventListener('scroll', upd, { passive: true }); upd();
   b.addEventListener('click', e => { e.preventDefault(); scrollTo({ top: 0, behavior: document.documentElement.dataset.motion === 'off' ? 'auto' : 'smooth' }); const f = document.querySelector('.hd a, a'); if (f) f.focus({ preventScroll: true }); });
 })();
+
+/* Scroll-Indikator: blendet aus, sobald gescrollt wurde; Klick gleitet zum nächsten Abschnitt */
+(() => {
+  const s = document.querySelector('.sci'); if (!s) return;
+  const upd = () => s.classList.toggle('off', scrollY > 40);
+  addEventListener('scroll', upd, { passive: true }); upd();
+  s.addEventListener('click', e => { const t = document.getElementById('weiter'); if (!t) return; e.preventDefault();
+    scrollTo({ top: t.getBoundingClientRect().top + scrollY - 40, behavior: document.documentElement.dataset.motion === 'off' ? 'auto' : 'smooth' }); });
+})();

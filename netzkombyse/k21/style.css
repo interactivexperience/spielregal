@@ -1006,3 +1006,15 @@ html[data-motion=off] .cta::before{transition:none!important}html[data-motion=of
 .cta:not(.ln)::before{background:#fff!important}
 .cta:not(.ln) i,.cta:not(.ln):hover i,.cta:not(.ln):focus-visible i{color:#000!important}
 .cta:not(.ln):hover,.cta:not(.ln):focus-visible{color:#000!important}
+
+/* Scroll-Indikator unten im Hero: Maus-Kapsel mit wanderndem Punkt + „Scrollen“, verschwindet nach dem ersten Scrollen */
+.sci{position:absolute;left:var(--g);bottom:clamp(1.4rem,4vh,2.6rem);z-index:4;display:flex;align-items:center;gap:.8rem;color:rgba(255,255,255,.7);text-decoration:none;font:600 .68rem var(--bf);letter-spacing:.18em;text-transform:uppercase;transition:opacity .4s,color .3s,transform .4s var(--ease)}
+.sci:hover{color:#fff}.sci:focus-visible{outline:2px solid var(--o);outline-offset:6px;border-radius:4px}
+.sci-m{position:relative;width:24px;height:38px;border:1.5px solid currentColor;border-radius:12px}
+.sci-m i{position:absolute;left:50%;top:7px;width:4px;height:8px;margin-left:-2px;border-radius:2px;background:var(--o);animation:sciD 1.8s var(--ease) infinite}
+@keyframes sciD{0%{transform:none;opacity:0}20%{opacity:1}70%{transform:translate3d(0,12px,0);opacity:0}100%{transform:translate3d(0,12px,0);opacity:0}}
+.sci.off{opacity:0;transform:translate3d(0,10px,0);pointer-events:none}
+html[data-motion=off] .sci-m i{animation:none;opacity:1}
+@media(max-width:860px){.sci{display:none}}
+.hero>.sci{position:absolute!important;left:50%!important;right:auto;bottom:clamp(1.2rem,3vh,2.2rem);margin-left:-40px;width:80px;flex-direction:column;gap:.55rem;grid-column:auto}
+.hero>.sci.off{transform:translate3d(0,10px,0)}
