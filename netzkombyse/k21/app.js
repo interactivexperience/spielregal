@@ -60,9 +60,16 @@
   addEventListener('scroll', () => { if (!sct) { sct = true; requestAnimationFrame(scrubUpdate); } }, { passive: true });
   addEventListener('nk:motion', scrubUpdate); addEventListener('resize', scrubUpdate);
   /* Hero: Wörter und Blöcke bauen sich nach dem Laden in ca. 1,6 s auf */
-  { const t0 = performance.now(), D = 850;
-    const tick = t => { heroP = motionOn() ? clamp((t - t0) / D, 0, 1) : 1; revealUpdate(); scrubUpdate(); if (heroP < 1) requestAnimationFrame(tick); };
-    requestAnimationFrame(tick); }
+  /* Start erst, wenn die Seite wirklich sichtbar ist und die Schrift geladen ist (sonst läuft der Aufbau
+     unsichtbar im Hintergrund ab, z. B. in einer Vorschau oder einem Hintergrund-Tab, und die Seite steht schon fertig da) */
+  { let t0 = 0, armed = false; const D = 850;
+    const tick = t => { if (!t0) t0 = t + 120; heroP = motionOn() ? clamp((t - t0) / D, 0, 1) : 1; revealUpdate(); scrubUpdate(); if (heroP < 1) requestAnimationFrame(tick); };
+    const go = () => { if (armed) return; armed = true; requestAnimationFrame(tick); };
+    const ready = () => { const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting) && document.visibilityState === 'visible') { io.disconnect(); go(); } }, { threshold: .2 });
+      const h = document.querySelector('.hero'); if (h) io.observe(h); else go();
+      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && h && h.getBoundingClientRect().bottom > 0) { io.disconnect(); go(); } }); };
+    (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(ready);
+    setTimeout(() => { if (!armed && document.visibilityState === 'visible') go(); }, 2500); }
 
   /* ---------- Lesefortschritt, Laufband, Hero-Glühen beim Scrollen ---------- */
   /* ---------- Marken-Laufband: folgt dem Scrollen, lässt sich aber auch wischen und ziehen ---------- */
