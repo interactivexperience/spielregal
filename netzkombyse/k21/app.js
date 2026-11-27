@@ -341,3 +341,11 @@
       sc.style.setProperty('--ry', (x * 24 - 6).toFixed(1) + 'deg'); sc.style.setProperty('--rx', (4 - y * 16).toFixed(1) + 'deg'); });
     k.addEventListener('pointerleave', () => { sc.style.removeProperty('--ry'); sc.style.removeProperty('--rx'); }); });
 })();
+
+/* Nach oben: Knopf erscheint, sobald der Hero aus dem Bild ist; weich nach oben, bei ausgeschalteter Bewegung sofort */
+(() => {
+  const b = document.querySelector('.totop'), h = document.querySelector('.hero'); if (!b) return;
+  const upd = () => b.classList.toggle('on', scrollY > (h ? h.offsetHeight * .8 : 600));
+  addEventListener('scroll', upd, { passive: true }); upd();
+  b.addEventListener('click', e => { e.preventDefault(); scrollTo({ top: 0, behavior: document.documentElement.dataset.motion === 'off' ? 'auto' : 'smooth' }); const f = document.querySelector('.hd a, a'); if (f) f.focus({ preventScroll: true }); });
+})();

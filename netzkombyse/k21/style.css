@@ -930,3 +930,12 @@ main#main{position:relative;z-index:1}
 .spot3{background:radial-gradient(closest-side,#ffa766 0,#ffb27f 35%,#ffd2b0 62%,#fff 85%)!important}
 /* Hero: Abstand Subtext zu den Knöpfen */
 .hero .ctas{margin-top:clamp(1.6rem,3.5vh,2.6rem)!important}
+
+/* Nach oben: runder Knopf unten rechts, erscheint nach dem Hero */
+.totop{position:fixed;right:clamp(12px,2.4vw,32px);bottom:clamp(12px,2.4vw,32px);z-index:96;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:#0b0b0b;color:#fff;border:1.5px solid var(--line);box-shadow:0 8px 24px rgba(0,0,0,.45);text-decoration:none;opacity:0;transform:translate3d(0,16px,0) scale(.9);pointer-events:none;transition:opacity .35s,transform .45s var(--ease),background .25s,border-color .25s,color .25s}
+.totop.on{opacity:1;transform:none;pointer-events:auto}
+.totop:hover{background:var(--o);border-color:var(--o);color:#000}
+.totop:hover svg{animation:tup .6s var(--ease)}@keyframes tup{40%{transform:translate3d(0,-4px,0)}}
+.totop:focus-visible{outline:2px solid var(--o);outline-offset:3px}
+@media(max-width:760px){.totop{width:48px;height:48px;bottom:72px;right:12px}}
+html[data-motion=off] .totop{transition:none}html[data-motion=off] .totop:hover svg{animation:none}
