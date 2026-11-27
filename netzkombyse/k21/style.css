@@ -1089,3 +1089,52 @@ html[data-motion=off] .qk a::before{transition:none}
 .sv-cur span::after{content:" ↗"}
 .sv-cur.on{scale:1}
 @media(min-width:901px){.svc.sv-click{cursor:pointer}}
+
+/* Zusammenarbeit: klare Rangfolge groß → mittel → klein. Headline, dann die drei Sätze als mittlere Reihe, darunter Text und Team-Reihe nebeneinander */
+#zusammen .two{margin-bottom:clamp(1.6rem,4vh,2.6rem)}
+.sun .trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(1rem,2.4vw,2.4rem);margin:0;padding:clamp(1.4rem,3vh,2rem) 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font:700 clamp(1.3rem,2.1vw,1.9rem)/1.15 var(--hf);letter-spacing:-.03em}
+.sun .trio>span{display:block}
+.zs-low{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(1.5rem,4vw,4rem);align-items:center;margin-top:clamp(1.6rem,4vh,2.6rem)}
+.sun .zs-low .zs{margin:0;max-width:32rem;font-size:1rem}
+.zs-low .crew{margin:0;justify-self:end}
+@media(max-width:760px){.sun .trio{grid-template-columns:1fr;gap:.5rem}.zs-low{grid-template-columns:1fr}.zs-low .crew{justify-self:start}}
+
+/* Team aufgeräumt: ein Bild mit einem Lichtkreis dahinter (wie bei Henning im Kontakt), Name, Rolle, Text; darunter Bildkacheln statt Kreise */
+.tq-w{display:grid;gap:clamp(1.2rem,3vh,2rem)}
+.tq-st{display:grid}
+.tq-p{grid-area:1/1;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1fr);gap:clamp(1.5rem,4vw,4rem);align-items:center;opacity:0;visibility:hidden;transition:opacity .5s,visibility .5s}
+.tq-p.on{opacity:1;visibility:visible}
+.tq-im{position:relative;aspect-ratio:4/5;max-height:min(34rem,62vh);justify-self:start;width:100%;max-width:27rem}
+.tq-im::before{content:"";position:absolute;left:50%;top:44%;width:96%;aspect-ratio:1;translate:-50% -50%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,90,20,.78),rgba(194,31,11,.36) 55%,transparent 82%);filter:blur(18px)}
+.tq-im img{position:relative;display:block;width:100%;height:100%;object-fit:contain;object-position:50% 100%}
+.tq-p:nth-child(9) .tq-im img{object-fit:contain;padding:18%;box-sizing:border-box}
+.tq-tx h3{font:800 clamp(2rem,4vw,3.4rem)/.98 var(--hf);letter-spacing:-.04em;margin:0}
+.tq-ro{margin:.7rem 0 0;font:600 .72rem/1.4 var(--bf);letter-spacing:.12em;text-transform:uppercase;color:var(--o)}
+.tq-d{margin:1rem 0 0;max-width:28rem;font-size:1rem;line-height:1.6;color:#e2e2e2}
+.tq-r{display:flex;gap:clamp(.4rem,1vw,.7rem);overflow-x:auto;scrollbar-width:none;padding:6px 2px}
+.tq-r::-webkit-scrollbar{display:none}
+.tq-r button{flex:0 0 clamp(56px,6vw,80px);aspect-ratio:4/5;padding:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;background:radial-gradient(90% 70% at 50% 60%,rgba(255,90,20,.32),#0b0b0b 75%);transition:border-color .3s,transform .4s var(--ease)}
+.tq-r img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 15%;filter:grayscale(1) brightness(.75);transition:filter .4s}
+.tq-r button:last-child img{object-fit:contain;padding:18%;box-sizing:border-box}
+.tq-r button:hover img,.tq-r button[aria-selected=true] img{filter:none}
+.tq-r button[aria-selected=true]{border-color:var(--o);transform:translate3d(0,-4px,0)}
+.tq-r button:focus-visible{outline:2px solid var(--o);outline-offset:3px}
+@media(max-width:760px){.tq-p{grid-template-columns:1fr;gap:1rem}.tq-im{max-width:18rem;justify-self:center}.tq-tx{min-height:13rem}}
+
+/* Kontakt: nur ein Lichtkreis (hinter Henning), linke Seite kompakter, nur noch ein Knopf */
+#kontakt .kst li{padding-top:.7rem!important;padding-bottom:.7rem!important}
+#kontakt .who{margin-top:1.2rem!important}
+#kontakt .ctas{margin-top:.8rem!important}
+#kontakt .cl{display:flex!important;flex-wrap:wrap;gap:.4rem 1.6rem!important;margin-top:1.4rem!important}
+#kontakt .cl li{padding:0!important;border:0!important}
+.sbar.hide{transform:translateY(120%)!important;opacity:0!important;pointer-events:none!important}
+
+/* Footer: ohne Abschiedszeile, Zeilen sauber bündig, Platz für den Nach-oben-Knopf */
+.ft{display:grid!important;grid-template-columns:auto 1fr auto;align-items:center;gap:.4rem 2rem!important;padding-right:calc(var(--g) + 72px)!important}
+.ft nav:first-of-type{justify-self:center}
+.ft-n{grid-column:1/-1;margin:0!important;padding:0!important;text-align:left}
+@media(max-width:760px){.ft{grid-template-columns:1fr;padding-right:var(--g)!important;padding-bottom:6rem!important}.ft nav:first-of-type{justify-self:start}}
+.tq-im img{-webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent)}
+.tq-p:nth-child(9) .tq-im img{-webkit-mask-image:none;mask-image:none}
+.ft{padding-bottom:5.2rem!important}.ft nav{row-gap:0!important}
+@media(max-width:760px){.ft{padding-bottom:8.5rem!important}}

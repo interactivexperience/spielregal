@@ -35,14 +35,16 @@
       /* gleiche Kurve wie der Block-Aufbau, damit Text nie hinter tieferen Blöcken zurückbleibt; Text in einem aufbauenden Block steht sofort (der Block blendet ihn ein) */
       if (r.inScr) { r.ws.forEach(w => w.classList.add('on')); return; }
       const p = r.hero ? heroP : clamp((innerHeight * .97 - b.top) / (innerHeight * .3 + b.height * .5), 0, 1);
-      r.ws.forEach((w, i) => w.classList.toggle('on', !on || i / r.ws.length < p * 1.04)); }); };
+      /* Zeile für Zeile von oben nach unten (nicht Wort für Wort, das wirkt schräg): alle Wörter einer Zeile erscheinen gemeinsam */
+      if (!r.ln) { const tops = []; r.ln = r.ws.map(w => { const t = w.offsetTop; let k = tops.findIndex(x => Math.abs(x - t) < 6); if (k < 0) { tops.push(t); k = tops.length - 1; } return k; }); r.nl = tops.length; }
+      r.ws.forEach((w, i) => w.classList.toggle('on', !on || r.ln[i] / r.nl < p * 1.04)); }); };
   addEventListener('scroll', () => { if (!rt) { rt = true; requestAnimationFrame(revealUpdate); } }, { passive: true });
-  addEventListener('nk:motion', revealUpdate); addEventListener('resize', revealUpdate); revealUpdate();
+  addEventListener('nk:motion', revealUpdate); addEventListener('resize', () => { revealEls.forEach(r => { r.ln = null; }); revealUpdate(); }); addEventListener('load', () => { revealEls.forEach(r => { r.ln = null; }); revealUpdate(); }); revealUpdate();
 
   /* ---------- Aufbau im Apple-Stil: Blöcke sind an die Scroll-Position gekoppelt ----------
      Bilder, Karten, Listen, Knöpfe blenden beim Hereinscrollen ein, gleiten hoch und wachsen leicht auf Endgröße,
      beim Zurückscrollen wieder zurück. Der Hero ist sofort sichtbar. */
-  const SCRUB = '.mq,.kc,.zs-g,.svc,.crew,.trio,.vq,.rate,.awc,.ts-w,.tsr,.acc>li,.kst li,.ctas,.cl li,.gk,.facts li,.all,.qk,.ft>*,.hero .micro,.gwrap';
+  const SCRUB = '.mq,.kc,.zs-g,.svc,.crew,.trio,.vq,.rate,.awc,.tq-st,.tq-r,.acc>li,.kst li,.ctas,.cl li,.gk,.facts li,.all,.qk,.hero .micro,.gwrap';
   const scr = [];
   $$(SCRUB).forEach(el => { if (el.closest('header,.sbar')) return; if (scr.some(x => x.el.contains(el))) return;
     el.removeAttribute('data-reveal'); const up = el.parentElement && el.parentElement.closest('[data-reveal]'); if (up && !up.matches('.tsl')) up.removeAttribute('data-reveal');
@@ -402,3 +404,19 @@
     c.addEventListener('pointerleave', () => cu.classList.remove('on'));
     c.addEventListener('click', e => { if (e.target.closest('a')) return; a.click(); }); });
 })();
+
+/* Team: Auswahl über Bildkacheln (Klick, Pfeiltasten, Maus-Hover wechselt nicht, damit nichts springt) */
+(() => {
+  const w = document.querySelector('[data-tq]'); if (!w) return;
+  const ps = [...w.querySelectorAll('.tq-p')], bt = [...w.querySelectorAll('.tq-r button')];
+  const go = (i, f) => { ps.forEach((p, j) => p.classList.toggle('on', j === i)); bt.forEach((b, j) => { b.setAttribute('aria-selected', String(j === i)); b.tabIndex = j === i ? 0 : -1; }); if (f) bt[i].focus(); };
+  bt.forEach((b, i) => { b.addEventListener('click', () => go(i)); b.addEventListener('keydown', e => { const k = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (k) { e.preventDefault(); go((i + k + bt.length) % bt.length, true); } }); });
+  go(0);
+})();
+
+/* Kontakt: die feste Leiste unten (Termin/Anrufen) verschwindet, sobald der Kontaktbereich im Bild ist, damit sich nichts doppelt */
+(() => {
+  const k = document.getElementById('kontakt'), b = document.querySelector('.sbar'); if (!k || !b || !window.IntersectionObserver) return;
+  new IntersectionObserver(es => { b.classList.toggle('hide', es[0].isIntersecting); }, { rootMargin: '0px 0px -30% 0px' }).observe(k);
+})();
+
