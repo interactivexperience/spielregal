@@ -1016,3 +1016,10 @@ html[data-motion=off] .sci-m i{animation:none;opacity:1}
 .hero>.sci.off{transform:translate3d(0,10px,0)}
 .cta:not(.ln):not(.alt):hover i,.cta:not(.ln):not(.alt):focus-visible i{color:var(--o)!important}
 .cta:not(.ln):not(.alt){outline:1.5px solid transparent;outline-offset:-1.5px;transition:color .45s var(--ease),outline-color .45s var(--ease)!important}.cta:not(.ln):not(.alt):hover{outline-color:var(--o)}
+/* Schnell zur Antwort: ohne Unterstrich, beim Hover füllt sich die Fläche orange von links */
+.qk ul{gap:.3rem .4rem!important}
+.qk a{position:relative;isolation:isolate;overflow:hidden;text-decoration:none!important;padding:0 .9rem!important;border-radius:6px!important;min-height:40px}
+.qk a::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--o);transform:scaleX(0);transform-origin:0 50%;transition:transform .45s var(--ease)}
+.qk a:hover::before,.qk a:focus-visible::before{transform:none}
+.qk a:hover,.qk a:focus-visible{color:#000!important}.qk a:hover::after,.qk a:focus-visible::after{color:#000}
+html[data-motion=off] .qk a::before{transition:none}
