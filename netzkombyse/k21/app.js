@@ -44,7 +44,7 @@
   /* ---------- Aufbau im Apple-Stil: Blöcke sind an die Scroll-Position gekoppelt ----------
      Bilder, Karten, Listen, Knöpfe blenden beim Hereinscrollen ein, gleiten hoch und wachsen leicht auf Endgröße,
      beim Zurückscrollen wieder zurück. Der Hero ist sofort sichtbar. */
-  const SCRUB = '.mq,.kc,.zs-g,.svc,.crew,.trio,.vq,.rate,.awc,.tq-st,.tq-r,.acc>li,.kst li,.ctas,.cl li,.gk,.facts li,.all,.qk,.hero .micro,.gwrap';
+  const SCRUB = '.mq,.kc,.zs-g,.svc,.crew,.trio,.vq,.rate,.awc,.tq-st,.tq-r,.acc>li,.kst li,.ctas,.cl li,.gk,.facts li,.all,.qk,.sv-hot,.hero .micro,.gwrap';
   const scr = [];
   $$(SCRUB).forEach(el => { if (el.closest('header,.sbar')) return; if (scr.some(x => x.el.contains(el))) return;
     el.removeAttribute('data-reveal'); const up = el.parentElement && el.parentElement.closest('[data-reveal]'); if (up && !up.matches('.tsl')) up.removeAttribute('data-reveal');
