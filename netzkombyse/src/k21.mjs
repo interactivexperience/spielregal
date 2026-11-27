@@ -78,6 +78,17 @@ const kacheln = [
   { c: 4, img: 'truckline', s: 'Lightbars für Trucks, Schritt für Schritt konfiguriert.', mid: [50, 32, 46], cut: [-4, 2, 64], ch: [['Konfigurator in drei Schritten'], ['Alle großen Lkw-Marken']] },
   { c: 5, img: 'pechkeks', s: 'Fiese Kekse brauchen einen frechen Shop.', mid: [4, 52, 66], cut: [24, -4, 60], ch: [['Shop Usability Award', 'Top 2017', 'b1'], ['Shop Award 2016', 'Shortlist', 'b2']] },
 ];
+// Referenzen-Galerie „Ziehen mit Schwung“ (Mi-Wahl 27.11.2026, Variante 1 aus vorschau/karussell.html): [Case-Index, Branche, Satz, Pillen]
+const zsCases = [
+  [1, 'Outdoor', 'Ein Shop, so robust wie die Räder, die er verkauft.', ['Shop Award 2020', 'Usability Award nominiert']],
+  [0, 'Mobilität', 'Original-Felgen, die in drei Schritten zum Auto passen.', ['Top Shop 2024', 'Trend Shop 2025']],
+  [7, 'Food', 'Feinste Fleischwaren, mit dem Daumen bestellt.', ['Gegründet 1836', 'Gutschein im Warenkorb']],
+  [6, 'Heimtier', 'Hundesofas, so gemütlich wie ihr Ruf.', ['Empfohlen von Martin Rütter', 'Geld-zurück-Garantie']],
+  [2, 'Food', '50 Jahre Weinhandel, jetzt auf allen Kanälen.', ['Shop, Social, Verkaufswagen', '50 Jahre']],
+  [3, 'Food', 'Fangfrisch bestellt, gekühlt an der Haustür.', ['Lieferstatus per SMS', 'Gekühlt bis zur Tür']],
+  [4, 'Mobilität', 'Lightbars für Trucks, Schritt für Schritt konfiguriert.', ['Konfigurator', 'Alle Lkw-Marken']],
+  [5, 'Heimtier', 'Fiese Kekse brauchen einen frechen Shop.', ['Usability Award 2017', 'Shop Award Shortlist']],
+];
 const pc = a => a.map(v => v + '%');
 const kachel = (k, i) => { const c = cases[k.c], m = pc(k.mid), u = pc(k.cut), M = `../media/kc/${k.img}`;
   const chip = (x, j) => `<span class="kc-ch kc-ch${j + 1}">${x[2] ? `<img src="${M}-${x[2]}.webp" alt="" loading="lazy">` : '<b aria-hidden="true"></b>'}${esc(x[0])}${x[1] ? ` <em>${esc(x[1])}</em>` : ''}</span>`;
@@ -140,7 +151,7 @@ function index() {
 <div class="mqs" role="group" aria-label="Marken, für die wir arbeiten"><p class="k mk">Diese Marken arbeiten mit uns.</p><p class="sr-only">${marken.join(', ')}</p><p class="mq a" aria-hidden="true"><span class="mq-t" data-mq="-1">${row(marken.slice(0, 9))}</span></p><p class="mq b" aria-hidden="true"><span class="mq-t" data-mq="1">${row(marken.slice(9))}</span></p></div>
 
 <section class="sec" id="arbeit"><div class="wr"><p class="k kc">Referenzen</p><div class="two"><h2 data-chars data-reveal>Handverlesen. Wie am Fischmarkt.</h2></div>
-  <div class="gal" data-gal="kc"><ul class="kcs">${kacheln.slice(0, 3).map(kachel).join('')}</ul></div>
+  <div class="gal zs-g" data-gal="kc"><div class="zs-vp" data-zs aria-label="Referenzen, seitlich ziehen oder wischen"><ul class="zs-tr">${zsCases.map((z, i) => { const c = cases[z[0]]; return `<li class="zs-cd"><a href="${W}/${c[4]}" target="_blank" rel="noopener" aria-label="${esc(c[1])}: ${esc(z[2])}" draggable="false"><div class="zs-im"><img src="../media/car/${c[0]}.webp" alt="" draggable="false" loading="lazy" decoding="async"><div class="zs-pl"><span class="zs-p t">${esc(z[1])}</span>${z[3].map(x => `<span class="zs-p">${esc(x)}</span>`).join('')}</div></div><div class="zs-cap"><h3>${esc(z[2])}</h3><span>${pad(i + 1)}</span></div><p class="zs-n">${esc(c[1])}</p></a></li>`; }).join('')}</ul></div><div class="zs-bar" aria-hidden="true"><i></i></div></div>
   <p class="all" data-reveal>${btn(`${W}/references`, 'Alle Referenzen ansehen', 'alt')}</p></div>
   <div class="pv" aria-hidden="true"><img alt="" width="1024" height="675"></div><span class="pc" aria-hidden="true">${ar}</span></section>
 

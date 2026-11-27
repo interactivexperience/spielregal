@@ -42,7 +42,7 @@
   /* ---------- Aufbau im Apple-Stil: Blöcke sind an die Scroll-Position gekoppelt ----------
      Bilder, Karten, Listen, Knöpfe blenden beim Hereinscrollen ein, gleiten hoch und wachsen leicht auf Endgröße,
      beim Zurückscrollen wieder zurück. Der Hero ist sofort sichtbar. */
-  const SCRUB = '.mq,.kc,.svc,.crew,.trio,.vq,.rate,.awc,.ts-w,.tsr,.acc>li,.kst li,.ctas,.cl li,.gk,.facts li,.all,.qk,.ft>*,.hero .micro,.gwrap';
+  const SCRUB = '.mq,.kc,.zs-g,.svc,.crew,.trio,.vq,.rate,.awc,.ts-w,.tsr,.acc>li,.kst li,.ctas,.cl li,.gk,.facts li,.all,.qk,.ft>*,.hero .micro,.gwrap';
   const scr = [];
   $$(SCRUB).forEach(el => { if (el.closest('header,.sbar')) return; if (scr.some(x => x.el.contains(el))) return;
     el.removeAttribute('data-reveal'); const up = el.parentElement && el.parentElement.closest('[data-reveal]'); if (up && !up.matches('.tsl')) up.removeAttribute('data-reveal');
@@ -364,3 +364,30 @@
   s.addEventListener('click', e => { const t = document.getElementById('weiter'); if (!t) return; e.preventDefault();
     scrollTo({ top: t.getBoundingClientRect().top + scrollY - 40, behavior: document.documentElement.dataset.motion === 'off' ? 'auto' : 'smooth' }); });
 })();
+
+/* Referenzen „Ziehen mit Schwung“: ziehen (Maus/Finger), Mausrad seitlich oder Shift, Pfeiltasten; Trägheit, Neigung beim schnellen Ziehen, Bild-Parallaxe, Fortschrittsbalken */
+(() => {
+  const vp = document.querySelector('[data-zs]'); if (!vp) return;
+  const tr = vp.querySelector('.zs-tr'), bar = vp.parentElement.querySelector('.zs-bar'), cds = [...tr.children], ims = cds.map(c => c.querySelector('img'));
+  const RM = () => document.documentElement.dataset.motion === 'off' || matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const cl = (v, a, b) => Math.max(a, Math.min(b, v));
+  let t = 0, cur = 0, max = 0, d = false, x = 0, moved = 0;
+  const mx = () => { max = Math.max(0, tr.scrollWidth - vp.clientWidth + parseFloat(getComputedStyle(vp).paddingLeft) * 2); t = cl(t, 0, max); }; mx(); addEventListener('resize', mx); addEventListener('load', mx);
+  vp.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse' && e.pointerType !== 'pen' && e.pointerType !== 'touch') return; d = true; moved = 0; x = e.clientX; vp.classList.add('dn'); });
+  addEventListener('pointermove', e => { if (!d) return; const dx = e.clientX - x; x = e.clientX; moved += Math.abs(dx); t = cl(t - dx * 1.4, 0, max); });
+  const up = () => { d = false; vp.classList.remove('dn'); }; addEventListener('pointerup', up); addEventListener('pointercancel', up);
+  vp.addEventListener('click', e => { if (moved > 6) { e.preventDefault(); e.stopPropagation(); } }, true);
+  vp.addEventListener('dragstart', e => e.preventDefault());
+  vp.addEventListener('wheel', e => { if (Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey) { e.preventDefault(); t = cl(t + (e.deltaX || e.deltaY), 0, max); } }, { passive: false });
+  cds.forEach((c, i) => c.querySelector('a').addEventListener('focus', () => { const r = c.offsetLeft - parseFloat(getComputedStyle(vp).paddingLeft); t = cl(r, 0, max); }));
+  const cu = document.createElement('div'); cu.className = 'zs-cur'; cu.textContent = 'Ziehen'; cu.setAttribute('aria-hidden', 'true'); document.body.appendChild(cu);
+  vp.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') cu.classList.add('on'); }); vp.addEventListener('pointerleave', () => cu.classList.remove('on'));
+  addEventListener('pointermove', e => { cu.style.transform = `translate(${e.clientX}px,${e.clientY}px)`; }, { passive: true });
+  if (matchMedia('(hover:none)').matches) { const io = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle('hot', e.intersectionRatio > .9)), { threshold: [0, .9] }); cds.forEach(c => io.observe(c)); }
+  let vis = true; new IntersectionObserver(es => { vis = es[0].isIntersecting; }).observe(vp);
+  (function f() { requestAnimationFrame(f); if (!vis) return; const rm = RM(); cur = rm ? t : cur + (t - cur) * .09; const v = t - cur; tr.style.transform = `translate3d(${-cur}px,0,0)`;
+    const sk = rm ? 0 : cl(v * .03, -7, 7), mid = innerWidth / 2;
+    cds.forEach((c, i) => { c.style.transform = sk ? `skewX(${-sk}deg)` : ''; const r = c.getBoundingClientRect(); ims[i].style.transform = rm ? '' : `translate3d(${((r.left + r.width / 2 - mid) / innerWidth) * -10}%,0,0)`; });
+    bar.style.setProperty('--p', (10 + 90 * (max ? cur / max : 0)) + '%'); })();
+})();
+
