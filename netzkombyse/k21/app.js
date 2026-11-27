@@ -347,3 +347,14 @@
   addEventListener('scroll', upd, { passive: true }); upd();
   b.addEventListener('click', e => { e.preventDefault(); scrollTo({ top: 0, behavior: document.documentElement.dataset.motion === 'off' ? 'auto' : 'smooth' }); const f = document.querySelector('.hd a, a'); if (f) f.focus({ preventScroll: true }); });
 })();
+
+/* Sticker „30 Minuten Videotermin“: zeigt sich, sobald der Zeiger dem Hauptknopf nahe kommt (ca. 140 px) oder darüber ist */
+(() => {
+  const w = document.querySelector('.hero .ctas'), b = w && w.querySelector('a'); if (!b || !matchMedia('(hover:hover)').matches) return;
+  let raf = 0, x = 0, y = 0;
+  const chk = () => { raf = 0; const r = b.getBoundingClientRect(); const dx = Math.max(r.left - x, 0, x - r.right), dy = Math.max(r.top - y, 0, y - r.bottom);
+    w.classList.toggle('near', Math.hypot(dx, dy) < 140); };
+  addEventListener('pointermove', e => { x = e.clientX; y = e.clientY; if (!raf) raf = requestAnimationFrame(chk); }, { passive: true });
+  addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(chk); }, { passive: true });
+})();
+

@@ -963,3 +963,14 @@ html[data-motion=off] .totop{transition:none}html[data-motion=off] .totop:hover 
 .hero .micro{align-self:start;margin-top:-.3rem!important}
 /* Hero ohne Aufbau: Wörter sofort voll sichtbar */
 .hero .lw{transition:none!important}
+
+/* Videotermin-Hinweis als Sticker: erscheint erst, wenn man sich dem Knopf nähert oder ihn fokussiert, mit Pfeil zum Knopf */
+.hero .ctas{position:relative}
+.stk{position:absolute;left:clamp(7rem,12vw,10rem);top:calc(100% + 1.1rem);z-index:5;display:flex;align-items:flex-start;gap:.2rem;pointer-events:none;opacity:0;transform:translate3d(0,10px,0) rotate(-2deg) scale(.92);transform-origin:0 0;transition:opacity .3s,transform .5s cubic-bezier(.34,1.56,.64,1)}
+.stk-t{display:block;background:#F4F1EA;color:#0b0b0b;font:600 .86rem/1.25 var(--bf);padding:.6rem .85rem .65rem;border-radius:12px;box-shadow:0 10px 26px rgba(0,0,0,.45),0 0 0 3px #0b0b0b;transform:rotate(-5deg);margin-top:1.6rem;white-space:nowrap}
+.stk-t b{color:var(--o);font-weight:800}
+.stk-a{width:46px;height:38px;color:#F4F1EA;margin-right:-.4rem;flex:none;transform:rotate(4deg)}
+.hero .ctas.near .stk,.hero .ctas:focus-within .stk{opacity:1;transform:none}
+@media(hover:none){.hero .ctas .stk{opacity:1;transform:none;transition-delay:.6s}}
+html[data-motion=off] .stk{transition:none}
+.hero .micro{display:none}
