@@ -39,7 +39,7 @@
 
   /* ---------- Aufbau im Apple-Stil: Blöcke sind an die Scroll-Position gekoppelt ----------
      Bilder, Karten, Listen, Knöpfe blenden beim Hereinscrollen ein, gleiten hoch und wachsen leicht auf Endgröße,
-     beim Zurückscrollen wieder zurück. Der Hero baut sich nach dem Laden der Reihe nach auf. */
+     beim Zurückscrollen wieder zurück. Der Hero ist sofort sichtbar. */
   const SCRUB = '.mq,.kc,.svc,.crew,.trio,.vq,.rate,.awc,.ts-w,.tsr,.acc>li,.kst li,.ctas,.cl li,.gk,.facts li,.all,.qk,.ft>*,.hero .micro,.gwrap';
   const scr = [];
   $$(SCRUB).forEach(el => { if (el.closest('header,.sbar')) return; if (scr.some(x => x.el.contains(el))) return;
@@ -59,17 +59,8 @@
       e.style.opacity = q.toFixed(3); e.style.translate = `0 ${((1 - q) * 56).toFixed(1)}px`; e.style.scale = (.94 + q * .06).toFixed(4); }); };
   addEventListener('scroll', () => { if (!sct) { sct = true; requestAnimationFrame(scrubUpdate); } }, { passive: true });
   addEventListener('nk:motion', scrubUpdate); addEventListener('resize', scrubUpdate);
-  /* Hero: Wörter und Blöcke bauen sich nach dem Laden in ca. 1,6 s auf */
-  /* Start erst, wenn die Seite wirklich sichtbar ist und die Schrift geladen ist (sonst läuft der Aufbau
-     unsichtbar im Hintergrund ab, z. B. in einer Vorschau oder einem Hintergrund-Tab, und die Seite steht schon fertig da) */
-  { let t0 = 0, armed = false; const D = 850;
-    const tick = t => { if (!t0) t0 = t + 120; heroP = motionOn() ? clamp((t - t0) / D, 0, 1) : 1; revealUpdate(); scrubUpdate(); if (heroP < 1) requestAnimationFrame(tick); };
-    const go = () => { if (armed) return; armed = true; requestAnimationFrame(tick); };
-    const ready = () => { const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting) && document.visibilityState === 'visible') { io.disconnect(); go(); } }, { threshold: .2 });
-      const h = document.querySelector('.hero'); if (h) io.observe(h); else go();
-      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && h && h.getBoundingClientRect().bottom > 0) { io.disconnect(); go(); } }); };
-    (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(ready);
-    setTimeout(() => { if (!armed && document.visibilityState === 'visible') go(); }, 2500); }
+  /* Hero steht sofort fertig da (Owner-Wunsch), der Aufbau beim Scrollen gilt nur für den Rest der Seite */
+  heroP = 1; revealUpdate(); scrubUpdate();
 
   /* ---------- Lesefortschritt, Laufband, Hero-Glühen beim Scrollen ---------- */
   /* ---------- Marken-Laufband: folgt dem Scrollen, lässt sich aber auch wischen und ziehen ---------- */
