@@ -52,7 +52,7 @@
     scr.forEach(x => { const e = x.el;
       if (!on) { e.style.opacity = e.style.translate = e.style.scale = ''; return; }
       let p;
-      if (x.hero) p = clamp((heroP - .35 - Math.min(x.i, 4) * .08) / .5, 0, 1);
+      if (x.hero) p = clamp((heroP - .2 - Math.min(x.i, 4) * .05) / .45, 0, 1);
       else { const b = e.getBoundingClientRect(); if (b.top > H + 120 || b.bottom < -120) { if (b.top > H) { e.style.opacity = '0'; } return; }
         p = clamp((H * .97 - b.top - Math.min(x.i, 5) * 22) / (H * .3), 0, 1); }
       const q = ease(p);
@@ -60,7 +60,7 @@
   addEventListener('scroll', () => { if (!sct) { sct = true; requestAnimationFrame(scrubUpdate); } }, { passive: true });
   addEventListener('nk:motion', scrubUpdate); addEventListener('resize', scrubUpdate);
   /* Hero: Wörter und Blöcke bauen sich nach dem Laden in ca. 1,6 s auf */
-  { const t0 = performance.now(), D = 1600;
+  { const t0 = performance.now(), D = 850;
     const tick = t => { heroP = motionOn() ? clamp((t - t0) / D, 0, 1) : 1; revealUpdate(); scrubUpdate(); if (heroP < 1) requestAnimationFrame(tick); };
     requestAnimationFrame(tick); }
 

@@ -123,7 +123,7 @@ function index() {
   
   <p class="k kh" data-reveal>Digital Commerce mit Unternehmergeist. Aus Hamburg.</p>
   <h1 id="h1" data-chars data-reveal>Nicht Möwen <br>zählen. <br>Machen.</h1>
-  <p class="s" data-reveal>Wir verbinden Strategie, Shop- und Systementwicklung, Markenkommunikation und Performance-Marketing. Mit künstlicher Intelligenz, echtem Menschenverstand und dem Blick für dein Geschäft.</p>
+  <p class="s" data-reveal>Wir verbinden Strategie, Shop- und Systementwicklung, Markenkommunikation und Performance-Marketing.<br class="dbr"> Mit künstlicher Intelligenz, echtem Menschenverstand und dem Blick für dein Geschäft.</p>
   <p class="ctas" data-reveal>${btn(C.termin, 'Lass uns schnacken.')}${btn('#arbeit', 'Erst mal umschauen.', 'alt')}</p><p class="micro" data-reveal>30 Minuten Videotermin, unverbindlich.</p>
   <div class="gwrap" data-gull aria-hidden="true"><div class="gfl"></div><div class="gb"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"></div><div class="gw"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"></div><div class="gh"><img src="../media/moewe-cut-l.webp" alt="" width="832" height="1232" decoding="async"><i class="lid"></i></div></div>
 </section>
