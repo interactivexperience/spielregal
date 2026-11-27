@@ -24,6 +24,7 @@
     walk(el); el.removeAttribute('data-reveal'); el.classList.add('in', 'wr2');
     return $$('.lw', el);
   };
+  let heroP = 0;
   const revealEls = [];
   $$(REVEAL).forEach(el => { if (el.closest('[hidden],.vq,.pn[hidden]') && !el.closest('.vq')) return; const ws = wordify(el); if (ws && ws.length) revealEls.push({ el, ws }); });
   const heroDone = el => el.getBoundingClientRect().top < innerHeight * .75;
@@ -31,10 +32,37 @@
   let rt = false;
   const revealUpdate = () => { rt = false; const on = motionOn();
     revealEls.forEach(r => { const b = r.el.getBoundingClientRect(); if (b.bottom < -50 || b.top > innerHeight + 50) { if (b.top > innerHeight + 50) r.ws.forEach(w => w.classList.toggle('on', !on)); else r.ws.forEach(w => w.classList.add('on')); return; }
-      const p = r.hero ? 1 : clamp((innerHeight * .9 - b.top) / (b.height + innerHeight * .3), 0, 1);
+      const p = r.hero ? heroP : clamp((innerHeight * .9 - b.top) / (b.height + innerHeight * .3), 0, 1);
       r.ws.forEach((w, i) => w.classList.toggle('on', !on || i / r.ws.length < p * 1.04)); }); };
   addEventListener('scroll', () => { if (!rt) { rt = true; requestAnimationFrame(revealUpdate); } }, { passive: true });
   addEventListener('nk:motion', revealUpdate); addEventListener('resize', revealUpdate); revealUpdate();
+
+  /* ---------- Aufbau im Apple-Stil: Blöcke sind an die Scroll-Position gekoppelt ----------
+     Bilder, Karten, Listen, Knöpfe blenden beim Hereinscrollen ein, gleiten hoch und wachsen leicht auf Endgröße,
+     beim Zurückscrollen wieder zurück. Der Hero baut sich nach dem Laden der Reihe nach auf. */
+  const SCRUB = '.mq,.kc,.svc,.crew,.trio,.vq,.rate,.awc,.ts-w,.tsr,.acc>li,.kst li,.ctas,.cl li,.gk,.facts li,.all,.qk,.ft>*,.hero .micro,.gwrap';
+  const scr = [];
+  $$(SCRUB).forEach(el => { if (el.closest('header,.sbar')) return; if (scr.some(x => x.el.contains(el))) return;
+    el.removeAttribute('data-reveal'); const up = el.parentElement && el.parentElement.closest('[data-reveal]'); if (up && !up.matches('.tsl')) up.removeAttribute('data-reveal');
+    scr.push({ el, hero: !!el.closest('.hero'), i: 0 }); });
+  scr.forEach((x, n) => { x.i = x.el.parentElement ? [...x.el.parentElement.children].indexOf(x.el) : 0; });
+  const ease = t => 1 - Math.pow(1 - t, 3);
+  let sct = false;
+  const scrubUpdate = () => { sct = false; const on = motionOn(), H = innerHeight;
+    scr.forEach(x => { const e = x.el;
+      if (!on) { e.style.opacity = e.style.translate = e.style.scale = ''; return; }
+      let p;
+      if (x.hero) p = clamp((heroP - .35 - Math.min(x.i, 4) * .08) / .5, 0, 1);
+      else { const b = e.getBoundingClientRect(); if (b.top > H + 120 || b.bottom < -120) { if (b.top > H) { e.style.opacity = '0'; } return; }
+        p = clamp((H * .97 - b.top - Math.min(x.i, 5) * 22) / (H * .3), 0, 1); }
+      const q = ease(p);
+      e.style.opacity = q.toFixed(3); e.style.translate = `0 ${((1 - q) * 56).toFixed(1)}px`; e.style.scale = (.94 + q * .06).toFixed(4); }); };
+  addEventListener('scroll', () => { if (!sct) { sct = true; requestAnimationFrame(scrubUpdate); } }, { passive: true });
+  addEventListener('nk:motion', scrubUpdate); addEventListener('resize', scrubUpdate);
+  /* Hero: Wörter und Blöcke bauen sich nach dem Laden in ca. 1,6 s auf */
+  { const t0 = performance.now(), D = 1600;
+    const tick = t => { heroP = motionOn() ? clamp((t - t0) / D, 0, 1) : 1; revealUpdate(); scrubUpdate(); if (heroP < 1) requestAnimationFrame(tick); };
+    requestAnimationFrame(tick); }
 
   /* ---------- Lesefortschritt, Laufband, Hero-Glühen beim Scrollen ---------- */
   /* ---------- Marken-Laufband: folgt dem Scrollen, lässt sich aber auch wischen und ziehen ---------- */
