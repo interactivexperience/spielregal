@@ -32,7 +32,9 @@
   let rt = false;
   const revealUpdate = () => { rt = false; const on = motionOn();
     revealEls.forEach(r => { const b = r.el.getBoundingClientRect(); if (b.bottom < -50 || b.top > innerHeight + 50) { if (b.top > innerHeight + 50) r.ws.forEach(w => w.classList.toggle('on', !on)); else r.ws.forEach(w => w.classList.add('on')); return; }
-      const p = r.hero ? heroP : clamp((innerHeight * .9 - b.top) / (b.height + innerHeight * .3), 0, 1);
+      /* gleiche Kurve wie der Block-Aufbau, damit Text nie hinter tieferen Blöcken zurückbleibt; Text in einem aufbauenden Block steht sofort (der Block blendet ihn ein) */
+      if (r.inScr) { r.ws.forEach(w => w.classList.add('on')); return; }
+      const p = r.hero ? heroP : clamp((innerHeight * .97 - b.top) / (innerHeight * .3 + b.height * .5), 0, 1);
       r.ws.forEach((w, i) => w.classList.toggle('on', !on || i / r.ws.length < p * 1.04)); }); };
   addEventListener('scroll', () => { if (!rt) { rt = true; requestAnimationFrame(revealUpdate); } }, { passive: true });
   addEventListener('nk:motion', revealUpdate); addEventListener('resize', revealUpdate); revealUpdate();
@@ -45,18 +47,23 @@
   $$(SCRUB).forEach(el => { if (el.closest('header,.sbar')) return; if (scr.some(x => x.el.contains(el))) return;
     el.removeAttribute('data-reveal'); const up = el.parentElement && el.parentElement.closest('[data-reveal]'); if (up && !up.matches('.tsl')) up.removeAttribute('data-reveal');
     scr.push({ el, hero: !!el.closest('.hero'), i: 0 }); });
+  revealEls.forEach(r => { r.inScr = scr.some(x => x.el.contains(r.el)); });
   scr.forEach((x, n) => { x.i = x.el.parentElement ? [...x.el.parentElement.children].indexOf(x.el) : 0; });
   const ease = t => 1 - Math.pow(1 - t, 3);
   let sct = false;
-  const scrubUpdate = () => { sct = false; const on = motionOn(), H = innerHeight;
+  /* Aufbau streng von oben nach unten: kein Versatz innerhalb einer Reihe (nicht schräg), und ein tieferes Element ist nie sichtbarer als das darüber */
+  const scrubUpdate = () => { sct = false; const on = motionOn(), H = innerHeight; let capP = 1, capT = -1e9;
     scr.forEach(x => { const e = x.el;
       if (!on) { e.style.opacity = e.style.translate = e.style.scale = ''; return; }
       let p;
       if (x.hero) p = clamp((heroP - .2 - Math.min(x.i, 4) * .05) / .45, 0, 1);
-      else { const b = e.getBoundingClientRect(); if (b.top > H + 120 || b.bottom < -120) { if (b.top > H) { e.style.opacity = '0'; } return; }
-        p = clamp((H * .97 - b.top - Math.min(x.i, 5) * 22) / (H * .3), 0, 1); }
-      const q = ease(p);
-      e.style.opacity = q.toFixed(3); e.style.translate = `0 ${((1 - q) * 56).toFixed(1)}px`; e.style.scale = (.94 + q * .06).toFixed(4); }); };
+      else { const b = e.getBoundingClientRect(), top = b.top - (x.ty || 0);
+        if (top > H + 120) { e.style.opacity = '0'; x.ty = 56; capP = 0; capT = top; return; }
+        if (b.bottom < -120) { capP = 1; capT = top; return; }
+        p = clamp((H * .97 - top) / (H * .3), 0, 1);
+        if (top >= capT - 8) p = Math.min(p, capP); capP = p; capT = top; }
+      const q = ease(p); x.ty = (1 - q) * 56;
+      e.style.opacity = q.toFixed(3); e.style.translate = `0 ${x.ty.toFixed(1)}px`; e.style.scale = (.94 + q * .06).toFixed(4); }); };
   addEventListener('scroll', () => { if (!sct) { sct = true; requestAnimationFrame(scrubUpdate); } }, { passive: true });
   addEventListener('nk:motion', scrubUpdate); addEventListener('resize', scrubUpdate);
   /* Hero steht sofort fertig da (Owner-Wunsch), der Aufbau beim Scrollen gilt nur für den Rest der Seite */
