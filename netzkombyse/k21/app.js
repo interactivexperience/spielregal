@@ -100,7 +100,8 @@
   addEventListener('scroll', () => { if (!st) { st = true; requestAnimationFrame(onScroll); } }, { passive: true }); addEventListener('nk:motion', onScroll); onScroll();
 
   /* ---------- Magnetische Knöpfe ---------- */
-  if (fine) $$('[data-mag]').forEach(b => {
+  /* Knöpfe (.cta) ohne Magnet: ihre Bewegung kommt allein vom Kreis, der sich ausbreitet */
+  if (fine) $$('[data-mag]:not(.cta)').forEach(b => {
     b.addEventListener('pointermove', e => { if (!motionOn()) return; const r = b.getBoundingClientRect(); b.style.transform = `translate3d(${(((e.clientX - r.left) / r.width - .5) * 12).toFixed(1)}px,${(((e.clientY - r.top) / r.height - .5) * 8).toFixed(1)}px,0)`; });
     b.addEventListener('pointerleave', () => { b.style.transform = ''; });
   });
